@@ -1,0 +1,33 @@
+FROM python:3.12-slim
+
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PIP_NO_CACHE_DIR=1 \
+    UV_LINK_MODE=copy \
+    PYTHONPATH=/app/apps/api:/app/packages/basketball-core/src
+
+# Install uv
+RUN pip install --no-cache-dir uv
+
+WORKDIR /app
+
+# Copy workspace files
+COPY pyproject.toml uv.lock* ./
+COPY apps/api/pyproject.toml ./apps/api/pyproject.toml
+COPY apps/worker/pyproject.toml ./apps/worker/pyproject.toml
+COPY apps/mcp/pyproject.toml ./apps/mcp/pyproject.toml
+COPY packages/basketball-core/pyproject.toml ./packages/basketball-core/pyproject.toml
+
+# Install the api service (which transitively installs the workspace)
+RUN uv sync --package knicksiq-api --frozen 2>/dev/null || uv sync --package knicksiq-api
+
+# Copy source
+COPY apps/api/app ./apps/api/app
+COPY packages/basketball-core/src ./packages/basketball-core/src
+
+# Re-sync to pick up the source changes
+RUN uv sync --package knicksiq-api
+
+EXPOSE 8000
+
+CMD ["/bin/sh", "-c", "uv run --package knicksiq-api uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}"]

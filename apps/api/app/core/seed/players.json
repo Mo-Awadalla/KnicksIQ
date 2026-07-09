@@ -1,0 +1,20 @@
+[
+  {"nba_player_id": 1628973, "full_name": "Jalen Brunson", "team_id": "NYK", "position": "PG", "jersey_number": "11"},
+  {"nba_player_id": 1628384, "full_name": "Julius Randle", "team_id": "NYK", "position": "PF", "jersey_number": "30"},
+  {"nba_player_id": 1628368, "full_name": "OG Anunoby", "team_id": "NYK", "position": "SF", "jersey_number": "8"},
+  {"nba_player_id": 1629216, "full_name": "Donte DiVincenzo", "team_id": "NYK", "position": "SG", "jersey_number": "0"},
+  {"nba_player_id": 1628404, "full_name": "Josh Hart", "team_id": "NYK", "position": "SG", "jersey_number": "3"},
+  {"nba_player_id": 1629723, "full_name": "Precious Achiuwa", "team_id": "NYK", "position": "PF", "jersey_number": "5"},
+  {"nba_player_id": 1641748, "full_name": "Karl-Anthony Towns", "team_id": "NYK", "position": "C", "jersey_number": "32"},
+  {"nba_player_id": 1627752, "full_name": "Mikal Bridges", "team_id": "NYK", "position": "SF", "jersey_number": "1"},
+  {"nba_player_id": 1628369, "full_name": "Jayson Tatum", "team_id": "BOS", "position": "SF", "jersey_number": "0"},
+  {"nba_player_id": 1627750, "full_name": "Jaylen Brown", "team_id": "BOS", "position": "SG", "jersey_number": "7"},
+  {"nba_player_id": 201143, "full_name": "Al Horford", "team_id": "BOS", "position": "C", "jersey_number": "42"},
+  {"nba_player_id": 1626156, "full_name": "Derrick White", "team_id": "BOS", "position": "SG", "jersey_number": "9"},
+  {"nba_player_id": 203468, "full_name": "Jrue Holiday", "team_id": "BOS", "position": "PG", "jersey_number": "4"},
+  {"nba_player_id": 203954, "full_name": "Joel Embiid", "team_id": "PHI", "position": "C", "jersey_number": "21"},
+  {"nba_player_id": 1630178, "full_name": "Tyrese Maxey", "team_id": "PHI", "position": "PG", "jersey_number": "0"},
+  {"nba_player_id": 1627734, "full_name": "Tobias Harris", "team_id": "PHI", "position": "PF", "jersey_number": "12"},
+  {"nba_player_id": 1628396, "full_name": "Kelly Oubre Jr.", "team_id": "PHI", "position": "SF", "jersey_number": "9"},
+  {"nba_player_id": 203076, "full_name": "Kyle Lowry", "team_id": "PHI", "position": "PG", "jersey_number": "7"}
+]

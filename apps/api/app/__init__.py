@@ -1,0 +1,1 @@
+"""KnicksIQ FastAPI backend."""
