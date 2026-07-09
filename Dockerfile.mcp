@@ -1,0 +1,29 @@
+FROM python:3.12-slim
+
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PIP_NO_CACHE_DIR=1 \
+    UV_LINK_MODE=copy \
+    PYTHONPATH=/app/apps/api:/app/apps/mcp/mcp_app:/app/packages/basketball-core/src
+
+RUN pip install --no-cache-dir uv
+
+WORKDIR /app
+
+COPY pyproject.toml uv.lock* ./
+COPY apps/api/pyproject.toml ./apps/api/pyproject.toml
+COPY apps/worker/pyproject.toml ./apps/worker/pyproject.toml
+COPY apps/mcp/pyproject.toml ./apps/mcp/pyproject.toml
+COPY packages/basketball-core/pyproject.toml ./packages/basketball-core/pyproject.toml
+
+RUN uv sync --package knicksiq-mcp 2>/dev/null || uv sync --package knicksiq-mcp
+
+COPY apps/api/app ./apps/api/app
+COPY apps/mcp/mcp_app ./apps/mcp/mcp_app
+COPY packages/basketball-core/src ./packages/basketball-core/src
+
+RUN uv sync --package knicksiq-mcp
+
+EXPOSE 8001
+
+CMD ["uv", "run", "--package", "knicksiq-mcp", "python", "-m", "mcp_app.server", "--transport", "sse"]

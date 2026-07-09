@@ -1,0 +1,133 @@
+[
+  {
+    "question": "what was the knicks longest losing streak",
+    "route": "table_rag",
+    "answer_contains": ["longest cached 2025-26 losing streak", "Evidence used:"],
+    "forbidden_tools": ["search_season_docs", "search_possession_chunks", "llm_generate"]
+  },
+  {
+    "question": "What was the best game the Knicks played this season?",
+    "route": "table_rag",
+    "answer_contains": [
+      "by win margin",
+      "Evidence used:"
+    ],
+    "forbidden_tools": [
+      "search_season_docs",
+      "search_possession_chunks",
+      "llm_generate"
+    ]
+  },
+  {
+    "question": "What is the Knicks record this season?",
+    "route": "table_rag",
+    "answer_contains": [
+      "NYK is",
+      "Evidence used:"
+    ],
+    "forbidden_tools": [
+      "search_season_docs",
+      "search_possession_chunks",
+      "llm_generate"
+    ]
+  },
+  {
+    "question": "What was the Knicks average score this season?",
+    "route": "table_rag",
+    "answer_contains": [
+      "averaged",
+      "Evidence used:"
+    ],
+    "forbidden_tools": [
+      "search_season_docs",
+      "search_possession_chunks"
+    ]
+  },
+  {
+    "question": "How many total points did the Knicks score this season?",
+    "route": "table_rag",
+    "answer_contains": [
+      "total points",
+      "Evidence used:"
+    ],
+    "forbidden_tools": [
+      "search_season_docs",
+      "search_possession_chunks"
+    ]
+  },
+  {
+    "question": "What happened in the Knicks game against Toronto?",
+    "route": "retrieval_rag",
+    "answer_contains": [
+      "Knicks",
+      "Evidence used:"
+    ],
+    "required_tools": [
+      "search_possession_chunks"
+    ]
+  },
+  {
+    "question": "What happened in Q4 of a Knicks game?",
+    "route": "retrieval_rag",
+    "answer_contains": [
+      "Knicks",
+      "Evidence used:"
+    ],
+    "required_tools": [
+      "search_possession_chunks"
+    ]
+  },
+  {
+    "question": "Compare the Knicks game against Toronto versus Boston.",
+    "route": "retrieval_rag",
+    "answer_contains": [
+      "Knicks",
+      "Evidence used:"
+    ],
+    "required_tools": [
+      "search_possession_chunks"
+    ]
+  },
+  {
+    "question": "How did the lineup with Brunson look in the Knicks game?",
+    "route": "retrieval_rag",
+    "answer_contains": [
+      "Brunson",
+      "Evidence used:"
+    ],
+    "required_tools": [
+      "search_possession_chunks"
+    ]
+  },
+  {
+    "question": "What if the Knicks made two more threes in that game?",
+    "route": "retrieval_rag",
+    "answer_contains": [
+      "Knicks",
+      "Evidence used:"
+    ],
+    "required_tools": [
+      "search_possession_chunks"
+    ]
+  },
+  {
+    "question": "Show Knicks possessions on 2099-01-01.",
+    "route": "retrieval_rag",
+    "answer_contains": [
+      "No possession-level evidence matched"
+    ],
+    "required_tools": [
+      "search_possession_chunks"
+    ]
+  },
+  {
+    "question": "What happened in the Knicks season?",
+    "route": "retrieval_rag",
+    "answer_contains": [
+      "Knicks"
+    ],
+    "required_tools": [
+      "search_possession_chunks"
+    ]
+  }
+]

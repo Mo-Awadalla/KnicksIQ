@@ -1,0 +1,557 @@
+{
+  "/Users/mohamedawadalla/Projects/KnicksIQ/apps/api/app/__init__.py": {
+    "mtime": 1782744403.9997547,
+    "ast_hash": "e262398d8e5525c5e3edb178bdc53a80",
+    "semantic_hash": "e262398d8e5525c5e3edb178bdc53a80"
+  },
+  "/Users/mohamedawadalla/Projects/KnicksIQ/apps/api/app/api/__init__.py": {
+    "mtime": 1782744466.918746,
+    "ast_hash": "176b953577fa2921f9f25e5fd7700101",
+    "semantic_hash": "176b953577fa2921f9f25e5fd7700101"
+  },
+  "/Users/mohamedawadalla/Projects/KnicksIQ/apps/api/app/api/analysis.py": {
+    "mtime": 1782872445.517132,
+    "ast_hash": "15c018fdc317b78f35130ed80fc2456f",
+    "semantic_hash": "15c018fdc317b78f35130ed80fc2456f"
+  },
+  "/Users/mohamedawadalla/Projects/KnicksIQ/apps/api/app/api/games.py": {
+    "mtime": 1782872906.661212,
+    "ast_hash": "684f0823e8aa7798069a897947c723be",
+    "semantic_hash": "684f0823e8aa7798069a897947c723be"
+  },
+  "/Users/mohamedawadalla/Projects/KnicksIQ/apps/api/app/api/health.py": {
+    "mtime": 1782744488.663886,
+    "ast_hash": "3f71d6ffa6b5d336ae9ec5a8c07e6644",
+    "semantic_hash": "3f71d6ffa6b5d336ae9ec5a8c07e6644"
+  },
+  "/Users/mohamedawadalla/Projects/KnicksIQ/apps/api/app/api/jobs.py": {
+    "mtime": 1782872502.3172293,
+    "ast_hash": "c6ee3a06a66704a11489368d734a7010",
+    "semantic_hash": "c6ee3a06a66704a11489368d734a7010"
+  },
+  "/Users/mohamedawadalla/Projects/KnicksIQ/apps/api/app/api/players.py": {
+    "mtime": 1782744482.26448,
+    "ast_hash": "85a275801d678b5c10b9397662c4bb81",
+    "semantic_hash": "85a275801d678b5c10b9397662c4bb81"
+  },
+  "/Users/mohamedawadalla/Projects/KnicksIQ/apps/api/app/api/reports.py": {
+    "mtime": 1782872603.0038888,
+    "ast_hash": "12b08678518682de884fe43a72fad1f8",
+    "semantic_hash": "12b08678518682de884fe43a72fad1f8"
+  },
+  "/Users/mohamedawadalla/Projects/KnicksIQ/apps/api/app/api/router.py": {
+    "mtime": 1782872445.659249,
+    "ast_hash": "680460540aa8aff7327a8035ad54a7c9",
+    "semantic_hash": "680460540aa8aff7327a8035ad54a7c9"
+  },
+  "/Users/mohamedawadalla/Projects/KnicksIQ/apps/api/app/api/security.py": {
+    "mtime": 1782855553.2835476,
+    "ast_hash": "31d6cacd5f92cc1f35d5260a147316ee",
+    "semantic_hash": "31d6cacd5f92cc1f35d5260a147316ee"
+  },
+  "/Users/mohamedawadalla/Projects/KnicksIQ/apps/api/app/api/teams.py": {
+    "mtime": 1782744486.0024624,
+    "ast_hash": "084dc21ffd52f13bc59931e0a500c3eb",
+    "semantic_hash": "084dc21ffd52f13bc59931e0a500c3eb"
+  },
+  "/Users/mohamedawadalla/Projects/KnicksIQ/apps/api/app/core/__init__.py": {
+    "mtime": 1782744405.9280648,
+    "ast_hash": "b5392d655b418d9c75055fdcecd0e53d",
+    "semantic_hash": "b5392d655b418d9c75055fdcecd0e53d"
+  },
+  "/Users/mohamedawadalla/Projects/KnicksIQ/apps/api/app/core/config.py": {
+    "mtime": 1782855553.1387572,
+    "ast_hash": "9bd221fa310fc71482a295915f450428",
+    "semantic_hash": "9bd221fa310fc71482a295915f450428"
+  },
+  "/Users/mohamedawadalla/Projects/KnicksIQ/apps/api/app/core/db.py": {
+    "mtime": 1782744415.412534,
+    "ast_hash": "bd639c6c3df0e68ad7f8d5a5d64886e9",
+    "semantic_hash": "bd639c6c3df0e68ad7f8d5a5d64886e9"
+  },
+  "/Users/mohamedawadalla/Projects/KnicksIQ/apps/api/app/core/logging.py": {
+    "mtime": 1782744420.0651195,
+    "ast_hash": "5f2cfb2c313eb2ffb5c1279104c9ba0e",
+    "semantic_hash": "5f2cfb2c313eb2ffb5c1279104c9ba0e"
+  },
+  "/Users/mohamedawadalla/Projects/KnicksIQ/apps/api/app/core/seed/games.json": {
+    "mtime": 1782872687.896669,
+    "ast_hash": "224e391f3c16ed86c9eac4732a3e2415",
+    "semantic_hash": "224e391f3c16ed86c9eac4732a3e2415"
+  },
+  "/Users/mohamedawadalla/Projects/KnicksIQ/apps/api/app/core/seed/players.json": {
+    "mtime": 1782744546.418824,
+    "ast_hash": "a332809d8333055b670d57d6d79a9e7e",
+    "semantic_hash": "a332809d8333055b670d57d6d79a9e7e"
+  },
+  "/Users/mohamedawadalla/Projects/KnicksIQ/apps/api/app/core/seed/teams.json": {
+    "mtime": 1782744535.1729023,
+    "ast_hash": "53f72184ca0fe5b0a09847e2de0dd8ed",
+    "semantic_hash": "53f72184ca0fe5b0a09847e2de0dd8ed"
+  },
+  "/Users/mohamedawadalla/Projects/KnicksIQ/apps/api/app/core/seed_loader.py": {
+    "mtime": 1782872463.8516917,
+    "ast_hash": "2c8bf143cee8e9f2e1ed53019d2d6b4b",
+    "semantic_hash": "2c8bf143cee8e9f2e1ed53019d2d6b4b"
+  },
+  "/Users/mohamedawadalla/Projects/KnicksIQ/apps/api/app/main.py": {
+    "mtime": 1782744705.0040064,
+    "ast_hash": "f1aee97728455f2291d5e3e797d493fd",
+    "semantic_hash": "f1aee97728455f2291d5e3e797d493fd"
+  },
+  "/Users/mohamedawadalla/Projects/KnicksIQ/apps/api/app/models/__init__.py": {
+    "mtime": 1782855553.7231987,
+    "ast_hash": "cdae47efcb95217a72b5e52db7140afe",
+    "semantic_hash": "cdae47efcb95217a72b5e52db7140afe"
+  },
+  "/Users/mohamedawadalla/Projects/KnicksIQ/apps/api/app/models/bad_stretch.py": {
+    "mtime": 1782744449.8137817,
+    "ast_hash": "627895570c8282754d4a79bd333b21ce",
+    "semantic_hash": "627895570c8282754d4a79bd333b21ce"
+  },
+  "/Users/mohamedawadalla/Projects/KnicksIQ/apps/api/app/models/base.py": {
+    "mtime": 1782744425.1434212,
+    "ast_hash": "7f6fe1f188bdc95392463a5939d568a6",
+    "semantic_hash": "7f6fe1f188bdc95392463a5939d568a6"
+  },
+  "/Users/mohamedawadalla/Projects/KnicksIQ/apps/api/app/models/chunk_model.py": {
+    "mtime": 1782747119.600173,
+    "ast_hash": "74204e1809feabb45d32351fb9f7a95f",
+    "semantic_hash": "74204e1809feabb45d32351fb9f7a95f"
+  },
+  "/Users/mohamedawadalla/Projects/KnicksIQ/apps/api/app/models/document.py": {
+    "mtime": 1782747119.5996127,
+    "ast_hash": "6cb61446962d016bc47f15ab00c65c34",
+    "semantic_hash": "6cb61446962d016bc47f15ab00c65c34"
+  },
+  "/Users/mohamedawadalla/Projects/KnicksIQ/apps/api/app/models/game.py": {
+    "mtime": 1782872921.786031,
+    "ast_hash": "16412cd86477560b95c4dba9dd96080c",
+    "semantic_hash": "16412cd86477560b95c4dba9dd96080c"
+  },
+  "/Users/mohamedawadalla/Projects/KnicksIQ/apps/api/app/models/game_event.py": {
+    "mtime": 1782744724.752679,
+    "ast_hash": "27626ad08709f5ade953944437927b46",
+    "semantic_hash": "27626ad08709f5ade953944437927b46"
+  },
+  "/Users/mohamedawadalla/Projects/KnicksIQ/apps/api/app/models/ingest_run.py": {
+    "mtime": 1782855553.5764484,
+    "ast_hash": "8fcb51a7ac869d3f75da14514c764b26",
+    "semantic_hash": "8fcb51a7ac869d3f75da14514c764b26"
+  },
+  "/Users/mohamedawadalla/Projects/KnicksIQ/apps/api/app/models/job.py": {
+    "mtime": 1782745062.2630844,
+    "ast_hash": "14ec0c9f6a6cc8b8f198020699b4531c",
+    "semantic_hash": "14ec0c9f6a6cc8b8f198020699b4531c"
+  },
+  "/Users/mohamedawadalla/Projects/KnicksIQ/apps/api/app/models/player.py": {
+    "mtime": 1782744724.7525923,
+    "ast_hash": "b71e68199b76e95ef347ca5cd1d72fbf",
+    "semantic_hash": "b71e68199b76e95ef347ca5cd1d72fbf"
+  },
+  "/Users/mohamedawadalla/Projects/KnicksIQ/apps/api/app/models/report.py": {
+    "mtime": 1782746961.4212906,
+    "ast_hash": "bc69757f738f697a8d9abd1db1d214c1",
+    "semantic_hash": "bc69757f738f697a8d9abd1db1d214c1"
+  },
+  "/Users/mohamedawadalla/Projects/KnicksIQ/apps/api/app/models/scoring_run.py": {
+    "mtime": 1782744446.4748893,
+    "ast_hash": "2d16b44ac43dea771b2d191e336a4c6e",
+    "semantic_hash": "2d16b44ac43dea771b2d191e336a4c6e"
+  },
+  "/Users/mohamedawadalla/Projects/KnicksIQ/apps/api/app/models/team.py": {
+    "mtime": 1782744724.7525313,
+    "ast_hash": "bdb26a66bd81f4f70c9e27726ead6052",
+    "semantic_hash": "bdb26a66bd81f4f70c9e27726ead6052"
+  },
+  "/Users/mohamedawadalla/Projects/KnicksIQ/apps/api/app/schemas/__init__.py": {
+    "mtime": 1782744455.2242637,
+    "ast_hash": "9cf907b440fbdc05b1c9853089c185d9",
+    "semantic_hash": "9cf907b440fbdc05b1c9853089c185d9"
+  },
+  "/Users/mohamedawadalla/Projects/KnicksIQ/apps/api/app/schemas/game.py": {
+    "mtime": 1782855553.8699296,
+    "ast_hash": "07d2b2146e4eca724af9e937fac00065",
+    "semantic_hash": "07d2b2146e4eca724af9e937fac00065"
+  },
+  "/Users/mohamedawadalla/Projects/KnicksIQ/apps/api/app/schemas/player.py": {
+    "mtime": 1782744459.998842,
+    "ast_hash": "b6f7300cbf88fcd3ad31abdf4d4e36c4",
+    "semantic_hash": "b6f7300cbf88fcd3ad31abdf4d4e36c4"
+  },
+  "/Users/mohamedawadalla/Projects/KnicksIQ/apps/api/app/schemas/team.py": {
+    "mtime": 1782744457.5326676,
+    "ast_hash": "82a4a7db3bce3789d85589ba28f6e063",
+    "semantic_hash": "82a4a7db3bce3789d85589ba28f6e063"
+  },
+  "/Users/mohamedawadalla/Projects/KnicksIQ/apps/api/app/services/rag.py": {
+    "mtime": 1782872921.9367204,
+    "ast_hash": "d2fc8cc56ac8f3151eaa3758a576307c",
+    "semantic_hash": "d2fc8cc56ac8f3151eaa3758a576307c"
+  },
+  "/Users/mohamedawadalla/Projects/KnicksIQ/apps/api/app/services/report_generator.py": {
+    "mtime": 1782872408.0220065,
+    "ast_hash": "084308c110dcb0f19a5732db08eaec01",
+    "semantic_hash": "084308c110dcb0f19a5732db08eaec01"
+  },
+  "/Users/mohamedawadalla/Projects/KnicksIQ/apps/api/app/services/report_llm.py": {
+    "mtime": 1782872407.8760877,
+    "ast_hash": "1c7cd8e1e7db3eecc314312766416b63",
+    "semantic_hash": "1c7cd8e1e7db3eecc314312766416b63"
+  },
+  "/Users/mohamedawadalla/Projects/KnicksIQ/apps/api/app/tests/conftest.py": {
+    "mtime": 1782744724.7525218,
+    "ast_hash": "d5e9b460cf446e14d121d7f9d67e09a9",
+    "semantic_hash": "d5e9b460cf446e14d121d7f9d67e09a9"
+  },
+  "/Users/mohamedawadalla/Projects/KnicksIQ/apps/api/app/tests/test_analysis.py": {
+    "mtime": 1782872626.746534,
+    "ast_hash": "b7d6d7240e1e72c5d7069f459f991078",
+    "semantic_hash": "b7d6d7240e1e72c5d7069f459f991078"
+  },
+  "/Users/mohamedawadalla/Projects/KnicksIQ/apps/api/app/tests/test_games.py": {
+    "mtime": 1782872701.2781093,
+    "ast_hash": "4017d187f454fd9b1d40b5dde601172a",
+    "semantic_hash": "4017d187f454fd9b1d40b5dde601172a"
+  },
+  "/Users/mohamedawadalla/Projects/KnicksIQ/apps/api/app/tests/test_jobs.py": {
+    "mtime": 1782745062.2620106,
+    "ast_hash": "f1bf659f69ee88b7b6d93a314e020a0a",
+    "semantic_hash": "f1bf659f69ee88b7b6d93a314e020a0a"
+  },
+  "/Users/mohamedawadalla/Projects/KnicksIQ/apps/api/app/tests/test_players.py": {
+    "mtime": 1782744568.6401978,
+    "ast_hash": "996a5ccb66198745f31c5ffaa813c24a",
+    "semantic_hash": "996a5ccb66198745f31c5ffaa813c24a"
+  },
+  "/Users/mohamedawadalla/Projects/KnicksIQ/apps/api/app/tests/test_reports.py": {
+    "mtime": 1782747156.917091,
+    "ast_hash": "ace18be8750f1071207d17ab6b6f7a57",
+    "semantic_hash": "ace18be8750f1071207d17ab6b6f7a57"
+  },
+  "/Users/mohamedawadalla/Projects/KnicksIQ/apps/api/app/tests/test_reports_api.py": {
+    "mtime": 1782747085.0338252,
+    "ast_hash": "209e632b88e3ef1fda423bc79d94ab1f",
+    "semantic_hash": "209e632b88e3ef1fda423bc79d94ab1f"
+  },
+  "/Users/mohamedawadalla/Projects/KnicksIQ/apps/mcp/mcp_app/__init__.py": {
+    "mtime": 1782746808.2596383,
+    "ast_hash": "20c836556f10b438c5a660015a82a004",
+    "semantic_hash": "20c836556f10b438c5a660015a82a004"
+  },
+  "/Users/mohamedawadalla/Projects/KnicksIQ/apps/mcp/mcp_app/core/__init__.py": {
+    "mtime": 1782746833.7942383,
+    "ast_hash": "2af061386ff2f7a1ae046c2725c373c1",
+    "semantic_hash": "2af061386ff2f7a1ae046c2725c373c1"
+  },
+  "/Users/mohamedawadalla/Projects/KnicksIQ/apps/mcp/mcp_app/core/config.py": {
+    "mtime": 1782746831.3637247,
+    "ast_hash": "56530f45baddcf0f8801cf700b74d4c9",
+    "semantic_hash": "56530f45baddcf0f8801cf700b74d4c9"
+  },
+  "/Users/mohamedawadalla/Projects/KnicksIQ/apps/mcp/mcp_app/core/db.py": {
+    "mtime": 1782746922.0807204,
+    "ast_hash": "ac14dcc505b0a6e8698b401527fc67a6",
+    "semantic_hash": "ac14dcc505b0a6e8698b401527fc67a6"
+  },
+  "/Users/mohamedawadalla/Projects/KnicksIQ/apps/mcp/mcp_app/logging_middleware.py": {
+    "mtime": 1782746851.0378,
+    "ast_hash": "8e2d4651aa771bca61c4e705434858a2",
+    "semantic_hash": "8e2d4651aa771bca61c4e705434858a2"
+  },
+  "/Users/mohamedawadalla/Projects/KnicksIQ/apps/mcp/mcp_app/schemas.py": {
+    "mtime": 1782746922.0811357,
+    "ast_hash": "bee0383ee3ef151f445a29fe1b19e4b0",
+    "semantic_hash": "bee0383ee3ef151f445a29fe1b19e4b0"
+  },
+  "/Users/mohamedawadalla/Projects/KnicksIQ/apps/mcp/mcp_app/server.py": {
+    "mtime": 1782746922.0815272,
+    "ast_hash": "af9c8bac1da3be8dc003c885a728e2d6",
+    "semantic_hash": "af9c8bac1da3be8dc003c885a728e2d6"
+  },
+  "/Users/mohamedawadalla/Projects/KnicksIQ/apps/mcp/mcp_app/tests/test_tools.py": {
+    "mtime": 1782746922.0810132,
+    "ast_hash": "1732383910f256a2e9e8b7d96462b8a0",
+    "semantic_hash": "1732383910f256a2e9e8b7d96462b8a0"
+  },
+  "/Users/mohamedawadalla/Projects/KnicksIQ/apps/mcp/mcp_app/tools.py": {
+    "mtime": 1782746922.081154,
+    "ast_hash": "44dac1a67be6114add5bef5f987d40f8",
+    "semantic_hash": "44dac1a67be6114add5bef5f987d40f8"
+  },
+  "/Users/mohamedawadalla/Projects/KnicksIQ/apps/web/package.json": {
+    "mtime": 1782747198.8869796,
+    "ast_hash": "d4620fd838151f2ad6b393005851d9e1",
+    "semantic_hash": "d4620fd838151f2ad6b393005851d9e1"
+  },
+  "/Users/mohamedawadalla/Projects/KnicksIQ/apps/web/postcss.config.js": {
+    "mtime": 1782747215.1078722,
+    "ast_hash": "ef3ba2a81ba19f8ea5ddf625521e96f0",
+    "semantic_hash": "ef3ba2a81ba19f8ea5ddf625521e96f0"
+  },
+  "/Users/mohamedawadalla/Projects/KnicksIQ/apps/web/src/App.tsx": {
+    "mtime": 1782872519.5204158,
+    "ast_hash": "996eec3514aa4b0fe2c2c179ce9db51d",
+    "semantic_hash": "996eec3514aa4b0fe2c2c179ce9db51d"
+  },
+  "/Users/mohamedawadalla/Projects/KnicksIQ/apps/web/src/api/client.ts": {
+    "mtime": 1782747238.4674737,
+    "ast_hash": "3569c89f283f33c916e5fd591bd1df4d",
+    "semantic_hash": "3569c89f283f33c916e5fd591bd1df4d"
+  },
+  "/Users/mohamedawadalla/Projects/KnicksIQ/apps/web/src/api/index.ts": {
+    "mtime": 1782872519.369437,
+    "ast_hash": "7d41adb563d64d138adf5eda1e702b00",
+    "semantic_hash": "7d41adb563d64d138adf5eda1e702b00"
+  },
+  "/Users/mohamedawadalla/Projects/KnicksIQ/apps/web/src/main.tsx": {
+    "mtime": 1782747225.9634695,
+    "ast_hash": "96f8349d47ae22005e30d1b1328638cf",
+    "semantic_hash": "96f8349d47ae22005e30d1b1328638cf"
+  },
+  "/Users/mohamedawadalla/Projects/KnicksIQ/apps/web/src/pages/AnalystChat.tsx": {
+    "mtime": 1782872584.5107923,
+    "ast_hash": "e9a9d0700804595e0894a4a62aa4fbcf",
+    "semantic_hash": "e9a9d0700804595e0894a4a62aa4fbcf"
+  },
+  "/Users/mohamedawadalla/Projects/KnicksIQ/apps/web/src/pages/GameDetail.tsx": {
+    "mtime": 1782872562.7721906,
+    "ast_hash": "9f166ec6dafec86bf49e87194b9096d8",
+    "semantic_hash": "9f166ec6dafec86bf49e87194b9096d8"
+  },
+  "/Users/mohamedawadalla/Projects/KnicksIQ/apps/web/src/pages/Games.tsx": {
+    "mtime": 1782872537.5464158,
+    "ast_hash": "dc06686c912af8852e6fe1be1fa8d1a5",
+    "semantic_hash": "dc06686c912af8852e6fe1be1fa8d1a5"
+  },
+  "/Users/mohamedawadalla/Projects/KnicksIQ/apps/web/src/pages/Home.tsx": {
+    "mtime": 1782872598.503942,
+    "ast_hash": "0b22868f27e5984d0780ca383e5919fc",
+    "semantic_hash": "0b22868f27e5984d0780ca383e5919fc"
+  },
+  "/Users/mohamedawadalla/Projects/KnicksIQ/apps/web/src/pages/PostgameReport.tsx": {
+    "mtime": 1782872584.657201,
+    "ast_hash": "01a612760d716c4a8886dd046f032b4f",
+    "semantic_hash": "01a612760d716c4a8886dd046f032b4f"
+  },
+  "/Users/mohamedawadalla/Projects/KnicksIQ/apps/web/src/pages/SavedReports.tsx": {
+    "mtime": 1782747297.0281506,
+    "ast_hash": "328b31f6ee1b5d073a9a3ddcd9e20883",
+    "semantic_hash": "328b31f6ee1b5d073a9a3ddcd9e20883"
+  },
+  "/Users/mohamedawadalla/Projects/KnicksIQ/apps/web/src/types/index.ts": {
+    "mtime": 1782872519.2147934,
+    "ast_hash": "d7417cf80bca02071b98c0271295dd5e",
+    "semantic_hash": "d7417cf80bca02071b98c0271295dd5e"
+  },
+  "/Users/mohamedawadalla/Projects/KnicksIQ/apps/web/src/vite-env.d.ts": {
+    "mtime": 1782747319.9078205,
+    "ast_hash": "643932158c234c6b05a7a8bf32209c62",
+    "semantic_hash": "643932158c234c6b05a7a8bf32209c62"
+  },
+  "/Users/mohamedawadalla/Projects/KnicksIQ/apps/web/tailwind.config.js": {
+    "mtime": 1782747211.675182,
+    "ast_hash": "876da2d822d286f8dc295b666f7ea00c",
+    "semantic_hash": "876da2d822d286f8dc295b666f7ea00c"
+  },
+  "/Users/mohamedawadalla/Projects/KnicksIQ/apps/web/tsconfig.json": {
+    "mtime": 1782747203.7413878,
+    "ast_hash": "c7b1d42e866e843c845d40766997117e",
+    "semantic_hash": "c7b1d42e866e843c845d40766997117e"
+  },
+  "/Users/mohamedawadalla/Projects/KnicksIQ/apps/web/vite.config.ts": {
+    "mtime": 1782747207.327128,
+    "ast_hash": "a2673da9bc31dc13d666c76e11b29357",
+    "semantic_hash": "a2673da9bc31dc13d666c76e11b29357"
+  },
+  "/Users/mohamedawadalla/Projects/KnicksIQ/apps/worker/worker_app/__init__.py": {
+    "mtime": 1782744775.9084547,
+    "ast_hash": "9a60bb12e2f0a3a04063a63c7d7c9412",
+    "semantic_hash": "9a60bb12e2f0a3a04063a63c7d7c9412"
+  },
+  "/Users/mohamedawadalla/Projects/KnicksIQ/apps/worker/worker_app/adapters/__init__.py": {
+    "mtime": 1782830785.0123696,
+    "ast_hash": "3cfebdb9c703ef62fc7a0545c0f0444a",
+    "semantic_hash": "3cfebdb9c703ef62fc7a0545c0f0444a"
+  },
+  "/Users/mohamedawadalla/Projects/KnicksIQ/apps/worker/worker_app/adapters/nba_api_source.py": {
+    "mtime": 1782831221.5171075,
+    "ast_hash": "c856ad284453f289598d87b670ee15ce",
+    "semantic_hash": "c856ad284453f289598d87b670ee15ce"
+  },
+  "/Users/mohamedawadalla/Projects/KnicksIQ/apps/worker/worker_app/cli.py": {
+    "mtime": 1782872922.088088,
+    "ast_hash": "2c0c4714a2d5127bb785cc32657e751a",
+    "semantic_hash": "2c0c4714a2d5127bb785cc32657e751a"
+  },
+  "/Users/mohamedawadalla/Projects/KnicksIQ/apps/worker/worker_app/core/__init__.py": {
+    "mtime": 1782744782.3447275,
+    "ast_hash": "26ffd6e30e04e1ed1f246a75d975d8f3",
+    "semantic_hash": "26ffd6e30e04e1ed1f246a75d975d8f3"
+  },
+  "/Users/mohamedawadalla/Projects/KnicksIQ/apps/worker/worker_app/core/config.py": {
+    "mtime": 1782830629.7191496,
+    "ast_hash": "7552faadd03e0388bae835099e368c94",
+    "semantic_hash": "7552faadd03e0388bae835099e368c94"
+  },
+  "/Users/mohamedawadalla/Projects/KnicksIQ/apps/worker/worker_app/core/db.py": {
+    "mtime": 1782744984.3515675,
+    "ast_hash": "5c6f11559f3cb587a85abf6d45bd7442",
+    "semantic_hash": "5c6f11559f3cb587a85abf6d45bd7442"
+  },
+  "/Users/mohamedawadalla/Projects/KnicksIQ/apps/worker/worker_app/job_queue.py": {
+    "mtime": 1782747526.8752322,
+    "ast_hash": "eeb9ee541cce961020c8b00fa1253d12",
+    "semantic_hash": "eeb9ee541cce961020c8b00fa1253d12"
+  },
+  "/Users/mohamedawadalla/Projects/KnicksIQ/apps/worker/worker_app/jobs/__init__.py": {
+    "mtime": 1782745113.7300782,
+    "ast_hash": "bfb6c25e01e73101989b2b6c03e8721e",
+    "semantic_hash": "bfb6c25e01e73101989b2b6c03e8721e"
+  },
+  "/Users/mohamedawadalla/Projects/KnicksIQ/apps/worker/worker_app/jobs/detect_runs.py": {
+    "mtime": 1782745281.1010025,
+    "ast_hash": "ee5f168953ffd5907ea3573e9af0018c",
+    "semantic_hash": "ee5f168953ffd5907ea3573e9af0018c"
+  },
+  "/Users/mohamedawadalla/Projects/KnicksIQ/apps/worker/worker_app/jobs/ingest_game_detail.py": {
+    "mtime": 1782872464.1550696,
+    "ast_hash": "f6dd68bc66c3057f3f830813d1724ac9",
+    "semantic_hash": "f6dd68bc66c3057f3f830813d1724ac9"
+  },
+  "/Users/mohamedawadalla/Projects/KnicksIQ/apps/worker/worker_app/jobs/ingest_games.py": {
+    "mtime": 1782872464.001665,
+    "ast_hash": "2d6dc0c295b679fb4912eb6ce7fabba3",
+    "semantic_hash": "2d6dc0c295b679fb4912eb6ce7fabba3"
+  },
+  "/Users/mohamedawadalla/Projects/KnicksIQ/apps/worker/worker_app/jobs/seed_players_from_nba_api.py": {
+    "mtime": 1782831159.8254042,
+    "ast_hash": "d907d545d8424b94d541dc969a743783",
+    "semantic_hash": "d907d545d8424b94d541dc969a743783"
+  },
+  "/Users/mohamedawadalla/Projects/KnicksIQ/apps/worker/worker_app/main.py": {
+    "mtime": 1782744861.1045427,
+    "ast_hash": "bfae27f0c268cd5b6b80b1598d1faf1e",
+    "semantic_hash": "bfae27f0c268cd5b6b80b1598d1faf1e"
+  },
+  "/Users/mohamedawadalla/Projects/KnicksIQ/apps/worker/worker_app/tests/test_detect_runs.py": {
+    "mtime": 1782745288.7377958,
+    "ast_hash": "e6fe6bc7710deeea222b3926a3420fb4",
+    "semantic_hash": "e6fe6bc7710deeea222b3926a3420fb4"
+  },
+  "/Users/mohamedawadalla/Projects/KnicksIQ/apps/worker/worker_app/tests/test_nba_api_source.py": {
+    "mtime": 1782831180.092491,
+    "ast_hash": "0a597ff48230a8520dc5f8b72343c536",
+    "semantic_hash": "0a597ff48230a8520dc5f8b72343c536"
+  },
+  "/Users/mohamedawadalla/Projects/KnicksIQ/apps/worker/worker_app/tests/test_worker_jobs.py": {
+    "mtime": 1782745102.4390552,
+    "ast_hash": "0585cb00440c8f8ffd78ed52ac730814",
+    "semantic_hash": "0585cb00440c8f8ffd78ed52ac730814"
+  },
+  "/Users/mohamedawadalla/Projects/KnicksIQ/packages/basketball-core/src/basketball_core/__init__.py": {
+    "mtime": 1782744312.4371781,
+    "ast_hash": "5e80eae721f12ed8b6cb64fb8948d2c7",
+    "semantic_hash": "5e80eae721f12ed8b6cb64fb8948d2c7"
+  },
+  "/Users/mohamedawadalla/Projects/KnicksIQ/packages/basketball-core/src/basketball_core/detectors/__init__.py": {
+    "mtime": 1782744350.2391064,
+    "ast_hash": "056cffe8ea72c20a414ce2e94d62213c",
+    "semantic_hash": "056cffe8ea72c20a414ce2e94d62213c"
+  },
+  "/Users/mohamedawadalla/Projects/KnicksIQ/packages/basketball-core/src/basketball_core/detectors/bad_stretch.py": {
+    "mtime": 1782744740.1201332,
+    "ast_hash": "b6efb0c2d8ea6b9dd1b8e2dac6febb8b",
+    "semantic_hash": "b6efb0c2d8ea6b9dd1b8e2dac6febb8b"
+  },
+  "/Users/mohamedawadalla/Projects/KnicksIQ/packages/basketball-core/src/basketball_core/detectors/scoring_run.py": {
+    "mtime": 1782745244.8182914,
+    "ast_hash": "af6e5bd144ef2610e33dd27683c52815",
+    "semantic_hash": "af6e5bd144ef2610e33dd27683c52815"
+  },
+  "/Users/mohamedawadalla/Projects/KnicksIQ/packages/basketball-core/src/basketball_core/models/__init__.py": {
+    "mtime": 1782744314.6872373,
+    "ast_hash": "6a560e97a9b2e6e692d6cffd60b53695",
+    "semantic_hash": "6a560e97a9b2e6e692d6cffd60b53695"
+  },
+  "/Users/mohamedawadalla/Projects/KnicksIQ/packages/basketball-core/src/basketball_core/models/event.py": {
+    "mtime": 1782744328.2103727,
+    "ast_hash": "958401b2e671390592ce21c18c9e0c40",
+    "semantic_hash": "958401b2e671390592ce21c18c9e0c40"
+  },
+  "/Users/mohamedawadalla/Projects/KnicksIQ/packages/basketball-core/src/basketball_core/models/game.py": {
+    "mtime": 1782744320.8931284,
+    "ast_hash": "5aaa631eba4d2fdea269506305946abc",
+    "semantic_hash": "5aaa631eba4d2fdea269506305946abc"
+  },
+  "/Users/mohamedawadalla/Projects/KnicksIQ/packages/basketball-core/src/basketball_core/models/run.py": {
+    "mtime": 1782745239.5587473,
+    "ast_hash": "734f0d193769383088ab99d92548cccb",
+    "semantic_hash": "734f0d193769383088ab99d92548cccb"
+  },
+  "/Users/mohamedawadalla/Projects/KnicksIQ/packages/basketball-core/src/basketball_core/parsers/__init__.py": {
+    "mtime": 1782744336.4975507,
+    "ast_hash": "a24907bf8f590c21400947b36d0991d9",
+    "semantic_hash": "a24907bf8f590c21400947b36d0991d9"
+  },
+  "/Users/mohamedawadalla/Projects/KnicksIQ/packages/basketball-core/src/basketball_core/parsers/play_by_play.py": {
+    "mtime": 1782744347.83629,
+    "ast_hash": "4d88fa56136b7d5250a941d654c5d05e",
+    "semantic_hash": "4d88fa56136b7d5250a941d654c5d05e"
+  },
+  "/Users/mohamedawadalla/Projects/KnicksIQ/packages/basketball-core/tests/test_bad_stretch.py": {
+    "mtime": 1782745281.1005867,
+    "ast_hash": "e7b3acc626772cae1b152803cf1b6ee7",
+    "semantic_hash": "e7b3acc626772cae1b152803cf1b6ee7"
+  },
+  "/Users/mohamedawadalla/Projects/KnicksIQ/packages/basketball-core/tests/test_parser.py": {
+    "mtime": 1782744744.3678832,
+    "ast_hash": "def7e1526b77a882066efea53786efb9",
+    "semantic_hash": "def7e1526b77a882066efea53786efb9"
+  },
+  "/Users/mohamedawadalla/Projects/KnicksIQ/packages/basketball-core/tests/test_scoring_run.py": {
+    "mtime": 1782744746.6464772,
+    "ast_hash": "3d52c2685055131bf7a90975986ada4f",
+    "semantic_hash": "3d52c2685055131bf7a90975986ada4f"
+  },
+  "/Users/mohamedawadalla/Projects/KnicksIQ/.github/workflows/ci.yml": {
+    "mtime": 1782747382.7238405,
+    "ast_hash": "4e4c7465701247ab5ed80ee3679c601d",
+    "semantic_hash": "4e4c7465701247ab5ed80ee3679c601d"
+  },
+  "/Users/mohamedawadalla/Projects/KnicksIQ/README.md": {
+    "mtime": 1782747407.0330682,
+    "ast_hash": "f19d43aed6f926c4526445f19c94437b",
+    "semantic_hash": "f19d43aed6f926c4526445f19c94437b"
+  },
+  "/Users/mohamedawadalla/Projects/KnicksIQ/apps/web/index.html": {
+    "mtime": 1782747218.691961,
+    "ast_hash": "7ea9ef148e5aa99670f19c7f343facf4",
+    "semantic_hash": "7ea9ef148e5aa99670f19c7f343facf4"
+  },
+  "/Users/mohamedawadalla/Projects/KnicksIQ/docker-compose.yml": {
+    "mtime": 1782747359.2962186,
+    "ast_hash": "8e5dcd2489bd72bccab5dd19430178f2",
+    "semantic_hash": "8e5dcd2489bd72bccab5dd19430178f2"
+  },
+  "/Users/mohamedawadalla/Projects/KnicksIQ/docs/api.md": {
+    "mtime": 1782747472.9579496,
+    "ast_hash": "c275ece004c8777e9b3598f0425b5f5f",
+    "semantic_hash": "c275ece004c8777e9b3598f0425b5f5f"
+  },
+  "/Users/mohamedawadalla/Projects/KnicksIQ/docs/architecture.md": {
+    "mtime": 1782831134.0729558,
+    "ast_hash": "be9cc7991518bf062f32a5e26e5c915c",
+    "semantic_hash": "be9cc7991518bf062f32a5e26e5c915c"
+  },
+  "/Users/mohamedawadalla/Projects/KnicksIQ/docs/data-model.md": {
+    "mtime": 1782747455.4168127,
+    "ast_hash": "2b2a153b87879742e2ba282339d30d07",
+    "semantic_hash": "2b2a153b87879742e2ba282339d30d07"
+  },
+  "/Users/mohamedawadalla/Projects/KnicksIQ/docs/mcp-tools.md": {
+    "mtime": 1782747488.4244108,
+    "ast_hash": "08e516bc57e256673cbfff68608295be",
+    "semantic_hash": "08e516bc57e256673cbfff68608295be"
+  }
+}

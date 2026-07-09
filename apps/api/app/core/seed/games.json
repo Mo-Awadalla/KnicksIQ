@@ -1,0 +1,99 @@
+[
+  {
+    "nba_game_id": "seed-2026-04-12-cha-nyk",
+    "season": "2025-26",
+    "game_date": "2026-04-12",
+    "home_team_id": "NYK",
+    "away_team_id": "CHA",
+    "home_score": 96,
+    "away_score": 110,
+    "status": "final",
+    "events": [
+      {"period": 1, "clock": "12:00", "event_type": "period_start", "description": "Start of 1st quarter", "home_score": 0, "away_score": 0},
+      {"period": 1, "clock": "11:36", "event_type": "made_shot", "description": "Brunson made 2pt jumper", "team_id": "NYK", "home_score": 2, "away_score": 0},
+      {"period": 1, "clock": "11:20", "event_type": "made_shot", "description": "Bridges made 2pt jumper", "team_id": "NYK", "home_score": 4, "away_score": 0},
+      {"period": 1, "clock": "11:02", "event_type": "made_shot", "description": "Towns made 2pt hook shot", "team_id": "NYK", "home_score": 6, "away_score": 0},
+      {"period": 1, "clock": "10:44", "event_type": "made_shot", "description": "Hart made 2pt putback", "team_id": "NYK", "home_score": 8, "away_score": 0},
+      {"period": 1, "clock": "10:32", "event_type": "missed_shot", "description": "Knicks missed 3pt shot", "team_id": "NYK", "home_score": 8, "away_score": 0},
+      {"period": 1, "clock": "10:08", "event_type": "made_shot", "description": "Hornets made 3pt shot", "team_id": "CHA", "home_score": 8, "away_score": 3},
+      {"period": 1, "clock": "9:44", "event_type": "turnover", "description": "Knicks turnover", "team_id": "NYK", "home_score": 8, "away_score": 3},
+      {"period": 1, "clock": "0:00", "event_type": "period_end", "description": "End of 1st quarter", "home_score": 23, "away_score": 29}
+    ]
+  },
+  {
+    "nba_game_id": "seed-2026-04-10-tor-nyk",
+    "season": "2025-26",
+    "game_date": "2026-04-10",
+    "home_team_id": "NYK",
+    "away_team_id": "TOR",
+    "home_score": 112,
+    "away_score": 95,
+    "status": "final",
+    "events": [
+      {"period": 1, "clock": "12:00", "event_type": "period_start", "description": "Start of 1st quarter", "home_score": 0, "away_score": 0},
+      {"period": 1, "clock": "11:40", "event_type": "made_shot", "description": "Towns made 2pt hook shot", "team_id": "NYK", "home_score": 2, "away_score": 0},
+      {"period": 1, "clock": "11:14", "event_type": "made_shot", "description": "Raptors made 2pt jumper", "team_id": "TOR", "home_score": 2, "away_score": 2},
+      {"period": 1, "clock": "10:49", "event_type": "made_shot", "description": "Bridges made 3pt shot", "team_id": "NYK", "home_score": 5, "away_score": 2},
+      {"period": 1, "clock": "10:18", "event_type": "rebound", "description": "Knicks defensive rebound", "team_id": "NYK", "home_score": 5, "away_score": 2},
+      {"period": 1, "clock": "9:55", "event_type": "made_shot", "description": "Brunson made driving layup", "team_id": "NYK", "home_score": 7, "away_score": 2},
+      {"period": 1, "clock": "0:00", "event_type": "period_end", "description": "End of 1st quarter", "home_score": 30, "away_score": 22}
+    ]
+  },
+  {
+    "nba_game_id": "seed-2026-04-09-bos-nyk",
+    "season": "2025-26",
+    "game_date": "2026-04-09",
+    "home_team_id": "NYK",
+    "away_team_id": "BOS",
+    "home_score": 112,
+    "away_score": 106,
+    "status": "final",
+    "events": [
+      {"period": 1, "clock": "12:00", "event_type": "period_start", "description": "Start of 1st quarter", "home_score": 0, "away_score": 0},
+      {"period": 1, "clock": "11:42", "event_type": "made_shot", "description": "Celtics made 3pt shot", "team_id": "BOS", "home_score": 0, "away_score": 3},
+      {"period": 1, "clock": "11:18", "event_type": "made_shot", "description": "Brunson made 2pt pullup", "team_id": "NYK", "home_score": 2, "away_score": 3},
+      {"period": 1, "clock": "10:50", "event_type": "made_shot", "description": "Anunoby made corner 3pt shot", "team_id": "NYK", "home_score": 5, "away_score": 3},
+      {"period": 1, "clock": "10:19", "event_type": "missed_shot", "description": "Celtics missed 3pt shot", "team_id": "BOS", "home_score": 5, "away_score": 3},
+      {"period": 1, "clock": "9:58", "event_type": "made_shot", "description": "Hart made 2pt putback", "team_id": "NYK", "home_score": 7, "away_score": 3},
+      {"period": 1, "clock": "0:00", "event_type": "period_end", "description": "End of 1st quarter", "home_score": 27, "away_score": 26}
+    ]
+  },
+  {
+    "nba_game_id": "seed-2026-04-06-nyk-atl",
+    "season": "2025-26",
+    "game_date": "2026-04-06",
+    "home_team_id": "ATL",
+    "away_team_id": "NYK",
+    "home_score": 105,
+    "away_score": 108,
+    "status": "final",
+    "events": [
+      {"period": 1, "clock": "12:00", "event_type": "period_start", "description": "Start of 1st quarter", "home_score": 0, "away_score": 0},
+      {"period": 1, "clock": "11:30", "event_type": "made_shot", "description": "Hawks made 2pt jumper", "team_id": "ATL", "home_score": 2, "away_score": 0},
+      {"period": 1, "clock": "11:05", "event_type": "made_shot", "description": "Brunson made 3pt shot", "team_id": "NYK", "home_score": 2, "away_score": 3},
+      {"period": 1, "clock": "10:38", "event_type": "made_shot", "description": "Towns made 2pt hook shot", "team_id": "NYK", "home_score": 2, "away_score": 5},
+      {"period": 1, "clock": "10:09", "event_type": "turnover", "description": "Hawks turnover", "team_id": "ATL", "home_score": 2, "away_score": 5},
+      {"period": 1, "clock": "9:45", "event_type": "made_shot", "description": "Bridges made 2pt jumper", "team_id": "NYK", "home_score": 2, "away_score": 7},
+      {"period": 1, "clock": "0:00", "event_type": "period_end", "description": "End of 1st quarter", "home_score": 23, "away_score": 28}
+    ]
+  },
+  {
+    "nba_game_id": "seed-2026-04-03-chi-nyk",
+    "season": "2025-26",
+    "game_date": "2026-04-03",
+    "home_team_id": "NYK",
+    "away_team_id": "CHI",
+    "home_score": 136,
+    "away_score": 96,
+    "status": "final",
+    "events": [
+      {"period": 1, "clock": "12:00", "event_type": "period_start", "description": "Start of 1st quarter", "home_score": 0, "away_score": 0},
+      {"period": 1, "clock": "11:39", "event_type": "made_shot", "description": "Brunson made 2pt jumper", "team_id": "NYK", "home_score": 2, "away_score": 0},
+      {"period": 1, "clock": "11:11", "event_type": "missed_shot", "description": "Bulls missed 3pt shot", "team_id": "CHI", "home_score": 2, "away_score": 0},
+      {"period": 1, "clock": "10:52", "event_type": "made_shot", "description": "Anunoby made dunk", "team_id": "NYK", "home_score": 4, "away_score": 0},
+      {"period": 1, "clock": "10:20", "event_type": "turnover", "description": "Bulls turnover", "team_id": "CHI", "home_score": 4, "away_score": 0},
+      {"period": 1, "clock": "9:59", "event_type": "made_shot", "description": "Towns made 3pt shot", "team_id": "NYK", "home_score": 7, "away_score": 0},
+      {"period": 1, "clock": "0:00", "event_type": "period_end", "description": "End of 1st quarter", "home_score": 38, "away_score": 20}
+    ]
+  }
+]

@@ -1,0 +1,48 @@
+[project]
+name = "knicksiq"
+version = "0.1.0"
+description = "KnicksIQ — full-stack MCP sports intelligence platform"
+requires-python = ">=3.12"
+dependencies = []
+
+[tool.uv.workspace]
+members = [
+    "apps/api",
+    "apps/worker",
+    "apps/mcp",
+    "packages/basketball-core",
+]
+
+[tool.uv.sources]
+knicksiq-api = { workspace = true }
+knicksiq-worker = { workspace = true }
+knicksiq-mcp = { workspace = true }
+knicksiq-basketball-core = { workspace = true }
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0",
+    "pytest-asyncio>=0.23",
+    "ruff>=0.5.0",
+    "pyright>=1.1.360",
+]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["apps", "packages"]
+pythonpath = [
+    "apps/api/app",
+    "apps/worker/worker_app",
+    "apps/mcp/mcp_app",
+    "packages/basketball-core/src",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "W", "B", "UP"]
+ignore = [
+    "UP042",  # (str, Enum) idiom — acceptable for compatibility with SQLAlchemy Enum columns
+]

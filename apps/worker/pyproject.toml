@@ -1,0 +1,38 @@
+[project]
+name = "knicksiq-worker"
+version = "0.1.0"
+description = "KnicksIQ background worker service"
+requires-python = ">=3.12"
+dependencies = [
+    "sqlalchemy[asyncio]>=2.0",
+    "asyncpg>=0.29",
+    "aiosqlite>=0.19",
+    "pydantic>=2.6",
+    "pydantic-settings>=2.2",
+    "structlog>=24.1",
+    "redis>=5.0",
+    "rq>=1.16",
+    "nba_api>=1.11.4",
+    "knicksiq-basketball-core",
+    "knicksiq-api",
+]
+
+[project.scripts]
+knicksiq-cache-season = "worker_app.cli:cache_season_main"
+knicksiq-cache-rosters = "worker_app.cli:cache_rosters_main"
+knicksiq-build-rag-index = "worker_app.cli:build_rag_index_main"
+
+[project.optional-dependencies]
+test = [
+    "pytest>=8.0",
+    "pytest-asyncio>=0.23",
+    "fakeredis>=2.21",
+    "responses>=0.25",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["worker_app"]
