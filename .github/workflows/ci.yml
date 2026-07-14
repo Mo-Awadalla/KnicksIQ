@@ -76,12 +76,14 @@ jobs:
         working-directory: apps/web
     steps:
       - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v6.0.9
+        with:
+          version: 11.9.0
       - uses: actions/setup-node@v4
         with:
           node-version: "24.4.1"
           cache: pnpm
           cache-dependency-path: apps/web/pnpm-lock.yaml
-      - run: corepack enable
       - run: pnpm install --frozen-lockfile
       - run: pnpm exec playwright install --with-deps chromium
       - run: pnpm lint
@@ -113,14 +115,14 @@ jobs:
           load: true
           tags: knicksiq-web:ci
       - name: Scan API image for critical vulnerabilities
-        uses: aquasecurity/trivy-action@0.33.1
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           image-ref: knicksiq-api:ci
           severity: CRITICAL
           exit-code: "1"
           ignore-unfixed: true
       - name: Scan web image for critical vulnerabilities
-        uses: aquasecurity/trivy-action@0.33.1
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           image-ref: knicksiq-web:ci
           severity: CRITICAL
