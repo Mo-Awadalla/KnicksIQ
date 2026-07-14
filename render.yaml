@@ -9,7 +9,6 @@ services:
     autoDeployTrigger: off
     domains:
       - api.knicksiq.win
-    preDeployCommand: /app/.venv/bin/alembic upgrade head
     envVars:
       - key: DB_URL
         sync: false
