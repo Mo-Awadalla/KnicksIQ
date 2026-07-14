@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from functools import lru_cache
+from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 
 from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -98,9 +99,20 @@ class Settings(BaseSettings):
     def effective_db_url(self) -> str:
         if self.test_mode:
             return "sqlite+aiosqlite:///:memory:"
-        if self.db_url.startswith("postgresql://"):
-            return self.db_url.replace("postgresql://", "postgresql+asyncpg://", 1)
-        return self.db_url
+        url = self.db_url
+        if url.startswith("postgresql://"):
+            url = url.replace("postgresql://", "postgresql+asyncpg://", 1)
+        if url.startswith("postgresql+asyncpg://"):
+            parts = urlsplit(url)
+            query = [
+                ("ssl" if key == "sslmode" else key, value)
+                for key, value in parse_qsl(parts.query, keep_blank_values=True)
+                if key != "channel_binding"
+            ]
+            url = urlunsplit(
+                (parts.scheme, parts.netloc, parts.path, urlencode(query), parts.fragment)
+            )
+        return url
 
     @property
     def is_production(self) -> bool:
