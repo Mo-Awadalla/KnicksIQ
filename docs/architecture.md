@@ -21,8 +21,9 @@ one hash-bound reviewed report per game. The loader verifies the supplied
 SHA-256, validates the bundle, and imports it transactionally and idempotently.
 
 All public basketball queries are scoped to the active validated release. The
-API does not run migrations or mutate archive data at startup; Render runs the
-expand-only Alembic migration separately before deployment.
+API does not run migrations or mutate archive data at startup. Because Render's
+Free tier does not support pre-deploy commands, the release operator runs the
+expand-only Alembic migration against Neon before deployment.
 
 ## Runtime request flow
 

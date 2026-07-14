@@ -20,15 +20,23 @@ available when they fail.
    allowlist in the blueprint and public files.
 3. Create a Neon Free project. In Render, set `DB_URL` to Neon's direct
    connection string and set the optional OpenRouter and Sentry values.
-4. Build, validate, and manually approve the immutable release bundle.
-5. Build and scan the exact API image that will be promoted.
+4. Free Render services do not support pre-deploy commands. Run migrations
+   against Neon from the local release environment before deploying:
+
+   ```bash
+   DB_URL="$NEON_DIRECT_CONNECTION_STRING" uv run alembic upgrade head
+   ```
+
+5. Build, validate, and manually approve the immutable release bundle.
+6. Build and scan the exact API image that will be promoted.
 
 ## Deployment and activation
 
 1. Create the Render blueprint from `render.yaml`. Automatic deploys are
    intentionally disabled.
-2. The API pre-deploy command runs `alembic upgrade head`; application startup
-   never creates tables, seeds data, ingests games, or generates reports.
+2. Confirm the local Neon migration completed. Application startup never
+   creates tables, runs migrations, seeds data, ingests games, or generates
+   reports.
 3. Load the validated bundle with `knicksiq-load-release <bundle> --sha256
    <sha>`. Stage it first; do not activate it until the image and deterministic
    retrieval checks have passed.
