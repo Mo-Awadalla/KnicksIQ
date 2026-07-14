@@ -1,33 +1,35 @@
-FROM python:3.12-slim
+FROM ghcr.io/astral-sh/uv:0.8.6 AS uv
+FROM python:3.12.11-slim-bookworm AS runtime
 
-ENV PYTHONUNBUFFERED=1 \
-    PYTHONDONTWRITEBYTECODE=1 \
-    PIP_NO_CACHE_DIR=1 \
-    UV_LINK_MODE=copy \
+ENV PYTHONUNBUFFERED=1 PYTHONDONTWRITEBYTECODE=1 UV_LINK_MODE=copy \
+    UV_NO_DEV=1 UV_NO_CACHE=1 \
     PYTHONPATH=/app/apps/api:/app/packages/basketball-core/src
-
-# Install uv
-RUN pip install --no-cache-dir uv
-
+COPY --from=uv /uv /uvx /bin/
 WORKDIR /app
 
-# Copy workspace files
-COPY pyproject.toml uv.lock* ./
-COPY apps/api/pyproject.toml ./apps/api/pyproject.toml
-COPY apps/worker/pyproject.toml ./apps/worker/pyproject.toml
-COPY apps/mcp/pyproject.toml ./apps/mcp/pyproject.toml
-COPY packages/basketball-core/pyproject.toml ./packages/basketball-core/pyproject.toml
+# The pinned Python image can lag Debian security point releases. Apply the
+# current Bookworm security updates so a rebuilt release image contains the
+# fixed OpenSSL/GnuTLS packages checked by the CI Trivy gate.
+RUN apt-get update \
+    && apt-get upgrade -y \
+    && rm -rf /var/lib/apt/lists/*
 
-# Install the api service (which transitively installs the workspace)
-RUN uv sync --package knicksiq-api --frozen 2>/dev/null || uv sync --package knicksiq-api
+COPY pyproject.toml uv.lock ./
+COPY apps/api/pyproject.toml apps/api/pyproject.toml
+COPY apps/worker/pyproject.toml apps/worker/pyproject.toml
+COPY apps/mcp/pyproject.toml apps/mcp/pyproject.toml
+COPY packages/basketball-core/pyproject.toml packages/basketball-core/pyproject.toml
+RUN uv sync --frozen --no-dev --package knicksiq-api --no-install-workspace
 
-# Copy source
-COPY apps/api/app ./apps/api/app
-COPY packages/basketball-core/src ./packages/basketball-core/src
+COPY apps/api/app apps/api/app
+COPY packages/basketball-core/src packages/basketball-core/src
+COPY alembic.ini alembic.ini
+COPY migrations migrations
+RUN uv sync --frozen --no-dev --package knicksiq-api
 
-# Re-sync to pick up the source changes
-RUN uv sync --package knicksiq-api
-
+RUN addgroup --system knicksiq && adduser --system --ingroup knicksiq knicksiq \
+    && chown -R knicksiq:knicksiq /app
+USER knicksiq
 EXPOSE 8000
-
-CMD ["/bin/sh", "-c", "uv run --package knicksiq-api uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}"]
+HEALTHCHECK --interval=30s --timeout=3s --retries=3 CMD ["python", "-c", "import os,urllib.request; urllib.request.urlopen('http://127.0.0.1:'+os.getenv('PORT','8000')+'/health/live', timeout=2)"]
+CMD ["sh", "-c", "exec /app/.venv/bin/uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000} --no-access-log"]

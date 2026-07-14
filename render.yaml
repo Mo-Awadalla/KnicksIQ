@@ -5,8 +5,11 @@ services:
     plan: starter
     dockerfilePath: ./Dockerfile.api
     dockerContext: .
-    healthCheckPath: /health
-    autoDeployTrigger: commit
+    healthCheckPath: /health/live
+    autoDeployTrigger: off
+    domains:
+      - api.knicksiq.win
+    preDeployCommand: /app/.venv/bin/alembic upgrade head
     envVars:
       - key: DB_URL
         fromDatabase:
@@ -18,20 +21,48 @@ services:
         value: INFO
       - key: LOG_JSON
         value: "true"
-      - key: SEED_ON_STARTUP
+      - key: REQUIRE_ACTIVE_RELEASE
         value: "true"
-      - key: ADMIN_API_KEY
+      - key: IP_HASH_SECRET
         generateValue: true
       - key: AI_PROVIDER
-        value: mock
+        value: openrouter
+      - key: AI_BASE_URL
+        value: https://openrouter.ai/api/v1
       - key: AI_API_KEY
-        value: ""
+        sync: false
+      - key: AI_CHAT_MODEL
+        value: nvidia/nemotron-3-ultra-550b-a55b:free
+      - key: OPENROUTER_ALLOWED_MODELS
+        value: '["nvidia/nemotron-3-ultra-550b-a55b:free"]'
+      - key: OPENROUTER_API_KEY
+        sync: false
+      - key: OPENROUTER_SUMMARY_MODEL
+        value: nvidia/nemotron-3-ultra-550b-a55b:free
+      - key: OPENROUTER_MONTHLY_CUTOFF_USD
+        value: "8"
+      - key: SENTRY_DSN
+        sync: false
       - key: CORS_ORIGINS
-        value: '["https://knicksiq-web.onrender.com"]'
+        value: '["https://www.knicksiq.win"]'
+      - key: PUBLIC_WEB_ORIGIN
+        value: https://www.knicksiq.win
+      - key: TRUSTED_HOSTS
+        value: '["api.knicksiq.win","127.0.0.1","localhost"]'
+      - key: REDIS_URL
+        sync: false
       - key: RAG_QDRANT_ENABLED
-        value: "false"
+        value: "true"
+      - key: QDRANT_URL
+        sync: false
+      - key: QDRANT_API_KEY
+        sync: false
+      - key: RAG_QDRANT_CLOUD_INFERENCE
+        value: "true"
+      - key: QDRANT_TIMEOUT_SECONDS
+        value: "0.5"
       - key: RAG_HYBRID_ENABLED
-        value: "false"
+        value: "true"
       - key: RAG_RERANKER_ENABLED
         value: "false"
       - key: RAG_LLM_PLANNER_ENABLED
@@ -42,10 +73,31 @@ services:
     runtime: static
     buildCommand: cd apps/web && corepack enable pnpm && pnpm install --frozen-lockfile && pnpm build
     staticPublishPath: apps/web/dist
-    autoDeployTrigger: commit
+    autoDeployTrigger: off
+    domains:
+      - www.knicksiq.win
     envVars:
+      - key: NODE_VERSION
+        value: 24.4.1
       - key: VITE_API_URL
-        value: https://knicksiq-api.onrender.com
+        value: https://api.knicksiq.win
+      - key: VITE_PUBLIC_URL
+        value: https://www.knicksiq.win
+      - key: VITE_SENTRY_DSN
+        sync: false
+    headers:
+      - path: /*
+        name: Content-Security-Policy
+        value: "default-src 'self'; connect-src 'self' https://api.knicksiq.win; img-src 'self' data:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; frame-ancestors 'none'; base-uri 'self'; form-action https://formspree.io"
+      - path: /*
+        name: Strict-Transport-Security
+        value: max-age=31536000; includeSubDomains
+      - path: /*
+        name: X-Content-Type-Options
+        value: nosniff
+      - path: /*
+        name: Referrer-Policy
+        value: strict-origin-when-cross-origin
     routes:
       - type: rewrite
         source: /*

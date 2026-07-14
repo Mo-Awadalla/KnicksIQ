@@ -2,9 +2,13 @@
 
 from __future__ import annotations
 
+import hashlib
+import hmac
 import json
+import re
 import time
 from collections import defaultdict, deque
+from datetime import UTC, datetime
 from typing import Annotated, Any
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
@@ -14,19 +18,30 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import get_settings
 from app.core.db import get_db
+from app.models.dataset_release import DatasetRelease
 from app.models.game import Game
 from app.models.game_event import GameEvent
 from app.services.llm_planner import maybe_plan_query
 from app.services.possession_chunks import chunk_evidence
+from app.services.qdrant_client import is_qdrant_healthy
 from app.services.query_classifier import QueryClassifierResult, classify_query
 from app.services.rag import SearchResult, search_possession_chunks, search_season_docs
+from app.services.releases import restrict_to_active_release
 from app.services.report_llm import get_llm_adapter
+from app.services.runtime_store import (
+    answer_cache_key,
+    enforce_redis_limits,
+    get_cached_answer,
+    reserve_ai_budget,
+    set_cached_answer,
+)
 from app.services.table_rag import answer_table_question
 
 router = APIRouter(prefix="/analysis", tags=["analysis"])
 
 _WINDOW_SECONDS = 60
 _requests_by_client: dict[str, deque[float]] = defaultdict(deque)
+_daily_requests_by_client: dict[str, deque[float]] = defaultdict(deque)
 
 
 class AnalysisContextMessage(BaseModel):
@@ -35,12 +50,13 @@ class AnalysisContextMessage(BaseModel):
 
 
 class AnalysisQueryRequest(BaseModel):
-    question: str = Field(..., min_length=3)
+    question: str = Field(..., min_length=3, max_length=1200)
     season: str = "2025-26"
-    context: list[AnalysisContextMessage] = Field(default_factory=list)
+    context: list[AnalysisContextMessage] = Field(default_factory=list, max_length=4)
 
 
 class AnalysisCitation(BaseModel):
+    claim: str
     type: str
     title: str
     game_id: int | None = None
@@ -51,26 +67,39 @@ class AnalysisCitation(BaseModel):
 
 class AnalysisQueryResponse(BaseModel):
     answer: str
-    route: str | None = None
-    classifier: dict[str, Any] = Field(default_factory=dict)
-    evidence: list[dict[str, Any]] = Field(default_factory=list)
+    route: str | None = Field(default=None, exclude=get_settings().is_production)
+    classifier: dict[str, Any] = Field(default_factory=dict, exclude=get_settings().is_production)
+    evidence: list[dict[str, Any]] = Field(
+        default_factory=list, exclude=get_settings().is_production
+    )
     warnings: list[str] = Field(default_factory=list)
     citations: list[AnalysisCitation]
-    tool_calls: list[dict[str, Any]] = Field(default_factory=list)
+    tool_calls: list[dict[str, Any]] = Field(
+        default_factory=list, exclude=get_settings().is_production
+    )
     refused: bool = False
+    degraded: bool = False
+    data_version: str = "unreleased"
+    request_id: str = ""
 
 
 def _client_id(request: Request) -> str:
-    forwarded = request.headers.get("x-forwarded-for")
-    if forwarded:
-        return forwarded.split(",", maxsplit=1)[0].strip()
-    return request.client.host if request.client else "unknown"
+    # Uvicorn resolves trusted proxy headers before constructing Request.client.
+    # Never consume X-Forwarded-For directly here: a caller-controlled header
+    # would let one client manufacture unlimited rate-limit identities.
+    ip = request.client.host if request.client else "unknown"
+    day = datetime.now(UTC).strftime("%Y-%m-%d")
+    return hmac.new(
+        getattr(get_settings(), "ip_hash_secret", "test-secret").encode(),
+        f"{day}:{ip}".encode(),
+        hashlib.sha256,
+    ).hexdigest()
 
 
-def _rate_limit(request: Request) -> None:
+async def _rate_limit(request: Request) -> bool:
     settings = get_settings()
     if getattr(settings, "test_mode", False):
-        return
+        return False
     client = _client_id(request)
     now = time.monotonic()
     bucket = _requests_by_client[client]
@@ -82,6 +111,23 @@ def _rate_limit(request: Request) -> None:
             detail="Rate limit exceeded",
         )
     bucket.append(now)
+    day_bucket = _daily_requests_by_client[client]
+    while day_bucket and now - day_bucket[0] > 86_400:
+        day_bucket.popleft()
+    if len(day_bucket) >= getattr(settings, "public_chat_rate_limit_per_day", 100):
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail="Daily rate limit exceeded",
+        )
+    day_bucket.append(now)
+    try:
+        return await enforce_redis_limits(client)
+    except ValueError as exc:
+        label = "Daily" if str(exc) == "day" else "Minute"
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail=f"{label} rate limit exceeded",
+        ) from exc
 
 
 def _is_supported_question(question: str) -> bool:
@@ -111,7 +157,27 @@ def _is_supported_question(question: str) -> bool:
     )
     if any(term in q for term in blocked):
         return False
-    team_terms = ("knick", "nyk")
+    team_terms = (
+        "knick",
+        "nyk",
+        "brunson",
+        "towns",
+        "bridges",
+        "anunoby",
+        "hart",
+        "robinson",
+        "mcbride",
+        "boston",
+        "celtics",
+        "toronto",
+        "raptors",
+        "atlanta",
+        "hawks",
+        "chicago",
+        "bulls",
+        "charlotte",
+        "hornets",
+    )
     basketball_terms = (
         "against",
         "assist",
@@ -123,7 +189,11 @@ def _is_supported_question(question: str) -> bool:
         "defense",
         "game",
         "lineup",
+        "led",
+        "lead",
         "loss",
+        "lose",
+        "lost",
         "losing",
         "longest",
         "margin",
@@ -132,6 +202,7 @@ def _is_supported_question(question: str) -> bool:
         "playoff",
         "point",
         "possession",
+        "receipt",
         "quarter",
         "rebound",
         "record",
@@ -139,31 +210,51 @@ def _is_supported_question(question: str) -> bool:
         "score",
         "season",
         "shot",
+        "steal",
         "streak",
         "stretch",
         "turnover",
         "win",
         "worst",
+        "data",
     )
-    return any(term in q for term in team_terms) and any(
-        term in q for term in basketball_terms
+    broad_archive_terms = (
+        "last game",
+        "4th quarter",
+        "fourth quarter",
+        "their biggest win",
+        "their best win",
+        "their biggest game",
+        "their record",
+        "they win",
+        "they lose",
+        "they lost",
+        "they score",
+        "who led",
+        "most assists",
+        "big leads",
+        "comeback",
+        "bench",
+        "clutch",
+        "shoot well",
+        "from three",
+        "not in the data",
     )
+    return (
+        any(term in q for term in team_terms) and any(term in q for term in basketball_terms)
+    ) or any(term in q for term in broad_archive_terms)
 
 
 def _looks_like_follow_up(question: str) -> bool:
     q = question.lower().strip()
-    return (
-        q.startswith(("what about", "how about", "why", "what happened then"))
-        or q
-        in {
-            "that game",
-            "those games",
-            "that one",
-            "tell me more",
-            "explain",
-            "nice",
-        }
-    )
+    return q.startswith(("what about", "how about", "why", "what happened then")) or q in {
+        "that game",
+        "those games",
+        "that one",
+        "tell me more",
+        "explain",
+        "nice",
+    }
 
 
 def _score_line(game: Game) -> str:
@@ -178,9 +269,10 @@ def _llm_enabled() -> bool:
     settings = get_settings()
     if getattr(settings, "test_mode", False):
         return False
-    return settings.ai_provider.lower() not in {"mock", "none", "disabled"} and bool(
-        settings.ai_api_key
-    )
+    if settings.ai_provider.lower() in {"mock", "none", "disabled"} or not settings.ai_api_key:
+        return False
+    allowed_models = getattr(settings, "openrouter_allowed_models", [])
+    return not allowed_models or (settings.ai_chat_model in allowed_models)
 
 
 def _analysis_context(
@@ -237,7 +329,7 @@ def _table_evidence_note(evidence: list[dict[str, Any]]) -> str:
         for item in evidence[:3]
     )
     suffix = f"; {len(evidence) - 3} more" if len(evidence) > 3 else ""
-    return f"\n\nEvidence used: {len(evidence)} cached game row(s): {examples}{suffix}."
+    return f"\n\nKey evidence\n- {len(evidence)} available Knicks game(s): {examples}{suffix}."
 
 
 def _possession_evidence_note(evidence: list[dict[str, Any]]) -> str:
@@ -254,7 +346,55 @@ def _possession_evidence_note(evidence: list[dict[str, Any]]) -> str:
             f"{item['date']} Q{item['period_window'][0]} "
             f"{item['clock_window'][0]}-{item['clock_window'][1]}{description}"
         )
-    return "\n\nEvidence used: " + "; ".join(notes) + "."
+    return "\n\nReceipts\n" + "\n".join(f"- {note}" for note in notes)
+
+
+def _format_answer(
+    *,
+    direct_answer: str,
+    evidence_note: str = "",
+    limitation_note: str | None = None,
+) -> str:
+    sections = [f"Short answer\n{direct_answer.strip()}"]
+    if evidence_note:
+        sections.append(evidence_note.strip())
+    if limitation_note:
+        sections.append(f"Limitation\n{limitation_note.strip()}")
+    return "\n\n".join(sections)
+
+
+def _unknown_data_question(question: str) -> bool:
+    q = question.lower()
+    return "not in the data" in q or "not in knicksiq" in q
+
+
+def _retrieval_limitation_note(question: str) -> str | None:
+    q = question.lower()
+    if _unknown_data_question(question):
+        return (
+            "I can only speak to the games currently in KnicksIQ. I do not have "
+            "enough available season data to answer about a game outside that set."
+        )
+    if (
+        ("who led" in q and any(term in q for term in ("scoring", "points", "assists", "rebounds")))
+        or "most assists" in q
+        or "most rebounds" in q
+    ):
+        return (
+            "The available season data does not include complete player box-score "
+            "leader tables for that category."
+        )
+    if any(term in q for term in ("bench", "defense", "rebound", "from three", "shoot well")):
+        return (
+            "The available season data has scores and play-by-play receipts, but not "
+            "complete team/player split tables for that claim."
+        )
+    if any(term in q for term in ("dominated", "clutch", "blow any big leads", "big leads")):
+        return (
+            "The available play-by-play can show matching moments, but it is not "
+            "complete enough to rank or prove that broader claim confidently."
+        )
+    return None
 
 
 async def _generate_llm_answer(
@@ -269,13 +409,18 @@ async def _generate_llm_answer(
 ) -> str | None:
     if not _llm_enabled():
         return None
+    if not await reserve_ai_budget():
+        return None
 
     system = (
         "You are KnicksIQ, a grounded Knicks analyst. Answer only from the provided "
-        "cached game and document context. Do not use live, current, injury, trade, "
+        "available Knicks game and document context. Do not use live, current, injury, trade, "
         "standings, or outside knowledge. If the context is insufficient, say so. "
         "If the classifier is counterfactual, provide a historical baseline and a "
         "clearly labeled hypothetical adjustment, not a full simulation. "
+        "Do not use backend terms like RAG, vector search, embeddings, chunks, Qdrant, "
+        "lexical retrieval, seeded data, or cached. Structure the answer as: "
+        "Short answer, Key evidence, Receipts, and Limitation only when needed. "
         "Keep the answer concise and mention concrete dates, opponents, scores, "
         "runs, stretches, or play-by-play details when present."
     )
@@ -291,14 +436,26 @@ async def _generate_llm_answer(
         )
     )
     try:
-        return await get_llm_adapter(response_format_json=False).generate(system=system, user=user)
+        answer = await get_llm_adapter(response_format_json=False).generate(
+            system=system, user=user
+        )
+        canonical_numbers = set(re.findall(r"\b\d+(?:\.\d+)?\b", user))
+        answer_numbers = set(re.findall(r"\b\d+(?:\.\d+)?\b", answer))
+        if not answer_numbers.issubset(canonical_numbers):
+            return None
+        ignored_phrases = {"short answer", "key evidence"}
+        named_entities = {
+            match.group(0).lower()
+            for match in re.finditer(r"\b[A-Z][a-z'-]+ [A-Z][a-z'-]+\b", answer)
+        } - ignored_phrases
+        if any(entity not in user.lower() for entity in named_entities):
+            return None
+        return answer
     except Exception:  # noqa: B110
         return None
 
 
-async def _matching_games(
-    db: AsyncSession, question: str, season: str
-) -> list[Game]:
+async def _matching_games(db: AsyncSession, question: str, season: str) -> list[Game]:
     stmt = (
         select(Game)
         .where(Game.season == season)
@@ -306,10 +463,18 @@ async def _matching_games(
         .order_by(Game.game_date.desc())
         .limit(10)
     )
+    stmt = restrict_to_active_release(stmt)
     games = (await db.execute(stmt)).scalars().all()
     q = question.upper()
     team_hits = [g for g in games if g.home_team_id in q or g.away_team_id in q]
-    return team_hits or games[:5]
+    return list(team_hits or games[:5])
+
+
+async def _active_data_version(db: AsyncSession) -> str:
+    version = (
+        await db.execute(select(DatasetRelease.version).where(DatasetRelease.status == "active"))
+    ).scalar_one_or_none()
+    return version or ("test-seed" if getattr(get_settings(), "test_mode", False) else "unreleased")
 
 
 def _contextual_question(question: str, context: list[AnalysisContextMessage]) -> str:
@@ -330,7 +495,13 @@ async def query_analysis(
     db: Annotated[AsyncSession, Depends(get_db)],
 ) -> AnalysisQueryResponse:
     settings = get_settings()
-    _rate_limit(request)
+    redis_degraded = await _rate_limit(request)
+    response_metadata = {
+        "request_id": getattr(request.state, "request_id", ""),
+        "data_version": await _active_data_version(db),
+        "degraded": redis_degraded
+        or (getattr(settings, "rag_qdrant_enabled", False) and not is_qdrant_healthy()),
+    }
     question = req.question.strip()
     context_question = _contextual_question(question, req.context)
     if len(question) > settings.public_chat_max_prompt_chars:
@@ -339,27 +510,43 @@ async def query_analysis(
             detail="Question is too long",
         )
     current_supported = _is_supported_question(question)
-    contextual_follow_up_supported = (
-        _looks_like_follow_up(question) and _is_supported_question(context_question)
+    contextual_follow_up_supported = _looks_like_follow_up(question) and _is_supported_question(
+        context_question
     )
     if not current_supported and not contextual_follow_up_supported:
-        return AnalysisQueryResponse(
+        response = AnalysisQueryResponse(
+            **response_metadata,
             refused=True,
             route=None,
             classifier={},
             evidence=[],
             warnings=[
-                "Question asks outside cached Knicks season scope or live/current coverage."
+                "Question asks outside the available Knicks season data or live/current coverage."
             ],
             answer=(
-                "I can only answer grounded questions about cached Knicks 2025-26 "
+                "Short answer\n"
+                "I can only answer grounded questions about available Knicks 2025-26 "
                 "regular-season or playoff games. I do not have live, current, "
                 "future, injury, trade, or non-Knicks coverage."
             ),
             citations=[],
             tool_calls=[],
         )
+        return response
     effective_question = context_question if contextual_follow_up_supported else question
+
+    cache_key = None
+    if not req.context:
+        cache_key = answer_cache_key(
+            question,
+            response_metadata["data_version"],
+            getattr(settings, "ai_chat_model", "deterministic"),
+        )
+        cached = await get_cached_answer(cache_key)
+        if cached:
+            cached["request_id"] = response_metadata["request_id"]
+            cached["degraded"] = response_metadata["degraded"]
+            return AnalysisQueryResponse.model_validate(cached)
 
     tool_calls: list[dict[str, Any]] = []
     classifier = classify_query(effective_question)
@@ -379,6 +566,28 @@ async def query_analysis(
         classifier_payload.update(planner.as_dict())
     warnings: list[str] = []
 
+    if _unknown_data_question(question):
+        limitation = _retrieval_limitation_note(question)
+        response = AnalysisQueryResponse(
+            **response_metadata,
+            answer=_format_answer(
+                direct_answer=(
+                    "I can only answer from the games currently in KnicksIQ, and that "
+                    "question does not identify an available game."
+                ),
+                limitation_note=limitation,
+            ),
+            route=route,
+            classifier=classifier_payload,
+            evidence=[],
+            warnings=[limitation] if limitation else [],
+            citations=[],
+            tool_calls=tool_calls,
+        )
+        if cache_key:
+            await set_cached_answer(cache_key, response.model_dump(mode="json"))
+        return response
+
     if route == "table_rag":
         t0 = time.perf_counter()
         table_result = await answer_table_question(db, effective_question, season=req.season)
@@ -391,6 +600,7 @@ async def query_analysis(
         )
         citations = [
             AnalysisCitation(
+                claim=table_result.answer,
                 type="game",
                 title=f"{item['date']} NYK vs {item['opponent']}",
                 game_id=item["game_id"],
@@ -404,8 +614,13 @@ async def query_analysis(
             )
             for item in table_result.evidence[:5]
         ]
-        return AnalysisQueryResponse(
-            answer=table_result.answer + _table_evidence_note(table_result.evidence),
+        response = AnalysisQueryResponse(
+            **response_metadata,
+            answer=_format_answer(
+                direct_answer=table_result.answer,
+                evidence_note=_table_evidence_note(table_result.evidence),
+                limitation_note=" ".join(table_result.warnings) if table_result.warnings else None,
+            ),
             route=route,
             classifier=classifier_payload,
             evidence=table_result.evidence,
@@ -413,6 +628,9 @@ async def query_analysis(
             citations=citations,
             tool_calls=tool_calls,
         )
+        if cache_key:
+            await set_cached_answer(cache_key, response.model_dump(mode="json"))
+        return response
 
     t0 = time.perf_counter()
     games = await _matching_games(db, effective_question, req.season)
@@ -460,6 +678,7 @@ async def query_analysis(
         lines.append(_score_line(game))
         citations.append(
             AnalysisCitation(
+                claim=_score_line(game),
                 type="game",
                 title=f"{game.game_date} {game.away_team_id} @ {game.home_team_id}",
                 game_id=game.id,
@@ -478,19 +697,24 @@ async def query_analysis(
         term in question.lower() for term in ("run", "stretch", "play", "quarter")
     ):
         event_count = (
-            await db.execute(
-                select(GameEvent).where(GameEvent.game_id.in_(event_ready_game_ids)).limit(5)
+            (
+                await db.execute(
+                    select(GameEvent).where(GameEvent.game_id.in_(event_ready_game_ids)).limit(5)
+                )
             )
-        ).scalars().all()
+            .scalars()
+            .all()
+        )
         if event_count:
             lines.append(
-                "For event-level context, cached play-by-play is available for "
+                "Event-level play-by-play is available for "
                 f"{len(event_ready_game_ids)} matching game(s)."
             )
 
     for doc in docs:
         citations.append(
             AnalysisCitation(
+                claim=doc.text[:240],
                 type="document",
                 title=doc.title,
                 game_id=doc.metadata.get("game_id"),
@@ -501,8 +725,13 @@ async def query_analysis(
         )
 
     for evidence_item in possession_evidence[:3]:
+        first_description = next(
+            (str(row["description"]) for row in evidence_item["rows"] if row.get("description")),
+            "Possession-level play-by-play evidence",
+        )
         citations.append(
             AnalysisCitation(
+                claim=first_description,
                 type="possession",
                 title=(
                     f"{evidence_item['date']} "
@@ -521,15 +750,21 @@ async def query_analysis(
 
     if classifier.kind == "counterfactual":
         warnings.append(
-            "Counterfactual answer is bounded to cached historical baseline plus a "
+            "Counterfactual answer is bounded to the available historical baseline plus a "
             "labeled hypothetical adjustment."
         )
     if not possession_evidence:
-        warnings.append("No possession-level evidence matched the metadata filters.")
+        warnings.append("No possession-level evidence matched the available season data.")
 
-    if not lines:
+    if _unknown_data_question(question):
+        lines = [
+            "I can only answer from the games currently in KnicksIQ, and that question "
+            "does not identify an available game."
+        ]
+    elif not lines:
         lines.append(
-            "I could not find a cached Knicks game matching that question in the selected season."
+            "I could not find an available Knicks game matching that question in "
+            "the selected season."
         )
 
     fallback_answer = " ".join(lines)
@@ -545,8 +780,34 @@ async def query_analysis(
     if answer:
         tool_calls.append({"tool": "llm_generate", "model": get_settings().ai_chat_model})
 
-    return AnalysisQueryResponse(
-        answer=(answer or fallback_answer) + _possession_evidence_note(possession_evidence),
+    limitation_note = None
+    retrieval_limitation = _retrieval_limitation_note(question)
+    if retrieval_limitation:
+        warnings.append(retrieval_limitation)
+        limitation_note = retrieval_limitation
+    elif warnings:
+        limitation_note = " ".join(warnings)
+    elif not answer and not possession_evidence:
+        limitation_note = (
+            "The available Knicks game data was not detailed enough to support a more "
+            "specific answer."
+        )
+
+    response = AnalysisQueryResponse(
+        **response_metadata,
+        answer=(
+            (
+                answer
+                if "Receipts" in answer or not possession_evidence
+                else answer + _possession_evidence_note(possession_evidence)
+            )
+            if answer
+            else _format_answer(
+                direct_answer=fallback_answer,
+                evidence_note=_possession_evidence_note(possession_evidence),
+                limitation_note=limitation_note,
+            )
+        ),
         route=route,
         classifier=classifier_payload,
         evidence=possession_evidence,
@@ -554,3 +815,6 @@ async def query_analysis(
         citations=citations,
         tool_calls=tool_calls,
     )
+    if cache_key:
+        await set_cached_answer(cache_key, response.model_dump(mode="json"))
+    return response

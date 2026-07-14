@@ -16,11 +16,15 @@ dependencies = [
     "certifi>=2024.2.2",
     "python-multipart>=0.0.9",
     "qdrant-client>=1.9",
-    "sentence-transformers>=3.0",
+    "redis>=5.0",
+    "sentry-sdk[fastapi]>=2.0",
     "knicksiq-basketball-core",
 ]
 
 [project.optional-dependencies]
+local-rag = [
+    "sentence-transformers>=3.0",
+]
 test = [
     "httpx>=0.26",
     "pytest>=8.0",

@@ -9,9 +9,9 @@ from __future__ import annotations
 import os
 from collections.abc import AsyncIterator
 
-# Force test mode before importing any app code so config picks it up.
-# `.env` sets TEST_MODE=false for dev, so setdefault is not strong enough here.
-os.environ["TEST_MODE"] = "true"
+# Force isolated SQLite unless CI explicitly selects the disposable Postgres
+# integration database. `.env` sets TEST_MODE=false, so setdefault is not enough.
+os.environ["TEST_MODE"] = "false" if os.environ.get("KNICKSIQ_POSTGRES_TEST") == "1" else "true"
 os.environ["LOG_JSON"] = "false"
 os.environ["DEBUG"] = "true"
 
@@ -36,6 +36,10 @@ async def db_session() -> AsyncIterator:
         yield session
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.drop_all)
+    # pytest-asyncio may use a new event loop for the next test. Asyncpg
+    # connections are loop-bound, so never return a pooled test connection to
+    # a later loop.
+    await engine.dispose()
 
 
 @pytest.fixture(scope="function")

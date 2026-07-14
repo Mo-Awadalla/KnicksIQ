@@ -37,9 +37,7 @@ from worker_app.jobs import mark_failed, mark_finished, mark_started
 
 log = logging.getLogger(__name__)
 
-API_SEED_DIR = (
-    Path(__file__).resolve().parents[4] / "apps" / "api" / "app" / "core" / "seed"
-)
+API_SEED_DIR = Path(__file__).resolve().parents[4] / "apps" / "api" / "app" / "core" / "seed"
 
 
 def _worker_name() -> str:
@@ -63,9 +61,7 @@ async def _upsert_player(
 
     Returns one of: 'inserted', 'updated', 'unchanged'.
     """
-    existing = await db.execute(
-        select(Player).where(Player.nba_player_id == nba_player_id)
-    )
+    existing = await db.execute(select(Player).where(Player.nba_player_id == nba_player_id))
     row = existing.scalar_one_or_none()
     if row is None:
         db.add(
@@ -122,9 +118,7 @@ async def seed_players_from_nba_api(*, job_id: str) -> dict[str, Any]:
                 full_name = row.get("DISPLAY_FIRST_LAST") or row.get("displayFirstLast")
                 team_abbrev = row.get("TEAM_ABBREVIATION") or row.get("teamAbbreviation")
                 roster_status = (
-                    row.get("ROSTERSTATUS")
-                    or row.get("rosterStatus")
-                    or row.get("roster_status")
+                    row.get("ROSTERSTATUS") or row.get("rosterStatus") or row.get("roster_status")
                 )
                 if not nba_player_id or not full_name:
                     counts["skipped"] += 1

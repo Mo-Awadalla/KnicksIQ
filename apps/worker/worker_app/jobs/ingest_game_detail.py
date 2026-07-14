@@ -24,18 +24,14 @@ from worker_app.core.config import get_settings
 from worker_app.core.db import AsyncSessionLocal
 from worker_app.jobs import mark_failed, mark_finished, mark_started
 
-API_SEED_DIR = (
-    Path(__file__).resolve().parents[4] / "apps" / "api" / "app" / "core" / "seed"
-)
+API_SEED_DIR = Path(__file__).resolve().parents[4] / "apps" / "api" / "app" / "core" / "seed"
 
 
 def _worker_name() -> str:
     return f"worker@{socket.gethostname()}"
 
 
-async def _build_player_id_map(
-    db: Any, raw_events: list[dict[str, Any]]
-) -> dict[int, int]:
+async def _build_player_id_map(db: Any, raw_events: list[dict[str, Any]]) -> dict[int, int]:
     """Map nba_player_id (int) -> internal players.id (int) for the given events.
 
     Players missing from the DB are inserted with the name/team carried
@@ -53,9 +49,7 @@ async def _build_player_id_map(
     missing_ids = nba_ids - set(player_id_map)
     if missing_ids:
         for nba_player_id in missing_ids:
-            source_event = next(
-                ev for ev in raw_events if ev.get("player_id") == nba_player_id
-            )
+            source_event = next(ev for ev in raw_events if ev.get("player_id") == nba_player_id)
             full_name = str(source_event.get("player_name") or "").strip()
             if not full_name:
                 full_name = f"NBA Player {nba_player_id}"
@@ -96,9 +90,7 @@ async def ingest_game_detail(
             player_id_map = await _build_player_id_map(db, raw_events)
 
             # Wipe and re-insert events. Cheap and avoids dedup logic.
-            await db.execute(
-                delete(GameEvent).where(GameEvent.game_id == game.id)
-            )
+            await db.execute(delete(GameEvent).where(GameEvent.game_id == game.id))
 
             events = parse_events(game.id, raw_events)
             event_rows: list[GameEvent] = []

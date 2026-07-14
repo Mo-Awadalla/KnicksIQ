@@ -52,9 +52,7 @@ class JobStatusResponse(BaseModel):
     worker_name: str | None
 
 
-async def _create_job_row(
-    job_id: str, job_type: str, payload: dict[str, Any]
-) -> None:
+async def _create_job_row(job_id: str, job_type: str, payload: dict[str, Any]) -> None:
     """Insert a Job row in 'queued' state so the API can read status back."""
     async with AsyncSessionLocal() as db:
         job = Job(
@@ -133,7 +131,5 @@ async def get_job_status(
     result = await db.execute(select(Job).where(Job.id == job_id))
     job = result.scalar_one_or_none()
     if not job:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Job not found"
-        )
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Job not found")
     return _serialize(job)

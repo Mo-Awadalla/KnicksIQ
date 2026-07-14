@@ -65,9 +65,27 @@ def test_parses_free_throw():
 
 def test_parse_events_assigns_sequences():
     raw = [
-        {"event_type": "made_shot", "description": "made 2pt", "period": 1, "clock": "11:00", "team_id": "NYK"},  # noqa: E501
-        {"event_type": "made_shot", "description": "made 2pt", "period": 1, "clock": "10:30", "team_id": "BOS"},  # noqa: E501
-        {"event_type": "turnover", "description": "TO", "period": 1, "clock": "10:00", "team_id": "NYK"},  # noqa: E501
+        {
+            "event_type": "made_shot",
+            "description": "made 2pt",
+            "period": 1,
+            "clock": "11:00",
+            "team_id": "NYK",
+        },  # noqa: E501
+        {
+            "event_type": "made_shot",
+            "description": "made 2pt",
+            "period": 1,
+            "clock": "10:30",
+            "team_id": "BOS",
+        },  # noqa: E501
+        {
+            "event_type": "turnover",
+            "description": "TO",
+            "period": 1,
+            "clock": "10:00",
+            "team_id": "NYK",
+        },  # noqa: E501
     ]
     events = parse_events(game_id=42, raw_events=raw)
     assert len(events) == 3

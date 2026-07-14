@@ -63,9 +63,7 @@ async def knicks_get_games(
             if season:
                 stmt = stmt.where(Game.season == season)
             if team_id:
-                stmt = stmt.where(
-                    (Game.home_team_id == team_id) | (Game.away_team_id == team_id)
-                )
+                stmt = stmt.where((Game.home_team_id == team_id) | (Game.away_team_id == team_id))
             stmt = stmt.order_by(Game.game_date.desc()).limit(limit)
             games = (await db.execute(stmt)).scalars().all()
             return [_to_summary(g) for g in games]
@@ -108,9 +106,7 @@ async def knicks_get_box_score(game_id: int) -> dict[str, Any]:
             }
 
 
-async def knicks_get_play_by_play(
-    game_id: int, period: int | None = None
-) -> list[dict[str, Any]]:
+async def knicks_get_play_by_play(game_id: int, period: int | None = None) -> list[dict[str, Any]]:
     """Get the normalized play-by-play events for a game."""
     with tool_call("knicks.get_play_by_play", game_id=game_id, period=period):
         async with AsyncSessionLocal() as db:

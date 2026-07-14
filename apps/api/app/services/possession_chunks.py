@@ -5,9 +5,6 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any
 
-from app.models.game import Game
-from app.models.game_event import GameEvent
-
 
 @dataclass(frozen=True)
 class PossessionChunk:
@@ -21,7 +18,7 @@ class PossessionChunk:
 _POSSESSION_END_TYPES = {"made_shot", "turnover"}
 
 
-def _event_row(event: GameEvent) -> dict[str, Any]:
+def _event_row(event: Any) -> dict[str, Any]:
     return {
         "event_id": event.id,
         "sequence": event.sequence,
@@ -38,7 +35,7 @@ def _event_row(event: GameEvent) -> dict[str, Any]:
     }
 
 
-def _chunk_text(game: Game, rows: list[dict[str, Any]]) -> str:
+def _chunk_text(game: Any, rows: list[dict[str, Any]]) -> str:
     opponent = game.home_team_id if game.away_team_id == "NYK" else game.away_team_id
     lines = [
         f"{game.game_date} NYK vs {opponent} possession window",
@@ -53,7 +50,7 @@ def _chunk_text(game: Game, rows: list[dict[str, Any]]) -> str:
     return "\n".join(lines)
 
 
-def _metadata(game: Game, possession_index: int, rows: list[dict[str, Any]]) -> dict[str, Any]:
+def _metadata(game: Any, possession_index: int, rows: list[dict[str, Any]]) -> dict[str, Any]:
     player_ids = sorted({row["player_id"] for row in rows if row["player_id"] is not None})
     player_names = sorted({row["player_name"] for row in rows if row["player_name"]})
     team_ids = sorted({row["team_id"] for row in rows if row["team_id"]})
@@ -79,7 +76,7 @@ def _metadata(game: Game, possession_index: int, rows: list[dict[str, Any]]) -> 
     }
 
 
-def build_possession_chunks(game: Game, events: list[GameEvent]) -> list[PossessionChunk]:
+def build_possession_chunks(game: Any, events: list[Any]) -> list[PossessionChunk]:
     """Build possession-like chunks without changing cached source rows."""
     ordered = sorted(events, key=lambda event: (event.period, event.sequence, event.id or 0))
     chunks: list[PossessionChunk] = []

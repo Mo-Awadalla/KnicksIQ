@@ -12,19 +12,16 @@ class GameEvent(Base, TimestampMixin):
     __tablename__ = "game_events"
     __table_args__ = (
         Index("ix_game_events_game_period_seq", "game_id", "period", "sequence"),
+        Index("ix_game_events_game_team_type", "game_id", "team_id", "event_type"),
     )
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    game_id: Mapped[int] = mapped_column(
-        ForeignKey("games.id", ondelete="CASCADE"), index=True
-    )
+    game_id: Mapped[int] = mapped_column(ForeignKey("games.id", ondelete="CASCADE"), index=True)
     sequence: Mapped[int] = mapped_column(Integer)
     period: Mapped[int] = mapped_column(Integer)
     clock: Mapped[str] = mapped_column(String(8))
 
-    team_id: Mapped[str | None] = mapped_column(
-        ForeignKey("teams.id"), nullable=True, index=True
-    )
+    team_id: Mapped[str | None] = mapped_column(ForeignKey("teams.id"), nullable=True, index=True)
     player_id: Mapped[int | None] = mapped_column(
         ForeignKey("players.id"), nullable=True, index=True
     )

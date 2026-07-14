@@ -1,0 +1,5 @@
+# Historical false positives: an intentionally empty NBA_API_PROXY example was
+# interpreted as part of the following high-entropy user-agent value. Keep the
+# precise fingerprints so all other findings continue to fail CI.
+449c2d8fdd08f94025562f05d0b55268e9339a30:.env.example:generic-api-key:42
+449c2d8fdd08f94025562f05d0b55268e9339a30:docs/architecture.md:generic-api-key:260

@@ -6,31 +6,70 @@ on:
   pull_request:
     branches: [main]
 
+permissions:
+  contents: read
+
 jobs:
   backend:
-    name: Backend (lint + test)
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16.9-alpine
+        env:
+          POSTGRES_USER: knicksiq
+          POSTGRES_PASSWORD: knicksiq
+          POSTGRES_DB: knicksiq_test
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U knicksiq -d knicksiq_test"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      DB_URL: postgresql+asyncpg://knicksiq:knicksiq@localhost:5432/knicksiq_test
+      PGPASSWORD: knicksiq
+      TEST_MODE: "false"
+      UV_FROZEN: "true"
     steps:
       - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          version: "0.8.6"
+          enable-cache: true
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - name: Install uv
-        run: pip install uv
-      - name: Sync dependencies
-        run: uv sync --all-packages
-      - name: Lint
-        run: uv run ruff check apps/ packages/
-      - name: Type check
-        run: uv run pyright apps/ packages/
-      - name: Test
-        run: uv run pytest
-      - env:
+      - run: uv sync --all-packages --all-extras --dev
+      - run: uv run ruff check apps packages migrations
+      - run: uv run ruff format --check apps packages migrations
+      - run: uv run pyright apps packages migrations
+      - name: Unit and integration tests
+        env:
           TEST_MODE: "true"
-        run: uv run pytest
+        run: uv run pytest --maxfail=1
+      - name: Empty database migration and expand-only rollback
+        run: |
+          uv run alembic upgrade head
+          uv run alembic downgrade base
+          uv run alembic upgrade head
+      - name: Postgres release-loader integration and idempotency
+        env:
+          KNICKSIQ_POSTGRES_TEST: "1"
+          TEST_MODE: "false"
+        run: uv run pytest apps/api/app/tests/test_release_bundle.py --maxfail=1
+      - name: Upgrade populated pre-Alembic schema
+        run: |
+          createdb -h localhost -U knicksiq knicksiq_upgrade
+          psql -h localhost -U knicksiq -d knicksiq_upgrade -v ON_ERROR_STOP=1 \
+            -f migrations/fixtures/pre_alembic_minimal.sql
+          DB_URL=postgresql+asyncpg://knicksiq:knicksiq@localhost:5432/knicksiq_upgrade \
+            uv run alembic upgrade head
+          psql -h localhost -U knicksiq -d knicksiq_upgrade -v ON_ERROR_STOP=1 -c \
+            "SELECT 1 FROM reports WHERE title='Legacy report' AND reviewed=false"
+          psql -h localhost -U knicksiq -d knicksiq_upgrade -v ON_ERROR_STOP=1 -c \
+            "INSERT INTO dataset_releases (version,season,source,manifest_sha256,manifest_json,validation_json,validation_passed,status) VALUES ('migration-test','2025-26','fixture',repeat('a',64),'{}','{}',true,'staged')"
+          psql -h localhost -U knicksiq -d knicksiq_upgrade -v ON_ERROR_STOP=1 -c \
+            "INSERT INTO games (nba_game_id,season,game_date,home_team_id,away_team_id,home_score,away_score,status,season_type,data_status,release_id) SELECT nba_game_id,season,game_date,home_team_id,away_team_id,home_score,away_score,status,season_type,data_status,(SELECT id FROM dataset_releases WHERE version='migration-test') FROM games WHERE nba_game_id='legacy-game' AND release_id IS NULL"
 
   frontend:
-    name: Frontend (build)
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -39,8 +78,66 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: "20"
-          cache: "npm"
-          cache-dependency-path: apps/web/package-lock.json
-      - run: npm ci
-      - run: npm run build
+          node-version: "24.4.1"
+          cache: pnpm
+          cache-dependency-path: apps/web/pnpm-lock.yaml
+      - run: corepack enable
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec playwright install --with-deps chromium
+      - run: pnpm lint
+      - run: pnpm format:check
+      - run: pnpm build
+        env:
+          VITE_API_URL: https://api.knicksiq.win
+          VITE_PUBLIC_URL: https://www.knicksiq.win
+      - run: pnpm test
+      - run: pnpm e2e
+
+  containers:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: Dockerfile.api
+          push: false
+          load: true
+          tags: knicksiq-api:ci
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: Dockerfile.web
+          push: false
+          load: true
+          tags: knicksiq-web:ci
+      - name: Scan API image for critical vulnerabilities
+        uses: aquasecurity/trivy-action@0.33.1
+        with:
+          image-ref: knicksiq-api:ci
+          severity: CRITICAL
+          exit-code: "1"
+          ignore-unfixed: true
+      - name: Scan web image for critical vulnerabilities
+        uses: aquasecurity/trivy-action@0.33.1
+        with:
+          image-ref: knicksiq-web:ci
+          severity: CRITICAL
+          exit-code: "1"
+          ignore-unfixed: true
+
+  security:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: gitleaks/gitleaks-action@v2
+      - uses: github/codeql-action/init@v3
+        with:
+          languages: python,javascript-typescript
+      - uses: github/codeql-action/analyze@v3

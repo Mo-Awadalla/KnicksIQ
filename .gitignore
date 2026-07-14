@@ -23,6 +23,8 @@ uv.lock
 .coverage
 htmlcov/
 .tox/
+apps/web/test-results/
+apps/web/playwright-report/
 
 # Type checking
 .mypy_cache/
@@ -49,3 +51,7 @@ Thumbs.db
 # Logs
 *.log
 logs/
+
+# Generated release and retrieval artifacts
+rag-artifacts/
+release-artifacts/

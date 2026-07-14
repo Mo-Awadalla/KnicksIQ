@@ -2,7 +2,9 @@
 
 from app.models.bad_stretch import BadStretch
 from app.models.base import Base
+from app.models.box_score import PeriodScore, PlayerGameStat, TeamGameStat
 from app.models.chunk_model import DocumentChunk
+from app.models.dataset_release import DatasetRelease
 from app.models.document import Document
 from app.models.game import Game
 from app.models.game_event import GameEvent
@@ -15,6 +17,7 @@ from app.models.team import Team
 
 __all__ = [
     "Base",
+    "DatasetRelease",
     "Team",
     "Player",
     "Game",
@@ -26,4 +29,7 @@ __all__ = [
     "Document",
     "DocumentChunk",
     "Report",
+    "PeriodScore",
+    "TeamGameStat",
+    "PlayerGameStat",
 ]

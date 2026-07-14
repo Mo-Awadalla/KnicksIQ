@@ -12,12 +12,14 @@ from typing import Any
 
 from app.core.config import get_settings
 from app.models.chunk_model import DocumentChunk
+from app.models.dataset_release import DatasetRelease
 from app.models.document import Document
 from app.models.game import Game
 from app.models.game_event import GameEvent
 from app.services.embeddings import embed_texts
 from app.services.possession_chunks import PossessionChunk, build_possession_chunks
 from app.services.qdrant_client import is_qdrant_healthy, search_possessions
+from app.services.releases import restrict_to_active_release
 from app.services.reranker import rerank_candidates
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -74,10 +76,7 @@ def build_metadata_filters(query: str) -> RetrievalFilters:
     }
     if "knicks" in q:
         team_ids.add("NYK")
-    periods = {
-        int(match)
-        for match in re.findall(r"\b(?:q|quarter\s*)([1-4])\b", q)
-    }
+    periods = {int(match) for match in re.findall(r"\b(?:q|quarter\s*)([1-4])\b", q)}
     player_terms = {
         token
         for token in _tokens(query)
@@ -120,9 +119,7 @@ def _passes_filters(chunk: PossessionChunk, filters: RetrievalFilters) -> bool:
         if not filters.team_ids & (chunk_teams | game_teams):
             return False
     if filters.periods:
-        chunk_periods = set(
-            range(int(metadata["start_period"]), int(metadata["end_period"]) + 1)
-        )
+        chunk_periods = set(range(int(metadata["start_period"]), int(metadata["end_period"]) + 1))
         if not filters.periods & chunk_periods:
             return False
     return True
@@ -160,9 +157,7 @@ def _rrf_merge(
     rankings: list[list[tuple[PossessionChunk, float]]], limit: int
 ) -> list[PossessionChunk]:
     chunks: dict[str, PossessionChunk] = {
-        chunk.chunk_id: chunk
-        for ranking in rankings
-        for chunk, _score in ranking
+        chunk.chunk_id: chunk for ranking in rankings for chunk, _score in ranking
     }
     fused = reciprocal_rank_fusion(
         [[(chunk.chunk_id, score) for chunk, score in ranking] for ranking in rankings],
@@ -187,13 +182,15 @@ def _lexical_rank_chunks(
     player_rank = [
         (
             chunk,
-            len(
-                query_tokens
-                & {
-                    token
-                    for name in chunk.metadata.get("player_names", [])
-                    for token in _tokens(name)
-                }
+            float(
+                len(
+                    query_tokens
+                    & {
+                        token
+                        for name in chunk.metadata.get("player_names", [])
+                        for token in _tokens(name)
+                    }
+                )
             ),
         )
         for chunk in chunks
@@ -254,13 +251,17 @@ async def upsert_game_documents(
 ) -> int:
     """Replace generated RAG docs/chunks for one game."""
     existing = (
-        await db.execute(
-            select(Document).where(
-                Document.game_id == game.id,
-                Document.source_type.in_(("game_summary", "play_by_play")),
+        (
+            await db.execute(
+                select(Document).where(
+                    Document.game_id == game.id,
+                    Document.source_type.in_(("game_summary", "play_by_play")),
+                )
             )
         )
-    ).scalars().all()
+        .scalars()
+        .all()
+    )
     for doc in existing:
         await db.delete(doc)
     await db.flush()
@@ -354,6 +355,7 @@ async def search_possession_chunks(
         .where((Game.home_team_id == "NYK") | (Game.away_team_id == "NYK"))
         .order_by(Game.game_date.desc())
     )
+    game_stmt = restrict_to_active_release(game_stmt)
     if filters.dates:
         parsed_dates = [date.fromisoformat(value) for value in filters.dates]
         game_stmt = game_stmt.where(Game.game_date.in_(parsed_dates))
@@ -363,13 +365,17 @@ async def search_possession_chunks(
         return [], filters
 
     event_rows = (
-        await db.execute(
-            select(GameEvent)
-            .options(selectinload(GameEvent.player))
-            .where(GameEvent.game_id.in_(game_ids))
-            .order_by(GameEvent.game_id, GameEvent.period, GameEvent.sequence)
+        (
+            await db.execute(
+                select(GameEvent)
+                .options(selectinload(GameEvent.player))
+                .where(GameEvent.game_id.in_(game_ids))
+                .order_by(GameEvent.game_id, GameEvent.period, GameEvent.sequence)
+            )
         )
-    ).scalars().all()
+        .scalars()
+        .all()
+    )
     events_by_game: dict[int, list[GameEvent]] = {}
     for event in event_rows:
         events_by_game.setdefault(event.game_id, []).append(event)
@@ -391,16 +397,36 @@ async def search_possession_chunks(
         )
 
     settings = get_settings()
+    qdrant_filters = filters.as_dict()
+    if getattr(settings, "is_production", False):
+        active_version = (
+            await db.execute(
+                select(DatasetRelease.version).where(
+                    DatasetRelease.status == "active",
+                    DatasetRelease.validation_passed.is_(True),
+                )
+            )
+        ).scalar_one_or_none()
+        if active_version:
+            qdrant_filters["data_version"] = active_version
     dense_rank: list[tuple[PossessionChunk, float]] = []
     if settings.rag_hybrid_enabled and settings.rag_qdrant_enabled:
         try:
             if is_qdrant_healthy():
                 t0 = time.perf_counter()
-                query_embedding = embed_texts([query])[0]
+                query_embedding: list[float] | str = (
+                    query
+                    if getattr(settings, "rag_qdrant_cloud_inference", False)
+                    else embed_texts([query])[0]
+                )
                 if trace is not None:
                     trace.append(
                         {
-                            "tool": "embed_query",
+                            "tool": (
+                                "qdrant_cloud_inference"
+                                if isinstance(query_embedding, str)
+                                else "embed_query"
+                            ),
                             "latency_ms": int((time.perf_counter() - t0) * 1000),
                             "result_count": 1,
                         }
@@ -408,7 +434,7 @@ async def search_possession_chunks(
                 t0 = time.perf_counter()
                 dense_results = search_possessions(
                     query_embedding,
-                    filters.as_dict(),
+                    qdrant_filters,
                     max(limit * 10, settings.rag_rerank_limit, 20),
                 )
                 dense_rank = [
@@ -457,9 +483,7 @@ async def search_possession_chunks(
             }
         )
     merged = [
-        candidate_map[chunk_id]
-        for chunk_id, _score in fused_ids
-        if chunk_id in candidate_map
+        candidate_map[chunk_id] for chunk_id, _score in fused_ids if chunk_id in candidate_map
     ]
 
     if settings.rag_reranker_enabled and merged:

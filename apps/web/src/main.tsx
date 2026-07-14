@@ -7,6 +7,7 @@ import {
   QueryClientProvider,
 } from '@tanstack/react-query'
 import { RouterProvider, createRouter } from '@tanstack/react-router'
+import * as Sentry from '@sentry/react'
 import { toast } from 'sonner'
 import { handleServerError } from '@/lib/handle-server-error'
 import { DirectionProvider } from './context/direction-provider'
@@ -15,6 +16,28 @@ import { FontProvider } from './context/font-provider'
 import { routeTree } from './routeTree.gen'
 // Styles
 import './styles/index.css'
+
+if (import.meta.env.VITE_SENTRY_DSN) {
+  Sentry.init({
+    dsn: import.meta.env.VITE_SENTRY_DSN,
+    environment: import.meta.env.MODE,
+    sendDefaultPii: false,
+    tracesSampleRate: 0.05,
+    beforeBreadcrumb(breadcrumb) {
+      if (breadcrumb.category === 'fetch' || breadcrumb.category === 'xhr') {
+        return null
+      }
+      delete breadcrumb.data
+      return breadcrumb
+    },
+    beforeSend(event) {
+      delete event.user
+      delete event.request
+      if (event.breadcrumbs) event.breadcrumbs = []
+      return event
+    },
+  })
+}
 
 document.documentElement.classList.remove('dark', 'light')
 document

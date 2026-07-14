@@ -45,9 +45,15 @@ def test_detects_mixed_net_swing():
         make_event(2, 1, "1:05", "BOS", EventType.MADE_SHOT, points=3, home_score=2, away_score=3),
         make_event(3, 1, "0:38", "BOS", EventType.MADE_SHOT, points=2, home_score=2, away_score=5),
         make_event(4, 1, "0:04", "BOS", EventType.MADE_SHOT, points=3, home_score=2, away_score=8),
-        make_event(5, 2, "11:41", "BOS", EventType.MADE_SHOT, points=2, home_score=2, away_score=10),
-        make_event(6, 2, "11:15", "BOS", EventType.MADE_SHOT, points=3, home_score=2, away_score=13),
-        make_event(7, 2, "10:42", "BOS", EventType.MADE_SHOT, points=3, home_score=2, away_score=16),
+        make_event(
+            5, 2, "11:41", "BOS", EventType.MADE_SHOT, points=2, home_score=2, away_score=10
+        ),
+        make_event(
+            6, 2, "11:15", "BOS", EventType.MADE_SHOT, points=3, home_score=2, away_score=13
+        ),
+        make_event(
+            7, 2, "10:42", "BOS", EventType.MADE_SHOT, points=3, home_score=2, away_score=16
+        ),
     ]
 
     runs = detect_impactful_runs(events, ImpactfulRunConfig(home_team_id="NYK", away_team_id="BOS"))
@@ -79,8 +85,12 @@ def test_shows_early_8_0_but_does_not_highlight_it():
 
 def test_clutch_5_0_can_highlight_inside_pressure_zone():
     events = [
-        make_event(1, 4, "5:40", "BOS", EventType.MADE_SHOT, points=2, home_score=94, away_score=96),
-        make_event(2, 4, "5:10", "BOS", EventType.MADE_SHOT, points=3, home_score=94, away_score=99),
+        make_event(
+            1, 4, "5:40", "BOS", EventType.MADE_SHOT, points=2, home_score=94, away_score=96
+        ),
+        make_event(
+            2, 4, "5:10", "BOS", EventType.MADE_SHOT, points=3, home_score=94, away_score=99
+        ),
     ]
 
     runs = detect_impactful_runs(events, ImpactfulRunConfig(home_team_id="NYK", away_team_id="BOS"))
@@ -93,9 +103,15 @@ def test_clutch_5_0_can_highlight_inside_pressure_zone():
 
 def test_late_run_outside_pressure_zone_is_low_leverage():
     events = [
-        make_event(1, 4, "5:40", "BOS", EventType.MADE_SHOT, points=3, home_score=80, away_score=98),
-        make_event(2, 4, "5:00", "BOS", EventType.MADE_SHOT, points=3, home_score=80, away_score=101),
-        make_event(3, 4, "4:30", "BOS", EventType.MADE_SHOT, points=2, home_score=80, away_score=103),
+        make_event(
+            1, 4, "5:40", "BOS", EventType.MADE_SHOT, points=3, home_score=80, away_score=98
+        ),
+        make_event(
+            2, 4, "5:00", "BOS", EventType.MADE_SHOT, points=3, home_score=80, away_score=101
+        ),
+        make_event(
+            3, 4, "4:30", "BOS", EventType.MADE_SHOT, points=2, home_score=80, away_score=103
+        ),
     ]
 
     runs = detect_impactful_runs(events, ImpactfulRunConfig(home_team_id="NYK", away_team_id="BOS"))

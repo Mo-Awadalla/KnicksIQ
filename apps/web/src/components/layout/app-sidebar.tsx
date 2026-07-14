@@ -6,8 +6,8 @@ import {
   SidebarHeader,
   SidebarRail,
 } from '@/components/ui/sidebar'
-import { sidebarData } from './data/sidebar-data'
 import { AppTitle } from './app-title'
+import { sidebarData } from './data/sidebar-data'
 import { NavGroup } from './nav-group'
 
 export function AppSidebar() {
@@ -23,7 +23,7 @@ export function AppSidebar() {
         ))}
       </SidebarContent>
       <SidebarFooter className='px-3 py-4 text-xs text-sidebar-foreground/80'>
-        Internal dashboard
+        Unofficial fan archive
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>

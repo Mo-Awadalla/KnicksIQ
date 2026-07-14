@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from basketball_core.models.event import EventType, GameEvent
+from basketball_core.models.event import GameEvent
 from basketball_core.models.run import ImpactfulRun
 
 _PERIOD_SECONDS = 12 * 60
@@ -59,7 +59,9 @@ def _score_before(event: GameEvent, config: ImpactfulRunConfig) -> tuple[int, in
     return home_score, away_score
 
 
-def _margin_for_team(home_score: int, away_score: int, team_id: str, config: ImpactfulRunConfig) -> int | None:
+def _margin_for_team(
+    home_score: int, away_score: int, team_id: str, config: ImpactfulRunConfig
+) -> int | None:
     if config.home_team_id is None or config.away_team_id is None:
         return None
     if team_id == config.home_team_id:
@@ -117,7 +119,9 @@ def _classify_leverage(
     if (
         start_margin is not None
         and end_margin is not None
-        and (abs(start_margin) <= config.pressure_margin or abs(end_margin) <= config.pressure_margin)
+        and (
+            abs(start_margin) <= config.pressure_margin or abs(end_margin) <= config.pressure_margin
+        )
     ):
         return "clutch"
     return "late"
@@ -188,25 +192,36 @@ def detect_impactful_runs(
 
         for end_idx in scoring_indices[scoring_start_pos:]:
             end_event = sorted_events[end_idx]
-            if _seconds_elapsed(end_event.period, end_event.clock) - start_elapsed > cfg.max_window_seconds:
+            if (
+                _seconds_elapsed(end_event.period, end_event.clock) - start_elapsed
+                > cfg.max_window_seconds
+            ):
                 break
             if end_event.team_id is None:
                 continue
-            team_points[end_event.team_id] = team_points.get(end_event.team_id, 0) + end_event.points_scored
-            scoring_events_for_team[end_event.team_id] = scoring_events_for_team.get(end_event.team_id, 0) + 1
+            team_points[end_event.team_id] = (
+                team_points.get(end_event.team_id, 0) + end_event.points_scored
+            )
+            scoring_events_for_team[end_event.team_id] = (
+                scoring_events_for_team.get(end_event.team_id, 0) + 1
+            )
 
             if len(team_points) == 0:
                 continue
             run_team_id = max(team_points, key=lambda team_id: team_points[team_id])
             points_for = team_points[run_team_id]
-            points_against = sum(points for team_id, points in team_points.items() if team_id != run_team_id)
+            points_against = sum(
+                points for team_id, points in team_points.items() if team_id != run_team_id
+            )
             net_swing = points_for - points_against
             if scoring_events_for_team.get(run_team_id, 0) < 2:
                 continue
 
             start_home, start_away = _score_before(start_event, cfg)
             start_margin = _margin_for_team(start_home, start_away, run_team_id, cfg)
-            end_margin = _margin_for_team(end_event.home_score, end_event.away_score, run_team_id, cfg)
+            end_margin = _margin_for_team(
+                end_event.home_score, end_event.away_score, run_team_id, cfg
+            )
             leverage = _classify_leverage(start_event, end_event, start_margin, end_margin, cfg)
             min_swing = cfg.clutch_min_net_swing if leverage == "clutch" else cfg.min_net_swing
             if net_swing < min_swing:
