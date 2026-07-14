@@ -16,7 +16,7 @@ COPY apps/worker/pyproject.toml ./apps/worker/pyproject.toml
 COPY apps/mcp/pyproject.toml ./apps/mcp/pyproject.toml
 COPY packages/basketball-core/pyproject.toml ./packages/basketball-core/pyproject.toml
 
-RUN uv sync --package knicksiq-worker 2>/dev/null || uv sync --package knicksiq-worker
+RUN uv sync --package knicksiq-worker
 
 COPY apps/api/app ./apps/api/app
 COPY apps/worker/worker_app ./apps/worker/worker_app

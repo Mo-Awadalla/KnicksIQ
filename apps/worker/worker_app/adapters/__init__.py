@@ -52,9 +52,7 @@ class StaticSeedDataSource:
         games = self._read("games.json")
         return sorted({g["season"] for g in games})
 
-    def list_games(
-        self, season: str, *, include_playoffs: bool = False
-    ) -> list[dict[str, Any]]:
+    def list_games(self, season: str, *, include_playoffs: bool = False) -> list[dict[str, Any]]:
         games = self._read("games.json")
         rows = [g for g in games if g.get("season") == season]
         if include_playoffs:

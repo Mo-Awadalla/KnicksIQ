@@ -8,7 +8,12 @@ from types import SimpleNamespace
 import pytest
 from app.services import embeddings
 from app.services.possession_chunks import PossessionChunk
-from app.services.qdrant_client import ensure_collections, qdrant_point_id, upsert_points
+from app.services.qdrant_client import (
+    ensure_collections,
+    qdrant_point_id,
+    switch_aliases,
+    upsert_points,
+)
 from app.services.rag import reciprocal_rank_fusion, search_possession_chunks
 from app.services.reranker import rerank_candidates
 
@@ -59,20 +64,53 @@ class _FakeModels:
             self.vector = vector
             self.payload = payload
 
+    class Document:
+        def __init__(self, text, model):
+            self.text = text
+            self.model = model
+
+    class DeleteAlias:
+        def __init__(self, alias_name):
+            self.alias_name = alias_name
+
+    class DeleteAliasOperation:
+        def __init__(self, delete_alias):
+            self.delete_alias = delete_alias
+
+    class CreateAlias:
+        def __init__(self, collection_name, alias_name):
+            self.collection_name = collection_name
+            self.alias_name = alias_name
+
+    class CreateAliasOperation:
+        def __init__(self, create_alias):
+            self.create_alias = create_alias
+
 
 class _FakeQdrantClient:
     def __init__(self):
         self.created = []
+        self.deleted = []
         self.upserts = []
+        self.alias_updates = []
 
     def get_collections(self):
-        return SimpleNamespace(collections=[])
+        return SimpleNamespace(collections=[SimpleNamespace(name="knicks_games")])
 
     def create_collection(self, collection_name, vectors_config):
         self.created.append((collection_name, vectors_config.size, vectors_config.distance))
 
+    def delete_collection(self, collection_name):
+        self.deleted.append(collection_name)
+
     def upsert(self, collection_name, points):
         self.upserts.append((collection_name, points))
+
+    def get_aliases(self):
+        return SimpleNamespace(aliases=[SimpleNamespace(alias_name="knicks_games")])
+
+    def update_collection_aliases(self, change_aliases_operations):
+        self.alias_updates.append(change_aliases_operations)
 
 
 def test_qdrant_collections_and_upsert_payload_shape(monkeypatch):
@@ -80,7 +118,7 @@ def test_qdrant_collections_and_upsert_payload_shape(monkeypatch):
     client = _FakeQdrantClient()
 
     ensure_collections(client)
-    assert ("knicks_possessions", 1024, "Cosine") in client.created
+    assert ("knicks_possessions", 384, "Cosine") in client.created
 
     count = upsert_points(
         "knicks_possessions",
@@ -106,6 +144,59 @@ def test_qdrant_collections_and_upsert_payload_shape(monkeypatch):
     assert point.id == str(qdrant_point_id("game:1:poss:0"))
     assert point.payload["chunk_id"] == "game:1:poss:0"
     assert point.payload["player_names"] == ["Jalen Brunson"]
+
+
+def test_qdrant_cloud_inference_upserts_source_documents(monkeypatch):
+    monkeypatch.setitem(sys.modules, "qdrant_client", SimpleNamespace(models=_FakeModels))
+    monkeypatch.setattr(
+        "app.services.qdrant_client.get_settings",
+        lambda: SimpleNamespace(
+            rag_qdrant_cloud_inference=True,
+            rag_embedding_model="sentence-transformers/all-MiniLM-L6-v2",
+        ),
+    )
+    client = _FakeQdrantClient()
+
+    count = upsert_points(
+        "knicks_games",
+        [{"id": "game:1", "payload": {"game_id": 1}}],
+        documents=["Knicks defeated Boston 100-90"],
+        client=client,
+    )
+
+    point = client.upserts[0][1][0]
+    assert count == 1
+    assert point.vector.text == "Knicks defeated Boston 100-90"
+    assert point.vector.model == "sentence-transformers/all-MiniLM-L6-v2"
+
+
+def test_release_aliases_promote_in_one_atomic_request(monkeypatch):
+    monkeypatch.setitem(sys.modules, "qdrant_client", SimpleNamespace(models=_FakeModels))
+    client = _FakeQdrantClient()
+
+    switch_aliases(
+        {
+            "knicks_games": "knicks_games__v1",
+            "knicks_reports": "knicks_reports__v1",
+            "knicks_possessions": "knicks_possessions__v1",
+        },
+        client=client,
+    )
+
+    assert len(client.alias_updates) == 1
+    assert client.deleted == ["knicks_games"]
+    operations = client.alias_updates[0]
+    assert len(operations) == 4  # one delete plus three creates
+    created = {
+        operation.create_alias.alias_name: operation.create_alias.collection_name
+        for operation in operations
+        if hasattr(operation, "create_alias")
+    }
+    assert created == {
+        "knicks_games": "knicks_games__v1",
+        "knicks_possessions": "knicks_possessions__v1",
+        "knicks_reports": "knicks_reports__v1",
+    }
 
 
 def test_rrf_ordering_is_deterministic_for_ties():

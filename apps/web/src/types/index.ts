@@ -112,6 +112,7 @@ export interface Report {
 }
 
 export interface AnalysisCitation {
+  claim: string
   type: string
   title: string
   game_id: number | null
@@ -127,11 +128,25 @@ export interface AnalysisContextMessage {
 
 export interface AnalysisResponse {
   answer: string
-  route: string | null
-  classifier: Record<string, unknown>
-  evidence: Record<string, unknown>[]
+  route?: string | null
+  classifier?: Record<string, unknown>
+  evidence?: Record<string, unknown>[]
   warnings: string[]
   citations: AnalysisCitation[]
-  tool_calls: { tool: string; latency_ms: number; [key: string]: unknown }[]
+  tool_calls?: { tool: string; latency_ms: number; [key: string]: unknown }[]
   refused: boolean
+  degraded: boolean
+  data_version: string
+  request_id: string
+}
+
+export interface ArchiveStatus {
+  season: string
+  data_version: string
+  games: number
+  regular_season_games: number
+  postseason_games: number
+  reports: number
+  activated_at: string | null
+  capabilities: string[]
 }

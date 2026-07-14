@@ -14,9 +14,7 @@ class Player(Base, TimestampMixin):
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     nba_player_id: Mapped[int] = mapped_column(unique=True, index=True)
     full_name: Mapped[str] = mapped_column(String(128), index=True)
-    team_id: Mapped[str | None] = mapped_column(
-        ForeignKey("teams.id"), nullable=True, index=True
-    )
+    team_id: Mapped[str | None] = mapped_column(ForeignKey("teams.id"), nullable=True, index=True)
     position: Mapped[str | None] = mapped_column(String(8), nullable=True)
     jersey_number: Mapped[str | None] = mapped_column(String(8), nullable=True)
 

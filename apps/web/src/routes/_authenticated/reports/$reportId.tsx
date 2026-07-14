@@ -1,11 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { ReportDetailPage } from '@/features/knicks'
+import { SeasonArchivePage } from '@/features/knicks/archive'
 
 export const Route = createFileRoute('/_authenticated/reports/$reportId')({
-  component: RouteComponent,
+  component: SeasonArchivePage,
 })
-
-function RouteComponent() {
-  const { reportId } = Route.useParams()
-  return <ReportDetailPage reportId={Number(reportId)} />
-}

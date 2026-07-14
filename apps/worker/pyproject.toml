@@ -21,6 +21,12 @@ dependencies = [
 knicksiq-cache-season = "worker_app.cli:cache_season_main"
 knicksiq-cache-rosters = "worker_app.cli:cache_rosters_main"
 knicksiq-build-rag-index = "worker_app.cli:build_rag_index_main"
+knicksiq-build-release = "worker_app.release_cli:build_main"
+knicksiq-load-release = "worker_app.release_cli:load_main"
+knicksiq-validate-release = "worker_app.release_cli:validate_main"
+knicksiq-fetch-release-boxes = "worker_app.release_export:fetch_main"
+knicksiq-export-release = "worker_app.release_export:export_main"
+knicksiq-create-report-review-pack = "worker_app.release_export:review_pack_main"
 
 [project.optional-dependencies]
 test = [

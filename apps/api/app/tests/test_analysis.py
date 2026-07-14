@@ -3,6 +3,27 @@
 from __future__ import annotations
 
 from app.api import analysis
+from starlette.requests import Request
+
+
+def test_client_identity_ignores_untrusted_forwarded_header():
+    def request(forwarded_for: bytes) -> Request:
+        return Request(
+            {
+                "type": "http",
+                "method": "POST",
+                "path": "/analysis/query",
+                "headers": [(b"x-forwarded-for", forwarded_for)],
+                "client": ("203.0.113.10", 50000),
+                "server": ("test", 80),
+                "scheme": "http",
+                "query_string": b"",
+            }
+        )
+
+    assert analysis._client_id(request(b"198.51.100.1")) == analysis._client_id(
+        request(b"198.51.100.2")
+    )
 
 
 async def test_public_analysis_query_returns_citations(client):
@@ -58,7 +79,9 @@ async def test_public_analysis_aggregate_uses_table_rag(client):
     assert body["classifier"]["is_aggregative"] is True
     assert body["evidence"]
     assert "NYK is" in body["answer"]
-    assert "Evidence used:" in body["answer"]
+    assert "Short answer" in body["answer"]
+    assert "Key evidence" in body["answer"]
+    assert "cached" not in body["answer"].lower()
     tools = {call["tool"] for call in body["tool_calls"]}
     assert tools == {"table_rag"}
 
@@ -73,7 +96,7 @@ async def test_public_analysis_losing_streak_uses_table_rag(client):
     assert body["refused"] is False
     assert body["route"] == "table_rag"
     assert body["classifier"]["is_aggregative"] is True
-    assert "longest cached 2025-26 losing streak" in body["answer"]
+    assert "longest 2025-26 losing streak in the available data" in body["answer"]
     assert {call["tool"] for call in body["tool_calls"]} == {"table_rag"}
 
 
@@ -91,6 +114,20 @@ async def test_public_analysis_best_game_uses_largest_win_margin(client):
     assert {call["tool"] for call in body["tool_calls"]} == {"table_rag"}
 
 
+async def test_public_analysis_accepts_pronoun_biggest_win_query(client):
+    r = await client.post(
+        "/analysis/query",
+        json={"question": "what was their biggest win"},
+    )
+    assert r.status_code == 200
+    body = r.json()
+    assert body["refused"] is False
+    assert body["route"] == "table_rag"
+    assert "best 2025-26 game by win margin" in body["answer"]
+    assert "136-96" in body["answer"]
+    assert "cached" not in body["answer"].lower()
+
+
 async def test_public_analysis_why_pick_follow_up_stays_table_rag(client):
     r = await client.post(
         "/analysis/query",
@@ -104,7 +141,7 @@ async def test_public_analysis_why_pick_follow_up_stays_table_rag(client):
                 {
                     "role": "assistant",
                     "content": (
-                        "The Knicks' best cached 2025-26 game by win margin was "
+                        "The Knicks' best 2025-26 game by win margin in the available data was "
                         "2026-04-03 against CHI: NYK won 136-96 by 40."
                     ),
                 },
@@ -114,7 +151,7 @@ async def test_public_analysis_why_pick_follow_up_stays_table_rag(client):
     assert r.status_code == 200
     body = r.json()
     assert body["route"] == "table_rag"
-    assert "because this route ranks cached Knicks wins by final margin" in body["answer"]
+    assert "ranks available Knicks wins by final margin" in body["answer"]
     assert {call["tool"] for call in body["tool_calls"]} == {"table_rag"}
 
 
@@ -130,7 +167,7 @@ async def test_public_analysis_follow_up_uses_short_context(client):
                 },
                 {
                     "role": "assistant",
-                    "content": "The Knicks beat Toronto using cached evidence.",
+                    "content": "The Knicks beat Toronto using available evidence.",
                 },
             ],
         },
@@ -149,14 +186,16 @@ async def test_public_analysis_retrieval_answer_shows_evidence(client):
     assert r.status_code == 200
     body = r.json()
     assert body["route"] == "retrieval_rag"
-    assert "Evidence used:" in body["answer"]
+    assert "Short answer" in body["answer"]
+    assert "Receipts" in body["answer"]
+    assert "cached" not in body["answer"].lower()
 
 
 async def test_public_analysis_query_uses_configured_llm(client, monkeypatch):
     class StubSettings:
         ai_provider = "openrouter"
         ai_api_key = "test-key"
-        ai_chat_model = "poolside/laguna-xs-2.1:free"
+        ai_chat_model = "nvidia/nemotron-3-ultra-550b-a55b:free"
         public_chat_rate_limit_per_minute = 20
         public_chat_max_prompt_chars = 1200
 
@@ -180,10 +219,78 @@ async def test_public_analysis_query_uses_configured_llm(client, monkeypatch):
     assert r.status_code == 200
     body = r.json()
     assert body["answer"].startswith("LLM-grounded Raptors answer.")
-    assert "Evidence used:" in body["answer"]
-    assert {"tool": "llm_generate", "model": "poolside/laguna-xs-2.1:free"} in body[
-        "tool_calls"
-    ]
+    assert "Receipts" in body["answer"]
+    assert {
+        "tool": "llm_generate",
+        "model": "nvidia/nemotron-3-ultra-550b-a55b:free",
+    } in body["tool_calls"]
+
+
+async def test_openrouter_failure_preserves_deterministic_factual_answer(client, monkeypatch):
+    original_get_settings = analysis.get_settings
+
+    class StubSettings:
+        test_mode = False
+        ai_provider = "openrouter"
+        ai_api_key = "test-key"
+        ai_chat_model = "approved-model"
+        openrouter_allowed_models = ["approved-model"]
+
+    class FailingAdapter:
+        async def generate(self, *, system: str, user: str) -> str:  # noqa: ARG002
+            raise ConnectionError("provider unavailable")
+
+    monkeypatch.setattr(analysis, "get_settings", lambda: StubSettings())
+    monkeypatch.setattr(analysis, "reserve_ai_budget", lambda: _true())
+    monkeypatch.setattr(
+        analysis,
+        "get_llm_adapter",
+        lambda *, response_format_json=True: FailingAdapter(),
+    )
+
+    answer = await analysis._generate_llm_answer(
+        question="What happened against Toronto?",
+        season="2025-26",
+        games=[],
+        docs=[],
+    )
+
+    assert answer is None
+    monkeypatch.setattr(analysis, "get_settings", original_get_settings)
+
+    response = await client.post(
+        "/analysis/query",
+        json={"question": "What happened in the Knicks game against Toronto?"},
+    )
+    assert response.status_code == 200
+    body = response.json()
+    assert body["refused"] is False
+    assert body["citations"]
+    assert "Knicks" in body["answer"]
+    assert all(call["tool"] != "llm_generate" for call in body["tool_calls"])
+
+
+async def _true() -> bool:
+    return True
+
+
+async def test_redis_failure_marks_factual_answer_degraded(client, monkeypatch):
+    async def redis_degraded(_request):
+        return True
+
+    monkeypatch.setattr(analysis, "_rate_limit", redis_degraded)
+
+    response = await client.post(
+        "/analysis/query",
+        json={"question": "What is the Knicks record this season?"},
+    )
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["refused"] is False
+    assert body["degraded"] is True
+    assert body["citations"]
+    assert "NYK is" in body["answer"]
 
 
 async def test_public_analysis_valid_question_recovers_after_off_topic_context(client):
@@ -195,7 +302,7 @@ async def test_public_analysis_valid_question_recovers_after_off_topic_context(c
         {
             "role": "assistant",
             "content": (
-                "I can only answer grounded questions about cached Knicks 2025-26 "
+                "I can only answer grounded questions about available Knicks 2025-26 "
                 "regular-season or playoff games."
             ),
         },
@@ -206,7 +313,7 @@ async def test_public_analysis_valid_question_recovers_after_off_topic_context(c
         {
             "role": "assistant",
             "content": (
-                "I can only answer grounded questions about cached Knicks 2025-26 "
+                "I can only answer grounded questions about available Knicks 2025-26 "
                 "regular-season or playoff games."
             ),
         },
@@ -217,7 +324,7 @@ async def test_public_analysis_valid_question_recovers_after_off_topic_context(c
         {
             "role": "assistant",
             "content": (
-                "I can only answer grounded questions about cached Knicks 2025-26 "
+                "I can only answer grounded questions about available Knicks 2025-26 "
                 "regular-season or playoff games."
             ),
         },
@@ -227,7 +334,7 @@ async def test_public_analysis_valid_question_recovers_after_off_topic_context(c
         "/analysis/query",
         json={
             "question": "who beat the knicks by the most points",
-            "context": context,
+            "context": context[-4:],
         },
     )
 
@@ -235,5 +342,45 @@ async def test_public_analysis_valid_question_recovers_after_off_topic_context(c
     body = r.json()
     assert body["refused"] is False
     assert body["route"] == "table_rag"
-    assert "biggest cached 2025-26 Knicks loss" in body["answer"]
+    assert "biggest 2025-26 Knicks loss in the available data" in body["answer"]
     assert body["tool_calls"]
+
+
+async def test_public_analysis_accepts_natural_archive_phrasings(client):
+    questions = [
+        "What happened in the 4th quarter?",
+        "Why did the Knicks lose?",
+        "Who led the Knicks in scoring?",
+        "Show me games where Towns dominated.",
+        "Tell me about Mikal Bridges defense.",
+        "Give me receipts for Brunson clutch moments.",
+        "What went wrong against Boston?",
+        "Did the Knicks shoot well from three?",
+        "What do you know about a game that is not in the data?",
+    ]
+
+    for question in questions:
+        r = await client.post("/analysis/query", json={"question": question})
+        assert r.status_code == 200
+        body = r.json()
+        assert body["refused"] is False, question
+        assert "Short answer" in body["answer"], question
+        assert "cached" not in body["answer"].lower(), question
+
+
+async def test_public_analysis_unsupported_table_question_is_not_generic_dump(client):
+    r = await client.post(
+        "/analysis/query",
+        json={"question": "Who had the most steals for the Knicks?"},
+    )
+
+    assert r.status_code == 200
+    body = r.json()
+    assert body["refused"] is False
+    assert body["route"] == "table_rag"
+    assert "No complete player steals facts are available" in body["answer"]
+    assert "Available season summary" not in body["answer"]
+    assert "Cached table summary" not in body["answer"]
+    assert "Evidence used:" not in body["answer"]
+    assert "cached" not in body["answer"].lower()
+    assert body["warnings"]

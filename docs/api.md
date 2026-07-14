@@ -1,191 +1,75 @@
-# API Reference
+# API reference
 
-The KnicksIQ API is a FastAPI service. All endpoints are JSON.
-The full OpenAPI schema is available at `/docs` when the service is running.
+KnicksIQ is a JSON FastAPI service. Development exposes Swagger at `/docs`;
+production disables Swagger, ReDoc, and the OpenAPI document.
 
-## Conventions
+All public basketball responses are scoped to the validated active release.
+`game_id` and `player_id` path values are internal integer IDs. List endpoints
+use `limit` and `offset` where supported.
 
-- All list endpoints accept `limit` (default 50, max 200) and `offset`
-  (default 0) for pagination.
-- All timestamps are ISO 8601 with timezone.
-- All internal `id` columns are integers; `team_id` columns are
-  abbreviations like `NYK`.
-- `game_id` in the URL path is the **internal** integer id, not the
-  NBA's `nba_game_id` string.
+## Production endpoints
 
-## Endpoints
+### Operational
 
-### Health
+- `GET /health/live`: process liveness.
+- `GET /health/ready`: Postgres and active-release readiness plus optional
+  dependency status. Returns 503 without a validated active release.
+- `GET /`: service metadata.
+- `GET /archive/status`: active season, data version, game/report counts, and
+  supported capabilities.
 
-#### `GET /health`
+`GET /health` and `GET /health/rag` are development diagnostics and are not in
+the production router.
 
-Liveness probe. Returns `{"status": "ok"}`.
+### Archive reads
 
-#### `GET /`
+- `GET /teams`, `GET /teams/{team_id}`
+- `GET /players`, `GET /players/{player_id}`
+- `GET /games`, `GET /games/{game_id}`
+- `GET /games/{game_id}/box-score`
+- `GET /games/{game_id}/play-by-play`
+- `GET /games/{game_id}/runs`
+- `GET /reports`, `GET /reports/{report_id}`
 
-API metadata. Returns the service name, description, and a link to docs.
+Only reviewed reports from the active release are public. The legacy
+`GET /games/{game_id}/bad-stretches` route remains development-only.
 
-### Teams
+### Analyst query
 
-#### `GET /teams`
-
-List all teams (30 NBA teams in the seed data).
-
-#### `GET /teams/{team_id}`
-
-Get one team by abbreviation. `404` if not found.
-
-### Players
-
-#### `GET /players`
-
-Query players.
-
-Query params:
-
-- `team_id` — filter by team abbreviation (e.g. `NYK`)
-- `search` — case-insensitive name search
-- `limit`, `offset` — pagination
-
-#### `GET /players/{player_id}`
-
-Get one player by internal id. `404` if not found.
-
-### Games
-
-#### `GET /games`
-
-List games.
-
-Query params:
-
-- `season` — e.g. `2024-25`
-- `team_id` — filter to games involving this team
-- `status` — `scheduled` / `live` / `final` / `postponed`
-- `limit`, `offset` — pagination
-
-Returns a list of `GameSummary` objects (no team detail to keep
-the response small).
-
-#### `GET /games/{game_id}`
-
-Game detail. Returns `GameDetail` with home/away team objects
-embedded.
-
-#### `GET /games/{game_id}/play-by-play`
-
-Get the play-by-play events for a game, ordered by `(period, sequence)`.
-
-Query params:
-
-- `period` — optional, 1-4
-
-#### `GET /games/{game_id}/runs`
-
-Get precomputed scoring runs (run detection is a separate
-background job — see `/games/{id}/detect-runs`).
-
-Query params:
-
-- `team_id` — filter to runs by this team
-
-Returns an empty list if the detection job hasn't been run yet.
-
-#### `GET /games/{game_id}/bad-stretches`
-
-Get precomputed bad stretches. Same caching behavior as `/runs`.
-
-#### `POST /games/{game_id}/detect-runs`
-
-Enqueue a job to (re)run scoring-run and bad-stretch detection
-on the game's events. Returns `202 Accepted` with a `job_id`.
-
-### Jobs
-
-#### `POST /jobs/ingest/games`
-
-Body: `{ "season": "2024-25" | null }`
-
-Enqueue an ingestion job. `202 Accepted` with a `job_id`.
-
-#### `POST /jobs/ingest/game/{game_id}`
-
-Enqueue ingestion for a single game's play-by-play.
-
-#### `GET /jobs/{job_id}`
-
-Get job status. Response includes `status`, `payload`, `result`,
-`error_message`, and timing fields.
-
-### Reports
-
-#### `POST /reports/postgame`
-
-Generate a postgame autopsy report.
-
-Body:
+`POST /analysis/query` accepts:
 
 ```json
 {
-  "game_id": 1,
-  "include_tool_trace": true,
-  "include_sources": true
+  "question": "What was the Knicks' record against Boston?",
+  "season": "2025-26",
+  "context": []
 }
 ```
 
-`201 Created` with the report, including:
+The response contains the deterministic answer, claim-level citations,
+warnings, refusal/degraded flags, active data version, and request ID. Internal
+classifier, evidence, route, and tool-trace fields are excluded in production.
+Unsupported tactical, live, injury, trade, future, and out-of-archive questions
+are explicitly refused. Rate-limit failures return 429.
 
-- `title`, `summary`, `turning_point`, `best_stretch`, `worst_stretch`
-- `player_notes` (list of strings)
-- `suggested_adjustments` (list of strings)
-- `sources` (list of source records)
-- `tool_calls` (list of tool-call records with latency in ms)
+## Development-only mutation routes
 
-`404` if the game is not found.
+The development router also includes job enqueue/status, run detection,
+postgame report generation, and report deletion. These routes exist for offline
+workflows and tests and are intentionally absent in production. Production data
+is loaded only through the validated release CLI.
 
-#### `GET /reports`
+## Errors and tracing
 
-List saved reports (newest first).
+Errors use a stable envelope:
 
-Query params:
-
-- `game_id` — filter to one game's reports
-- `limit`
-
-#### `GET /reports/{report_id}`
-
-Get one report with full tool trace. `404` if not found.
-
-#### `DELETE /reports/{report_id}`
-
-Delete a report. `204 No Content` on success.
-
-## Error responses
-
-| Status | When                                       | Body                          |
-| ------ | ------------------------------------------ | ----------------------------- |
-| 404    | Resource not found                         | `{"detail": "..."}`           |
-| 422    | Validation error (Pydantic)                | `{"detail": [{...}]}`         |
-| 500    | Unhandled server error                     | `{"detail": "Internal..."}`   |
-
-## Example: end-to-end report generation
-
-```bash
-# 1. Pick a game
-curl -s 'http://localhost:8000/games?team_id=NYK' | jq
-
-# 2. Trigger run detection
-curl -s -X POST 'http://localhost:8000/games/1/detect-runs' | jq
-# => { "job_id": "...", "status": "queued" }
-
-# 3. (Wait for worker; in a real env, poll /jobs/{id})
-curl -s 'http://localhost:8000/jobs/{job_id}' | jq
-
-# 4. Read the runs
-curl -s 'http://localhost:8000/games/1/runs' | jq
-
-# 5. Generate the report
-curl -s -X POST 'http://localhost:8000/reports/postgame' \
-     -H 'Content-Type: application/json' \
-     -d '{"game_id": 1, "include_tool_trace": true, "include_sources": true}' | jq
+```json
+{
+  "error": {"code": "http_404", "message": "..."},
+  "request_id": "..."
+}
 ```
+
+Validation errors use `invalid_request`; unexpected errors use
+`internal_error`. Every response returns `X-Request-ID`, accepts an optional
+caller-provided `X-Request-ID`, and includes security and timing headers.

@@ -27,9 +27,7 @@ async def test_gold_query_smoke_set_preserves_routing_and_grounding(client):
         body = response.json()
         tools = {call["tool"] for call in body["tool_calls"]}
         if body["route"] != case["route"]:
-            failures.append(
-                f"{case['question']}: route {body['route']} != {case['route']}"
-            )
+            failures.append(f"{case['question']}: route {body['route']} != {case['route']}")
         for text in case.get("answer_contains", []):
             if text not in body["answer"] and text not in " ".join(body["warnings"]):
                 failures.append(f"{case['question']}: missing answer text {text!r}")

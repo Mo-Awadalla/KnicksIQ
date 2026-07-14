@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /games/
+Disallow: /analyst/
+Disallow: /reports/
+Sitemap: https://www.knicksiq.win/sitemap.xml

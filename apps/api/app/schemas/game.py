@@ -92,3 +92,46 @@ class BadStretchRead(BaseModel):
     knicks_turnovers: int
     knicks_missed_shots: int
     opponent_fast_breaks: int
+
+
+class PeriodScoreRead(BaseModel):
+    period: int
+    team_id: str
+    points: int
+
+
+class TeamGameStatRead(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    team_id: str
+    points: int
+    field_goals_made: int
+    field_goals_attempted: int
+    three_pointers_made: int
+    three_pointers_attempted: int
+    free_throws_made: int
+    free_throws_attempted: int
+    offensive_rebounds: int
+    defensive_rebounds: int
+    rebounds: int
+    assists: int
+    steals: int
+    blocks: int
+    turnovers: int
+    personal_fouls: int
+    plus_minus: int
+
+
+class PlayerGameStatRead(TeamGameStatRead):
+    player_id: int
+    player_name: str
+    starter: bool
+    position: str | None
+    minutes: float
+
+
+class BoxScoreRead(BaseModel):
+    game_id: int
+    periods: list[PeriodScoreRead]
+    teams: list[TeamGameStatRead]
+    players: list[PlayerGameStatRead]

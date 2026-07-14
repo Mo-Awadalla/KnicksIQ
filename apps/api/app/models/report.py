@@ -8,7 +8,7 @@ end-to-end.
 
 from __future__ import annotations
 
-from sqlalchemy import ForeignKey, String, Text
+from sqlalchemy import Boolean, ForeignKey, Index, String, Text, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.models.base import Base, TimestampMixin
@@ -16,11 +16,18 @@ from app.models.base import Base, TimestampMixin
 
 class Report(Base, TimestampMixin):
     __tablename__ = "reports"
+    __table_args__ = (
+        UniqueConstraint("release_id", "game_id", "report_type"),
+        Index("ix_reports_release_game", "release_id", "game_id"),
+    )
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    game_id: Mapped[int] = mapped_column(
-        ForeignKey("games.id", ondelete="CASCADE"), index=True
+    game_id: Mapped[int] = mapped_column(ForeignKey("games.id", ondelete="CASCADE"), index=True)
+    release_id: Mapped[int | None] = mapped_column(
+        ForeignKey("dataset_releases.id"), nullable=True, index=True
     )
+    reviewed: Mapped[bool] = mapped_column(Boolean, default=False, index=True)
+    content_sha256: Mapped[str | None] = mapped_column(String(64))
     report_type: Mapped[str] = mapped_column(String(64), default="postgame")
     title: Mapped[str] = mapped_column(String(256))
     summary: Mapped[str] = mapped_column(Text, default="")

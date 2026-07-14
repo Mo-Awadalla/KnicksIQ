@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { GamesPage } from '@/features/knicks'
+import { SeasonArchivePage } from '@/features/knicks/archive'
 
 export const Route = createFileRoute('/_authenticated/games/')({
-  component: GamesPage,
+  component: SeasonArchivePage,
 })

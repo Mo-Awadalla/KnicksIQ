@@ -24,9 +24,7 @@ from worker_app.jobs import mark_failed, mark_finished, mark_started
 
 # Path to the API's seed directory. Worker reads from the same JSON
 # the API uses at startup.
-API_SEED_DIR = (
-    Path(__file__).resolve().parents[4] / "apps" / "api" / "app" / "core" / "seed"
-)
+API_SEED_DIR = Path(__file__).resolve().parents[4] / "apps" / "api" / "app" / "core" / "seed"
 
 
 def _worker_name() -> str:
@@ -60,9 +58,7 @@ async def ingest_games(
             for s in seasons:
                 for raw in source.list_games(s, include_playoffs=include_playoffs):
                     nba_game_id = raw["nba_game_id"]
-                    existing = await db.execute(
-                        select(Game).where(Game.nba_game_id == nba_game_id)
-                    )
+                    existing = await db.execute(select(Game).where(Game.nba_game_id == nba_game_id))
                     if existing.scalar_one_or_none():
                         skipped.append(nba_game_id)
                         continue

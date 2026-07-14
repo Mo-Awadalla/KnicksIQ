@@ -30,9 +30,7 @@ async def test_post_ingest_games_returns_202(client):
 
 async def test_post_ingest_games_with_season(client):
     with patch("worker_app.job_queue.enqueue_ingest_games", return_value="xyz") as m:
-        r = await client.post(
-            "/jobs/ingest/games", json={"season": "2024-25"}
-        )
+        r = await client.post("/jobs/ingest/games", json={"season": "2024-25"})
     assert r.status_code == 202
     assert m.call_args.kwargs["season"] == "2024-25"
 

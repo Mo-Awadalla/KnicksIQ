@@ -47,6 +47,8 @@ from typing import Any, TypeVar
 
 import requests
 from nba_api.stats.endpoints import (
+    boxscoresummaryv3,
+    boxscoretraditionalv3,
     commonallplayers,
     commonplayerinfo,
     commonteamroster,
@@ -126,9 +128,7 @@ class NbaApiDataSource:
     def list_seasons(self) -> list[str]:
         return [s.strip() for s in self._settings.seasons.split(",") if s.strip()]
 
-    def list_games(
-        self, season: str, *, include_playoffs: bool = False
-    ) -> list[dict[str, Any]]:
+    def list_games(self, season: str, *, include_playoffs: bool = False) -> list[dict[str, Any]]:
         """Return seed-shaped game dicts for Knicks games in `season`.
 
         Each entry: `nba_game_id`, `season`, `game_date`, `home_team_id`
@@ -197,9 +197,7 @@ class NbaApiDataSource:
             try:
                 game_date = self._parse_nba_game_date(game_date_str)
             except ValueError:
-                log.warning(
-                    "Could not parse game_date %r for %s; skipping", game_date_str, game_id
-                )
+                log.warning("Could not parse game_date %r for %s; skipping", game_date_str, game_id)
                 continue
 
             entry = partials.setdefault(
@@ -226,17 +224,19 @@ class NbaApiDataSource:
         return list(partials.values())
 
     def get_game(self, nba_game_id: str) -> dict[str, Any] | None:
-        """Return a seed-shaped game dict with `events` populated."""
+        """Return play-by-play, traditional box score, and period summary."""
         try:
             pbp_ds = self._call_with_retry(
-                lambda: playbyplayv3.PlayByPlayV3(
-                    game_id=nba_game_id,
-                    end_period="14",
-                    start_period="1",
-                    proxy=self._settings.proxy_url,
-                    headers=self._build_headers(),
-                    timeout=self._settings.timeout_seconds,
-                ).play_by_play
+                lambda: (
+                    playbyplayv3.PlayByPlayV3(
+                        game_id=nba_game_id,
+                        end_period="14",
+                        start_period="1",
+                        proxy=self._settings.proxy_url,
+                        headers=self._build_headers(),
+                        timeout=self._settings.timeout_seconds,
+                    ).play_by_play
+                )
             )
         except Exception as exc:  # noqa: BLE001
             log.warning("playbyplayv3 fetch failed for %s: %s", nba_game_id, exc)
@@ -256,6 +256,45 @@ class NbaApiDataSource:
         return {
             "nba_game_id": nba_game_id,
             "events": events,
+        }
+
+    def get_game_release(self, nba_game_id: str) -> dict[str, Any] | None:
+        """Fetch all immutable release inputs for a game in one offline operation."""
+        game = self.get_game(nba_game_id)
+        if game is None:
+            return None
+        return {**game, **self.get_game_box_score(nba_game_id)}
+
+    def get_game_box_score(self, nba_game_id: str) -> dict[str, Any]:
+        """Fetch box-score and period data without re-downloading play-by-play."""
+        traditional = self._call_with_retry(
+            lambda: boxscoretraditionalv3.BoxScoreTraditionalV3(
+                game_id=nba_game_id,
+                proxy=self._settings.proxy_url,
+                headers=self._build_headers(),
+                timeout=self._settings.timeout_seconds,
+            )
+        )
+        summary = self._call_with_retry(
+            lambda: boxscoresummaryv3.BoxScoreSummaryV3(
+                game_id=nba_game_id,
+                proxy=self._settings.proxy_url,
+                headers=self._build_headers(),
+                timeout=self._settings.timeout_seconds,
+            )
+        )
+        if traditional.player_stats is None or traditional.team_stats is None:
+            raise ValueError(f"Traditional box score missing for {nba_game_id}")
+        if summary.line_score is None:
+            raise ValueError(f"Line score missing for {nba_game_id}")
+        player_stats = traditional.player_stats.get_data_frame().to_dict(orient="records")
+        team_stats = traditional.team_stats.get_data_frame().to_dict(orient="records")
+        line_scores = summary.line_score.get_data_frame().to_dict(orient="records")
+
+        return {
+            "player_stats": player_stats,
+            "team_stats": team_stats,
+            "line_scores": line_scores,
         }
 
     # -- Player ingest helpers (used by seed_players_from_nba_api job) --------

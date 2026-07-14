@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from datetime import date, datetime
 
-from sqlalchemy import Date, DateTime, Enum, ForeignKey, Integer, String
+from sqlalchemy import Date, DateTime, Enum, ForeignKey, Index, Integer, String, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import Base, TimestampMixin
@@ -12,9 +12,16 @@ from app.models.base import Base, TimestampMixin
 
 class Game(Base, TimestampMixin):
     __tablename__ = "games"
+    __table_args__ = (
+        UniqueConstraint("release_id", "nba_game_id", name="uq_games_release_nba_game"),
+        Index("ix_games_release_season_date", "release_id", "season", "game_date"),
+    )
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    nba_game_id: Mapped[str] = mapped_column(String(32), unique=True, index=True)
+    release_id: Mapped[int | None] = mapped_column(
+        ForeignKey("dataset_releases.id"), nullable=True, index=True
+    )
+    nba_game_id: Mapped[str] = mapped_column(String(32), index=True)
     season: Mapped[str] = mapped_column(String(16), index=True)
     game_date: Mapped[date] = mapped_column(Date, index=True)
 

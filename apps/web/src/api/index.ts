@@ -1,8 +1,8 @@
-import { api } from './client'
 import type {
   BadStretch,
   AnalysisResponse,
   AnalysisContextMessage,
+  ArchiveStatus,
   GameDetail,
   GameEvent,
   GameSummary,
@@ -10,6 +10,7 @@ import type {
   Report,
   ScoringRun,
 } from '../types'
+import { api } from './client'
 
 export interface ReportSummary {
   id: number
@@ -36,6 +37,11 @@ export async function fetchGames(opts?: {
   if (opts?.offset) params.offset = opts.offset
   const r = await api.get<GameSummary[]>('/games', { params })
   return r.data
+}
+
+export async function fetchArchiveStatus(): Promise<ArchiveStatus> {
+  const response = await api.get<ArchiveStatus>('/archive/status')
+  return response.data
 }
 
 export async function fetchGame(id: number): Promise<GameDetail> {
@@ -73,23 +79,6 @@ export async function fetchPlayers(opts?: {
   return r.data
 }
 
-export async function triggerDetectRuns(id: number) {
-  const r = await api.post<{ job_id: string }>(`/games/${id}/detect-runs`)
-  return r.data
-}
-
-export async function generatePostgameReport(
-  gameId: number,
-  opts: { includeToolTrace?: boolean; includeSources?: boolean } = {}
-) {
-  const r = await api.post<Report>('/reports/postgame', {
-    game_id: gameId,
-    include_tool_trace: opts.includeToolTrace ?? true,
-    include_sources: opts.includeSources ?? true,
-  })
-  return r.data
-}
-
 export async function fetchReports(): Promise<ReportSummary[]> {
   const r = await api.get<ReportSummary[]>('/reports')
   return r.data
@@ -97,17 +86,6 @@ export async function fetchReports(): Promise<ReportSummary[]> {
 
 export async function fetchReport(id: number): Promise<Report> {
   const r = await api.get<Report>(`/reports/${id}`)
-  return r.data
-}
-
-export async function deleteReport(id: number) {
-  await api.delete(`/reports/${id}`)
-}
-
-export async function triggerIngestGames(season: string | null = '2025-26') {
-  const r = await api.post<{ job_id: string }>('/jobs/ingest/games', {
-    season,
-  })
   return r.data
 }
 

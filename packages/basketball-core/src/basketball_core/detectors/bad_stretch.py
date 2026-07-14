@@ -57,11 +57,7 @@ def _likely_causes(
     counts: dict[str, int], reasons: list[str], config: BadStretchConfig
 ) -> list[str]:
     causes: list[str] = []
-    if (
-        "huge_swing" in reasons
-        or "clutch" in reasons
-        or "entered_pressure_zone" in reasons
-    ):
+    if "huge_swing" in reasons or "clutch" in reasons or "entered_pressure_zone" in reasons:
         causes.append("opponent scoring swing")
     else:
         causes.append("opponent scoring run")

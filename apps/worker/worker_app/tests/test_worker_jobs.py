@@ -64,6 +64,7 @@ async def test_ingest_games_creates_jobs(worker_db):
         assert row.started_at is not None
         assert row.finished_at is not None
         assert row.worker_name is not None
+        assert row.result_json is not None
         assert "inserted_game_ids" in row.result_json
 
 

@@ -12,7 +12,9 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.security import require_admin_api_key
+from app.core.config import get_settings
 from app.core.db import get_db
+from app.models.dataset_release import DatasetRelease
 from app.models.report import Report
 
 router = APIRouter(prefix="/reports", tags=["reports"])
@@ -65,9 +67,7 @@ async def generate_postgame(req: PostgameRequest) -> PostgameResponse:
     try:
         result = await generate_postgame_report(game_id=req.game_id)
     except ValueError as exc:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)
-        ) from exc
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
     if not req.include_tool_trace:
         result["tool_calls"] = []
     if not req.include_sources:
@@ -84,6 +84,12 @@ async def list_reports(
     stmt = select(Report).order_by(Report.created_at.desc()).limit(limit)
     if game_id is not None:
         stmt = stmt.where(Report.game_id == game_id)
+    if get_settings().is_production:
+        stmt = stmt.join(DatasetRelease, Report.release_id == DatasetRelease.id).where(
+            Report.reviewed.is_(True),
+            DatasetRelease.status == "active",
+            DatasetRelease.validation_passed.is_(True),
+        )
     rows = (await db.execute(stmt)).scalars().all()
     return [
         ReportSummary(
@@ -105,6 +111,10 @@ async def get_report(
     row = await db.get(Report, report_id)
     if not row:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Report not found")
+    if get_settings().is_production:
+        release = await db.get(DatasetRelease, row.release_id) if row.release_id else None
+        if not row.reviewed or not release or release.status != "active":
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Report not found")
     return PostgameResponse(
         id=row.id,
         game_id=row.game_id,

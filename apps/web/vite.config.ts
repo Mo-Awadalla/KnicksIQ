@@ -31,7 +31,12 @@ export default defineConfig({
       },
     },
   },
+  optimizeDeps: {
+    exclude: ['fsevents'],
+  },
   test: {
+    api: { host: '127.0.0.1' },
+    exclude: ['e2e/**', 'node_modules/**', 'dist/**'],
     silent: 'passed-only',
     unstubEnvs: true,
     browser: {

@@ -10,14 +10,10 @@ from app.models.base import Base, TimestampMixin
 
 class ScoringRun(Base, TimestampMixin):
     __tablename__ = "scoring_runs"
-    __table_args__ = (
-        Index("ix_scoring_runs_game_period", "game_id", "period"),
-    )
+    __table_args__ = (Index("ix_scoring_runs_game_period", "game_id", "period"),)
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    game_id: Mapped[int] = mapped_column(
-        ForeignKey("games.id", ondelete="CASCADE"), index=True
-    )
+    game_id: Mapped[int] = mapped_column(ForeignKey("games.id", ondelete="CASCADE"), index=True)
     team_id: Mapped[str] = mapped_column(ForeignKey("teams.id"), index=True)
 
     period: Mapped[int] = mapped_column(Integer)

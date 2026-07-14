@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import os
 from collections.abc import AsyncIterator
 
@@ -15,6 +16,41 @@ from app.models import Base  # noqa: E402
 from app.models.bad_stretch import BadStretch  # noqa: E402
 from app.models.report import Report  # noqa: E402
 from app.models.scoring_run import ScoringRun  # noqa: E402
+
+
+def test_openrouter_requests_require_zero_data_retention(monkeypatch):
+    from app.services.report_llm import OpenAICompatibleLLMAdapter
+
+    captured: dict = {}
+
+    class FakeResponse:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *args):
+            return None
+
+        def read(self):
+            return b'{"choices":[{"message":{"content":"{}"}}]}'
+
+    def fake_urlopen(request, **kwargs):
+        captured.update(json.loads(request.data))
+        return FakeResponse()
+
+    monkeypatch.setattr("urllib.request.urlopen", fake_urlopen)
+    adapter = OpenAICompatibleLLMAdapter(
+        base_url="https://openrouter.ai/api/v1",
+        api_key="test-key",
+        model="nvidia/nemotron-3-ultra-550b-a55b:free",
+    )
+
+    assert adapter._generate_sync("system", "user") == "{}"
+    assert captured["model"] == "nvidia/nemotron-3-ultra-550b-a55b:free"
+    assert captured["provider"] == {
+        "zdr": True,
+        "data_collection": "deny",
+        "allow_fallbacks": False,
+    }
 
 
 @pytest.fixture(scope="function")
@@ -48,15 +84,87 @@ async def report_db() -> AsyncIterator:
         await session.flush()
         # Simple events for detector
         events_raw = [
-            {"event_type": "made_shot", "description": "made 2pt", "period": 1, "clock": "10:00", "team_id": "NYK", "home_score": 2, "away_score": 0},  # noqa: E501
-            {"event_type": "made_shot", "description": "made 2pt", "period": 1, "clock": "9:30", "team_id": "NYK", "home_score": 4, "away_score": 0},  # noqa: E501
-            {"event_type": "made_shot", "description": "made 3pt", "period": 1, "clock": "9:00", "team_id": "NYK", "home_score": 7, "away_score": 0},  # noqa: E501
-            {"event_type": "made_shot", "description": "made 2pt", "period": 1, "clock": "8:30", "team_id": "NYK", "home_score": 9, "away_score": 0},  # noqa: E501
-            {"event_type": "made_shot", "description": "made 2pt", "period": 1, "clock": "8:00", "team_id": "BOS", "home_score": 9, "away_score": 2},  # noqa: E501
-            {"event_type": "turnover", "description": "Brunson TO", "period": 2, "clock": "6:00", "team_id": "NYK", "home_score": 50, "away_score": 45},  # noqa: E501
-            {"event_type": "turnover", "description": "Randle TO", "period": 2, "clock": "5:30", "team_id": "NYK", "home_score": 50, "away_score": 45},  # noqa: E501
-            {"event_type": "made_shot", "description": "made 3pt", "period": 2, "clock": "5:00", "team_id": "BOS", "home_score": 50, "away_score": 48},  # noqa: E501
-            {"event_type": "made_shot", "description": "made 2pt", "period": 2, "clock": "4:30", "team_id": "BOS", "home_score": 50, "away_score": 50},  # noqa: E501
+            {
+                "event_type": "made_shot",
+                "description": "made 2pt",
+                "period": 1,
+                "clock": "10:00",
+                "team_id": "NYK",
+                "home_score": 2,
+                "away_score": 0,
+            },  # noqa: E501
+            {
+                "event_type": "made_shot",
+                "description": "made 2pt",
+                "period": 1,
+                "clock": "9:30",
+                "team_id": "NYK",
+                "home_score": 4,
+                "away_score": 0,
+            },  # noqa: E501
+            {
+                "event_type": "made_shot",
+                "description": "made 3pt",
+                "period": 1,
+                "clock": "9:00",
+                "team_id": "NYK",
+                "home_score": 7,
+                "away_score": 0,
+            },  # noqa: E501
+            {
+                "event_type": "made_shot",
+                "description": "made 2pt",
+                "period": 1,
+                "clock": "8:30",
+                "team_id": "NYK",
+                "home_score": 9,
+                "away_score": 0,
+            },  # noqa: E501
+            {
+                "event_type": "made_shot",
+                "description": "made 2pt",
+                "period": 1,
+                "clock": "8:00",
+                "team_id": "BOS",
+                "home_score": 9,
+                "away_score": 2,
+            },  # noqa: E501
+            {
+                "event_type": "turnover",
+                "description": "Brunson TO",
+                "period": 2,
+                "clock": "6:00",
+                "team_id": "NYK",
+                "home_score": 50,
+                "away_score": 45,
+            },  # noqa: E501
+            {
+                "event_type": "turnover",
+                "description": "Randle TO",
+                "period": 2,
+                "clock": "5:30",
+                "team_id": "NYK",
+                "home_score": 50,
+                "away_score": 45,
+            },  # noqa: E501
+            {
+                "event_type": "made_shot",
+                "description": "made 3pt",
+                "period": 2,
+                "clock": "5:00",
+                "team_id": "BOS",
+                "home_score": 50,
+                "away_score": 48,
+            },  # noqa: E501
+            {
+                "event_type": "made_shot",
+                "description": "made 2pt",
+                "period": 2,
+                "clock": "4:30",
+                "team_id": "BOS",
+                "home_score": 50,
+                "away_score": 50,
+            },  # noqa: E501
         ]
         events = parse_events(game.id, events_raw)
         for ev in events:
@@ -113,6 +221,7 @@ async def test_generate_postgame_creates_report_row(report_db):
     # Verify persisted
     async with AsyncSessionLocal() as session:
         from sqlalchemy import select as sel
+
         rows = (await session.execute(sel(Report))).scalars().all()
         assert len(rows) == 1
         assert rows[0].sources_json  # non-empty

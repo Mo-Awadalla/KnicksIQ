@@ -7,7 +7,14 @@ from typing import Annotated
 
 from basketball_core.detectors.bad_stretch import BadStretchConfig, detect_bad_stretches
 from basketball_core.detectors.impactful_run import ImpactfulRunConfig, detect_impactful_runs
-from basketball_core.models.event import GameEvent as CoreGameEvent
+from basketball_core.models.event import (
+    EventType,
+    ShotResult,
+    ShotType,
+)
+from basketball_core.models.event import (
+    GameEvent as CoreGameEvent,
+)
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -17,16 +24,22 @@ from app.api.jobs import JobAcceptedResponse
 from app.api.security import require_admin_api_key
 from app.core.db import get_db
 from app.models.bad_stretch import BadStretch
+from app.models.box_score import PeriodScore, PlayerGameStat, TeamGameStat
 from app.models.game import Game
 from app.models.game_event import GameEvent
 from app.models.scoring_run import ScoringRun
 from app.schemas.game import (
     BadStretchRead,
+    BoxScoreRead,
     GameDetail,
     GameEventRead,
     GameSummary,
+    PeriodScoreRead,
+    PlayerGameStatRead,
     ScoringRunRead,
+    TeamGameStatRead,
 )
+from app.services.releases import restrict_to_active_release
 
 router = APIRouter(prefix="/games", tags=["games"])
 
@@ -66,19 +79,21 @@ def _orm_event_to_core(event: GameEvent) -> CoreGameEvent:
         clock=event.clock,
         team_id=event.team_id,
         player_id=event.player_id,
-        event_type=event.event_type,
+        event_type=EventType(event.event_type),
         description=event.description,
         home_score=event.home_score,
         away_score=event.away_score,
         score_margin=event.score_margin,
-        shot_type=event.shot_type,
-        shot_result=event.shot_result,
+        shot_type=ShotType(event.shot_type) if event.shot_type else None,
+        shot_result=ShotResult(event.shot_result) if event.shot_result else None,
         shot_distance_ft=event.shot_distance_ft,
     )
 
 
 async def _load_game_or_404(db: AsyncSession, game_id: int) -> Game:
-    game = await db.get(Game, game_id)
+    game = (
+        await db.execute(restrict_to_active_release(select(Game).where(Game.id == game_id)))
+    ).scalar_one_or_none()
     if not game:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Game not found")
     return game
@@ -104,6 +119,7 @@ async def list_games(
     offset: int = Query(0, ge=0),
 ) -> list[GameSummary]:
     stmt = select(Game)
+    stmt = restrict_to_active_release(stmt)
     if season:
         stmt = stmt.where(Game.season == season)
     if team_id:
@@ -130,6 +146,7 @@ async def get_game(
         .options(selectinload(Game.home_team), selectinload(Game.away_team))
         .where(Game.id == game_id)
     )
+    stmt = restrict_to_active_release(stmt)
     result = await db.execute(stmt)
     game = result.scalar_one_or_none()
     if not game:
@@ -139,6 +156,68 @@ async def get_game(
         **summary.model_dump(),
         home_team=game.home_team,
         away_team=game.away_team,
+    )
+
+
+@router.get("/{game_id}/box-score", response_model=BoxScoreRead)
+async def get_box_score(
+    game_id: int,
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> BoxScoreRead:
+    await _load_game_or_404(db, game_id)
+    periods = (
+        (
+            await db.execute(
+                select(PeriodScore)
+                .where(PeriodScore.game_id == game_id)
+                .order_by(PeriodScore.period, PeriodScore.team_id)
+            )
+        )
+        .scalars()
+        .all()
+    )
+    teams = (
+        (
+            await db.execute(
+                select(TeamGameStat)
+                .where(TeamGameStat.game_id == game_id)
+                .order_by(TeamGameStat.team_id)
+            )
+        )
+        .scalars()
+        .all()
+    )
+    players = (
+        (
+            await db.execute(
+                select(PlayerGameStat)
+                .options(selectinload(PlayerGameStat.player))
+                .where(PlayerGameStat.game_id == game_id)
+                .order_by(
+                    PlayerGameStat.team_id,
+                    PlayerGameStat.starter.desc(),
+                    PlayerGameStat.points.desc(),
+                )
+            )
+        )
+        .scalars()
+        .all()
+    )
+    return BoxScoreRead(
+        game_id=game_id,
+        periods=[PeriodScoreRead.model_validate(row, from_attributes=True) for row in periods],
+        teams=[TeamGameStatRead.model_validate(row) for row in teams],
+        players=[
+            PlayerGameStatRead(
+                **TeamGameStatRead.model_validate(row).model_dump(),
+                player_id=row.player_id,
+                player_name=row.player.full_name,
+                starter=row.starter,
+                position=row.position,
+                minutes=row.minutes,
+            )
+            for row in players
+        ],
     )
 
 
@@ -184,12 +263,16 @@ async def get_runs(
         return [ScoringRunRead.model_validate(r) for r in runs]
 
     event_rows = (
-        await db.execute(
-            select(GameEvent)
-            .where(GameEvent.game_id == game_id)
-            .order_by(GameEvent.period, GameEvent.sequence)
+        (
+            await db.execute(
+                select(GameEvent)
+                .where(GameEvent.game_id == game_id)
+                .order_by(GameEvent.period, GameEvent.sequence)
+            )
         )
-    ).scalars().all()
+        .scalars()
+        .all()
+    )
     computed = detect_impactful_runs(
         [_orm_event_to_core(e) for e in event_rows],
         ImpactfulRunConfig(
@@ -235,12 +318,16 @@ async def get_bad_stretches(
     out: list[BadStretchRead] = []
     if not stretches:
         event_rows = (
-            await db.execute(
-                select(GameEvent)
-                .where(GameEvent.game_id == game_id)
-                .order_by(GameEvent.period, GameEvent.sequence)
+            (
+                await db.execute(
+                    select(GameEvent)
+                    .where(GameEvent.game_id == game_id)
+                    .order_by(GameEvent.period, GameEvent.sequence)
+                )
             )
-        ).scalars().all()
+            .scalars()
+            .all()
+        )
         computed = detect_bad_stretches(
             [_orm_event_to_core(e) for e in event_rows],
             BadStretchConfig(

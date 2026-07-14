@@ -32,7 +32,7 @@ def polars_summary(rows: list[dict[str, Any]]) -> dict[str, Any] | None:
     if not rows:
         return None
     try:
-        import polars as pl
+        import polars as pl  # type: ignore[import-not-found]
     except ImportError:
         return None
     frame = pl.DataFrame(rows)

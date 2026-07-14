@@ -72,8 +72,15 @@ class OpenAICompatibleLLMAdapter(LLMAdapter):
                 {"role": "system", "content": system},
                 {"role": "user", "content": user},
             ],
-            "temperature": 0.2,
+            "temperature": 0,
+            "max_tokens": 220,
         }
+        if "openrouter.ai" in self.base_url:
+            payload_body["provider"] = {
+                "zdr": True,
+                "data_collection": "deny",
+                "allow_fallbacks": False,
+            }
         if self.response_format_json:
             payload_body["response_format"] = {"type": "json_object"}
         payload = json.dumps(payload_body).encode("utf-8")
@@ -189,9 +196,7 @@ def _build_report(ctx: dict[str, Any]) -> dict[str, Any]:
             "Earlier ball movement to break offensive droughts — consider running a higher tempo."
         )
     if any("turnovers" in " ".join(s.get("likely_causes", [])).lower() for s in stretches):
-        adjustments.append(
-            "Reduce live-ball turnovers through simplified half-court sets."
-        )
+        adjustments.append("Reduce live-ball turnovers through simplified half-court sets.")
     if not adjustments:
         adjustments.append("Maintain the current rotation; no glaring adjustments needed.")
 

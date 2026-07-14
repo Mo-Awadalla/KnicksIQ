@@ -12,9 +12,7 @@ class BadStretch(Base, TimestampMixin):
     __tablename__ = "bad_stretches"
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    game_id: Mapped[int] = mapped_column(
-        ForeignKey("games.id", ondelete="CASCADE"), index=True
-    )
+    game_id: Mapped[int] = mapped_column(ForeignKey("games.id", ondelete="CASCADE"), index=True)
 
     period: Mapped[int] = mapped_column(Integer)
     start_clock: Mapped[str] = mapped_column(String(8))

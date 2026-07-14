@@ -43,15 +43,11 @@ def _build_server() -> FastMCP:
         return await TOOLS["knicks.get_box_score"](game_id)
 
     @server.tool()
-    async def get_play_by_play(
-        game_id: int, period: int | None = None
-    ) -> list[dict[str, Any]]:
+    async def get_play_by_play(game_id: int, period: int | None = None) -> list[dict[str, Any]]:
         return await TOOLS["knicks.get_play_by_play"](game_id, period)
 
     @server.tool()
-    async def find_scoring_runs(
-        game_id: int, team_id: str | None = None
-    ) -> list[dict[str, Any]]:
+    async def find_scoring_runs(game_id: int, team_id: str | None = None) -> list[dict[str, Any]]:
         return await TOOLS["knicks.find_scoring_runs"](game_id, team_id)
 
     @server.tool()

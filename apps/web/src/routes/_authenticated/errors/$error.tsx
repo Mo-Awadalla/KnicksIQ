@@ -1,5 +1,5 @@
-import { createFileRoute } from '@tanstack/react-router'
 import type React from 'react'
+import { createFileRoute } from '@tanstack/react-router'
 import { Header } from '@/components/layout/header'
 import { Search } from '@/components/search'
 import { ForbiddenError } from '@/features/errors/forbidden'

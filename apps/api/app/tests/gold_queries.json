@@ -2,7 +2,7 @@
   {
     "question": "what was the knicks longest losing streak",
     "route": "table_rag",
-    "answer_contains": ["longest cached 2025-26 losing streak", "Evidence used:"],
+    "answer_contains": ["longest 2025-26 losing streak in the available data", "Key evidence"],
     "forbidden_tools": ["search_season_docs", "search_possession_chunks", "llm_generate"]
   },
   {
@@ -10,7 +10,7 @@
     "route": "table_rag",
     "answer_contains": [
       "by win margin",
-      "Evidence used:"
+      "Key evidence"
     ],
     "forbidden_tools": [
       "search_season_docs",
@@ -23,7 +23,7 @@
     "route": "table_rag",
     "answer_contains": [
       "NYK is",
-      "Evidence used:"
+      "Key evidence"
     ],
     "forbidden_tools": [
       "search_season_docs",
@@ -36,7 +36,7 @@
     "route": "table_rag",
     "answer_contains": [
       "averaged",
-      "Evidence used:"
+      "Key evidence"
     ],
     "forbidden_tools": [
       "search_season_docs",
@@ -48,7 +48,7 @@
     "route": "table_rag",
     "answer_contains": [
       "total points",
-      "Evidence used:"
+      "Key evidence"
     ],
     "forbidden_tools": [
       "search_season_docs",
@@ -60,7 +60,7 @@
     "route": "retrieval_rag",
     "answer_contains": [
       "Knicks",
-      "Evidence used:"
+      "Receipts"
     ],
     "required_tools": [
       "search_possession_chunks"
@@ -71,7 +71,7 @@
     "route": "retrieval_rag",
     "answer_contains": [
       "Knicks",
-      "Evidence used:"
+      "Receipts"
     ],
     "required_tools": [
       "search_possession_chunks"
@@ -82,7 +82,7 @@
     "route": "retrieval_rag",
     "answer_contains": [
       "Knicks",
-      "Evidence used:"
+      "Receipts"
     ],
     "required_tools": [
       "search_possession_chunks"
@@ -93,7 +93,7 @@
     "route": "retrieval_rag",
     "answer_contains": [
       "Brunson",
-      "Evidence used:"
+      "Receipts"
     ],
     "required_tools": [
       "search_possession_chunks"
@@ -104,7 +104,7 @@
     "route": "retrieval_rag",
     "answer_contains": [
       "Knicks",
-      "Evidence used:"
+      "Receipts"
     ],
     "required_tools": [
       "search_possession_chunks"

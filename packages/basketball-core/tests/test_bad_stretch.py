@@ -67,10 +67,7 @@ def test_detects_turnover_cluster():
     ]
     stretches = detect_bad_stretches(events)
     assert len(stretches) >= 1
-    assert any(
-        any("turnovers" in c for c in stretch.likely_causes)
-        for stretch in stretches
-    )
+    assert any(any("turnovers" in c for c in stretch.likely_causes) for stretch in stretches)
 
 
 def test_stretch_summary_includes_numbers():

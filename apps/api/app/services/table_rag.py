@@ -1,4 +1,4 @@
-"""Read-only table RAG over cached game rows."""
+"""Read-only table RAG over available game rows."""
 
 from __future__ import annotations
 
@@ -8,9 +8,12 @@ from dataclasses import dataclass
 from types import MappingProxyType
 from typing import Any
 
+from app.models.box_score import PeriodScore, PlayerGameStat, TeamGameStat
 from app.models.game import Game
+from app.models.player import Player
+from app.services.releases import restrict_to_active_release
 from app.services.table_rag_templates import polars_summary, template_intent
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 TABLE_RAG_TIMEOUT_SECONDS = 1.5
@@ -115,9 +118,7 @@ def validate_table_expression(expression: str) -> ast.Expression:
 
     for node in ast.walk(parsed):
         if not isinstance(node, _ALLOWED_AST_NODES):
-            raise TableRagSandboxError(
-                f"Unsupported table expression node: {type(node).__name__}."
-            )
+            raise TableRagSandboxError(f"Unsupported table expression node: {type(node).__name__}.")
         if isinstance(node, ast.Name):
             if node.id in _BLOCKED_NAMES:
                 raise TableRagSandboxError(f"Blocked table expression name: {node.id}.")
@@ -127,9 +128,7 @@ def validate_table_expression(expression: str) -> ast.Expression:
             if not isinstance(node.func, ast.Name):
                 raise TableRagSandboxError("Only direct aggregate helper calls are allowed.")
             if node.func.id not in _ALLOWED_TABLE_FUNCTIONS:
-                raise TableRagSandboxError(
-                    f"Unsupported aggregate helper: {node.func.id}."
-                )
+                raise TableRagSandboxError(f"Unsupported aggregate helper: {node.func.id}.")
             if node.args or node.keywords:
                 raise TableRagSandboxError("Aggregate helpers do not accept arguments.")
     return parsed
@@ -187,18 +186,17 @@ def evaluate_table_expression(expression: str, games: list[Game]) -> int | float
 
 
 async def _season_games(db: AsyncSession, season: str) -> list[Game]:
-    rows = (
-        await db.execute(
-            select(Game)
-            .where(Game.season == season)
-            .where((Game.home_team_id == "NYK") | (Game.away_team_id == "NYK"))
-            .order_by(Game.game_date)
-        )
-    ).scalars().all()
+    stmt = restrict_to_active_release(
+        select(Game)
+        .where(Game.season == season)
+        .where((Game.home_team_id == "NYK") | (Game.away_team_id == "NYK"))
+        .order_by(Game.game_date)
+    )
+    rows = (await db.execute(stmt)).scalars().all()
     return _dedupe_games(list(rows))
 
 
-def _dedupe_games(games: list[Game]) -> list[Game]:
+def _dedupe_games(games: list[Any]) -> list[Any]:
     """Collapse duplicate cached rows for the same final game.
 
     Some local/dev caches can contain a seed summary row and a later source row
@@ -230,15 +228,16 @@ def _answer_from_games(question: str, season: str, games: list[Game]) -> TableRa
     warnings: list[str] = []
     if not games:
         return TableRagResult(
-            answer=f"No cached Knicks games were found for {season}.",
+            answer=f"No available Knicks games were found for {season}.",
             evidence=[],
-            warnings=[f"No cached games for season {season}."],
+            warnings=[f"No available Knicks games for season {season}."],
         )
 
     summary_only = sum(1 for game in games if game.data_status == "summary_only")
     if summary_only:
         warnings.append(
-            f"{summary_only} cached game(s) are summary-only; aggregate score math is available, "
+            f"{summary_only} available game(s) are summary-only; aggregate score "
+            "math is available, "
             "but event-level detail is incomplete."
         )
 
@@ -246,9 +245,7 @@ def _answer_from_games(question: str, season: str, games: list[Game]) -> TableRa
     summary = polars_summary([_table_row(game) for game in games])
     wins = int(summary["wins"]) if summary else int(evaluate_table_expression("wins()", games))
     losses = (
-        int(summary["losses"])
-        if summary
-        else int(evaluate_table_expression("losses()", games))
+        int(summary["losses"]) if summary else int(evaluate_table_expression("losses()", games))
     )
     points_for = (
         int(summary["points_for"])
@@ -261,6 +258,70 @@ def _answer_from_games(question: str, season: str, games: list[Game]) -> TableRa
         else int(evaluate_table_expression("sum_points_against()", games))
     )
     intent = template_intent(question)
+    unsupported_player_leader = any(
+        term in q for term in ("who led", "who had", "player led", "player had", "leader")
+    ) and any(
+        term in q
+        for term in (
+            "assist",
+            "block",
+            "rebound",
+            "scoring",
+            "steal",
+            "point",
+            "turnover",
+        )
+    )
+    if not unsupported_player_leader and "most" in q:
+        unsupported_player_leader = any(
+            term in q
+            for term in (
+                "assists",
+                "blocks",
+                "rebounds",
+                "steals",
+                "turnovers",
+            )
+        )
+    unsupported_comeback = "comeback" in q
+
+    if unsupported_player_leader:
+        warnings.append(
+            "The available season data does not include complete player box-score leader tables."
+        )
+        return TableRagResult(
+            answer=(
+                "I do not have enough available Knicks game data to name a player leader "
+                "for that category."
+            ),
+            evidence=evidence,
+            warnings=warnings,
+        )
+
+    if unsupported_comeback:
+        warnings.append(
+            "The available season data does not include complete lead-by-lead comeback rankings."
+        )
+        return TableRagResult(
+            answer=("I do not have enough available Knicks game data to rank the best comeback."),
+            evidence=evidence,
+            warnings=warnings,
+        )
+
+    if intent is None:
+        warnings.append(
+            "This table view supports season record, scoring averages/totals, streaks, "
+            "and largest win/loss margins. It does not have enough structured data for "
+            "that specific ranking or breakdown."
+        )
+        return TableRagResult(
+            answer=(
+                "I do not have enough available Knicks game data to answer that "
+                "specific table question."
+            ),
+            evidence=evidence,
+            warnings=warnings,
+        )
 
     if intent == "longest_losing_streak":
         longest_streak: list[Game] = []
@@ -274,7 +335,7 @@ def _answer_from_games(question: str, season: str, games: list[Game]) -> TableRa
             else:
                 current_streak = []
         if not longest_streak:
-            answer = f"In cached {season} Knicks games, NYK has no losing streak."
+            answer = f"In the available {season} Knicks games, NYK has no losing streak."
             evidence = []
         else:
             streak_evidence = [_game_evidence(game) for game in longest_streak]
@@ -294,7 +355,7 @@ def _answer_from_games(question: str, season: str, games: list[Game]) -> TableRa
                 else f"{start['date']} through {end['date']}"
             )
             answer = (
-                f"The Knicks' longest cached {season} losing streak is "
+                f"The Knicks' longest {season} losing streak in the available data is "
                 f"{len(longest_streak)} game(s), from {date_text}."
             )
     elif intent == "largest_loss_margin":
@@ -304,7 +365,7 @@ def _answer_from_games(question: str, season: str, games: list[Game]) -> TableRa
             if _knicks_scores(game)[0] < _knicks_scores(game)[1]
         ]
         if not knicks_losses:
-            answer = f"In cached {season} Knicks games, NYK has no losses to rank."
+            answer = f"In the available {season} Knicks games, NYK has no losses to rank."
         else:
             game, knicks_score, opponent_score, opponent = max(
                 knicks_losses,
@@ -312,15 +373,11 @@ def _answer_from_games(question: str, season: str, games: list[Game]) -> TableRa
             )
             evidence = [
                 _game_evidence(game),
-                *[
-                    _game_evidence(other_game)
-                    for other_game in games
-                    if other_game.id != game.id
-                ],
+                *[_game_evidence(other_game) for other_game in games if other_game.id != game.id],
             ]
             margin = opponent_score - knicks_score
             answer = (
-                f"The biggest cached {season} Knicks loss was {game.game_date} "
+                f"The biggest {season} Knicks loss in the available data was {game.game_date} "
                 f"against {opponent}: NYK lost {knicks_score}-{opponent_score} "
                 f"by {margin}."
             )
@@ -331,7 +388,7 @@ def _answer_from_games(question: str, season: str, games: list[Game]) -> TableRa
             if _knicks_scores(game)[0] > _knicks_scores(game)[1]
         ]
         if not knicks_wins:
-            answer = f"In cached {season} Knicks games, NYK has no wins to rank."
+            answer = f"In the available {season} Knicks games, NYK has no wins to rank."
         else:
             game, knicks_score, opponent_score, opponent = max(
                 knicks_wins,
@@ -345,18 +402,18 @@ def _answer_from_games(question: str, season: str, games: list[Game]) -> TableRa
             if "why did you pick" in q or "why those" in q or "why that" in q:
                 answer = (
                     f"I picked {game.game_date} against {opponent} because this route "
-                    f"ranks cached Knicks wins by final margin. NYK won "
+                    f"ranks available Knicks wins by final margin. NYK won "
                     f"{knicks_score}-{opponent_score}, a {margin}-point margin, which is "
-                    f"the largest Knicks win margin in the cached {season} games."
+                    f"the largest Knicks win margin in the available {season} games."
                 )
             else:
                 answer = (
-                    f"The Knicks' best cached {season} game by win margin was "
+                    f"The Knicks' best {season} game by win margin in the available data was "
                     f"{game.game_date} against {opponent}: NYK won "
                     f"{knicks_score}-{opponent_score} by {margin}."
                 )
     elif intent == "record":
-        answer = f"In cached {season} Knicks games, NYK is {wins}-{losses}."
+        answer = f"In the available {season} Knicks games, NYK is {wins}-{losses}."
     elif intent == "points_average":
         avg_for = (
             float(summary["avg_for"])
@@ -369,18 +426,18 @@ def _answer_from_games(question: str, season: str, games: list[Game]) -> TableRa
             else float(evaluate_table_expression("average_points_against()", games))
         )
         answer = (
-            f"Across {len(games)} cached {season} Knicks game(s), NYK averaged "
+            f"Across {len(games)} available {season} Knicks game(s), NYK averaged "
             f"{avg_for:.1f} points "
             f"and allowed {avg_against:.1f}."
         )
     elif intent == "points_total":
         answer = (
-            f"Across {len(games)} cached {season} Knicks game(s), NYK scored "
+            f"Across {len(games)} available {season} Knicks game(s), NYK scored "
             f"{points_for} total points and allowed {points_against}."
         )
     else:
         answer = (
-            f"Cached table summary for {season}: {len(games)} game(s), "
+            f"Available season summary for {season}: {len(games)} game(s), "
             f"{wins}-{losses}, {points_for} points for, {points_against} against."
         )
     return TableRagResult(answer=answer, evidence=evidence, warnings=warnings)
@@ -399,7 +456,186 @@ async def answer_table_question(
     input, open files, make network calls, or mutate source basketball tables.
     """
     games = await asyncio.wait_for(_season_games(db, season), timeout=timeout_seconds)
+    box_score_answer = await asyncio.wait_for(
+        _answer_box_score_question(db, question, season, games),
+        timeout=timeout_seconds,
+    )
+    if box_score_answer is not None:
+        return box_score_answer
     return await asyncio.wait_for(
         asyncio.to_thread(_answer_from_games, question, season, games),
         timeout=timeout_seconds,
     )
+
+
+_STAT_TERMS = {
+    "points": "points",
+    "scoring": "points",
+    "rebounds": "rebounds",
+    "rebound": "rebounds",
+    "assists": "assists",
+    "assist": "assists",
+    "turnovers": "turnovers",
+    "turnover": "turnovers",
+    "steals": "steals",
+    "steal": "steals",
+    "blocks": "blocks",
+    "block": "blocks",
+}
+
+
+def _requested_stat(question: str) -> str | None:
+    q = question.lower()
+    return next((column for term, column in _STAT_TERMS.items() if term in q), None)
+
+
+async def _answer_box_score_question(
+    db: AsyncSession,
+    question: str,
+    season: str,
+    games: list[Game],
+) -> TableRagResult | None:
+    """Authoritative SQL for facts that require complete box-score tables."""
+    q = question.lower()
+    stat = _requested_stat(question)
+    game_ids = [game.id for game in games]
+    if not game_ids:
+        return None
+    evidence = [_game_evidence(game) for game in games]
+
+    if (
+        stat
+        and "beat the knicks" not in q
+        and any(term in q for term in ("who led", "leader", "most", "which player"))
+    ):
+        stat_column = getattr(PlayerGameStat, stat)
+        row = (
+            await db.execute(
+                select(Player.full_name, func.sum(stat_column).label("total"))
+                .join(PlayerGameStat, PlayerGameStat.player_id == Player.id)
+                .where(
+                    PlayerGameStat.game_id.in_(game_ids),
+                    PlayerGameStat.team_id == "NYK",
+                )
+                .group_by(Player.id, Player.full_name)
+                .order_by(func.sum(stat_column).desc(), Player.full_name)
+                .limit(1)
+            )
+        ).one_or_none()
+        if row is None:
+            return TableRagResult(
+                answer=f"No complete player {stat} facts are available for {season}.",
+                evidence=evidence,
+                warnings=["Complete player box scores are unavailable."],
+            )
+        return TableRagResult(
+            answer=(
+                f"{row.full_name} led the Knicks with {int(row.total)} total {stat} in {season}."
+            ),
+            evidence=evidence,
+            warnings=[],
+        )
+
+    if "quarter" in q or any(f"q{period}" in q for period in range(1, 5)):
+        requested_period = next(
+            (
+                period
+                for period in range(1, 5)
+                if f"q{period}" in q
+                or f"{period}st quarter" in q
+                or f"{period}nd quarter" in q
+                or f"{period}rd quarter" in q
+                or f"{period}th quarter" in q
+            ),
+            None,
+        )
+        stmt = select(PeriodScore.period, func.sum(PeriodScore.points)).where(
+            PeriodScore.game_id.in_(game_ids), PeriodScore.team_id == "NYK"
+        )
+        if requested_period:
+            stmt = stmt.where(PeriodScore.period == requested_period)
+        rows = (
+            await db.execute(stmt.group_by(PeriodScore.period).order_by(PeriodScore.period))
+        ).all()
+        if not rows:
+            return None
+        totals = ", ".join(f"Q{period}: {int(points)}" for period, points in rows)
+        return TableRagResult(
+            answer=f"Knicks quarter scoring across available {season} games — {totals}.",
+            evidence=evidence,
+            warnings=[],
+        )
+
+    if "bench" in q:
+        total = (
+            await db.execute(
+                select(func.sum(PlayerGameStat.points)).where(
+                    PlayerGameStat.game_id.in_(game_ids),
+                    PlayerGameStat.team_id == "NYK",
+                    PlayerGameStat.starter.is_(False),
+                )
+            )
+        ).scalar_one()
+        if total is None:
+            return None
+        return TableRagResult(
+            answer=(
+                f"The Knicks bench scored {int(total)} total points across "
+                f"available {season} games."
+            ),
+            evidence=evidence,
+            warnings=[],
+        )
+
+    if any(term in q for term in ("shooting split", "from three", "three-point", "free throw")):
+        made_attempted = (
+            await db.execute(
+                select(
+                    func.sum(TeamGameStat.field_goals_made),
+                    func.sum(TeamGameStat.field_goals_attempted),
+                    func.sum(TeamGameStat.three_pointers_made),
+                    func.sum(TeamGameStat.three_pointers_attempted),
+                    func.sum(TeamGameStat.free_throws_made),
+                    func.sum(TeamGameStat.free_throws_attempted),
+                ).where(TeamGameStat.game_id.in_(game_ids), TeamGameStat.team_id == "NYK")
+            )
+        ).one()
+        if made_attempted[1] is None:
+            return None
+
+        def pct(made: int, attempted: int) -> float:
+            return 100 * made / attempted if attempted else 0.0
+
+        fg_m, fg_a, three_m, three_a, ft_m, ft_a = map(int, made_attempted)
+        return TableRagResult(
+            answer=(
+                f"Across available {season} games, NYK shot {fg_m}/{fg_a} "
+                f"({pct(fg_m, fg_a):.1f}%) overall, {three_m}/{three_a} "
+                f"({pct(three_m, three_a):.1f}%) from three, and {ft_m}/{ft_a} "
+                f"({pct(ft_m, ft_a):.1f}%) at the line."
+            ),
+            evidence=evidence,
+            warnings=[],
+        )
+
+    if stat and any(term in q for term in ("average", "total", "how many", "per game")):
+        stat_column = getattr(TeamGameStat, stat)
+        total = (
+            await db.execute(
+                select(func.sum(stat_column)).where(
+                    TeamGameStat.game_id.in_(game_ids), TeamGameStat.team_id == "NYK"
+                )
+            )
+        ).scalar_one()
+        if total is None:
+            return None
+        total_value = int(total)
+        if "average" in q or "per game" in q:
+            answer = (
+                f"The Knicks averaged {total_value / len(games):.1f} {stat} per game "
+                f"in available {season} games."
+            )
+        else:
+            answer = f"The Knicks recorded {total_value} total {stat} in available {season} games."
+        return TableRagResult(answer=answer, evidence=evidence, warnings=[])
+    return None

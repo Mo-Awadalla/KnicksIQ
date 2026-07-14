@@ -1,0 +1,4 @@
+Contact: mailto:security@knicksiq.win
+Preferred-Languages: en
+Canonical: https://www.knicksiq.win/.well-known/security.txt
+Expires: 2027-07-14T00:00:00Z

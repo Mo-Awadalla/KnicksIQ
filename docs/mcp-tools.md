@@ -137,8 +137,8 @@ Add to your `claude_desktop_config.json`:
 
 - All tools are read-only by default.
 - Tools never execute shell commands or write to the filesystem.
-- The MCP server does not accept user-controlled job enqueue or
-  data mutation requests. (The API does, via authenticated admin
-  endpoints — a Phase 8+ follow-up.)
+- The MCP server does not accept user-controlled job enqueue or data mutation
+  requests. Production API routing excludes mutation and job endpoints too;
+  those routes are available only to offline/development workflows.
 - Tool calls are rate-limited by the underlying transport; the
   MCP server does not impose additional limits today.
