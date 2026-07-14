@@ -9,10 +9,9 @@ are declined rather than invented.
 
 - `apps/web`: anonymous React archive and analyst experience.
 - `apps/api`: read-only production FastAPI service.
-- Render managed Postgres: authoritative factual data and active release metadata.
-- Qdrant Cloud: optional semantic retrieval with Cloud Inference; Postgres/lexical fallback is
-  always available.
-- Upstash Redis: optional rate limits, HMAC answer cache, circuit state, and budget counters.
+- Neon Free Postgres: authoritative factual data and active release metadata.
+- Qdrant and Redis are disabled for the free beta; Postgres/lexical retrieval and in-process
+  safety controls remain available.
 - OpenRouter: optional phrasing of already-computed facts.
 - Sentry: scrubbed exception, trace, alert, and uptime monitoring.
 

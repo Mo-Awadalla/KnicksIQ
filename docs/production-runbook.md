@@ -12,7 +12,7 @@ Production serves one immutable 2025–26 archive release. The API never migrate
 ## Database restore and rebuild
 
 1. Preserve the failed database and record the active release version and bundle SHA-256.
-2. Restore the latest managed Postgres backup, run `alembic upgrade head`, then run `knicksiq-load-release <bundle> --sha256 <sha> --activate`.
+2. Create or reset the Neon database, run `alembic upgrade head`, then run `knicksiq-load-release <bundle> --sha256 <sha> --activate`.
 3. The loader is transactional and idempotent. It must complete without NBA.com access.
 4. Rebuild Qdrant from Postgres with `knicksiq-build-rag-index --season 2025-26 --data-version <version> --reset-qdrant`. Confirm Recall@5 before the alias switch.
 5. Target core archive RPO is zero from the immutable bundle and RTO is under four hours.
@@ -34,4 +34,9 @@ Rotate one secret at a time: database, Redis, Qdrant, OpenRouter, Sentry, Formsp
 
 ## Backups and monitoring
 
-Use daily managed Postgres backups. Snapshot Qdrant manually after every validated release, while retaining the bundle as the source of truth. Sentry must have API/frontend exception alerts, latency tracing, and an external `/health/live` uptime check. Session replay stays disabled and `before_send` removes requests, headers, cookies, users, prompts, and breadcrumbs.
+Neon Free does not replace an application-owned backup. Retain the validated,
+hash-bound release bundle as the source of truth and rehearse rebuilding a new
+Neon project from it. Sentry must have API/frontend exception alerts, latency
+tracing, and an external `/health/live` uptime check. Session replay stays
+disabled and `before_send` removes requests, headers, cookies, users, prompts,
+and breadcrumbs.

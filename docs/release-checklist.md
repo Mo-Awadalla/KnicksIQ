@@ -6,7 +6,7 @@ AI is allowlisted to `nvidia/nemotron-3-ultra-550b-a55b:free` with zero-data-
 retention routing required on every OpenRouter request.
 
 - [ ] Purchase the domain; configure `www`, `api`, and apex redirect; verify DNS and TLS.
-- [ ] Complete legal review of NBA/source, Qdrant, OpenRouter, Upstash, Sentry, Render, and Formspree terms.
+- [ ] Complete legal review of NBA/source, Neon, OpenRouter, Sentry, Render, and Formspree terms.
 - [ ] Build the release offline; verify its SHA-256; achieve 100% game/report/reconciliation coverage.
 - [ ] Manually review and mark exactly one immutable postgame report per game.
 - [ ] Pass 100% canonical numeric/entity facts, 95% paraphrase/citation evaluation, and 95% semantic Recall@5.

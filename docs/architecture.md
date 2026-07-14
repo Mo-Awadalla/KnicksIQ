@@ -3,11 +3,10 @@
 ## Production system
 
 KnicksIQ serves one immutable Knicks 2025–26 archive. Render hosts a static
-React application, a read-only FastAPI service, and managed Postgres. Qdrant
-Cloud adds semantic retrieval; Upstash Redis adds distributed rate limits,
-answer caching, circuit state, and AI budget counters; OpenRouter may phrase
-facts that KnicksIQ has already computed. Sentry receives scrubbed errors and
-low-sample traces.
+React application and a free, read-only FastAPI service. Neon Free Postgres is
+the authoritative store. Qdrant and Redis are disabled for the free beta;
+OpenRouter may phrase facts that KnicksIQ has already computed. Sentry receives
+scrubbed errors and low-sample traces.
 
 Postgres and one validated active `dataset_releases` row are required.
 Qdrant, Redis, and OpenRouter are optional at request time. Their failure must
@@ -61,13 +60,12 @@ Teams and players supply entity metadata. Documents/chunks support local and
 legacy retrieval paths. Jobs exist for offline/development workflows only.
 See `docs/data-model.md` for field-level detail.
 
-## RAG indexing
+## Optional RAG indexing
 
-The offline indexer creates immutable physical collections for game summaries,
-box-score facts, reviewed reports, and possession chunks. It verifies every
-point count before moving the stable aliases together. Production uses Qdrant
-Cloud Inference, so the API image contains no PyTorch or local model weights.
-Postgres/lexical retrieval remains authoritative during a Qdrant outage.
+The offline indexer can create immutable Qdrant collections for game summaries,
+box-score facts, reviewed reports, and possession chunks. Qdrant is not
+provisioned for the free beta. Postgres/lexical retrieval is authoritative, and
+the API image contains no PyTorch or local model weights.
 
 ## Safety and operations
 

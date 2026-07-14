@@ -33,7 +33,7 @@ count before promoting all stable aliases in one operation. Possession summaries
 are deterministic and provider-free; this command never calls OpenRouter.
 
 `RAG_EMBEDDING_DEVICE=cpu` is a useful override on Apple Silicon when MPS is
-slower for this compact model. Production uses Qdrant Cloud Inference instead of
+slower for this compact model. An optional paid deployment can use Qdrant Cloud Inference instead of
 shipping local model weights.
 
 After indexing, restart the local API if it was already running:
