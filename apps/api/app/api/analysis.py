@@ -38,6 +38,7 @@ from app.services.runtime_store import (
     set_cached_answer,
 )
 from app.services.table_rag import answer_table_question
+from app.services.team_aliases import team_ids_in_text
 
 router = APIRouter(prefix="/analysis", tags=["analysis"])
 
@@ -494,13 +495,11 @@ async def _matching_games(db: AsyncSession, question: str, season: str) -> list[
         .where(Game.season == season)
         .where((Game.home_team_id == "NYK") | (Game.away_team_id == "NYK"))
         .order_by(Game.game_date.desc())
-        .limit(10)
     )
     stmt = restrict_to_active_release(stmt)
     games = (await db.execute(stmt)).scalars().all()
-    q = question.upper()
-    team_hits = [g for g in games if g.home_team_id in q or g.away_team_id in q]
-    return list(team_hits)
+    opponent_ids = team_ids_in_text(question) - {"NYK"}
+    return [game for game in games if opponent_ids & {game.home_team_id, game.away_team_id}]
 
 
 async def _active_data_version(db: AsyncSession) -> str:
@@ -723,6 +722,9 @@ async def query_analysis(
 
     t0 = time.perf_counter()
     docs = await search_season_docs(db, effective_question, season=req.season, limit=3)
+    matching_game_ids = {game.id for game in games}
+    if matching_game_ids:
+        docs = [doc for doc in docs if int(doc.metadata.get("game_id") or -1) in matching_game_ids]
     tool_calls.append(
         {
             "tool": "search_season_docs",

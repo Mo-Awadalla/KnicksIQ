@@ -21,6 +21,7 @@ from app.services.possession_chunks import PossessionChunk, build_possession_chu
 from app.services.qdrant_client import is_qdrant_healthy, search_possessions
 from app.services.releases import restrict_to_active_release
 from app.services.reranker import rerank_candidates
+from app.services.team_aliases import team_ids_in_text
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
@@ -69,13 +70,7 @@ def build_metadata_filters(query: str) -> RetrievalFilters:
     """Extract strict metadata filters that can be applied before retrieval."""
     q = query.lower()
     dates = set(re.findall(r"\b20\d{2}-\d{2}-\d{2}\b", q))
-    team_ids = {
-        token.upper()
-        for token in re.findall(r"\b[A-Z]{2,3}\b", query)
-        if token.upper() in {"NYK", "TOR", "BOS", "MIA", "MIL", "PHI", "CHI", "BKN"}
-    }
-    if "knicks" in q:
-        team_ids.add("NYK")
+    team_ids = team_ids_in_text(query)
     periods = {int(match) for match in re.findall(r"\b(?:q|quarter\s*)([1-4])\b", q)}
     player_terms = {
         token
@@ -114,9 +109,10 @@ def _passes_filters(chunk: PossessionChunk, filters: RetrievalFilters) -> bool:
     if filters.dates and metadata.get("date") not in filters.dates:
         return False
     if filters.team_ids:
+        required_team_ids = filters.team_ids - {"NYK"} or filters.team_ids
         chunk_teams = set(metadata.get("team_ids") or [])
         game_teams = {metadata.get("home_team_id"), metadata.get("away_team_id")}
-        if not filters.team_ids & (chunk_teams | game_teams):
+        if not required_team_ids & (chunk_teams | game_teams):
             return False
     if filters.periods:
         chunk_periods = set(range(int(metadata["start_period"]), int(metadata["end_period"]) + 1))
@@ -356,6 +352,11 @@ async def search_possession_chunks(
         .order_by(Game.game_date.desc())
     )
     game_stmt = restrict_to_active_release(game_stmt)
+    opponent_ids = filters.team_ids - {"NYK"}
+    if opponent_ids:
+        game_stmt = game_stmt.where(
+            (Game.home_team_id.in_(opponent_ids)) | (Game.away_team_id.in_(opponent_ids))
+        )
     if filters.dates:
         parsed_dates = [date.fromisoformat(value) for value in filters.dates]
         game_stmt = game_stmt.where(Game.game_date.in_(parsed_dates))

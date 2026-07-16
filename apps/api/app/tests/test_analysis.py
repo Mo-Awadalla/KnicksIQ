@@ -2,7 +2,10 @@
 
 from __future__ import annotations
 
+from datetime import date, timedelta
+
 from app.api import analysis
+from app.models.game import Game
 from starlette.requests import Request
 
 
@@ -24,6 +27,34 @@ def test_client_identity_ignores_untrusted_forwarded_header():
     assert analysis._client_id(request(b"198.51.100.1")) == analysis._client_id(
         request(b"198.51.100.2")
     )
+
+
+async def test_matching_games_finds_named_opponent_beyond_latest_ten(db_session):
+    for offset in range(11):
+        db_session.add(
+            Game(
+                nba_game_id=f"later-boston-{offset}",
+                season="2025-26",
+                game_date=date(2026, 4, 13) + timedelta(days=offset),
+                home_team_id="NYK",
+                away_team_id="BOS",
+                home_score=110,
+                away_score=100,
+                status="final",
+                season_type="playoffs",
+                data_status="summary_only",
+            )
+        )
+    await db_session.commit()
+
+    games = await analysis._matching_games(
+        db_session,
+        "What happened in the Knicks game against Toronto?",
+        "2025-26",
+    )
+
+    assert games
+    assert all("TOR" in {game.home_team_id, game.away_team_id} for game in games)
 
 
 async def test_public_analysis_query_returns_citations(client):

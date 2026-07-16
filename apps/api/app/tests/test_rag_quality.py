@@ -128,6 +128,29 @@ def test_metadata_filter_extraction():
     assert filters.periods == {4}
 
 
+def test_metadata_filter_resolves_full_opponent_name():
+    filters = build_metadata_filters("What happened in the Knicks game against Toronto?")
+    assert filters.team_ids == {"NYK", "TOR"}
+
+
+async def test_full_opponent_name_excludes_unrelated_possession_receipts(db_session):
+    chunks, _filters = await search_possession_chunks(
+        db_session,
+        "What happened in the Knicks game against Toronto?",
+        limit=10,
+    )
+
+    assert chunks
+    assert all(
+        "TOR"
+        in {
+            chunk.metadata["home_team_id"],
+            chunk.metadata["away_team_id"],
+        }
+        for chunk in chunks
+    )
+
+
 def test_table_rag_sandbox_rejects_imports_and_blocked_modules():
     with pytest.raises(TableRagSandboxError):
         validate_table_expression("__import__('os').system('echo bad')")
