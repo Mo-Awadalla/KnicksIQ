@@ -194,9 +194,7 @@ async def test_alias_resolution_collapses_repeats_and_keeps_distinct_comparisons
         "Jalen Brunson",
         "Karl-Anthony Towns",
     }
-    repeated, ambiguous = _resolve_players(
-        "Compare KAT with Karl-Anthony Towns", archive_players
-    )
+    repeated, ambiguous = _resolve_players("Compare KAT with Karl-Anthony Towns", archive_players)
     assert ambiguous == []
     assert [player.full_name for player in repeated] == ["Karl-Anthony Towns"]
 
