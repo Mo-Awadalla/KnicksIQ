@@ -21,7 +21,9 @@ from app.core.db import get_db
 from app.models.dataset_release import DatasetRelease
 from app.models.game import Game
 from app.models.game_event import GameEvent
+from app.schemas.analytics import AnalyticsPayload
 from app.services.llm_planner import maybe_plan_query
+from app.services.player_analytics import answer_player_question
 from app.services.possession_chunks import chunk_evidence
 from app.services.qdrant_client import is_qdrant_healthy
 from app.services.query_classifier import QueryClassifierResult, classify_query
@@ -81,6 +83,7 @@ class AnalysisQueryResponse(BaseModel):
     degraded: bool = False
     data_version: str = "unreleased"
     request_id: str = ""
+    analytics: AnalyticsPayload | None = None
 
 
 def _client_id(request: Request) -> str:
@@ -243,6 +246,36 @@ def _is_supported_question(question: str) -> bool:
     return (
         any(term in q for term in team_terms) and any(term in q for term in basketball_terms)
     ) or any(term in q for term in broad_archive_terms)
+
+
+def _requires_explicit_refusal(question: str) -> bool:
+    q = question.lower()
+    return bool(
+        re.search(r"\b(?:202[7-9]|20[3-9]\d)(?:-\d{2}-\d{2})?\b", q)
+        or re.search(r"\b2026-(?:0[7-9]|1[0-2])-\d{2}\b", q)
+        or re.search(r"\bwill\b", q)
+        or any(
+        term in q
+        for term in (
+            "today",
+            "tonight",
+            "tomorrow",
+            "next game",
+            "upcoming",
+            "live",
+            "injury",
+            "current injury",
+            "injury status",
+            "injured",
+            "trade",
+            "will he",
+            "will they",
+            "will the knicks",
+            "future",
+            "next season",
+        )
+        )
+    )
 
 
 def _looks_like_follow_up(question: str) -> bool:
@@ -467,7 +500,7 @@ async def _matching_games(db: AsyncSession, question: str, season: str) -> list[
     games = (await db.execute(stmt)).scalars().all()
     q = question.upper()
     team_hits = [g for g in games if g.home_team_id in q or g.away_team_id in q]
-    return list(team_hits or games[:5])
+    return list(team_hits)
 
 
 async def _active_data_version(db: AsyncSession) -> str:
@@ -509,6 +542,52 @@ async def query_analysis(
             status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
             detail="Question is too long",
         )
+    if _requires_explicit_refusal(question):
+        return AnalysisQueryResponse(
+            **response_metadata,
+            refused=True,
+            route=None,
+            classifier={},
+            evidence=[],
+            warnings=[
+                "Question asks outside the available Knicks season data or live/current coverage."
+            ],
+            answer=(
+                "Short answer\n"
+                "I can only answer grounded questions about available Knicks 2025-26 "
+                "regular-season or playoff games. I do not have live, current, future, "
+                "injury, or trade coverage."
+            ),
+            citations=[],
+            tool_calls=[],
+        )
+    analytics_t0 = time.perf_counter()
+    player_answer = await answer_player_question(
+        db,
+        question=question,
+        season=req.season,
+        context=[item.model_dump() for item in req.context],
+    )
+    if player_answer is not None:
+        analytics_payload = AnalyticsPayload.model_validate(player_answer.analytics)
+        response = AnalysisQueryResponse(
+            **response_metadata,
+            answer=player_answer.answer,
+            route="table_rag",
+            classifier={"kind": "player_intelligence", "is_aggregative": True},
+            evidence=[],
+            warnings=player_answer.warnings,
+            citations=[AnalysisCitation.model_validate(item) for item in player_answer.citations],
+            tool_calls=[
+                {
+                    "tool": "player_analytics",
+                    "latency_ms": int((time.perf_counter() - analytics_t0) * 1000),
+                    "result_count": len(analytics_payload.results),
+                }
+            ],
+            analytics=analytics_payload,
+        )
+        return response
     current_supported = _is_supported_question(question)
     contextual_follow_up_supported = _looks_like_follow_up(question) and _is_supported_question(
         context_question

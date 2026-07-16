@@ -1,7 +1,12 @@
 import { type KeyboardEvent, useMemo, useState } from 'react'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { askAnalyst, fetchArchiveStatus, fetchGames } from '@/api'
-import type { AnalysisCitation, AnalysisResponse, GameSummary } from '@/types'
+import type {
+  AnalysisCitation,
+  AnalysisContextMessage,
+  AnalysisResponse,
+  GameSummary,
+} from '@/types'
 import {
   CalendarDays,
   FileText,
@@ -20,6 +25,8 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import { Textarea } from '@/components/ui/textarea'
+import { AnalyticsCards } from './analytics-cards'
+import { retainLastFour } from './conversation'
 
 const KNICKS_SEASON = '2025-26'
 const SUGGESTED_QUESTIONS = [
@@ -120,9 +127,11 @@ function ReceiptCard({
 function AnswerPanel({
   answer,
   games,
+  onClarification,
 }: {
   answer: AnalysisResponse
   games: GameSummary[]
+  onClarification: (value: string) => void
 }) {
   return (
     <section className='space-y-4'>
@@ -146,8 +155,26 @@ function AnswerPanel({
           <p className='text-base leading-7 whitespace-pre-wrap text-[#172a3d]'>
             {answer.answer}
           </p>
+          {answer.analytics?.clarification ? (
+            <div className='mt-4 flex flex-wrap gap-2'>
+              {answer.analytics.clarification.choices.map((choice) => (
+                <Button
+                  key={choice.id}
+                  type='button'
+                  variant='outline'
+                  onClick={() => onClarification(choice.value)}
+                >
+                  {choice.label}
+                </Button>
+              ))}
+            </div>
+          ) : null}
         </CardContent>
       </Card>
+
+      {answer.analytics && answer.analytics.results.length > 0 ? (
+        <AnalyticsCards analytics={answer.analytics} games={games} />
+      ) : null}
 
       <div>
         <h2 className='mb-3 flex items-center gap-2 text-lg font-semibold text-[#0d2238]'>
@@ -178,7 +205,14 @@ function AnswerPanel({
 
 export function SeasonArchivePage() {
   const [question, setQuestion] = useState('')
-  const [lastAnswer, setLastAnswer] = useState<AnalysisResponse | null>(null)
+  const [messages, setMessages] = useState<
+    Array<
+      AnalysisContextMessage & {
+        id: string
+        response?: AnalysisResponse
+      }
+    >
+  >([])
   const games = useQuery({
     queryKey: ['games', 'season-archive'],
     queryFn: () =>
@@ -190,16 +224,40 @@ export function SeasonArchivePage() {
   })
   const summary = useMemo(() => seasonSummary(games.data ?? []), [games.data])
   const analyst = useMutation({
-    mutationFn: (nextQuestion: string) =>
-      askAnalyst(nextQuestion, KNICKS_SEASON),
-    onSuccess: setLastAnswer,
+    mutationFn: ({
+      nextQuestion,
+      context,
+    }: {
+      nextQuestion: string
+      context: AnalysisContextMessage[]
+    }) => askAnalyst(nextQuestion, KNICKS_SEASON, context),
+    onSuccess: (response) => {
+      setMessages((current) =>
+        retainLastFour(current, {
+          id: `assistant-${response.request_id || Date.now()}`,
+          role: 'assistant' as const,
+          content: response.answer,
+          response,
+        })
+      )
+    },
   })
 
   const submit = (value = question) => {
     const nextQuestion = value.trim()
     if (!nextQuestion || analyst.isPending) return
-    setQuestion(nextQuestion)
-    analyst.mutate(nextQuestion)
+    const context = messages
+      .slice(-4)
+      .map(({ role, content }) => ({ role, content }))
+    setMessages((current) =>
+      retainLastFour(current, {
+        id: `user-${Date.now()}`,
+        role: 'user' as const,
+        content: nextQuestion,
+      })
+    )
+    setQuestion('')
+    analyst.mutate({ nextQuestion, context })
   }
 
   const handleKeyDown = (event: KeyboardEvent<HTMLTextAreaElement>) => {
@@ -333,8 +391,26 @@ export function SeasonArchivePage() {
               </CardContent>
             </Card>
           ) : null}
-          {lastAnswer ? (
-            <AnswerPanel answer={lastAnswer} games={games.data ?? []} />
+          {messages.length > 0 ? (
+            <div className='space-y-5' aria-live='polite'>
+              {messages.map((message) =>
+                message.role === 'user' ? (
+                  <div
+                    key={message.id}
+                    className='ml-auto max-w-2xl rounded-lg bg-[#006BB6] px-4 py-3 text-white'
+                  >
+                    {message.content}
+                  </div>
+                ) : message.response ? (
+                  <AnswerPanel
+                    key={message.id}
+                    answer={message.response}
+                    games={games.data ?? []}
+                    onClarification={submit}
+                  />
+                ) : null
+              )}
+            </div>
           ) : (
             <Card className='border-[#BEC0C2]/70 bg-white'>
               <CardHeader>

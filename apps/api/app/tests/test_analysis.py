@@ -55,6 +55,18 @@ async def test_public_analysis_refuses_live_questions(client):
     assert body["warnings"]
 
 
+async def test_public_analysis_refuses_future_player_analytics_before_historical_fallback(client):
+    r = await client.post(
+        "/analysis/query",
+        json={"question": "Will Jalen Brunson average 30 points tomorrow?"},
+    )
+    assert r.status_code == 200
+    body = r.json()
+    assert body["refused"] is True
+    assert body["analytics"] is None
+    assert body["citations"] == []
+
+
 async def test_public_analysis_refuses_off_topic_knicks_questions(client):
     r = await client.post(
         "/analysis/query",

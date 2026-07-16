@@ -126,6 +126,99 @@ export interface AnalysisContextMessage {
   content: string
 }
 
+export type AnalyticsResultType =
+  | 'game_log'
+  | 'aggregate'
+  | 'period_comparison'
+  | 'player_comparison'
+  | 'split'
+  | 'leaderboard'
+  | 'streak'
+  | 'trend'
+  | 'outlier'
+  | 'outcome_association'
+  | 'notable_facts'
+
+export interface AnalyticsTimeframe {
+  kind: string
+  label: string
+  last_n?: number | null
+  unit?: string
+  start_date?: string | null
+  end_date?: string | null
+}
+
+export interface AnalyticsResult {
+  id: string
+  type: AnalyticsResultType
+  title: string
+  raw_values: Record<string, number | null>
+  display_values: Record<string, string>
+  sample_size: number
+  timeframe: AnalyticsTimeframe
+  warnings: string[]
+  source_game_ids: number[]
+  aggregation_mode?: 'average' | 'total' | 'both'
+  per_appearance_values?: Record<string, number | null>
+  per_appearance_display_values?: Record<string, string>
+  totals?: Record<string, number | null>
+  total_display_values?: Record<string, string>
+  availability?: boolean
+  appearances?: number
+  requested_team_games?: number
+  candidate_count?: number
+  entries?: Record<string, unknown>[]
+  groups?: Array<{
+    key: string
+    label: string
+    sample_size: number
+    raw_values: Record<string, number | null>
+    display_values: Record<string, string>
+    source_game_ids: number[]
+  }>
+  series?: Array<{
+    game_id: number
+    date: string
+    value: number
+    rolling_mean: number
+  }>
+  facts?: Array<{
+    fingerprint: string
+    statement: string
+    sample_size: number
+    score: number
+    source_game_ids: number[]
+  }>
+  [key: string]: unknown
+}
+
+export interface AnalyticsPayload {
+  status: 'complete' | 'clarification_required' | 'limited'
+  resolved_question: string
+  plan: {
+    players: Array<Record<string, unknown>>
+    timeframe: AnalyticsTimeframe
+    filters: Record<string, string | number | boolean>
+    stats: string[]
+    operations: string[]
+    output_type: string
+    aggregation_mode: 'average' | 'total' | 'both'
+    retrieval_required: boolean
+  } | null
+  clarification: {
+    prompt: string
+    choices: Array<{ id: string; label: string; value: string }>
+  } | null
+  results: AnalyticsResult[]
+  coverage: {
+    expected_game_count: number
+    covered_game_count: number
+    missing_game_ids: number[]
+    completeness: number
+    data_through: string | null
+  } | null
+}
+
 export interface AnalysisResponse {
   answer: string
   route?: string | null
@@ -138,6 +231,7 @@ export interface AnalysisResponse {
   degraded: boolean
   data_version: string
   request_id: string
+  analytics?: AnalyticsPayload | null
 }
 
 export interface ArchiveStatus {

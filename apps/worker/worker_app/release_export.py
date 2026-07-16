@@ -20,6 +20,7 @@ from app.models.player import Player
 from app.models.scoring_run import ScoringRun
 from app.models.team import Team
 from app.services.release_bundle import canonical_json
+from basketball_core.analytics import build_fact_catalog
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -523,6 +524,7 @@ async def export_release_candidate(
             "period_scores": period_scores,
             "team_game_stats": team_stats,
             "player_game_stats": player_stats,
+            "generated_stat_facts": build_fact_catalog(game_rows, player_stats, player_rows),
             "reports": reports,
         },
         "review_manifest": {

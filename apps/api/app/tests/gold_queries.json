@@ -112,11 +112,11 @@
   },
   {
     "question": "Show Knicks possessions on 2099-01-01.",
-    "route": "retrieval_rag",
+    "route": null,
     "answer_contains": [
-      "No possession-level evidence matched"
+      "future"
     ],
-    "required_tools": [
+    "forbidden_tools": [
       "search_possession_chunks"
     ]
   },

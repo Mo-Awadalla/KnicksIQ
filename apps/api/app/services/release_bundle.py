@@ -14,9 +14,11 @@ from app.models.box_score import PeriodScore, PlayerGameStat, TeamGameStat
 from app.models.dataset_release import DatasetRelease
 from app.models.game import Game
 from app.models.game_event import GameEvent
+from app.models.generated_stat_fact import GeneratedStatFact
 from app.models.player import Player
 from app.models.report import Report
 from app.models.team import Team
+from basketball_core.analytics import FactCandidate, build_fact_catalog, fact_fingerprint
 from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -42,7 +44,16 @@ def build_bundle(payload: dict[str, Any], output: Path) -> str:
     """Write byte-for-byte reproducible gzip JSON and return its SHA-256."""
     data = dict(payload)
     manifest = dict(data.get("manifest") or {})
-    content = data.get("data") or {}
+    content = dict(data.get("data") or {})
+    content.setdefault(
+        "generated_stat_facts",
+        build_fact_catalog(
+            list(content.get("games") or []),
+            list(content.get("player_game_stats") or []),
+            list(content.get("players") or []),
+        ),
+    )
+    data["data"] = content
     manifest["schedule_sha256"] = _schedule_sha256(content.get("games") or [])
     manifest["content_sha256"] = hashlib.sha256(canonical_json(content)).hexdigest()
     data["manifest"] = manifest
@@ -101,6 +112,7 @@ def validate_bundle(
     team_stats = list(content.get("team_game_stats") or [])
     player_stats = list(content.get("player_game_stats") or [])
     periods = list(content.get("period_scores") or [])
+    generated_facts = list(content.get("generated_stat_facts") or [])
     errors: list[str] = []
 
     required_manifest = {
@@ -125,6 +137,60 @@ def validate_bundle(
         errors.append("game IDs do not match the LeagueGameFinder schedule manifest")
     if manifest.get("schedule_sha256") != _schedule_sha256(games):
         errors.append("game dates, opponents, scores, or season types do not match the manifest")
+
+    known_players = {int(row.get("nba_player_id") or 0) for row in content.get("players") or []}
+    fact_fingerprints: set[str] = set()
+    for fact in generated_facts:
+        fingerprint = str(fact.get("fingerprint") or "")
+        if len(fingerprint) != 64 or fingerprint in fact_fingerprints:
+            errors.append("generated facts require unique stable fingerprints")
+        fact_fingerprints.add(fingerprint)
+        expected_fingerprint = fact_fingerprint(
+            FactCandidate(
+                fact_type=str(fact.get("fact_type") or ""),
+                player_ids=tuple(int(value) for value in fact.get("player_ids") or []),
+                stat_keys=tuple(str(value) for value in fact.get("stat_keys") or []),
+                timeframe=dict(fact.get("timeframe") or {}),
+                statement=str(fact.get("statement") or ""),
+                result=dict(fact.get("result") or {}),
+                source_game_ids=tuple(fact.get("source_game_ids") or []),
+                sample_size=int(fact.get("sample_size") or 0),
+                components={},
+            ),
+            str(fact.get("detector_version") or ""),
+        )
+        if fingerprint != expected_fingerprint:
+            errors.append(f"{fingerprint}: generated fact fingerprint does not reconcile")
+        if not set(int(value) for value in fact.get("player_ids") or []).issubset(known_players):
+            errors.append(f"{fingerprint}: generated fact references an unknown player")
+        if not set(str(value) for value in fact.get("source_game_ids") or []).issubset(
+            set(game_ids)
+        ):
+            errors.append(f"{fingerprint}: generated fact references an unknown game")
+        components = fact.get("score_components") or {}
+        component_names = {
+            "magnitude",
+            "rarity",
+            "sample_quality",
+            "recency",
+            "coverage",
+            "basketball_relevance",
+            "novelty",
+            "interpretability",
+        }
+        if not component_names.issubset(components):
+            errors.append(f"{fingerprint}: generated fact score components are incomplete")
+        recomputed = sum(float(components.get(name) or 0) for name in component_names) - float(
+            components.get("penalty") or 0
+        )
+        if abs(max(0.0, recomputed) - float(fact.get("total_score") or 0)) > 0.00001:
+            errors.append(f"{fingerprint}: generated fact total score does not reconcile")
+        if not fact.get("detector_version") or not fact.get("statement"):
+            errors.append(f"{fingerprint}: generated fact metadata is incomplete")
+        if str(fact.get("data_through") or "") > max(
+            (str(game.get("game_date")) for game in games), default=""
+        ):
+            errors.append(f"{fingerprint}: generated fact data-through exceeds release coverage")
 
     all_reports_by_game: dict[str, list[dict[str, Any]]] = {}
     reports_by_game: dict[str, list[dict[str, Any]]] = {}
@@ -343,6 +409,18 @@ async def load_release_bundle(
         report_content = canonical_json(row)
         row["content_sha256"] = hashlib.sha256(report_content).hexdigest()
         db.add(Report(**row))
+    for raw in content.get("generated_stat_facts", []):
+        row = dict(raw)
+        row["release_id"] = release.id
+        row["player_ids_json"] = json.dumps(row.pop("player_ids"), sort_keys=True)
+        row["stat_keys_json"] = json.dumps(row.pop("stat_keys"), sort_keys=True)
+        row["timeframe_json"] = json.dumps(row.pop("timeframe"), sort_keys=True)
+        row["result_json"] = json.dumps(row.pop("result"), sort_keys=True)
+        row["source_game_ids_json"] = json.dumps(row.pop("source_game_ids"), sort_keys=True)
+        row["score_components_json"] = json.dumps(row.pop("score_components"), sort_keys=True)
+        if isinstance(row.get("data_through"), str):
+            row["data_through"] = date.fromisoformat(row["data_through"])
+        db.add(GeneratedStatFact(**row))
 
     if activate:
         await db.execute(
