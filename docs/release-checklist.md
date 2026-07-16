@@ -2,7 +2,7 @@
 
 The owner signs this checklist. The selected production domain is
 `knicksiq.win`, the feedback form uses Formspree form `xaqrndvp`, and production
-AI is allowlisted to `nvidia/nemotron-3-ultra-550b-a55b:free` with zero-data-
+AI is allowlisted to `google/gemini-3.1-flash-lite` with zero-data-
 retention routing required on every OpenRouter request.
 
 - [ ] Purchase the domain; configure `www`, `api`, and apex redirect; verify DNS and TLS.

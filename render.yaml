@@ -29,11 +29,11 @@ services:
       - key: AI_API_KEY
         sync: false
       - key: AI_CHAT_MODEL
-        value: nvidia/nemotron-3-ultra-550b-a55b:free
+        value: google/gemini-3.1-flash-lite
       - key: OPENROUTER_ALLOWED_MODELS
-        value: '["nvidia/nemotron-3-ultra-550b-a55b:free"]'
+        value: '["google/gemini-3.1-flash-lite"]'
       - key: OPENROUTER_SUMMARY_MODEL
-        value: nvidia/nemotron-3-ultra-550b-a55b:free
+        value: google/gemini-3.1-flash-lite
       - key: OPENROUTER_MONTHLY_CUTOFF_USD
         value: "8"
       - key: SENTRY_DSN
@@ -53,7 +53,7 @@ services:
       - key: RAG_RERANKER_ENABLED
         value: "false"
       - key: RAG_LLM_PLANNER_ENABLED
-        value: "false"
+        value: "true"
 
   - type: web
     name: knicksiq-web

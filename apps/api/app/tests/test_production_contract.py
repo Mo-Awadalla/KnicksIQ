@@ -33,3 +33,17 @@ def test_render_blueprint_uses_only_free_tier_supported_fields():
     assert free_services
     assert all("preDeployCommand" not in service for service in free_services)
     assert "databases" not in blueprint
+
+
+def test_render_blueprint_enables_the_grounded_ai_configuration():
+    blueprint_path = Path(__file__).parents[4] / "render.yaml"
+    blueprint = yaml.safe_load(blueprint_path.read_text())
+    api = next(service for service in blueprint["services"] if service["name"] == "knicksiq-api")
+    env = {item["key"]: item.get("value") for item in api["envVars"]}
+
+    model = "google/gemini-3.1-flash-lite"
+    assert env["AI_PROVIDER"] == "openrouter"
+    assert env["AI_CHAT_MODEL"] == model
+    assert env["OPENROUTER_ALLOWED_MODELS"] == f'["{model}"]'
+    assert env["OPENROUTER_SUMMARY_MODEL"] == model
+    assert env["RAG_LLM_PLANNER_ENABLED"] == "true"
