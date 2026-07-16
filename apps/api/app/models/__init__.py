@@ -8,6 +8,7 @@ from app.models.dataset_release import DatasetRelease
 from app.models.document import Document
 from app.models.game import Game
 from app.models.game_event import GameEvent
+from app.models.generated_stat_fact import GeneratedStatFact
 from app.models.ingest_run import IngestRun
 from app.models.job import Job
 from app.models.player import Player
@@ -22,6 +23,7 @@ __all__ = [
     "Player",
     "Game",
     "GameEvent",
+    "GeneratedStatFact",
     "IngestRun",
     "ScoringRun",
     "BadStretch",

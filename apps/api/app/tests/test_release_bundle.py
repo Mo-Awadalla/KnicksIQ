@@ -6,12 +6,14 @@ from pathlib import Path
 
 import pytest
 from app.models.dataset_release import DatasetRelease
+from app.models.generated_stat_fact import GeneratedStatFact
 from app.services.release_bundle import (
     ReleaseValidationError,
     build_bundle,
     load_release_bundle,
     read_bundle,
 )
+from basketball_core.analytics import FactCandidate, fact_fingerprint, score_fact_candidate
 from sqlalchemy import func, select
 
 
@@ -159,3 +161,69 @@ async def test_existing_staged_release_can_be_activated(db_session, tmp_path: Pa
     assert staged.activated is False
     assert activated.inserted is False
     assert activated.activated is True
+
+
+async def test_generated_facts_are_validated_hashed_and_loaded(db_session, tmp_path: Path) -> None:
+    payload = _payload()
+    payload["data"]["players"] = [
+        {
+            "nba_player_id": 1628973,
+            "full_name": "Jalen Brunson",
+            "team_id": "NYK",
+            "position": "PG",
+            "jersey_number": "11",
+        }
+    ]
+    candidate = FactCandidate(
+        fact_type="window_leader",
+        player_ids=(1628973,),
+        stat_keys=("points",),
+        timeframe={"kind": "regular_season", "label": "regular season"},
+        statement="Jalen Brunson led the window.",
+        result={"value": 3.0, "rank": 1},
+        source_game_ids=("test-release-game",),
+        sample_size=1,
+        components={
+            name: 1.0
+            for name in (
+                "magnitude",
+                "rarity",
+                "sample_quality",
+                "recency",
+                "coverage",
+                "basketball_relevance",
+                "novelty",
+                "interpretability",
+            )
+        },
+    )
+    total, components = score_fact_candidate(candidate)
+    payload["data"]["generated_stat_facts"] = [
+        {
+            "fingerprint": fact_fingerprint(candidate),
+            "fact_type": candidate.fact_type,
+            "player_ids": list(candidate.player_ids),
+            "stat_keys": list(candidate.stat_keys),
+            "timeframe": candidate.timeframe,
+            "statement": candidate.statement,
+            "result": candidate.result,
+            "source_game_ids": list(candidate.source_game_ids),
+            "sample_size": candidate.sample_size,
+            "total_score": total,
+            "score_components": components,
+            "detector_version": "player-intelligence-v1",
+            "data_through": "2026-01-01",
+        }
+    ]
+    bundle = tmp_path / "facts.json.gz"
+    build_bundle(payload, bundle)
+    await load_release_bundle(db_session, bundle)
+    assert (
+        await db_session.execute(select(func.count()).select_from(GeneratedStatFact))
+    ).scalar_one() == 1
+
+    payload["data"]["generated_stat_facts"][0]["fingerprint"] = "0" * 64
+    invalid = tmp_path / "invalid-facts.json.gz"
+    build_bundle(payload, invalid)
+    with pytest.raises(ReleaseValidationError, match="fingerprint does not reconcile"):
+        await load_release_bundle(db_session, invalid)
