@@ -255,25 +255,25 @@ def _requires_explicit_refusal(question: str) -> bool:
         or re.search(r"\b2026-(?:0[7-9]|1[0-2])-\d{2}\b", q)
         or re.search(r"\bwill\b", q)
         or any(
-        term in q
-        for term in (
-            "today",
-            "tonight",
-            "tomorrow",
-            "next game",
-            "upcoming",
-            "live",
-            "injury",
-            "current injury",
-            "injury status",
-            "injured",
-            "trade",
-            "will he",
-            "will they",
-            "will the knicks",
-            "future",
-            "next season",
-        )
+            term in q
+            for term in (
+                "today",
+                "tonight",
+                "tomorrow",
+                "next game",
+                "upcoming",
+                "live",
+                "injury",
+                "current injury",
+                "injury status",
+                "injured",
+                "trade",
+                "will he",
+                "will they",
+                "will the knicks",
+                "future",
+                "next season",
+            )
         )
     )
 

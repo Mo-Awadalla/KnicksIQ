@@ -442,18 +442,21 @@ def _is_player_intelligence(question: str, resolved: list[Player]) -> bool:
     availability = _asks_availability(question)
     discovery = any(term in q for term in _DISCOVERY_TERMS)
     ranking = any(
-        term in q
-        for term in ("rank players", "who led", "which player led", "most ", "top ")
+        term in q for term in ("rank players", "who led", "which player led", "most ", "top ")
     )
     if any(term in q for term in ("lineup", "possession", "clutch", "defense", "dominated")):
         return bool(resolved) and canonical_stats and operation
-    unresolved_name_slot = bool(_name_like_slots(question)) and canonical_stats and bool(
-        "player" in q
-        or re.search(
-            r"\b(?:did|does|has|have|compare)\s+[A-Z][A-Za-z'-]+",
-            question,
+    unresolved_name_slot = (
+        bool(_name_like_slots(question))
+        and canonical_stats
+        and bool(
+            "player" in q
+            or re.search(
+                r"\b(?:did|does|has|have|compare)\s+[A-Z][A-Za-z'-]+",
+                question,
+            )
+            or re.search(r"\b[A-Za-z][A-Za-z'-]+['’]s\b", question)
         )
-        or re.search(r"\b[A-Za-z][A-Za-z'-]+['’]s\b", question)
     )
     return (
         (
@@ -565,9 +568,7 @@ def _parse_last_count(
 
 
 def _window_limitation(text: str) -> str | None:
-    if re.search(
-        rf"\blast\s+negative\s+(?:{'|'.join(_WORD_NUMBERS)}|\d+)\b", text.lower()
-    ):
+    if re.search(rf"\blast\s+negative\s+(?:{'|'.join(_WORD_NUMBERS)}|\d+)\b", text.lower()):
         return "A last-N window must contain at least one game or appearance."
     parsed = _parse_last_count(text)
     if parsed is None:
@@ -727,18 +728,21 @@ def _parse_plan(text: str, resolved: list[Player]) -> AnalyticsPlan:
     elif len(resolved) >= 2 or "compare" in q or " versus " in q:
         operation = AnalyticsOperation.PLAYER_COMPARISON
         output = OutputType.COMPARISON
-    elif any(
-        term in q
-        for term in (
-            "leader",
-            "most ",
-            "top ",
-            "who had",
-            "rank players",
-            "who led",
-            "which player led",
+    elif (
+        any(
+            term in q
+            for term in (
+                "leader",
+                "most ",
+                "top ",
+                "who had",
+                "rank players",
+                "who led",
+                "which player led",
+            )
         )
-    ) and not resolved:
+        and not resolved
+    ):
         operation = AnalyticsOperation.LEADERBOARD
         output = OutputType.TABLE
     elif any(term in q for term in ("recent versus", "recent vs", "baseline")):
@@ -1681,8 +1685,7 @@ def validate_analytics_evidence(answer: str, analytics: dict[str, Any]) -> bool:
     structured = " ".join(structured_strings)
     ignored = {"short answer", "this is", "no eligible", "all star"}
     entities = {
-        match.group(0).lower()
-        for match in re.finditer(r"\b[A-Z][a-z'-]+ [A-Z][a-z'-]+\b", answer)
+        match.group(0).lower() for match in re.finditer(r"\b[A-Z][a-z'-]+ [A-Z][a-z'-]+\b", answer)
     } - ignored
     return all(entity in structured for entity in entities)
 
@@ -1846,9 +1849,7 @@ async def answer_player_question(
             combined,
             "That concept is not available from the release-scoped box-score archive.",
         )
-    if re.search(
-        r"\b(?:why|reason)\b.*\bdnp\b|\bdnp\b.*\b(?:why|reason)\b", combined.lower()
-    ):
+    if re.search(r"\b(?:why|reason)\b.*\bdnp\b|\bdnp\b.*\b(?:why|reason)\b", combined.lower()):
         return _limited_answer(
             combined,
             "The archive can report observed appearances, but not exact inactive or DNP reasons.",
@@ -1876,9 +1877,13 @@ async def answer_player_question(
             "coverage": None,
         }
         return AnalyticsAnswer(clarification["prompt"], analytics, [], [])
-    if not resolved and _name_like_slots(combined) and not any(
-        term in combined.lower()
-        for term in (*_DISCOVERY_TERMS, "rank players", "who led", "most ")
+    if (
+        not resolved
+        and _name_like_slots(combined)
+        and not any(
+            term in combined.lower()
+            for term in (*_DISCOVERY_TERMS, "rank players", "who led", "most ")
+        )
     ):
         return _limited_answer(
             combined,
@@ -1949,9 +1954,7 @@ async def answer_player_question(
             "unavailable."
         )
         resolved_ids = {player.player_id for player in plan.resolved_players}
-        observed_teams = {
-            row["team_id"] for row in all_rows if row["player_id"] in resolved_ids
-        }
+        observed_teams = {row["team_id"] for row in all_rows if row["player_id"] in resolved_ids}
         if observed_teams - {"NYK"} or len({row["game_id"] for row in rows}) < len(selected_games):
             result["warnings"].append(
                 "Roster eligibility is unavailable, so this is an observed-tenure count rather "

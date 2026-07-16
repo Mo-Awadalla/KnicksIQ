@@ -25,9 +25,7 @@ _DEFINITIONS = (
     StatDefinition("assists", "Assists", "count", ("assists",), ("assist", "asts"), 1, 2),
     StatDefinition("steals", "Steals", "count", ("steals",), ("steal", "stls"), 1, 0.5),
     StatDefinition("blocks", "Blocks", "count", ("blocks",), ("block", "blks"), 1, 0.5),
-    StatDefinition(
-        "turnovers", "Turnovers", "count", ("turnovers",), ("turnover", "tos"), 1, 1
-    ),
+    StatDefinition("turnovers", "Turnovers", "count", ("turnovers",), ("turnover", "tos"), 1, 1),
     StatDefinition("personal_fouls", "Personal fouls", "count", ("personal_fouls",), ("fouls",), 1),
     StatDefinition(
         "plus_minus", "Plus/minus", "count", ("plus_minus",), ("+/-", "plus minus"), 1, 5
