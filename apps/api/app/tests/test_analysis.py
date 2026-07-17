@@ -449,6 +449,22 @@ async def test_public_analysis_accepts_natural_archive_phrasings(client):
         assert "cached" not in body["answer"].lower(), question
 
 
+async def test_suggested_wildest_swings_question_returns_ranked_games(client):
+    response = await client.post(
+        "/analysis/query",
+        json={"question": "Which games had the wildest swings?"},
+    )
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["refused"] is False
+    assert body["route"] == "table_rag"
+    assert "score-margin range" in body["answer"]
+    assert "1." in body["answer"]
+    assert body["citations"]
+    assert body["warnings"] == []
+
+
 async def test_public_analysis_unsupported_table_question_is_not_generic_dump(client):
     r = await client.post(
         "/analysis/query",

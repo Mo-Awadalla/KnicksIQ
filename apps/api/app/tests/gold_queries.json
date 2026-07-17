@@ -56,6 +56,19 @@
     ]
   },
   {
+    "question": "Which games had the wildest swings?",
+    "route": "table_rag",
+    "answer_contains": [
+      "score-margin range",
+      "Key evidence"
+    ],
+    "forbidden_tools": [
+      "search_season_docs",
+      "search_possession_chunks",
+      "llm_generate"
+    ]
+  },
+  {
     "question": "What happened in the Knicks game against Toronto?",
     "route": "retrieval_rag",
     "answer_contains": [
