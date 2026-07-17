@@ -631,7 +631,8 @@ async def query_analysis(
     classifier_payload = classifier.as_dict()
     route = "table_rag" if classifier.is_aggregative else "retrieval_rag"
     t0 = time.perf_counter()
-    planner = await maybe_plan_query(effective_question, classifier)
+    named_opponent_ids = team_ids_in_text(effective_question) - {"NYK"}
+    planner = None if named_opponent_ids else await maybe_plan_query(effective_question, classifier)
     if planner:
         tool_calls.append(
             {

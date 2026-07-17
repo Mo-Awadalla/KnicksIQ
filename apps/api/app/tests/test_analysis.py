@@ -6,6 +6,7 @@ from datetime import date, timedelta
 
 from app.api import analysis
 from app.models.game import Game
+from app.services.llm_planner import PlannerResult
 from starlette.requests import Request
 
 
@@ -72,6 +73,43 @@ async def test_public_analysis_query_returns_citations(client):
     assert "Knicks" in body["answer"]
     assert body["citations"]
     assert any(c["type"] == "game" for c in body["citations"])
+
+
+async def test_named_opponent_query_cannot_be_reinterpreted_as_table_rag(client, monkeypatch):
+    async def table_planner(*_args, **_kwargs):
+        return PlannerResult(
+            intent="season_table",
+            confidence=0.99,
+            route="table_rag",
+        )
+
+    monkeypatch.setattr(analysis, "maybe_plan_query", table_planner)
+
+    r = await client.post(
+        "/analysis/query",
+        json={
+            "question": "What happened in the Knicks game against Toronto?",
+            "context": [
+                {
+                    "role": "user",
+                    "content": "I want to review an archived Knicks matchup.",
+                },
+                {
+                    "role": "assistant",
+                    "content": "Which opponent should I use?",
+                },
+            ],
+        },
+    )
+
+    assert r.status_code == 200
+    body = r.json()
+    assert body["route"] == "retrieval_rag"
+    assert body["citations"]
+    assert {citation["game_id"] for citation in body["citations"]} == {2}
+    assert all(
+        "TOR" in citation["title"] for citation in body["citations"] if citation["type"] == "game"
+    )
 
 
 async def test_public_analysis_refuses_live_questions(client):
