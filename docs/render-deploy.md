@@ -7,11 +7,14 @@ immutable archive.
 
 - `knicksiq-api`: Dockerized FastAPI read service.
 - `knicksiq-web`: static Vite frontend.
+- `knicksiq-redis`: ephemeral Render Free Key Value runtime state.
 - Neon Free Postgres: external authoritative store supplied through `DB_URL`.
 
-Qdrant and Redis are disabled for the free beta. OpenRouter and Sentry are
-optional external services: deterministic Postgres-backed answers remain
-available when they fail.
+Qdrant is disabled for the free beta. Redis, OpenRouter, and Sentry are
+optional at request time: deterministic Postgres-backed answers remain
+available when they fail. The free Key Value instance is intentionally
+non-persistent because every stored rate-limit, cache, and budget entry is
+reconstructible runtime state.
 
 ## Before creating the blueprint
 

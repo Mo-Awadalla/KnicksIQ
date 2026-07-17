@@ -1,4 +1,12 @@
 services:
+  - type: keyvalue
+    name: knicksiq-redis
+    plan: free
+    region: oregon
+    ipAllowList: []
+    maxmemoryPolicy: allkeys-lru
+    persistenceMode: "off"
+
   - type: web
     name: knicksiq-api
     runtime: docker
@@ -12,6 +20,11 @@ services:
     envVars:
       - key: DB_URL
         sync: false
+      - key: REDIS_URL
+        fromService:
+          type: keyvalue
+          name: knicksiq-redis
+          property: connectionString
       - key: ENVIRONMENT
         value: production
       - key: LOG_LEVEL

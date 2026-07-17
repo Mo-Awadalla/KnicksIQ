@@ -47,3 +47,28 @@ def test_render_blueprint_enables_the_grounded_ai_configuration():
     assert env["OPENROUTER_ALLOWED_MODELS"] == f'["{model}"]'
     assert env["OPENROUTER_SUMMARY_MODEL"] == model
     assert env["RAG_LLM_PLANNER_ENABLED"] == "true"
+
+
+def test_render_blueprint_provisions_the_optional_runtime_store():
+    blueprint_path = Path(__file__).parents[4] / "render.yaml"
+    blueprint = yaml.safe_load(blueprint_path.read_text())
+    runtime_store = next(
+        service for service in blueprint["services"] if service["name"] == "knicksiq-redis"
+    )
+    api = next(service for service in blueprint["services"] if service["name"] == "knicksiq-api")
+    redis_url = next(item for item in api["envVars"] if item["key"] == "REDIS_URL")
+
+    assert runtime_store == {
+        "type": "keyvalue",
+        "name": "knicksiq-redis",
+        "plan": "free",
+        "region": "oregon",
+        "ipAllowList": [],
+        "maxmemoryPolicy": "allkeys-lru",
+        "persistenceMode": "off",
+    }
+    assert redis_url["fromService"] == {
+        "type": "keyvalue",
+        "name": "knicksiq-redis",
+        "property": "connectionString",
+    }

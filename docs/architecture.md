@@ -4,9 +4,10 @@
 
 KnicksIQ serves one immutable Knicks 2025–26 archive. Render hosts a static
 React application and a free, read-only FastAPI service. Neon Free Postgres is
-the authoritative store. Qdrant and Redis are disabled for the free beta;
-OpenRouter may phrase facts that KnicksIQ has already computed. Sentry receives
-scrubbed errors and low-sample traces.
+the authoritative store. Render Free Key Value supplies ephemeral shared rate
+limits, answer caching, and AI budget state. Qdrant is disabled for the free
+beta; OpenRouter may phrase facts that KnicksIQ has already computed. Sentry
+receives scrubbed errors and low-sample traces.
 
 Postgres and one validated active `dataset_releases` row are required.
 Qdrant, Redis, and OpenRouter are optional at request time. Their failure must

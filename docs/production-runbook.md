@@ -20,7 +20,7 @@ Production serves one immutable 2025–26 archive release. The API never migrate
 ## Dependency outage
 
 - Qdrant: leave the API up; lexical/Postgres retrieval is authoritative. Rebuild or resume the cluster, validate it, then switch aliases.
-- Redis: AI synthesis and shared caching are disabled. In-process limits protect one instance and deterministic facts remain available.
+- Redis: AI synthesis and shared caching are disabled during the outage. In-process limits protect one instance and deterministic facts remain available. A restarted free Key Value instance loses only reconstructible rate-limit, cache, and AI budget state.
 - OpenRouter or budget exhaustion: deterministic phrasing remains available. Do not raise the $8 application cutoff without owner approval; the provider guardrail is $9.
 - Sentry: application availability is unaffected. Use Render logs and synthetic checks until restored.
 

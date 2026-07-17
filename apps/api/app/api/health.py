@@ -57,10 +57,20 @@ async def ready(db: Annotated[AsyncSession, Depends(get_db)]):
             failures.append("openrouter_model_allowlist")
 
     optional = {
-        "qdrant": "ok" if is_qdrant_healthy() else "degraded",
-        "redis": "configured" if settings.redis_url else "degraded",
+        "qdrant": (
+            "disabled"
+            if not settings.rag_qdrant_enabled
+            else "ok"
+            if is_qdrant_healthy()
+            else "degraded"
+        ),
+        "redis": "configured" if settings.redis_url else "disabled",
         "openrouter": (
-            "configured" if settings.openrouter_api_key or settings.ai_api_key else "degraded"
+            "disabled"
+            if settings.ai_provider.lower() != "openrouter"
+            else "configured"
+            if settings.openrouter_api_key or settings.ai_api_key
+            else "degraded"
         ),
     }
     body = {
