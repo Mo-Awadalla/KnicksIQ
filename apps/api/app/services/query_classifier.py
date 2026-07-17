@@ -42,6 +42,7 @@ _AGGREGATE_TERMS = (
     "rank",
     "per game",
     "streak",
+    "wildest",
 )
 _COMPARATIVE_TERMS = ("compare", "versus", " vs ", "better", "worse", "more than", "less than")
 _TEMPORAL_TERMS = ("before", "after", "since", "during", "last", "first", "quarter", "half")

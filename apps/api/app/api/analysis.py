@@ -217,6 +217,7 @@ def _is_supported_question(question: str) -> bool:
         "steal",
         "streak",
         "stretch",
+        "swing",
         "turnover",
         "win",
         "worst",
@@ -242,6 +243,7 @@ def _is_supported_question(question: str) -> bool:
         "clutch",
         "shoot well",
         "from three",
+        "wildest swings",
         "not in the data",
     )
     return (
