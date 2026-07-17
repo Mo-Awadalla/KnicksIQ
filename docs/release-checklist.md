@@ -15,7 +15,7 @@ retention routing required on every OpenRouter request.
 - [ ] Record zero serious/critical axe findings; perform manual keyboard and current VoiceOver/NVDA smoke tests.
 - [ ] Verify the OpenRouter zero-retention model allowlist, $8 app cutoff, and $9 provider guardrail.
 - [ ] Verify Sentry scrubbing, email alerts, uptime monitor, no replay, and no prompt/IP capture.
-- [ ] Verify Upstash failure, Qdrant failure, and OpenRouter failure preserve deterministic factual answers.
+- [ ] Verify Render Key Value failure, Qdrant failure, and OpenRouter failure preserve deterministic factual answers.
 - [ ] Restore Postgres and rebuild Qdrant from the immutable bundle inside four hours.
 - [ ] Stage the release, deploy the immutable image manually, activate data/index aliases, and run synthetic smoke tests.
 - [ ] Verify dashboards, alerts, backup, rollback, privacy/terms/sources, feedback retention disclosure, and private security address.

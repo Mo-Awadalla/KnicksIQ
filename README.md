@@ -10,8 +10,8 @@ are declined rather than invented.
 - `apps/web`: anonymous React archive and analyst experience.
 - `apps/api`: read-only production FastAPI service.
 - Neon Free Postgres: authoritative factual data and active release metadata.
-- Qdrant and Redis are disabled for the free beta; Postgres/lexical retrieval and in-process
-  safety controls remain available.
+- Render Free Key Value: ephemeral shared rate limits, response caching, and AI budget state.
+- Qdrant is disabled for the free beta; Postgres/lexical retrieval remains authoritative.
 - OpenRouter: optional phrasing of already-computed facts.
 - Sentry: scrubbed exception, trace, alert, and uptime monitoring.
 
