@@ -52,10 +52,7 @@ def deterministic_retrieval_plan(
     lowered = question.lower()
     team_ids = sorted(team_ids_in_text(question) - {"NYK"})
     dates = re.findall(r"\b20\d{2}-\d{2}-\d{2}\b", question)
-    periods = [
-        int(value)
-        for value in re.findall(r"\b(?:q|quarter\s*)([1-9])\b", lowered)
-    ]
+    periods = [int(value) for value in re.findall(r"\b(?:q|quarter\s*)([1-9])\b", lowered)]
     collections: list[ArchiveCollection] = ["games", "reports"]
     if is_aggregative or any(
         term in lowered

@@ -69,9 +69,7 @@ def search_archive_vectors(
     query_vectors: dict[str, list[float] | str] = {}
     for query in queries[:3]:
         query_vectors[query] = (
-            query
-            if settings.rag_qdrant_cloud_inference
-            else embed_texts([query])[0]
+            query if settings.rag_qdrant_cloud_inference else embed_texts([query])[0]
         )
     started = time.perf_counter()
     for collection in collections:
@@ -87,11 +85,7 @@ def search_archive_vectors(
             for hit in hits:
                 candidate_id = f"{collection}:{hit.id}"
                 ranking.append(candidate_id)
-                text = str(
-                    hit.payload.get("semantic_summary")
-                    or hit.payload.get("text")
-                    or ""
-                )
+                text = str(hit.payload.get("semantic_summary") or hit.payload.get("text") or "")
                 candidates[candidate_id] = ArchiveEvidence(
                     evidence_id=f"vector:{candidate_id}",
                     collection=collection,

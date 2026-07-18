@@ -503,8 +503,7 @@ async def test_llm_primary_synthesizes_computed_swing_facts(client, monkeypatch)
                     "claims": [
                         {
                             "text": (
-                                "The computed score-margin ranking identifies "
-                                "the wildest swings."
+                                "The computed score-margin ranking identifies the wildest swings."
                             ),
                             "evidence_ids": [
                                 "fact:table",
