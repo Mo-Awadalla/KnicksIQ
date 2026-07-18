@@ -92,12 +92,11 @@
   },
   {
     "question": "Compare the Knicks game against Toronto versus Boston.",
-    "route": "retrieval_rag",
+    "route": "table_rag",
     "answer_contains": [
-      "Knicks",
-      "Receipts"
+      "Knicks"
     ],
-    "required_tools": [
+    "forbidden_tools": [
       "search_possession_chunks"
     ]
   },

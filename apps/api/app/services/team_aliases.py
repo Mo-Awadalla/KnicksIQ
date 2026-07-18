@@ -10,6 +10,8 @@ TEAM_ALIASES = {
     "hawks": "ATL",
     "boston": "BOS",
     "celtics": "BOS",
+    "celts": "BOS",
+    "c's": "BOS",
     "brooklyn": "BKN",
     "nets": "BKN",
     "bucks": "MIL",
@@ -59,10 +61,13 @@ TEAM_ALIASES = {
     "sixers": "PHI",
     "toronto": "TOR",
     "raptors": "TOR",
+    "raps": "TOR",
     "utah": "UTA",
     "jazz": "UTA",
     "washington": "WAS",
     "wizards": "WAS",
+    "knics": "NYK",
+    "ny": "NYK",
 }
 
 _TEAM_IDS = frozenset({"NYK", *TEAM_ALIASES.values()})
@@ -76,11 +81,11 @@ def team_ids_in_text(text: str) -> set[str]:
         for alias, team_id in TEAM_ALIASES.items()
         if re.search(rf"\b{re.escape(alias)}\b", lowered)
     }
-    resolved.update(
-        token.upper()
-        for token in re.findall(r"\b[a-z]{2,3}\b", lowered)
-        if token.upper() in _TEAM_IDS
-    )
+    # Canonical abbreviations must be uppercase in the source text. Lowercasing
+    # first made ordinary words such as "was" resolve to Washington (WAS).
+    resolved.update(token for token in re.findall(r"\b[A-Z]{2,3}\b", text) if token in _TEAM_IDS)
+    if re.search(r"\bnyk\b", lowered):
+        resolved.add("NYK")
     if re.search(r"\b(?:knicks|new york)\b", lowered):
         resolved.add("NYK")
     return resolved

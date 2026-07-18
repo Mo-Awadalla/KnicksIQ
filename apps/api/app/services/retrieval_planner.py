@@ -24,6 +24,7 @@ class RetrievalPlanFilters(BaseModel):
     dates: list[str] = Field(default_factory=list, max_length=8)
     team_ids: list[str] = Field(default_factory=list, max_length=4)
     player_ids: list[int] = Field(default_factory=list, max_length=8)
+    game_ids: list[int] = Field(default_factory=list, max_length=82)
     periods: list[int] = Field(default_factory=list, max_length=5)
     season_types: list[Literal["regular", "play_in", "playoffs"]] = Field(
         default_factory=list,
@@ -107,9 +108,8 @@ def _filters_are_grounded(plan: RetrievalPlan, question: str) -> bool:
         allowed_season_types.add("playoffs")
     if not set(plan.filters.season_types).issubset(allowed_season_types):
         return False
-    # Player IDs are resolved by the deterministic analytics planner. The model
-    # cannot safely invent internal IDs from a natural-language prompt.
-    return not plan.filters.player_ids
+    # Internal entity IDs are injected only after deterministic resolution.
+    return not plan.filters.player_ids and not plan.filters.game_ids
 
 
 async def maybe_plan_retrieval(

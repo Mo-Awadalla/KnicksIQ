@@ -232,6 +232,20 @@ export interface AnalysisResponse {
   data_version: string
   request_id: string
   analytics?: AnalyticsPayload | null
+  conversation_state?: {
+    player_ids: number[]
+    game_ids: number[]
+    opponent_id: string | null
+    date_start: string | null
+    date_end: string | null
+    periods: number[]
+    season_type: 'regular' | 'play_in' | 'playoffs' | null
+    home_away: 'home' | 'away' | null
+    game_result: 'W' | 'L' | null
+    metric: string | null
+    route: string | null
+    data_version: string | null
+  } | null
 }
 
 export interface ArchiveStatus {

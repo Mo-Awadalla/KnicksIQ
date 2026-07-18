@@ -18,6 +18,7 @@ from app.models.game import Game
 from app.models.generated_stat_fact import GeneratedStatFact
 from app.models.player import Player
 from app.services.analytics_planner import maybe_refine_analytics_plan
+from app.services.pattern_facts import generate_pattern_facts
 from app.services.team_aliases import TEAM_ALIASES as _TEAM_ALIASES
 from basketball_core.analytics import (
     STAT_REGISTRY,
@@ -423,12 +424,33 @@ def _is_player_intelligence(question: str, resolved: list[Player]) -> bool:
             or re.search(r"\b[A-Za-z][A-Za-z'-]+['’]s\b", question)
         )
     )
+    explicit_operation = operation and any(
+        term in q
+        for term in (
+            "average",
+            "compare",
+            "split",
+            "leader",
+            "most ",
+            "streak",
+            "trend",
+            "outlier",
+            "notable",
+            "surprising",
+            "how many",
+            "total",
+            "rank",
+            "per game",
+            "lately",
+            "better",
+        )
+    )
     return (
         (
             bool(resolved)
             and (
                 canonical_stats
-                or operation
+                or explicit_operation
                 or availability
                 or any(concept in q for concept in _UNSUPPORTED_CONCEPTS)
             )
@@ -1817,6 +1839,8 @@ async def answer_player_question(
     question: str,
     season: str,
     context: list[dict[str, str]] | None = None,
+    resolved_player_ids: list[int] | None = None,
+    resolved_game_ids: list[int] | None = None,
 ) -> AnalyticsAnswer | None:
     """Return typed analytics when the question is in the player-intelligence domain."""
     release_id = await _release_id(db)
@@ -1824,6 +1848,8 @@ async def answer_player_question(
     context = context or []
     combined, substantive_question = _fold_question(question, context)
     resolved, ambiguous_players = _resolve_players(combined, players)
+    if not resolved and resolved_player_ids:
+        resolved = [player for player in players if player.id in set(resolved_player_ids)]
     if not _is_player_intelligence(combined, resolved):
         return None
     invalid_window = _window_limitation(combined)
@@ -1913,6 +1939,10 @@ async def answer_player_question(
     if window_limitation:
         return _limited_answer(combined, window_limitation, plan=plan)
     selected_games, rows = _select_window(games, all_rows, plan)
+    if resolved_game_ids:
+        allowed_game_ids = set(resolved_game_ids)
+        selected_games = [game for game in selected_games if game.id in allowed_game_ids]
+        rows = [row for row in rows if row["game_id"] in allowed_game_ids]
     knicks_premise = bool(
         re.search(
             r"\b(?:knicks player|as a knick|for the knicks|with the knicks)\b",
@@ -1963,6 +1993,20 @@ async def answer_player_question(
                 "Roster eligibility is unavailable, so this is an observed-tenure count rather "
                 "than an exact games-missed total."
             )
+    if (
+        getattr(get_settings(), "player_pattern_facts_enabled", False)
+        and len(plan.resolved_players) == 1
+        and plan.stats
+    ):
+        result["pattern_facts"] = [
+            fact.model_dump(mode="json")
+            for fact in generate_pattern_facts(
+                rows,
+                player_id=plan.resolved_players[0].player_id,
+                metric=plan.stats[0],
+                threshold=plan.threshold,
+            )
+        ]
     warnings = list(result.get("warnings", []))
     if not all_rows:
         warnings.append("Player box-score facts are unavailable for the active release.")

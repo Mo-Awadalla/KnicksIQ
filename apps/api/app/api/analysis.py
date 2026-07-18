@@ -24,12 +24,23 @@ from app.models.dataset_release import DatasetRelease
 from app.models.game import Game
 from app.models.game_event import GameEvent
 from app.schemas.analytics import AnalyticsPayload
-from app.services.archive_retrieval import ArchiveEvidence, search_archive_vectors
+from app.services.archive_retrieval import (
+    ArchiveEvidence,
+    fuse_archive_evidence,
+    search_archive_lexical,
+    search_archive_vectors,
+)
+from app.services.conversation_state import (
+    ConversationState,
+    resolve_conversation_delta,
+    state_from_resolved,
+)
 from app.services.grounded_answer import GroundedAnswer, validate_grounded_answer
 from app.services.llm_planner import maybe_plan_query
 from app.services.player_analytics import answer_player_question
 from app.services.possession_chunks import chunk_evidence
 from app.services.query_classifier import QueryClassifierResult, classify_query
+from app.services.query_resolution import ResolvedQuery, resolve_query
 from app.services.rag import SearchResult, search_possession_chunks, search_season_docs
 from app.services.releases import restrict_to_active_release
 from app.services.report_llm import get_llm_adapter
@@ -66,6 +77,7 @@ class AnalysisQueryRequest(BaseModel):
     question: str = Field(..., min_length=3, max_length=1200)
     season: str = "2025-26"
     context: list[AnalysisContextMessage] = Field(default_factory=list, max_length=4)
+    conversation_state: ConversationState | None = None
 
 
 class AnalysisCitation(BaseModel):
@@ -95,6 +107,11 @@ class AnalysisQueryResponse(BaseModel):
     data_version: str = "unreleased"
     request_id: str = ""
     analytics: AnalyticsPayload | None = None
+    resolved_query: dict[str, Any] = Field(
+        default_factory=dict,
+        exclude=get_settings().is_production,
+    )
+    conversation_state: ConversationState | None = None
 
 
 def _client_id(request: Request) -> str:
@@ -257,6 +274,8 @@ def _is_supported_question(question: str) -> bool:
         "from three",
         "wildest swings",
         "not in the data",
+        "close games",
+        "blowouts",
     )
     return (
         any(term in q for term in team_terms) and any(term in q for term in basketball_terms)
@@ -275,6 +294,7 @@ def _requires_explicit_refusal(question: str) -> bool:
                 "today",
                 "tonight",
                 "tomorrow",
+                "yesterday",
                 "next game",
                 "upcoming",
                 "live",
@@ -514,6 +534,8 @@ async def _generate_grounded_answer(
     season: str,
     evidence: dict[str, str],
     chat_context: list[AnalysisContextMessage] | None = None,
+    structured_evidence: dict[str, dict[str, Any]] | None = None,
+    evidence_metadata: dict[str, dict[str, Any]] | None = None,
 ) -> str | None:
     if not _llm_enabled() or not evidence:
         return None
@@ -527,6 +549,26 @@ async def _generate_grounded_answer(
         "live, current, injury, trade, or future knowledge. Keep the answer concise. "
         "Do not mention backend systems, retrieval, validation, or evidence IDs."
     )
+    if getattr(get_settings(), "rag_typed_grounding_enabled", False):
+        system += (
+            " For every statistical sentence use claim_type=player_stat and include "
+            "subject_id, metric, value, game_ids, and filters. Use claim_type=causal "
+            "for causal language; causal claims require a reviewed report or explicitly "
+            "connected event sequence. Otherwise use observational wording."
+        )
+    max_evidence_chars = max(
+        1024,
+        int(getattr(get_settings(), "rag_generation_max_input_tokens", 4000)) * 4 - 2000,
+    )
+    compact_evidence: dict[str, str] = {}
+    used_chars = 0
+    for evidence_id, text in evidence.items():
+        remaining = max_evidence_chars - used_chars
+        if remaining <= 0:
+            break
+        compact = text[: min(1200, remaining)]
+        compact_evidence[evidence_id] = compact
+        used_chars += len(compact)
     payload = {
         "question": question,
         "season": season,
@@ -535,7 +577,7 @@ async def _generate_grounded_answer(
             for item in (chat_context or [])[-4:]
             if item.role in {"user", "assistant"}
         ],
-        "evidence": evidence,
+        "evidence": compact_evidence,
     }
     try:
         raw = await get_llm_adapter(response_format_json=True).generate(
@@ -543,7 +585,12 @@ async def _generate_grounded_answer(
             user=json.dumps(payload, separators=(",", ":")),
         )
         candidate = GroundedAnswer.model_validate_json(raw)
-        if not validate_grounded_answer(candidate, evidence=evidence):
+        if not validate_grounded_answer(
+            candidate,
+            evidence=evidence,
+            structured_evidence=structured_evidence,
+            evidence_metadata=evidence_metadata,
+        ):
             logger.warning("grounded_answer_rejected", extra={"reason": "claim_validation"})
             return None
         return candidate.answer
@@ -578,59 +625,97 @@ async def _active_data_version(db: AsyncSession) -> str:
 async def _execute_archive_retrieval(
     plan: RetrievalPlan,
     *,
+    db: AsyncSession | None = None,
     data_version: str,
     settings: Any,
 ) -> tuple[list[ArchiveEvidence], dict[str, Any], bool]:
     started = time.perf_counter()
     base_call = {
         "tool": "archive_vector_search",
+        "mode": "hybrid",
         "collection_count": len(plan.collections),
     }
-    if not getattr(settings, "rag_qdrant_enabled", False):
+    lexical: list[ArchiveEvidence] = []
+    dense: list[ArchiveEvidence] = []
+    errors: list[str] = []
+    true_hybrid = getattr(settings, "rag_true_hybrid_enabled", False)
+    if db is not None and true_hybrid:
+        try:
+            lexical = await search_archive_lexical(
+                db,
+                query=" ".join(plan.queries),
+                collections=list(plan.collections),
+                filters=plan.filters.model_dump(mode="json"),
+                data_version=data_version,
+                limit=getattr(settings, "rag_lexical_candidate_limit", 30),
+            )
+        except Exception as exc:  # noqa: BLE001
+            logger.warning(
+                "archive_lexical_search_failed",
+                extra={"error_type": type(exc).__name__},
+            )
+            errors.append("lexical")
+    if getattr(settings, "rag_qdrant_enabled", False):
+        try:
+            dense = await asyncio.to_thread(
+                search_archive_vectors,
+                queries=plan.queries,
+                collections=list(plan.collections),
+                filters=plan.filters.model_dump(mode="json"),
+                data_version=data_version,
+                limit=getattr(settings, "rag_dense_candidate_limit", 30),
+                candidate_limit=getattr(settings, "rag_dense_candidate_limit", 30),
+            )
+        except Exception as exc:  # noqa: BLE001
+            logger.warning(
+                "archive_vector_search_failed",
+                extra={"error_type": type(exc).__name__},
+            )
+            errors.append("dense")
+    else:
+        errors.append("dense")
+    if not true_hybrid:
         return (
-            [],
+            dense[: getattr(settings, "rag_retrieval_limit", 5)],
             {
                 **base_call,
+                "mode": "dense",
                 "latency_ms": int((time.perf_counter() - started) * 1000),
-                "result_count": 0,
-                "error": "unavailable",
+                "result_count": len(dense),
+                "lexical_candidate_count": 0,
+                "dense_candidate_count": len(dense),
+                "errors": errors,
             },
-            True,
+            "dense" in errors,
         )
-    try:
-        evidence = await asyncio.to_thread(
-            search_archive_vectors,
-            queries=plan.queries,
-            collections=list(plan.collections),
-            filters=plan.filters.model_dump(mode="json"),
-            data_version=data_version,
-            limit=getattr(settings, "rag_retrieval_limit", 5),
-            candidate_limit=max(getattr(settings, "rag_rerank_limit", 20), 20),
-        )
-        return (
-            evidence,
-            {
-                **base_call,
-                "latency_ms": int((time.perf_counter() - started) * 1000),
-                "result_count": len(evidence),
-            },
-            False,
-        )
-    except Exception as exc:  # noqa: BLE001
-        logger.warning(
-            "archive_vector_search_failed",
-            extra={"error_type": type(exc).__name__},
-        )
-        return (
-            [],
-            {
-                **base_call,
-                "latency_ms": int((time.perf_counter() - started) * 1000),
-                "result_count": 0,
-                "error": "unavailable",
-            },
-            True,
-        )
+    evidence = fuse_archive_evidence(
+        lexical,
+        dense,
+        limit=getattr(settings, "rag_final_evidence_limit", 5),
+        max_per_game=(
+            (
+                None
+                if len(plan.filters.game_ids) == 1
+                else getattr(settings, "rag_multi_game_max_evidence_per_game", 2)
+            )
+            if getattr(settings, "rag_result_diversity_enabled", False)
+            else None
+        ),
+        filters=plan.filters.model_dump(mode="json"),
+        weighted=getattr(settings, "rag_weighted_fusion_enabled", False),
+    )
+    return (
+        evidence,
+        {
+            **base_call,
+            "latency_ms": int((time.perf_counter() - started) * 1000),
+            "result_count": len(evidence),
+            "lexical_candidate_count": len(lexical),
+            "dense_candidate_count": len(dense),
+            "errors": errors,
+        },
+        len(errors) == 2,
+    )
 
 
 def _sample_shadow(request_id: str, rate: float) -> bool:
@@ -743,6 +828,19 @@ def _contextual_question(question: str, context: list[AnalysisContextMessage]) -
     return "\n".join([*recent, f"user: {question}"])
 
 
+def _apply_resolved_filters(
+    plan: RetrievalPlan,
+    resolved: ResolvedQuery | None,
+) -> RetrievalPlan:
+    if resolved is None:
+        return plan
+    return plan.model_copy(
+        update={
+            "filters": RetrievalPlanFilters.model_validate(resolved.planner_filters()),
+        }
+    )
+
+
 @router.post("/query", response_model=AnalysisQueryResponse)
 async def query_analysis(
     req: AnalysisQueryRequest,
@@ -758,7 +856,14 @@ async def query_analysis(
         "degraded": redis_degraded,
     }
     question = req.question.strip()
-    context_question = _contextual_question(question, req.context)
+    structured_conversation_enabled = getattr(
+        settings,
+        "rag_structured_conversation_state_enabled",
+        False,
+    )
+    context_question = (
+        question if structured_conversation_enabled else _contextual_question(question, req.context)
+    )
     if len(question) > settings.public_chat_max_prompt_chars:
         raise HTTPException(
             status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
@@ -783,12 +888,79 @@ async def query_analysis(
             citations=[],
             tool_calls=[],
         )
+    resolved_query: ResolvedQuery | None = None
+    if getattr(settings, "rag_query_resolution_v2_enabled", False) or (
+        structured_conversation_enabled
+    ):
+        initial_classifier = classify_query(question)
+        resolved_query = await resolve_query(
+            db,
+            question,
+            intent=initial_classifier.kind,
+            data_version=str(response_metadata["data_version"]),
+        )
+        conversation_state: ConversationState | None = None
+        if structured_conversation_enabled:
+            prior_state = req.conversation_state
+            if prior_state is None:
+                prior_user = next(
+                    (
+                        item.content
+                        for item in reversed(req.context)
+                        if item.role == "user" and item.content.strip()
+                    ),
+                    None,
+                )
+                if prior_user:
+                    prior_resolved = await resolve_query(
+                        db,
+                        prior_user,
+                        intent=classify_query(prior_user).kind,
+                        data_version=str(response_metadata["data_version"]),
+                    )
+                    prior_state = state_from_resolved(prior_resolved)
+            resolved_query, conversation_state = resolve_conversation_delta(
+                question,
+                resolved_query,
+                prior_state,
+            )
+        if resolved_query.requires_clarification:
+            choices = "; ".join(resolved_query.clarification_options)
+            return AnalysisQueryResponse(
+                **response_metadata,
+                route="clarification",
+                classifier=initial_classifier.as_dict(),
+                resolved_query=resolved_query.model_dump(mode="json"),
+                conversation_state=conversation_state,
+                warnings=[resolved_query.clarification_reason or "ambiguous_reference"],
+                answer=(
+                    "Short answer\n"
+                    "I found more than one valid match. Which one did you mean?"
+                    + (f"\n\nOptions\n{choices}" if choices else "")
+                ),
+                citations=[],
+                tool_calls=[
+                    {
+                        "tool": "query_resolution",
+                        "result_count": len(resolved_query.clarification_options),
+                    }
+                ],
+            )
+        response_metadata = {
+            **response_metadata,
+            "resolved_query": resolved_query.model_dump(mode="json"),
+            "conversation_state": conversation_state,
+        }
     analytics_t0 = time.perf_counter()
     player_answer = await answer_player_question(
         db,
         question=question,
         season=req.season,
-        context=[item.model_dump() for item in req.context],
+        context=(
+            [] if structured_conversation_enabled else [item.model_dump() for item in req.context]
+        ),
+        resolved_player_ids=resolved_query.player_ids if resolved_query else None,
+        resolved_game_ids=resolved_query.game_ids if resolved_query else None,
     )
     if player_answer is not None:
         analytics_payload = AnalyticsPayload.model_validate(player_answer.analytics)
@@ -807,18 +979,26 @@ async def query_analysis(
             intent="player_intelligence",
             queries=[context_question],
             collections=["games", "box_scores", "reports"],
-            filters=RetrievalPlanFilters(),
+            filters=RetrievalPlanFilters.model_validate(
+                resolved_query.planner_filters() if resolved_query else {}
+            ),
             fact_tools=["player_analytics"],
         )
-        if player_mode == "llm_primary":
+        if player_mode == "llm_primary" and not getattr(
+            settings,
+            "rag_conditional_generation_enabled",
+            False,
+        ):
             plan_t0 = time.perf_counter()
             player_plan = await maybe_plan_retrieval(
                 context_question,
                 fallback=player_fallback_plan,
             )
+            player_plan = _apply_resolved_filters(player_plan, resolved_query)
             player_tool_calls.append(
                 {
                     "tool": "retrieval_plan",
+                    "estimated_cost_usd": 0.002,
                     "latency_ms": int((time.perf_counter() - plan_t0) * 1000),
                     "result_count": len(player_plan.queries),
                     "intent": player_plan.intent,
@@ -827,6 +1007,7 @@ async def query_analysis(
             )
             player_vectors, vector_call, vector_degraded = await _execute_archive_retrieval(
                 player_plan,
+                db=db,
                 data_version=response_metadata["data_version"],
                 settings=settings,
             )
@@ -843,6 +1024,32 @@ async def query_analysis(
                         "fact:player": analytics_payload.model_dump_json(),
                         **{item.evidence_id: item.text for item in player_vectors if item.text},
                     },
+                    structured_evidence={
+                        "fact:player": {
+                            "claims": [
+                                {
+                                    **result.model_dump(mode="json"),
+                                    "player_id": (
+                                        resolved_query.player_ids[0]
+                                        if resolved_query and len(resolved_query.player_ids) == 1
+                                        else None
+                                    ),
+                                    "game_ids": result.source_game_ids,
+                                }
+                                for result in analytics_payload.results
+                            ],
+                        }
+                    },
+                    evidence_metadata={
+                        item.evidence_id: {
+                            "reviewed_report": item.collection == "reports",
+                            "connected_sequence": (
+                                item.collection == "possessions"
+                                and bool(item.metadata.get("sequence_id"))
+                            ),
+                        }
+                        for item in player_vectors
+                    },
                 )
             )
             if grounded_player_answer:
@@ -850,6 +1057,7 @@ async def query_analysis(
                 player_tool_calls.append(
                     {
                         "tool": "llm_generate",
+                        "estimated_cost_usd": 0.01,
                         "model": settings.ai_chat_model,
                         "latency_ms": 0,
                     }
@@ -882,7 +1090,21 @@ async def query_analysis(
     answer_mode = getattr(settings, "analysis_answer_mode", "deterministic")
     preplanned_retrieval_plan: RetrievalPlan | None = None
     preplan_latency_ms = 0
-    current_supported = _is_supported_question(question)
+    resolved_supported = bool(
+        resolved_query
+        and (
+            resolved_query.player_ids
+            or resolved_query.team_ids
+            or resolved_query.game_ids
+            or resolved_query.date_start
+            or resolved_query.date_end
+            or resolved_query.relative_game_count
+            or resolved_query.periods
+            or resolved_query.metric
+            or team_ids_in_text(question)
+        )
+    )
+    current_supported = _is_supported_question(question) or resolved_supported
     contextual_follow_up_supported = _looks_like_follow_up(question) and _is_supported_question(
         context_question
     )
@@ -927,9 +1149,14 @@ async def query_analysis(
     effective_question = context_question if contextual_follow_up_supported else question
 
     cache_key = None
-    if not req.context:
+    if not req.context or structured_conversation_enabled:
+        state_cache_suffix = (
+            req.conversation_state.model_dump_json()
+            if structured_conversation_enabled and req.conversation_state
+            else ""
+        )
         cache_key = answer_cache_key(
-            question,
+            f"{question}\nstate:{state_cache_suffix}",
             response_metadata["data_version"],
             getattr(settings, "ai_chat_model", "deterministic"),
             season=req.season,
@@ -976,6 +1203,7 @@ async def query_analysis(
         tool_calls.append(
             {
                 "tool": "llm_planner",
+                "estimated_cost_usd": 0.002,
                 "latency_ms": int((time.perf_counter() - t0) * 1000),
                 "result_count": 1,
             }
@@ -993,22 +1221,33 @@ async def query_analysis(
                 intent=classifier.kind,
                 is_aggregative=classifier.is_aggregative,
             )
-            retrieval_plan = await maybe_plan_retrieval(
-                effective_question,
-                fallback=fallback_plan,
+            retrieval_plan = (
+                fallback_plan
+                if getattr(settings, "rag_conditional_generation_enabled", False)
+                else await maybe_plan_retrieval(
+                    effective_question,
+                    fallback=fallback_plan,
+                )
             )
             plan_latency_ms = int((time.perf_counter() - plan_t0) * 1000)
-        tool_calls.append(
-            {
-                "tool": "retrieval_plan",
-                "latency_ms": plan_latency_ms,
-                "result_count": len(retrieval_plan.queries),
-                "intent": retrieval_plan.intent,
-                "collection_count": len(retrieval_plan.collections),
-            }
-        )
+        retrieval_plan = _apply_resolved_filters(retrieval_plan, resolved_query)
+        plan_call = {
+            "tool": (
+                "deterministic_retrieval_plan"
+                if getattr(settings, "rag_conditional_generation_enabled", False)
+                else "retrieval_plan"
+            ),
+            "latency_ms": plan_latency_ms,
+            "result_count": len(retrieval_plan.queries),
+            "intent": retrieval_plan.intent,
+            "collection_count": len(retrieval_plan.collections),
+        }
+        if plan_call["tool"] == "retrieval_plan":
+            plan_call["estimated_cost_usd"] = 0.002
+        tool_calls.append(plan_call)
         archive_vector_evidence, vector_call, vector_degraded = await _execute_archive_retrieval(
             retrieval_plan,
+            db=db,
             data_version=response_metadata["data_version"],
             settings=settings,
         )
@@ -1079,6 +1318,7 @@ async def query_analysis(
         if (
             getattr(settings, "analysis_answer_mode", "deterministic") == "llm_primary"
             and not response_metadata["degraded"]
+            and not getattr(settings, "rag_conditional_generation_enabled", False)
         ):
             llm_t0 = time.perf_counter()
             generated_answer = await _generate_grounded_answer(
@@ -1086,11 +1326,19 @@ async def query_analysis(
                 season=req.season,
                 chat_context=req.context,
                 evidence=table_grounding_evidence,
+                evidence_metadata={
+                    item.evidence_id: {
+                        "reviewed_report": item.collection == "reports",
+                        "connected_sequence": item.collection == "possessions",
+                    }
+                    for item in archive_vector_evidence
+                },
             )
             if generated_answer:
                 tool_calls.append(
                     {
                         "tool": "llm_generate",
+                        "estimated_cost_usd": 0.01,
                         "model": settings.ai_chat_model,
                         "latency_ms": int((time.perf_counter() - llm_t0) * 1000),
                     }
@@ -1309,6 +1557,21 @@ async def query_analysis(
             season=req.season,
             evidence=grounded_evidence,
             chat_context=req.context,
+            evidence_metadata={
+                **{
+                    item.evidence_id: {
+                        "reviewed_report": item.collection == "reports",
+                        "connected_sequence": item.collection == "possessions",
+                    }
+                    for item in archive_vector_evidence
+                },
+                **{
+                    f"possession:{item['possession_id']}": {
+                        "connected_sequence": len(item.get("sequence_ids", [])) > 1
+                    }
+                    for item in possession_evidence[:5]
+                },
+            },
         )
     elif answer_mode == "shadow":
         _schedule_shadow(
@@ -1329,6 +1592,7 @@ async def query_analysis(
         tool_calls.append(
             {
                 "tool": "llm_generate",
+                "estimated_cost_usd": 0.01,
                 "model": get_settings().ai_chat_model,
                 "latency_ms": 0,
             }

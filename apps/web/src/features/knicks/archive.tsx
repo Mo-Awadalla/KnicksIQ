@@ -230,7 +230,16 @@ export function SeasonArchivePage() {
     }: {
       nextQuestion: string
       context: AnalysisContextMessage[]
-    }) => askAnalyst(nextQuestion, KNICKS_SEASON, context),
+    }) =>
+      askAnalyst(
+        nextQuestion,
+        KNICKS_SEASON,
+        context,
+        [...messages]
+          .reverse()
+          .find((message) => message.response?.conversation_state)?.response
+          ?.conversation_state
+      ),
     onSuccess: (response) => {
       setMessages((current) =>
         retainLastFour(current, {

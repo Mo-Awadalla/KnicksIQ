@@ -8,7 +8,7 @@ end-to-end.
 
 from __future__ import annotations
 
-from sqlalchemy import Boolean, ForeignKey, Index, String, Text, UniqueConstraint
+from sqlalchemy import Boolean, ForeignKey, Index, String, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.models.base import Base, TimestampMixin
@@ -17,7 +17,13 @@ from app.models.base import Base, TimestampMixin
 class Report(Base, TimestampMixin):
     __tablename__ = "reports"
     __table_args__ = (
-        UniqueConstraint("release_id", "game_id", "report_type"),
+        Index(
+            "uq_reports_release_game_type_idx",
+            "release_id",
+            "game_id",
+            "report_type",
+            unique=True,
+        ),
         Index("ix_reports_release_game", "release_id", "game_id"),
     )
 

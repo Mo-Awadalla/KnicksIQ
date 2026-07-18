@@ -53,12 +53,14 @@ class OpenAICompatibleLLMAdapter(LLMAdapter):
         model: str,
         timeout_seconds: float = 20.0,
         response_format_json: bool = True,
+        max_tokens: int = 500,
     ) -> None:
         self.base_url = base_url.rstrip("/")
         self.api_key = api_key
         self.model = model
         self.timeout_seconds = timeout_seconds
         self.response_format_json = response_format_json
+        self.max_tokens = max_tokens
 
     async def generate(self, *, system: str, user: str) -> str:
         import asyncio
@@ -73,7 +75,7 @@ class OpenAICompatibleLLMAdapter(LLMAdapter):
                 {"role": "user", "content": user},
             ],
             "temperature": 0,
-            "max_tokens": 220,
+            "max_tokens": self.max_tokens,
         }
         if "openrouter.ai" in self.base_url:
             payload_body["provider"] = {
@@ -119,6 +121,7 @@ def get_llm_adapter(*, response_format_json: bool = True) -> LLMAdapter:
         model=settings.ai_chat_model,
         timeout_seconds=settings.ai_request_timeout_seconds,
         response_format_json=response_format_json,
+        max_tokens=getattr(settings, "rag_generation_max_output_tokens", 500),
     )
 
 

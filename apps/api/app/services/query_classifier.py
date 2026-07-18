@@ -43,6 +43,17 @@ _AGGREGATE_TERMS = (
     "per game",
     "streak",
     "wildest",
+    "worst loss",
+    "highest-scoring",
+    "lowest-scoring",
+    "at least",
+    "points allowed",
+    "home or away",
+    "home and on the road",
+    "perform",
+    "stronger",
+    "close games",
+    "blowouts",
 )
 _COMPARATIVE_TERMS = ("compare", "versus", " vs ", "better", "worse", "more than", "less than")
 _TEMPORAL_TERMS = ("before", "after", "since", "during", "last", "first", "quarter", "half")
@@ -59,7 +70,14 @@ def classify_query(question: str) -> QueryClassifierResult:
     q = f" {question.lower().strip()} "
     signals: list[str] = []
 
-    is_aggregative = any(term in q for term in _AGGREGATE_TERMS)
+    comparative = any(term in q for term in _COMPARATIVE_TERMS) or bool(re.search(r"\bvs\.?\b", q))
+    is_aggregative = any(term in q for term in _AGGREGATE_TERMS) or (
+        comparative
+        and not re.search(r"\bvs\.?\b", q)
+        and not re.search(r"\bcompare\s+(?:that|this)\b", q)
+    )
+    if re.search(r"\bwhat did .+ do\b", q) or " explain " in q:
+        is_aggregative = False
     if is_aggregative:
         signals.append("aggregate_terms")
 
@@ -71,7 +89,7 @@ def classify_query(question: str) -> QueryClassifierResult:
         signals.append("lineup_terms")
         return QueryClassifierResult("lineup_conditioned", is_aggregative, 0.82, signals)
 
-    if any(term in q for term in _COMPARATIVE_TERMS) or re.search(r"\bvs\.?\b", q):
+    if comparative:
         signals.append("comparative_terms")
         return QueryClassifierResult("comparative", is_aggregative, 0.78, signals)
 
