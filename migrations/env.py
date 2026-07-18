@@ -17,12 +17,27 @@ if config.config_file_name:
 config.set_main_option("sqlalchemy.url", get_settings().effective_db_url)
 target_metadata = Base.metadata
 
+_MIGRATION_MANAGED_INDEXES = {
+    "ix_chunks_text_fts",
+    "ix_game_events_description_fts",
+    "ix_players_full_name_trgm",
+    "ix_reports_text_fts",
+}
+
+
+def include_object(object_, name, type_, reflected, compare_to) -> bool:
+    """Keep expression indexes managed by their explicit expand-only migration."""
+    if type_ == "index" and reflected and name in _MIGRATION_MANAGED_INDEXES:
+        return False
+    return True
+
 
 def do_run_migrations(connection) -> None:
     context.configure(
         connection=connection,
         target_metadata=target_metadata,
         compare_type=True,
+        include_object=include_object,
         render_as_batch=connection.dialect.name == "sqlite",
     )
     with context.begin_transaction():

@@ -11,7 +11,7 @@ actual vector and source metadata.
 
 from __future__ import annotations
 
-from sqlalchemy import ForeignKey, Index, String, Text, UniqueConstraint
+from sqlalchemy import ForeignKey, Index, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import Base, TimestampMixin
@@ -20,7 +20,14 @@ from app.models.base import Base, TimestampMixin
 class Document(Base, TimestampMixin):
     __tablename__ = "documents"
     __table_args__ = (
-        UniqueConstraint("release_id", "source_type", "game_id", "title"),
+        Index(
+            "uq_documents_release_source_game_title_idx",
+            "release_id",
+            "source_type",
+            "game_id",
+            "title",
+            unique=True,
+        ),
         Index("ix_documents_release_source_game", "release_id", "source_type", "game_id"),
     )
 

@@ -17,7 +17,11 @@ from app.models.document import Document
 from app.models.game import Game
 from app.models.game_event import GameEvent
 from app.services.embeddings import embed_texts
-from app.services.possession_chunks import PossessionChunk, build_possession_chunks
+from app.services.possession_chunks import (
+    PossessionChunk,
+    build_possession_chunks,
+    expand_neighboring_sequences,
+)
 from app.services.qdrant_client import is_qdrant_healthy, search_possessions
 from app.services.releases import restrict_to_active_release
 from app.services.reranker import rerank_candidates
@@ -382,8 +386,19 @@ async def search_possession_chunks(
         events_by_game.setdefault(event.game_id, []).append(event)
 
     chunks: list[PossessionChunk] = []
+    settings = get_settings()
     for game in games:
-        chunks.extend(build_possession_chunks(game, events_by_game.get(game.id, [])))
+        chunks.extend(
+            build_possession_chunks(
+                game,
+                events_by_game.get(game.id, []),
+                contextual_event_windows=getattr(
+                    settings,
+                    "rag_contextual_event_windows_enabled",
+                    False,
+                ),
+            )
+        )
     chunks = [chunk for chunk in chunks if _passes_filters(chunk, filters)]
 
     t0 = time.perf_counter()
@@ -397,19 +412,17 @@ async def search_possession_chunks(
             }
         )
 
-    settings = get_settings()
     qdrant_filters = filters.as_dict()
-    if getattr(settings, "is_production", False):
-        active_version = (
-            await db.execute(
-                select(DatasetRelease.version).where(
-                    DatasetRelease.status == "active",
-                    DatasetRelease.validation_passed.is_(True),
-                )
+    active_version = (
+        await db.execute(
+            select(DatasetRelease.version).where(
+                DatasetRelease.status == "active",
+                DatasetRelease.validation_passed.is_(True),
             )
-        ).scalar_one_or_none()
-        if active_version:
-            qdrant_filters["data_version"] = active_version
+        )
+    ).scalar_one_or_none()
+    if active_version:
+        qdrant_filters["data_version"] = active_version
     dense_rank: list[tuple[PossessionChunk, float]] = []
     if settings.rag_hybrid_enabled and settings.rag_qdrant_enabled:
         try:
@@ -481,17 +494,27 @@ async def search_possession_chunks(
                 "tool": "rrf",
                 "result_count": len(fused_ids),
                 "rankings": 3 if dense_rank else 2,
+                "candidate_evidence_ids": [
+                    f"possession:{chunk_id}" for chunk_id, _score in fused_ids[:20]
+                ],
             }
         )
     merged = [
         candidate_map[chunk_id] for chunk_id, _score in fused_ids if chunk_id in candidate_map
     ]
 
-    if settings.rag_reranker_enabled and merged:
+    exact_metadata_confidence = bool(
+        (filters.dates or filters.team_ids or filters.periods) and lexical and lexical[0][1] > 0
+    )
+    should_rerank = settings.rag_reranker_enabled and (
+        not getattr(settings, "rag_conditional_reranker_enabled", False)
+        or not exact_metadata_confidence
+    )
+    if should_rerank and merged:
         t0 = time.perf_counter()
         merged = rerank_candidates(
             query,
-            merged[:50],
+            merged[: min(20, settings.rag_rerank_limit)],
             top_n=limit,
         )
         if trace is not None:
@@ -500,8 +523,42 @@ async def search_possession_chunks(
                     "tool": "rerank",
                     "latency_ms": int((time.perf_counter() - t0) * 1000),
                     "result_count": len(merged),
+                    "candidate_count": min(20, settings.rag_rerank_limit),
                 }
             )
+    elif (
+        settings.rag_reranker_enabled
+        and getattr(settings, "rag_conditional_reranker_enabled", False)
+        and trace is not None
+    ):
+        trace.append(
+            {
+                "tool": "rerank",
+                "result_count": 0,
+                "candidate_count": len(merged),
+                "skipped": "exact_metadata_and_lexical_confidence",
+            }
+        )
     else:
         merged = merged[:limit]
+    if getattr(settings, "rag_neighbor_expansion_enabled", False) and merged:
+        t0 = time.perf_counter()
+        merged = expand_neighboring_sequences(merged, chunks, radius=1)
+        if trace is not None:
+            trace.append(
+                {
+                    "tool": "neighbor_expansion",
+                    "latency_ms": int((time.perf_counter() - t0) * 1000),
+                    "result_count": len(merged),
+                    "vector_search_calls": 0,
+                }
+            )
+    if trace is not None:
+        trace.append(
+            {
+                "tool": "retrieval_result",
+                "result_count": len(merged),
+                "returned_evidence_ids": [f"possession:{chunk.chunk_id}" for chunk in merged[:5]],
+            }
+        )
     return merged, filters

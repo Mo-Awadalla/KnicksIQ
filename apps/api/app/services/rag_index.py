@@ -156,7 +156,15 @@ async def build_rag_artifacts(
                     "data_status": game.data_status,
                 }
             )
-            for chunk in build_possession_chunks(game, events_by_game.get(game.id, [])):
+            for chunk in build_possession_chunks(
+                game,
+                events_by_game.get(game.id, []),
+                contextual_event_windows=getattr(
+                    get_settings(),
+                    "rag_contextual_event_windows_enabled",
+                    False,
+                ),
+            ):
                 # Index construction is offline, deterministic, and provider-free.
                 # OpenRouter is reserved for optional runtime phrasing only.
                 summary = _semantic_summary(chunk.text)

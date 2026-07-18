@@ -6,7 +6,10 @@ from datetime import date
 from types import SimpleNamespace
 
 import pytest
-from app.services.possession_chunks import build_possession_chunks
+from app.services.possession_chunks import (
+    build_possession_chunks,
+    expand_neighboring_sequences,
+)
 from app.services.query_classifier import classify_query
 from app.services.rag import build_metadata_filters, search_possession_chunks
 from app.services.table_rag import (
@@ -73,6 +76,12 @@ def test_classifier_routes_core_query_types():
     assert classify_query("What happened in Q4 after the timeout?").kind == "temporal"
     assert classify_query("How did the lineup with Brunson do?").kind == "lineup_conditioned"
     assert classify_query("What if the Knicks made two more threes?").kind == "counterfactual"
+    assert classify_query("How did NYK do vs BOS?").is_aggregative is False
+    assert (
+        classify_query("Did the Knicks play better against Boston or Toronto?").is_aggregative
+        is True
+    )
+    assert classify_query("What did Towns do in the biggest win?").is_aggregative is False
 
 
 def test_possession_chunking_respects_period_and_possession_boundaries():
@@ -121,6 +130,121 @@ def test_possession_chunking_respects_period_and_possession_boundaries():
     assert chunks[1].metadata["player_names"] == ["Jalen Brunson"]
 
 
+def test_and_one_and_multi_free_throw_sequences_are_not_split():
+    chunks = build_possession_chunks(
+        _game(),
+        [
+            _event(
+                sequence=1,
+                clock="2:14",
+                team_id="NYK",
+                event_type="made_shot",
+                description="Brunson makes driving layup",
+                home_score=100,
+                away_score=98,
+            ),
+            _event(
+                id=2,
+                sequence=2,
+                clock="2:14",
+                team_id="TOR",
+                event_type="foul",
+                description="Shooting foul; and-one",
+                home_score=100,
+                away_score=98,
+            ),
+            _event(
+                id=3,
+                sequence=3,
+                clock="2:14",
+                team_id="NYK",
+                event_type="free_throw",
+                description="Brunson makes free throw 1 of 1",
+                home_score=101,
+                away_score=98,
+            ),
+            _event(
+                id=4,
+                sequence=4,
+                clock="1:58",
+                team_id="TOR",
+                event_type="turnover",
+                description="Toronto turnover",
+                home_score=101,
+                away_score=98,
+            ),
+        ],
+    )
+
+    assert len(chunks) == 2
+    assert [row["event_type"] for row in chunks[0].rows] == [
+        "made_shot",
+        "foul",
+        "free_throw",
+    ]
+    assert chunks[0].metadata["possession_result"] == "free_throws"
+
+
+def test_offensive_rebound_continues_sequence_and_review_is_honestly_labeled():
+    chunks = build_possession_chunks(
+        _game(),
+        [
+            _event(
+                sequence=1,
+                team_id="NYK",
+                event_type="missed_shot",
+                description="Brunson misses",
+            ),
+            _event(
+                id=2,
+                sequence=2,
+                team_id="NYK",
+                event_type="rebound",
+                description="Knicks offensive rebound",
+            ),
+            _event(
+                id=3,
+                sequence=3,
+                team_id="NYK",
+                event_type="made_shot",
+                description="Hart makes putback",
+                home_score=2,
+            ),
+            _event(
+                id=4,
+                sequence=4,
+                team_id=None,
+                event_type="timeout",
+                description="Replay review overturns basket",
+                home_score=0,
+            ),
+        ],
+    )
+
+    assert len(chunks) == 1
+    assert len(chunks[0].rows) == 4
+    assert chunks[0].metadata["unit_type"] == "event_window"
+    assert chunks[0].metadata["possession_result"] is None
+
+
+def test_neighbor_expansion_happens_after_selection_and_merges_overlap():
+    chunks = build_possession_chunks(
+        _game(),
+        [
+            _event(sequence=1, team_id="NYK", event_type="turnover"),
+            _event(id=2, sequence=2, team_id="TOR", event_type="turnover"),
+            _event(id=3, sequence=3, team_id="NYK", event_type="turnover"),
+            _event(id=4, sequence=4, team_id="TOR", event_type="turnover"),
+        ],
+    )
+
+    expanded = expand_neighboring_sequences([chunks[1], chunks[2]], chunks)
+
+    assert len(expanded) == 1
+    assert expanded[0].metadata["citation_sequence_ids"] == [chunk.chunk_id for chunk in chunks]
+    assert len(expanded[0].rows) == 4
+
+
 def test_metadata_filter_extraction():
     filters = build_metadata_filters("Show Knicks Q4 possessions vs TOR on 2025-10-22")
     assert filters.dates == {"2025-10-22"}
@@ -131,6 +255,11 @@ def test_metadata_filter_extraction():
 def test_metadata_filter_resolves_full_opponent_name():
     filters = build_metadata_filters("What happened in the Knicks game against Toronto?")
     assert filters.team_ids == {"NYK", "TOR"}
+
+
+def test_team_alias_resolution_does_not_treat_was_as_washington():
+    filters = build_metadata_filters("What was the Knicks average score?")
+    assert filters.team_ids == {"NYK"}
 
 
 async def test_full_opponent_name_excludes_unrelated_possession_receipts(db_session):

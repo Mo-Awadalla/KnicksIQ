@@ -81,9 +81,39 @@ class Settings(BaseSettings):
     rag_embedding_device: str | None = None
     rag_embedding_batch_size: int = 64
     rag_embedding_max_seq_length: int = 128
-    rag_reranker_model: str = "BAAI/bge-reranker-v2-m3"
+    rag_reranker_model: str = "cross-encoder/ms-marco-MiniLM-L-6-v2"
     rag_retrieval_limit: int = 5
     rag_rerank_limit: int = 20
+    rag_lexical_candidate_limit: int = Field(default=30, ge=1, le=200)
+    rag_dense_candidate_limit: int = Field(default=30, ge=1, le=200)
+    rag_fused_candidate_limit: int = Field(default=20, ge=1, le=100)
+    rag_final_evidence_limit: int = Field(default=5, ge=1, le=20)
+    rag_rrf_k: int = Field(default=60, ge=1, le=1000)
+    rag_lexical_weight: float = Field(default=1.25, ge=0)
+    rag_dense_weight: float = Field(default=1.0, ge=0)
+    rag_exact_match_boost: float = Field(default=0.25, ge=0)
+    rag_multi_game_max_evidence_per_game: int = Field(default=2, ge=1, le=10)
+    rag_collection_weights: dict[str, float] = Field(
+        default_factory=lambda: {
+            "games": 1.0,
+            "box_scores": 1.15,
+            "reports": 1.1,
+            "possessions": 1.1,
+        }
+    )
+    rag_true_hybrid_enabled: bool = False
+    rag_query_resolution_v2_enabled: bool = False
+    rag_contextual_event_windows_enabled: bool = False
+    rag_neighbor_expansion_enabled: bool = False
+    rag_weighted_fusion_enabled: bool = False
+    rag_result_diversity_enabled: bool = False
+    player_pattern_facts_enabled: bool = False
+    rag_typed_grounding_enabled: bool = False
+    rag_conditional_generation_enabled: bool = False
+    rag_conditional_reranker_enabled: bool = False
+    rag_structured_conversation_state_enabled: bool = False
+    rag_generation_max_input_tokens: int = Field(default=4000, ge=256, le=32000)
+    rag_generation_max_output_tokens: int = Field(default=500, ge=64, le=4000)
     rag_planner_confidence_threshold: float = 0.7
     analysis_answer_mode: Literal["deterministic", "shadow", "llm_primary"] = "deterministic"
     analysis_shadow_sample_rate: float = Field(default=0.1, ge=0, le=1)

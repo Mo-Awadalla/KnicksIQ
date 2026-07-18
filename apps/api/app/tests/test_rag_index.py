@@ -48,7 +48,7 @@ async def test_build_rag_artifacts_limits_to_recent_games_and_reports_manifest(
     reset_calls: list[str] = []
     upsert_calls: list[tuple[str, int]] = []
 
-    def fake_chunks(game, _events):
+    def fake_chunks(game, _events, **_kwargs):
         chunked_game_ids.append(game.id)
         return [
             PossessionChunk(
@@ -137,7 +137,10 @@ async def test_build_rag_artifacts_does_not_reset_qdrant_unless_requested(
     reset_calls: list[str] = []
     ensure_calls: list[bool] = []
 
-    monkeypatch.setattr("app.services.rag_index.build_possession_chunks", lambda *_args: [])
+    monkeypatch.setattr(
+        "app.services.rag_index.build_possession_chunks",
+        lambda *_args, **_kwargs: [],
+    )
     monkeypatch.setattr(
         "app.services.rag_index.get_settings",
         lambda: SimpleNamespace(

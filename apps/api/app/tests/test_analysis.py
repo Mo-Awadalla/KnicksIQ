@@ -800,6 +800,47 @@ async def test_llm_primary_synthesizes_typed_player_analytics(client, monkeypatc
     }
 
 
+async def test_conditional_generation_never_calls_model_for_structured_question(
+    client,
+    monkeypatch,
+):
+    original_settings = analysis.get_settings()
+
+    class ConditionalSettings:
+        analysis_answer_mode = "llm_primary"
+        rag_conditional_generation_enabled = True
+        rag_qdrant_enabled = False
+        test_mode = False
+        ai_provider = "openrouter"
+        ai_api_key = "test-key"
+        ai_chat_model = "approved-model"
+        openrouter_allowed_models = ["approved-model"]
+
+        def __getattr__(self, name):
+            return getattr(original_settings, name)
+
+    async def healthy_rate_limit(_request):
+        return False
+
+    def fail_adapter(**_kwargs):
+        raise AssertionError("structured questions must not call generation")
+
+    monkeypatch.setattr(analysis, "get_settings", lambda: ConditionalSettings())
+    monkeypatch.setattr(analysis, "_rate_limit", healthy_rate_limit)
+    monkeypatch.setattr(analysis, "get_llm_adapter", fail_adapter)
+
+    response = await client.post(
+        "/analysis/query",
+        json={"question": "What was the Knicks average score?"},
+    )
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["refused"] is False
+    assert "llm_generate" not in {call["tool"] for call in body["tool_calls"]}
+    assert "deterministic_retrieval_plan" in {call["tool"] for call in body["tool_calls"]}
+
+
 async def test_llm_primary_qdrant_failure_uses_deterministic_swing_answer(
     client,
     monkeypatch,

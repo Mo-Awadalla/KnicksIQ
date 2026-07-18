@@ -3,7 +3,12 @@
 from __future__ import annotations
 
 from app.services import archive_retrieval
-from app.services.archive_retrieval import search_archive_vectors
+from app.services.archive_retrieval import (
+    ArchiveEvidence,
+    fuse_archive_evidence,
+    search_archive_lexical,
+    search_archive_vectors,
+)
 from app.services.qdrant_client import (
     QdrantSearchResult,
     build_qdrant_filter,
@@ -90,3 +95,43 @@ def test_qdrant_collections_index_every_filterable_payload_field():
         "end_period",
     }
     assert all(item["collection_name"] == "knicks_test" for item in indexed)
+
+
+async def test_lexical_archive_search_is_independent_of_dense_results(db_session):
+    trace: list[dict] = []
+
+    results = await search_archive_lexical(
+        db_session,
+        query="TOR",
+        collections=["games"],
+        filters={"team_ids": ["TOR"]},
+        data_version="test-seed",
+        limit=30,
+        trace=trace,
+    )
+
+    assert results
+    assert all(item.collection == "games" for item in results)
+    assert all(item.metadata["data_version"] == "test-seed" for item in results)
+    assert all(item.metadata["retrieval_sources"] == ["lexical"] for item in results)
+    assert trace[0]["retrieval_source"] == "lexical"
+
+
+def test_fusion_deduplicates_and_traces_both_retrieval_sources(monkeypatch):
+    monkeypatch.setattr(
+        archive_retrieval,
+        "get_settings",
+        lambda: type(
+            "Settings",
+            (),
+            {"rag_lexical_weight": 1.25, "rag_dense_weight": 1.0, "rag_rrf_k": 60},
+        )(),
+    )
+    shared_metadata = {"game_id": 2, "source_row_id": 2, "data_version": "v1"}
+    lexical = [ArchiveEvidence("lexical:games:2", "games", "Toronto game", 1.0, shared_metadata)]
+    dense = [ArchiveEvidence("vector:games:2", "games", "Toronto game", 0.9, shared_metadata)]
+
+    results = fuse_archive_evidence(lexical, dense, limit=5)
+
+    assert len(results) == 1
+    assert results[0].metadata["retrieval_sources"] == ["dense", "lexical"]

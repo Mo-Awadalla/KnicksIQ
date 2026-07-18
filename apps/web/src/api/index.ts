@@ -92,12 +92,14 @@ export async function fetchReport(id: number): Promise<Report> {
 export async function askAnalyst(
   question: string,
   season = '2025-26',
-  context: AnalysisContextMessage[] = []
+  context: AnalysisContextMessage[] = [],
+  conversationState?: AnalysisResponse['conversation_state']
 ) {
   const r = await api.post<AnalysisResponse>('/analysis/query', {
     question,
     season,
     context,
+    conversation_state: conversationState,
   })
   return r.data
 }
