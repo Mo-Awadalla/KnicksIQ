@@ -10,6 +10,8 @@ from typing import Any
 
 from app.core.config import get_settings
 
+ANSWER_CACHE_SCHEMA_VERSION = "v2"
+
 
 def answer_cache_key(
     question: str,
@@ -24,6 +26,7 @@ def answer_cache_key(
     normalized = " ".join(question.lower().split())
     payload = "|".join(
         (
+            ANSWER_CACHE_SCHEMA_VERSION,
             normalized,
             season,
             data_version,

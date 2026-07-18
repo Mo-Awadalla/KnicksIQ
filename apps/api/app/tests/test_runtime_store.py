@@ -93,3 +93,27 @@ def test_answer_cache_key_changes_with_season(monkeypatch):
         )
 
     assert key("2025-26") != key("2026-27")
+
+
+def test_answer_cache_key_changes_with_cache_schema(monkeypatch):
+    monkeypatch.setattr(
+        runtime_store,
+        "get_settings",
+        lambda: type("Settings", (), {"ip_hash_secret": "test-secret"})(),
+    )
+
+    def key() -> str:
+        return runtime_store.answer_cache_key(
+            "What was their record?",
+            "release-1",
+            "model-1",
+            season="2025-26",
+            answer_mode="deterministic",
+            prompt_version="v1",
+            index_version="release-1",
+        )
+
+    original = key()
+    monkeypatch.setattr(runtime_store, "ANSWER_CACHE_SCHEMA_VERSION", "v3")
+
+    assert key() != original
