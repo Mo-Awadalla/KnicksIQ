@@ -77,6 +77,32 @@ def create_collection(collection_name: str, *, client: Any | None = None) -> Non
             distance=models.Distance.COSINE,
         ),
     )
+    create_payload_indexes(collection_name, client=resolved)
+
+
+def create_payload_indexes(collection_name: str, *, client: Any | None = None) -> None:
+    """Create indexes required by Qdrant Cloud for strict metadata filters."""
+    from qdrant_client import models
+
+    resolved: Any = client or get_qdrant_client()
+    schemas = {
+        "data_version": models.PayloadSchemaType.KEYWORD,
+        "date": models.PayloadSchemaType.KEYWORD,
+        "team_ids": models.PayloadSchemaType.KEYWORD,
+        "season_type": models.PayloadSchemaType.KEYWORD,
+        "game_id": models.PayloadSchemaType.INTEGER,
+        "player_ids": models.PayloadSchemaType.INTEGER,
+        "player_names": models.PayloadSchemaType.KEYWORD,
+        "start_period": models.PayloadSchemaType.INTEGER,
+        "end_period": models.PayloadSchemaType.INTEGER,
+    }
+    for field_name, field_schema in schemas.items():
+        resolved.create_payload_index(
+            collection_name=collection_name,
+            field_name=field_name,
+            field_schema=field_schema,
+            wait=True,
+        )
 
 
 def recreate_collection(collection_name: str, *, client: Any | None = None) -> None:
@@ -93,6 +119,7 @@ def recreate_collection(collection_name: str, *, client: Any | None = None) -> N
                 distance=models.Distance.COSINE,
             ),
         )
+        create_payload_indexes(collection_name, client=resolved)
         return
 
     existing = {item.name for item in resolved.get_collections().collections}
@@ -155,6 +182,11 @@ def build_qdrant_filter(filters: dict[str, Any] | None):
     if data_version:
         must.append(
             models.FieldCondition(key="data_version", match=models.MatchValue(value=data_version))
+        )
+    season_types = set(filters.get("season_types") or [])
+    if season_types:
+        must.append(
+            models.FieldCondition(key="season_type", match=_match_any(season_types))
         )
     player_names = set(filters.get("player_names") or [])
     if player_names:

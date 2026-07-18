@@ -44,18 +44,24 @@ services:
     environment:
       DB_URL: postgresql+asyncpg://knicksiq:knicksiq@postgres:5432/knicksiq
       REDIS_URL: redis://redis:6379/0
+      QDRANT_URL: ${QDRANT_URL:-}
+      QDRANT_API_KEY: ${QDRANT_API_KEY:-}
       QDRANT_HOST: qdrant
       QDRANT_PORT: "6333"
       RAG_QDRANT_ENABLED: "true"
+      RAG_QDRANT_CLOUD_INFERENCE: ${RAG_QDRANT_CLOUD_INFERENCE:-false}
       RAG_HYBRID_ENABLED: "true"
       RAG_RERANKER_ENABLED: "false"
       RAG_LLM_PLANNER_ENABLED: "true"
+      ANALYSIS_ANSWER_MODE: ${ANALYSIS_ANSWER_MODE:-deterministic}
+      ANALYSIS_SHADOW_SAMPLE_RATE: ${ANALYSIS_SHADOW_SAMPLE_RATE:-0.1}
+      ANALYSIS_PROMPT_VERSION: ${ANALYSIS_PROMPT_VERSION:-v1}
       AI_PROVIDER: openrouter
       AI_BASE_URL: https://openrouter.ai/api/v1
       AI_API_KEY: ${AI_API_KEY:-}
-      AI_CHAT_MODEL: ${AI_CHAT_MODEL:-google/gemini-3.1-flash-lite}
+      AI_CHAT_MODEL: ${AI_CHAT_MODEL:-nvidia/nemotron-3-ultra-550b-a55b:free}
       OPENROUTER_API_KEY: ${OPENROUTER_API_KEY:-}
-      OPENROUTER_SUMMARY_MODEL: ${OPENROUTER_SUMMARY_MODEL:-google/gemini-3.1-flash-lite}
+      OPENROUTER_SUMMARY_MODEL: ${OPENROUTER_SUMMARY_MODEL:-nvidia/nemotron-3-ultra-550b-a55b:free}
       LOG_LEVEL: INFO
       LOG_JSON: "true"
       CORS_ORIGINS: '["http://localhost:5173", "http://localhost:3000"]'

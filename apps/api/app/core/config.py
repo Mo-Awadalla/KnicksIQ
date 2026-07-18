@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from functools import lru_cache
+from typing import Literal
 from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 
 from pydantic import Field
@@ -53,12 +54,12 @@ class Settings(BaseSettings):
     ai_provider: str = "mock"
     ai_base_url: str = "https://api.openai.com/v1"
     ai_api_key: str | None = None
-    ai_chat_model: str = "google/gemini-3.1-flash-lite"
+    ai_chat_model: str = "nvidia/nemotron-3-ultra-550b-a55b:free"
     ai_embedding_model: str = "text-embedding-3-small"
     ai_request_timeout_seconds: float = 2.5
 
     openrouter_api_key: str | None = None
-    openrouter_summary_model: str = "google/gemini-3.1-flash-lite"
+    openrouter_summary_model: str = "nvidia/nemotron-3-ultra-550b-a55b:free"
     qdrant_url: str | None = None
     qdrant_api_key: str | None = None
     qdrant_host: str = "localhost"
@@ -84,6 +85,9 @@ class Settings(BaseSettings):
     rag_retrieval_limit: int = 5
     rag_rerank_limit: int = 20
     rag_planner_confidence_threshold: float = 0.7
+    analysis_answer_mode: Literal["deterministic", "shadow", "llm_primary"] = "deterministic"
+    analysis_shadow_sample_rate: float = Field(default=0.1, ge=0, le=1)
+    analysis_prompt_version: str = "v1"
 
     public_chat_rate_limit_per_minute: int = 10
     public_chat_rate_limit_per_day: int = 100

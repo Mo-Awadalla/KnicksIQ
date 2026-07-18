@@ -29,12 +29,29 @@ uv run --package knicksiq-worker knicksiq-build-rag-index \
 
 The release build creates immutable physical collections for game summaries,
 box-score facts, reviewed reports, and possessions. It validates every point
-count before promoting all stable aliases in one operation. Possession summaries
-are deterministic and provider-free; this command never calls OpenRouter.
+count before promoting all stable aliases in one operation. Each collection
+also receives payload indexes for every supported release/date/team/player/
+period filter, which Qdrant Cloud requires for filtered queries. Possession
+summaries are deterministic and provider-free; this command never calls
+OpenRouter.
 
 `RAG_EMBEDDING_DEVICE=cpu` is a useful override on Apple Silicon when MPS is
 slower for this compact model. An optional paid deployment can use Qdrant Cloud Inference instead of
 shipping local model weights.
+
+For Qdrant Cloud Inference, use the configured cloud URL/key and allow a longer
+indexing timeout than the request-time API default:
+
+```sh
+QDRANT_TIMEOUT_SECONDS=120 \
+RAG_QDRANT_CLOUD_INFERENCE=true \
+RAG_EMBEDDING_MODEL=sentence-transformers/all-MiniLM-L6-v2 \
+uv run --package knicksiq-worker knicksiq-build-rag-index \
+  --season 2025-26 \
+  --data-version RELEASE_VERSION \
+  --out-dir /tmp/knicksiq-rag-index \
+  --reset-qdrant
+```
 
 After indexing, restart the local API if it was already running:
 

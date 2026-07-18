@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Lesson 1: Schema, data, activation</title>
+  <style>
+    body { max-width: 48rem; margin: 3rem auto; padding: 0 1.25rem; color: #1b1b1b; font: 18px/1.58 Georgia, serif; } h1 { font-size: 2.2rem; line-height: 1.1; } h2 { margin-top: 2rem; } code, input { font-family: ui-monospace, SFMono-Regular, monospace; } code { background:#f2f2ee; padding:.12rem .3rem; border-radius:.2rem; } .callout { border-left:4px solid #b45309; padding:.5rem 1rem; background:#fffbeb; } button { padding:.45rem .7rem; } #feedback { font-weight:bold; }
+  </style>
+</head>
+<body>
+  <p><a href="../reference/database-release-flow.html">Reference: database release flow</a></p>
+  <h1>Schema, data, activation</h1>
+  <p><em>Mission:</em> operate a production database safely. Your first rule: <strong>structure first, data second, traffic last.</strong></p>
+  <h2>What you did</h2>
+  <p><code>alembic upgrade head</code> changed the <strong>schema</strong>: the tables and constraints the application needs. It did not load Knicks games.</p>
+  <p><code>knicksiq-load-release … --activate</code> verified a data bundle, loaded its 101 games in a transaction, then made that one validated release the release visible to the public API.</p>
+  <div class="callout"><p>A transaction is all-or-nothing: either all release rows appear together or none do. That is why a failed load should not make a half-archive public.</p></div>
+  <h2>Readiness is a contract</h2>
+  <p><code>/health/live</code> answers “is the process running?” <code>/health/ready</code> answers “can this process safely serve its intended traffic?” A service can be live but not ready when its schema, data, configuration, or dependencies are incomplete.</p>
+  <h2>Retrieval practice</h2>
+  <p>Which operation changes the database’s structure?</p>
+  <input id="answer" aria-label="Your answer" placeholder="migration or load"> <button onclick="check()">Check</button>
+  <p id="feedback" aria-live="polite"></p>
+  <script>
+    function check() {
+      const answer = document.getElementById('answer').value.trim().toLowerCase();
+      document.getElementById('feedback').textContent = answer === 'migration' ? 'Correct. A migration changes structure; a load adds release data.' : 'Try again: think tables and columns versus rows of release data.';
+    }
+  </script>
+  <h2>Your next real-world check</h2>
+  <p>Before running any production command, say aloud: “Which database will this touch, what will it change, and how will I verify the result?” Then run a readiness check after the change.</p>
+  <p>Primary source: <a href="https://www.postgresql.org/docs/current/tutorial-transactions.html">PostgreSQL transactions documentation</a>. Ask me a follow-up whenever a term or command is unclear.</p>
+</body>
+</html>

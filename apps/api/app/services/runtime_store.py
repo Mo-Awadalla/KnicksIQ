@@ -11,9 +11,26 @@ from typing import Any
 from app.core.config import get_settings
 
 
-def answer_cache_key(question: str, data_version: str, model_version: str) -> str:
+def answer_cache_key(
+    question: str,
+    data_version: str,
+    model_version: str,
+    *,
+    answer_mode: str,
+    prompt_version: str,
+    index_version: str,
+) -> str:
     normalized = " ".join(question.lower().split())
-    payload = f"{normalized}|{data_version}|{model_version}"
+    payload = "|".join(
+        (
+            normalized,
+            data_version,
+            index_version,
+            model_version,
+            answer_mode,
+            prompt_version,
+        )
+    )
     digest = hmac.new(
         get_settings().ip_hash_secret.encode(), payload.encode(), hashlib.sha256
     ).hexdigest()
