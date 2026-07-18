@@ -1,4 +1,4 @@
-import { type KeyboardEvent, useMemo, useState } from 'react'
+import { type KeyboardEvent, useEffect, useMemo, useRef, useState } from 'react'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { askAnalyst, fetchArchiveStatus, fetchGames } from '@/api'
 import type {
@@ -8,6 +8,7 @@ import type {
   GameSummary,
 } from '@/types'
 import {
+  ArrowUpRight,
   CalendarDays,
   FileText,
   Loader2,
@@ -22,10 +23,10 @@ import {
   CardContent,
   CardDescription,
   CardHeader,
-  CardTitle,
 } from '@/components/ui/card'
 import { Textarea } from '@/components/ui/textarea'
 import { AnalyticsCards } from './analytics-cards'
+import './archive.css'
 import { retainLastFour } from './conversation'
 
 const KNICKS_SEASON = '2025-26'
@@ -72,6 +73,32 @@ function seasonSummary(games: GameSummary[]) {
   return { wins, losses, eventReady, biggestWin, biggestLoss }
 }
 
+function uniqueGames(games: GameSummary[]) {
+  const readiness = {
+    summary_only: 0,
+    events_ready: 1,
+    analysis_ready: 2,
+  }
+  const canonical = new Map<string, GameSummary>()
+  for (const game of games) {
+    const key = [
+      game.game_date,
+      game.home_team_id,
+      game.away_team_id,
+      game.home_score,
+      game.away_score,
+    ].join(':')
+    const current = canonical.get(key)
+    if (
+      !current ||
+      readiness[game.data_status] > readiness[current.data_status]
+    ) {
+      canonical.set(key, game)
+    }
+  }
+  return [...canonical.values()]
+}
+
 function ReceiptCard({
   citation,
   games,
@@ -83,20 +110,20 @@ function ReceiptCard({
   const score = game ? knicksScore(game) : null
 
   return (
-    <Card className='border-[#BEC0C2]/70 bg-white'>
+    <Card className='archive-receipt'>
       <CardContent className='space-y-3 p-4'>
         <div className='flex flex-wrap items-center gap-2'>
           <Badge className='bg-[#006BB6] text-white'>{citation.type}</Badge>
-          <span className='text-sm font-semibold text-[#0d2238]'>
+          <span className='text-sm font-semibold text-[var(--archive-ink)]'>
             {citation.title}
           </span>
         </div>
-        <p className='text-sm leading-6 text-[#172a3d]'>
+        <p className='text-sm leading-6 text-[var(--archive-ink-soft)]'>
           Supports: {citation.claim}
         </p>
         {game && score ? (
-          <div className='rounded-md border border-[#BEC0C2]/70 bg-[#f7f8fa] p-3'>
-            <div className='text-sm font-semibold text-[#0d2238]'>
+          <div className='archive-receipt-game'>
+            <div className='text-sm font-semibold text-[var(--archive-ink)]'>
               {formatDate(game.game_date)} - NYK {score.points},{' '}
               {score.opponent} {score.opponentPoints}
             </div>
@@ -107,12 +134,13 @@ function ReceiptCard({
         ) : null}
         {citation.source_url ? (
           <a
-            className='text-xs font-medium text-[#006BB6] underline underline-offset-2'
+            className='text-xs font-medium text-[var(--archive-blue)] underline underline-offset-2'
             href={citation.source_url}
             rel='noreferrer'
             target='_blank'
           >
             Source: {citation.source_name ?? 'NBA.com'}
+            <span className='sr-only'> (opens in a new tab)</span>
           </a>
         ) : citation.source_name ? (
           <p className='text-xs text-muted-foreground'>
@@ -128,46 +156,52 @@ function AnswerPanel({
   answer,
   games,
   onClarification,
+  disabled,
 }: {
   answer: AnalysisResponse
   games: GameSummary[]
   onClarification: (value: string) => void
+  disabled: boolean
 }) {
   return (
-    <section className='space-y-4'>
-      <Card className='border-[#006BB6]/25 bg-white shadow-sm'>
+    <section>
+      <Card className='archive-answer'>
         <CardHeader>
-          <CardTitle className='flex items-center gap-2 text-[#0d2238]'>
+          <h3 className='archive-answer-heading' tabIndex={-1}>
             <Sparkles className='size-5 text-[#F58426]' />
-            Answer
-          </CardTitle>
+            {answer.refused ? 'Archive boundary' : 'Answer'}
+          </h3>
           {answer.warnings.length > 0 ? (
             <CardDescription>{answer.warnings.join(' ')}</CardDescription>
           ) : null}
         </CardHeader>
         <CardContent>
           {answer.degraded ? (
-            <p className='mb-4 rounded-md border border-amber-300 bg-amber-50 p-3 text-sm text-amber-950'>
+            <p className='archive-degraded'>
               Optional AI or search services are degraded. This answer uses the
               deterministic archive fallback.
             </p>
           ) : null}
-          <p className='text-base leading-7 whitespace-pre-wrap text-[#172a3d]'>
-            {answer.answer}
-          </p>
+          <p className='archive-answer-copy'>{answer.answer}</p>
           {answer.analytics?.clarification ? (
-            <div className='mt-4 flex flex-wrap gap-2'>
-              {answer.analytics.clarification.choices.map((choice) => (
-                <Button
-                  key={choice.id}
-                  type='button'
-                  variant='outline'
-                  onClick={() => onClarification(choice.value)}
-                >
-                  {choice.label}
-                </Button>
-              ))}
-            </div>
+            <fieldset className='mt-4'>
+              <legend className='mb-3 text-sm font-semibold'>
+                {answer.analytics.clarification.prompt}
+              </legend>
+              <div className='flex flex-wrap gap-2'>
+                {answer.analytics.clarification.choices.map((choice) => (
+                  <Button
+                    key={choice.id}
+                    type='button'
+                    variant='outline'
+                    disabled={disabled}
+                    onClick={() => onClarification(choice.value)}
+                  >
+                    {choice.label}
+                  </Button>
+                ))}
+              </div>
+            </fieldset>
           ) : null}
         </CardContent>
       </Card>
@@ -177,12 +211,12 @@ function AnswerPanel({
       ) : null}
 
       <div>
-        <h2 className='mb-3 flex items-center gap-2 text-lg font-semibold text-[#0d2238]'>
+        <h3 className='archive-receipts-heading'>
           <FileText className='size-5 text-[#006BB6]' />
           Receipts
-        </h2>
+        </h3>
         {answer.citations.length > 0 ? (
-          <div className='grid gap-3 md:grid-cols-2'>
+          <div className='archive-receipt-grid'>
             {answer.citations.map((citation, index) => (
               <ReceiptCard
                 key={`${citation.title}-${index}`}
@@ -192,7 +226,7 @@ function AnswerPanel({
             ))}
           </div>
         ) : (
-          <Card className='border-[#BEC0C2]/70 bg-white'>
+          <Card className='archive-receipt'>
             <CardContent className='p-4 text-sm text-muted-foreground'>
               No separate game receipt was returned for this answer.
             </CardContent>
@@ -205,6 +239,7 @@ function AnswerPanel({
 
 export function SeasonArchivePage() {
   const [question, setQuestion] = useState('')
+  const resultsRef = useRef<HTMLDivElement>(null)
   const [messages, setMessages] = useState<
     Array<
       AnalysisContextMessage & {
@@ -215,14 +250,35 @@ export function SeasonArchivePage() {
   >([])
   const games = useQuery({
     queryKey: ['games', 'season-archive'],
-    queryFn: () =>
-      fetchGames({ teamId: 'NYK', season: KNICKS_SEASON, limit: 200 }),
+    queryFn: async () => {
+      const firstPage = await fetchGames({
+        teamId: 'NYK',
+        season: KNICKS_SEASON,
+        limit: 200,
+      })
+      if (firstPage.length < 200) return firstPage
+      const secondPage = await fetchGames({
+        teamId: 'NYK',
+        season: KNICKS_SEASON,
+        limit: 200,
+        offset: 200,
+      })
+      return [...firstPage, ...secondPage]
+    },
   })
   const archive = useQuery({
     queryKey: ['archive-status'],
     queryFn: fetchArchiveStatus,
   })
-  const summary = useMemo(() => seasonSummary(games.data ?? []), [games.data])
+  const seasonGames = useMemo(
+    () =>
+      (games.data ?? []).filter(
+        (game) => game.home_team_id === 'NYK' || game.away_team_id === 'NYK'
+      ),
+    [games.data]
+  )
+  const summaryGames = useMemo(() => uniqueGames(seasonGames), [seasonGames])
+  const summary = useMemo(() => seasonSummary(summaryGames), [summaryGames])
   const analyst = useMutation({
     mutationFn: ({
       nextQuestion,
@@ -251,6 +307,17 @@ export function SeasonArchivePage() {
       )
     },
   })
+
+  useEffect(() => {
+    if (!analyst.isSuccess) return
+    const frame = requestAnimationFrame(() => {
+      const headings = resultsRef.current?.querySelectorAll<HTMLElement>(
+        '.archive-answer-heading'
+      )
+      headings?.item(headings.length - 1).focus()
+    })
+    return () => cancelAnimationFrame(frame)
+  }, [analyst.isSuccess, messages.length])
 
   const submit = (value = question) => {
     const nextQuestion = value.trim()
@@ -282,52 +349,144 @@ export function SeasonArchivePage() {
   }
 
   return (
-    <main className='min-h-screen bg-[#f4f7fb] text-[#0d2238]'>
-      <section className='border-b border-[#BEC0C2]/60 bg-[#006BB6] text-white'>
-        <div className='mx-auto flex max-w-6xl flex-col gap-8 px-4 py-10 md:px-8 md:py-14'>
-          <div className='max-w-3xl space-y-4'>
-            <Badge className='w-fit bg-[#F58426] text-[#0d2238]'>
-              KnicksIQ Season Archive
-            </Badge>
-            <h1 className='text-4xl font-semibold tracking-normal md:text-6xl'>
-              Relive the Knicks&apos; historic {KNICKS_SEASON} season.
-            </h1>
-            <p className='max-w-2xl text-base leading-7 text-white md:text-lg'>
-              An anonymous, unofficial fan archive of every 2025-26 regular
-              season and postseason game. Ask factual questions and inspect the
-              receipts behind every answer.
-            </p>
-            <div className='flex flex-wrap gap-2 text-xs text-white/90'>
-              <span className='rounded-full bg-[#004b80] px-3 py-1 text-white'>
-                Data {archive.data?.data_version ?? 'loading'}
-              </span>
-              <span className='rounded-full bg-[#004b80] px-3 py-1 text-white'>
-                {archive.data?.games ?? games.data?.length ?? 0} games
-              </span>
-              <span className='rounded-full bg-[#004b80] px-3 py-1 text-white'>
-                Scores, box scores, play-by-play, reviewed reports
-              </span>
-            </div>
-          </div>
+    <div className='archive-page'>
+      <main>
+        <header className='archive-hero'>
+          <div className='archive-shell'>
+            <nav className='archive-nav' aria-label='Archive'>
+              <a className='archive-brand' href='/'>
+                <span className='archive-brand-mark' aria-hidden='true'>
+                  KIQ
+                </span>
+                <span className='archive-brand-name'>KnicksIQ</span>
+              </a>
+              <div className='archive-nav-meta'>
+                <span className='archive-status'>
+                  <span
+                    className='archive-status-dot'
+                    data-state={
+                      archive.isError
+                        ? 'error'
+                        : archive.isLoading
+                          ? 'loading'
+                          : 'current'
+                    }
+                    aria-hidden='true'
+                  />
+                  {archive.isError
+                    ? 'Archive unavailable'
+                    : archive.isLoading
+                      ? 'Checking archive'
+                      : 'Archive current'}
+                </span>
+                <span>{KNICKS_SEASON} season</span>
+              </div>
+            </nav>
 
-          <Card className='border-white/20 bg-white text-[#0d2238] shadow-xl'>
-            <CardContent className='space-y-4 p-4 md:p-6'>
+            <div className='archive-hero-grid'>
+              <div className='archive-copy'>
+                <p className='archive-eyebrow'>The season archive</p>
+                <h1 className='archive-title'>
+                  <span className='sr-only'>
+                    {KNICKS_SEASON} Knicks season archive:{' '}
+                  </span>
+                  Every night. Every swing. <em>Receipts.</em>
+                </h1>
+                <p className='archive-intro'>
+                  Revisit the {KNICKS_SEASON} regular season and postseason
+                  through grounded answers, box scores, play-by-play, and
+                  reviewed game reports.
+                </p>
+                <div
+                  className='archive-proof-line'
+                  aria-label='Archive coverage'
+                >
+                  <span>
+                    {archive.isError
+                      ? 'Data status unavailable'
+                      : `Data ${archive.data?.data_version ?? 'loading'}`}
+                  </span>
+                  <span>
+                    {archive.data?.games ?? summaryGames.length} games indexed
+                  </span>
+                  <span>Every answer keeps its evidence close</span>
+                </div>
+              </div>
+
+              <figure className='archive-photo'>
+                <picture>
+                  <source
+                    srcSet='/images/madison-square-garden-arena.webp'
+                    type='image/webp'
+                  />
+                  <img
+                    src='/images/madison-square-garden-arena.jpg'
+                    alt='Madison Square Garden basketball court before the crowd arrives'
+                    width='1600'
+                    height='2400'
+                    fetchPriority='high'
+                  />
+                </picture>
+                <figcaption className='archive-photo-caption'>
+                  <span>
+                    <strong>The Garden, before tip-off</strong>
+                    New York, New York
+                  </span>
+                  <a
+                    href='https://unsplash.com/photos/eEnokNtvnoo'
+                    rel='noreferrer'
+                    target='_blank'
+                  >
+                    Photo: With Paul
+                  </a>
+                </figcaption>
+              </figure>
+            </div>
+
+            <form
+              className='archive-console'
+              aria-labelledby='ask-title'
+              onSubmit={(event) => {
+                event.preventDefault()
+                submit()
+              }}
+            >
+              <div className='archive-console-heading'>
+                <div>
+                  <label
+                    className='archive-console-label'
+                    htmlFor='archive-question'
+                  >
+                    Ask the archive
+                  </label>
+                  <h2 id='ask-title'>What do you remember?</h2>
+                </div>
+                <p className='archive-console-hint'>
+                  Enter to search · Shift + Enter for a new line
+                </p>
+              </div>
               <Textarea
+                id='archive-question'
                 value={question}
                 maxLength={1200}
                 rows={4}
+                enterKeyHint='search'
                 onChange={(event) => setQuestion(event.target.value)}
                 onKeyDown={handleKeyDown}
-                placeholder='Ask a Knicks season question...'
-                className='min-h-32 resize-none border-[#BEC0C2] text-lg'
+                placeholder='Ask about a game, streak, opponent, player, or turning point…'
+                className='archive-textarea'
               />
-              <div className='flex flex-col gap-3 md:flex-row md:items-center md:justify-between'>
-                <div className='flex flex-wrap gap-2'>
-                  {SUGGESTED_QUESTIONS.slice(0, 4).map((item) => (
+              <div className='archive-console-actions'>
+                <div
+                  className='archive-quick-prompts'
+                  aria-label='Quick questions'
+                >
+                  {SUGGESTED_QUESTIONS.slice(0, 2).map((item) => (
                     <button
                       key={item}
                       type='button'
-                      className='rounded-md border border-[#BEC0C2]/80 bg-white px-3 py-2 text-left text-xs font-medium text-[#0d2238] transition hover:border-[#F58426] hover:text-[#006BB6]'
+                      className='archive-prompt'
+                      disabled={analyst.isPending}
                       onClick={() => submit(item)}
                     >
                       {item}
@@ -335,9 +494,9 @@ export function SeasonArchivePage() {
                   ))}
                 </div>
                 <Button
-                  className='bg-[#F58426] text-white hover:bg-[#d96f19]'
+                  type='submit'
+                  className='archive-search-button'
                   disabled={analyst.isPending || !question.trim()}
-                  onClick={() => submit()}
                 >
                   {analyst.isPending ? (
                     <Loader2 className='animate-spin' />
@@ -347,157 +506,216 @@ export function SeasonArchivePage() {
                   Search archive
                 </Button>
               </div>
-            </CardContent>
-          </Card>
-        </div>
-      </section>
+            </form>
+          </div>
+        </header>
 
-      <section className='mx-auto grid max-w-6xl gap-4 px-4 py-6 md:grid-cols-4 md:px-8'>
-        <ArchiveStat
-          icon={CalendarDays}
-          label='Available games'
-          value={games.isLoading ? '...' : String(games.data?.length ?? 0)}
-        />
-        <ArchiveStat
-          icon={Trophy}
-          label='Record'
-          value={games.isLoading ? '...' : `${summary.wins}-${summary.losses}`}
-        />
-        <ArchiveStat
-          icon={Sparkles}
-          label='Event receipts'
-          value={games.isLoading ? '...' : String(summary.eventReady)}
-        />
-        <ArchiveStat
-          icon={FileText}
-          label='Best margin'
-          value={
-            summary.biggestWin
-              ? `+${summary.biggestWin.margin}`
-              : games.isLoading
-                ? '...'
-                : '-'
-          }
-        />
-      </section>
+        <section
+          className='archive-stat-section'
+          aria-label='Season at a glance'
+        >
+          <dl className='archive-shell archive-stat-rail'>
+            <ArchiveStat
+              icon={CalendarDays}
+              label='Available games'
+              value={
+                games.isLoading
+                  ? '—'
+                  : games.isError
+                    ? 'Error'
+                    : String(archive.data?.games ?? summaryGames.length)
+              }
+            />
+            <ArchiveStat
+              icon={Trophy}
+              label='Record'
+              value={
+                games.isLoading || games.isError
+                  ? '—'
+                  : `${summary.wins}-${summary.losses}`
+              }
+            />
+            <ArchiveStat
+              icon={Sparkles}
+              label='Event receipts'
+              value={
+                games.isLoading || games.isError
+                  ? '—'
+                  : String(summary.eventReady)
+              }
+            />
+            <ArchiveStat
+              icon={FileText}
+              label='Best margin'
+              value={
+                summary.biggestWin
+                  ? `+${summary.biggestWin.margin}`
+                  : games.isLoading || games.isError
+                    ? '—'
+                    : '—'
+              }
+            />
+          </dl>
+        </section>
 
-      <section className='mx-auto grid max-w-6xl gap-6 px-4 pb-12 md:px-8 lg:grid-cols-[1fr_320px]'>
-        <div className='space-y-6'>
-          {analyst.isPending ? (
-            <Card className='border-[#BEC0C2]/70 bg-white'>
-              <CardContent className='flex items-center gap-3 p-6 text-sm text-muted-foreground'>
-                <Loader2 className='size-4 animate-spin text-[#006BB6]' />
-                Searching the season archive...
-              </CardContent>
-            </Card>
-          ) : null}
-          {analyst.error ? (
-            <Card className='border-[#F58426]/50 bg-white'>
-              <CardContent className='p-6 text-sm text-muted-foreground'>
-                {navigator.onLine
-                  ? 'The archive could not answer that request. It may have timed out or reached a rate limit; try again shortly.'
-                  : 'You are offline. Reconnect to search the archive.'}
-              </CardContent>
-            </Card>
-          ) : null}
-          {messages.length > 0 ? (
-            <div className='space-y-5' aria-live='polite'>
-              {messages.map((message) =>
-                message.role === 'user' ? (
-                  <div
-                    key={message.id}
-                    className='ml-auto max-w-2xl rounded-lg bg-[#006BB6] px-4 py-3 text-white'
-                  >
-                    {message.content}
-                  </div>
-                ) : message.response ? (
-                  <AnswerPanel
-                    key={message.id}
-                    answer={message.response}
-                    games={games.data ?? []}
-                    onClarification={submit}
+        <section className='archive-shell archive-workspace'>
+          <div>
+            <header className='archive-workspace-heading'>
+              <p className='archive-section-kicker'>Archive desk</p>
+              <h2>Ask like a fan. Verify like an analyst.</h2>
+              <p>
+                Explore the season in plain language. KnicksIQ keeps the answer,
+                the underlying games, and any data limitations in the same view.
+              </p>
+            </header>
+
+            <div
+              ref={resultsRef}
+              className='archive-result-stack'
+              aria-busy={analyst.isPending}
+            >
+              <span className='sr-only' role='status' aria-live='polite'>
+                {analyst.isSuccess ? 'Answer ready. Review it below.' : ''}
+              </span>
+              {analyst.isPending ? (
+                <div className='archive-state' role='status'>
+                  <Loader2
+                    className='size-4 animate-spin text-[var(--archive-blue)]'
+                    aria-hidden='true'
                   />
-                ) : null
+                  Searching the season archive…
+                </div>
+              ) : null}
+              {analyst.error ? (
+                <div className='archive-state archive-state-error' role='alert'>
+                  {navigator.onLine
+                    ? 'The archive could not answer that request. It may have timed out or reached a rate limit; try again shortly.'
+                    : 'You are offline. Reconnect to search the archive.'}
+                </div>
+              ) : null}
+              {messages.length > 0 ? (
+                <ol className='archive-message-list'>
+                  {messages.map((message) =>
+                    message.role === 'user' ? (
+                      <li key={message.id}>
+                        <p className='archive-question'>
+                          <span className='sr-only'>You asked: </span>
+                          {message.content}
+                        </p>
+                      </li>
+                    ) : message.response ? (
+                      <li key={message.id}>
+                        <AnswerPanel
+                          answer={message.response}
+                          games={seasonGames}
+                          onClarification={submit}
+                          disabled={analyst.isPending}
+                        />
+                      </li>
+                    ) : null
+                  )}
+                </ol>
+              ) : (
+                <section
+                  className='archive-empty'
+                  aria-labelledby='prompt-title'
+                >
+                  <h3 id='prompt-title'>Start with a season memory.</h3>
+                  <p>
+                    Choose a line of inquiry or write your own question above.
+                  </p>
+                  <div className='archive-prompt-grid'>
+                    {SUGGESTED_QUESTIONS.map((item) => (
+                      <button
+                        key={item}
+                        type='button'
+                        className='archive-prompt-row'
+                        disabled={analyst.isPending}
+                        onClick={() => submit(item)}
+                      >
+                        <span>{item}</span>
+                        <ArrowUpRight aria-hidden='true' />
+                      </button>
+                    ))}
+                  </div>
+                </section>
               )}
             </div>
-          ) : (
-            <Card className='border-[#BEC0C2]/70 bg-white'>
-              <CardHeader>
-                <CardTitle>Start with a season memory</CardTitle>
-                <CardDescription>
-                  Pick a prompt or ask your own Knicks question.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className='grid gap-2 sm:grid-cols-2'>
-                {SUGGESTED_QUESTIONS.map((item) => (
-                  <button
-                    key={item}
-                    type='button'
-                    className='rounded-md border border-[#BEC0C2]/80 bg-[#f7f8fa] p-3 text-left text-sm font-medium transition hover:border-[#F58426] hover:bg-white hover:text-[#006BB6]'
-                    onClick={() => submit(item)}
-                  >
-                    {item}
-                  </button>
-                ))}
-              </CardContent>
-            </Card>
-          )}
-        </div>
+          </div>
 
-        <aside className='space-y-4'>
-          <Card className='border-[#BEC0C2]/70 bg-white'>
-            <CardHeader>
-              <CardTitle className='text-base'>Season receipts</CardTitle>
-              <CardDescription>
-                Fast reference points from the archive.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className='space-y-3 text-sm'>
-              {summary.biggestWin ? (
+          <aside className='archive-ledger' aria-labelledby='ledger-title'>
+            <p className='archive-ledger-label'>On the ledger</p>
+            <h2 id='ledger-title'>Season receipts</h2>
+            <p className='archive-ledger-intro'>
+              The high and low marks currently indexed in the archive.
+            </p>
+            <div className='archive-mini-receipts' aria-live='polite'>
+              {games.isError ? (
+                <div className='archive-ledger-state' role='alert'>
+                  <p>Season data is unavailable right now.</p>
+                  <button
+                    type='button'
+                    className='archive-retry'
+                    onClick={() => {
+                      void games.refetch()
+                      void archive.refetch()
+                    }}
+                  >
+                    Try again
+                  </button>
+                </div>
+              ) : summary.biggestWin ? (
                 <ReceiptMini label='Biggest win' game={summary.biggestWin} />
               ) : null}
-              {summary.biggestLoss ? (
+              {!games.isError && summary.biggestLoss ? (
                 <ReceiptMini label='Biggest loss' game={summary.biggestLoss} />
               ) : null}
-              {!summary.biggestWin && !summary.biggestLoss ? (
-                <p className='text-muted-foreground'>
-                  Loading season receipts...
+              {games.isLoading ? (
+                <p className='archive-ledger-note'>Loading season receipts…</p>
+              ) : null}
+              {!games.isLoading &&
+              !games.isError &&
+              summaryGames.length === 0 ? (
+                <p className='archive-ledger-note'>
+                  No games are indexed for this season yet.
                 </p>
               ) : null}
-            </CardContent>
-          </Card>
-        </aside>
-      </section>
-      <footer className='border-t border-[#BEC0C2]/70 bg-white'>
-        <div className='mx-auto grid max-w-6xl gap-6 px-4 py-8 text-sm text-muted-foreground md:grid-cols-2 md:px-8'>
+            </div>
+            <p className='archive-ledger-note'>
+              Scores, event data, and reviewed reports are cited when available.
+              Tactical claims unsupported by published data are declined.
+            </p>
+          </aside>
+        </section>
+      </main>
+
+      <footer className='archive-footer'>
+        <div className='archive-shell archive-footer-inner'>
           <div>
-            <p className='font-semibold text-[#0d2238]'>About this archive</p>
-            <p className='mt-2 leading-6'>
+            <strong>About this archive</strong>
+            <p>
               KnicksIQ is an unofficial fan project and is not affiliated with,
-              endorsed by, or sponsored by the New York Knicks or the NBA.
-              Tactical claims not supported by the published data are declined.
+              endorsed by, or sponsored by the New York Knicks or the NBA. Arena
+              photograph by{' '}
+              <a
+                href='https://unsplash.com/photos/eEnokNtvnoo'
+                rel='noreferrer'
+                target='_blank'
+              >
+                With Paul on Unsplash
+              </a>
+              .
             </p>
           </div>
-          <nav
-            aria-label='Policies'
-            className='flex flex-wrap content-start gap-4 md:justify-end'
-          >
-            <a className='underline hover:text-[#006BB6]' href='/privacy.html'>
-              Privacy
-            </a>
-            <a className='underline hover:text-[#006BB6]' href='/terms.html'>
-              Terms
-            </a>
-            <a className='underline hover:text-[#006BB6]' href='/sources.html'>
-              Sources
-            </a>
-            <a className='underline hover:text-[#006BB6]' href='/feedback.html'>
-              Feedback
-            </a>
+          <nav aria-label='Policies' className='archive-footer-nav'>
+            <a href='/privacy.html'>Privacy</a>
+            <a href='/terms.html'>Terms</a>
+            <a href='/sources.html'>Sources</a>
+            <a href='/feedback.html'>Feedback</a>
           </nav>
         </div>
       </footer>
-    </main>
+    </div>
   )
 }
 
@@ -511,34 +729,26 @@ function ArchiveStat({
   value: string
 }) {
   return (
-    <Card className='border-[#BEC0C2]/70 bg-white'>
-      <CardContent className='flex items-center justify-between p-4'>
-        <div>
-          <p className='text-xs font-medium tracking-wide text-muted-foreground uppercase'>
-            {label}
-          </p>
-          <p className='mt-1 text-2xl font-semibold text-[#0d2238]'>{value}</p>
-        </div>
-        <div className='rounded-md bg-[#006BB6]/10 p-2 text-[#006BB6]'>
-          <Icon className='size-5' />
-        </div>
-      </CardContent>
-    </Card>
+    <div className='archive-stat'>
+      <Icon className='archive-stat-icon size-5' aria-hidden='true' />
+      <dt className='archive-stat-label'>{label}</dt>
+      <dd className='archive-stat-value'>{value}</dd>
+    </div>
   )
 }
 
 function ReceiptMini({ label, game }: { label: string; game: GameSummary }) {
   const score = knicksScore(game)
   return (
-    <div className='rounded-md border border-[#BEC0C2]/70 p-3'>
-      <div className='flex items-center justify-between gap-2'>
-        <span className='font-semibold text-[#0d2238]'>{label}</span>
+    <div className='archive-mini-receipt'>
+      <div className='archive-mini-receipt-header'>
+        <strong>{label}</strong>
         <Badge variant={score.won ? 'default' : 'secondary'}>
           {score.won ? '+' : '-'}
           {Math.abs(game.margin)}
         </Badge>
       </div>
-      <p className='mt-2 text-xs text-muted-foreground'>
+      <p>
         {formatDate(game.game_date)} - NYK {score.points}, {score.opponent}{' '}
         {score.opponentPoints}
       </p>

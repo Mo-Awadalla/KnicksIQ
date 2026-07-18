@@ -12,7 +12,7 @@ import {
   YAxis,
 } from 'recharts'
 import { Badge } from '@/components/ui/badge'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader } from '@/components/ui/card'
 
 function statLabel(value: string) {
   return value.replace(/_/g, ' ')
@@ -63,22 +63,54 @@ function ResultBody({ result }: { result: AnalyticsResult }) {
 
   if (result.type === 'trend' && result.series) {
     return (
-      <div className='h-64' aria-label={`${result.title} chart`}>
-        <ResponsiveContainer width='100%' height='100%'>
-          <LineChart data={result.series}>
-            <CartesianGrid strokeDasharray='3 3' />
-            <XAxis dataKey='date' tick={{ fontSize: 11 }} />
-            <YAxis />
-            <Tooltip />
-            <Line dataKey='value' stroke='#BEC0C2' dot={false} />
-            <Line
-              dataKey='rolling_mean'
-              name='5-game rolling mean'
-              stroke='#006BB6'
-              strokeWidth={3}
-            />
-          </LineChart>
-        </ResponsiveContainer>
+      <div className='space-y-3'>
+        <div className='h-64' aria-hidden='true'>
+          <ResponsiveContainer width='100%' height='100%'>
+            <LineChart data={result.series}>
+              <CartesianGrid strokeDasharray='3 3' />
+              <XAxis dataKey='date' tick={{ fontSize: 11 }} />
+              <YAxis />
+              <Tooltip isAnimationActive={false} />
+              <Line
+                dataKey='value'
+                stroke='#BEC0C2'
+                dot={false}
+                isAnimationActive={false}
+              />
+              <Line
+                dataKey='rolling_mean'
+                name='5-game rolling mean'
+                stroke='#006BB6'
+                strokeWidth={3}
+                isAnimationActive={false}
+              />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+        <details className='archive-chart-data'>
+          <summary>View chart data</summary>
+          <div className='overflow-x-auto'>
+            <table>
+              <caption>{result.title}</caption>
+              <thead>
+                <tr>
+                  <th scope='col'>Date</th>
+                  <th scope='col'>Value</th>
+                  <th scope='col'>5-game rolling mean</th>
+                </tr>
+              </thead>
+              <tbody>
+                {result.series.map((point) => (
+                  <tr key={`${point.game_id}-${point.date}`}>
+                    <td>{point.date}</td>
+                    <td>{point.value}</td>
+                    <td>{point.rolling_mean}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </details>
       </div>
     )
   }
@@ -103,18 +135,19 @@ function ResultBody({ result }: { result: AnalyticsResult }) {
           ))}
         </div>
         {stats.length > 0 ? (
-          <div className='h-52' aria-label={`${result.title} comparison chart`}>
+          <div className='h-52' aria-hidden='true'>
             <ResponsiveContainer width='100%' height='100%'>
               <BarChart data={chart}>
                 <CartesianGrid strokeDasharray='3 3' />
                 <XAxis dataKey='name' />
                 <YAxis />
-                <Tooltip />
+                <Tooltip isAnimationActive={false} />
                 {stats.slice(0, 3).map((stat, index) => (
                   <Bar
                     key={stat}
                     dataKey={stat}
                     fill={['#006BB6', '#F58426', '#BEC0C2'][index]}
+                    isAnimationActive={false}
                   />
                 ))}
               </BarChart>
@@ -145,6 +178,17 @@ function ResultBody({ result }: { result: AnalyticsResult }) {
     return (
       <div className='overflow-x-auto'>
         <table className='w-full text-left text-sm'>
+          <caption className='sr-only'>{result.title}</caption>
+          <thead>
+            <tr>
+              <th className='border-b py-3 pr-3' scope='col'>
+                Result
+              </th>
+              <th className='border-b py-3 text-right' scope='col'>
+                Metrics
+              </th>
+            </tr>
+          </thead>
           <tbody>
             {result.entries.map((entry, index) => {
               const values = (entry.display_values ?? {}) as Record<
@@ -162,8 +206,11 @@ function ResultBody({ result }: { result: AnalyticsResult }) {
                     )}
                   </td>
                   <td className='border-b py-3 text-right'>
-                    {Object.values(values).join(' · ') ||
-                      String(entry.display_value ?? '')}
+                    {Object.entries(values).length > 0
+                      ? Object.entries(values)
+                          .map(([key, value]) => `${statLabel(key)}: ${value}`)
+                          .join(' · ')
+                      : String(entry.display_value ?? '')}
                   </td>
                 </tr>
               )
@@ -218,11 +265,11 @@ function Receipts({
     .map((id) => games.find((game) => game.id === id))
     .filter((game): game is GameSummary => Boolean(game))
   return (
-    <details className='group rounded-md border border-[#BEC0C2]/70'>
+    <details className='archive-disclosure group rounded-md border border-[#BEC0C2]/70'>
       <summary className='flex cursor-pointer list-none items-center justify-between p-3 text-sm font-medium'>
         {result.source_game_ids.length} supporting game receipt
         {result.source_game_ids.length === 1 ? '' : 's'}
-        <ChevronDown className='size-4 transition group-open:rotate-180' />
+        <ChevronDown className='size-4 transition-transform duration-200 group-open:rotate-180' />
       </summary>
       <div className='grid gap-2 border-t p-3 sm:grid-cols-2'>
         {sourceGames.map((game) => (
@@ -252,10 +299,12 @@ export function AnalyticsCards({
   return (
     <div className='space-y-4'>
       {analytics.results.map((result) => (
-        <Card key={result.id} className='border-[#006BB6]/25 bg-white'>
+        <Card key={result.id} className='archive-analytics-card'>
           <CardHeader className='space-y-3'>
             <div className='flex flex-wrap items-center justify-between gap-2'>
-              <CardTitle className='text-lg'>{result.title}</CardTitle>
+              <h3 className='text-lg font-semibold tracking-[-0.02em]'>
+                {result.title}
+              </h3>
               <Badge variant='secondary'>{statLabel(result.type)}</Badge>
             </div>
             <div className='flex flex-wrap gap-2 text-xs text-muted-foreground'>
