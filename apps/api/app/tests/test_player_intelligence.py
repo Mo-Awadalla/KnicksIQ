@@ -448,12 +448,22 @@ async def test_hardest_opposing_player_ranks_cumulative_plus_minus(db_session) -
     await db_session.flush()
     for game, tatum_plus_minus, brown_plus_minus in zip(
         games,
-        (8, 12, -3),
+        (None, 12, 5),
         (15, 1, -4),
         strict=True,
     ):
-        db_session.add_all(
-            [
+        stats = [
+            PlayerGameStat(
+                release_id=release.id,
+                game_id=game.id,
+                player_id=brown.id,
+                team_id="BOS",
+                minutes=36,
+                plus_minus=brown_plus_minus,
+            )
+        ]
+        if tatum_plus_minus is not None:
+            stats.append(
                 PlayerGameStat(
                     release_id=release.id,
                     game_id=game.id,
@@ -461,17 +471,9 @@ async def test_hardest_opposing_player_ranks_cumulative_plus_minus(db_session) -
                     team_id="BOS",
                     minutes=38,
                     plus_minus=tatum_plus_minus,
-                ),
-                PlayerGameStat(
-                    release_id=release.id,
-                    game_id=game.id,
-                    player_id=brown.id,
-                    team_id="BOS",
-                    minutes=36,
-                    plus_minus=brown_plus_minus,
-                ),
-            ]
-        )
+                )
+            )
+        db_session.add_all(stats)
     await db_session.commit()
 
     answer = await answer_player_question(
@@ -486,7 +488,10 @@ async def test_hardest_opposing_player_ranks_cumulative_plus_minus(db_session) -
     result = answer.analytics["results"][0]
     assert result["entries"][0]["player_name"] == "Jayson Tatum"
     assert result["entries"][0]["raw_values"]["plus_minus"] == 17
-    assert result["entries"][0]["sample_size"] == 3
+    assert result["entries"][0]["sample_size"] == 2
+    assert {citation["game_id"] for citation in answer.citations} == set(
+        result["entries"][0]["source_game_ids"]
+    )
     assert "cumulative plus-minus" in answer.answer.lower()
 
     explicit = await answer_player_question(
