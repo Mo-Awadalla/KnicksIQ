@@ -21,6 +21,27 @@ from app.core.seed_loader import seed_all
 from app.main import create_app
 from app.models import Base
 from httpx import ASGITransport, AsyncClient
+from sqlalchemy import event
+from sqlalchemy.engine import Connection
+from sqlalchemy.sql.schema import MetaData
+
+
+@event.listens_for(Base.metadata, "before_drop")
+def _drop_analytics_views(
+    _metadata: MetaData,
+    connection: Connection,
+    **_kwargs: object,
+) -> None:
+    """Remove migration-managed views before their source tables."""
+    if connection.dialect.name != "postgresql":
+        return
+    for view_name in (
+        "player_period_statistics",
+        "rolling_player_statistics",
+        "team_game_statistics",
+        "player_game_statistics",
+    ):
+        connection.exec_driver_sql(f"DROP VIEW IF EXISTS {view_name}")
 
 
 @pytest.fixture(scope="function")
