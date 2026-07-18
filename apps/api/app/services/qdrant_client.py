@@ -185,9 +185,7 @@ def build_qdrant_filter(filters: dict[str, Any] | None):
         )
     season_types = set(filters.get("season_types") or [])
     if season_types:
-        must.append(
-            models.FieldCondition(key="season_type", match=_match_any(season_types))
-        )
+        must.append(models.FieldCondition(key="season_type", match=_match_any(season_types)))
     player_names = set(filters.get("player_names") or [])
     if player_names:
         must.append(models.FieldCondition(key="player_names", match=_match_any(player_names)))

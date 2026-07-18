@@ -815,11 +815,11 @@ async def query_analysis(
         player_fallback_plan = RetrievalPlan(
             supported=True,
             intent="player_intelligence",
-                queries=[context_question],
-                collections=["games", "box_scores", "reports"],
-                filters=RetrievalPlanFilters(),
-                fact_tools=["player_analytics"],
-            )
+            queries=[context_question],
+            collections=["games", "box_scores", "reports"],
+            filters=RetrievalPlanFilters(),
+            fact_tools=["player_analytics"],
+        )
         if player_mode == "llm_primary":
             plan_t0 = time.perf_counter()
             player_plan = await maybe_plan_retrieval(
@@ -851,11 +851,7 @@ async def query_analysis(
                     chat_context=req.context,
                     evidence={
                         "fact:player": analytics_payload.model_dump_json(),
-                        **{
-                            item.evidence_id: item.text
-                            for item in player_vectors
-                            if item.text
-                        },
+                        **{item.evidence_id: item.text for item in player_vectors if item.text},
                     },
                 )
             )
@@ -1004,12 +1000,10 @@ async def query_analysis(
                 "collection_count": len(retrieval_plan.collections),
             }
         )
-        archive_vector_evidence, vector_call, vector_degraded = (
-            await _execute_archive_retrieval(
-                retrieval_plan,
-                data_version=response_metadata["data_version"],
-                settings=settings,
-            )
+        archive_vector_evidence, vector_call, vector_degraded = await _execute_archive_retrieval(
+            retrieval_plan,
+            data_version=response_metadata["data_version"],
+            settings=settings,
         )
         tool_calls.append(vector_call)
         response_metadata = {
@@ -1068,11 +1062,7 @@ async def query_analysis(
         ]
         table_grounding_evidence = {
             "fact:table": " ".join([table_result.answer, *table_result.warnings]).strip(),
-            **{
-                item.evidence_id: item.text
-                for item in archive_vector_evidence
-                if item.text
-            },
+            **{item.evidence_id: item.text for item in archive_vector_evidence if item.text},
             **{
                 f"game:{item['game_id']}": json.dumps(item, sort_keys=True)
                 for item in table_result.evidence[:5]
@@ -1127,9 +1117,7 @@ async def query_analysis(
             or _format_answer(
                 direct_answer=table_result.answer,
                 evidence_note=_table_evidence_note(table_result.evidence),
-                limitation_note=" ".join(table_result.warnings)
-                if table_result.warnings
-                else None,
+                limitation_note=" ".join(table_result.warnings) if table_result.warnings else None,
             ),
             route=route,
             classifier=classifier_payload,
@@ -1282,9 +1270,7 @@ async def query_analysis(
 
     fallback_answer = " ".join(lines)
     grounded_evidence = {
-        item.evidence_id: item.text
-        for item in archive_vector_evidence
-        if item.text
+        item.evidence_id: item.text for item in archive_vector_evidence if item.text
     }
     grounded_evidence.update(
         {
@@ -1302,9 +1288,7 @@ async def query_analysis(
             for game in games[:5]
         }
     )
-    grounded_evidence.update(
-        {f"document:{doc.chunk_id}": doc.text for doc in docs[:5] if doc.text}
-    )
+    grounded_evidence.update({f"document:{doc.chunk_id}": doc.text for doc in docs[:5] if doc.text})
     grounded_evidence.update(
         {
             f"possession:{item['possession_id']}": json.dumps(item, sort_keys=True)
@@ -1366,9 +1350,7 @@ async def query_analysis(
         answer=(
             (
                 answer
-                if answer_mode == "llm_primary"
-                or "Receipts" in answer
-                or not possession_evidence
+                if answer_mode == "llm_primary" or "Receipts" in answer or not possession_evidence
                 else answer + _possession_evidence_note(possession_evidence)
             )
             if answer

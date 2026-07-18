@@ -52,6 +52,7 @@ def validate_grounded_answer(
     evidence: dict[str, str],
 ) -> bool:
     """Verify that every claim references evidence containing its numbers."""
+
     def numbers(text: str) -> set[Decimal]:
         values: set[Decimal] = set()
         for raw in _NUMBER_RE.findall(text):
