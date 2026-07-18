@@ -186,7 +186,7 @@ async def test_public_analysis_aggregate_uses_table_rag(client):
 async def test_public_analysis_losing_streak_uses_table_rag(client):
     r = await client.post(
         "/analysis/query",
-        json={"question": "what was the knicks longest losing streak"},
+        json={"question": "When was the longest losing streak?"},
     )
     assert r.status_code == 200
     body = r.json()

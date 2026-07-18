@@ -242,6 +242,8 @@ def _is_supported_question(question: str) -> bool:
         "their best win",
         "their biggest game",
         "their record",
+        "losing streak",
+        "longest streak",
         "they win",
         "they lose",
         "they lost",
