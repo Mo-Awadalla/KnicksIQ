@@ -5,6 +5,7 @@ from __future__ import annotations
 import logging
 import uuid
 from dataclasses import dataclass
+from functools import lru_cache
 from typing import Any
 
 from app.core.config import get_settings
@@ -37,21 +38,40 @@ def _collection_names() -> tuple[str, ...]:
     )
 
 
-def get_qdrant_client():
-    settings = get_settings()
+@lru_cache(maxsize=8)
+def _cached_qdrant_client(
+    url: str | None,
+    api_key: str | None,
+    cloud_inference: bool,
+    timeout_seconds: int,
+    host: str,
+    port: int,
+):
     from qdrant_client import QdrantClient
 
-    if settings.qdrant_url:
+    if url:
         return QdrantClient(
-            url=settings.qdrant_url,
-            api_key=settings.qdrant_api_key,
-            cloud_inference=settings.rag_qdrant_cloud_inference,
-            timeout=int(settings.qdrant_timeout_seconds),
+            url=url,
+            api_key=api_key,
+            cloud_inference=cloud_inference,
+            timeout=timeout_seconds,
         )
     return QdrantClient(
-        host=settings.qdrant_host,
-        port=settings.qdrant_port,
-        timeout=int(settings.qdrant_timeout_seconds),
+        host=host,
+        port=port,
+        timeout=timeout_seconds,
+    )
+
+
+def get_qdrant_client():
+    settings = get_settings()
+    return _cached_qdrant_client(
+        settings.qdrant_url,
+        settings.qdrant_api_key,
+        settings.rag_qdrant_cloud_inference,
+        settings.qdrant_timeout_seconds,
+        settings.qdrant_host,
+        settings.qdrant_port,
     )
 
 
@@ -287,6 +307,51 @@ def search_collection(
     return [
         QdrantSearchResult(id=str(hit.id), score=float(hit.score), payload=dict(hit.payload or {}))
         for hit in hits
+    ]
+
+
+def search_collection_batch(
+    collection_name: str,
+    query_embeddings: list[list[float] | str],
+    filters: dict[str, Any] | None,
+    top_k: int,
+    *,
+    client: Any | None = None,
+) -> list[list[QdrantSearchResult]]:
+    """Batch multiple searches against one collection into one network request."""
+    if not query_embeddings:
+        return []
+    from qdrant_client import models
+
+    resolved: Any = client or get_qdrant_client()
+    query_filter = build_qdrant_filter(filters)
+    requests = [
+        models.QueryRequest(
+            query=(
+                models.Document(text=query, model=get_settings().rag_embedding_model)
+                if isinstance(query, str)
+                else query
+            ),
+            filter=query_filter,
+            limit=top_k,
+            with_payload=True,
+        )
+        for query in query_embeddings
+    ]
+    responses = resolved.query_batch_points(
+        collection_name=collection_name,
+        requests=requests,
+    )
+    return [
+        [
+            QdrantSearchResult(
+                id=str(hit.id),
+                score=float(hit.score),
+                payload=dict(hit.payload or {}),
+            )
+            for hit in response.points
+        ]
+        for response in responses
     ]
 
 

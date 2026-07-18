@@ -29,7 +29,6 @@ from app.services.grounded_answer import GroundedAnswer, validate_grounded_answe
 from app.services.llm_planner import maybe_plan_query
 from app.services.player_analytics import answer_player_question
 from app.services.possession_chunks import chunk_evidence
-from app.services.qdrant_client import is_qdrant_healthy
 from app.services.query_classifier import QueryClassifierResult, classify_query
 from app.services.rag import SearchResult, search_possession_chunks, search_season_docs
 from app.services.releases import restrict_to_active_release
@@ -598,17 +597,6 @@ async def _execute_archive_retrieval(
             },
             True,
         )
-    if not await asyncio.to_thread(is_qdrant_healthy):
-        return (
-            [],
-            {
-                **base_call,
-                "latency_ms": int((time.perf_counter() - started) * 1000),
-                "result_count": 0,
-                "error": "unavailable",
-            },
-            True,
-        )
     try:
         evidence = await asyncio.to_thread(
             search_archive_vectors,
@@ -944,14 +932,31 @@ async def query_analysis(
             question,
             response_metadata["data_version"],
             getattr(settings, "ai_chat_model", "deterministic"),
+            season=req.season,
             answer_mode=getattr(settings, "analysis_answer_mode", "deterministic"),
             prompt_version=getattr(settings, "analysis_prompt_version", "v1"),
             index_version=response_metadata["data_version"],
         )
         cached = await get_cached_answer(cache_key)
-        if cached:
+        if cached and not cached.get("degraded", False):
+            if answer_mode == "shadow":
+                cached_classifier = classify_query(question)
+                _schedule_shadow(
+                    background_tasks,
+                    settings=settings,
+                    request_id=response_metadata["request_id"],
+                    question=question,
+                    season=req.season,
+                    data_version=response_metadata["data_version"],
+                    fallback_plan=deterministic_retrieval_plan(
+                        question,
+                        intent=cached_classifier.kind,
+                        is_aggregative=cached_classifier.is_aggregative,
+                    ),
+                    evidence={"fact:cached": str(cached.get("answer") or "")},
+                )
             cached["request_id"] = response_metadata["request_id"]
-            cached["degraded"] = response_metadata["degraded"]
+            cached["degraded"] = bool(cached.get("degraded")) or response_metadata["degraded"]
             return AnalysisQueryResponse.model_validate(cached)
 
     tool_calls: list[dict[str, Any]] = []
@@ -1032,7 +1037,7 @@ async def query_analysis(
             citations=[],
             tool_calls=tool_calls,
         )
-        if cache_key:
+        if cache_key and not response.degraded:
             await set_cached_answer(cache_key, response.model_dump(mode="json"))
         return response
 
@@ -1128,7 +1133,7 @@ async def query_analysis(
             citations=citations,
             tool_calls=tool_calls,
         )
-        if cache_key:
+        if cache_key and not response.degraded:
             await set_cached_answer(cache_key, response.model_dump(mode="json"))
         return response
 
@@ -1369,6 +1374,6 @@ async def query_analysis(
         citations=citations,
         tool_calls=tool_calls,
     )
-    if cache_key:
+    if cache_key and not response.degraded:
         await set_cached_answer(cache_key, response.model_dump(mode="json"))
     return response

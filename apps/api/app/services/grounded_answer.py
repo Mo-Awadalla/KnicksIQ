@@ -65,15 +65,16 @@ def validate_grounded_answer(
     for claim in candidate.claims:
         if any(evidence_id not in evidence for evidence_id in claim.evidence_ids):
             return False
-        cited_text = " ".join(evidence[evidence_id] for evidence_id in claim.evidence_ids)
-        if not numbers(claim.text).issubset(numbers(cited_text)):
-            return False
-        cited_lower = cited_text.lower()
+        claim_numbers = numbers(claim.text)
         entities = {
             token
             for token in _ENTITY_RE.findall(claim.text)
             if token not in _NON_ENTITY_SENTENCE_WORDS
         }
-        if any(entity.lower() not in cited_lower for entity in entities):
+        if not any(
+            claim_numbers.issubset(numbers(evidence[evidence_id]))
+            and all(entity.lower() in evidence[evidence_id].lower() for entity in entities)
+            for evidence_id in claim.evidence_ids
+        ):
             return False
     return True

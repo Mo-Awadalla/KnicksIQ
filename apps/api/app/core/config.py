@@ -64,7 +64,7 @@ class Settings(BaseSettings):
     qdrant_api_key: str | None = None
     qdrant_host: str = "localhost"
     qdrant_port: int = 6333
-    qdrant_timeout_seconds: float = 5.0
+    qdrant_timeout_seconds: int = Field(default=5, ge=1)
     qdrant_collection: str = "knicksiq_possessions"
     rag_qdrant_enabled: bool = False
     rag_qdrant_cloud_inference: bool = False

@@ -13,6 +13,7 @@ from app.services.qdrant_client import (
 
 def test_archive_vector_search_injects_active_release_scope(monkeypatch):
     calls = []
+    client = object()
 
     class Settings:
         rag_qdrant_enabled = True
@@ -22,19 +23,21 @@ def test_archive_vector_search_injects_active_release_scope(monkeypatch):
         rag_qdrant_box_scores_collection = "knicks_box_scores"
         rag_qdrant_possessions_collection = "knicks_possessions"
 
-    def search(collection, query, filters, top_k):
-        calls.append((collection, query, filters, top_k))
+    def search_batch(collection, queries, filters, top_k, *, client: object):
+        calls.append((collection, queries, filters, top_k, client))
         return [
-            QdrantSearchResult(
-                id=f"{collection}:1",
-                score=0.9,
-                payload={"semantic_summary": f"{collection} Toronto archive fact"},
-            )
+            [
+                QdrantSearchResult(
+                    id=f"{collection}:1",
+                    score=0.9,
+                    payload={"semantic_summary": f"{collection} Toronto archive fact"},
+                )
+            ]
         ]
 
     monkeypatch.setattr(archive_retrieval, "get_settings", lambda: Settings())
-    monkeypatch.setattr(archive_retrieval, "is_qdrant_healthy", lambda: True)
-    monkeypatch.setattr(archive_retrieval, "search_collection", search)
+    monkeypatch.setattr(archive_retrieval, "get_qdrant_client", lambda: client)
+    monkeypatch.setattr(archive_retrieval, "search_collection_batch", search_batch)
 
     results = search_archive_vectors(
         queries=["Toronto turning points"],
@@ -46,10 +49,11 @@ def test_archive_vector_search_injects_active_release_scope(monkeypatch):
     )
 
     assert {call[0] for call in calls} == {"knicks_games", "knicks_reports"}
-    assert all(call[1] == "Toronto turning points" for call in calls)
+    assert all(call[1] == ["Toronto turning points"] for call in calls)
     assert all(call[2]["data_version"] == "release-2025-26" for call in calls)
     assert all(call[2]["team_ids"] == ["TOR"] for call in calls)
     assert all(call[3] == 20 for call in calls)
+    assert all(call[4] is client for call in calls)
     assert len(results) == 2
 
 

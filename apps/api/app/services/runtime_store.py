@@ -16,6 +16,7 @@ def answer_cache_key(
     data_version: str,
     model_version: str,
     *,
+    season: str,
     answer_mode: str,
     prompt_version: str,
     index_version: str,
@@ -24,6 +25,7 @@ def answer_cache_key(
     payload = "|".join(
         (
             normalized,
+            season,
             data_version,
             index_version,
             model_version,

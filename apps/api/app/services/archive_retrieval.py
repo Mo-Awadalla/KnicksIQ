@@ -9,7 +9,7 @@ from typing import Any
 
 from app.core.config import get_settings
 from app.services.embeddings import embed_texts
-from app.services.qdrant_client import is_qdrant_healthy, search_collection
+from app.services.qdrant_client import get_qdrant_client, search_collection_batch
 
 _TOKEN_RE = re.compile(r"[a-z0-9]+")
 
@@ -58,7 +58,7 @@ def search_archive_vectors(
 ) -> list[ArchiveEvidence]:
     """Search allowlisted aliases and fuse dense and lexical candidate ranks."""
     settings = get_settings()
-    if not settings.rag_qdrant_enabled or not is_qdrant_healthy():
+    if not settings.rag_qdrant_enabled:
         return []
     scoped_filters = {
         key: value for key, value in filters.items() if value not in (None, [], {}, "")
@@ -66,21 +66,24 @@ def search_archive_vectors(
     scoped_filters["data_version"] = data_version
     candidates: dict[str, ArchiveEvidence] = {}
     dense_rankings: list[list[str]] = []
+    selected_queries = list(dict.fromkeys(queries[:3]))
     query_vectors: dict[str, list[float] | str] = {}
-    for query in queries[:3]:
+    for query in selected_queries:
         query_vectors[query] = (
             query if settings.rag_qdrant_cloud_inference else embed_texts([query])[0]
         )
     started = time.perf_counter()
+    client = get_qdrant_client()
     for collection in collections:
         alias = _collection_alias(collection)
-        for query in queries[:3]:
-            hits = search_collection(
-                alias,
-                query_vectors[query],
-                scoped_filters,
-                candidate_limit,
-            )
+        result_batches = search_collection_batch(
+            alias,
+            [query_vectors[query] for query in selected_queries],
+            scoped_filters,
+            candidate_limit,
+            client=client,
+        )
+        for hits in result_batches:
             ranking: list[str] = []
             for hit in hits:
                 candidate_id = f"{collection}:{hit.id}"
@@ -94,7 +97,7 @@ def search_archive_vectors(
                     metadata=dict(hit.payload),
                 )
             dense_rankings.append(ranking)
-    query_tokens = _tokens(" ".join(queries))
+    query_tokens = _tokens(" ".join(selected_queries))
     lexical = sorted(
         candidates,
         key=lambda candidate_id: (

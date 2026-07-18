@@ -86,6 +86,7 @@ def deterministic_retrieval_plan(
 
 
 def _filters_are_grounded(plan: RetrievalPlan, question: str) -> bool:
+    lowered = question.lower()
     allowed_teams = team_ids_in_text(question) | {"NYK"}
     if not set(plan.filters.team_ids).issubset(allowed_teams):
         return False
@@ -96,6 +97,15 @@ def _filters_are_grounded(plan: RetrievalPlan, question: str) -> bool:
         int(value) for value in re.findall(r"\b(?:q|quarter\s*)([1-9])\b", question.lower())
     }
     if not set(plan.filters.periods).issubset(allowed_periods):
+        return False
+    allowed_season_types: set[str] = set()
+    if re.search(r"\bregular[- ]season\b", lowered):
+        allowed_season_types.add("regular")
+    if re.search(r"\bplay[- ]?in\b", lowered):
+        allowed_season_types.add("play_in")
+    if "playoff" in lowered or "postseason" in lowered:
+        allowed_season_types.add("playoffs")
+    if not set(plan.filters.season_types).issubset(allowed_season_types):
         return False
     # Player IDs are resolved by the deterministic analytics planner. The model
     # cannot safely invent internal IDs from a natural-language prompt.
