@@ -42,11 +42,11 @@ services:
       - key: AI_API_KEY
         sync: false
       - key: AI_CHAT_MODEL
-        value: google/gemini-3.1-flash-lite
+        value: nvidia/nemotron-3-ultra-550b-a55b:free
       - key: OPENROUTER_ALLOWED_MODELS
-        value: '["google/gemini-3.1-flash-lite"]'
+        value: '["nvidia/nemotron-3-ultra-550b-a55b:free"]'
       - key: OPENROUTER_SUMMARY_MODEL
-        value: google/gemini-3.1-flash-lite
+        value: nvidia/nemotron-3-ultra-550b-a55b:free
       - key: OPENROUTER_MONTHLY_CUTOFF_USD
         value: "8"
       - key: SENTRY_DSN
@@ -57,16 +57,26 @@ services:
         value: https://www.knicksiq.win
       - key: TRUSTED_HOSTS
         value: '["api.knicksiq.win","127.0.0.1","localhost"]'
+      - key: QDRANT_URL
+        sync: false
+      - key: QDRANT_API_KEY
+        sync: false
       - key: RAG_QDRANT_ENABLED
-        value: "false"
+        value: "true"
       - key: RAG_QDRANT_CLOUD_INFERENCE
-        value: "false"
+        value: "true"
       - key: RAG_HYBRID_ENABLED
-        value: "false"
+        value: "true"
       - key: RAG_RERANKER_ENABLED
         value: "false"
       - key: RAG_LLM_PLANNER_ENABLED
         value: "true"
+      - key: ANALYSIS_ANSWER_MODE
+        value: shadow
+      - key: ANALYSIS_SHADOW_SAMPLE_RATE
+        value: "0.1"
+      - key: ANALYSIS_PROMPT_VERSION
+        value: v1
 
   - type: web
     name: knicksiq-web

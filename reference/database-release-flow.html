@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Database release flow</title>
+  <style>
+    body { max-width: 48rem; margin: 3rem auto; padding: 0 1.25rem; color: #1b1b1b; font: 18px/1.55 Georgia, serif; }
+    h1 { font-size: 2rem; line-height: 1.15; } code { background: #f1f1ed; padding: .12rem .28rem; border-radius: .2rem; font-family: ui-monospace, monospace; } ol { padding-left: 1.4rem; } strong { color: #7c2d12; }
+  </style>
+</head>
+<body>
+  <h1>Database release flow</h1>
+  <ol>
+    <li><strong>Connect:</strong> set <code>DB_URL</code> only in your shell or deployment secret store.</li>
+    <li><strong>Migrate:</strong> apply versioned schema changes with <code>alembic upgrade head</code>.</li>
+    <li><strong>Validate:</strong> verify the release file’s hash and internal rules.</li>
+    <li><strong>Load:</strong> insert the release data transactionally.</li>
+    <li><strong>Activate:</strong> make one validated release the public application’s source of truth.</li>
+    <li><strong>Verify:</strong> check readiness, then exercise a real public query.</li>
+  </ol>
+  <p><strong>Mnemonic:</strong> structure first, data second, traffic last.</p>
+</body>
+</html>

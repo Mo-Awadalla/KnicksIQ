@@ -1,6 +1,6 @@
 # KnicksIQ production runbook
 
-Production serves one immutable 2025–26 archive release. The API never migrates, seeds, ingests, generates reports, or mutates basketball data at startup. Qdrant, Redis, and OpenRouter are optional at request time; Postgres and one validated active release are required.
+Production serves one immutable 2025–26 archive release. The API never migrates, seeds, ingests, generates reports, or mutates basketball data at startup. Qdrant, Redis, and OpenRouter are required for the LLM-primary path but remain optional for availability; Postgres and one validated active release are the only dependencies required for deterministic answers.
 
 ## Failed deployment and rollback
 
@@ -19,7 +19,7 @@ Production serves one immutable 2025–26 archive release. The API never migrate
 
 ## Dependency outage
 
-- Qdrant: leave the API up; lexical/Postgres retrieval is authoritative. Rebuild or resume the cluster, validate it, then switch aliases.
+- Qdrant: leave the API up; responses fall back to deterministic Postgres answers with `degraded=true`. Rebuild or resume the cluster, validate counts and Recall@5, then switch aliases.
 - Redis: AI synthesis and shared caching are disabled during the outage. In-process limits protect one instance and deterministic facts remain available. A restarted free Key Value instance loses only reconstructible rate-limit, cache, and AI budget state.
 - OpenRouter or budget exhaustion: deterministic phrasing remains available. Do not raise the $8 application cutoff without owner approval; the provider guardrail is $9.
 - Sentry: application availability is unaffected. Use Render logs and synthetic checks until restored.
@@ -27,6 +27,16 @@ Production serves one immutable 2025–26 archive release. The API never migrate
 ## Elevated errors
 
 Correlate the public `request_id` with scrubbed API logs. Do not request or copy user prompts. Check Postgres pool saturation and statement timeouts first, then optional dependency timeouts. Roll back when the error rate exceeds 1% and the cause is release-specific.
+
+## Answer-mode rollout
+
+1. Deploy with `ANALYSIS_ANSWER_MODE=shadow` and
+   `ANALYSIS_SHADOW_SAMPLE_RATE=0.1`.
+2. Verify shadow validation, retrieval, cost, and latency gates without
+   inspecting or retaining prompt/evidence content.
+3. Set `ANALYSIS_ANSWER_MODE=llm_primary` only after owner sign-off.
+4. Roll back instantly by setting the mode to `deterministic`; no data or index
+   rollback is required.
 
 ## Secret rotation
 

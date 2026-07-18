@@ -6,7 +6,7 @@ import sys
 from types import SimpleNamespace
 
 import pytest
-from app.services import embeddings
+from app.services import embeddings, qdrant_client
 from app.services.possession_chunks import PossessionChunk
 from app.services.qdrant_client import (
     ensure_collections,
@@ -50,6 +50,10 @@ def test_embed_texts_shape_and_loader_cache(monkeypatch):
 
 
 class _FakeModels:
+    class PayloadSchemaType:
+        KEYWORD = "keyword"
+        INTEGER = "integer"
+
     class Distance:
         COSINE = "Cosine"
 
@@ -93,12 +97,16 @@ class _FakeQdrantClient:
         self.deleted = []
         self.upserts = []
         self.alias_updates = []
+        self.payload_indexes = []
 
     def get_collections(self):
         return SimpleNamespace(collections=[SimpleNamespace(name="knicks_games")])
 
     def create_collection(self, collection_name, vectors_config):
         self.created.append((collection_name, vectors_config.size, vectors_config.distance))
+
+    def create_payload_index(self, **kwargs):
+        self.payload_indexes.append(kwargs)
 
     def delete_collection(self, collection_name):
         self.deleted.append(collection_name)
@@ -115,6 +123,18 @@ class _FakeQdrantClient:
 
 def test_qdrant_collections_and_upsert_payload_shape(monkeypatch):
     monkeypatch.setitem(sys.modules, "qdrant_client", SimpleNamespace(models=_FakeModels))
+    settings = qdrant_client.get_settings().model_copy(
+        update={
+            "rag_qdrant_cloud_inference": False,
+            "rag_qdrant_vector_size": 384,
+            "rag_qdrant_games_collection": "knicks_games",
+            "rag_qdrant_possessions_collection": "knicks_possessions",
+            "rag_qdrant_roster_collection": "knicks_roster",
+            "rag_qdrant_box_scores_collection": "knicks_box_scores",
+            "rag_qdrant_reports_collection": "knicks_reports",
+        }
+    )
+    monkeypatch.setattr(qdrant_client, "get_settings", lambda: settings)
     client = _FakeQdrantClient()
 
     ensure_collections(client)

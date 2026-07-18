@@ -41,12 +41,22 @@ def test_render_blueprint_enables_the_grounded_ai_configuration():
     api = next(service for service in blueprint["services"] if service["name"] == "knicksiq-api")
     env = {item["key"]: item.get("value") for item in api["envVars"]}
 
-    model = "google/gemini-3.1-flash-lite"
+    model = "nvidia/nemotron-3-ultra-550b-a55b:free"
     assert env["AI_PROVIDER"] == "openrouter"
     assert env["AI_CHAT_MODEL"] == model
     assert env["OPENROUTER_ALLOWED_MODELS"] == f'["{model}"]'
     assert env["OPENROUTER_SUMMARY_MODEL"] == model
     assert env["RAG_LLM_PLANNER_ENABLED"] == "true"
+    assert env["RAG_QDRANT_ENABLED"] == "true"
+    assert env["RAG_QDRANT_CLOUD_INFERENCE"] == "true"
+    assert env["RAG_HYBRID_ENABLED"] == "true"
+    assert env["RAG_RERANKER_ENABLED"] == "false"
+    assert env["ANALYSIS_ANSWER_MODE"] == "shadow"
+    assert env["ANALYSIS_SHADOW_SAMPLE_RATE"] == "0.1"
+    assert env["ANALYSIS_PROMPT_VERSION"] == "v1"
+    for secret in ("QDRANT_URL", "QDRANT_API_KEY"):
+        item = next(entry for entry in api["envVars"] if entry["key"] == secret)
+        assert item == {"key": secret, "sync": False}
 
 
 def test_render_blueprint_provisions_the_optional_runtime_store():

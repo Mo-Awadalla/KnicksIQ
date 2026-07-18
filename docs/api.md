@@ -46,11 +46,18 @@ Only reviewed reports from the active release are public. The legacy
 }
 ```
 
-The response contains the deterministic answer, claim-level citations,
-warnings, refusal/degraded flags, active data version, and request ID. Internal
-classifier, evidence, route, and tool-trace fields are excluded in production.
+The response contains a grounded answer, claim-level citations, warnings,
+refusal/degraded flags, active data version, and request ID. Typed analytics
+remain available for computed player results. Internal retrieval plans,
+claim-validation comparisons, classifier data, evidence, routes, and tool
+traces are excluded in production.
 Unsupported tactical, live, injury, trade, future, and out-of-archive questions
 are explicitly refused. Rate-limit failures return 429.
+
+The public schema is identical in `deterministic`, `shadow`, and `llm_primary`.
+In shadow mode the user receives the deterministic response. In primary mode,
+failure of Qdrant, OpenRouter, Redis-backed AI budgeting, or claim validation
+returns that same deterministic response with `degraded=true`.
 
 ## Development-only mutation routes
 

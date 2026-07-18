@@ -2,12 +2,28 @@
 
 from __future__ import annotations
 
+import json
 from datetime import date, timedelta
 
+import pytest
 from app.api import analysis
 from app.models.game import Game
+from app.services.archive_retrieval import ArchiveEvidence
 from app.services.llm_planner import PlannerResult
+from app.services.player_analytics import AnalyticsAnswer
 from starlette.requests import Request
+
+
+@pytest.fixture(autouse=True)
+def isolate_response_cache(monkeypatch):
+    async def cache_miss(_key):
+        return None
+
+    async def discard_cache_write(_key, _value):
+        return None
+
+    monkeypatch.setattr(analysis, "get_cached_answer", cache_miss)
+    monkeypatch.setattr(analysis, "set_cached_answer", discard_cache_write)
 
 
 def test_client_identity_ignores_untrusted_forwarded_header():
@@ -272,8 +288,9 @@ async def test_public_analysis_retrieval_answer_shows_evidence(client):
     assert "cached" not in body["answer"].lower()
 
 
-async def test_public_analysis_query_uses_configured_llm(client, monkeypatch):
+async def test_deterministic_mode_does_not_use_configured_llm(client, monkeypatch):
     class StubSettings:
+        analysis_answer_mode = "deterministic"
         ai_provider = "openrouter"
         ai_api_key = "test-key"
         ai_chat_model = "nvidia/nemotron-3-ultra-550b-a55b:free"
@@ -282,9 +299,7 @@ async def test_public_analysis_query_uses_configured_llm(client, monkeypatch):
 
     class StubAdapter:
         async def generate(self, *, system: str, user: str) -> str:
-            assert "grounded Knicks analyst" in system
-            assert "Toronto" in user
-            return "LLM-grounded Raptors answer."
+            raise AssertionError("deterministic mode must not call the model")
 
     monkeypatch.setattr(analysis, "get_settings", lambda: StubSettings())
     monkeypatch.setattr(
@@ -299,12 +314,9 @@ async def test_public_analysis_query_uses_configured_llm(client, monkeypatch):
     )
     assert r.status_code == 200
     body = r.json()
-    assert body["answer"].startswith("LLM-grounded Raptors answer.")
+    assert body["answer"].startswith("Short answer")
     assert "Receipts" in body["answer"]
-    assert {
-        "tool": "llm_generate",
-        "model": "nvidia/nemotron-3-ultra-550b-a55b:free",
-    } in body["tool_calls"]
+    assert all(call["tool"] != "llm_generate" for call in body["tool_calls"])
 
 
 async def test_openrouter_failure_preserves_deterministic_factual_answer(client, monkeypatch):
@@ -463,6 +475,432 @@ async def test_suggested_wildest_swings_question_returns_ranked_games(client):
     assert "1." in body["answer"]
     assert body["citations"]
     assert body["warnings"] == []
+
+
+async def test_llm_primary_synthesizes_computed_swing_facts(client, monkeypatch):
+    original_settings = analysis.get_settings()
+
+    class LlmPrimarySettings:
+        analysis_answer_mode = "llm_primary"
+        test_mode = False
+        ai_provider = "openrouter"
+        ai_api_key = "test-key"
+        ai_chat_model = "approved-model"
+        openrouter_allowed_models = ["approved-model"]
+        rag_qdrant_enabled = True
+
+        def __getattr__(self, name):
+            return getattr(original_settings, name)
+
+    class GroundedAdapter:
+        async def generate(self, *, system: str, user: str) -> str:
+            payload = json.loads(user)
+            assert "evidence-linked claims" in system.lower()
+            assert "score-margin range" in payload["evidence"]["fact:table"]
+            assert payload["evidence"]["vector:possessions:swing-1"]
+            return json.dumps(
+                {
+                    "claims": [
+                        {
+                            "text": (
+                                "The computed score-margin ranking identifies "
+                                "the wildest swings."
+                            ),
+                            "evidence_ids": [
+                                "fact:table",
+                                "vector:possessions:swing-1",
+                            ],
+                        }
+                    ]
+                }
+            )
+
+    async def healthy_rate_limit(_request):
+        return False
+
+    monkeypatch.setattr(analysis, "get_settings", lambda: LlmPrimarySettings())
+    monkeypatch.setattr(analysis, "_rate_limit", healthy_rate_limit)
+    monkeypatch.setattr(analysis, "is_qdrant_healthy", lambda: True)
+    monkeypatch.setattr(analysis, "reserve_ai_budget", lambda: _true())
+    monkeypatch.setattr(
+        analysis,
+        "get_llm_adapter",
+        lambda *, response_format_json=True: GroundedAdapter(),
+    )
+    monkeypatch.setattr(
+        analysis,
+        "search_archive_vectors",
+        lambda **_kwargs: [
+            ArchiveEvidence(
+                evidence_id="vector:possessions:swing-1",
+                collection="possessions",
+                text="Archive possession evidence about the wildest swings.",
+                score=1.0,
+                metadata={"game_id": 1},
+            )
+        ],
+    )
+
+    response = await client.post(
+        "/analysis/query",
+        json={"question": "Which games had the wildest swings?"},
+    )
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["refused"] is False
+    assert body["answer"].startswith("The computed score-margin ranking")
+    assert {call["tool"] for call in body["tool_calls"]} == {
+        "retrieval_plan",
+        "archive_vector_search",
+        "table_rag",
+        "llm_generate",
+    }
+    assert body["citations"]
+
+
+async def test_llm_primary_grounds_descriptive_answers_in_vector_evidence(client, monkeypatch):
+    original_settings = analysis.get_settings()
+
+    class LlmPrimarySettings:
+        analysis_answer_mode = "llm_primary"
+        test_mode = False
+        ai_provider = "openrouter"
+        ai_api_key = "test-key"
+        ai_chat_model = "approved-model"
+        openrouter_allowed_models = ["approved-model"]
+        rag_qdrant_enabled = True
+
+        def __getattr__(self, name):
+            return getattr(original_settings, name)
+
+    class GroundedAdapter:
+        async def generate(self, *, system: str, user: str) -> str:
+            payload = json.loads(user)
+            assert payload["evidence"]["vector:reports:toronto-1"]
+            return json.dumps(
+                {
+                    "claims": [
+                        {
+                            "text": "Toronto was decided by the archived turning points.",
+                            "evidence_ids": ["vector:reports:toronto-1"],
+                        }
+                    ]
+                }
+            )
+
+    async def healthy_rate_limit(_request):
+        return False
+
+    monkeypatch.setattr(analysis, "get_settings", lambda: LlmPrimarySettings())
+    monkeypatch.setattr(analysis, "_rate_limit", healthy_rate_limit)
+    monkeypatch.setattr(analysis, "is_qdrant_healthy", lambda: True)
+    monkeypatch.setattr(analysis, "reserve_ai_budget", lambda: _true())
+    monkeypatch.setattr(
+        analysis,
+        "get_llm_adapter",
+        lambda *, response_format_json=True: GroundedAdapter(),
+    )
+    monkeypatch.setattr(
+        analysis,
+        "search_archive_vectors",
+        lambda **_kwargs: [
+            ArchiveEvidence(
+                evidence_id="vector:reports:toronto-1",
+                collection="reports",
+                text="Archived Toronto turning points.",
+                score=1.0,
+                metadata={"game_id": 2},
+            )
+        ],
+    )
+
+    response = await client.post(
+        "/analysis/query",
+        json={"question": "What happened in the Knicks game against Toronto?"},
+    )
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["answer"] == "Toronto was decided by the archived turning points."
+    assert body["refused"] is False
+    assert body["degraded"] is False
+    assert {"retrieval_plan", "archive_vector_search", "llm_generate"}.issubset(
+        {call["tool"] for call in body["tool_calls"]}
+    )
+    assert body["citations"]
+
+
+async def test_llm_primary_planner_can_accept_unfamiliar_archive_phrasing(client, monkeypatch):
+    original_settings = analysis.get_settings()
+
+    class LlmPrimarySettings:
+        analysis_answer_mode = "llm_primary"
+        test_mode = False
+        ai_provider = "openrouter"
+        ai_api_key = "test-key"
+        ai_chat_model = "approved-model"
+        openrouter_allowed_models = ["approved-model"]
+        rag_qdrant_enabled = True
+
+        def __getattr__(self, name):
+            return getattr(original_settings, name)
+
+    async def healthy_rate_limit(_request):
+        return False
+
+    async def accepted_plan(_question, *, fallback):
+        return fallback.model_copy(
+            update={
+                "supported": True,
+                "intent": "descriptive",
+                "queries": ["dramatic Knicks lead reversals"],
+                "collections": ["reports"],
+            }
+        )
+
+    class GroundedAdapter:
+        async def generate(self, *, system: str, user: str) -> str:
+            return json.dumps(
+                {
+                    "claims": [
+                        {
+                            "text": "The archive contains dramatic lead reversals.",
+                            "evidence_ids": ["vector:reports:reversal-1"],
+                        }
+                    ]
+                }
+            )
+
+    monkeypatch.setattr(analysis, "get_settings", lambda: LlmPrimarySettings())
+    monkeypatch.setattr(analysis, "_rate_limit", healthy_rate_limit)
+    monkeypatch.setattr(analysis, "is_qdrant_healthy", lambda: True)
+    monkeypatch.setattr(analysis, "maybe_plan_retrieval", accepted_plan)
+    monkeypatch.setattr(analysis, "reserve_ai_budget", lambda: _true())
+    monkeypatch.setattr(
+        analysis,
+        "get_llm_adapter",
+        lambda *, response_format_json=True: GroundedAdapter(),
+    )
+    monkeypatch.setattr(
+        analysis,
+        "search_archive_vectors",
+        lambda **_kwargs: [
+            ArchiveEvidence(
+                evidence_id="vector:reports:reversal-1",
+                collection="reports",
+                text="The archive contains dramatic lead reversals.",
+                score=1.0,
+                metadata={"game_id": 1},
+            )
+        ],
+    )
+
+    response = await client.post(
+        "/analysis/query",
+        json={"question": "Rank the craziest reversals."},
+    )
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["refused"] is False
+    assert body["answer"] == "The archive contains dramatic lead reversals."
+
+
+async def test_llm_primary_synthesizes_typed_player_analytics(client, monkeypatch):
+    original_settings = analysis.get_settings()
+
+    class LlmPrimarySettings:
+        analysis_answer_mode = "llm_primary"
+        test_mode = False
+        ai_provider = "openrouter"
+        ai_api_key = "test-key"
+        ai_chat_model = "approved-model"
+        openrouter_allowed_models = ["approved-model"]
+        rag_qdrant_enabled = True
+
+        def __getattr__(self, name):
+            return getattr(original_settings, name)
+
+    async def player_answer(*_args, **_kwargs):
+        return AnalyticsAnswer(
+            answer="Jalen Brunson averaged 25 points.",
+            analytics={
+                "status": "complete",
+                "resolved_question": "Brunson scoring average",
+                "plan": None,
+                "clarification": None,
+                "results": [
+                    {
+                        "type": "aggregate",
+                        "id": "brunson-points",
+                        "title": "Jalen Brunson points",
+                        "raw_values": {"points": 25},
+                        "display_values": {"points": "25.0"},
+                        "sample_size": 2,
+                        "timeframe": {"label": "last 2 appearances"},
+                        "warnings": [],
+                        "source_game_ids": [1, 2],
+                    }
+                ],
+                "coverage": None,
+            },
+            citations=[
+                {
+                    "claim": "Jalen Brunson averaged 25 points.",
+                    "type": "analytics",
+                    "title": "Jalen Brunson points",
+                    "metadata": {"result_id": "brunson-points"},
+                }
+            ],
+            warnings=[],
+        )
+
+    class GroundedAdapter:
+        async def generate(self, *, system: str, user: str) -> str:
+            payload = json.loads(user)
+            player_fact = json.loads(payload["evidence"]["fact:player"])
+            assert player_fact["results"][0]["raw_values"]["points"] == 25
+            return json.dumps(
+                {
+                    "claims": [
+                        {
+                            "text": "Brunson averaged 25 points in the computed sample.",
+                            "evidence_ids": ["fact:player"],
+                        }
+                    ]
+                }
+            )
+
+    async def healthy_rate_limit(_request):
+        return False
+
+    monkeypatch.setattr(analysis, "get_settings", lambda: LlmPrimarySettings())
+    monkeypatch.setattr(analysis, "_rate_limit", healthy_rate_limit)
+    monkeypatch.setattr(analysis, "is_qdrant_healthy", lambda: True)
+    monkeypatch.setattr(analysis, "reserve_ai_budget", lambda: _true())
+    monkeypatch.setattr(analysis, "answer_player_question", player_answer)
+    monkeypatch.setattr(
+        analysis,
+        "get_llm_adapter",
+        lambda *, response_format_json=True: GroundedAdapter(),
+    )
+    monkeypatch.setattr(analysis, "search_archive_vectors", lambda **_kwargs: [])
+
+    response = await client.post(
+        "/analysis/query",
+        json={"question": "What did Jalen Brunson average?"},
+    )
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["answer"] == "Brunson averaged 25 points in the computed sample."
+    assert body["analytics"]["results"][0]["raw_values"]["points"] == 25
+    assert body["citations"]
+    assert {call["tool"] for call in body["tool_calls"]} == {
+        "player_analytics",
+        "retrieval_plan",
+        "archive_vector_search",
+        "llm_generate",
+    }
+
+
+async def test_llm_primary_qdrant_failure_uses_deterministic_swing_answer(
+    client,
+    monkeypatch,
+):
+    original_settings = analysis.get_settings()
+
+    class LlmPrimarySettings:
+        analysis_answer_mode = "llm_primary"
+        test_mode = False
+        ai_provider = "openrouter"
+        ai_api_key = "test-key"
+        ai_chat_model = "approved-model"
+        openrouter_allowed_models = ["approved-model"]
+        rag_qdrant_enabled = True
+
+        def __getattr__(self, name):
+            return getattr(original_settings, name)
+
+    async def healthy_rate_limit(_request):
+        return False
+
+    class UnexpectedAdapter:
+        async def generate(self, *, system: str, user: str) -> str:
+            raise AssertionError("LLM must not run without primary vector retrieval")
+
+    def failed_search(**_kwargs):
+        raise ConnectionError("qdrant unavailable")
+
+    monkeypatch.setattr(analysis, "get_settings", lambda: LlmPrimarySettings())
+    monkeypatch.setattr(analysis, "_rate_limit", healthy_rate_limit)
+    monkeypatch.setattr(analysis, "is_qdrant_healthy", lambda: True)
+    monkeypatch.setattr(analysis, "search_archive_vectors", failed_search)
+    monkeypatch.setattr(
+        analysis,
+        "get_llm_adapter",
+        lambda *, response_format_json=True: UnexpectedAdapter(),
+    )
+
+    response = await client.post(
+        "/analysis/query",
+        json={"question": "Which games had the wildest swings?"},
+    )
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["refused"] is False
+    assert body["degraded"] is True
+    assert "score-margin range" in body["answer"]
+    assert all(call["tool"] != "llm_generate" for call in body["tool_calls"])
+
+
+async def test_shadow_mode_returns_deterministic_answer_and_runs_candidate_in_background(
+    client,
+    monkeypatch,
+):
+    original_settings = analysis.get_settings()
+    captured = []
+
+    class ShadowSettings:
+        analysis_answer_mode = "shadow"
+        analysis_shadow_sample_rate = 1.0
+        test_mode = False
+        public_chat_max_prompt_chars = 1200
+        rag_qdrant_enabled = True
+
+        def __getattr__(self, name):
+            return getattr(original_settings, name)
+
+    async def healthy_rate_limit(_request):
+        return False
+
+    async def shadow_candidate(**kwargs):
+        captured.append(kwargs)
+
+    monkeypatch.setattr(analysis, "get_settings", lambda: ShadowSettings())
+    monkeypatch.setattr(analysis, "_rate_limit", healthy_rate_limit)
+    monkeypatch.setattr(
+        analysis,
+        "is_qdrant_healthy",
+        lambda: (_ for _ in ()).throw(
+            AssertionError("shadow response must not block on Qdrant health")
+        ),
+    )
+    monkeypatch.setattr(analysis, "_run_shadow_candidate", shadow_candidate)
+
+    response = await client.post(
+        "/analysis/query",
+        json={"question": "Which games had the wildest swings?"},
+    )
+
+    assert response.status_code == 200
+    body = response.json()
+    assert "score-margin range" in body["answer"]
+    assert {call["tool"] for call in body["tool_calls"]} == {"table_rag"}
+    assert len(captured) == 1
+    assert "score-margin range" in captured[0]["evidence"]["fact:table"]
 
 
 async def test_public_analysis_unsupported_table_question_is_not_generic_dump(client):

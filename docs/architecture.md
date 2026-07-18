@@ -5,9 +5,10 @@
 KnicksIQ serves one immutable Knicks 2025–26 archive. Render hosts a static
 React application and a free, read-only FastAPI service. Neon Free Postgres is
 the authoritative store. Render Free Key Value supplies ephemeral shared rate
-limits, answer caching, and AI budget state. Qdrant is disabled for the free
-beta; OpenRouter may phrase facts that KnicksIQ has already computed. Sentry
-receives scrubbed errors and low-sample traces.
+limits, answer caching, and AI budget state. Qdrant Cloud holds release-versioned
+retrieval indexes. OpenRouter plans bounded retrieval and phrases evidence that
+KnicksIQ retrieved or computed. Sentry receives scrubbed errors and low-sample
+traces.
 
 Postgres and one validated active `dataset_releases` row are required.
 Qdrant, Redis, and OpenRouter are optional at request time. Their failure must
@@ -29,12 +30,19 @@ expand-only Alembic migration against Neon before deployment.
 ## Runtime request flow
 
 The web application calls the public API anonymously. Archive endpoints read
-the active release directly from Postgres. `POST /analysis/query` classifies the
-question, refuses unsupported/live/tactical requests, and computes canonical
-facts from Postgres. Semantic retrieval can add possession and report evidence
-from release-versioned Qdrant collections. OpenRouter is allowed only to phrase
-already-computed evidence and is constrained by an allowlist and budget cutoff.
-Every supported factual claim carries a source citation and data version.
+the active release directly from Postgres. `POST /analysis/query` first refuses
+explicit unsupported/live/tactical requests. In `llm_primary`, a schema-bound
+planner selects allowlisted searches and fact tools; the server validates its
+filters and injects the active data version. Qdrant supplies game, box-score,
+report, and possession evidence while Postgres analytics compute canonical
+numeric facts. The answer model emits evidence-linked claims, and the server
+rejects unsupported evidence IDs, entities, or numbers before rendering prose.
+
+`deterministic` bypasses planning and synthesis. `shadow` returns the
+deterministic response and evaluates a sampled LLM candidate in a background
+task. `llm_primary` returns the validated LLM answer. Any vector, model, Redis
+budget, timeout, parsing, or validation failure returns the deterministic answer
+with `degraded=true`.
 
 Production routing deliberately excludes ingestion, job enqueue, run
 detection, report creation/deletion, Swagger, and OpenAPI. Workers and MCP are
@@ -62,12 +70,14 @@ Teams and players supply entity metadata. Documents/chunks support local and
 legacy retrieval paths. Jobs exist for offline/development workflows only.
 See `docs/data-model.md` for field-level detail.
 
-## Optional RAG indexing
+## RAG indexing
 
 The offline indexer can create immutable Qdrant collections for game summaries,
-box-score facts, reviewed reports, and possession chunks. Qdrant is not
-provisioned for the free beta. Postgres/lexical retrieval is authoritative, and
-the API image contains no PyTorch or local model weights.
+box-score facts, reviewed reports, and possession chunks. It validates counts
+before atomically promoting stable aliases. Production uses Qdrant Cloud
+Inference with the configured 384-dimensional MiniLM model; the API image
+contains no PyTorch or local model weights. Postgres remains the authoritative
+source and can rebuild every collection.
 
 ## Safety and operations
 

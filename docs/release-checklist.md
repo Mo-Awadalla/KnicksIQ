@@ -2,7 +2,7 @@
 
 The owner signs this checklist. The selected production domain is
 `knicksiq.win`, the feedback form uses Formspree form `xaqrndvp`, and production
-AI is allowlisted to `google/gemini-3.1-flash-lite` with zero-data-
+AI is allowlisted to `nvidia/nemotron-3-ultra-550b-a55b:free` with zero-data-
 retention routing required on every OpenRouter request.
 
 - [ ] Purchase the domain; configure `www`, `api`, and apex redirect; verify DNS and TLS.
@@ -14,6 +14,8 @@ retention routing required on every OpenRouter request.
 - [ ] Pass k6 at 10 concurrent analysts: archive p95 <1s, analyst p95 <4s, errors <1%.
 - [ ] Record zero serious/critical axe findings; perform manual keyboard and current VoiceOver/NVDA smoke tests.
 - [ ] Verify the OpenRouter zero-retention model allowlist, $8 app cutoff, and $9 provider guardrail.
+- [ ] Build the active-release Qdrant aliases; verify point counts, release filters, hybrid Recall@5, and deterministic fallback.
+- [ ] Run 10% shadow traffic without retaining prompts/evidence; promote to `llm_primary` only after correctness, latency, cost, and error gates pass.
 - [ ] Verify Sentry scrubbing, email alerts, uptime monitor, no replay, and no prompt/IP capture.
 - [ ] Verify Render Key Value failure, Qdrant failure, and OpenRouter failure preserve deterministic factual answers.
 - [ ] Restore Postgres and rebuild Qdrant from the immutable bundle inside four hours.

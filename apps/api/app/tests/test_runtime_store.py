@@ -43,3 +43,30 @@ async def test_redis_limit_failure_degrades_and_closes_client(monkeypatch):
 
     assert await runtime_store.enforce_redis_limits("anonymous-client") is True
     assert redis.closed is True
+
+
+def test_answer_cache_key_changes_with_generation_contract(monkeypatch):
+    monkeypatch.setattr(
+        runtime_store,
+        "get_settings",
+        lambda: type("Settings", (), {"ip_hash_secret": "test-secret"})(),
+    )
+
+    shadow = runtime_store.answer_cache_key(
+        "Which games had the wildest swings?",
+        "release-1",
+        "model-1",
+        answer_mode="shadow",
+        prompt_version="v1",
+        index_version="release-1",
+    )
+    primary = runtime_store.answer_cache_key(
+        "Which games had the wildest swings?",
+        "release-1",
+        "model-1",
+        answer_mode="llm_primary",
+        prompt_version="v1",
+        index_version="release-1",
+    )
+
+    assert shadow != primary
