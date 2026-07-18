@@ -227,6 +227,23 @@ def _normalize(value: str) -> str:
     return re.sub(r"[^a-z0-9]+", " ", value.lower()).strip()
 
 
+def _asks_opponent_plus_minus_leader(question: str) -> bool:
+    """Recognize opponent impact phrasing as a cumulative plus/minus leaderboard."""
+    q = question.lower()
+    normalized = _normalize(question)
+    natural_impact = (
+        "gave the knicks" in normalized
+        and any(term in normalized for term in ("hardest time", "toughest time"))
+        and any(term in normalized for term in ("on the court", "on court", "on the floor"))
+    )
+    explicit_plus_minus = bool(
+        re.search(r"(?:\+/-|plus[- ]?minus)", q)
+        and any(term in normalized for term in ("opponent", "opposing", "against the knicks"))
+        and any(term in normalized for term in ("most", "highest", "leader", "which player"))
+    )
+    return natural_impact or explicit_plus_minus
+
+
 async def _release_id(db: AsyncSession) -> int | None:
     active = (
         await db.execute(
@@ -291,8 +308,10 @@ def _name_like_slots(question: str) -> list[str]:
 
 def _has_opponent_context(question: str) -> bool:
     q = _normalize(question)
-    return any(term in f" {q} " for term in (" opponent ", " against ", " opposing ")) or any(
-        re.search(rf"\b{re.escape(alias)}\b", q) for alias in _TEAM_ALIASES
+    return (
+        _asks_opponent_plus_minus_leader(question)
+        or any(term in f" {q} " for term in (" opponent ", " against ", " opposing "))
+        or any(re.search(rf"\b{re.escape(alias)}\b", q) for alias in _TEAM_ALIASES)
     )
 
 
@@ -368,6 +387,8 @@ def _is_player_intelligence(question: str, resolved: list[Player]) -> bool:
     q = question.lower()
     if any(term in q for term in ("who beat the knicks", "beat the knicks by", "knicks loss")):
         return False
+    if _asks_opponent_plus_minus_leader(question):
+        return True
     canonical_stats = bool(stat_keys_in_text(question)) or any(
         term in q for term in ("scoring", "shooting", "stat line")
     )
@@ -599,8 +620,11 @@ def _has_explicit_timeframe(text: str) -> bool:
 def _parse_plan(text: str, resolved: list[Player]) -> AnalyticsPlan:
     q = text.lower()
     timeframe, filters = _timeframe(text)
+    opponent_plus_minus_leader = _asks_opponent_plus_minus_leader(text)
     stats = stat_keys_in_text(text)
-    if "use true shooting percentage" in q:
+    if opponent_plus_minus_leader:
+        stats = ["plus_minus"]
+    elif "use true shooting percentage" in q:
         stats = ["true_shooting_percentage"]
     elif "use effective field goal percentage" in q:
         stats = ["effective_field_goal_percentage"]
@@ -641,7 +665,10 @@ def _parse_plan(text: str, resolved: list[Player]) -> AnalyticsPlan:
 
     # Select the operation before applying any conditioning filters. Words such as
     # "winning" and "correlated" describe a question; they do not select only wins.
-    if any(term in q for term in ("notable", "surprising", "interesting", "discover")):
+    if opponent_plus_minus_leader:
+        operation = AnalyticsOperation.LEADERBOARD
+        output = OutputType.TABLE
+    elif any(term in q for term in ("notable", "surprising", "interesting", "discover")):
         operation = AnalyticsOperation.NOTABLE_FACTS
         output = OutputType.FACTS
         if not has_explicit_stats:
@@ -725,6 +752,8 @@ def _parse_plan(text: str, resolved: list[Player]) -> AnalyticsPlan:
         if re.search(rf"\b{re.escape(alias)}\b", q):
             filters["opponent"] = team_id
             break
+    if opponent_plus_minus_leader:
+        filters["player_scope"] = "opponents"
 
     asks_average = any(term in q for term in ("average", "averaged", "per game", "per appearance"))
     asks_total = bool(
@@ -734,9 +763,14 @@ def _parse_plan(text: str, resolved: list[Player]) -> AnalyticsPlan:
         )
         or re.search(r"\bmost\s+(?:points?|rebounds?|assists?|steals?|blocks?)\b", q)
     )
-    aggregation_mode = (
-        "both" if asks_average and asks_total else "total" if asks_total else "average"
-    )
+    if opponent_plus_minus_leader:
+        aggregation_mode = "total"
+    elif asks_average and asks_total:
+        aggregation_mode = "both"
+    elif asks_total:
+        aggregation_mode = "total"
+    else:
+        aggregation_mode = "average"
 
     return AnalyticsPlan(
         resolved_players=[
@@ -1099,9 +1133,15 @@ def _split_result(plan: AnalyticsPlan, rows: list[dict[str, Any]], text: str) ->
 
 
 def _leaderboard_result(plan: AnalyticsPlan, rows: list[dict[str, Any]]) -> dict[str, Any]:
-    knicks = [row for row in rows if row["team_id"] == "NYK" and row["appeared"]]
+    opponent_scope = plan.filters.get("player_scope") == "opponents"
+    eligible_rows = [
+        row
+        for row in rows
+        if row["appeared"]
+        and ((row["team_id"] != "NYK") if opponent_scope else (row["team_id"] == "NYK"))
+    ]
     groups: dict[int, list[dict[str, Any]]] = defaultdict(list)
-    for row in knicks:
+    for row in eligible_rows:
         groups[row["player_id"]].append(row)
     stat = plan.stats[0]
     entries: list[dict[str, Any]] = []
@@ -1146,13 +1186,18 @@ def _leaderboard_result(plan: AnalyticsPlan, rows: list[dict[str, Any]]) -> dict
         warnings.append("No players met the requested ranking eligibility in this window.")
     result = _common_result(
         "leaderboard",
-        f"Knicks {STAT_REGISTRY[stat].label} leaders",
+        (
+            f"Opponent cumulative {STAT_REGISTRY[stat].label} leaders against the Knicks"
+            if opponent_scope and plan.aggregation_mode == "total"
+            else f"Knicks {STAT_REGISTRY[stat].label} leaders"
+        ),
         plan,
-        knicks,
+        eligible_rows,
         warnings=warnings,
     )
     result["stat"] = stat
     result["aggregation_mode"] = plan.aggregation_mode
+    result["player_scope"] = "opponents" if opponent_scope else "knicks"
     result["entries"] = entries[:10]
     return result
 
@@ -1543,6 +1588,17 @@ def _answer_text(result: dict[str, Any]) -> str:
         leader = result["entries"][0]
         stat = result["stat"]
         mode = result.get("aggregation_mode", "average")
+        if (
+            result["stat"] == "plus_minus"
+            and mode == "total"
+            and result.get("player_scope") == "opponents"
+        ):
+            value = float(leader["raw_values"][stat] or 0)
+            return (
+                f"{leader['player_name']} gave the Knicks the hardest time on court, "
+                f"with a cumulative plus-minus of {value:+.1f} across "
+                f"{leader['sample_size']} appearances."
+            )
         label = "total" if mode == "total" else "per appearance"
         return (
             f"{leader['player_name']} led at {leader['display_values'][stat]} {label} "

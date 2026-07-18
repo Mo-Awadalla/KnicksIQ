@@ -419,3 +419,83 @@ async def test_default_leaderboard_is_knicks_only_and_false_team_premise_is_limi
     assert false_premise is not None
     assert false_premise.analytics["status"] == "limited"
     assert false_premise.analytics["results"] == []
+
+
+async def test_hardest_opposing_player_ranks_cumulative_plus_minus(db_session) -> None:
+    release, _ = await _seed_release_stats(db_session)
+    games = list(
+        (
+            await db_session.execute(
+                select(Game).where(Game.release_id == release.id).order_by(Game.game_date)
+            )
+        ).scalars()
+    )
+    tatum = Player(
+        nba_player_id=999101,
+        full_name="Jayson Tatum",
+        team_id="BOS",
+        position="F",
+        jersey_number="0",
+    )
+    brown = Player(
+        nba_player_id=999102,
+        full_name="Jaylen Brown",
+        team_id="BOS",
+        position="F",
+        jersey_number="7",
+    )
+    db_session.add_all([tatum, brown])
+    await db_session.flush()
+    for game, tatum_plus_minus, brown_plus_minus in zip(
+        games,
+        (8, 12, -3),
+        (15, 1, -4),
+        strict=True,
+    ):
+        db_session.add_all(
+            [
+                PlayerGameStat(
+                    release_id=release.id,
+                    game_id=game.id,
+                    player_id=tatum.id,
+                    team_id="BOS",
+                    minutes=38,
+                    plus_minus=tatum_plus_minus,
+                ),
+                PlayerGameStat(
+                    release_id=release.id,
+                    game_id=game.id,
+                    player_id=brown.id,
+                    team_id="BOS",
+                    minutes=36,
+                    plus_minus=brown_plus_minus,
+                ),
+            ]
+        )
+    await db_session.commit()
+
+    answer = await answer_player_question(
+        db_session,
+        question=(
+            "Which player gave the Knicks the hardest time when he was on the court all season?"
+        ),
+        season="2025-26",
+    )
+
+    assert answer is not None
+    result = answer.analytics["results"][0]
+    assert result["entries"][0]["player_name"] == "Jayson Tatum"
+    assert result["entries"][0]["raw_values"]["plus_minus"] == 17
+    assert result["entries"][0]["sample_size"] == 3
+    assert "cumulative plus-minus" in answer.answer.lower()
+
+    explicit = await answer_player_question(
+        db_session,
+        question="Which opposing player had the most cumulative +/- against the Knicks?",
+        season="2025-26",
+    )
+
+    assert explicit is not None
+    explicit_leader = explicit.analytics["results"][0]["entries"][0]
+    assert explicit_leader["player_name"] == "Jayson Tatum"
+    assert explicit_leader["raw_values"]["plus_minus"] == 17
