@@ -1,7 +1,7 @@
 # Graph Report - KnicksIQ  (2026-07-18)
 
 ## Corpus Check
-- 342 files · ~130,180 words
+- 342 files · ~130,196 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
@@ -10,7 +10,7 @@
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `a2792478`
+- Built from commit: `0a598c04`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 

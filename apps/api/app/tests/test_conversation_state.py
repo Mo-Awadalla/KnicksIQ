@@ -9,13 +9,13 @@ from app.services.conversation_state import (
 from app.services.query_resolution import ResolvedQuery
 
 
-def _resolved(**updates) -> ResolvedQuery:
-    values = {
+def _resolved(**updates: object) -> ResolvedQuery:
+    values: dict[str, object] = {
         "intent": "narrative",
         "data_version": "v1",
     }
     values.update(updates)
-    return ResolvedQuery(**values)
+    return ResolvedQuery.model_validate(values)
 
 
 def test_follow_up_inherits_entities_and_changes_only_explicit_metric():

@@ -5057,7 +5057,7 @@
       "label": "_normalize()",
       "file_type": "code",
       "source_file": "apps/api/app/services/query_resolution.py",
-      "source_location": "L131",
+      "source_location": "L134",
       "_origin": "ast",
       "id": "services_query_resolution_normalize",
       "community": 71,
@@ -5067,7 +5067,7 @@
       "label": "_player_aliases()",
       "file_type": "code",
       "source_file": "apps/api/app/services/query_resolution.py",
-      "source_location": "L136",
+      "source_location": "L139",
       "_origin": "ast",
       "id": "services_query_resolution_player_aliases",
       "community": 71,
@@ -5077,7 +5077,7 @@
       "label": "Player",
       "file_type": "code",
       "source_file": "apps/api/app/services/query_resolution.py",
-      "source_location": "L136",
+      "source_location": "L139",
       "_origin": "ast",
       "id": "apps_api_app_services_query_resolution_py_player",
       "community": 7,
@@ -5087,7 +5087,7 @@
       "label": "_name_candidates()",
       "file_type": "code",
       "source_file": "apps/api/app/services/query_resolution.py",
-      "source_location": "L148",
+      "source_location": "L151",
       "_origin": "ast",
       "id": "services_query_resolution_name_candidates",
       "community": 71,
@@ -5097,7 +5097,7 @@
       "label": "_resolve_player_mentions()",
       "file_type": "code",
       "source_file": "apps/api/app/services/query_resolution.py",
-      "source_location": "L160",
+      "source_location": "L163",
       "_origin": "ast",
       "id": "services_query_resolution_resolve_player_mentions",
       "community": 71,
@@ -5107,7 +5107,7 @@
       "label": "_periods()",
       "file_type": "code",
       "source_file": "apps/api/app/services/query_resolution.py",
-      "source_location": "L236",
+      "source_location": "L239",
       "_origin": "ast",
       "id": "services_query_resolution_periods",
       "community": 71,
@@ -5117,7 +5117,7 @@
       "label": "_metric()",
       "file_type": "code",
       "source_file": "apps/api/app/services/query_resolution.py",
-      "source_location": "L249",
+      "source_location": "L252",
       "_origin": "ast",
       "id": "services_query_resolution_metric",
       "community": 71,
@@ -5127,7 +5127,7 @@
       "label": "_active_release()",
       "file_type": "code",
       "source_file": "apps/api/app/services/query_resolution.py",
-      "source_location": "L261",
+      "source_location": "L264",
       "_origin": "ast",
       "id": "services_query_resolution_active_release",
       "community": 71,
@@ -5137,7 +5137,7 @@
       "label": "AsyncSession",
       "file_type": "code",
       "source_file": "apps/api/app/services/query_resolution.py",
-      "source_location": "L261",
+      "source_location": "L264",
       "_origin": "ast",
       "id": "apps_api_app_services_query_resolution_py_asyncsession",
       "community": 7,
@@ -5147,7 +5147,7 @@
       "label": "resolve_query()",
       "file_type": "code",
       "source_file": "apps/api/app/services/query_resolution.py",
-      "source_location": "L279",
+      "source_location": "L282",
       "_origin": "ast",
       "id": "services_query_resolution_resolve_query",
       "community": 71,
@@ -5177,9 +5177,9 @@
       "label": "Resolve canonical entities and filters without model inference.",
       "file_type": "rationale",
       "source_file": "apps/api/app/services/query_resolution.py",
-      "source_location": "L287",
+      "source_location": "L290",
       "_origin": "ast",
-      "id": "services_query_resolution_rationale_287",
+      "id": "services_query_resolution_rationale_290",
       "community": 71,
       "norm_label": "resolve canonical entities and filters without model inference."
     },
@@ -30795,9 +30795,9 @@
       "source_file": "apps/api/app/api/analysis.py",
       "source_location": "L740",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "api_analysis_rationale_740",
-      "target": "api_analysis_run_shadow_candidate",
-      "confidence_score": 1.0
+      "target": "api_analysis_run_shadow_candidate"
     },
     {
       "relation": "calls",
@@ -41818,9 +41818,9 @@
       "source_file": "apps/api/app/services/conversation_state.py",
       "source_location": "L48",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "services_conversation_state_rationale_48",
-      "target": "services_conversation_state_resolve_conversation_delta",
-      "confidence_score": 1.0
+      "target": "services_conversation_state_resolve_conversation_delta"
     },
     {
       "relation": "references",
@@ -44943,9 +44943,9 @@
       "source_file": "apps/api/app/services/player_analytics.py",
       "source_location": "L1705",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "services_player_analytics_rationale_1705",
-      "target": "services_player_analytics_validate_analytics_evidence",
-      "confidence_score": 1.0
+      "target": "services_player_analytics_validate_analytics_evidence"
     },
     {
       "relation": "calls",
@@ -45019,9 +45019,9 @@
       "source_file": "apps/api/app/services/player_analytics.py",
       "source_location": "L1761",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "services_player_analytics_rationale_1761",
-      "target": "services_player_analytics_fold_question",
-      "confidence_score": 1.0
+      "target": "services_player_analytics_fold_question"
     },
     {
       "relation": "calls",
@@ -45040,9 +45040,9 @@
       "source_file": "apps/api/app/services/player_analytics.py",
       "source_location": "L1845",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "services_player_analytics_rationale_1845",
-      "target": "services_player_analytics_answer_player_question",
-      "confidence_score": 1.0
+      "target": "services_player_analytics_answer_player_question"
     },
     {
       "relation": "calls",
@@ -46777,9 +46777,9 @@
       "source_file": "apps/api/app/services/query_classifier.py",
       "source_location": "L65",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "services_query_classifier_rationale_65",
-      "target": "services_query_classifier_classify_query",
-      "confidence_score": 1.0
+      "target": "services_query_classifier_classify_query"
     },
     {
       "relation": "calls",
@@ -47175,9 +47175,9 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "apps/api/app/services/query_resolution.py",
-      "source_location": "L287",
+      "source_location": "L290",
       "weight": 1.0,
-      "source": "services_query_resolution_rationale_287",
+      "source": "services_query_resolution_rationale_290",
       "target": "services_query_resolution_resolve_query",
       "confidence_score": 1.0
     },
@@ -51463,9 +51463,9 @@
       "source_file": "apps/api/app/services/team_aliases.py",
       "source_location": "L77",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "services_team_aliases_rationale_77",
-      "target": "services_team_aliases_team_ids_in_text",
-      "confidence_score": 1.0
+      "target": "services_team_aliases_team_ids_in_text"
     },
     {
       "relation": "contains",
@@ -53172,9 +53172,9 @@
       "source_file": "apps/api/app/tests/test_query_resolution.py",
       "source_location": "L106",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "tests_test_query_resolution",
-      "target": "tests_test_query_resolution_test_common_word_was_does_not_resolve_to_washington",
-      "confidence_score": 1.0
+      "target": "tests_test_query_resolution_test_common_word_was_does_not_resolve_to_washington"
     },
     {
       "relation": "contains",
@@ -53202,9 +53202,9 @@
       "source_file": "apps/api/app/tests/test_query_resolution.py",
       "source_location": "L118",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "tests_test_query_resolution",
-      "target": "tests_test_query_resolution_test_full_name_consumes_surname_before_ambiguity_check",
-      "confidence_score": 1.0
+      "target": "tests_test_query_resolution_test_full_name_consumes_surname_before_ambiguity_check"
     },
     {
       "relation": "contains",
@@ -53232,9 +53232,9 @@
       "source_file": "apps/api/app/tests/test_query_resolution.py",
       "source_location": "L65",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "tests_test_query_resolution",
-      "target": "tests_test_query_resolution_test_superlative_game_reference_resolves_structurally",
-      "confidence_score": 1.0
+      "target": "tests_test_query_resolution_test_superlative_game_reference_resolves_structurally"
     },
     {
       "relation": "rationale_for",
@@ -54123,9 +54123,9 @@
       "source_file": "apps/api/app/tests/test_rag_quality.py",
       "source_location": "L260",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "tests_test_rag_quality",
-      "target": "tests_test_rag_quality_test_team_alias_resolution_does_not_treat_was_as_washington",
-      "confidence_score": 1.0
+      "target": "tests_test_rag_quality_test_team_alias_resolution_does_not_treat_was_as_washington"
     },
     {
       "relation": "rationale_for",
@@ -83661,5 +83661,5 @@
       "source_file": "docs/architecture.md"
     }
   ],
-  "built_at_commit": "a279247833ee4393a6ece76f06044a4c04e4a2b0"
+  "built_at_commit": "0a598c0415da6df37bdc788014ec86d1fdaa8a65"
 }
