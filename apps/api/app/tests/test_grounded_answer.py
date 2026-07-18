@@ -45,3 +45,27 @@ def test_grounded_answer_rejects_entity_missing_from_cited_evidence():
         )
         is False
     )
+
+
+def test_grounded_answer_rejects_entity_and_number_joined_across_unrelated_evidence():
+    candidate = GroundedAnswer.model_validate(
+        {
+            "claims": [
+                {
+                    "text": "Jalen Brunson scored 40 points.",
+                    "evidence_ids": ["player:brunson", "player:hart"],
+                }
+            ]
+        }
+    )
+
+    assert (
+        validate_grounded_answer(
+            candidate,
+            evidence={
+                "player:brunson": "Jalen Brunson played in the game.",
+                "player:hart": "Josh Hart scored 40 points.",
+            },
+        )
+        is False
+    )

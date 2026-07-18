@@ -84,6 +84,44 @@ async def test_llm_plan_can_rewrite_search_with_grounded_filters(monkeypatch):
     assert plan.filters.periods == [4]
 
 
+async def test_llm_plan_cannot_invent_a_playoff_filter(monkeypatch):
+    fallback = deterministic_retrieval_plan(
+        "What were the Knicks season turning points?",
+        intent="descriptive",
+        is_aggregative=False,
+    )
+
+    class Settings:
+        rag_llm_planner_enabled = True
+        ai_provider = "openrouter"
+        ai_api_key = "test-key"
+
+    class Adapter:
+        async def generate(self, *, system: str, user: str) -> str:
+            return (
+                '{"supported":true,"intent":"descriptive",'
+                '"queries":["Knicks playoff turning points"],'
+                '"collections":["games","reports"],'
+                '"filters":{"season_types":["playoffs"]},'
+                '"fact_tools":[]}'
+            )
+
+    monkeypatch.setattr(retrieval_planner, "get_settings", lambda: Settings())
+    monkeypatch.setattr(
+        retrieval_planner,
+        "get_llm_adapter",
+        lambda *, response_format_json=True: Adapter(),
+    )
+
+    assert (
+        await maybe_plan_retrieval(
+            "What were the Knicks season turning points?",
+            fallback=fallback,
+        )
+        == fallback
+    )
+
+
 async def test_llm_planner_budget_denial_returns_fallback(monkeypatch):
     fallback = deterministic_retrieval_plan(
         "Which games had the wildest swings?",

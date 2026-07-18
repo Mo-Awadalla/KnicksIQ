@@ -519,7 +519,6 @@ async def test_llm_primary_synthesizes_computed_swing_facts(client, monkeypatch)
 
     monkeypatch.setattr(analysis, "get_settings", lambda: LlmPrimarySettings())
     monkeypatch.setattr(analysis, "_rate_limit", healthy_rate_limit)
-    monkeypatch.setattr(analysis, "is_qdrant_healthy", lambda: True)
     monkeypatch.setattr(analysis, "reserve_ai_budget", lambda: _true())
     monkeypatch.setattr(
         analysis,
@@ -593,7 +592,6 @@ async def test_llm_primary_grounds_descriptive_answers_in_vector_evidence(client
 
     monkeypatch.setattr(analysis, "get_settings", lambda: LlmPrimarySettings())
     monkeypatch.setattr(analysis, "_rate_limit", healthy_rate_limit)
-    monkeypatch.setattr(analysis, "is_qdrant_healthy", lambda: True)
     monkeypatch.setattr(analysis, "reserve_ai_budget", lambda: _true())
     monkeypatch.setattr(
         analysis,
@@ -673,7 +671,6 @@ async def test_llm_primary_planner_can_accept_unfamiliar_archive_phrasing(client
 
     monkeypatch.setattr(analysis, "get_settings", lambda: LlmPrimarySettings())
     monkeypatch.setattr(analysis, "_rate_limit", healthy_rate_limit)
-    monkeypatch.setattr(analysis, "is_qdrant_healthy", lambda: True)
     monkeypatch.setattr(analysis, "maybe_plan_retrieval", accepted_plan)
     monkeypatch.setattr(analysis, "reserve_ai_budget", lambda: _true())
     monkeypatch.setattr(
@@ -776,7 +773,6 @@ async def test_llm_primary_synthesizes_typed_player_analytics(client, monkeypatc
 
     monkeypatch.setattr(analysis, "get_settings", lambda: LlmPrimarySettings())
     monkeypatch.setattr(analysis, "_rate_limit", healthy_rate_limit)
-    monkeypatch.setattr(analysis, "is_qdrant_healthy", lambda: True)
     monkeypatch.setattr(analysis, "reserve_ai_budget", lambda: _true())
     monkeypatch.setattr(analysis, "answer_player_question", player_answer)
     monkeypatch.setattr(
@@ -832,10 +828,15 @@ async def test_llm_primary_qdrant_failure_uses_deterministic_swing_answer(
     def failed_search(**_kwargs):
         raise ConnectionError("qdrant unavailable")
 
+    cache_writes = []
+
+    async def capture_cache_write(key, value):
+        cache_writes.append((key, value))
+
     monkeypatch.setattr(analysis, "get_settings", lambda: LlmPrimarySettings())
     monkeypatch.setattr(analysis, "_rate_limit", healthy_rate_limit)
-    monkeypatch.setattr(analysis, "is_qdrant_healthy", lambda: True)
     monkeypatch.setattr(analysis, "search_archive_vectors", failed_search)
+    monkeypatch.setattr(analysis, "set_cached_answer", capture_cache_write)
     monkeypatch.setattr(
         analysis,
         "get_llm_adapter",
@@ -853,6 +854,23 @@ async def test_llm_primary_qdrant_failure_uses_deterministic_swing_answer(
     assert body["degraded"] is True
     assert "score-margin range" in body["answer"]
     assert all(call["tool"] != "llm_generate" for call in body["tool_calls"])
+    assert cache_writes == []
+
+
+async def test_degraded_cache_entry_is_ignored(client, monkeypatch):
+    async def stale_cache(_key):
+        return {"answer": "stale degraded answer", "degraded": True}
+
+    monkeypatch.setattr(analysis, "get_cached_answer", stale_cache)
+
+    response = await client.post(
+        "/analysis/query",
+        json={"question": "What is the Knicks record this season?"},
+    )
+
+    assert response.status_code == 200
+    assert "stale degraded answer" not in response.json()["answer"]
+    assert "NYK is" in response.json()["answer"]
 
 
 async def test_shadow_mode_returns_deterministic_answer_and_runs_candidate_in_background(
@@ -878,28 +896,37 @@ async def test_shadow_mode_returns_deterministic_answer_and_runs_candidate_in_ba
     async def shadow_candidate(**kwargs):
         captured.append(kwargs)
 
+    cache = {}
+
+    async def get_cached(key):
+        return cache.get(key)
+
+    async def set_cached(key, value):
+        cache[key] = value
+
     monkeypatch.setattr(analysis, "get_settings", lambda: ShadowSettings())
     monkeypatch.setattr(analysis, "_rate_limit", healthy_rate_limit)
-    monkeypatch.setattr(
-        analysis,
-        "is_qdrant_healthy",
-        lambda: (_ for _ in ()).throw(
-            AssertionError("shadow response must not block on Qdrant health")
-        ),
-    )
+    monkeypatch.setattr(analysis, "get_cached_answer", get_cached)
+    monkeypatch.setattr(analysis, "set_cached_answer", set_cached)
     monkeypatch.setattr(analysis, "_run_shadow_candidate", shadow_candidate)
 
     response = await client.post(
         "/analysis/query",
         json={"question": "Which games had the wildest swings?"},
     )
+    cached_response = await client.post(
+        "/analysis/query",
+        json={"question": "Which games had the wildest swings?"},
+    )
 
     assert response.status_code == 200
+    assert cached_response.status_code == 200
     body = response.json()
     assert "score-margin range" in body["answer"]
     assert {call["tool"] for call in body["tool_calls"]} == {"table_rag"}
-    assert len(captured) == 1
+    assert len(captured) == 2
     assert "score-margin range" in captured[0]["evidence"]["fact:table"]
+    assert "score-margin range" in captured[1]["evidence"]["fact:cached"]
 
 
 async def test_public_analysis_unsupported_table_question_is_not_generic_dump(client):

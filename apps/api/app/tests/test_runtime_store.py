@@ -56,6 +56,7 @@ def test_answer_cache_key_changes_with_generation_contract(monkeypatch):
         "Which games had the wildest swings?",
         "release-1",
         "model-1",
+        season="2025-26",
         answer_mode="shadow",
         prompt_version="v1",
         index_version="release-1",
@@ -64,9 +65,31 @@ def test_answer_cache_key_changes_with_generation_contract(monkeypatch):
         "Which games had the wildest swings?",
         "release-1",
         "model-1",
+        season="2025-26",
         answer_mode="llm_primary",
         prompt_version="v1",
         index_version="release-1",
     )
 
     assert shadow != primary
+
+
+def test_answer_cache_key_changes_with_season(monkeypatch):
+    monkeypatch.setattr(
+        runtime_store,
+        "get_settings",
+        lambda: type("Settings", (), {"ip_hash_secret": "test-secret"})(),
+    )
+
+    def key(season: str) -> str:
+        return runtime_store.answer_cache_key(
+            "What was their record?",
+            "release-1",
+            "model-1",
+            season=season,
+            answer_mode="deterministic",
+            prompt_version="v1",
+            index_version="release-1",
+        )
+
+    assert key("2025-26") != key("2026-27")

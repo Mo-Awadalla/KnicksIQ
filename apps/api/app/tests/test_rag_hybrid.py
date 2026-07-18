@@ -10,7 +10,9 @@ from app.services import embeddings, qdrant_client
 from app.services.possession_chunks import PossessionChunk
 from app.services.qdrant_client import (
     ensure_collections,
+    get_qdrant_client,
     qdrant_point_id,
+    search_collection_batch,
     switch_aliases,
     upsert_points,
 )
@@ -188,6 +190,65 @@ def test_qdrant_cloud_inference_upserts_source_documents(monkeypatch):
     assert count == 1
     assert point.vector.text == "Knicks defeated Boston 100-90"
     assert point.vector.model == "sentence-transformers/all-MiniLM-L6-v2"
+
+
+def test_qdrant_client_is_reused_for_the_same_configuration(monkeypatch):
+    created = []
+
+    class Client:
+        def __init__(self, **kwargs):
+            created.append(kwargs)
+
+    settings = SimpleNamespace(
+        qdrant_url="https://example.qdrant.io",
+        qdrant_api_key="test-key",
+        rag_qdrant_cloud_inference=True,
+        qdrant_timeout_seconds=5,
+        qdrant_host="localhost",
+        qdrant_port=6333,
+    )
+    monkeypatch.setitem(sys.modules, "qdrant_client", SimpleNamespace(QdrantClient=Client))
+    monkeypatch.setattr(qdrant_client, "get_settings", lambda: settings)
+    qdrant_client._cached_qdrant_client.cache_clear()
+
+    first = get_qdrant_client()
+    second = get_qdrant_client()
+
+    assert first is second
+    assert len(created) == 1
+    qdrant_client._cached_qdrant_client.cache_clear()
+
+
+def test_qdrant_collection_queries_are_batched_per_collection():
+    calls = []
+
+    class Client:
+        def query_batch_points(self, *, collection_name, requests):
+            calls.append((collection_name, requests))
+            return [
+                SimpleNamespace(
+                    points=[
+                        SimpleNamespace(
+                            id=index,
+                            score=0.9,
+                            payload={"semantic_summary": f"result {index}"},
+                        )
+                    ]
+                )
+                for index, _request in enumerate(requests, start=1)
+            ]
+
+    results = search_collection_batch(
+        "knicks_games",
+        ["first query", "second query"],
+        {"data_version": "v1"},
+        20,
+        client=Client(),
+    )
+
+    assert len(calls) == 1
+    assert len(calls[0][1]) == 2
+    assert [[item.id for item in ranking] for ranking in results] == [["1"], ["2"]]
 
 
 def test_release_aliases_promote_in_one_atomic_request(monkeypatch):
