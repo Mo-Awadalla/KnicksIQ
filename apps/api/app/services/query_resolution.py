@@ -117,14 +117,17 @@ class ResolvedQuery(BaseModel):
 
     def planner_filters(self) -> dict[str, list[object]]:
         """Return the exact filter schema shared by lexical and dense retrieval."""
-        filters = self.retrieval_filters()
         return {
-            "dates": list(filters["dates"]),
-            "team_ids": list(filters["team_ids"]),
-            "player_ids": list(filters["player_ids"]),
-            "game_ids": list(filters["game_ids"]),
-            "periods": list(filters["periods"]),
-            "season_types": list(filters["season_types"]),
+            "dates": (
+                [self.date_start.isoformat()]
+                if self.date_start and self.date_end and self.date_start == self.date_end
+                else []
+            ),
+            "team_ids": list(self.team_ids),
+            "player_ids": list(self.player_ids),
+            "game_ids": list(self.game_ids),
+            "periods": list(self.periods),
+            "season_types": [self.season_type] if self.season_type else [],
         }
 
 
