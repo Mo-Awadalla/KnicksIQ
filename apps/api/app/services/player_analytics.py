@@ -1199,6 +1199,9 @@ def _leaderboard_result(plan: AnalyticsPlan, rows: list[dict[str, Any]]) -> dict
     result["aggregation_mode"] = plan.aggregation_mode
     result["player_scope"] = "opponents" if opponent_scope else "knicks"
     result["entries"] = entries[:10]
+    if entries:
+        result["source_game_ids"] = entries[0]["source_game_ids"]
+        result["sample_size"] = entries[0]["sample_size"]
     return result
 
 
