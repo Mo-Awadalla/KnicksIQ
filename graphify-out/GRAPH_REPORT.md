@@ -1,16 +1,16 @@
 # Graph Report - KnicksIQ  (2026-07-18)
 
 ## Corpus Check
-- 342 files · ~130,196 words
+- 342 files · ~130,247 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 2705 nodes · 5363 edges · 235 communities (179 shown, 56 thin omitted)
+- 2709 nodes · 5367 edges · 230 communities (174 shown, 56 thin omitted)
 - Extraction: 75% EXTRACTED · 25% INFERRED · 0% AMBIGUOUS · INFERRED: 1330 edges (avg confidence: 0.59)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `0a598c04`
+- Built from commit: `239e7af5`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -96,12 +96,10 @@
 - [[_COMMUNITY_LLM Primary Answer Mode|LLM Primary Answer Mode]]
 - [[_COMMUNITY_403 Module|403 Module]]
 - [[_COMMUNITY_use table url state|use table url state]]
-- [[_COMMUNITY_players Module|players Module]]
 - [[_COMMUNITY_teams Module|teams Module]]
 - [[_COMMUNITY_archive retrieval|archive retrieval]]
 - [[_COMMUNITY_Render Deployment Blueprint|Render Deployment Blueprint]]
 - [[_COMMUNITY_QueryClassifierResult Module|QueryClassifierResult Module]]
-- [[_COMMUNITY_NbaApiSettings Module|NbaApiSettings Module]]
 - [[_COMMUNITY_Deterministic Fallback|Deterministic Fallback]]
 - [[_COMMUNITY_bad stretches Table|bad stretches Table]]
 - [[_COMMUNITY_embeddings Module|embeddings Module]]
@@ -111,7 +109,6 @@
 - [[_COMMUNITY_Frontend Build Allowlist|Frontend Build Allowlist]]
 - [[_COMMUNITY_types Module|types Module]]
 - [[_COMMUNITY_health Module|health Module]]
-- [[_COMMUNITY_Tests for staged local|Tests for staged local]]
 - [[_COMMUNITY_POST analysisquery|POST /analysis/query]]
 - [[_COMMUNITY_Model Context Protocol|Model Context Protocol]]
 - [[_COMMUNITY_Traditional Box Score Data|Traditional Box Score Data]]
@@ -180,7 +177,6 @@
 - [[_COMMUNITY_Community 184|Community 184]]
 - [[_COMMUNITY_Community 185|Community 185]]
 - [[_COMMUNITY_Community 186|Community 186]]
-- [[_COMMUNITY_Community 187|Community 187]]
 - [[_COMMUNITY_Community 188|Community 188]]
 - [[_COMMUNITY_Community 189|Community 189]]
 - [[_COMMUNITY_Community 190|Community 190]]
@@ -190,7 +186,6 @@
 - [[_COMMUNITY_Community 194|Community 194]]
 - [[_COMMUNITY_Community 195|Community 195]]
 - [[_COMMUNITY_Community 196|Community 196]]
-- [[_COMMUNITY_Community 197|Community 197]]
 - [[_COMMUNITY_Community 198|Community 198]]
 - [[_COMMUNITY_Community 199|Community 199]]
 - [[_COMMUNITY_Community 200|Community 200]]
@@ -263,63 +258,63 @@
 - **Read-Only Basketball MCP Tool Suite** — docs_mcp_tools_get_games, docs_mcp_tools_get_game, docs_mcp_tools_get_box_score, docs_mcp_tools_get_play_by_play, docs_mcp_tools_find_scoring_runs, docs_mcp_tools_find_bad_stretches [EXTRACTED 1.00]
 - **Release-Scoped Immutable Archive** — docs_architecture_dataset_releases, docs_architecture_data_hierarchy, docs_architecture_qdrant_indexing [EXTRACTED 1.00]
 
-## Communities (235 total, 56 thin omitted)
+## Communities (230 total, 56 thin omitted)
 
 ### Community 0 - "calculations Module"
 Cohesion: 0.05
-Nodes (104): aggregate_rows(), count_double_doubles(), linear_slope(), Pure formulas shared by request-time and offline analytics., Aggregate appearances with weighted rates and total-minute per-36 values., Return signed robust scores using MAD, with an IQR fallback., robust_outlier_scores(), rolling_mean() (+96 more)
+Nodes (107): aggregate_rows(), count_double_doubles(), linear_slope(), Pure formulas shared by request-time and offline analytics., Aggregate appearances with weighted rates and total-minute per-36 values., Return signed robust scores using MAD, with an IQR fallback., robust_outlier_scores(), rolling_mean() (+99 more)
 
 ### Community 1 - "layout provider"
-Cohesion: 0.08
-Nodes (25): useIsMobile(), Header(), HeaderProps, Input(), Separator(), Sheet(), SheetContent(), SheetDescription() (+17 more)
+Cohesion: 0.20
+Nodes (5): build_api_router(), Aggregate router for the API., APIRouter, The production API exposes only the documented immutable public surface., test_production_route_allowlist_is_exact()
 
 ### Community 2 - "logo Module"
 Cohesion: 0.06
-Nodes (47): Logo(), IconDiscord(), IconDocker(), IconFacebook(), IconFigma(), IconGithub(), IconGitlab(), IconGmail() (+39 more)
+Nodes (49): Logo(), IconDiscord(), IconDocker(), IconFacebook(), IconFigma(), IconGithub(), IconGitlab(), IconGmail() (+41 more)
 
 ### Community 3 - "bad stretch"
-Cohesion: 0.15
+Cohesion: 0.16
 Nodes (28): _classify_leverage(), _clock_to_seconds(), _collapse_overlapping_candidates(), _crossed_pressure_zone(), detect_impactful_runs(), _impact_score(), ImpactfulRunConfig, _is_late_game() (+20 more)
 
 ### Community 4 - "release bundle"
-Cohesion: 0.15
-Nodes (24): Any, AsyncSession, Game, Release recovery and v3 box-score normalization tests., test_complete_overtime_period_scores_uses_cumulative_pbp(), test_normalize_box_score_keeps_dnp_players_as_zero_rows(), test_normalize_box_score_maps_v3_fields_and_overtime(), test_normalize_box_score_parses_clock_minutes_and_carries_seconds() (+16 more)
+Cohesion: 0.09
+Nodes (44): Path, Any, AsyncSession, Game, build_bundle(), canonical_json(), load_release_bundle(), Deterministic release bundles and transactional database loading. (+36 more)
 
 ### Community 5 - "FastMCP Module"
-Cohesion: 0.13
-Nodes (25): Any, Any, Game, Tool-call logging.  The MCP server logs every tool invocation to the `tool_calls, Context manager that logs a tool call's start, end, and duration., tool_call(), BadStretchModel, GameEventModel (+17 more)
+Cohesion: 0.07
+Nodes (46): Any, Any, Game, FastMCP, Tool-call logging.  The MCP server logs every tool invocation to the `tool_calls, Context manager that logs a tool call's start, end, and duration., tool_call(), BadStretchModel (+38 more)
 
 ### Community 6 - "dependencies Module"
 Cohesion: 0.05
 Nodes (43): dependencies, axios, class-variance-authority, clsx, cmdk, date-fns, @hookform/resolvers, input-otp (+35 more)
 
 ### Community 7 - "game Module"
-Cohesion: 0.08
-Nodes (41): archive_status(), ArchiveStatus, Public archive release metadata., AsyncSession, Depends, get_db, AsyncSession, Player (+33 more)
+Cohesion: 0.07
+Nodes (64): archive_status(), ArchiveStatus, Public archive release metadata., AsyncSession, Depends, get_db, Game, Any (+56 more)
 
 ### Community 8 - "JobAcceptedResponse Module"
-Cohesion: 0.16
-Nodes (27): Any, Path, Path, GeneratedStatFact, Offline-generated, release-scoped structured analytics facts., build_bundle(), canonical_json(), load_release_bundle() (+19 more)
+Cohesion: 0.25
+Nodes (6): Direction, DirectionContext, DirectionContextType, DirectionProvider(), IconDir(), IconDirProps
 
 ### Community 9 - "DataTableBulkActions Module"
-Cohesion: 0.08
-Nodes (37): useLayout(), sidebarData, AppSidebar(), AppTitle(), ToggleSidebar(), checkIsActive(), NavGroup(), SidebarMenuCollapsedDropdown() (+29 more)
+Cohesion: 0.04
+Nodes (62): Collapsible, LayoutContext, LayoutContextType, LayoutProviderProps, useLayout(), Variant, sidebarData, useIsMobile() (+54 more)
 
 ### Community 10 - "gameId Module"
 Cohesion: 0.08
 Nodes (31): Route, Route, Route, Route, Route, Route, SeasonArchivePage(), Route (+23 more)
 
 ### Community 11 - "table rag"
-Cohesion: 0.11
-Nodes (32): Any, AsyncSession, Game, Any, _answer_box_score_question(), _answer_from_games(), _answer_swing_question(), answer_table_question() (+24 more)
+Cohesion: 0.06
+Nodes (57): Any, AsyncSession, Game, Any, build_possession_chunks(), chunk_evidence(), _chunk_text(), _event_row() (+49 more)
 
 ### Community 12 - "command menu"
 Cohesion: 0.09
 Nodes (26): CommandMenu(), Search(), SearchContext, SearchContextType, SearchProviderProps, useSearch(), DataTableFacetedFilterProps, Command() (+18 more)
 
 ### Community 13 - "analytics cards"
-Cohesion: 0.11
-Nodes (17): AnalyticsCards(), analytics, formatDate(), knicksScore(), ReceiptCard(), ReceiptMini(), SUGGESTED_QUESTIONS, retainLastFour() (+9 more)
+Cohesion: 0.10
+Nodes (20): AnalyticsCards(), analytics, formatDate(), knicksScore(), ReceiptCard(), ReceiptMini(), SUGGESTED_QUESTIONS, retainLastFour() (+12 more)
 
 ### Community 14 - "Security Contact"
 Cohesion: 0.06
@@ -346,20 +341,20 @@ Cohesion: 0.20
 Nodes (11): Project Graphify Rules, Incremental Update, Graph Query Interface, Native Claude Integration, Post-Commit Hook, BFS Traversal, DFS Traversal, Explain Query (+3 more)
 
 ### Community 20 - "AnalyticsOperation Module"
-Cohesion: 0.20
-Nodes (34): JobAcceptedResponse, Game, GameEvent, Any, AsyncSession, GameEvent, BadStretchRead, BoxScoreRead (+26 more)
+Cohesion: 0.22
+Nodes (33): JobAcceptedResponse, Game, GameEvent, Any, AsyncSession, GameEvent, BadStretchRead, BoxScoreRead (+25 more)
 
 ### Community 21 - "archive Module"
-Cohesion: 0.32
-Nodes (11): delete_report(), generate_postgame(), get_report(), list_reports(), PostgameRequest, PostgameResponse, Synchronously generate a postgame report for a game.      In a heavier setup thi, ReportSummary (+3 more)
+Cohesion: 0.31
+Nodes (8): DomainGameEvent, _delete_existing(), detect_game_features(), Job: run scoring run + bad stretch detectors on a single game.  Reads `game_even, Convert an ORM GameEvent to the basketball-core domain model., Run both detectors on a single game and persist results., _to_domain(), _worker_name()
 
 ### Community 22 - "fetchArchiveStatus Module"
-Cohesion: 0.13
-Nodes (15): AnalysisCitation, AnalysisResponse, BadStretch, GameDataStatus, GameDetail, GameEvent, GameStatus, GameSummary (+7 more)
+Cohesion: 0.07
+Nodes (19): fetchArchiveStatus(), ReportSummary, AnalysisCitation, AnalysisResponse, BadStretch, GameDataStatus, GameDetail, GameEvent (+11 more)
 
 ### Community 23 - "qdrant client"
-Cohesion: 0.27
-Nodes (15): Any, build_qdrant_filter(), _match_any(), QdrantSearchResult, Qdrant vector-store integration for RAG., Translate retrieval filters to Qdrant payload filters., Batch multiple searches against one collection into one network request., Atomically point one stable read alias at a validated physical collection. (+7 more)
+Cohesion: 0.15
+Nodes (28): Any, build_qdrant_filter(), _cached_qdrant_client(), _collection_names(), create_collection(), create_payload_indexes(), ensure_collections(), get_qdrant_client() (+20 more)
 
 ### Community 24 - "scoring run"
 Cohesion: 0.13
@@ -378,12 +373,12 @@ Cohesion: 0.11
 Nodes (17): get_data_source(), NBADataSource, parse_game_date(), Data source adapters.  The `NBADataSource` protocol defines a stable interface f, Protocol for NBA data sources. Implementations may be remote or local., Reads game data from the API's seed JSON files.      This is the default source., Construct the data source selected by `settings.data_source`.      Args:, StaticSeedDataSource (+9 more)
 
 ### Community 28 - "GameEvent Module"
-Cohesion: 0.08
-Nodes (37): Any, Game, Any, AsyncSession, Game, GameEvent, Any, ArgumentParser (+29 more)
+Cohesion: 0.13
+Nodes (27): Any, Any, AsyncSession, Game, GameEvent, DocumentChunk, Chunk ORM model — a piece of a Document with an optional embedding.  For Phase 5, Document (+19 more)
 
 ### Community 29 - "analysis context"
-Cohesion: 0.23
-Nodes (16): Any, AsyncSession, _canonical_key(), _clean_filters(), _collection_alias(), fuse_archive_evidence(), _game_filter_clauses(), _lexical_match() (+8 more)
+Cohesion: 0.14
+Nodes (19): _canonical_key(), _clean_filters(), _collection_alias(), fuse_archive_evidence(), _game_filter_clauses(), _lexical_match(), Independent lexical and dense retrieval across the immutable archive., Return a backend-appropriate match predicate and rank expression. (+11 more)
 
 ### Community 30 - "Tests for worker CLI"
 Cohesion: 0.12
@@ -394,31 +389,31 @@ Cohesion: 0.08
 Nodes (24): dependencies, axios, react, react-dom, react-router-dom, @tanstack/react-query, devDependencies, autoprefixer (+16 more)
 
 ### Community 32 - "date picker"
-Cohesion: 0.24
-Nodes (9): LongText(), LongTextProps, DataTableBulkActionsProps, Badge(), badgeVariants, Tooltip(), TooltipContent(), TooltipProvider() (+1 more)
+Cohesion: 0.18
+Nodes (11): LongText(), LongTextProps, DataTableBulkActionsProps, Header(), HeaderProps, Separator(), SidebarTrigger(), Tooltip() (+3 more)
 
 ### Community 33 - "PossessionChunk Module"
 Cohesion: 0.12
-Nodes (15): PossessionChunk, CreateAlias, CreateAliasOperation, DeleteAlias, DeleteAliasOperation, Distance, Document, _FakeEmbeddingModel (+7 more)
+Nodes (14): PossessionChunk, CreateAlias, CreateAliasOperation, DeleteAlias, DeleteAliasOperation, Distance, Document, _FakeEmbeddingModel (+6 more)
 
 ### Community 34 - "analysis Module"
-Cohesion: 0.28
-Nodes (32): _analysis_context(), AnalysisCitation, AnalysisContextMessage, AnalysisQueryRequest, AnalysisQueryResponse, _generate_llm_answer(), Any, AsyncSession (+24 more)
+Cohesion: 0.17
+Nodes (51): _active_data_version(), _analysis_context(), AnalysisCitation, AnalysisContextMessage, AnalysisQueryRequest, AnalysisQueryResponse, _apply_resolved_filters(), _client_id() (+43 more)
 
 ### Community 35 - "report generator"
 Cohesion: 0.15
 Nodes (22): Any, Path, Any, _load_cases(), main(), _query(), Run the analyst evaluation set against an API endpoint., _citation_ids() (+14 more)
 
 ### Community 36 - "games Module"
-Cohesion: 0.11
-Nodes (22): DataTableBulkActions(), DataTableColumnHeader(), DataTableColumnHeaderProps, DataTableFacetedFilter(), DataTableToolbar(), DataTableToolbarProps, DataTableViewOptions(), DataTableViewOptionsProps (+14 more)
+Cohesion: 0.10
+Nodes (23): DataTableBulkActions(), DataTableColumnHeader(), DataTableColumnHeaderProps, DataTableFacetedFilter(), DataTableToolbar(), DataTableToolbarProps, DataTableViewOptions(), DataTableViewOptionsProps (+15 more)
 
 ### Community 37 - "jobs Module"
 Cohesion: 0.10
 Nodes (29): _create_job_row(), get_job_status(), IngestGameDetailRequest, IngestGamesRequest, JobStatusResponse, Job management endpoints.  Enqueue work and read job status. The queue uses RQ +, Enqueue a job to (re)ingest play-by-play events for one game., Get the status of a background job. (+21 more)
 
 ### Community 38 - "create app"
-Cohesion: 0.15
+Cohesion: 0.14
 Nodes (23): BadStretchConfig, _cause_counts(), detect_bad_stretches(), _events_in_range(), _likely_causes(), Bad stretch detector.  Bad stretches are Knicks-centric views of opponent impact, BadStretch, A composite bad stretch for the Knicks.      A bad stretch is identified when th (+15 more)
 
 ### Community 39 - "tsconfig app"
@@ -427,27 +422,27 @@ Nodes (21): compilerOptions, allowImportingTsExtensions, isolatedModules, jsx, l
 
 ### Community 40 - "confirm dialog"
 Cohesion: 0.11
-Nodes (21): ConfirmDialog(), ConfirmDialogProps, DatePickerProps, LearnMore(), LearnMoreProps, AlertDialog(), AlertDialogAction(), AlertDialogCancel() (+13 more)
+Nodes (22): ConfirmDialog(), ConfirmDialogProps, DatePickerProps, LearnMore(), LearnMoreProps, GeneralErrorProps, AlertDialog(), AlertDialogAction() (+14 more)
 
 ### Community 41 - "queryClient Module"
-Cohesion: 0.09
-Nodes (17): queryClient, fonts, Direction, DirectionContext, DirectionContextType, DirectionProvider(), Font, FontContext (+9 more)
+Cohesion: 0.13
+Nodes (11): queryClient, fonts, Font, FontContext, FontContextType, FontProvider(), handleServerError(), toastError (+3 more)
 
 ### Community 42 - "ingest game detail"
 Cohesion: 0.27
 Nodes (9): Any, _build_player_id_map(), ingest_game_detail(), Job: ingest play-by-play events for a single game.  Reads the source's event lis, Map nba_player_id (int) -> internal players.id (int) for the given events., Ingest the play-by-play events for a single game (by internal id)., _worker_name(), If the game id doesn't exist, the job should fail with a clear error. (+1 more)
 
 ### Community 43 - "BaseModel Module"
-Cohesion: 0.11
-Nodes (22): AnalyticsPlan, Strict, storage-independent analytics plan types., ResolvedPlayer, Timeframe, BaseModel, ToolError, Team, AnalyticsClarification (+14 more)
+Cohesion: 0.12
+Nodes (26): delete_report(), generate_postgame(), get_report(), list_reports(), PostgameRequest, PostgameResponse, Synchronously generate a postgame report for a game.      In a heavier setup thi, ReportSummary (+18 more)
 
 ### Community 44 - "select dropdown"
-Cohesion: 0.17
-Nodes (14): SelectDropdown(), SelectDropdownProps, DataTablePagination(), DataTablePaginationProps, getPageNumbers(), Select(), SelectContent(), SelectItem() (+6 more)
+Cohesion: 0.10
+Nodes (22): SelectDropdown(), SelectDropdownProps, FormControl(), FormDescription(), FormFieldContext, FormFieldContextValue, FormItem(), FormItemContext (+14 more)
 
 ### Community 45 - "retrieval planner"
-Cohesion: 0.09
-Nodes (38): _active_data_version(), _apply_resolved_filters(), _client_id(), _contextual_question(), _execute_archive_retrieval(), _format_answer(), _generate_grounded_answer(), _is_supported_question() (+30 more)
+Cohesion: 0.27
+Nodes (10): Any, answer_cache_key(), enforce_redis_limits(), get_cached_answer(), Optional Redis limits and privacy-preserving response cache., Fail closed when Redis is absent or the application cutoff is reached., Return True when Redis is degraded; raise ValueError when a limit is hit., _redis() (+2 more)
 
 ### Community 46 - "components Module"
 Cohesion: 0.11
@@ -462,12 +457,12 @@ Cohesion: 0.11
 Nodes (17): compilerOptions, allowImportingTsExtensions, isolatedModules, lib, module, moduleDetection, moduleResolution, noEmit (+9 more)
 
 ### Community 49 - "seed loader"
-Cohesion: 0.22
-Nodes (17): AsyncSession, _attach_seed_player_ids(), _coerce_game_row(), _expand_seed_events_to_full_game(), _load(), Seed loader — reads JSON files in this directory and inserts them.  Used both by, Insert games (and their play-by-play events).      Returns the number of games i, Seed teams, players, and games in dependency order. (+9 more)
+Cohesion: 0.24
+Nodes (16): AsyncSession, _attach_seed_player_ids(), _coerce_game_row(), _expand_seed_events_to_full_game(), _load(), Seed loader — reads JSON files in this directory and inserts them.  Used both by, Insert games (and their play-by-play events).      Returns the number of games i, Seed teams, players, and games in dependency order. (+8 more)
 
 ### Community 50 - "SimpleNamespace Module"
 Cohesion: 0.11
-Nodes (12): SimpleNamespace, Operational health response tests., test_ready_distinguishes_disabled_optional_services(), _FakeQdrantClient, test_conditional_reranker_skips_high_confidence_metadata_match(), test_qdrant_client_is_reused_for_the_same_configuration(), test_qdrant_cloud_inference_upserts_source_documents(), test_qdrant_failure_falls_back_to_lexical_retrieval() (+4 more)
+Nodes (20): T, Path, _load_model(), Optional local cross-encoder reranking for hybrid RAG candidates., rerank_candidates(), SimpleNamespace, Operational health response tests., test_ready_distinguishes_disabled_optional_services() (+12 more)
 
 ### Community 51 - "Tests for game endpoints"
 Cohesion: 0.12
@@ -475,23 +470,23 @@ Nodes (5): Tests for game endpoints., Runs are computed from cached events when 
 
 ### Community 52 - "Reset one collection without"
 Cohesion: 0.21
-Nodes (14): embed_texts(), Embed text with a cached local BGE model., versioned_collection(), build_rag_artifacts(), _build_release_supporting_collections(), _embedding_text(), _iter_batches(), Build derived RAG artifacts from cached DB rows only. (+6 more)
+Nodes (14): Reset one collection without touching the rest of the local Qdrant store., recreate_collection(), versioned_collection(), build_rag_artifacts(), _build_release_supporting_collections(), _embedding_text(), _iter_batches(), Build derived RAG artifacts from cached DB rows only. (+6 more)
 
 ### Community 53 - "Job Module"
 Cohesion: 0.15
 Nodes (12): ingest_games(), Job: ingest a list of games (or refresh from the upstream data source).  Pulls g, Ingest games from the data source.      The job_id is created by the API (return, _worker_name(), Tests for the worker service.  These run the job functions directly (no RQ, no R, Yield a fresh DB with the worker's expected schema., The ingest_games job should run, update the Job row to 'finished'., A single-game ingest should populate the game_events table. (+4 more)
 
 ### Community 54 - "detect runs"
-Cohesion: 0.20
-Nodes (11): _delete_existing(), detect_game_features(), Job: run scoring run + bad stretch detectors on a single game.  Reads `game_even, Run both detectors on a single game and persist results., _worker_name(), Tests for the basketball-logic detector worker job., Re-running detection should not duplicate scoring_runs rows., Insert a game with a small sequence of events for the detector to process. (+3 more)
+Cohesion: 0.32
+Nodes (6): Tests for the basketball-logic detector worker job., Re-running detection should not duplicate scoring_runs rows., Insert a game with a small sequence of events for the detector to process., _seed_game_with_events(), test_detect_runs_populates_scoring_runs_table(), test_detect_runs_replaces_existing_results()
 
 ### Community 55 - "play by play"
 Cohesion: 0.16
-Nodes (18): Any, GameEvent, infer_event_type(), normalize_shot_type(), parse_event(), parse_events(), Play-by-play parser.  The raw play-by-play feed from the NBA (or any other sourc, Parse a list of raw event dicts into normalized GameEvents.      Sequences are r (+10 more)
+Nodes (16): infer_event_type(), normalize_shot_type(), parse_event(), parse_events(), Play-by-play parser.  The raw play-by-play feed from the NBA (or any other sourc, Parse a list of raw event dicts into normalized GameEvents.      Sequences are r, Infer ShotType from a description string., Infer the canonical EventType from a raw event dict. (+8 more)
 
 ### Community 56 - "build metadata filters"
-Cohesion: 0.16
-Nodes (18): build_metadata_filters(), Extract strict metadata filters that can be applied before retrieval., _event(), _game(), _game_row(), Tests for query-time RAG routing and evidence quality., test_and_one_and_multi_free_throw_sequences_are_not_split(), test_full_opponent_name_excludes_unrelated_possession_receipts() (+10 more)
+Cohesion: 0.39
+Nodes (7): get_player(), list_players(), Player-related endpoints., AsyncSession, Depends, get_db, PlayerRead
 
 ### Community 57 - "FailingPipeline Module"
 Cohesion: 0.14
@@ -514,12 +509,12 @@ Cohesion: 0.18
 Nodes (14): Lesson 1: Schema, Data, Activation, Validated Release Activation, knicksiq-load-release, Alembic Schema Migration, PostgreSQL Transactions Documentation, Readiness Contract, Transactional Release Load, Database Release Flow (+6 more)
 
 ### Community 62 - "analytics Module"
-Cohesion: 0.26
-Nodes (13): AggregateResult, AnalyticsResultBase, GameLogResult, LeaderboardResult, NotableFactsResult, OutcomeAssociationResult, OutlierResult, PeriodComparisonResult (+5 more)
+Cohesion: 0.18
+Nodes (17): AggregateResult, AnalyticsClarification, AnalyticsClarificationChoice, AnalyticsCoverage, AnalyticsResultBase, ConsumerAnalyticsPlan, GameLogResult, LeaderboardResult (+9 more)
 
 ### Community 63 - "form Module"
-Cohesion: 0.20
-Nodes (11): FormControl(), FormDescription(), FormFieldContext, FormFieldContextValue, FormItem(), FormItemContext, FormItemContextValue, FormLabel() (+3 more)
+Cohesion: 0.39
+Nodes (7): get_team(), list_teams(), Team-related endpoints., AsyncSession, Depends, get_db, TeamRead
 
 ### Community 64 - "config Module"
 Cohesion: 0.18
@@ -542,36 +537,32 @@ Cohesion: 0.24
 Nodes (7): Parse NBA's `GAME_DATE` strings.          `LeagueGameFinder` has returned both I, date, NbaApiSettings, Path, T, NbaApiSettings, Settings for the live nba_api-backed data source.      Reads env vars prefixed `
 
 ### Community 69 - "router Module"
-Cohesion: 0.05
-Nodes (38): get_player(), list_players(), Player-related endpoints., build_api_router(), Aggregate router for the API., API auth dependencies., Protect mutation/admin endpoints with a shared API key.      Development and tes, require_admin_api_key() (+30 more)
+Cohesion: 0.24
+Nodes (9): create_app(), lifespan(), FastAPI application factory., BoundLogger, configure_logging(), get_logger(), Structured logging configuration using structlog., Configure structlog to emit JSON in production, pretty in dev. (+1 more)
 
 ### Community 70 - "Launch Evaluation Set"
 Cohesion: 0.18
 Nodes (10): Candidate Release Bundle, Formspree Feedback Form, Local preflight evidence — 2026-07-14, Nemotron OpenRouter Model, Owner Approval, 2026-07-14 Local Preflight Evidence, Public beta release checklist, Formspree Feedback Handling (+2 more)
 
 ### Community 71 - "Queue Module"
-Cohesion: 0.19
-Nodes (19): _active_release(), _metric(), _name_candidates(), _normalize(), _periods(), _player_aliases(), Basketball-specific deterministic query resolution for the active release., Resolve canonical entities and filters without model inference. (+11 more)
+Cohesion: 0.18
+Nodes (20): _active_release(), _metric(), _name_candidates(), _normalize(), _periods(), _player_aliases(), Basketball-specific deterministic query resolution for the active release., Resolve canonical entities and filters without model inference. (+12 more)
 
 ### Community 72 - "grounded answer"
-Cohesion: 0.16
-Nodes (14): knicks_get_game(), knicks_get_games(), List Knicks games. Optional season and team filters.      Returns a list of game, Get a single game's full detail.      Returns None if the game is not found., Tests for the MCP server tools.  These tests exercise the tool functions directl, The bad stretch detector should return at least one stretch., When no precomputed runs exist, the detector should run live., test_knicks_find_bad_stretches_finds_stretches() (+6 more)
+Cohesion: 0.25
+Nodes (7): Connection, MetaData, db_session(), _drop_analytics_views(), Shared pytest fixtures.  Tests use SQLite in-memory + the FastAPI TestClient. Th, Remove migration-managed views before their source tables., Yield a fresh, schema-loaded, seeded DB session.
 
 ### Community 73 - "Tests for /reports endpoints"
 Cohesion: 0.20
 Nodes (3): Tests for /reports endpoints., A missing game should surface as a 5xx, not silently succeed., test_post_postgame_for_missing_game_returns_500()
 
 ### Community 74 - "possession chunks"
-Cohesion: 0.14
-Nodes (4): fetchArchiveStatus(), ReportSummary, AnalysisContextMessage, ArchiveStatus
+Cohesion: 0.40
+Nodes (4): API auth dependencies., Protect mutation/admin endpoints with a shared API key.      Development and tes, require_admin_api_key(), Header
 
 ### Community 75 - "reranker Module"
-Cohesion: 0.33
-Nodes (6): T, _load_model(), Optional local cross-encoder reranking for hybrid RAG candidates., rerank_candidates(), test_reranker_failure_falls_back_to_fused_order(), test_reranker_reorders_and_respects_top_n()
-
-### Community 76 - "direction provider"
-Cohesion: 0.27
-Nodes (10): Any, build_possession_chunks(), chunk_evidence(), _chunk_text(), _event_row(), expand_neighboring_sequences(), _metadata(), Sequence-aware possession and event-window chunks from cached play-by-play. (+2 more)
+Cohesion: 0.67
+Nodes (3): _scrub_sentry_event(), Event, Hint
 
 ### Community 77 - "Validated Active Release"
 Cohesion: 0.29
@@ -582,20 +573,16 @@ Cohesion: 0.16
 Nodes (14): POST /analysis/query, Deterministic Answer Mode, LLM Primary Answer Mode, Deterministic Fallback, Neon Free Postgres, OpenRouter, Production system, Qdrant Cloud (+6 more)
 
 ### Community 79 - "403 Module"
-Cohesion: 0.21
-Nodes (7): NavigationProgress(), Route, Route, GeneralError(), GeneralErrorProps, NotFoundError(), Toaster()
+Cohesion: 0.23
+Nodes (6): NavigationProgress(), Route, Route, GeneralError(), NotFoundError(), Toaster()
 
 ### Community 80 - "use table url state"
 Cohesion: 0.31
 Nodes (7): NavigateFn, SearchRecord, applyLastSearchFn(), lastNavigateOpts(), useTableUrlState(), UseTableUrlStateParams, UseTableUrlStateReturn
 
-### Community 81 - "players Module"
-Cohesion: 0.25
-Nodes (11): _cached_qdrant_client(), _collection_names(), create_collection(), create_payload_indexes(), ensure_collections(), get_qdrant_client(), Create indexes required by Qdrant Cloud for strict metadata filters., Reset one collection without touching the rest of the local Qdrant store. (+3 more)
-
 ### Community 82 - "teams Module"
-Cohesion: 0.24
-Nodes (9): Any, diversify_by_game(), FusionComponent, FusionResult, Deterministic weighted fusion, deduplication, and result diversity., Fuse rankings while capping repeated variants to one contribution per source., Preserve rank order while enforcing a configurable per-game cap., weighted_reciprocal_rank_fusion() (+1 more)
+Cohesion: 0.28
+Nodes (8): Any, diversify_by_game(), FusionComponent, FusionResult, Deterministic weighted fusion, deduplication, and result diversity., Fuse rankings while capping repeated variants to one contribution per source., Preserve rank order while enforcing a configurable per-game cap., weighted_reciprocal_rank_fusion()
 
 ### Community 83 - "archive retrieval"
 Cohesion: 0.40
@@ -606,12 +593,8 @@ Cohesion: 0.17
 Nodes (11): knicksiq-api Render Service, Before creating the blueprint, Deployment and activation, Render /health/live Deploy Check, Neon Postgres Deployment Store, Qdrant Cloud Deployment Store, knicksiq-redis Render Key Value, Render deployment (+3 more)
 
 ### Community 85 - "QueryClassifierResult Module"
-Cohesion: 0.19
-Nodes (11): deterministic_retrieval_plan(), _filters_are_grounded(), maybe_plan_retrieval(), Schema-constrained planning for LLM-first archive retrieval., Return a validated LLM retrieval plan or the deterministic fallback., Build the safe plan used when model planning is disabled or rejected., Behavioral contract for bounded LLM retrieval plans., test_deterministic_swing_plan_requests_facts_and_possessions() (+3 more)
-
-### Community 86 - "NbaApiSettings Module"
-Cohesion: 0.29
-Nodes (5): Collapsible, LayoutContext, LayoutContextType, LayoutProviderProps, Variant
+Cohesion: 0.15
+Nodes (14): deterministic_retrieval_plan(), _filters_are_grounded(), maybe_plan_retrieval(), Schema-constrained planning for LLM-first archive retrieval., Return a validated LLM retrieval plan or the deterministic fallback., Build the safe plan used when model planning is disabled or rejected., Canonical NBA team aliases shared by analytics and retrieval., Resolve exact team-name spans and canonical abbreviations from text. (+6 more)
 
 ### Community 87 - "Deterministic Fallback"
 Cohesion: 0.20
@@ -643,11 +626,7 @@ Nodes (13): Any, _average(), _base(), generate_pattern_facts(), PatternFact, Det
 
 ### Community 95 - "health Module"
 Cohesion: 0.22
-Nodes (9): health(), live(), rag_health(), Liveness and readiness probes with optional-dependency degradation., ready(), AsyncSession, Depends, get_db (+1 more)
-
-### Community 96 - "Tests for staged local"
-Cohesion: 0.53
-Nodes (5): Path, Tests for staged local RAG indexing., _replace_games(), test_build_rag_artifacts_does_not_reset_qdrant_unless_requested(), test_build_rag_artifacts_limits_to_recent_games_and_reports_manifest()
+Nodes (8): health(), live(), rag_health(), Liveness and readiness probes with optional-dependency degradation., ready(), AsyncSession, Depends, get_db
 
 ### Community 97 - "POST /analysis/query"
 Cohesion: 0.22
@@ -678,8 +657,8 @@ Cohesion: 0.33
 Nodes (5): compilerOptions, paths, files, @/*, references
 
 ### Community 104 - "security Module"
-Cohesion: 0.40
-Nodes (6): qdrant_point_id(), Upsert records with payloads and vectors into Qdrant., Map local stable string IDs to Qdrant-compatible UUID point IDs., upsert_points(), test_qdrant_collections_and_upsert_payload_shape(), UUID
+Cohesion: 0.15
+Nodes (7): qdrant_point_id(), Upsert records with payloads and vectors into Qdrant., Map local stable string IDs to Qdrant-compatible UUID point IDs., upsert_points(), _FakeQdrantClient, test_qdrant_cloud_inference_upserts_source_documents(), test_qdrant_collections_and_upsert_payload_shape()
 
 ### Community 105 - "db Module"
 Cohesion: 0.40
@@ -738,8 +717,8 @@ Cohesion: 0.25
 Nodes (7): Analyst query, API reference, Archive reads, Development-only mutation routes, Errors and tracing, Operational, Production endpoints
 
 ### Community 184 - "Community 184"
-Cohesion: 0.52
-Nodes (6): AnalyticsOperation, OutputType, Enum, GameStatus, TeamSide, str
+Cohesion: 0.22
+Nodes (11): AnalyticsOperation, AnalyticsPlan, OutputType, Strict, storage-independent analytics plan types., ResolvedPlayer, Timeframe, Enum, GameStatus (+3 more)
 
 ### Community 185 - "Community 185"
 Cohesion: 0.19
@@ -748,10 +727,6 @@ Nodes (13): Any, GroundedClaim, Structured, internally validated LLM answers., V
 ### Community 186 - "Community 186"
 Cohesion: 0.29
 Nodes (6): Data model, Immutable release boundary, KnicksIQ architecture, RAG indexing, Runtime request flow, Safety and operations
-
-### Community 187 - "Community 187"
-Cohesion: 0.60
-Nodes (4): FastMCP, _build_server(), main(), MCP server entry point.  Exposes the basketball tools via the official MCP Pytho
 
 ### Community 188 - "Community 188"
 Cohesion: 0.33
@@ -766,8 +741,8 @@ Cohesion: 0.33
 Nodes (5): Constraints, Mission: Production database operations, Out of scope, Success looks like, Why
 
 ### Community 191 - "Community 191"
-Cohesion: 0.50
-Nodes (4): _load_model(), _preferred_device(), Local embedding helpers for RAG retrieval., Load the embedding model lazily so disabled paths have no startup cost.
+Cohesion: 0.38
+Nodes (6): embed_texts(), _load_model(), _preferred_device(), Local embedding helpers for RAG retrieval., Load the embedding model lazily so disabled paths have no startup cost., Embed text with a cached local BGE model.
 
 ### Community 192 - "Community 192"
 Cohesion: 0.40
@@ -882,23 +857,23 @@ Cohesion: 0.40
 Nodes (4): classify_query(), Query classification for analysis routing., Classify a user question into the RAG route dimensions.      This is intentional, test_classifier_routes_core_query_types()
 
 ### Community 231 - "Community 231"
-Cohesion: 0.18
-Nodes (10): AsyncClient, client(), Yield an httpx AsyncClient bound to the FastAPI app., Release-scoped vector retrieval behavior., test_archive_vector_search_injects_active_release_scope(), test_fusion_deduplicates_and_traces_both_retrieval_sources(), test_lexical_archive_search_is_independent_of_dense_results(), test_qdrant_collections_index_every_filterable_payload_field() (+2 more)
+Cohesion: 0.50
+Nodes (4): AsyncClient, client(), Yield an httpx AsyncClient bound to the FastAPI app., test_qdrant_collection_queries_are_batched_per_collection()
 
 ## Knowledge Gaps
-- **546 isolated node(s):** `APIRouter`, `Header`, `AsyncSession`, `BoundLogger`, `Event` (+541 more)
+- **548 isolated node(s):** `APIRouter`, `Header`, `AsyncSession`, `BoundLogger`, `Event` (+543 more)
   These have ≤1 connection - possible missing edges or undocumented components.
 - **56 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `Game` connect `game Module` to `calculations Module`, `Tests for staged local`, `analysis Module`, `runtime store`, `seed players from nba`, `FastMCP Module`, `release bundle`, `JobAcceptedResponse Module`, `ingest game detail`, `table rag`, `BaseModel Module`, `seed loader`, `AnalyticsOperation Module`, `Community 184`, `AnalyticsPlan Module`, `GameEvent Module`, `analysis context`, `Tests for worker CLI`?**
-  _High betweenness centrality (0.074) - this node is a cross-community bridge._
+- **Why does `Game` connect `game Module` to `calculations Module`, `analysis Module`, `runtime store`, `seed players from nba`, `FastMCP Module`, `release bundle`, `ingest game detail`, `table rag`, `BaseModel Module`, `seed loader`, `SimpleNamespace Module`, `AnalyticsOperation Module`, `archive Module`, `Community 184`, `AnalyticsPlan Module`, `GameEvent Module`, `Tests for worker CLI`?**
+  _High betweenness centrality (0.076) - this node is a cross-community bridge._
 - **Why does `NbaApiDataSource` connect `nba api source` to `Parse NBA s GAME`, `release bundle`, `game Module`, `NbaApiDataSource Module`, `get data source`?**
-  _High betweenness centrality (0.030) - this node is a cross-community bridge._
-- **Why does `GameEvent` connect `analysis Module` to `Tests for staged local`, `runtime store`, `release bundle`, `FastMCP Module`, `game Module`, `JobAcceptedResponse Module`, `ingest game detail`, `table rag`, `seed loader`, `AnalyticsOperation Module`, `AnalyticsPlan Module`, `GameEvent Module`, `analysis context`, `Tests for worker CLI`?**
-  _High betweenness centrality (0.030) - this node is a cross-community bridge._
+  _High betweenness centrality (0.034) - this node is a cross-community bridge._
+- **Why does `GameEvent` connect `game Module` to `analysis Module`, `runtime store`, `release bundle`, `FastMCP Module`, `ingest game detail`, `table rag`, `seed loader`, `SimpleNamespace Module`, `AnalyticsOperation Module`, `archive Module`, `AnalyticsPlan Module`, `GameEvent Module`, `Tests for worker CLI`?**
+  _High betweenness centrality (0.032) - this node is a cross-community bridge._
 - **Are the 99 inferred relationships involving `Game` (e.g. with `AnalysisCitation` and `AnalysisContextMessage`) actually correct?**
   _`Game` has 99 INFERRED edges - model-reasoned connections that need verification._
 - **Are the 84 inferred relationships involving `GameEvent` (e.g. with `AnalysisCitation` and `AnalysisContextMessage`) actually correct?**
@@ -906,4 +881,4 @@ _Questions this graph is uniquely positioned to answer:_
 - **Are the 65 inferred relationships involving `DatasetRelease` (e.g. with `AnalysisCitation` and `AnalysisContextMessage`) actually correct?**
   _`DatasetRelease` has 65 INFERRED edges - model-reasoned connections that need verification._
 - **What connects `KnicksIQ FastAPI backend.`, `Public analyst chat endpoints.`, `Best-effort shadow evaluation; never retain prompt or evidence content.` to the rest of the system?**
-  _874 weakly-connected nodes found - possible documentation gaps or missing edges._
+  _877 weakly-connected nodes found - possible documentation gaps or missing edges._
