@@ -10,7 +10,7 @@ from app.services.report_llm import get_llm_adapter
 from basketball_core.analytics import AnalyticsPlan
 
 logger = logging.getLogger(__name__)
-_FILTERS = {"outcome", "location", "starter", "opponent", "season_scope"}
+_FILTERS = {"outcome", "location", "starter", "opponent", "season_scope", "player_scope"}
 _EXPLICIT_TERMS = (
     "game log",
     "average",
@@ -27,6 +27,12 @@ _EXPLICIT_TERMS = (
     "record when",
     "notable",
     "surprising",
+    "which player",
+    "opposing player",
+    "opponent player",
+    "+/-",
+    "plus-minus",
+    "plus minus",
 )
 
 
