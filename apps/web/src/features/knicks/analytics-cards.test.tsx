@@ -1,7 +1,6 @@
 import type { AnalyticsPayload } from '@/types'
 import { describe, expect, it } from 'vitest'
 import { render } from 'vitest-browser-react'
-import { userEvent } from 'vitest/browser'
 import { AnalyticsCards } from './analytics-cards'
 
 const analytics: AnalyticsPayload = {
@@ -32,19 +31,12 @@ const analytics: AnalyticsPayload = {
 }
 
 describe('AnalyticsCards', () => {
-  it('shows typed values, coverage, warnings, and expandable receipts', async () => {
-    const { getByText } = await render(
-      <AnalyticsCards analytics={analytics} games={[]} />
-    )
+  it('shows typed values, coverage, and warnings', async () => {
+    const { getByText } = await render(<AnalyticsCards analytics={analytics} />)
     await expect.element(getByText('25.0')).toBeInTheDocument()
     await expect.element(getByText('Small sample.')).toBeInTheDocument()
     await expect
       .element(getByText(/Partial coverage: 2 of 3/))
-      .toBeInTheDocument()
-    const receipts = getByText('2 supporting game receipts')
-    await userEvent.click(receipts)
-    await expect
-      .element(getByText(/All source IDs are retained/))
       .toBeInTheDocument()
   })
 
@@ -70,9 +62,7 @@ describe('AnalyticsCards', () => {
         },
       ],
     }
-    const { getByText } = await render(
-      <AnalyticsCards analytics={both} games={[]} />
-    )
+    const { getByText } = await render(<AnalyticsCards analytics={both} />)
     await expect.element(getByText('points per appearance')).toBeInTheDocument()
     await expect.element(getByText('points total')).toBeInTheDocument()
     await expect
@@ -93,7 +83,7 @@ describe('AnalyticsCards', () => {
       ],
     }
     const { getByText } = await render(
-      <AnalyticsCards analytics={availability} games={[]} />
+      <AnalyticsCards analytics={availability} />
     )
     await expect.element(getByText('Player appearances')).toBeInTheDocument()
     await expect
