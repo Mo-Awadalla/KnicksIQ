@@ -1,4 +1,12 @@
 :root {
+  --type-display:
+    'Knockout', 'Knockout HTF49-Liteweight', 'Knockout-HTF49-Liteweight',
+    'Arial Narrow', 'Helvetica Neue Condensed', sans-serif;
+  --type-ui:
+    'Söhne', 'Sohne', 'Helvetica Neue', Helvetica, Arial, system-ui, sans-serif;
+  --type-stats:
+    'Söhne Mono', 'Sohne Mono', 'IBM Plex Mono', ui-monospace, SFMono-Regular,
+    Menlo, Monaco, Consolas, monospace;
   --radius: 0.625rem;
   --background: oklch(0.985 0.01 250);
   --foreground: oklch(0.16 0.04 255);
@@ -35,8 +43,12 @@
 }
 
 @theme inline {
-  --font-inter: 'Inter', 'sans-serif';
-  --font-manrope: 'Manrope', 'sans-serif';
+  --font-sans: var(--type-ui);
+  --font-sohne: var(--type-ui);
+  --font-system: system-ui, sans-serif;
+  --font-display: var(--type-display);
+  --font-mono: var(--type-stats);
+  --font-stats: var(--type-stats);
 
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);

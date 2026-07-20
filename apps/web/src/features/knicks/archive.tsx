@@ -1,21 +1,12 @@
-import { type KeyboardEvent, useEffect, useMemo, useRef, useState } from 'react'
+import { type KeyboardEvent, useEffect, useRef, useState } from 'react'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { askAnalyst, fetchArchiveStatus, fetchGames } from '@/api'
 import type {
   AnalysisCitation,
   AnalysisContextMessage,
   AnalysisResponse,
-  GameSummary,
 } from '@/types'
-import {
-  ArrowUpRight,
-  CalendarDays,
-  FileText,
-  Loader2,
-  Search,
-  Sparkles,
-  Trophy,
-} from 'lucide-react'
+import { ArrowUpRight, FileText, Loader2, Search, Sparkles } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
@@ -39,99 +30,19 @@ const SUGGESTED_QUESTIONS = [
   'Which games had the wildest swings?',
 ]
 
-function formatDate(value: string) {
-  return new Date(value).toLocaleDateString(undefined, {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-  })
-}
-
-function knicksScore(game: GameSummary) {
-  const home = game.home_team_id === 'NYK'
-  return {
-    points: home ? game.home_score : game.away_score,
-    opponentPoints: home ? game.away_score : game.home_score,
-    opponent: home ? game.away_team_id : game.home_team_id,
-    won: game.winner_team_id === 'NYK',
-  }
-}
-
-function seasonSummary(games: GameSummary[]) {
-  const wins = games.filter((game) => game.winner_team_id === 'NYK').length
-  const losses = games.length - wins
-  const eventReady = games.filter(
-    (game) => game.data_status !== 'summary_only'
-  ).length
-  const biggestWin = games
-    .filter((game) => game.winner_team_id === 'NYK')
-    .sort((a, b) => b.margin - a.margin)[0]
-  const biggestLoss = games
-    .filter((game) => game.winner_team_id !== 'NYK')
-    .sort((a, b) => b.margin - a.margin)[0]
-
-  return { wins, losses, eventReady, biggestWin, biggestLoss }
-}
-
-function uniqueGames(games: GameSummary[]) {
-  const readiness = {
-    summary_only: 0,
-    events_ready: 1,
-    analysis_ready: 2,
-  }
-  const canonical = new Map<string, GameSummary>()
-  for (const game of games) {
-    const key = [
-      game.game_date,
-      game.home_team_id,
-      game.away_team_id,
-      game.home_score,
-      game.away_score,
-    ].join(':')
-    const current = canonical.get(key)
-    if (
-      !current ||
-      readiness[game.data_status] > readiness[current.data_status]
-    ) {
-      canonical.set(key, game)
-    }
-  }
-  return [...canonical.values()]
-}
-
-function ReceiptCard({
-  citation,
-  games,
-}: {
-  citation: AnalysisCitation
-  games: GameSummary[]
-}) {
-  const game = games.find((item) => item.id === citation.game_id)
-  const score = game ? knicksScore(game) : null
-
+function ReceiptCard({ citation }: { citation: AnalysisCitation }) {
   return (
     <Card className='archive-receipt'>
       <CardContent className='space-y-3 p-4'>
         <div className='flex flex-wrap items-center gap-2'>
           <Badge className='bg-[#006BB6] text-white'>{citation.type}</Badge>
-          <span className='text-sm font-semibold text-[var(--archive-ink)]'>
+          <span className='archive-game-title text-sm font-semibold text-[var(--archive-ink)]'>
             {citation.title}
           </span>
         </div>
         <p className='text-sm leading-6 text-[var(--archive-ink-soft)]'>
           Supports: {citation.claim}
         </p>
-        {game && score ? (
-          <div className='archive-receipt-game'>
-            <div className='text-sm font-semibold text-[var(--archive-ink)]'>
-              {formatDate(game.game_date)} - NYK {score.points},{' '}
-              {score.opponent} {score.opponentPoints}
-            </div>
-            <div className='mt-1 text-xs text-muted-foreground'>
-              Knicks {score.won ? 'win' : 'loss'} by {Math.abs(game.margin)}
-            </div>
-          </div>
-        ) : null}
         {citation.source_url ? (
           <a
             className='text-xs font-medium text-[var(--archive-blue)] underline underline-offset-2'
@@ -154,12 +65,10 @@ function ReceiptCard({
 
 function AnswerPanel({
   answer,
-  games,
   onClarification,
   disabled,
 }: {
   answer: AnalysisResponse
-  games: GameSummary[]
   onClarification: (value: string) => void
   disabled: boolean
 }) {
@@ -207,7 +116,7 @@ function AnswerPanel({
       </Card>
 
       {answer.analytics && answer.analytics.results.length > 0 ? (
-        <AnalyticsCards analytics={answer.analytics} games={games} />
+        <AnalyticsCards analytics={answer.analytics} />
       ) : null}
 
       <div>
@@ -221,7 +130,6 @@ function AnswerPanel({
               <ReceiptCard
                 key={`${citation.title}-${index}`}
                 citation={citation}
-                games={games}
               />
             ))}
           </div>
@@ -248,37 +156,30 @@ export function SeasonArchivePage() {
       }
     >
   >([])
-  const games = useQuery({
-    queryKey: ['games', 'season-archive'],
-    queryFn: async () => {
-      const firstPage = await fetchGames({
-        teamId: 'NYK',
-        season: KNICKS_SEASON,
-        limit: 200,
-      })
-      if (firstPage.length < 200) return firstPage
-      const secondPage = await fetchGames({
-        teamId: 'NYK',
-        season: KNICKS_SEASON,
-        limit: 200,
-        offset: 200,
-      })
-      return [...firstPage, ...secondPage]
-    },
-  })
-  const archive = useQuery({
+  const archiveStatus = useQuery({
     queryKey: ['archive-status'],
     queryFn: fetchArchiveStatus,
   })
-  const seasonGames = useMemo(
-    () =>
-      (games.data ?? []).filter(
-        (game) => game.home_team_id === 'NYK' || game.away_team_id === 'NYK'
-      ),
-    [games.data]
-  )
-  const summaryGames = useMemo(() => uniqueGames(seasonGames), [seasonGames])
-  const summary = useMemo(() => seasonSummary(summaryGames), [summaryGames])
+  const gameProbe = useQuery({
+    queryKey: ['games', 'archive-readiness'],
+    queryFn: () =>
+      fetchGames({
+        teamId: 'NYK',
+        season: KNICKS_SEASON,
+        limit: 1,
+      }),
+  })
+  const archiveReady =
+    archiveStatus.isSuccess &&
+    archiveStatus.data.games > 0 &&
+    gameProbe.isSuccess &&
+    gameProbe.data.length > 0
+  const archiveFailed =
+    archiveStatus.isError ||
+    gameProbe.isError ||
+    (archiveStatus.isSuccess && archiveStatus.data.games === 0) ||
+    (gameProbe.isSuccess && gameProbe.data.length === 0)
+  const archiveChecking = !archiveReady && !archiveFailed
   const analyst = useMutation({
     mutationFn: ({
       nextQuestion,
@@ -321,7 +222,7 @@ export function SeasonArchivePage() {
 
   const submit = (value = question) => {
     const nextQuestion = value.trim()
-    if (!nextQuestion || analyst.isPending) return
+    if (!archiveReady || !nextQuestion || analyst.isPending) return
     const context = messages
       .slice(-4)
       .map(({ role, content }) => ({ role, content }))
@@ -356,31 +257,15 @@ export function SeasonArchivePage() {
             <nav className='archive-nav' aria-label='Archive'>
               <a className='archive-brand' href='/'>
                 <span className='archive-brand-mark' aria-hidden='true'>
-                  KIQ
+                  <img
+                    src='/images/knicksiq-mark-v2.png'
+                    alt=''
+                    width='256'
+                    height='256'
+                  />
                 </span>
                 <span className='archive-brand-name'>KnicksIQ</span>
               </a>
-              <div className='archive-nav-meta'>
-                <span className='archive-status'>
-                  <span
-                    className='archive-status-dot'
-                    data-state={
-                      archive.isError
-                        ? 'error'
-                        : archive.isLoading
-                          ? 'loading'
-                          : 'current'
-                    }
-                    aria-hidden='true'
-                  />
-                  {archive.isError
-                    ? 'Archive unavailable'
-                    : archive.isLoading
-                      ? 'Checking archive'
-                      : 'Archive current'}
-                </span>
-                <span>{KNICKS_SEASON} season</span>
-              </div>
             </nav>
 
             <div className='archive-hero-grid'>
@@ -397,20 +282,6 @@ export function SeasonArchivePage() {
                   through grounded answers, box scores, play-by-play, and
                   reviewed game reports.
                 </p>
-                <div
-                  className='archive-proof-line'
-                  aria-label='Archive coverage'
-                >
-                  <span>
-                    {archive.isError
-                      ? 'Data status unavailable'
-                      : `Data ${archive.data?.data_version ?? 'loading'}`}
-                  </span>
-                  <span>
-                    {archive.data?.games ?? summaryGames.length} games indexed
-                  </span>
-                  <span>Every answer keeps its evidence close</span>
-                </div>
               </div>
 
               <figure className='archive-photo'>
@@ -446,6 +317,7 @@ export function SeasonArchivePage() {
             <form
               className='archive-console'
               aria-labelledby='ask-title'
+              aria-busy={archiveChecking}
               onSubmit={(event) => {
                 event.preventDefault()
                 submit()
@@ -461,102 +333,94 @@ export function SeasonArchivePage() {
                   </label>
                   <h2 id='ask-title'>What do you remember?</h2>
                 </div>
-                <p className='archive-console-hint'>
-                  Enter to search · Shift + Enter for a new line
-                </p>
+                {archiveReady ? (
+                  <p className='archive-console-hint'>
+                    Enter to search · Shift + Enter for a new line
+                  </p>
+                ) : (
+                  <div
+                    id='archive-readiness'
+                    className='archive-console-readiness'
+                    role={archiveFailed ? 'alert' : 'status'}
+                    aria-live='polite'
+                  >
+                    {archiveFailed ? (
+                      <>
+                        <span>Archive unavailable</span>
+                        <button
+                          type='button'
+                          onClick={() => {
+                            void archiveStatus.refetch()
+                            void gameProbe.refetch()
+                          }}
+                        >
+                          Try again
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <Loader2
+                          className='size-3.5 animate-spin'
+                          aria-hidden='true'
+                        />
+                        Preparing archive
+                      </>
+                    )}
+                  </div>
+                )}
               </div>
-              <Textarea
-                id='archive-question'
-                value={question}
-                maxLength={1200}
-                rows={4}
-                enterKeyHint='search'
-                onChange={(event) => setQuestion(event.target.value)}
-                onKeyDown={handleKeyDown}
-                placeholder='Ask about a game, streak, opponent, player, or turning point…'
-                className='archive-textarea'
-              />
-              <div className='archive-console-actions'>
-                <div
-                  className='archive-quick-prompts'
-                  aria-label='Quick questions'
-                >
-                  {SUGGESTED_QUESTIONS.slice(0, 2).map((item) => (
-                    <button
-                      key={item}
-                      type='button'
-                      className='archive-prompt'
-                      disabled={analyst.isPending}
-                      onClick={() => submit(item)}
-                    >
-                      {item}
-                    </button>
-                  ))}
+              <fieldset
+                className='archive-console-controls'
+                disabled={!archiveReady}
+                aria-describedby={
+                  !archiveReady ? 'archive-readiness' : undefined
+                }
+              >
+                <Textarea
+                  id='archive-question'
+                  value={question}
+                  maxLength={1200}
+                  rows={4}
+                  enterKeyHint='search'
+                  onChange={(event) => setQuestion(event.target.value)}
+                  onKeyDown={handleKeyDown}
+                  placeholder='Ask about a game, streak, opponent, player, or turning point…'
+                  className='archive-textarea'
+                />
+                <div className='archive-console-actions'>
+                  <div
+                    className='archive-quick-prompts'
+                    aria-label='Quick questions'
+                  >
+                    {SUGGESTED_QUESTIONS.slice(0, 2).map((item) => (
+                      <button
+                        key={item}
+                        type='button'
+                        className='archive-prompt'
+                        disabled={analyst.isPending}
+                        onClick={() => submit(item)}
+                      >
+                        {item}
+                      </button>
+                    ))}
+                  </div>
+                  <Button
+                    type='submit'
+                    className='archive-search-button'
+                    disabled={analyst.isPending || !question.trim()}
+                  >
+                    {analyst.isPending ? (
+                      <Loader2 className='animate-spin' />
+                    ) : (
+                      <Search />
+                    )}
+                    Search archive
+                  </Button>
                 </div>
-                <Button
-                  type='submit'
-                  className='archive-search-button'
-                  disabled={analyst.isPending || !question.trim()}
-                >
-                  {analyst.isPending ? (
-                    <Loader2 className='animate-spin' />
-                  ) : (
-                    <Search />
-                  )}
-                  Search archive
-                </Button>
-              </div>
+              </fieldset>
             </form>
           </div>
         </header>
-
-        <section
-          className='archive-stat-section'
-          aria-label='Season at a glance'
-        >
-          <dl className='archive-shell archive-stat-rail'>
-            <ArchiveStat
-              icon={CalendarDays}
-              label='Available games'
-              value={
-                games.isLoading
-                  ? '—'
-                  : games.isError
-                    ? 'Error'
-                    : String(archive.data?.games ?? summaryGames.length)
-              }
-            />
-            <ArchiveStat
-              icon={Trophy}
-              label='Record'
-              value={
-                games.isLoading || games.isError
-                  ? '—'
-                  : `${summary.wins}-${summary.losses}`
-              }
-            />
-            <ArchiveStat
-              icon={Sparkles}
-              label='Event receipts'
-              value={
-                games.isLoading || games.isError
-                  ? '—'
-                  : String(summary.eventReady)
-              }
-            />
-            <ArchiveStat
-              icon={FileText}
-              label='Best margin'
-              value={
-                summary.biggestWin
-                  ? `+${summary.biggestWin.margin}`
-                  : games.isLoading || games.isError
-                    ? '—'
-                    : '—'
-              }
-            />
-          </dl>
-        </section>
 
         <section className='archive-shell archive-workspace'>
           <div>
@@ -607,7 +471,6 @@ export function SeasonArchivePage() {
                       <li key={message.id}>
                         <AnswerPanel
                           answer={message.response}
-                          games={seasonGames}
                           onClarification={submit}
                           disabled={analyst.isPending}
                         />
@@ -630,7 +493,7 @@ export function SeasonArchivePage() {
                         key={item}
                         type='button'
                         className='archive-prompt-row'
-                        disabled={analyst.isPending}
+                        disabled={!archiveReady || analyst.isPending}
                         onClick={() => submit(item)}
                       >
                         <span>{item}</span>
@@ -642,50 +505,6 @@ export function SeasonArchivePage() {
               )}
             </div>
           </div>
-
-          <aside className='archive-ledger' aria-labelledby='ledger-title'>
-            <p className='archive-ledger-label'>On the ledger</p>
-            <h2 id='ledger-title'>Season receipts</h2>
-            <p className='archive-ledger-intro'>
-              The high and low marks currently indexed in the archive.
-            </p>
-            <div className='archive-mini-receipts' aria-live='polite'>
-              {games.isError ? (
-                <div className='archive-ledger-state' role='alert'>
-                  <p>Season data is unavailable right now.</p>
-                  <button
-                    type='button'
-                    className='archive-retry'
-                    onClick={() => {
-                      void games.refetch()
-                      void archive.refetch()
-                    }}
-                  >
-                    Try again
-                  </button>
-                </div>
-              ) : summary.biggestWin ? (
-                <ReceiptMini label='Biggest win' game={summary.biggestWin} />
-              ) : null}
-              {!games.isError && summary.biggestLoss ? (
-                <ReceiptMini label='Biggest loss' game={summary.biggestLoss} />
-              ) : null}
-              {games.isLoading ? (
-                <p className='archive-ledger-note'>Loading season receipts…</p>
-              ) : null}
-              {!games.isLoading &&
-              !games.isError &&
-              summaryGames.length === 0 ? (
-                <p className='archive-ledger-note'>
-                  No games are indexed for this season yet.
-                </p>
-              ) : null}
-            </div>
-            <p className='archive-ledger-note'>
-              Scores, event data, and reviewed reports are cited when available.
-              Tactical claims unsupported by published data are declined.
-            </p>
-          </aside>
         </section>
       </main>
 
@@ -715,43 +534,6 @@ export function SeasonArchivePage() {
           </nav>
         </div>
       </footer>
-    </div>
-  )
-}
-
-function ArchiveStat({
-  icon: Icon,
-  label,
-  value,
-}: {
-  icon: typeof CalendarDays
-  label: string
-  value: string
-}) {
-  return (
-    <div className='archive-stat'>
-      <Icon className='archive-stat-icon size-5' aria-hidden='true' />
-      <dt className='archive-stat-label'>{label}</dt>
-      <dd className='archive-stat-value'>{value}</dd>
-    </div>
-  )
-}
-
-function ReceiptMini({ label, game }: { label: string; game: GameSummary }) {
-  const score = knicksScore(game)
-  return (
-    <div className='archive-mini-receipt'>
-      <div className='archive-mini-receipt-header'>
-        <strong>{label}</strong>
-        <Badge variant={score.won ? 'default' : 'secondary'}>
-          {score.won ? '+' : '-'}
-          {Math.abs(game.margin)}
-        </Badge>
-      </div>
-      <p>
-        {formatDate(game.game_date)} - NYK {score.points}, {score.opponent}{' '}
-        {score.opponentPoints}
-      </p>
     </div>
   )
 }

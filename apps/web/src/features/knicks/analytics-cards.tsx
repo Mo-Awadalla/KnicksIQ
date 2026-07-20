@@ -1,5 +1,5 @@
-import type { AnalyticsPayload, AnalyticsResult, GameSummary } from '@/types'
-import { AlertTriangle, ChevronDown } from 'lucide-react'
+import type { AnalyticsPayload, AnalyticsResult } from '@/types'
+import { AlertTriangle } from 'lucide-react'
 import {
   Bar,
   BarChart,
@@ -32,7 +32,9 @@ function Values({
           <p className='text-xs text-muted-foreground capitalize'>
             {statLabel(key)} {qualifier}
           </p>
-          <p className='mt-1 text-xl font-semibold text-[#0d2238]'>{value}</p>
+          <p className='mt-1 font-stats text-xl font-semibold text-[#0d2238]'>
+            {value}
+          </p>
         </div>
       ))}
     </div>
@@ -45,7 +47,7 @@ function ResultBody({ result }: { result: AnalyticsResult }) {
       <div className='grid gap-3 sm:grid-cols-2'>
         <div className='rounded-md bg-[#f4f7fb] p-3'>
           <p className='text-xs text-muted-foreground'>Player appearances</p>
-          <p className='mt-1 text-xl font-semibold text-[#0d2238]'>
+          <p className='mt-1 font-stats text-xl font-semibold text-[#0d2238]'>
             {result.appearances}
           </p>
         </div>
@@ -53,7 +55,7 @@ function ResultBody({ result }: { result: AnalyticsResult }) {
           <p className='text-xs text-muted-foreground'>
             Requested Knicks games
           </p>
-          <p className='mt-1 text-xl font-semibold text-[#0d2238]'>
+          <p className='mt-1 font-stats text-xl font-semibold text-[#0d2238]'>
             {result.requested_team_games}
           </p>
         </div>
@@ -164,7 +166,7 @@ function ResultBody({ result }: { result: AnalyticsResult }) {
         {result.facts.map((fact) => (
           <div key={fact.fingerprint} className='rounded-md border p-4'>
             <p className='leading-6'>{fact.statement}</p>
-            <p className='mt-2 text-xs text-muted-foreground'>
+            <p className='mt-2 font-stats text-xs text-muted-foreground'>
               {fact.sample_size} appearances · discovery score{' '}
               {fact.score.toFixed(2)}
             </p>
@@ -197,7 +199,7 @@ function ResultBody({ result }: { result: AnalyticsResult }) {
               >
               return (
                 <tr key={String(entry.game_id ?? entry.player_id ?? index)}>
-                  <td className='border-b py-3 pr-3 font-medium'>
+                  <td className='archive-game-title border-b py-3 pr-3 font-medium'>
                     {String(
                       entry.player_name ??
                         entry.date ??
@@ -205,7 +207,7 @@ function ResultBody({ result }: { result: AnalyticsResult }) {
                         `Result ${index + 1}`
                     )}
                   </td>
-                  <td className='border-b py-3 text-right'>
+                  <td className='border-b py-3 text-right font-stats'>
                     {Object.entries(values).length > 0
                       ? Object.entries(values)
                           .map(([key, value]) => `${statLabel(key)}: ${value}`)
@@ -254,60 +256,19 @@ function ResultBody({ result }: { result: AnalyticsResult }) {
   )
 }
 
-function Receipts({
-  result,
-  games,
-}: {
-  result: AnalyticsResult
-  games: GameSummary[]
-}) {
-  const sourceGames = result.source_game_ids
-    .map((id) => games.find((game) => game.id === id))
-    .filter((game): game is GameSummary => Boolean(game))
-  return (
-    <details className='archive-disclosure group rounded-md border border-[#BEC0C2]/70'>
-      <summary className='flex cursor-pointer list-none items-center justify-between p-3 text-sm font-medium'>
-        {result.source_game_ids.length} supporting game receipt
-        {result.source_game_ids.length === 1 ? '' : 's'}
-        <ChevronDown className='size-4 transition-transform duration-200 group-open:rotate-180' />
-      </summary>
-      <div className='grid gap-2 border-t p-3 sm:grid-cols-2'>
-        {sourceGames.map((game) => (
-          <div key={game.id} className='rounded bg-[#f4f7fb] p-2 text-xs'>
-            {game.game_date} · {game.away_team_id} {game.away_score} @{' '}
-            {game.home_team_id} {game.home_score}
-          </div>
-        ))}
-        {sourceGames.length < result.source_game_ids.length ? (
-          <p className='text-xs text-muted-foreground'>
-            All source IDs are retained in the result; some games are outside
-            the currently loaded receipt list.
-          </p>
-        ) : null}
-      </div>
-    </details>
-  )
-}
-
-export function AnalyticsCards({
-  analytics,
-  games,
-}: {
-  analytics: AnalyticsPayload
-  games: GameSummary[]
-}) {
+export function AnalyticsCards({ analytics }: { analytics: AnalyticsPayload }) {
   return (
     <div className='space-y-4'>
       {analytics.results.map((result) => (
         <Card key={result.id} className='archive-analytics-card'>
           <CardHeader className='space-y-3'>
             <div className='flex flex-wrap items-center justify-between gap-2'>
-              <h3 className='text-lg font-semibold tracking-[-0.02em]'>
+              <h3 className='font-display text-lg font-semibold tracking-[-0.02em]'>
                 {result.title}
               </h3>
               <Badge variant='secondary'>{statLabel(result.type)}</Badge>
             </div>
-            <div className='flex flex-wrap gap-2 text-xs text-muted-foreground'>
+            <div className='flex flex-wrap gap-2 font-stats text-xs text-muted-foreground'>
               <span>{result.sample_size} appearances</span>
               <span>·</span>
               <span>{result.timeframe.label}</span>
@@ -340,7 +301,6 @@ export function AnalyticsCards({
               </p>
             ))}
             <ResultBody result={result} />
-            <Receipts result={result} games={games} />
           </CardContent>
         </Card>
       ))}
