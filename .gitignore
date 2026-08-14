@@ -54,3 +54,6 @@ logs/
 # Generated release and retrieval artifacts
 rag-artifacts/
 release-artifacts/
+
+# Graphify generated output
+graphify-out/
