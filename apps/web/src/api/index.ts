@@ -39,8 +39,13 @@ export async function fetchGames(opts?: {
   return r.data
 }
 
-export async function fetchArchiveStatus(): Promise<ArchiveStatus> {
-  const response = await api.get<ArchiveStatus>('/archive/status')
+export async function fetchArchiveStatus(opts?: {
+  season_type?: string
+  data_status?: string
+}): Promise<ArchiveStatus> {
+  const response = await api.get<ArchiveStatus>('/archive/status', {
+    params: opts,
+  })
   return response.data
 }
 
@@ -79,8 +84,11 @@ export async function fetchPlayers(opts?: {
   return r.data
 }
 
-export async function fetchReports(): Promise<ReportSummary[]> {
-  const r = await api.get<ReportSummary[]>('/reports')
+export async function fetchReports(opts?: {
+  limit?: number
+  offset?: number
+}): Promise<ReportSummary[]> {
+  const r = await api.get<ReportSummary[]>('/reports', { params: opts })
   return r.data
 }
 

@@ -3,9 +3,12 @@
 from __future__ import annotations
 
 import logging
+import time
 import uuid
+from concurrent.futures import ThreadPoolExecutor, TimeoutError
 from dataclasses import dataclass
 from functools import lru_cache
+from threading import Lock
 from typing import Any
 
 from app.core.config import get_settings
@@ -148,16 +151,117 @@ def recreate_collection(collection_name: str, *, client: Any | None = None) -> N
     create_collection(collection_name, client=resolved)
 
 
+_health_pool = ThreadPoolExecutor(max_workers=1, thread_name_prefix="retrieval-health")
+_health_lock = Lock()
+_health_future: Any = None
+_health_checked_at = 0.0
+_health_result = False
+
+
+def inspect_retrieval_targets(client: Any | None = None) -> dict[str, Any]:
+    """Read usable dense targets; connectivity alone is insufficient."""
+    settings = get_settings()
+    resolved = client or get_qdrant_client()
+    targets = (
+        settings.rag_qdrant_games_collection,
+        settings.rag_qdrant_possessions_collection,
+        settings.rag_qdrant_box_scores_collection,
+        settings.rag_qdrant_reports_collection,
+    )
+    aliases = {item.alias_name: item.collection_name for item in resolved.get_aliases().aliases}
+    result: dict[str, Any] = {"aliases": aliases, "targets": {}, "usable": True}
+    for target in targets:
+        info = resolved.get_collection(target)
+        vector = info.config.params.vectors
+        count = resolved.count(collection_name=target, exact=True).count
+        points, _ = resolved.scroll(collection_name=target, limit=1, with_payload=True)
+        payload = (points[0].payload or {}) if points else {}
+        usable = (
+            getattr(vector, "size", None) == settings.rag_qdrant_vector_size
+            and str(getattr(vector, "distance", "")).lower() == "cosine"
+            and count > 0
+            and bool(payload.get("data_version"))
+        )
+        result["targets"][target] = {
+            "physical_collection": aliases.get(target, target),
+            "points": count,
+            "vector_size": getattr(vector, "size", None),
+            "distance": str(getattr(vector, "distance", "")),
+            "sample_data_version": payload.get("data_version"),
+            "usable": usable,
+        }
+        result["usable"] = result["usable"] and usable
+    return result
+
+
+def validate_candidate_collection(collection: str, data_version: str, expected_count: int) -> None:
+    """Verify stored counts and release isolation, not only write acknowledgements."""
+    from qdrant_client import models
+
+    client = get_qdrant_client()
+    info = client.get_collection(collection)
+    vector = info.config.params.vectors
+    if (
+        getattr(vector, "size", None) != get_settings().rag_qdrant_vector_size
+        or str(getattr(vector, "distance", "")).lower() != "cosine"
+    ):
+        raise RuntimeError("Candidate vector configuration mismatch")
+    count = client.count(collection_name=collection, exact=True).count
+    scoped = client.count(
+        collection_name=collection,
+        exact=True,
+        count_filter=build_qdrant_filter({"data_version": data_version}),
+    ).count
+    other = client.count(
+        collection_name=collection,
+        exact=True,
+        count_filter=models.Filter(
+            must_not=[
+                models.FieldCondition(
+                    key="data_version",
+                    match=models.MatchValue(value=data_version),
+                )
+            ]
+        ),
+    ).count
+    if expected_count <= 0 or count != expected_count or scoped != count or other:
+        raise RuntimeError("Candidate stored count or release payload mismatch")
+
+
+def ensure_candidate_not_serving(collection: str) -> None:
+    """Never reset a physical collection that is reachable through a live alias."""
+    if any(
+        alias.collection_name == collection for alias in get_qdrant_client().get_aliases().aliases
+    ):
+        raise RuntimeError("Candidate collection is already serving an alias; use a new version")
+
+
 def is_qdrant_healthy(client: Any | None = None) -> bool:
+    """Cache usable-target checks for 30s; cap caller waiting at 250ms.
+
+    A single shared in-flight probe prevents request-time probe amplification.
+    Optional retrieval failure never prevents deterministic archive answers.
+    """
+    global _health_future, _health_checked_at, _health_result
     if not get_settings().rag_qdrant_enabled:
         return False
+    with _health_lock:
+        if client is None and time.monotonic() - _health_checked_at < 30:
+            return _health_result
+        if _health_future is None:
+            _health_future = _health_pool.submit(inspect_retrieval_targets, client)
+        future = _health_future
     try:
-        resolved: Any = client or get_qdrant_client()
-        resolved.get_collections()
-        return True
-    except Exception as exc:  # noqa: BLE001
-        logger.warning("qdrant_health_check_failed", exc_info=exc)
+        result = bool(future.result(timeout=0.25)["usable"])
+    except TimeoutError:
         return False
+    except Exception:
+        result = False
+    with _health_lock:
+        _health_result = result
+        _health_checked_at = time.monotonic()
+        _health_future = None
+    return result
 
 
 def _match_any(values: set[Any] | list[Any]):

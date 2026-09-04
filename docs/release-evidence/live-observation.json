@@ -1,0 +1,9 @@
+{
+  "observed_at": "2026-09-04T21:22:06.601522+00:00",
+  "active_identity_verified": false,
+  "public_archive_error": "URLError",
+  "qdrant": {
+    "usable": false,
+    "error_type": "ResponseHandlingException"
+  }
+}

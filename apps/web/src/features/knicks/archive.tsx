@@ -1,11 +1,6 @@
-import { type KeyboardEvent, useEffect, useRef, useState } from 'react'
-import { useMutation, useQuery } from '@tanstack/react-query'
-import { askAnalyst, fetchArchiveStatus, fetchGames } from '@/api'
-import type {
-  AnalysisCitation,
-  AnalysisContextMessage,
-  AnalysisResponse,
-} from '@/types'
+import { type KeyboardEvent, useEffect, useRef } from 'react'
+import { Link } from '@tanstack/react-router'
+import type { AnalysisCitation, AnalysisResponse } from '@/types'
 import { ArrowUpRight, FileText, Loader2, Search, Sparkles } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -18,7 +13,7 @@ import {
 import { Textarea } from '@/components/ui/textarea'
 import { AnalyticsCards } from './analytics-cards'
 import './archive.css'
-import { retainLastFour } from './conversation'
+import { useAnalyst } from './use-analyst'
 
 const KNICKS_SEASON = '2025-26'
 const SUGGESTED_QUESTIONS = [
@@ -35,17 +30,17 @@ function ReceiptCard({ citation }: { citation: AnalysisCitation }) {
     <Card className='archive-receipt'>
       <CardContent className='space-y-3 p-4'>
         <div className='flex flex-wrap items-center gap-2'>
-          <Badge className='bg-[#006BB6] text-white'>{citation.type}</Badge>
-          <span className='archive-game-title text-sm font-semibold text-[var(--archive-ink)]'>
+          <Badge className='archive-citation-badge'>{citation.type}</Badge>
+          <span className='archive-game-title archive-ink-text text-sm font-semibold'>
             {citation.title}
           </span>
         </div>
-        <p className='text-sm leading-6 text-[var(--archive-ink-soft)]'>
+        <p className='archive-ink-soft-text text-sm leading-6'>
           Supports: {citation.claim}
         </p>
         {citation.source_url ? (
           <a
-            className='text-xs font-medium text-[var(--archive-blue)] underline underline-offset-2'
+            className='archive-blue-text text-xs font-medium underline underline-offset-2'
             href={citation.source_url}
             rel='noreferrer'
             target='_blank'
@@ -63,7 +58,7 @@ function ReceiptCard({ citation }: { citation: AnalysisCitation }) {
   )
 }
 
-function AnswerPanel({
+export function AnswerPanel({
   answer,
   onClarification,
   disabled,
@@ -77,7 +72,7 @@ function AnswerPanel({
       <Card className='archive-answer'>
         <CardHeader>
           <h3 className='archive-answer-heading' tabIndex={-1}>
-            <Sparkles className='size-5 text-[#F58426]' />
+            <Sparkles className='archive-orange-text size-5' />
             {answer.refused ? 'Archive boundary' : 'Answer'}
           </h3>
           {answer.warnings.length > 0 ? (
@@ -121,7 +116,7 @@ function AnswerPanel({
 
       <div>
         <h3 className='archive-receipts-heading'>
-          <FileText className='size-5 text-[#006BB6]' />
+          <FileText className='archive-blue-text size-5' />
           Receipts
         </h3>
         {answer.citations.length > 0 ? (
@@ -146,68 +141,19 @@ function AnswerPanel({
 }
 
 export function SeasonArchivePage() {
-  const [question, setQuestion] = useState('')
+  const {
+    question,
+    setQuestion,
+    messages,
+    analyst,
+    submit,
+    archiveReady,
+    archiveFailed,
+    archiveChecking,
+    slow,
+    retryReadiness,
+  } = useAnalyst()
   const resultsRef = useRef<HTMLDivElement>(null)
-  const [messages, setMessages] = useState<
-    Array<
-      AnalysisContextMessage & {
-        id: string
-        response?: AnalysisResponse
-      }
-    >
-  >([])
-  const archiveStatus = useQuery({
-    queryKey: ['archive-status'],
-    queryFn: fetchArchiveStatus,
-  })
-  const gameProbe = useQuery({
-    queryKey: ['games', 'archive-readiness'],
-    queryFn: () =>
-      fetchGames({
-        teamId: 'NYK',
-        season: KNICKS_SEASON,
-        limit: 1,
-      }),
-  })
-  const archiveReady =
-    archiveStatus.isSuccess &&
-    archiveStatus.data.games > 0 &&
-    gameProbe.isSuccess &&
-    gameProbe.data.length > 0
-  const archiveFailed =
-    archiveStatus.isError ||
-    gameProbe.isError ||
-    (archiveStatus.isSuccess && archiveStatus.data.games === 0) ||
-    (gameProbe.isSuccess && gameProbe.data.length === 0)
-  const archiveChecking = !archiveReady && !archiveFailed
-  const analyst = useMutation({
-    mutationFn: ({
-      nextQuestion,
-      context,
-    }: {
-      nextQuestion: string
-      context: AnalysisContextMessage[]
-    }) =>
-      askAnalyst(
-        nextQuestion,
-        KNICKS_SEASON,
-        context,
-        [...messages]
-          .reverse()
-          .find((message) => message.response?.conversation_state)?.response
-          ?.conversation_state
-      ),
-    onSuccess: (response) => {
-      setMessages((current) =>
-        retainLastFour(current, {
-          id: `assistant-${response.request_id || Date.now()}`,
-          role: 'assistant' as const,
-          content: response.answer,
-          response,
-        })
-      )
-    },
-  })
 
   useEffect(() => {
     if (!analyst.isSuccess) return
@@ -219,23 +165,6 @@ export function SeasonArchivePage() {
     })
     return () => cancelAnimationFrame(frame)
   }, [analyst.isSuccess, messages.length])
-
-  const submit = (value = question) => {
-    const nextQuestion = value.trim()
-    if (!archiveReady || !nextQuestion || analyst.isPending) return
-    const context = messages
-      .slice(-4)
-      .map(({ role, content }) => ({ role, content }))
-    setMessages((current) =>
-      retainLastFour(current, {
-        id: `user-${Date.now()}`,
-        role: 'user' as const,
-        content: nextQuestion,
-      })
-    )
-    setQuestion('')
-    analyst.mutate({ nextQuestion, context })
-  }
 
   const handleKeyDown = (event: KeyboardEvent<HTMLTextAreaElement>) => {
     if (
@@ -255,7 +184,7 @@ export function SeasonArchivePage() {
         <header className='archive-hero'>
           <div className='archive-shell'>
             <nav className='archive-nav' aria-label='Archive'>
-              <a className='archive-brand' href='/'>
+              <Link className='archive-brand' to='/'>
                 <span className='archive-brand-mark' aria-hidden='true'>
                   <img
                     src='/images/knicksiq-mark-v2.png'
@@ -265,7 +194,10 @@ export function SeasonArchivePage() {
                   />
                 </span>
                 <span className='archive-brand-name'>KnicksIQ</span>
-              </a>
+              </Link>
+              <Link to='/games'>Games</Link>
+              <Link to='/reports'>Reports</Link>
+              <Link to='/analyst'>Analyst</Link>
             </nav>
 
             <div className='archive-hero-grid'>
@@ -350,8 +282,7 @@ export function SeasonArchivePage() {
                         <button
                           type='button'
                           onClick={() => {
-                            void archiveStatus.refetch()
-                            void gameProbe.refetch()
+                            retryReadiness()
                           }}
                         >
                           Try again
@@ -363,7 +294,9 @@ export function SeasonArchivePage() {
                           className='size-3.5 animate-spin'
                           aria-hidden='true'
                         />
-                        Preparing archive
+                        {slow
+                          ? 'The archive is starting slowly. Please wait…'
+                          : 'Preparing archive'}
                       </>
                     )}
                   </div>
@@ -371,7 +304,7 @@ export function SeasonArchivePage() {
               </div>
               <fieldset
                 className='archive-console-controls'
-                disabled={!archiveReady}
+                disabled={!archiveReady || analyst.isPending}
                 aria-describedby={
                   !archiveReady ? 'archive-readiness' : undefined
                 }
@@ -444,7 +377,7 @@ export function SeasonArchivePage() {
               {analyst.isPending ? (
                 <div className='archive-state' role='status'>
                   <Loader2
-                    className='size-4 animate-spin text-[var(--archive-blue)]'
+                    className='archive-blue-text size-4 animate-spin'
                     aria-hidden='true'
                   />
                   Searching the season archive…
@@ -455,6 +388,14 @@ export function SeasonArchivePage() {
                   {navigator.onLine
                     ? 'The archive could not answer that request. It may have timed out or reached a rate limit; try again shortly.'
                     : 'You are offline. Reconnect to search the archive.'}
+                  <Button
+                    disabled={!archiveReady || analyst.isPending}
+                    onClick={() =>
+                      analyst.variables && analyst.mutate(analyst.variables)
+                    }
+                  >
+                    Retry question
+                  </Button>
                 </div>
               ) : null}
               {messages.length > 0 ? (

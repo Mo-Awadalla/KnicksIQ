@@ -28,11 +28,11 @@ function Values({
   return (
     <div className='grid gap-2 sm:grid-cols-3'>
       {Object.entries(values).map(([key, value]) => (
-        <div key={key} className='rounded-md bg-[#f4f7fb] p-3'>
+        <div key={key} className='archive-stat-cell rounded-md p-3'>
           <p className='text-xs text-muted-foreground capitalize'>
             {statLabel(key)} {qualifier}
           </p>
-          <p className='mt-1 font-stats text-xl font-semibold text-[#0d2238]'>
+          <p className='archive-stat-value mt-1 font-stats text-xl font-semibold'>
             {value}
           </p>
         </div>
@@ -45,17 +45,17 @@ function ResultBody({ result }: { result: AnalyticsResult }) {
   if (result.availability) {
     return (
       <div className='grid gap-3 sm:grid-cols-2'>
-        <div className='rounded-md bg-[#f4f7fb] p-3'>
+        <div className='archive-stat-cell rounded-md p-3'>
           <p className='text-xs text-muted-foreground'>Player appearances</p>
-          <p className='mt-1 font-stats text-xl font-semibold text-[#0d2238]'>
+          <p className='archive-stat-value mt-1 font-stats text-xl font-semibold'>
             {result.appearances}
           </p>
         </div>
-        <div className='rounded-md bg-[#f4f7fb] p-3'>
+        <div className='archive-stat-cell rounded-md p-3'>
           <p className='text-xs text-muted-foreground'>
             Requested Knicks games
           </p>
-          <p className='mt-1 font-stats text-xl font-semibold text-[#0d2238]'>
+          <p className='archive-stat-value mt-1 font-stats text-xl font-semibold'>
             {result.requested_team_games}
           </p>
         </div>
@@ -75,14 +75,14 @@ function ResultBody({ result }: { result: AnalyticsResult }) {
               <Tooltip isAnimationActive={false} />
               <Line
                 dataKey='value'
-                stroke='#BEC0C2'
+                stroke='var(--primitive-steel-400)'
                 dot={false}
                 isAnimationActive={false}
               />
               <Line
                 dataKey='rolling_mean'
                 name='5-game rolling mean'
-                stroke='#006BB6'
+                stroke='var(--signal-blue)'
                 strokeWidth={3}
                 isAnimationActive={false}
               />
@@ -148,7 +148,13 @@ function ResultBody({ result }: { result: AnalyticsResult }) {
                   <Bar
                     key={stat}
                     dataKey={stat}
-                    fill={['#006BB6', '#F58426', '#BEC0C2'][index]}
+                    fill={
+                      [
+                        'var(--signal-blue)',
+                        'var(--signal-orange)',
+                        'var(--primitive-steel-400)',
+                      ][index]
+                    }
                     isAnimationActive={false}
                   />
                 ))}
@@ -294,7 +300,7 @@ export function AnalyticsCards({ analytics }: { analytics: AnalyticsPayload }) {
             {result.warnings.map((warning) => (
               <p
                 key={warning}
-                className='flex gap-2 rounded-md bg-amber-50 p-3 text-sm text-amber-950'
+                className='archive-warning flex gap-2 rounded-md p-3 text-sm'
               >
                 <AlertTriangle className='mt-0.5 size-4 shrink-0' />
                 {warning}
@@ -305,7 +311,7 @@ export function AnalyticsCards({ analytics }: { analytics: AnalyticsPayload }) {
         </Card>
       ))}
       {analytics.coverage && analytics.coverage.completeness < 1 ? (
-        <p className='rounded-md bg-amber-50 p-3 text-sm text-amber-950'>
+        <p className='archive-warning rounded-md p-3 text-sm'>
           Partial coverage: {analytics.coverage.covered_game_count} of{' '}
           {analytics.coverage.expected_game_count} requested games are covered.
         </p>

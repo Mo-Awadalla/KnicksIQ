@@ -1,0 +1,17 @@
+{
+  "scope": "pnpm audit --prod",
+  "lockfile_sha256": "4cd1b6a32d3e4d4f0e5c20d2da47a627605a8a9f432b0d63ecaee69660b661bc",
+  "metadata": {
+    "vulnerabilities": {
+      "info": 0,
+      "low": 0,
+      "moderate": 0,
+      "high": 0,
+      "critical": 0
+    },
+    "dependencies": 198,
+    "devDependencies": 0,
+    "optionalDependencies": 86,
+    "totalDependencies": 284
+  }
+}

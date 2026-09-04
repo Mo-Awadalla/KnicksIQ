@@ -1,0 +1,35 @@
+{
+  "observed_at": "2026-09-04T21:38:33.550453+00:00",
+  "scope": "working tree; not an exact committed release",
+  "backend_tests": 241,
+  "backend_configuration": {
+    "AI_PROVIDER": "mock",
+    "RAG_QDRANT_ENABLED": false,
+    "REDIS_URL": ""
+  },
+  "independent_report_audit_tests": 8,
+  "frontend_component_tests": 46,
+  "browser_tests": 13,
+  "frontend_build": "passed",
+  "ruff": "passed",
+  "pyright": "passed",
+  "frontend_lint": {
+    "errors": 0,
+    "warnings": 2,
+    "notes": "Existing detail-route Fast Refresh export warnings"
+  },
+  "changed_frontend_formatting": "passed",
+  "desktop_mobile_accessibility": {
+    "widths": [
+      390,
+      1440
+    ],
+    "serious": 0,
+    "critical": 0,
+    "scope": "games, reports and analyst index screens; homepage covered separately"
+  },
+  "production_dependency_vulnerabilities": 0,
+  "canonical_120_question_evaluation": "blocked: unreviewed labels and unverified active/index identity",
+  "postgres_migration_and_container_scans": "not run: Docker daemon unavailable",
+  "live_load_and_deployment": "not run; release gate blocked"
+}

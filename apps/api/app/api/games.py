@@ -130,7 +130,7 @@ async def list_games(
         stmt = stmt.where(Game.season_type == season_type)
     if data_status:
         stmt = stmt.where(Game.data_status == data_status)
-    stmt = stmt.order_by(Game.game_date.desc()).limit(limit).offset(offset)
+    stmt = stmt.order_by(Game.game_date.desc(), Game.id.desc()).limit(limit).offset(offset)
     result = await db.execute(stmt)
     games = result.scalars().all()
     return [_to_summary(g) for g in games]

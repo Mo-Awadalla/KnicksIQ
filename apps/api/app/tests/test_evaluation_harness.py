@@ -75,3 +75,32 @@ def test_unanswerable_case_scores_explicit_refusal():
         10,
     )
     assert evaluate([observation]).metrics["correct_abstention_rate"] == 1
+
+
+def test_citations_are_not_ranked_retrieval_and_text_facts_are_not_vacuously_true():
+    observation = QueryObservation(
+        _case(required_facts=["fourth quarter"]),
+        {
+            "answer": "Nothing happened.",
+            "route": "retrieval_rag",
+            "citations": [{"metadata": {"possession_id": "p2"}}],
+        },
+        1,
+    )
+    report = evaluate([observation])
+    assert report.metrics["relevant_evidence_recall_at_5"] == 0
+    assert report.metrics["answer_completeness"] == 0
+    assert report.metrics["missing_ranked_traces"] == 1
+
+
+def test_incorrect_extra_numbers_fail():
+    report = evaluate(
+        [
+            QueryObservation(
+                _case(required_facts=["12 points"]),
+                {"answer": "12 points and 99 rebounds", "route": "retrieval_rag"},
+                1,
+            )
+        ]
+    )
+    assert report.metrics["exact_numeric_correctness"] == 0

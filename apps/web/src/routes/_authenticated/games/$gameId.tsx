@@ -1,6 +1,11 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { SeasonArchivePage } from '@/features/knicks/archive'
+import { GameDetailPage } from '@/features/knicks/surfaces'
+
+function GameDetailRoute() {
+  const { gameId } = Route.useParams()
+  return <GameDetailPage gameId={gameId} />
+}
 
 export const Route = createFileRoute('/_authenticated/games/$gameId')({
-  component: SeasonArchivePage,
+  component: GameDetailRoute,
 })

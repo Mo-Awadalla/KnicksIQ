@@ -249,6 +249,7 @@ export interface AnalysisResponse {
 }
 
 export interface ArchiveStatus {
+  matching_games?: number
   season: string
   data_version: string
   games: number

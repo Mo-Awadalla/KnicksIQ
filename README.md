@@ -29,8 +29,11 @@ The recovered 2025–26 candidate is under `release-artifacts/2025-26`:
 - 101 deterministic report drafts and a hash-bound manual review pack.
 - Data-only bundle SHA-256: `55d6aa90c206f3b3386cb4b8d056fb84ae51f5482a86e8c2ee920c72378c385c`.
 
-The data-only candidate passes full reconciliation. It is not activatable as the public release
-until every report hash is manually approved and the remaining owner launch gates are signed.
+Release eligibility is tracked in the [machine-readable release record](docs/release-evidence/release-record.json)
+and its [generated review view](docs/release-evidence/release-record.md). Local archive counts
+above do not establish active production identity or approval. The replacement report review policy
+requires agent verification of every report and owner approval of the template, exceptions and
+content-bound audit summary. Unresolved report checks block launch.
 
 ## Local development
 
