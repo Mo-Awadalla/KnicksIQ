@@ -1,4 +1,25 @@
 :root {
+  /* Primitive palette: the Garden after dark, paper scouting sheets, and signal ink. */
+  --primitive-ink-950: #071b2d;
+  --primitive-ink-900: #0d2238;
+  --primitive-ink-800: #122a40;
+  --primitive-blue-700: #004f8c;
+  --primitive-blue-600: #006bb6;
+  --primitive-blue-100: #e8f2f9;
+  --primitive-orange-600: #d96f19;
+  --primitive-orange-500: #f58426;
+  --primitive-orange-300: #ff9747;
+  --primitive-orange-100: #fff0e4;
+  --primitive-paper-100: #f3eee5;
+  --primitive-sheet-50: #fffdf9;
+  --primitive-steel-400: #bec0c2;
+  --primitive-slate-500: #5c6874;
+  --primitive-slate-200: #d9e0e6;
+  --primitive-danger-700: #8d3c1f;
+  --primitive-warning-700: #5e4904;
+  --primitive-warning-100: #fff7dc;
+
+  /* Type primitives. */
   --type-display:
     'Knockout', 'Knockout HTF49-Liteweight', 'Knockout-HTF49-Liteweight',
     'Arial Narrow', 'Helvetica Neue Condensed', sans-serif;
@@ -7,38 +28,77 @@
   --type-stats:
     'Söhne Mono', 'Sohne Mono', 'IBM Plex Mono', ui-monospace, SFMono-Regular,
     Menlo, Monaco, Consolas, monospace;
-  --radius: 0.625rem;
-  --background: oklch(0.985 0.01 250);
-  --foreground: oklch(0.16 0.04 255);
-  --card: #ffffff;
-  --card-foreground: oklch(0.16 0.04 255);
-  --popover: #ffffff;
-  --popover-foreground: oklch(0.16 0.04 255);
-  --primary: #006bb6;
-  --primary-foreground: #ffffff;
-  --secondary: oklch(0.95 0.02 245);
-  --secondary-foreground: #005394;
-  --muted: oklch(0.955 0.015 250);
-  --muted-foreground: oklch(0.42 0.04 255);
-  --accent: #f58426;
-  --accent-foreground: #ffffff;
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: #bec0c2;
-  --input: #bec0c2;
-  --ring: #006bb6;
-  --chart-1: #006bb6;
-  --chart-2: #f58426;
-  --chart-3: oklch(0.6 0.16 155);
-  --chart-4: oklch(0.65 0.18 28);
-  --chart-5: oklch(0.52 0.12 285);
 
-  --sidebar: #006bb6;
+  /* Semantic roles. Keep components speaking in roles, not hex values. */
+  --surface-ink: var(--primitive-ink-950);
+  --surface-ink-raised: var(--primitive-ink-900);
+  --surface-paper: var(--primitive-paper-100);
+  --surface-sheet: var(--primitive-sheet-50);
+  --surface-subtle: var(--primitive-blue-100);
+  --text-ink: var(--primitive-ink-950);
+  --text-strong: var(--primitive-ink-800);
+  --text-muted: var(--primitive-slate-500);
+  --text-on-ink: #ffffff;
+  --signal-blue: var(--primitive-blue-600);
+  --signal-blue-deep: var(--primitive-blue-700);
+  --signal-orange: var(--primitive-orange-500);
+  --signal-orange-deep: var(--primitive-orange-600);
+  --signal-orange-soft: var(--primitive-orange-100);
+  --status-danger: var(--primitive-danger-700);
+  --status-warning: var(--primitive-warning-700);
+  --status-warning-surface: var(--primitive-warning-100);
+  --line-subtle: rgb(7 27 45 / 14%);
+  --line-on-ink: rgb(255 255 255 / 18%);
+
+  /* Component aliases. */
+  --archive-panel: var(--surface-sheet);
+  --archive-panel-border: rgb(0 107 182 / 22%);
+  --archive-console: rgb(255 253 249 / 88%);
+  --archive-shadow: 0 1.25rem 3rem rgb(8 27 45 / 7%);
+  --data-row-hover: rgb(0 107 182 / 6%);
+  --focus-ring: rgb(0 107 182 / 24%);
+
+  /* Geometry, shadow, and motion primitives. */
+  --radius: 0.625rem;
+  --radius-panel: 1.25rem;
+  --radius-pill: 999px;
+  --shadow-panel: 0 1.8rem 5rem rgb(3 15 27 / 28%);
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --motion-press: 150ms var(--ease-out);
+  --motion-reveal: 220ms var(--ease-out);
+
+  /* shadcn-compatible semantic aliases. */
+  --background: var(--surface-paper);
+  --foreground: var(--text-ink);
+  --card: var(--surface-sheet);
+  --card-foreground: var(--text-ink);
+  --popover: var(--surface-sheet);
+  --popover-foreground: var(--text-ink);
+  --primary: var(--signal-blue);
+  --primary-foreground: #ffffff;
+  --secondary: var(--surface-subtle);
+  --secondary-foreground: var(--signal-blue-deep);
+  --muted: #e9edf0;
+  --muted-foreground: var(--text-muted);
+  --accent: var(--signal-orange);
+  --accent-foreground: var(--text-ink);
+  --destructive: var(--status-danger);
+  --border: var(--primitive-steel-400);
+  --input: var(--primitive-steel-400);
+  --ring: var(--signal-blue);
+  --chart-1: var(--signal-blue);
+  --chart-2: var(--signal-orange);
+  --chart-3: #2d8870;
+  --chart-4: var(--signal-orange-deep);
+  --chart-5: #7669a8;
+
+  --sidebar: var(--surface-ink);
   --sidebar-foreground: #ffffff;
-  --sidebar-primary: #f58426;
-  --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: oklch(1 0 0 / 16%);
-  --sidebar-accent-foreground: oklch(0.99 0.01 250);
-  --sidebar-border: oklch(1 0 0 / 20%);
+  --sidebar-primary: var(--signal-orange);
+  --sidebar-primary-foreground: var(--text-ink);
+  --sidebar-accent: rgb(255 255 255 / 12%);
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: rgb(255 255 255 / 20%);
   --sidebar-ring: var(--ring);
 }
 

@@ -192,6 +192,18 @@ def validate_bundle(
         ):
             errors.append(f"{fingerprint}: generated fact data-through exceeds release coverage")
 
+    approvals = (bundle.get("review_manifest") or {}).get("approvals") or {}
+    if require_reviewed_reports:
+        for report in reports:
+            report_content = {
+                key: value
+                for key, value in report.items()
+                if key not in {"reviewed", "review_hash"}
+            }
+            digest = hashlib.sha256(canonical_json(report_content)).hexdigest()
+            if approvals.get(str(report.get("nba_game_id"))) != digest:
+                errors.append(f"{report.get('nba_game_id')}: missing content-bound report approval")
+
     all_reports_by_game: dict[str, list[dict[str, Any]]] = {}
     reports_by_game: dict[str, list[dict[str, Any]]] = {}
     for row in reports:

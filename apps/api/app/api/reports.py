@@ -6,7 +6,7 @@ import json
 from datetime import datetime
 from typing import Annotated, Any
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel, Field
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -15,6 +15,7 @@ from app.api.security import require_admin_api_key
 from app.core.config import get_settings
 from app.core.db import get_db
 from app.models.dataset_release import DatasetRelease
+from app.models.game import Game
 from app.models.report import Report
 
 router = APIRouter(prefix="/reports", tags=["reports"])
@@ -79,9 +80,15 @@ async def generate_postgame(req: PostgameRequest) -> PostgameResponse:
 async def list_reports(
     db: Annotated[AsyncSession, Depends(get_db)],
     game_id: int | None = None,
-    limit: int = 50,
+    limit: int = Query(50, ge=1, le=200),
+    offset: int = Query(0, ge=0),
 ) -> list[ReportSummary]:
-    stmt = select(Report).order_by(Report.created_at.desc()).limit(limit)
+    stmt = (
+        select(Report)
+        .order_by(Report.created_at.desc(), Report.id.desc())
+        .limit(limit)
+        .offset(offset)
+    )
     if game_id is not None:
         stmt = stmt.where(Report.game_id == game_id)
     if get_settings().is_production:
@@ -113,8 +120,19 @@ async def get_report(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Report not found")
     if get_settings().is_production:
         release = await db.get(DatasetRelease, row.release_id) if row.release_id else None
-        if not row.reviewed or not release or release.status != "active":
+        if (
+            not row.reviewed
+            or not release
+            or release.status != "active"
+            or not release.validation_passed
+        ):
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Report not found")
+    sources = json.loads(row.sources_json or "[]")
+    game = await db.get(Game, row.game_id)
+    if game and game.source_url:
+        for source in sources:
+            source.setdefault("source_url", game.source_url)
+            source.setdefault("source_name", game.source_name)
     return PostgameResponse(
         id=row.id,
         game_id=row.game_id,
@@ -125,7 +143,7 @@ async def get_report(
         worst_stretch=row.worst_stretch,
         player_notes=json.loads(row.player_notes or "[]"),
         suggested_adjustments=json.loads(row.suggested_adjustments or "[]"),
-        sources=json.loads(row.sources_json or "[]"),
+        sources=sources,
         tool_calls=[],
         created_at=row.created_at,
     )

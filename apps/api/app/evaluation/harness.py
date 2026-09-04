@@ -42,6 +42,13 @@ class EvaluationCase:
     answerable: bool
     filters: dict[str, Any]
     context: tuple[dict[str, str], ...] = ()
+    label_status: str = "needs_archive_review"
+    required_entities: tuple[str, ...] = ()
+    forbidden_facts: tuple[str, ...] = ()
+    allowed_numbers: tuple[str, ...] = ()
+    claims: tuple[dict[str, Any], ...] = ()
+    entity_universe: tuple[str, ...] = ()
+    allowed_entities: tuple[str, ...] = ()
 
     @classmethod
     def from_dict(cls, value: dict[str, Any]) -> EvaluationCase:
@@ -55,6 +62,13 @@ class EvaluationCase:
             answerable=bool(value["answerable"]),
             filters=dict(value.get("filters", {})),
             context=tuple(value.get("context", [])),
+            label_status=str(value.get("label_status", "needs_archive_review")),
+            required_entities=tuple(value.get("required_entities", [])),
+            forbidden_facts=tuple(value.get("forbidden_facts", [])),
+            allowed_numbers=tuple(str(item) for item in value.get("allowed_numbers", [])),
+            claims=tuple(value.get("claims", [])),
+            entity_universe=tuple(value.get("entity_universe", [])),
+            allowed_entities=tuple(value.get("allowed_entities", [])),
         )
 
 
@@ -122,16 +136,26 @@ def evaluate(observations: Iterable[QueryObservation]) -> EvaluationReport:
     diagnosis = {"reranking_may_help": 0, "retrieval_miss": 0, "already_top5": 0}
     failures: list[dict[str, Any]] = []
 
+    entity_hits: list[bool] = []
+    paraphrase_hits: list[bool] = []
+    semantic_categories: dict[str, list[float]] = {}
+    missing_labels: list[str] = []
+    missing_traces: list[str] = []
     for row in rows:
         case, response = row.case, row.response
         answer = str(response.get("answer", ""))
         relevant = set(case.relevant_evidence_ids)
         top5 = _retrieval_ids(response, "returned_evidence_ids")[:5]
         top20 = _retrieval_ids(response, "candidate_evidence_ids")[:20]
-        if not top5:
-            top5 = list(_citation_ids(response))[:5]
-        if not top20:
-            top20 = top5
+        semantic = case.answerable and case.expected_route == "retrieval_rag"
+        if case.label_status != "reviewed" or (
+            case.answerable and (not case.required_facts or not relevant or not case.claims)
+        ):
+            missing_labels.append(case.id)
+        if semantic and (not top5 or not top20):
+            missing_traces.append(case.id)
+        if semantic:
+            semantic_categories.setdefault(case.category, []).append(_recall(relevant, top5) or 0.0)
 
         route_ok = response.get("route") == case.expected_route
         route_hits.append(route_ok)
@@ -147,16 +171,63 @@ def evaluate(observations: Iterable[QueryObservation]) -> EvaluationReport:
                 diagnosis["already_top5"] += 1
 
         required_numbers = _numbers(" ".join(case.required_facts))
-        numeric_ok = required_numbers.issubset(_numbers(answer))
-        if required_numbers:
+        answer_numbers = _numbers(answer)
+        allowed_numbers = required_numbers | set(case.allowed_numbers)
+        numeric_ok = required_numbers.issubset(answer_numbers) and answer_numbers.issubset(
+            allowed_numbers
+        )
+        entity_ok = all(
+            _normalise(entity) in _normalise(answer) for entity in case.required_entities
+        )
+        additions_ok = not any(
+            _normalise(fact) in _normalise(answer) for fact in case.forbidden_facts
+        )
+        allowed_entities = {
+            _normalise(entity) for entity in (*case.required_entities, *case.allowed_entities)
+        }
+        additions_ok = additions_ok and not any(
+            _normalise(entity) in _normalise(answer) and _normalise(entity) not in allowed_entities
+            for entity in case.entity_universe
+        )
+        if case.answerable:
+            entity_hits.append(entity_ok and additions_ok and not response.get("refused", False))
+        if case.answerable:
             numeric_hits.append(numeric_ok)
-        fact_hits = [
-            _normalise(fact) in _normalise(answer) or _numbers(fact).issubset(_numbers(answer))
-            for fact in case.required_facts
-        ]
+        fact_hits = [_normalise(fact) in _normalise(answer) for fact in case.required_facts]
         completeness.append(sum(fact_hits) / len(fact_hits) if fact_hits else 1.0)
+        if case.answerable:
+            paraphrase_hits.append(
+                bool(case.claims)
+                and all(
+                    any(
+                        _normalise(variant) in _normalise(answer)
+                        for variant in claim.get("accepted_phrasings", [claim.get("text", "")])
+                        if variant
+                    )
+                    for claim in case.claims
+                )
+            )
         cited = _citation_ids(response)
-        citation_ok = not relevant or bool(relevant & cited)
+        citation_ok = not relevant or relevant.issubset(cited)
+        if case.claims:
+            citation_ok = all(
+                any(
+                    _normalise(variant) in _normalise(answer)
+                    for variant in claim.get("accepted_phrasings", [claim.get("text", "")])
+                    if variant
+                )
+                and any(
+                    str(citation.get("metadata", {}).get("evidence_id", ""))
+                    in claim.get("evidence_ids", [])
+                    and _normalise(citation.get("claim", ""))
+                    in {
+                        _normalise(text)
+                        for text in claim.get("accepted_phrasings", [claim.get("text", "")])
+                    }
+                    for citation in response.get("citations", [])
+                )
+                for claim in case.claims
+            )
         if case.answerable and relevant:
             citation_hits.append(citation_ok)
         abstention_ok = bool(response.get("refused")) if not case.answerable else True
@@ -176,6 +247,8 @@ def evaluate(observations: Iterable[QueryObservation]) -> EvaluationReport:
             for name, passed in (
                 ("route", route_ok),
                 ("numeric", numeric_ok),
+                ("entities", entity_ok),
+                ("incorrect_additions", additions_ok),
                 ("citations", citation_ok),
                 ("abstention", abstention_ok),
                 ("completeness", all(fact_hits)),
@@ -185,10 +258,27 @@ def evaluate(observations: Iterable[QueryObservation]) -> EvaluationReport:
         if reasons:
             failures.append({"id": case.id, "failed": reasons})
 
+    for case_id in missing_labels:
+        failures.append({"id": case_id, "failed": ["missing_reviewed_labels"]})
+    for case_id in missing_traces:
+        failures.append({"id": case_id, "failed": ["missing_ranked_trace"]})
     count = len(rows)
     return EvaluationReport(
         metrics={
             "query_count": count,
+            "paraphrase_success": statistics.fmean(paraphrase_hits) if paraphrase_hits else None,
+            "missing_labels": len(missing_labels),
+            "missing_ranked_traces": len(missing_traces),
+            "canonical_entity_correctness": statistics.fmean(entity_hits) if entity_hits else None,
+            "semantic_recall_at_5": statistics.fmean(
+                [score for scores in semantic_categories.values() for score in scores]
+            )
+            if semantic_categories
+            else None,
+            **{
+                f"semantic_recall_at_5/{category}": statistics.fmean(scores)
+                for category, scores in semantic_categories.items()
+            },
             "routing_accuracy": statistics.fmean(route_hits),
             "relevant_evidence_recall_at_5": statistics.fmean(recall5) if recall5 else None,
             "relevant_evidence_recall_at_20": statistics.fmean(recall20) if recall20 else None,

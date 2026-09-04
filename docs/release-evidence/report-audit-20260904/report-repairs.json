@@ -1,0 +1,9 @@
+{
+  "schema_version": 1,
+  "kind": "report_only_repair_proposal_not_release",
+  "baseline_version": "2025-26.20260714.1",
+  "canonical_data_sha256": "b2ad21c69175600c3192ef6133f8c11fd63890609a8204f92508a5fb04d05170",
+  "policy_sha256": "94afda3c9e938fafcd6302c60715042c246fe03c51b34b8ff1afc084c2d4dc25",
+  "reports": [],
+  "approvals": {}
+}

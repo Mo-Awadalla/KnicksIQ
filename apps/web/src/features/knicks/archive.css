@@ -1,17 +1,17 @@
 .archive-page {
-  --archive-ink: #081b2d;
-  --archive-ink-soft: #122a40;
-  --archive-paper: #f3eee5;
-  --archive-sheet: #fffdf9;
-  --archive-blue: #006bb6;
-  --archive-blue-deep: #004f8c;
-  --archive-orange: #f58426;
-  --archive-orange-deep: #d96f19;
-  --archive-orange-ink: #9e4507;
-  --archive-muted: #5c6874;
-  --archive-line: rgb(8 27 45 / 14%);
-  --archive-line-light: rgb(255 255 255 / 18%);
-  --archive-ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --archive-ink: var(--surface-ink);
+  --archive-ink-soft: var(--surface-ink-raised);
+  --archive-paper: var(--surface-paper);
+  --archive-sheet: var(--surface-sheet);
+  --archive-blue: var(--signal-blue);
+  --archive-blue-deep: var(--signal-blue-deep);
+  --archive-orange: var(--signal-orange);
+  --archive-orange-deep: var(--signal-orange-deep);
+  --archive-orange-ink: var(--signal-orange-deep);
+  --archive-muted: var(--text-muted);
+  --archive-line: var(--line-subtle);
+  --archive-line-light: var(--line-on-ink);
+  --archive-ease-out: var(--ease-out);
   --archive-ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
   min-height: 100svh;
   overflow-x: clip;
@@ -650,6 +650,41 @@
 
 .archive-game-title {
   font-family: var(--type-display);
+}
+
+.archive-ink-text {
+  color: var(--text-ink);
+}
+
+.archive-ink-soft-text {
+  color: var(--text-strong);
+}
+
+.archive-blue-text {
+  color: var(--signal-blue);
+}
+
+.archive-orange-text {
+  color: var(--signal-orange);
+}
+
+.archive-citation-badge {
+  border-color: transparent;
+  background: var(--signal-blue);
+  color: white;
+}
+
+.archive-stat-cell {
+  background: var(--surface-subtle);
+}
+
+.archive-stat-value {
+  color: var(--text-strong);
+}
+
+.archive-warning {
+  background: var(--status-warning-surface);
+  color: var(--status-warning);
 }
 
 .archive-page .recharts-cartesian-axis-tick-value,

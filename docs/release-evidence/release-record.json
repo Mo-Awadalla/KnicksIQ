@@ -1,0 +1,46 @@
+{
+  "schema_version": 1,
+  "id": "2025-26-verified-parity",
+  "tested_commit": null,
+  "status": "blocked",
+  "configuration": {
+    "answer_mode": "shadow",
+    "shadow_sample_rate": 0.1,
+    "hosting": "existing Render services",
+    "automatic_deployments": false
+  },
+  "hashes": {
+    "data": null,
+    "bundle": null,
+    "evaluation": "a546b99c36fedb59a475479016b0338fe113c4478d5165c4a5073d144ffdf482"
+  },
+  "checks": {},
+  "approvals": {},
+  "deployments": {
+    "api": null,
+    "web": null
+  },
+  "rollback": {
+    "api_deployment": null,
+    "web_deployment": null,
+    "data_version": null,
+    "qdrant_aliases": null
+  },
+  "review_policy": "Agents audit every report. Owner approves template, exceptions, final hash-bound audit summary and evaluation labels in batches. Unresolved checks block release.",
+  "observations": {
+    "report_audit": "docs/release-evidence/report-audit-20260904/audit.json",
+    "live_dependencies": "docs/release-evidence/live-observation.json",
+    "label_drafts": "docs/release-evidence/evaluation-label-drafts.jsonl",
+    "note": "Working-tree observations are not evidence for an exact tested Git commit.",
+    "frontend_dependency_audit": "docs/release-evidence/frontend-dependency-audit.json",
+    "local_validation": "docs/release-evidence/local-validation.json"
+  },
+  "remaining_external_checks": [
+    "Verified active archive identity and authenticated live retrieval target/filter probes",
+    "Owner label adjudication and hash-bound template/exception/audit approvals",
+    "Independent resolution of report run discrepancies without changing canonical basketball data",
+    "Docker-backed PostgreSQL migration and container security checks (Docker daemon unavailable locally)",
+    "Ten-concurrent-analyst warm load test against verified environment",
+    "Protected GitHub environment and Render service/deployment snapshot configuration"
+  ]
+}

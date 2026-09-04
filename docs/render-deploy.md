@@ -76,3 +76,28 @@ offline/development tools and are not Render services.
 
 See `docs/production-runbook.md` for rollback, restore, dependency-outage,
 monitoring, and secret-rotation procedures.
+
+## Verified parity release workflow
+
+Current eligibility lives in [the release record](release-evidence/release-record.json),
+not historical deployment claims. `Manual verified release` is workflow_dispatch-only.
+Configure the `production-owner-approved` GitHub environment with required owner reviewers.
+Its `RELEASE_OWNER_APPROVAL_SHA256` secret must equal the reviewed record's SHA-256; the
+workflow cannot manufacture this approval. Configure existing Render service IDs/URLs in
+`services.api` and `services.web` in that record, plus environment credentials.
+
+Keep code and evidence commits distinct: the workflow checks out the selected tested code
+commit under `tested/` and the workflow's evidence commit under `evidence/`. This avoids
+asking a record committed inside Git to contain its own commit hash. Every passing check
+must reference the tested code commit and a hashed artifact in the evidence checkout.
+
+The coordinator sends Render the exact tested `commitId`, records both returned deployment
+IDs, verifies the deployed commits, then optionally promotes a previously validated staged
+dataset and evaluated candidate aliases. Its preflight rejects stale rollback snapshots and
+automatic deploys. Failures trigger restoration of each attempted component and produce
+workflow failure annotations; configure owner notifications for failed workflow runs.
+Never continue after `restoration_failed` without owner incident handling.
+
+Render rebuilds from Git, so artifact identity with CI is not asserted. API references:
+[trigger deploy](https://api-docs.render.com/reference/create-deploy) and
+[rollback](https://api-docs.render.com/reference/rollback-deploy).

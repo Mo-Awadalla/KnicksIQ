@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 from pathlib import Path
 
 import pytest
@@ -10,15 +11,17 @@ from app.models.generated_stat_fact import GeneratedStatFact
 from app.services.release_bundle import (
     ReleaseValidationError,
     build_bundle,
+    canonical_json,
     load_release_bundle,
     read_bundle,
+    validate_bundle,
 )
 from basketball_core.analytics import FactCandidate, fact_fingerprint, score_fact_candidate
 from sqlalchemy import func, select
 
 
 def _payload() -> dict:
-    return {
+    payload = {
         "manifest": {
             "version": "2025-26.test.1",
             "season": "2025-26",
@@ -117,6 +120,13 @@ def _payload() -> dict:
             ],
         },
     }
+
+    report = payload["data"]["reports"][0]
+    digest = hashlib.sha256(
+        canonical_json({k: v for k, v in report.items() if k != "reviewed"})
+    ).hexdigest()
+    payload["review_manifest"] = {"approvals": {report["nba_game_id"]: digest}}
+    return payload
 
 
 def test_bundle_is_deterministic_and_manifest_checked(tmp_path: Path) -> None:
@@ -227,3 +237,10 @@ async def test_generated_facts_are_validated_hashed_and_loaded(db_session, tmp_p
     build_bundle(payload, invalid)
     with pytest.raises(ReleaseValidationError, match="fingerprint does not reconcile"):
         await load_release_bundle(db_session, invalid)
+
+
+def test_reviewed_flag_does_not_approve_changed_content():
+    payload = _payload()
+    payload["data"]["reports"][0]["summary"] = "NYK won 300-2."
+    with pytest.raises(ReleaseValidationError, match="content-bound"):
+        validate_bundle(payload)

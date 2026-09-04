@@ -40,11 +40,14 @@ class ArchiveStatus(BaseModel):
     reports: int = Field(ge=0)
     activated_at: datetime | None
     capabilities: list[str]
+    matching_games: int = Field(ge=0)
 
 
 @router.get("/status", response_model=ArchiveStatus)
 async def archive_status(
     db: Annotated[AsyncSession, Depends(get_db)],
+    season_type: str | None = None,
+    data_status: str | None = None,
 ) -> ArchiveStatus:
     release = (
         await db.execute(
@@ -80,14 +83,31 @@ async def archive_status(
             ).where(*game_filters)
         )
     ).one()
+    matching_filters = list(game_filters)
+    if season_type:
+        matching_filters.append(Game.season_type == season_type)
+    if data_status:
+        matching_filters.append(Game.data_status == data_status)
+    matching_games = (
+        await db.execute(select(func.count(Game.id)).where(*matching_filters))
+    ).scalar_one()
     report_stmt = select(func.count(Report.id)).where(Report.reviewed.is_(True))
     if release_id is not None:
-        report_stmt = report_stmt.where(Report.release_id == release_id)
+        matching_filters = list(game_filters)
+    if season_type:
+        matching_filters.append(Game.season_type == season_type)
+    if data_status:
+        matching_filters.append(Game.data_status == data_status)
+    matching_games = (
+        await db.execute(select(func.count(Game.id)).where(*matching_filters))
+    ).scalar_one()
+    report_stmt = report_stmt.where(Report.release_id == release_id)
     reports = (await db.execute(report_stmt)).scalar_one()
     return ArchiveStatus(
         season=release.season if release else get_settings().dataset_season,
         data_version=version,
         games=totals[0],
+        matching_games=matching_games,
         regular_season_games=totals[1],
         postseason_games=totals[2],
         reports=reports,

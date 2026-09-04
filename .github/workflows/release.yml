@@ -1,0 +1,55 @@
+name: Manual verified release
+on:
+  workflow_dispatch:
+    inputs:
+      tested_commit:
+        description: Exact tested 40-character Git commit
+        required: true
+      record_path:
+        description: Reviewed release record path in this commit
+        required: true
+        default: docs/release-evidence/release-record.json
+permissions:
+  contents: read
+concurrency:
+  group: production-release
+  cancel-in-progress: false
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: production-owner-approved
+    timeout-minutes: 90
+    env:
+      RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
+      RELEASE_OWNER_APPROVAL_SHA256: ${{ secrets.RELEASE_OWNER_APPROVAL_SHA256 }}
+      DB_URL: ${{ secrets.DB_URL }}
+      QDRANT_URL: ${{ secrets.QDRANT_URL }}
+      QDRANT_API_KEY: ${{ secrets.QDRANT_API_KEY }}
+      RELEASE_RECORD_PATH: ${{ inputs.record_path }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: evidence
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.tested_commit }}
+          path: tested
+      - uses: astral-sh/setup-uv@v6
+        with:
+          version: '0.8.6'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: uv sync --project tested --all-packages --all-extras --dev --frozen
+      - name: Validate evidence and owner approval, deploy, smoke and restore on failure
+        working-directory: evidence
+        run: uv run --project ../tested --package knicksiq-api python -m app.services.deploy_release "$RELEASE_RECORD_PATH" --tested-root ../tested
+      - name: Preserve resulting deployment IDs and restoration evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-record
+          path: evidence/${{ inputs.record_path }}
+      - name: Stop and alert owner through failed workflow
+        if: failure()
+        run: echo '::error::Release blocked or failed. Owner must inspect the release record. Do not continue promotion after restoration failure.'

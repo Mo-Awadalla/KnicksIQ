@@ -61,3 +61,41 @@ async def test_post_postgame_for_missing_game_returns_500(client):
     """A missing game should surface as a 5xx, not silently succeed."""
     r = await client.post("/reports/postgame", json={"game_id": 99999})
     assert r.status_code in (500, 404)
+
+
+async def test_report_pagination_bounds(client):
+    for query in ("limit=0", "limit=201", "offset=-1"):
+        response = await client.get(f"/reports?{query}")
+        assert response.status_code == 422
+    response = await client.get("/reports?limit=50&offset=100")
+    assert response.status_code == 200
+    assert response.json() == []
+
+
+async def test_report_101_reachable_with_stable_tied_order(client, db_session):
+    from datetime import UTC, datetime
+
+    from app.models.report import Report
+
+    timestamp = datetime(2026, 1, 1, tzinfo=UTC)
+    for index in range(101):
+        db_session.add(
+            Report(
+                game_id=1,
+                title=f"Report {index}",
+                summary="Summary",
+                report_type="postgame",
+                created_at=timestamp,
+                reviewed=True,
+            )
+        )
+    await db_session.commit()
+    ids = []
+    for offset, expected in [(0, 50), (50, 50), (100, 1)]:
+        response = await client.get(f"/reports?limit=50&offset={offset}")
+        assert response.status_code == 200
+        page = response.json()
+        assert len(page) == expected
+        ids.extend(item["id"] for item in page)
+    assert len(set(ids)) == 101
+    assert ids == sorted(ids, reverse=True)

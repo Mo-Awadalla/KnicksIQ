@@ -17,10 +17,11 @@ from app.models.report import Report
 from app.services.embeddings import embed_texts
 from app.services.possession_chunks import build_possession_chunks
 from app.services.qdrant_client import (
+    ensure_candidate_not_serving,
     ensure_collections,
     recreate_collection,
-    switch_aliases,
     upsert_points,
+    validate_candidate_collection,
     versioned_collection,
 )
 from sqlalchemy import select
@@ -206,6 +207,7 @@ async def build_rag_artifacts(
     qdrant_upserted = 0
     qdrant_reset = False
     supporting_counts: dict[str, int] = {}
+    candidate_aliases: dict[str, str] = {}
     settings = get_settings()
     possession_collection = (
         versioned_collection(settings.rag_qdrant_possessions_collection, data_version)
@@ -213,6 +215,8 @@ async def build_rag_artifacts(
         else settings.rag_qdrant_possessions_collection
     )
     if settings.rag_qdrant_enabled and (reset_qdrant or data_version):
+        if data_version:
+            ensure_candidate_not_serving(possession_collection)
         recreate_collection(possession_collection)
         qdrant_reset = True
     elif settings.rag_qdrant_enabled and possession_records:
@@ -245,15 +249,16 @@ async def build_rag_artifacts(
         if qdrant_upserted != len(possession_records):
             raise RuntimeError("Qdrant indexed point count did not match release records")
         if data_version:
+            validate_candidate_collection(
+                possession_collection, data_version, len(possession_records)
+            )
             supporting_counts, supporting_collections = await _build_release_supporting_collections(
                 db, games, data_version
             )
-            switch_aliases(
-                {
-                    settings.rag_qdrant_possessions_collection: possession_collection,
-                    **supporting_collections,
-                }
-            )
+            candidate_aliases = {
+                settings.rag_qdrant_possessions_collection: possession_collection,
+                **supporting_collections,
+            }
         else:
             supporting_counts = {}
 
@@ -290,6 +295,8 @@ async def build_rag_artifacts(
         "qdrant_upserted": qdrant_upserted,
         "qdrant_supporting_counts": supporting_counts,
         "data_version": data_version,
+        "candidate_aliases": candidate_aliases,
+        "aliases_promoted": False,
         "qdrant_collection": possession_collection,
         "qdrant_batch_size": QDRANT_INDEX_BATCH_SIZE,
         "elapsed_seconds": round(time.perf_counter() - started_at, 3),
@@ -420,6 +427,7 @@ async def _build_release_supporting_collections(
     for alias, records in collections.items():
         physical = versioned_collection(alias, data_version)
         physical_names[alias] = physical
+        ensure_candidate_not_serving(physical)
         recreate_collection(physical)
         inserted = 0
         for batch in _iter_batches(records, QDRANT_INDEX_BATCH_SIZE):
@@ -430,5 +438,6 @@ async def _build_release_supporting_collections(
                 inserted += upsert_points(physical, batch, embed_texts(documents))
         if inserted != len(records) or not records:
             raise RuntimeError(f"Qdrant {alias} validation failed")
+        validate_candidate_collection(physical, data_version, len(records))
         counts[alias] = inserted
     return counts, physical_names
