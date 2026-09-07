@@ -8,6 +8,41 @@ async def test_get_report_not_found(client):
     assert r.status_code == 404
 
 
+async def test_report_sources_link_the_matching_evidence_type(client, db_session):
+    import json
+
+    from app.models.game import Game
+    from app.models.report import Report
+
+    game = await db_session.get(Game, 1)
+    game.nba_game_id = "0022500003"
+    game.source_url = "https://stats.nba.com/stats/playbyplayv3?GameID=0022500003"
+    report = Report(
+        game_id=1,
+        title="Verified report",
+        summary="Summary",
+        report_type="postgame",
+        sources_json=json.dumps(
+            [
+                {"type": "traditional_box_score", "nba_player_id": 1628973},
+                {"type": "play_by_play", "start_sequence": 10, "end_sequence": 20},
+                {"type": "game"},
+                "Legacy source note",
+            ]
+        ),
+    )
+    db_session.add(report)
+    await db_session.commit()
+    response = await client.get(f"/reports/{report.id}")
+    assert response.status_code == 200
+    sources = response.json()["sources"]
+    assert sources[0]["source_url"].endswith("/0022500003/box-score")
+    assert sources[1]["source_url"] == game.source_url
+    assert sources[2]["source_url"].endswith("/0022500003/box-score")
+    assert all(source["game_id"] == 1 for source in sources[:3])
+    assert sources[3] == "Legacy source note"
+
+
 async def test_list_reports_empty(client):
     r = await client.get("/reports")
     assert r.status_code == 200

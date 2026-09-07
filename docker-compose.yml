@@ -64,7 +64,7 @@ services:
       OPENROUTER_SUMMARY_MODEL: ${OPENROUTER_SUMMARY_MODEL:-nvidia/nemotron-3-ultra-550b-a55b:free}
       LOG_LEVEL: INFO
       LOG_JSON: "true"
-      CORS_ORIGINS: '["http://localhost:5173", "http://localhost:3000"]'
+      CORS_ORIGINS: '["http://localhost:5173", "http://localhost:3000", "http://localhost:8080"]'
     ports:
       - "8000:8000"
     depends_on:
@@ -80,8 +80,6 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.web
-    environment:
-      VITE_API_URL: http://localhost:8000
     ports:
       - "8080:8080"
     depends_on:

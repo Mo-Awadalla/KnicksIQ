@@ -129,10 +129,23 @@ async def get_report(
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Report not found")
     sources = json.loads(row.sources_json or "[]")
     game = await db.get(Game, row.game_id)
-    if game and game.source_url:
+    if game:
         for source in sources:
-            source.setdefault("source_url", game.source_url)
-            source.setdefault("source_name", game.source_name)
+            if not isinstance(source, dict):
+                continue
+            source.setdefault("game_id", game.id)
+            source_type = source.get("type", source.get("source_type"))
+            if game.nba_game_id and (
+                source_type in {"traditional_box_score", "box_score", "game"}
+                or source.get("nba_player_id")
+            ):
+                source.setdefault(
+                    "source_url", f"https://www.nba.com/game/{game.nba_game_id}/box-score"
+                )
+                source.setdefault("source_name", "NBA.com box score")
+            elif game.source_url:
+                source.setdefault("source_url", game.source_url)
+                source.setdefault("source_name", game.source_name)
     return PostgameResponse(
         id=row.id,
         game_id=row.game_id,

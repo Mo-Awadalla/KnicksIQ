@@ -18,6 +18,9 @@ class StatDefinition:
 
 
 _DEFINITIONS = (
+    StatDefinition(
+        "starts", "Games started", "count", ("starter",), ("start", "started", "games started"), 0
+    ),
     StatDefinition("points", "Points", "count", ("points",), ("point", "pts"), 1, 3),
     StatDefinition(
         "rebounds", "Rebounds", "count", ("rebounds",), ("rebound", "rebs", "boards"), 1, 2

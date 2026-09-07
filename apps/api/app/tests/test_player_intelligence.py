@@ -148,7 +148,7 @@ async def test_common_discovery_window_uses_precomputed_release_catalog(db_sessi
     await db_session.commit()
     answer = await answer_player_question(
         db_session,
-        question="What was notable about Jalen Brunson's points this season?",
+        question="What was notable about Jalen Brunson's points this regular season?",
         season="2025-26",
     )
     assert answer is not None
@@ -504,3 +504,237 @@ async def test_hardest_opposing_player_ranks_cumulative_plus_minus(db_session) -
     explicit_leader = explicit.analytics["results"][0]["entries"][0]
     assert explicit_leader["player_name"] == "Jayson Tatum"
     assert explicit_leader["raw_values"]["plus_minus"] == 17
+
+
+async def test_default_archive_includes_postseason_but_explicit_regular_does_not(db_session):
+    release, _ = await _seed_release_stats(db_session)
+    game = (
+        await db_session.execute(
+            select(Game).where(Game.release_id == release.id, Game.nba_game_id == "analytics-3")
+        )
+    ).scalar_one()
+    game.season_type = "playoffs"
+    await db_session.commit()
+    whole = await answer_player_question(
+        db_session, question="What was Jalen Brunson's scoring average?", season="2025-26"
+    )
+    assert whole is not None
+    regular = await answer_player_question(
+        db_session,
+        question="What was Jalen Brunson's regular-season scoring average?",
+        season="2025-26",
+    )
+    assert regular is not None
+    assert whole.analytics["results"][0]["raw_values"]["points"] == 25
+    assert whole.analytics["plan"]["timeframe"]["kind"] == "full_archive"
+    assert regular.analytics["results"][0]["raw_values"]["points"] == 20
+    assert regular.analytics["plan"]["timeframe"]["kind"] == "regular_season"
+
+
+async def test_leader_totals_and_explicit_average_rank_different_players(db_session):
+    await _seed_release_stats(db_session)
+    total = await answer_player_question(
+        db_session, question="Who led the Knicks in points?", season="2025-26"
+    )
+    assert total is not None
+    average = await answer_player_question(
+        db_session, question="Who led the Knicks in average points?", season="2025-26"
+    )
+    assert average is not None
+    top = total.analytics["results"][0]["entries"][0]
+    assert top["player_name"] == "Karl-Anthony Towns"
+    assert top["raw_values"]["points"] == 51
+    assert total.analytics["plan"]["aggregation_mode"] == "total"
+    assert average.analytics["results"][0]["entries"][0]["player_name"] == "Jalen Brunson"
+    assert average.analytics["results"][0]["entries"][0]["raw_values"]["points"] == 25
+
+
+async def test_starts_returns_count_instead_of_scoring_average(db_session):
+    release, player = await _seed_release_stats(db_session)
+    rows = (
+        (
+            await db_session.execute(
+                select(PlayerGameStat).where(
+                    PlayerGameStat.release_id == release.id, PlayerGameStat.player_id == player.id
+                )
+            )
+        )
+        .scalars()
+        .all()
+    )
+    for row in rows:
+        row.starter = True
+    await db_session.commit()
+    answer = await answer_player_question(
+        db_session, question="How many games did Jalen Brunson start?", season="2025-26"
+    )
+    assert answer is not None
+    assert answer.analytics["plan"]["stats"] == ["starts"]
+    assert answer.analytics["results"][0]["raw_values"] == {"starts": 2}
+    assert "games started 2 total" in answer.answer
+
+
+async def test_last_player_games_exclude_dnp_and_comparison_keeps_each_player_window(db_session):
+    await _seed_release_stats(db_session)
+    one = await answer_player_question(
+        db_session, question="What did Brunson average over his last 2 games?", season="2025-26"
+    )
+    assert one is not None
+    assert one.analytics["plan"]["timeframe"]["unit"] == "appearances"
+    assert one.analytics["results"][0]["raw_values"]["points"] == 25
+    compare = await answer_player_question(
+        db_session,
+        question="Compare Brunson and Towns scoring over their last 2 appearances",
+        season="2025-26",
+    )
+    assert compare is not None
+    groups = {r["label"]: r for r in compare.analytics["results"][0]["groups"]}
+    assert (
+        groups["Jalen Brunson"]["sample_size"] == groups["Karl-Anthony Towns"]["sample_size"] == 2
+    )
+    assert groups["Karl-Anthony Towns"]["raw_values"]["points"] == 17.5
+
+
+async def test_player_period_comparisons_keep_both_sides_and_full_season_baseline(db_session):
+    release, _ = await _seed_release_stats(db_session)
+    last = (
+        await db_session.execute(
+            select(Game).where(Game.release_id == release.id, Game.nba_game_id == "analytics-3")
+        )
+    ).scalar_one()
+    last.game_date = date(2026, 2, 20)
+    await db_session.commit()
+    compare = await answer_player_question(
+        db_session,
+        question="Compare Brunson's last 1 game with his season average",
+        season="2025-26",
+    )
+    assert compare is not None
+    groups = compare.analytics["results"][0]["groups"]
+    assert groups[0]["raw_values"]["points"] == 30
+    assert groups[1]["raw_values"]["points"] == 25
+    assert groups[1]["sample_size"] == 2
+    split = await answer_player_question(
+        db_session,
+        question="Compare Brunson scoring before and after the All-Star break",
+        season="2025-26",
+    )
+    assert split is not None
+    groups = split.analytics["results"][0]["groups"]
+    assert [r["raw_values"]["points"] for r in groups] == [20, 30]
+
+
+async def test_better_rebounding_uses_named_metric_without_clarifying(db_session):
+    await _seed_release_stats(db_session)
+    answer = await answer_player_question(
+        db_session,
+        question="Who had the better rebounding season, Towns or Brunson?",
+        season="2025-26",
+    )
+    assert answer is not None
+    assert answer.analytics["status"] != "clarification_required"
+    assert answer.analytics["plan"]["stats"] == ["rebounds"]
+    assert len(answer.analytics["results"][0]["groups"]) == 2
+
+
+async def test_informal_player_opponent_summaries_resolve_aliases_and_preserve_scope(db_session):
+    release, _ = await _seed_release_stats(db_session)
+    games = list(
+        (
+            await db_session.execute(
+                select(Game).where(Game.release_id == release.id).order_by(Game.id)
+            )
+        ).scalars()
+    )
+    games[0].away_team_id = "TOR"
+    games[1].away_team_id = "TOR"
+    await db_session.commit()
+    kat = await answer_player_question(
+        db_session, question="Tell me about KAT vs the Raps.", season="2025-26"
+    )
+    assert kat is not None
+    assert kat.analytics["plan"]["filters"]["opponent"] == "TOR"
+    assert kat.analytics["results"][0]["raw_values"] == {
+        "points": 16.5,
+        "rebounds": 10,
+        "assists": 3,
+    }
+    assert "versus TOR" in kat.answer
+    assert set(kat.analytics["results"][0]["source_game_ids"]) == {games[0].id, games[1].id}
+    plan = _parse_plan("How did OG look vs the C's?", [])
+    assert plan.filters["opponent"] == "BOS"
+    assert plan.stats == ["points", "rebounds", "assists"]
+
+
+async def test_mikal_typo_summary_reaches_public_player_route(db_session):
+    from app.main import create_app
+    from httpx import ASGITransport, AsyncClient
+
+    release, _ = await _seed_release_stats(db_session)
+    player = (
+        await db_session.execute(select(Player).where(Player.full_name == "Mikal Bridges"))
+    ).scalar_one()
+    game = (
+        await db_session.execute(
+            select(Game).where(Game.release_id == release.id).order_by(Game.id).limit(1)
+        )
+    ).scalar_one()
+    game.away_team_id = "TOR"
+    db_session.add(
+        PlayerGameStat(
+            release_id=release.id,
+            game_id=game.id,
+            player_id=player.id,
+            team_id="NYK",
+            minutes=30,
+            points=17,
+            rebounds=4,
+            assists=3,
+        )
+    )
+    await db_session.commit()
+    async with AsyncClient(
+        transport=ASGITransport(app=create_app()), base_url="http://testserver"
+    ) as client:
+        response = await client.post(
+            "/analysis/query",
+            json={"question": "Did Mikal play well aginst Toronto?", "season": "2025-26"},
+        )
+    assert response.status_code == 200
+    data = response.json()
+    assert not data["refused"]
+    assert data["analytics"]["results"][0]["raw_values"] == {
+        "points": 17,
+        "rebounds": 4,
+        "assists": 3,
+    }
+    assert "Mikal Bridges" in data["answer"]
+    assert "versus TOR" in data["answer"]
+
+
+async def test_biggest_win_selects_canonical_game_before_player_aggregation(db_session):
+    release, _ = await _seed_release_stats(db_session)
+    games = list(
+        (
+            await db_session.execute(
+                select(Game).where(Game.release_id == release.id).order_by(Game.id)
+            )
+        ).scalars()
+    )
+    games[0].home_score = 150
+    games[0].away_team_id = "TOR"
+    await db_session.commit()
+    answer = await answer_player_question(
+        db_session, question="What did Towns do in the biggest win?", season="2025-26"
+    )
+    assert answer is not None
+    result = answer.analytics["results"][0]
+    assert result["raw_values"] == {"points": 16, "rebounds": 10, "assists": 3}
+    assert result["source_game_ids"] == [games[0].id]
+    assert "2026-01-01 NYK 150-100 TOR" in answer.answer
+    boston = await answer_player_question(
+        db_session, question="What did Towns do in the biggest win against BOS?", season="2025-26"
+    )
+    assert boston is not None
+    assert boston.analytics["results"][0]["raw_values"]["points"] == 18
+    assert boston.analytics["results"][0]["source_game_ids"] == [games[2].id]

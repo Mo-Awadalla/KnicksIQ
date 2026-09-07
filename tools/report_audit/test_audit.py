@@ -128,3 +128,38 @@ def test_manifest_coverage_mismatch_blocks_audit():
     payload["manifest"]["expected_game_ids"].append("missing")
     result, _ = audit.audit(payload)
     assert result["coverage_complete"] is False
+
+
+def exact_text(start=2, end=4, points=4):
+    return (
+        f"Selected scoring interval: NYK scored {points} points and allowed 0 points "
+        f"from Q1 01:00 to Q1 00:30 (events {start}-{end}, inclusive)."
+    )
+
+
+def test_exact_sequences_include_all_free_throws_and_ignore_later_corrections():
+    events = [
+        event(1, 1, "02:00", 10, 10),
+        event(2, 1, "01:00", 11, 10),
+        event(3, 1, "01:00", 12, 10),
+        event(4, 1, "00:30", 14, 10),
+        event(5, 1, "00:10", 13, 10),
+    ]
+    evidence, error = audit.verify_exact_run(exact_text(), GAME, events)
+    assert error is None
+    assert evidence["baseline_score"] == {"home": 10, "away": 10}
+    assert evidence["end_score"] == {"home": 14, "away": 10}
+    assert audit.verify_exact_run(exact_text(points=5), GAME, events)[1] == "exact_points_mismatch"
+    changed = [dict(e) for e in events]
+    changed[2]["home_score"] = 10
+    assert audit.verify_exact_run(exact_text(), GAME, changed)[1] == "nonmonotonic_selected_score"
+
+
+def test_exact_wrong_period_and_absent_sequence_cannot_pass():
+    events = [
+        event(1, 1, "02:00", 10, 10),
+        event(2, 2, "01:00", 12, 10),
+        event(4, 2, "00:30", 14, 10),
+    ]
+    assert audit.verify_exact_run(exact_text(), GAME, events)[1] == "exact_clock_mismatch"
+    assert audit.verify_exact_run(exact_text(start=3), GAME, events)[1] == "missing_exact_boundary"

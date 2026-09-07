@@ -716,6 +716,13 @@
   border-bottom: 1px solid var(--line-subtle);
 }
 
+.report-interval-note {
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid var(--line-subtle);
+  color: var(--text-muted);
+  font-size: 0.875rem;
+}
+
 .report-section h2 {
   margin-bottom: 0.8rem;
   font-size: clamp(1.2rem, 2vw, 1.55rem);
@@ -751,11 +758,42 @@
   padding: 1.25rem 1.5rem;
 }
 
-.report-sources > div {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
+.report-source-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
+  gap: 0.75rem;
   margin-top: 0.6rem;
+}
+
+.report-source {
+  min-width: 0;
+  border: 1px solid var(--line-subtle);
+  border-radius: 0.5rem;
+  padding: 1rem;
+  color: var(--text-strong);
+  font-size: 0.85rem;
+  overflow-wrap: anywhere;
+}
+
+.report-source p {
+  margin-top: 0.4rem;
+}
+
+.report-source-links {
+  display: grid;
+  gap: 0.4rem;
+  margin-top: 0.65rem;
+}
+
+.report-source-links a {
+  color: var(--signal-blue);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+.data-table tr:target {
+  background: var(--surface-subtle);
+  outline: 2px solid var(--signal-blue);
 }
 
 .analyst-layout {
