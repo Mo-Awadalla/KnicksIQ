@@ -69,6 +69,9 @@ class ScoringRunRead(BaseModel):
     game_id: int
     team_id: str
     period: int
+    end_period: int | None = None
+    start_sequence: int | None = None
+    end_sequence: int | None = None
     start_clock: str
     end_clock: str
     points_for: int

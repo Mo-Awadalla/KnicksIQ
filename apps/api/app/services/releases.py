@@ -11,7 +11,8 @@ from sqlalchemy import select
 
 
 def restrict_to_active_release(stmt: Any) -> Any:
-    if not get_settings().is_production:
+    settings = get_settings()
+    if not settings.is_production and (settings.test_mode or not settings.require_active_release):
         return stmt
     active_release = (
         select(DatasetRelease.id)

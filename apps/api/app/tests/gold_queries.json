@@ -2,8 +2,15 @@
   {
     "question": "what was the knicks longest losing streak",
     "route": "table_rag",
-    "answer_contains": ["longest 2025-26 losing streak in the available data", "Key evidence"],
-    "forbidden_tools": ["search_season_docs", "search_possession_chunks", "llm_generate"]
+    "answer_contains": [
+      "longest 2025-26 losing streak in the available data",
+      "Key evidence"
+    ],
+    "forbidden_tools": [
+      "search_season_docs",
+      "search_possession_chunks",
+      "llm_generate"
+    ]
   },
   {
     "question": "What was the best game the Knicks played this season?",
@@ -81,13 +88,13 @@
   },
   {
     "question": "What happened in Q4 of a Knicks game?",
-    "route": "retrieval_rag",
+    "route": "clarification",
     "answer_contains": [
-      "Knicks",
-      "Receipts"
+      "Which game"
     ],
-    "required_tools": [
-      "search_possession_chunks"
+    "forbidden_tools": [
+      "search_possession_chunks",
+      "llm_generate"
     ]
   },
   {
@@ -102,24 +109,24 @@
   },
   {
     "question": "How did the lineup with Brunson look in the Knicks game?",
-    "route": "retrieval_rag",
+    "route": "clarification",
     "answer_contains": [
-      "Brunson",
-      "Receipts"
+      "Which game"
     ],
-    "required_tools": [
-      "search_possession_chunks"
+    "forbidden_tools": [
+      "search_possession_chunks",
+      "llm_generate"
     ]
   },
   {
     "question": "What if the Knicks made two more threes in that game?",
-    "route": "retrieval_rag",
+    "route": "clarification",
     "answer_contains": [
-      "Knicks",
-      "Receipts"
+      "Which game"
     ],
-    "required_tools": [
-      "search_possession_chunks"
+    "forbidden_tools": [
+      "search_possession_chunks",
+      "llm_generate"
     ]
   },
   {

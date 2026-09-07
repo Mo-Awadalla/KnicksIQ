@@ -1,0 +1,38 @@
+[
+  {
+    "header": {
+      "id": "hdr-dafiua1t0dsc73ebanm0",
+      "name": "Content-Security-Policy",
+      "path": "/*",
+      "value": "default-src 'self'; connect-src 'self' https://api.knicksiq.win https://*.ingest.sentry.io https://*.ingest.us.sentry.io https://*.ingest.de.sentry.io; img-src 'self' data:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; frame-ancestors 'none'; base-uri 'self'; form-action https://formspree.io"
+    },
+    "cursor": "JlVjj6r0lt11YTF0MGRzYzczZWJhbm0w"
+  },
+  {
+    "header": {
+      "id": "hdr-dafiua1t0dsc73ebanlg",
+      "name": "Strict-Transport-Security",
+      "path": "/*",
+      "value": "max-age=31536000; includeSubDomains"
+    },
+    "cursor": "JlVjj6r0lt11YTF0MGRzYzczZWJhbmxn"
+  },
+  {
+    "header": {
+      "id": "hdr-dafiua1t0dsc73ebanl0",
+      "name": "X-Content-Type-Options",
+      "path": "/*",
+      "value": "nosniff"
+    },
+    "cursor": "JlVjj6r0lt11YTF0MGRzYzczZWJhbmww"
+  },
+  {
+    "header": {
+      "id": "hdr-dafiua1t0dsc73ebank0",
+      "name": "Referrer-Policy",
+      "path": "/*",
+      "value": "strict-origin-when-cross-origin"
+    },
+    "cursor": "JlVjj6r0lt11YTF0MGRzYzczZWJhbmsw"
+  }
+]

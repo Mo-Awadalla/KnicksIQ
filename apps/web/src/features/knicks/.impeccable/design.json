@@ -1,0 +1,260 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-09-07T22:01:02.640443+00:00",
+  "title": "Design System: KnicksIQ Homepage",
+  "extensions": {
+    "colorMeta": {
+      "signal-blue": {
+        "role": "primary",
+        "displayName": "Knicks Blue",
+        "tonalRamp": [
+          "oklch(15% 0.15 248)",
+          "oklch(26% 0.15 248)",
+          "oklch(38% 0.15 248)",
+          "oklch(49% 0.15 248)",
+          "oklch(61% 0.15 248)",
+          "oklch(72% 0.15 248)",
+          "oklch(84% 0.15 248)",
+          "oklch(95% 0.15 248)"
+        ]
+      },
+      "signal-blue-deep": {
+        "role": "primary",
+        "displayName": "Deep Knicks Blue",
+        "tonalRamp": [
+          "oklch(15% 0.13 248)",
+          "oklch(26% 0.13 248)",
+          "oklch(38% 0.13 248)",
+          "oklch(49% 0.13 248)",
+          "oklch(61% 0.13 248)",
+          "oklch(72% 0.13 248)",
+          "oklch(84% 0.13 248)",
+          "oklch(95% 0.13 248)"
+        ]
+      },
+      "signal-orange": {
+        "role": "secondary",
+        "displayName": "Knicks Orange",
+        "tonalRamp": [
+          "oklch(15% 0.17 55)",
+          "oklch(26% 0.17 55)",
+          "oklch(38% 0.17 55)",
+          "oklch(49% 0.17 55)",
+          "oklch(61% 0.17 55)",
+          "oklch(72% 0.17 55)",
+          "oklch(84% 0.17 55)",
+          "oklch(95% 0.17 55)"
+        ]
+      },
+      "surface-ink": {
+        "role": "neutral",
+        "displayName": "Garden Ink",
+        "tonalRamp": [
+          "oklch(15% 0.05 250)",
+          "oklch(26% 0.05 250)",
+          "oklch(38% 0.05 250)",
+          "oklch(49% 0.05 250)",
+          "oklch(61% 0.05 250)",
+          "oklch(72% 0.05 250)",
+          "oklch(84% 0.05 250)",
+          "oklch(95% 0.05 250)"
+        ]
+      },
+      "surface-paper": {
+        "role": "neutral",
+        "displayName": "Warm Paper",
+        "tonalRamp": [
+          "oklch(15% 0.014 85)",
+          "oklch(26% 0.014 85)",
+          "oklch(38% 0.014 85)",
+          "oklch(49% 0.014 85)",
+          "oklch(61% 0.014 85)",
+          "oklch(72% 0.014 85)",
+          "oklch(84% 0.014 85)",
+          "oklch(95% 0.014 85)"
+        ]
+      },
+      "surface-sheet": {
+        "role": "neutral",
+        "displayName": "Sheet",
+        "tonalRamp": [
+          "oklch(15% 0.006 85)",
+          "oklch(26% 0.006 85)",
+          "oklch(38% 0.006 85)",
+          "oklch(49% 0.006 85)",
+          "oklch(61% 0.006 85)",
+          "oklch(72% 0.006 85)",
+          "oklch(84% 0.006 85)",
+          "oklch(95% 0.006 85)"
+        ]
+      },
+      "text-muted": {
+        "role": "neutral",
+        "displayName": "Muted Slate",
+        "tonalRamp": [
+          "oklch(15% 0.023 250)",
+          "oklch(26% 0.023 250)",
+          "oklch(38% 0.023 250)",
+          "oklch(49% 0.023 250)",
+          "oklch(61% 0.023 250)",
+          "oklch(72% 0.023 250)",
+          "oklch(84% 0.023 250)",
+          "oklch(95% 0.023 250)"
+        ]
+      },
+      "text-on-ink": {
+        "role": "neutral",
+        "displayName": "White Ink",
+        "tonalRamp": [
+          "oklch(15% 0 0)",
+          "oklch(26% 0 0)",
+          "oklch(38% 0 0)",
+          "oklch(49% 0 0)",
+          "oklch(61% 0 0)",
+          "oklch(72% 0 0)",
+          "oklch(84% 0 0)",
+          "oklch(95% 0 0)"
+        ]
+      },
+      "line-subtle": {
+        "role": "neutral",
+        "displayName": "Subtle Ink Rule",
+        "tonalRamp": [
+          "oklch(15% 0.05 250)",
+          "oklch(26% 0.05 250)",
+          "oklch(38% 0.05 250)",
+          "oklch(49% 0.05 250)",
+          "oklch(61% 0.05 250)",
+          "oklch(72% 0.05 250)",
+          "oklch(84% 0.05 250)",
+          "oklch(95% 0.05 250)"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Program Cover",
+        "purpose": "Opening headline; locally served Barlow Condensed 800."
+      }
+    },
+    "shadows": [
+      {
+        "name": "panel-flat",
+        "value": "none",
+        "purpose": "Homepage question and answer panels."
+      },
+      {
+        "name": "field-focus",
+        "value": "0 0 0 1px var(--signal-blue) inset, 0 0 0 4px rgb(0 107 182 / 14%)",
+        "purpose": "Focused question field."
+      }
+    ],
+    "motion": [
+      {
+        "name": "button-press",
+        "value": "150ms cubic-bezier(0, 0, 0.2, 1)",
+        "purpose": "Canonical button state transitions; active scale 0.98."
+      },
+      {
+        "name": "row-arrow",
+        "value": "150ms cubic-bezier(0.23, 1, 0.32, 1)",
+        "purpose": "Fine-pointer arrow hover; translate(2px, -2px). Reduced motion removes movement."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "compact-desktop",
+        "value": "64rem"
+      },
+      {
+        "name": "stacked",
+        "value": "46rem"
+      },
+      {
+        "name": "phone",
+        "value": "30rem"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Opening action",
+      "kind": "button",
+      "description": "Opening action as used on the reconstructed homepage.",
+      "html": "<a class=\"ds-button\" href=\"#archive-desk\">Ask the archive</a>",
+      "css": ".ds-button{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px;padding:8px 16px;border:0;border-radius:8px;font-size:14px;font-weight:500;text-decoration:none;transition:background-color 150ms cubic-bezier(0,0,.2,1),transform 150ms cubic-bezier(0,0,.2,1);font-family:var(--type-ui,Arial,sans-serif);}.ds-button:active{transform:scale(.98)}.ds-button:focus-visible{outline:3px solid var(--signal-blue,#006bb6);outline-offset:5px}.ds-button:disabled{opacity:.5;pointer-events:none}@media(prefers-reduced-motion:reduce){.ds-button{transition:none}.ds-button:active{transform:none}}.ds-button{background:var(--signal-blue,#006bb6);color:var(--text-on-ink,#fff);box-shadow:0 1px 2px rgb(0 0 0 / 5%)}.ds-button:hover{background:color-mix(in srgb,var(--signal-blue,#006bb6) 90%,transparent)}",
+      "refersTo": "button-primary"
+    },
+    {
+      "name": "Search action",
+      "kind": "button",
+      "description": "Search action as used on the reconstructed homepage.",
+      "html": "<button class=\"ds-button\" type=\"button\">Search archive</button>",
+      "css": ".ds-button{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px;padding:8px 16px;border:0;border-radius:8px;font-size:14px;font-weight:500;text-decoration:none;transition:background-color 150ms cubic-bezier(0,0,.2,1),transform 150ms cubic-bezier(0,0,.2,1);font-family:var(--type-ui,Arial,sans-serif);}.ds-button:active{transform:scale(.98)}.ds-button:focus-visible{outline:3px solid var(--signal-blue,#006bb6);outline-offset:5px}.ds-button:disabled{opacity:.5;pointer-events:none}@media(prefers-reduced-motion:reduce){.ds-button{transition:none}.ds-button:active{transform:none}}.ds-button{width:100%;border-radius:6px;background:var(--signal-orange,#f58426);color:var(--surface-ink,#071b2d);font-weight:600}.ds-button:hover{background:color-mix(in srgb,var(--signal-orange,#f58426) 90%,transparent)}",
+      "refersTo": "button-archive"
+    },
+    {
+      "name": "Archive question",
+      "kind": "input",
+      "description": "Archive question as used on the reconstructed homepage.",
+      "html": "<label class=\"ds-label\" for=\"ds-question\">Ask the archive</label><textarea class=\"ds-field\" id=\"ds-question\" rows=\"3\" placeholder=\"Ask about a game, streak, opponent, player, or turning point\u2026\"></textarea>",
+      "css": ".ds-label{display:block;margin-bottom:16px;color:var(--surface-ink,#071b2d);font-size:1.6rem;font-weight:700;font-family:var(--type-ui,Arial,sans-serif);}.ds-field{width:100%;min-height:7.5rem;resize:vertical;border:0;border-radius:6px;padding:1rem 1.1rem;background:var(--surface-paper,#f3eee5);color:var(--surface-ink,#071b2d);font-size:1rem;line-height:1.55;box-shadow:0 0 0 1px var(--line-subtle,rgb(7 27 45 / 14%)) inset;font-family:var(--type-ui,Arial,sans-serif);}.ds-field:focus-visible{box-shadow:0 0 0 1px var(--signal-blue,#006bb6) inset,0 0 0 4px rgb(0 107 182 / 14%)}.ds-field:focus-visible{outline:3px solid var(--signal-blue,#006bb6);outline-offset:5px}.ds-field:disabled{opacity:.5;cursor:not-allowed}",
+      "refersTo": "question-field"
+    },
+    {
+      "name": "Archive navigation",
+      "kind": "nav",
+      "description": "Archive navigation as used on the reconstructed homepage.",
+      "html": "<nav class=\"ds-nav\" aria-label=\"Archive\"><a href=\"/\" aria-current=\"page\">Archive</a><a href=\"/games\">Games</a><a href=\"/reports\">Reports</a><a href=\"/analyst\">Analyst</a></nav>",
+      "css": ".ds-nav{display:flex;align-items:center;gap:2rem;font-family:var(--type-ui,Arial,sans-serif);}.ds-nav a{display:inline-flex;align-items:center;min-height:2.75rem;font-size:.85rem;font-weight:650;color:var(--surface-ink,#071b2d);text-decoration:none}.ds-nav a[aria-current]{color:var(--signal-blue-deep,#004f8c);text-decoration:underline;text-underline-offset:.45rem}.ds-nav a:hover{color:var(--signal-blue-deep,#004f8c)}.ds-nav a:focus-visible{outline:3px solid var(--signal-blue,#006bb6);outline-offset:5px}@media(max-width:46rem){.ds-nav{gap:1rem}.ds-nav a{font-size:.8rem}}@media(max-width:30rem){.ds-nav{width:100%;justify-content:space-between}}"
+    },
+    {
+      "name": "Quick question",
+      "kind": "chip",
+      "description": "Quick question as used on the reconstructed homepage.",
+      "html": "<button class=\"ds-prompt\" type=\"button\">What was their best win?</button>",
+      "css": ".ds-prompt{min-height:2.75rem;padding:.6rem .7rem;border:1px solid var(--line-subtle,rgb(7 27 45 / 14%));border-radius:4px;background:transparent;color:var(--surface-ink-raised,#0d2238);font-size:.72rem;font-weight:500;text-align:left;font-family:var(--type-ui,Arial,sans-serif);}.ds-prompt:hover{border-color:rgb(0 107 182 / 38%);background:rgb(0 107 182 / 6%);color:var(--signal-blue-deep,#004f8c)}.ds-prompt:focus-visible{outline:3px solid var(--signal-blue,#006bb6);outline-offset:5px}.ds-prompt:disabled{opacity:.5;cursor:not-allowed}"
+    },
+    {
+      "name": "Question panel",
+      "kind": "card",
+      "description": "Question panel as used on the reconstructed homepage.",
+      "html": "<section class=\"ds-panel\"><h3 class=\"ds-panel-title\">Ask the archive</h3><p class=\"ds-panel-hint\">Enter to search \u00b7 Shift + Enter for a new line</p></section>",
+      "css": ".ds-panel{padding:2rem;border:0;border-radius:12px;background:var(--surface-sheet,#fffdf9);color:var(--surface-ink,#071b2d);box-shadow:none;font-family:var(--type-ui,Arial,sans-serif);}.ds-panel-title{margin:0;font-size:1.6rem;font-weight:700;letter-spacing:-.025em;line-height:1.2}.ds-panel-hint{font-size:.72rem;color:var(--text-muted,#5c6874)}@media(max-width:64rem){.ds-panel{padding:1.5rem}}@media(max-width:30rem){.ds-panel{padding:1.25rem}}",
+      "refersTo": "question-panel"
+    },
+    {
+      "name": "Editorial starter row",
+      "kind": "custom",
+      "description": "Editorial starter row as used on the reconstructed homepage.",
+      "html": "<button class=\"ds-row\" type=\"button\"><span><small class=\"ds-topic\">The statement wins</small>What was their best win?</span><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" aria-hidden=\"true\"><path d=\"M7 17 17 7M7 7h10v10\"/></svg></button>",
+      "css": ".ds-row{display:flex;align-items:center;justify-content:space-between;gap:1rem;width:100%;min-height:7rem;padding:1.5rem 2rem;border:0;border-bottom:1px solid var(--line-subtle,rgb(7 27 45 / 14%));background:transparent;color:var(--surface-ink,#071b2d);font-size:1.15rem;font-weight:600;text-align:left;font-family:var(--type-ui,Arial,sans-serif);}.ds-topic{display:block;margin-bottom:.65rem;color:var(--text-muted,#5c6874);font-size:.72rem;font-weight:400}.ds-row svg{width:1.3rem;height:1.3rem;flex-shrink:0;color:var(--signal-blue,#006bb6);transition:transform 150ms var(--ease-out,cubic-bezier(.23,1,.32,1))}.ds-row:focus-visible{outline:3px solid var(--signal-blue,#006bb6);outline-offset:5px}.ds-row:active{transform:scale(.985)}@media(hover:hover) and (pointer:fine){.ds-row:hover{background:rgb(0 107 182 / 5%);color:var(--signal-blue-deep,#004f8c)}.ds-row:hover svg{transform:translate(2px,-2px)}}@media(max-width:46rem){.ds-row{min-height:6rem;padding:1.25rem 0;font-size:1rem}}@media(prefers-reduced-motion:reduce){.ds-row,.ds-row svg{transition:none;transform:none!important}}"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Knicks Season Program",
+    "overview": "The reconstructed homepage pairs compressed sports headlines and a panoramic Garden photograph with warm paper, editorial rules, and a dark question desk. Large display type establishes identity; quiet controls keep the archive usable.",
+    "keyCharacteristics": [
+      "Condensed display type with generous page margins.",
+      "Blue navigation and orange emphasis against paper and ink.",
+      "Flat editorial sections with softly rounded functional panels."
+    ],
+    "rules": [
+      {
+        "name": "The Semantic Color Rule",
+        "body": "Reuse the existing CSS color roles; do not create a competing homepage palette.",
+        "section": "colors"
+      }
+    ],
+    "dos": [
+      "Do preserve the mark, arena credit, visible navigation, evidence links, and accessible form behavior.",
+      "Do keep large editorial typography outside the dense answer-reading content.",
+      "Do respect reduced motion and keep content visible without entrance animations."
+    ],
+    "donts": [
+      "Don't extend this homepage reconstruction to games, reports, or analyst routes by implication.",
+      "Don't replace real archive content with invented scores, coverage, or claims.",
+      "Don't remove shared answer styles while cleaning up old homepage selectors."
+    ]
+  }
+}

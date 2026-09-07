@@ -114,6 +114,6 @@ def test_answer_cache_key_changes_with_cache_schema(monkeypatch):
         )
 
     original = key()
-    monkeypatch.setattr(runtime_store, "ANSWER_CACHE_SCHEMA_VERSION", "v3")
+    monkeypatch.setattr(runtime_store, "ANSWER_CACHE_SCHEMA_VERSION", "future-version")
 
     assert key() != original

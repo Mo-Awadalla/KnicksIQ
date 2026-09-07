@@ -12,10 +12,16 @@ import json
 import re
 from collections import defaultdict
 from pathlib import Path
+from typing import Any
 
 RUN = re.compile(r"([A-Z]{3}) produced a (\d+)-(\d+) run in Q(\d+) from ([\d:]+) to ([\d:]+)\.")
+EXACT_RUN = re.compile(
+    r"Selected scoring interval: ([A-Z]{3}) scored (\d+) points and allowed (\d+) points "
+    r"from Q(\d+) ([\d:]+) to Q(\d+) ([\d:]+) "
+    r"\(events (\d+)-(\d+), inclusive\)\."
+)
 POLICY = {
-    "id": "agent-report-verification-owner-template-exceptions-summary-v1",
+    "id": "agent-report-verification-owner-template-exceptions-summary-v2",
     "review": (
         "Agents verify every report; unresolved checks block approval. Owner "
         "approves the corrected template, all exceptions and final hash-bound audit "
@@ -25,13 +31,18 @@ POLICY = {
         "Retain the existing selected interval only when canonical cumulative event "
         "scores independently prove its points. Identify both periods explicitly. "
         "These are selected scoring intervals, not causal turning points or "
-        "necessarily the best/worst interval."
+        "necessarily the best/worst interval. Replacement selection is recorded "
+        "separately in the repair proposal; the verifier does not use its selector."
     ),
     "boundary": (
         "Start is inclusive: baseline is the score immediately before the first "
         "scoring event at the stated start clock. End is inclusive: last event at "
         "the end clock. Resolve the end period by chronology and the claimed score "
-        "difference; require a unique interval."
+        "difference; require a unique interval. Repaired descriptions carry explicit "
+        "inclusive start/end event sequences. Check those boundaries, both clocks, "
+        "the preceding observed score and every intervening scoreboard transition. "
+        "Reject a backward scoreboard correction inside a selected interval; a "
+        "correction outside it does not invalidate its endpoint arithmetic."
     ),
     "template": (
         "Selected scoring interval: TEAM scored FOR points and allowed AGAINST "
@@ -48,6 +59,67 @@ def digest(value):
 
 def report_hash(report):
     return digest({k: v for k, v in report.items() if k not in {"reviewed", "review_hash"}})
+
+
+def verify_exact_run(text, game, events):
+    """Independently verify explicit event endpoints; never call interval selection."""
+    match = EXACT_RUN.fullmatch(text)
+    if not match:
+        return None, "unsupported_exact_format"
+    team, pf, pa, sp, sc, ep, ec, start, end = match.groups()
+    if team not in (game["home_team_id"], game["away_team_id"]):
+        return None, "unknown_run_team"
+    if int(start) > int(end):
+        return None, "reversed_sequence_bounds"
+    selected = [e for e in events if int(start) <= e["sequence"] <= int(end)]
+    if (
+        not selected
+        or selected[0]["sequence"] != int(start)
+        or selected[-1]["sequence"] != int(end)
+    ):
+        return None, "missing_exact_boundary"
+    first, last = selected[0], selected[-1]
+    if (first["period"], first["clock"], last["period"], last["clock"]) != (
+        int(sp),
+        sc,
+        int(ep),
+        ec,
+    ):
+        return None, "exact_clock_mismatch"
+    # Resolve only the baseline from prior rows; 0-0 is the cached absent-score sentinel.
+    prior = [e for e in events if e["sequence"] < int(start)]
+    previous = {"home_score": 0, "away_score": 0}
+    for event in prior:
+        if event["home_score"] or event["away_score"]:
+            previous = event
+    baseline = previous
+    for event in selected:
+        if not (event["home_score"] or event["away_score"]):
+            continue
+        if (
+            event["home_score"] < previous["home_score"]
+            or event["away_score"] < previous["away_score"]
+        ):
+            return None, "nonmonotonic_selected_score"
+        previous = event
+    own = "home_score" if team == game["home_team_id"] else "away_score"
+    other = "away_score" if own == "home_score" else "home_score"
+    if (previous[own] - baseline[own], previous[other] - baseline[other]) != (int(pf), int(pa)):
+        return None, "exact_points_mismatch"
+    return {
+        "team_id": team,
+        "points_for": int(pf),
+        "points_against": int(pa),
+        "start_period": int(sp),
+        "end_period": int(ep),
+        "start_clock": sc,
+        "end_clock": ec,
+        "start_sequence": int(start),
+        "end_sequence": int(end),
+        "baseline_sequence": prior[-1]["sequence"] if prior else None,
+        "baseline_score": {"home": baseline["home_score"], "away": baseline["away_score"]},
+        "end_score": {"home": previous["home_score"], "away": previous["away_score"]},
+    }, None
 
 
 def resolve_run(text, game, events):
@@ -198,14 +270,15 @@ def audit(payload):
                     "row_sha256": digest(stat),
                 }
             )
-        repaired = dict(report, reviewed=False)
+        repaired: dict[str, Any] = dict(report, reviewed=False)
         # A later countdown clock proves the single-quarter description is impossible.
         cross_period = any(
             (m := RUN.fullmatch(report[field])) and m.group(6) > m.group(5)
             for field in ("turning_point", "best_stretch")
         )
         for field in ("turning_point", "best_stretch"):
-            run, error = resolve_run(report[field], game, events)
+            exact = EXACT_RUN.fullmatch(report[field])
+            run, error = (verify_exact_run if exact else resolve_run)(report[field], game, events)
             if error:
                 issues.append(f"{field}:{error}")
                 if run:
@@ -219,17 +292,33 @@ def audit(payload):
                         }
                     )
             else:
+                assert run is not None
                 cross_period |= run["start_period"] != run["end_period"]
                 evidence.append(
                     {"claims": [field], "type": "play_by_play", "nba_game_id": game_id, **run}
                 )
-                repaired[field] = factual_run(run)
+                repaired[field] = report[field] if exact else factual_run(run)
         # Existing worst_stretch embeds detector narrative, with explicit period boundaries.
         worst = re.search(
             r"Knicks were outscored (\d+)-(\d+) from Q(\d+) ([\d:]+) to Q(\d+) ([\d:]+)\.",
             report["worst_stretch"],
         )
-        if worst:
+        if EXACT_RUN.fullmatch(report["worst_stretch"]):
+            run, error = verify_exact_run(report["worst_stretch"], game, events)
+            if error:
+                issues.append("worst_stretch:" + error)
+            else:
+                assert run is not None
+                cross_period |= run["start_period"] != run["end_period"]
+                evidence.append(
+                    {
+                        "claims": ["worst_stretch"],
+                        "type": "play_by_play",
+                        "nba_game_id": game_id,
+                        **run,
+                    }
+                )
+        elif worst:
             pf, pa, sp, sc, ep, ec = worst.groups()
             opponent = (
                 game["away_team_id"] if game["home_team_id"] == "NYK" else game["home_team_id"]
@@ -237,7 +326,11 @@ def audit(payload):
             run, error = resolve_run(
                 f"{opponent} produced a {pf}-{pa} run in Q{sp} from {sc} to {ec}.", game, events
             )
-            if error or str(run["end_period"]) != ep:
+            if not error:
+                assert run is not None
+                if str(run["end_period"]) != ep:
+                    error = "end_period_mismatch"
+            if error:
                 issues.append("worst_stretch:" + (error or "end_period_mismatch"))
                 if run:
                     evidence.append(
@@ -250,6 +343,7 @@ def audit(payload):
                         }
                     )
             else:
+                assert run is not None
                 cross_period |= run["start_period"] != run["end_period"]
                 evidence.append(
                     {

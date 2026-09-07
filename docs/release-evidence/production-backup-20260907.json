@@ -1,0 +1,7 @@
+{
+  "path": "release-artifacts/production-backup-20260907.dump",
+  "bytes": 1031925,
+  "sha256": "39ab83f5c18178065f88c662e0e45e3d8094ccdca6a04b50d9f711cc3f60d9c5",
+  "format": "pg_dump custom",
+  "server_major_version": 18
+}

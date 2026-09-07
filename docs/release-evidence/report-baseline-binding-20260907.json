@@ -1,0 +1,67 @@
+{
+  "active_bundle_sha256": "269b0db08fd07a1dbe53e6a388a313fe6afc04ace3cd3294dc9610c981c4b9fd",
+  "active_manifest_matches_authenticated_production": true,
+  "canonical_collections_equal_local_candidate": {
+    "events": true,
+    "games": true,
+    "period_scores": true,
+    "player_game_stats": true,
+    "players": true,
+    "team_game_stats": true,
+    "teams": true
+  },
+  "identity_source": "production-identity-20260907.json",
+  "note": "Canonical candidate rows compared to independently restored production backup, after verified expand-only migrations.",
+  "production_backup_row_comparison": {
+    "games": {
+      "expected_rows": 101,
+      "actual_rows": 101,
+      "missing_or_changed": 0,
+      "unexpected": 0,
+      "matches": true
+    },
+    "events": {
+      "expected_rows": 46500,
+      "actual_rows": 46500,
+      "missing_or_changed": 0,
+      "unexpected": 0,
+      "matches": true
+    },
+    "period_scores": {
+      "expected_rows": 816,
+      "actual_rows": 816,
+      "missing_or_changed": 0,
+      "unexpected": 0,
+      "matches": true
+    },
+    "player_game_stats": {
+      "expected_rows": 2748,
+      "actual_rows": 2748,
+      "missing_or_changed": 0,
+      "unexpected": 0,
+      "matches": true
+    },
+    "team_game_stats": {
+      "expected_rows": 202,
+      "actual_rows": 202,
+      "missing_or_changed": 0,
+      "unexpected": 0,
+      "matches": true
+    },
+    "players": {
+      "expected_rows": 599,
+      "actual_rows": 599,
+      "missing_or_changed": 0,
+      "unexpected": 0,
+      "matches": true
+    },
+    "teams": {
+      "expected_rows": 30,
+      "actual_rows": 30,
+      "missing_or_changed": 0,
+      "unexpected": 0,
+      "matches": true
+    }
+  },
+  "all_canonical_rows_match": true
+}

@@ -38,7 +38,10 @@ def _clock_to_seconds(clock: str) -> int:
 
 
 def _seconds_elapsed(period: int, clock: str) -> int:
-    return (period - 1) * _PERIOD_SECONDS + (_PERIOD_SECONDS - _clock_to_seconds(clock))
+    completed_regulation = min(period - 1, 4) * _PERIOD_SECONDS
+    completed_overtime = max(period - 5, 0) * 5 * 60
+    period_length = _PERIOD_SECONDS if period <= 4 else 5 * 60
+    return completed_regulation + completed_overtime + period_length - _clock_to_seconds(clock)
 
 
 def _remaining_seconds(event: GameEvent) -> int:

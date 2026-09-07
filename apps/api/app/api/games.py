@@ -39,7 +39,9 @@ from app.schemas.game import (
     ScoringRunRead,
     TeamGameStatRead,
 )
+from app.services.event_scores import cumulative_score
 from app.services.releases import restrict_to_active_release
+from app.services.verified_runs import verified_runs
 
 router = APIRouter(prefix="/games", tags=["games"])
 
@@ -235,11 +237,24 @@ async def get_play_by_play(
         .where(GameEvent.game_id == game_id)
         .order_by(GameEvent.period, GameEvent.sequence)
     )
-    if period is not None:
-        stmt = stmt.where(GameEvent.period == period)
     result = await db.execute(stmt)
     events = result.scalars().all()
-    return [GameEventRead.model_validate(e) for e in events]
+    score = (0, 0)
+    projected = []
+    for event in events:
+        score = cumulative_score(event, score)
+        if period is None or event.period == period:
+            row = GameEventRead.model_validate(event)
+            projected.append(
+                row.model_copy(
+                    update={
+                        "home_score": score[0],
+                        "away_score": score[1],
+                        "score_margin": score[0] - score[1],
+                    }
+                )
+            )
+    return projected
 
 
 @router.get("/{game_id}/runs", response_model=list[ScoringRunRead])
@@ -259,9 +274,6 @@ async def get_runs(
         stmt = stmt.where(ScoringRun.team_id == team_id)
     result = await db.execute(stmt)
     runs = result.scalars().all()
-    if runs:
-        return [ScoringRunRead.model_validate(r) for r in runs]
-
     event_rows = (
         (
             await db.execute(
@@ -273,6 +285,8 @@ async def get_runs(
         .scalars()
         .all()
     )
+    if runs:
+        return [ScoringRunRead(**row) for row in verified_runs(game, event_rows, runs)]
     computed = detect_impactful_runs(
         [_orm_event_to_core(e) for e in event_rows],
         ImpactfulRunConfig(
@@ -283,22 +297,7 @@ async def get_runs(
     )
     if team_id:
         computed = [r for r in computed if r.team_id == team_id]
-    return [
-        ScoringRunRead(
-            id=0,
-            game_id=r.game_id,
-            team_id=r.team_id,
-            period=r.period,
-            start_clock=r.start_clock,
-            end_clock=r.end_clock,
-            points_for=r.points_for,
-            points_against=r.points_against,
-            score_delta=r.score_delta,
-            event_count=r.event_count,
-            summary=r.summary,
-        )
-        for r in computed
-    ]
+    return [ScoringRunRead(**row) for row in verified_runs(game, event_rows, computed)]
 
 
 @router.get("/{game_id}/bad-stretches", response_model=list[BadStretchRead])

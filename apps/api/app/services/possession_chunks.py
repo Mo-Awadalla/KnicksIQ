@@ -5,6 +5,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any
 
+from app.services.event_scores import cumulative_score
+
 
 @dataclass(frozen=True)
 class PossessionChunk:
@@ -24,6 +26,7 @@ def _event_row(
     *,
     score_before: tuple[int, int],
 ) -> dict[str, Any]:
+    home_score, away_score = cumulative_score(event, score_before)
     return {
         "event_id": event.id,
         "sequence": event.sequence,
@@ -34,11 +37,11 @@ def _event_row(
         "player_name": event.player_name,
         "event_type": event.event_type,
         "description": event.description,
-        "home_score": event.home_score,
-        "away_score": event.away_score,
-        "score_margin": event.score_margin,
+        "home_score": home_score,
+        "away_score": away_score,
+        "score_margin": home_score - away_score,
         "score_before": {"home": score_before[0], "away": score_before[1]},
-        "score_after": {"home": event.home_score, "away": event.away_score},
+        "score_after": {"home": home_score, "away": away_score},
     }
 
 
@@ -198,7 +201,7 @@ def build_possession_chunks(
         if pending_end and not continuation:
             flush()
         current.append(_event_row(event, score_before=score))
-        score = (event.home_score, event.away_score)
+        score = cumulative_score(event, score)
 
         if any(term in description for term in ("review", "overturn", "clear path")):
             confident_possession = False

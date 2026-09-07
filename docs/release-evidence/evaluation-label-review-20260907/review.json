@@ -1,0 +1,4612 @@
+{
+  "schema_version": 1,
+  "identity": {
+    "baseline_file_sha256": "5960a0f5d005999133b3ec348daea68fa537e7d84b597f1372f95af7f354ed81",
+    "canonical_data_sha256": "b2ad21c69175600c3192ef6133f8c11fd63890609a8204f92508a5fb04d05170",
+    "questions_file_sha256": "a546b99c36fedb59a475479016b0338fe113c4478d5165c4a5073d144ffdf482",
+    "data_version": "2025-26.20260714.1"
+  },
+  "policy": {
+    "season_scope": "2025-26 regular season and postseason unless explicitly restricted",
+    "player_rate_denominator": "appearances with minutes > 0; last N player games means last N appearances",
+    "all_star_boundary": {
+      "date_exclusive": "2026-02-15",
+      "source": "https://www.nba.com/allstar/2026/"
+    },
+    "no_api_outputs_used": true,
+    "owner_approval": null
+  },
+  "case_count": 120,
+  "original_category_counts": {
+    "exact_statistics": 25,
+    "date_range_last_n": 15,
+    "comparisons": 15,
+    "single_game_narrative": 20,
+    "turning_points": 10,
+    "follow_ups": 10,
+    "aliases_typos": 10,
+    "unsupported": 15
+  },
+  "proposed_dispositions": {
+    "answer": 58,
+    "clarify": 53,
+    "refuse": 9
+  },
+  "agent_reviewed": 120,
+  "owner_approved": 0,
+  "gold_labels_eligible": false,
+  "labels_file_sha256": "7c3c549e6a540f4ce03a3fa4ba38821ddc6f7641c9d081270cff8607ec9b007e",
+  "discrepancies": [
+    {
+      "id": "date_range_last_n-014",
+      "question": "How many back-to-backs did they win in February?",
+      "issues": [
+        "original_answerability_requires_adjudication",
+        "original_route_requires_adjudication",
+        "question_requires_scope_or_definition"
+      ],
+      "proposed_label": {
+        "disposition": "clarify",
+        "answerable": false,
+        "expected_route": null,
+        "canonical_facts": [
+          {
+            "metric": "second_night_wins",
+            "value": 3,
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022500726",
+              "game:0022500780",
+              "game:0022500825"
+            ]
+          },
+          {
+            "metric": "both_games_won",
+            "value": 2,
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022500718",
+              "game:0022500726",
+              "game:0022500771",
+              "game:0022500780",
+              "game:0022500816",
+              "game:0022500825"
+            ]
+          }
+        ],
+        "required_facts": [],
+        "claims": [],
+        "canonical_evidence_ids": [
+          "game:0022500718",
+          "game:0022500726",
+          "game:0022500771",
+          "game:0022500780",
+          "game:0022500816",
+          "game:0022500825"
+        ],
+        "notes": [
+          "Back-to-back wins may mean winning the second night or sweeping both games. Both canonical counts supplied; ask which definition is intended."
+        ]
+      }
+    },
+    {
+      "id": "comparisons-007",
+      "question": "Compare the two Knicks games against Boston.",
+      "issues": [
+        "original_answerability_requires_adjudication",
+        "original_route_requires_adjudication",
+        "question_requires_scope_or_definition"
+      ],
+      "proposed_label": {
+        "disposition": "clarify",
+        "answerable": false,
+        "expected_route": null,
+        "canonical_facts": [
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0022500018",
+              "game_date": "2025-10-24",
+              "home_team_id": "NYK",
+              "away_team_id": "BOS",
+              "home_score": 105,
+              "away_score": 95
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022500018"
+            ]
+          },
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0022500320",
+              "game_date": "2025-12-02",
+              "home_team_id": "BOS",
+              "away_team_id": "NYK",
+              "home_score": 123,
+              "away_score": 117
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022500320"
+            ]
+          },
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0022500757",
+              "game_date": "2026-02-08",
+              "home_team_id": "BOS",
+              "away_team_id": "NYK",
+              "home_score": 89,
+              "away_score": 111
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022500757"
+            ]
+          },
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0022501168",
+              "game_date": "2026-04-09",
+              "home_team_id": "NYK",
+              "away_team_id": "BOS",
+              "home_score": 112,
+              "away_score": 106
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022501168"
+            ]
+          }
+        ],
+        "required_facts": [],
+        "claims": [],
+        "canonical_evidence_ids": [
+          "game:0022500018",
+          "game:0022500320",
+          "game:0022500757",
+          "game:0022501168"
+        ],
+        "notes": [
+          "Archive contains 4 Boston games, not two. Request the intended dates or compare all four explicitly."
+        ]
+      }
+    },
+    {
+      "id": "comparisons-012",
+      "question": "Which was stronger: the Knicks offense or defense?",
+      "issues": [
+        "original_answerability_requires_adjudication",
+        "original_route_requires_adjudication",
+        "question_requires_scope_or_definition"
+      ],
+      "proposed_label": {
+        "disposition": "clarify",
+        "answerable": false,
+        "expected_route": null,
+        "canonical_facts": [],
+        "required_facts": [],
+        "claims": [],
+        "canonical_evidence_ids": [],
+        "notes": [
+          "Define strength against a league benchmark or rating; archive points alone do not establish relative offense versus defense strength."
+        ]
+      }
+    },
+    {
+      "id": "comparisons-013",
+      "question": "Compare close games with blowouts.",
+      "issues": [
+        "original_answerability_requires_adjudication",
+        "original_route_requires_adjudication",
+        "question_requires_scope_or_definition"
+      ],
+      "proposed_label": {
+        "disposition": "clarify",
+        "answerable": false,
+        "expected_route": null,
+        "canonical_facts": [],
+        "required_facts": [],
+        "claims": [],
+        "canonical_evidence_ids": [],
+        "notes": [
+          "Define close-game and blowout margin thresholds before comparing; no threshold is stated in the question."
+        ]
+      }
+    },
+    {
+      "id": "single_game_narrative-001",
+      "question": "How did the Knicks lose the lead against Boston?",
+      "issues": [
+        "original_answerability_requires_adjudication",
+        "original_route_requires_adjudication",
+        "question_requires_scope_or_definition"
+      ],
+      "proposed_label": {
+        "disposition": "clarify",
+        "answerable": false,
+        "expected_route": null,
+        "canonical_facts": [
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0022500018",
+              "game_date": "2025-10-24",
+              "home_team_id": "NYK",
+              "away_team_id": "BOS",
+              "home_score": 105,
+              "away_score": 95
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022500018"
+            ]
+          },
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0022500320",
+              "game_date": "2025-12-02",
+              "home_team_id": "BOS",
+              "away_team_id": "NYK",
+              "home_score": 123,
+              "away_score": 117
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022500320"
+            ]
+          },
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0022500757",
+              "game_date": "2026-02-08",
+              "home_team_id": "BOS",
+              "away_team_id": "NYK",
+              "home_score": 89,
+              "away_score": 111
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022500757"
+            ]
+          },
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0022501168",
+              "game_date": "2026-04-09",
+              "home_team_id": "NYK",
+              "away_team_id": "BOS",
+              "home_score": 112,
+              "away_score": 106
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022501168"
+            ]
+          }
+        ],
+        "required_facts": [],
+        "claims": [],
+        "canonical_evidence_ids": [
+          "game:0022500018",
+          "game:0022500320",
+          "game:0022500757",
+          "game:0022501168"
+        ],
+        "notes": [
+          "No unique game/date is identified. Request a date and avoid treating a narrative premise as proven."
+        ]
+      }
+    },
+    {
+      "id": "single_game_narrative-002",
+      "question": "What decided the Knicks game against Toronto?",
+      "issues": [
+        "original_answerability_requires_adjudication",
+        "original_route_requires_adjudication",
+        "question_requires_scope_or_definition"
+      ],
+      "proposed_label": {
+        "disposition": "clarify",
+        "answerable": false,
+        "expected_route": null,
+        "canonical_facts": [
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0022500303",
+              "game_date": "2025-11-30",
+              "home_team_id": "NYK",
+              "away_team_id": "TOR",
+              "home_score": 116,
+              "away_score": 94
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022500303"
+            ]
+          },
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0022501202",
+              "game_date": "2025-12-09",
+              "home_team_id": "TOR",
+              "away_team_id": "NYK",
+              "home_score": 101,
+              "away_score": 117
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022501202"
+            ]
+          },
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0022500675",
+              "game_date": "2026-01-28",
+              "home_team_id": "TOR",
+              "away_team_id": "NYK",
+              "home_score": 92,
+              "away_score": 119
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022500675"
+            ]
+          },
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0022500887",
+              "game_date": "2026-03-03",
+              "home_team_id": "TOR",
+              "away_team_id": "NYK",
+              "home_score": 95,
+              "away_score": 111
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022500887"
+            ]
+          },
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0022501176",
+              "game_date": "2026-04-10",
+              "home_team_id": "NYK",
+              "away_team_id": "TOR",
+              "home_score": 112,
+              "away_score": 95
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022501176"
+            ]
+          }
+        ],
+        "required_facts": [],
+        "claims": [],
+        "canonical_evidence_ids": [
+          "game:0022500303",
+          "game:0022500675",
+          "game:0022500887",
+          "game:0022501176",
+          "game:0022501202"
+        ],
+        "notes": [
+          "No unique game/date is identified. Request a date and avoid treating a narrative premise as proven."
+        ]
+      }
+    },
+    {
+      "id": "single_game_narrative-003",
+      "question": "Walk me through the fourth quarter against Atlanta.",
+      "issues": [
+        "original_answerability_requires_adjudication",
+        "original_route_requires_adjudication",
+        "question_requires_scope_or_definition"
+      ],
+      "proposed_label": {
+        "disposition": "clarify",
+        "answerable": false,
+        "expected_route": null,
+        "canonical_facts": [
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0022500435",
+              "game_date": "2025-12-27",
+              "home_team_id": "ATL",
+              "away_team_id": "NYK",
+              "home_score": 125,
+              "away_score": 128
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022500435"
+            ]
+          },
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0022500479",
+              "game_date": "2026-01-02",
+              "home_team_id": "NYK",
+              "away_team_id": "ATL",
+              "home_score": 99,
+              "away_score": 111
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022500479"
+            ]
+          },
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0022501143",
+              "game_date": "2026-04-06",
+              "home_team_id": "ATL",
+              "away_team_id": "NYK",
+              "home_score": 105,
+              "away_score": 108
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022501143"
+            ]
+          },
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0042500121",
+              "game_date": "2026-04-18",
+              "home_team_id": "NYK",
+              "away_team_id": "ATL",
+              "home_score": 113,
+              "away_score": 102
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0042500121"
+            ]
+          },
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0042500122",
+              "game_date": "2026-04-20",
+              "home_team_id": "NYK",
+              "away_team_id": "ATL",
+              "home_score": 106,
+              "away_score": 107
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0042500122"
+            ]
+          },
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0042500123",
+              "game_date": "2026-04-23",
+              "home_team_id": "ATL",
+              "away_team_id": "NYK",
+              "home_score": 109,
+              "away_score": 108
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0042500123"
+            ]
+          },
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0042500124",
+              "game_date": "2026-04-25",
+              "home_team_id": "ATL",
+              "away_team_id": "NYK",
+              "home_score": 98,
+              "away_score": 114
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0042500124"
+            ]
+          },
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0042500125",
+              "game_date": "2026-04-28",
+              "home_team_id": "NYK",
+              "away_team_id": "ATL",
+              "home_score": 126,
+              "away_score": 97
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0042500125"
+            ]
+          },
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0042500126",
+              "game_date": "2026-04-30",
+              "home_team_id": "ATL",
+              "away_team_id": "NYK",
+              "home_score": 89,
+              "away_score": 140
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0042500126"
+            ]
+          }
+        ],
+        "required_facts": [],
+        "claims": [],
+        "canonical_evidence_ids": [
+          "game:0022500435",
+          "game:0022500479",
+          "game:0022501143",
+          "game:0042500121",
+          "game:0042500122",
+          "game:0042500123",
+          "game:0042500124",
+          "game:0042500125",
+          "game:0042500126"
+        ],
+        "notes": [
+          "No unique game/date is identified. Request a date and avoid treating a narrative premise as proven."
+        ]
+      }
+    },
+    {
+      "id": "single_game_narrative-004",
+      "question": "Why did the Knicks win the Chicago game?",
+      "issues": [
+        "original_answerability_requires_adjudication",
+        "original_route_requires_adjudication",
+        "question_requires_scope_or_definition"
+      ],
+      "proposed_label": {
+        "disposition": "clarify",
+        "answerable": false,
+        "expected_route": null,
+        "canonical_facts": [
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0022500023",
+              "game_date": "2025-10-31",
+              "home_team_id": "CHI",
+              "away_team_id": "NYK",
+              "home_score": 135,
+              "away_score": 125
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022500023"
+            ]
+          },
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0022500153",
+              "game_date": "2025-11-02",
+              "home_team_id": "NYK",
+              "away_team_id": "CHI",
+              "home_score": 128,
+              "away_score": 116
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022500153"
+            ]
+          },
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0022500825",
+              "game_date": "2026-02-22",
+              "home_team_id": "CHI",
+              "away_team_id": "NYK",
+              "home_score": 99,
+              "away_score": 105
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022500825"
+            ]
+          },
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0022501123",
+              "game_date": "2026-04-03",
+              "home_team_id": "NYK",
+              "away_team_id": "CHI",
+              "home_score": 136,
+              "away_score": 96
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022501123"
+            ]
+          }
+        ],
+        "required_facts": [],
+        "claims": [],
+        "canonical_evidence_ids": [
+          "game:0022500023",
+          "game:0022500153",
+          "game:0022500825",
+          "game:0022501123"
+        ],
+        "notes": [
+          "No unique game/date is identified. Request a date and avoid treating a narrative premise as proven."
+        ]
+      }
+    },
+    {
+      "id": "single_game_narrative-005",
+      "question": "What changed after halftime against Charlotte?",
+      "issues": [
+        "original_answerability_requires_adjudication",
+        "original_route_requires_adjudication",
+        "question_requires_scope_or_definition"
+      ],
+      "proposed_label": {
+        "disposition": "clarify",
+        "answerable": false,
+        "expected_route": null,
+        "canonical_facts": [
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0022500061",
+              "game_date": "2025-11-26",
+              "home_team_id": "CHA",
+              "away_team_id": "NYK",
+              "home_score": 101,
+              "away_score": 129
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022500061"
+            ]
+          },
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0022500328",
+              "game_date": "2025-12-03",
+              "home_team_id": "NYK",
+              "away_team_id": "CHA",
+              "home_score": 119,
+              "away_score": 104
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022500328"
+            ]
+          },
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0022501063",
+              "game_date": "2026-03-26",
+              "home_team_id": "CHA",
+              "away_team_id": "NYK",
+              "home_score": 114,
+              "away_score": 103
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022501063"
+            ]
+          },
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0022501190",
+              "game_date": "2026-04-12",
+              "home_team_id": "NYK",
+              "away_team_id": "CHA",
+              "home_score": 96,
+              "away_score": 110
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022501190"
+            ]
+          }
+        ],
+        "required_facts": [],
+        "claims": [],
+        "canonical_evidence_ids": [
+          "game:0022500061",
+          "game:0022500328",
+          "game:0022501063",
+          "game:0022501190"
+        ],
+        "notes": [
+          "No unique game/date is identified. Request a date and avoid treating a narrative premise as proven."
+        ]
+      }
+    },
+    {
+      "id": "single_game_narrative-006",
+      "question": "Tell the story of the closest Knicks game.",
+      "issues": [
+        "original_answerability_requires_adjudication",
+        "original_route_requires_adjudication",
+        "question_requires_scope_or_definition"
+      ],
+      "proposed_label": {
+        "disposition": "clarify",
+        "answerable": false,
+        "expected_route": null,
+        "canonical_facts": [
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0022500372",
+              "game_date": "2025-12-18",
+              "home_team_id": "IND",
+              "away_team_id": "NYK",
+              "home_score": 113,
+              "away_score": 114
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022500372"
+            ]
+          },
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0022501016",
+              "game_date": "2026-03-20",
+              "home_team_id": "BKN",
+              "away_team_id": "NYK",
+              "home_score": 92,
+              "away_score": 93
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022501016"
+            ]
+          },
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0042500122",
+              "game_date": "2026-04-20",
+              "home_team_id": "NYK",
+              "away_team_id": "ATL",
+              "home_score": 106,
+              "away_score": 107
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0042500122"
+            ]
+          },
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0042500123",
+              "game_date": "2026-04-23",
+              "home_team_id": "ATL",
+              "away_team_id": "NYK",
+              "home_score": 109,
+              "away_score": 108
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0042500123"
+            ]
+          },
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0042500402",
+              "game_date": "2026-06-05",
+              "home_team_id": "SAS",
+              "away_team_id": "NYK",
+              "home_score": 104,
+              "away_score": 105
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0042500402"
+            ]
+          },
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0042500404",
+              "game_date": "2026-06-10",
+              "home_team_id": "NYK",
+              "away_team_id": "SAS",
+              "home_score": 107,
+              "away_score": 106
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0042500404"
+            ]
+          }
+        ],
+        "required_facts": [],
+        "claims": [],
+        "canonical_evidence_ids": [
+          "game:0022500372",
+          "game:0022501016",
+          "game:0042500122",
+          "game:0042500123",
+          "game:0042500402",
+          "game:0042500404"
+        ],
+        "notes": [
+          "Multiple games tie for smallest final margin; ask which date."
+        ]
+      }
+    },
+    {
+      "id": "single_game_narrative-007",
+      "question": "How did Brunson influence the Boston game?",
+      "issues": [
+        "original_answerability_requires_adjudication",
+        "original_route_requires_adjudication",
+        "question_requires_scope_or_definition"
+      ],
+      "proposed_label": {
+        "disposition": "clarify",
+        "answerable": false,
+        "expected_route": null,
+        "canonical_facts": [
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0022500018",
+              "game_date": "2025-10-24",
+              "home_team_id": "NYK",
+              "away_team_id": "BOS",
+              "home_score": 105,
+              "away_score": 95
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022500018"
+            ]
+          },
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0022500320",
+              "game_date": "2025-12-02",
+              "home_team_id": "BOS",
+              "away_team_id": "NYK",
+              "home_score": 123,
+              "away_score": 117
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022500320"
+            ]
+          },
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0022500757",
+              "game_date": "2026-02-08",
+              "home_team_id": "BOS",
+              "away_team_id": "NYK",
+              "home_score": 89,
+              "away_score": 111
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022500757"
+            ]
+          },
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0022501168",
+              "game_date": "2026-04-09",
+              "home_team_id": "NYK",
+              "away_team_id": "BOS",
+              "home_score": 112,
+              "away_score": 106
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022501168"
+            ]
+          }
+        ],
+        "required_facts": [],
+        "claims": [],
+        "canonical_evidence_ids": [
+          "game:0022500018",
+          "game:0022500320",
+          "game:0022500757",
+          "game:0022501168"
+        ],
+        "notes": [
+          "No unique game/date is identified. Request a date and avoid treating a narrative premise as proven."
+        ]
+      }
+    },
+    {
+      "id": "single_game_narrative-008",
+      "question": "What were the decisive possessions against Toronto?",
+      "issues": [
+        "original_answerability_requires_adjudication",
+        "original_route_requires_adjudication",
+        "question_requires_scope_or_definition"
+      ],
+      "proposed_label": {
+        "disposition": "clarify",
+        "answerable": false,
+        "expected_route": null,
+        "canonical_facts": [
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0022500303",
+              "game_date": "2025-11-30",
+              "home_team_id": "NYK",
+              "away_team_id": "TOR",
+              "home_score": 116,
+              "away_score": 94
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022500303"
+            ]
+          },
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0022501202",
+              "game_date": "2025-12-09",
+              "home_team_id": "TOR",
+              "away_team_id": "NYK",
+              "home_score": 101,
+              "away_score": 117
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022501202"
+            ]
+          },
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0022500675",
+              "game_date": "2026-01-28",
+              "home_team_id": "TOR",
+              "away_team_id": "NYK",
+              "home_score": 92,
+              "away_score": 119
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022500675"
+            ]
+          },
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0022500887",
+              "game_date": "2026-03-03",
+              "home_team_id": "TOR",
+              "away_team_id": "NYK",
+              "home_score": 95,
+              "away_score": 111
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022500887"
+            ]
+          },
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0022501176",
+              "game_date": "2026-04-10",
+              "home_team_id": "NYK",
+              "away_team_id": "TOR",
+              "home_score": 112,
+              "away_score": 95
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022501176"
+            ]
+          }
+        ],
+        "required_facts": [],
+        "claims": [],
+        "canonical_evidence_ids": [
+          "game:0022500303",
+          "game:0022500675",
+          "game:0022500887",
+          "game:0022501176",
+          "game:0022501202"
+        ],
+        "notes": [
+          "No unique game/date is identified. Request a date and avoid treating a narrative premise as proven."
+        ]
+      }
+    },
+    {
+      "id": "single_game_narrative-009",
+      "question": "How did the Knicks close the Atlanta game?",
+      "issues": [
+        "original_answerability_requires_adjudication",
+        "original_route_requires_adjudication",
+        "question_requires_scope_or_definition"
+      ],
+      "proposed_label": {
+        "disposition": "clarify",
+        "answerable": false,
+        "expected_route": null,
+        "canonical_facts": [
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0022500435",
+              "game_date": "2025-12-27",
+              "home_team_id": "ATL",
+              "away_team_id": "NYK",
+              "home_score": 125,
+              "away_score": 128
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022500435"
+            ]
+          },
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0022500479",
+              "game_date": "2026-01-02",
+              "home_team_id": "NYK",
+              "away_team_id": "ATL",
+              "home_score": 99,
+              "away_score": 111
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022500479"
+            ]
+          },
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0022501143",
+              "game_date": "2026-04-06",
+              "home_team_id": "ATL",
+              "away_team_id": "NYK",
+              "home_score": 105,
+              "away_score": 108
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022501143"
+            ]
+          },
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0042500121",
+              "game_date": "2026-04-18",
+              "home_team_id": "NYK",
+              "away_team_id": "ATL",
+              "home_score": 113,
+              "away_score": 102
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0042500121"
+            ]
+          },
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0042500122",
+              "game_date": "2026-04-20",
+              "home_team_id": "NYK",
+              "away_team_id": "ATL",
+              "home_score": 106,
+              "away_score": 107
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0042500122"
+            ]
+          },
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0042500123",
+              "game_date": "2026-04-23",
+              "home_team_id": "ATL",
+              "away_team_id": "NYK",
+              "home_score": 109,
+              "away_score": 108
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0042500123"
+            ]
+          },
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0042500124",
+              "game_date": "2026-04-25",
+              "home_team_id": "ATL",
+              "away_team_id": "NYK",
+              "home_score": 98,
+              "away_score": 114
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0042500124"
+            ]
+          },
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0042500125",
+              "game_date": "2026-04-28",
+              "home_team_id": "NYK",
+              "away_team_id": "ATL",
+              "home_score": 126,
+              "away_score": 97
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0042500125"
+            ]
+          },
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0042500126",
+              "game_date": "2026-04-30",
+              "home_team_id": "ATL",
+              "away_team_id": "NYK",
+              "home_score": 89,
+              "away_score": 140
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0042500126"
+            ]
+          }
+        ],
+        "required_facts": [],
+        "claims": [],
+        "canonical_evidence_ids": [
+          "game:0022500435",
+          "game:0022500479",
+          "game:0022501143",
+          "game:0042500121",
+          "game:0042500122",
+          "game:0042500123",
+          "game:0042500124",
+          "game:0042500125",
+          "game:0042500126"
+        ],
+        "notes": [
+          "No unique game/date is identified. Request a date and avoid treating a narrative premise as proven."
+        ]
+      }
+    },
+    {
+      "id": "single_game_narrative-010",
+      "question": "Why did the Knicks offense stall against Chicago?",
+      "issues": [
+        "original_answerability_requires_adjudication",
+        "original_route_requires_adjudication",
+        "question_requires_scope_or_definition"
+      ],
+      "proposed_label": {
+        "disposition": "clarify",
+        "answerable": false,
+        "expected_route": null,
+        "canonical_facts": [
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0022500023",
+              "game_date": "2025-10-31",
+              "home_team_id": "CHI",
+              "away_team_id": "NYK",
+              "home_score": 135,
+              "away_score": 125
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022500023"
+            ]
+          },
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0022500153",
+              "game_date": "2025-11-02",
+              "home_team_id": "NYK",
+              "away_team_id": "CHI",
+              "home_score": 128,
+              "away_score": 116
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022500153"
+            ]
+          },
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0022500825",
+              "game_date": "2026-02-22",
+              "home_team_id": "CHI",
+              "away_team_id": "NYK",
+              "home_score": 99,
+              "away_score": 105
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022500825"
+            ]
+          },
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0022501123",
+              "game_date": "2026-04-03",
+              "home_team_id": "NYK",
+              "away_team_id": "CHI",
+              "home_score": 136,
+              "away_score": 96
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022501123"
+            ]
+          }
+        ],
+        "required_facts": [],
+        "claims": [],
+        "canonical_evidence_ids": [
+          "game:0022500023",
+          "game:0022500153",
+          "game:0022500825",
+          "game:0022501123"
+        ],
+        "notes": [
+          "No unique game/date is identified. Request a date and avoid treating a narrative premise as proven."
+        ]
+      }
+    },
+    {
+      "id": "single_game_narrative-012",
+      "question": "Which plays swung the Charlotte game?",
+      "issues": [
+        "original_answerability_requires_adjudication",
+        "original_route_requires_adjudication",
+        "question_requires_scope_or_definition"
+      ],
+      "proposed_label": {
+        "disposition": "clarify",
+        "answerable": false,
+        "expected_route": null,
+        "canonical_facts": [
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0022500061",
+              "game_date": "2025-11-26",
+              "home_team_id": "CHA",
+              "away_team_id": "NYK",
+              "home_score": 101,
+              "away_score": 129
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022500061"
+            ]
+          },
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0022500328",
+              "game_date": "2025-12-03",
+              "home_team_id": "NYK",
+              "away_team_id": "CHA",
+              "home_score": 119,
+              "away_score": 104
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022500328"
+            ]
+          },
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0022501063",
+              "game_date": "2026-03-26",
+              "home_team_id": "CHA",
+              "away_team_id": "NYK",
+              "home_score": 114,
+              "away_score": 103
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022501063"
+            ]
+          },
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0022501190",
+              "game_date": "2026-04-12",
+              "home_team_id": "NYK",
+              "away_team_id": "CHA",
+              "home_score": 96,
+              "away_score": 110
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022501190"
+            ]
+          }
+        ],
+        "required_facts": [],
+        "claims": [],
+        "canonical_evidence_ids": [
+          "game:0022500061",
+          "game:0022500328",
+          "game:0022501063",
+          "game:0022501190"
+        ],
+        "notes": [
+          "No unique game/date is identified. Request a date and avoid treating a narrative premise as proven."
+        ]
+      }
+    },
+    {
+      "id": "single_game_narrative-013",
+      "question": "How did the bench affect the Toronto game?",
+      "issues": [
+        "original_answerability_requires_adjudication",
+        "original_route_requires_adjudication",
+        "question_requires_scope_or_definition"
+      ],
+      "proposed_label": {
+        "disposition": "clarify",
+        "answerable": false,
+        "expected_route": null,
+        "canonical_facts": [
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0022500303",
+              "game_date": "2025-11-30",
+              "home_team_id": "NYK",
+              "away_team_id": "TOR",
+              "home_score": 116,
+              "away_score": 94
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022500303"
+            ]
+          },
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0022501202",
+              "game_date": "2025-12-09",
+              "home_team_id": "TOR",
+              "away_team_id": "NYK",
+              "home_score": 101,
+              "away_score": 117
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022501202"
+            ]
+          },
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0022500675",
+              "game_date": "2026-01-28",
+              "home_team_id": "TOR",
+              "away_team_id": "NYK",
+              "home_score": 92,
+              "away_score": 119
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022500675"
+            ]
+          },
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0022500887",
+              "game_date": "2026-03-03",
+              "home_team_id": "TOR",
+              "away_team_id": "NYK",
+              "home_score": 95,
+              "away_score": 111
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022500887"
+            ]
+          },
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0022501176",
+              "game_date": "2026-04-10",
+              "home_team_id": "NYK",
+              "away_team_id": "TOR",
+              "home_score": 112,
+              "away_score": 95
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022501176"
+            ]
+          }
+        ],
+        "required_facts": [],
+        "claims": [],
+        "canonical_evidence_ids": [
+          "game:0022500303",
+          "game:0022500675",
+          "game:0022500887",
+          "game:0022501176",
+          "game:0022501202"
+        ],
+        "notes": [
+          "No unique game/date is identified. Request a date and avoid treating a narrative premise as proven."
+        ]
+      }
+    },
+    {
+      "id": "single_game_narrative-014",
+      "question": "What happened in the final two minutes against Boston?",
+      "issues": [
+        "original_answerability_requires_adjudication",
+        "original_route_requires_adjudication",
+        "question_requires_scope_or_definition"
+      ],
+      "proposed_label": {
+        "disposition": "clarify",
+        "answerable": false,
+        "expected_route": null,
+        "canonical_facts": [
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0022500018",
+              "game_date": "2025-10-24",
+              "home_team_id": "NYK",
+              "away_team_id": "BOS",
+              "home_score": 105,
+              "away_score": 95
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022500018"
+            ]
+          },
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0022500320",
+              "game_date": "2025-12-02",
+              "home_team_id": "BOS",
+              "away_team_id": "NYK",
+              "home_score": 123,
+              "away_score": 117
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022500320"
+            ]
+          },
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0022500757",
+              "game_date": "2026-02-08",
+              "home_team_id": "BOS",
+              "away_team_id": "NYK",
+              "home_score": 89,
+              "away_score": 111
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022500757"
+            ]
+          },
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0022501168",
+              "game_date": "2026-04-09",
+              "home_team_id": "NYK",
+              "away_team_id": "BOS",
+              "home_score": 112,
+              "away_score": 106
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022501168"
+            ]
+          }
+        ],
+        "required_facts": [],
+        "claims": [],
+        "canonical_evidence_ids": [
+          "game:0022500018",
+          "game:0022500320",
+          "game:0022500757",
+          "game:0022501168"
+        ],
+        "notes": [
+          "No unique game/date is identified. Request a date and avoid treating a narrative premise as proven."
+        ]
+      }
+    },
+    {
+      "id": "single_game_narrative-016",
+      "question": "How did turnovers shape the Atlanta game?",
+      "issues": [
+        "original_answerability_requires_adjudication",
+        "original_route_requires_adjudication",
+        "question_requires_scope_or_definition"
+      ],
+      "proposed_label": {
+        "disposition": "clarify",
+        "answerable": false,
+        "expected_route": null,
+        "canonical_facts": [
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0022500435",
+              "game_date": "2025-12-27",
+              "home_team_id": "ATL",
+              "away_team_id": "NYK",
+              "home_score": 125,
+              "away_score": 128
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022500435"
+            ]
+          },
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0022500479",
+              "game_date": "2026-01-02",
+              "home_team_id": "NYK",
+              "away_team_id": "ATL",
+              "home_score": 99,
+              "away_score": 111
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022500479"
+            ]
+          },
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0022501143",
+              "game_date": "2026-04-06",
+              "home_team_id": "ATL",
+              "away_team_id": "NYK",
+              "home_score": 105,
+              "away_score": 108
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022501143"
+            ]
+          },
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0042500121",
+              "game_date": "2026-04-18",
+              "home_team_id": "NYK",
+              "away_team_id": "ATL",
+              "home_score": 113,
+              "away_score": 102
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0042500121"
+            ]
+          },
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0042500122",
+              "game_date": "2026-04-20",
+              "home_team_id": "NYK",
+              "away_team_id": "ATL",
+              "home_score": 106,
+              "away_score": 107
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0042500122"
+            ]
+          },
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0042500123",
+              "game_date": "2026-04-23",
+              "home_team_id": "ATL",
+              "away_team_id": "NYK",
+              "home_score": 109,
+              "away_score": 108
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0042500123"
+            ]
+          },
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0042500124",
+              "game_date": "2026-04-25",
+              "home_team_id": "ATL",
+              "away_team_id": "NYK",
+              "home_score": 98,
+              "away_score": 114
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0042500124"
+            ]
+          },
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0042500125",
+              "game_date": "2026-04-28",
+              "home_team_id": "NYK",
+              "away_team_id": "ATL",
+              "home_score": 126,
+              "away_score": 97
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0042500125"
+            ]
+          },
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0042500126",
+              "game_date": "2026-04-30",
+              "home_team_id": "ATL",
+              "away_team_id": "NYK",
+              "home_score": 89,
+              "away_score": 140
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0042500126"
+            ]
+          }
+        ],
+        "required_facts": [],
+        "claims": [],
+        "canonical_evidence_ids": [
+          "game:0022500435",
+          "game:0022500479",
+          "game:0022501143",
+          "game:0042500121",
+          "game:0042500122",
+          "game:0042500123",
+          "game:0042500124",
+          "game:0042500125",
+          "game:0042500126"
+        ],
+        "notes": [
+          "No unique game/date is identified. Request a date and avoid treating a narrative premise as proven."
+        ]
+      }
+    },
+    {
+      "id": "single_game_narrative-017",
+      "question": "What happened immediately after the Knicks took the lead against Chicago?",
+      "issues": [
+        "original_answerability_requires_adjudication",
+        "original_route_requires_adjudication",
+        "question_requires_scope_or_definition"
+      ],
+      "proposed_label": {
+        "disposition": "clarify",
+        "answerable": false,
+        "expected_route": null,
+        "canonical_facts": [
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0022500023",
+              "game_date": "2025-10-31",
+              "home_team_id": "CHI",
+              "away_team_id": "NYK",
+              "home_score": 135,
+              "away_score": 125
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022500023"
+            ]
+          },
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0022500153",
+              "game_date": "2025-11-02",
+              "home_team_id": "NYK",
+              "away_team_id": "CHI",
+              "home_score": 128,
+              "away_score": 116
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022500153"
+            ]
+          },
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0022500825",
+              "game_date": "2026-02-22",
+              "home_team_id": "CHI",
+              "away_team_id": "NYK",
+              "home_score": 99,
+              "away_score": 105
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022500825"
+            ]
+          },
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0022501123",
+              "game_date": "2026-04-03",
+              "home_team_id": "NYK",
+              "away_team_id": "CHI",
+              "home_score": 136,
+              "away_score": 96
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022501123"
+            ]
+          }
+        ],
+        "required_facts": [],
+        "claims": [],
+        "canonical_evidence_ids": [
+          "game:0022500023",
+          "game:0022500153",
+          "game:0022500825",
+          "game:0022501123"
+        ],
+        "notes": [
+          "No unique game/date is identified. Request a date and avoid treating a narrative premise as proven."
+        ]
+      }
+    },
+    {
+      "id": "single_game_narrative-018",
+      "question": "Describe the Knicks' worst third quarter.",
+      "issues": [
+        "original_answerability_requires_adjudication",
+        "original_route_requires_adjudication",
+        "question_requires_scope_or_definition"
+      ],
+      "proposed_label": {
+        "disposition": "clarify",
+        "answerable": false,
+        "expected_route": null,
+        "canonical_facts": [
+          {
+            "metric": "fewest_third_quarter_points",
+            "value": 11,
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "period:0022500835:NYK:3"
+            ]
+          }
+        ],
+        "required_facts": [],
+        "claims": [],
+        "canonical_evidence_ids": [
+          "period:0022500835:NYK:3"
+        ],
+        "notes": [
+          "Worst third quarter may mean fewest scored or worst net margin. Specify the metric before calling one worst."
+        ]
+      }
+    },
+    {
+      "id": "single_game_narrative-019",
+      "question": "How did the Knicks answer Toronto's late run?",
+      "issues": [
+        "original_answerability_requires_adjudication",
+        "original_route_requires_adjudication",
+        "question_requires_scope_or_definition"
+      ],
+      "proposed_label": {
+        "disposition": "clarify",
+        "answerable": false,
+        "expected_route": null,
+        "canonical_facts": [
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0022500303",
+              "game_date": "2025-11-30",
+              "home_team_id": "NYK",
+              "away_team_id": "TOR",
+              "home_score": 116,
+              "away_score": 94
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022500303"
+            ]
+          },
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0022501202",
+              "game_date": "2025-12-09",
+              "home_team_id": "TOR",
+              "away_team_id": "NYK",
+              "home_score": 101,
+              "away_score": 117
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022501202"
+            ]
+          },
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0022500675",
+              "game_date": "2026-01-28",
+              "home_team_id": "TOR",
+              "away_team_id": "NYK",
+              "home_score": 92,
+              "away_score": 119
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022500675"
+            ]
+          },
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0022500887",
+              "game_date": "2026-03-03",
+              "home_team_id": "TOR",
+              "away_team_id": "NYK",
+              "home_score": 95,
+              "away_score": 111
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022500887"
+            ]
+          },
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0022501176",
+              "game_date": "2026-04-10",
+              "home_team_id": "NYK",
+              "away_team_id": "TOR",
+              "home_score": 112,
+              "away_score": 95
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022501176"
+            ]
+          }
+        ],
+        "required_facts": [],
+        "claims": [],
+        "canonical_evidence_ids": [
+          "game:0022500303",
+          "game:0022500675",
+          "game:0022500887",
+          "game:0022501176",
+          "game:0022501202"
+        ],
+        "notes": [
+          "No unique game/date is identified. Request a date and avoid treating a narrative premise as proven."
+        ]
+      }
+    },
+    {
+      "id": "single_game_narrative-020",
+      "question": "What was the key sequence in the Boston loss?",
+      "issues": [
+        "original_answerability_requires_adjudication",
+        "original_route_requires_adjudication",
+        "question_requires_scope_or_definition"
+      ],
+      "proposed_label": {
+        "disposition": "clarify",
+        "answerable": false,
+        "expected_route": null,
+        "canonical_facts": [
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0022500320",
+              "game_date": "2025-12-02",
+              "home_team_id": "BOS",
+              "away_team_id": "NYK",
+              "home_score": 123,
+              "away_score": 117
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022500320"
+            ]
+          }
+        ],
+        "required_facts": [],
+        "claims": [],
+        "canonical_evidence_ids": [
+          "game:0022500320"
+        ],
+        "notes": [
+          "Game identity is unique, but causal/decisive premise needs qualification. Use corrected report interval as a descriptive example, not causal proof."
+        ]
+      }
+    },
+    {
+      "id": "turning_points-001",
+      "question": "What was the Knicks' biggest scoring run against Boston?",
+      "issues": [
+        "original_answerability_requires_adjudication",
+        "original_route_requires_adjudication",
+        "question_requires_scope_or_definition"
+      ],
+      "proposed_label": {
+        "disposition": "clarify",
+        "answerable": false,
+        "expected_route": null,
+        "canonical_facts": [
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0022500018",
+              "game_date": "2025-10-24",
+              "home_team_id": "NYK",
+              "away_team_id": "BOS",
+              "home_score": 105,
+              "away_score": 95
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022500018"
+            ]
+          },
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0022500320",
+              "game_date": "2025-12-02",
+              "home_team_id": "BOS",
+              "away_team_id": "NYK",
+              "home_score": 123,
+              "away_score": 117
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022500320"
+            ]
+          },
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0022500757",
+              "game_date": "2026-02-08",
+              "home_team_id": "BOS",
+              "away_team_id": "NYK",
+              "home_score": 89,
+              "away_score": 111
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022500757"
+            ]
+          },
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0022501168",
+              "game_date": "2026-04-09",
+              "home_team_id": "NYK",
+              "away_team_id": "BOS",
+              "home_score": 112,
+              "away_score": 106
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022501168"
+            ]
+          }
+        ],
+        "required_facts": [],
+        "claims": [],
+        "canonical_evidence_ids": [
+          "game:0022500018",
+          "game:0022500320",
+          "game:0022500757",
+          "game:0022501168"
+        ],
+        "notes": [
+          "Specify the game and scoring-run definition. A selected bounded scoreboard interval does not prove a causal turning point, collapse or drought that cost the game."
+        ]
+      }
+    },
+    {
+      "id": "turning_points-002",
+      "question": "Where did the Toronto game turn?",
+      "issues": [
+        "original_answerability_requires_adjudication",
+        "original_route_requires_adjudication",
+        "question_requires_scope_or_definition"
+      ],
+      "proposed_label": {
+        "disposition": "clarify",
+        "answerable": false,
+        "expected_route": null,
+        "canonical_facts": [
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0022500303",
+              "game_date": "2025-11-30",
+              "home_team_id": "NYK",
+              "away_team_id": "TOR",
+              "home_score": 116,
+              "away_score": 94
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022500303"
+            ]
+          },
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0022501202",
+              "game_date": "2025-12-09",
+              "home_team_id": "TOR",
+              "away_team_id": "NYK",
+              "home_score": 101,
+              "away_score": 117
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022501202"
+            ]
+          },
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0022500675",
+              "game_date": "2026-01-28",
+              "home_team_id": "TOR",
+              "away_team_id": "NYK",
+              "home_score": 92,
+              "away_score": 119
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022500675"
+            ]
+          },
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0022500887",
+              "game_date": "2026-03-03",
+              "home_team_id": "TOR",
+              "away_team_id": "NYK",
+              "home_score": 95,
+              "away_score": 111
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022500887"
+            ]
+          },
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0022501176",
+              "game_date": "2026-04-10",
+              "home_team_id": "NYK",
+              "away_team_id": "TOR",
+              "home_score": 112,
+              "away_score": 95
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022501176"
+            ]
+          }
+        ],
+        "required_facts": [],
+        "claims": [],
+        "canonical_evidence_ids": [
+          "game:0022500303",
+          "game:0022500675",
+          "game:0022500887",
+          "game:0022501176",
+          "game:0022501202"
+        ],
+        "notes": [
+          "Specify the game and scoring-run definition. A selected bounded scoreboard interval does not prove a causal turning point, collapse or drought that cost the game."
+        ]
+      }
+    },
+    {
+      "id": "turning_points-003",
+      "question": "When did the Knicks collapse against Atlanta?",
+      "issues": [
+        "original_answerability_requires_adjudication",
+        "original_route_requires_adjudication",
+        "question_requires_scope_or_definition"
+      ],
+      "proposed_label": {
+        "disposition": "clarify",
+        "answerable": false,
+        "expected_route": null,
+        "canonical_facts": [
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0022500435",
+              "game_date": "2025-12-27",
+              "home_team_id": "ATL",
+              "away_team_id": "NYK",
+              "home_score": 125,
+              "away_score": 128
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022500435"
+            ]
+          },
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0022500479",
+              "game_date": "2026-01-02",
+              "home_team_id": "NYK",
+              "away_team_id": "ATL",
+              "home_score": 99,
+              "away_score": 111
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022500479"
+            ]
+          },
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0022501143",
+              "game_date": "2026-04-06",
+              "home_team_id": "ATL",
+              "away_team_id": "NYK",
+              "home_score": 105,
+              "away_score": 108
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022501143"
+            ]
+          },
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0042500121",
+              "game_date": "2026-04-18",
+              "home_team_id": "NYK",
+              "away_team_id": "ATL",
+              "home_score": 113,
+              "away_score": 102
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0042500121"
+            ]
+          },
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0042500122",
+              "game_date": "2026-04-20",
+              "home_team_id": "NYK",
+              "away_team_id": "ATL",
+              "home_score": 106,
+              "away_score": 107
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0042500122"
+            ]
+          },
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0042500123",
+              "game_date": "2026-04-23",
+              "home_team_id": "ATL",
+              "away_team_id": "NYK",
+              "home_score": 109,
+              "away_score": 108
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0042500123"
+            ]
+          },
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0042500124",
+              "game_date": "2026-04-25",
+              "home_team_id": "ATL",
+              "away_team_id": "NYK",
+              "home_score": 98,
+              "away_score": 114
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0042500124"
+            ]
+          },
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0042500125",
+              "game_date": "2026-04-28",
+              "home_team_id": "NYK",
+              "away_team_id": "ATL",
+              "home_score": 126,
+              "away_score": 97
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0042500125"
+            ]
+          },
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0042500126",
+              "game_date": "2026-04-30",
+              "home_team_id": "ATL",
+              "away_team_id": "NYK",
+              "home_score": 89,
+              "away_score": 140
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0042500126"
+            ]
+          }
+        ],
+        "required_facts": [],
+        "claims": [],
+        "canonical_evidence_ids": [
+          "game:0022500435",
+          "game:0022500479",
+          "game:0022501143",
+          "game:0042500121",
+          "game:0042500122",
+          "game:0042500123",
+          "game:0042500124",
+          "game:0042500125",
+          "game:0042500126"
+        ],
+        "notes": [
+          "Specify the game and scoring-run definition. A selected bounded scoreboard interval does not prove a causal turning point, collapse or drought that cost the game."
+        ]
+      }
+    },
+    {
+      "id": "turning_points-004",
+      "question": "What run broke open the Chicago game?",
+      "issues": [
+        "original_answerability_requires_adjudication",
+        "original_route_requires_adjudication",
+        "question_requires_scope_or_definition"
+      ],
+      "proposed_label": {
+        "disposition": "clarify",
+        "answerable": false,
+        "expected_route": null,
+        "canonical_facts": [
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0022500023",
+              "game_date": "2025-10-31",
+              "home_team_id": "CHI",
+              "away_team_id": "NYK",
+              "home_score": 135,
+              "away_score": 125
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022500023"
+            ]
+          },
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0022500153",
+              "game_date": "2025-11-02",
+              "home_team_id": "NYK",
+              "away_team_id": "CHI",
+              "home_score": 128,
+              "away_score": 116
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022500153"
+            ]
+          },
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0022500825",
+              "game_date": "2026-02-22",
+              "home_team_id": "CHI",
+              "away_team_id": "NYK",
+              "home_score": 99,
+              "away_score": 105
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022500825"
+            ]
+          },
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0022501123",
+              "game_date": "2026-04-03",
+              "home_team_id": "NYK",
+              "away_team_id": "CHI",
+              "home_score": 136,
+              "away_score": 96
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022501123"
+            ]
+          }
+        ],
+        "required_facts": [],
+        "claims": [],
+        "canonical_evidence_ids": [
+          "game:0022500023",
+          "game:0022500153",
+          "game:0022500825",
+          "game:0022501123"
+        ],
+        "notes": [
+          "Specify the game and scoring-run definition. A selected bounded scoreboard interval does not prove a causal turning point, collapse or drought that cost the game."
+        ]
+      }
+    },
+    {
+      "id": "turning_points-005",
+      "question": "How did the Knicks erase their largest deficit?",
+      "issues": [
+        "original_answerability_requires_adjudication",
+        "original_route_requires_adjudication",
+        "question_requires_scope_or_definition"
+      ],
+      "proposed_label": {
+        "disposition": "clarify",
+        "answerable": false,
+        "expected_route": null,
+        "canonical_facts": [],
+        "required_facts": [],
+        "claims": [],
+        "canonical_evidence_ids": [],
+        "notes": [
+          "Specify comeback/run boundaries and whether biggest means unanswered points, net margin or duration. Corrected report intervals use an explicit three-minute bound and cannot establish an unrestricted season superlative."
+        ]
+      }
+    },
+    {
+      "id": "turning_points-006",
+      "question": "Which drought cost the Knicks the Boston game?",
+      "issues": [
+        "original_answerability_requires_adjudication",
+        "original_route_requires_adjudication",
+        "question_requires_scope_or_definition"
+      ],
+      "proposed_label": {
+        "disposition": "clarify",
+        "answerable": false,
+        "expected_route": null,
+        "canonical_facts": [
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0022500320",
+              "game_date": "2025-12-02",
+              "home_team_id": "BOS",
+              "away_team_id": "NYK",
+              "home_score": 123,
+              "away_score": 117
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022500320"
+            ]
+          }
+        ],
+        "required_facts": [],
+        "claims": [],
+        "canonical_evidence_ids": [
+          "game:0022500320"
+        ],
+        "notes": [
+          "Specify the game and scoring-run definition. A selected bounded scoreboard interval does not prove a causal turning point, collapse or drought that cost the game."
+        ]
+      }
+    },
+    {
+      "id": "turning_points-007",
+      "question": "What was the most damaging opponent run this season?",
+      "issues": [
+        "original_answerability_requires_adjudication",
+        "original_route_requires_adjudication",
+        "question_requires_scope_or_definition"
+      ],
+      "proposed_label": {
+        "disposition": "clarify",
+        "answerable": false,
+        "expected_route": null,
+        "canonical_facts": [],
+        "required_facts": [],
+        "claims": [],
+        "canonical_evidence_ids": [],
+        "notes": [
+          "Specify comeback/run boundaries and whether biggest means unanswered points, net margin or duration. Corrected report intervals use an explicit three-minute bound and cannot establish an unrestricted season superlative."
+        ]
+      }
+    },
+    {
+      "id": "turning_points-008",
+      "question": "When did the Knicks lose control against Charlotte?",
+      "issues": [
+        "original_answerability_requires_adjudication",
+        "original_route_requires_adjudication",
+        "question_requires_scope_or_definition"
+      ],
+      "proposed_label": {
+        "disposition": "clarify",
+        "answerable": false,
+        "expected_route": null,
+        "canonical_facts": [
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0022500061",
+              "game_date": "2025-11-26",
+              "home_team_id": "CHA",
+              "away_team_id": "NYK",
+              "home_score": 101,
+              "away_score": 129
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022500061"
+            ]
+          },
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0022500328",
+              "game_date": "2025-12-03",
+              "home_team_id": "NYK",
+              "away_team_id": "CHA",
+              "home_score": 119,
+              "away_score": 104
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022500328"
+            ]
+          },
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0022501063",
+              "game_date": "2026-03-26",
+              "home_team_id": "CHA",
+              "away_team_id": "NYK",
+              "home_score": 114,
+              "away_score": 103
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022501063"
+            ]
+          },
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0022501190",
+              "game_date": "2026-04-12",
+              "home_team_id": "NYK",
+              "away_team_id": "CHA",
+              "home_score": 96,
+              "away_score": 110
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022501190"
+            ]
+          }
+        ],
+        "required_facts": [],
+        "claims": [],
+        "canonical_evidence_ids": [
+          "game:0022500061",
+          "game:0022500328",
+          "game:0022501063",
+          "game:0022501190"
+        ],
+        "notes": [
+          "Specify the game and scoring-run definition. A selected bounded scoreboard interval does not prove a causal turning point, collapse or drought that cost the game."
+        ]
+      }
+    },
+    {
+      "id": "turning_points-009",
+      "question": "What sequence started the comeback against Toronto?",
+      "issues": [
+        "original_answerability_requires_adjudication",
+        "original_route_requires_adjudication",
+        "question_requires_scope_or_definition"
+      ],
+      "proposed_label": {
+        "disposition": "clarify",
+        "answerable": false,
+        "expected_route": null,
+        "canonical_facts": [
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0022500303",
+              "game_date": "2025-11-30",
+              "home_team_id": "NYK",
+              "away_team_id": "TOR",
+              "home_score": 116,
+              "away_score": 94
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022500303"
+            ]
+          },
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0022501202",
+              "game_date": "2025-12-09",
+              "home_team_id": "TOR",
+              "away_team_id": "NYK",
+              "home_score": 101,
+              "away_score": 117
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022501202"
+            ]
+          },
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0022500675",
+              "game_date": "2026-01-28",
+              "home_team_id": "TOR",
+              "away_team_id": "NYK",
+              "home_score": 92,
+              "away_score": 119
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022500675"
+            ]
+          },
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0022500887",
+              "game_date": "2026-03-03",
+              "home_team_id": "TOR",
+              "away_team_id": "NYK",
+              "home_score": 95,
+              "away_score": 111
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022500887"
+            ]
+          },
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0022501176",
+              "game_date": "2026-04-10",
+              "home_team_id": "NYK",
+              "away_team_id": "TOR",
+              "home_score": 112,
+              "away_score": 95
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022501176"
+            ]
+          }
+        ],
+        "required_facts": [],
+        "claims": [],
+        "canonical_evidence_ids": [
+          "game:0022500303",
+          "game:0022500675",
+          "game:0022500887",
+          "game:0022501176",
+          "game:0022501202"
+        ],
+        "notes": [
+          "Specify the game and scoring-run definition. A selected bounded scoreboard interval does not prove a causal turning point, collapse or drought that cost the game."
+        ]
+      }
+    },
+    {
+      "id": "turning_points-010",
+      "question": "Which late-game possessions were the turning point against Atlanta?",
+      "issues": [
+        "original_answerability_requires_adjudication",
+        "original_route_requires_adjudication",
+        "question_requires_scope_or_definition"
+      ],
+      "proposed_label": {
+        "disposition": "clarify",
+        "answerable": false,
+        "expected_route": null,
+        "canonical_facts": [
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0022500435",
+              "game_date": "2025-12-27",
+              "home_team_id": "ATL",
+              "away_team_id": "NYK",
+              "home_score": 125,
+              "away_score": 128
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022500435"
+            ]
+          },
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0022500479",
+              "game_date": "2026-01-02",
+              "home_team_id": "NYK",
+              "away_team_id": "ATL",
+              "home_score": 99,
+              "away_score": 111
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022500479"
+            ]
+          },
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0022501143",
+              "game_date": "2026-04-06",
+              "home_team_id": "ATL",
+              "away_team_id": "NYK",
+              "home_score": 105,
+              "away_score": 108
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022501143"
+            ]
+          },
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0042500121",
+              "game_date": "2026-04-18",
+              "home_team_id": "NYK",
+              "away_team_id": "ATL",
+              "home_score": 113,
+              "away_score": 102
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0042500121"
+            ]
+          },
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0042500122",
+              "game_date": "2026-04-20",
+              "home_team_id": "NYK",
+              "away_team_id": "ATL",
+              "home_score": 106,
+              "away_score": 107
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0042500122"
+            ]
+          },
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0042500123",
+              "game_date": "2026-04-23",
+              "home_team_id": "ATL",
+              "away_team_id": "NYK",
+              "home_score": 109,
+              "away_score": 108
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0042500123"
+            ]
+          },
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0042500124",
+              "game_date": "2026-04-25",
+              "home_team_id": "ATL",
+              "away_team_id": "NYK",
+              "home_score": 98,
+              "away_score": 114
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0042500124"
+            ]
+          },
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0042500125",
+              "game_date": "2026-04-28",
+              "home_team_id": "NYK",
+              "away_team_id": "ATL",
+              "home_score": 126,
+              "away_score": 97
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0042500125"
+            ]
+          },
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0042500126",
+              "game_date": "2026-04-30",
+              "home_team_id": "ATL",
+              "away_team_id": "NYK",
+              "home_score": 89,
+              "away_score": 140
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0042500126"
+            ]
+          }
+        ],
+        "required_facts": [],
+        "claims": [],
+        "canonical_evidence_ids": [
+          "game:0022500435",
+          "game:0022500479",
+          "game:0022501143",
+          "game:0042500121",
+          "game:0042500122",
+          "game:0042500123",
+          "game:0042500124",
+          "game:0042500125",
+          "game:0042500126"
+        ],
+        "notes": [
+          "Specify the game and scoring-run definition. A selected bounded scoreboard interval does not prove a causal turning point, collapse or drought that cost the game."
+        ]
+      }
+    },
+    {
+      "id": "follow_ups-001",
+      "question": "What happened next?",
+      "issues": [
+        "original_answerability_requires_adjudication",
+        "original_route_requires_adjudication",
+        "question_requires_scope_or_definition"
+      ],
+      "proposed_label": {
+        "disposition": "clarify",
+        "answerable": false,
+        "expected_route": null,
+        "canonical_facts": [
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0022500018",
+              "game_date": "2025-10-24",
+              "home_team_id": "NYK",
+              "away_team_id": "BOS",
+              "home_score": 105,
+              "away_score": 95
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022500018"
+            ]
+          },
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0022500320",
+              "game_date": "2025-12-02",
+              "home_team_id": "BOS",
+              "away_team_id": "NYK",
+              "home_score": 123,
+              "away_score": 117
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022500320"
+            ]
+          },
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0022500757",
+              "game_date": "2026-02-08",
+              "home_team_id": "BOS",
+              "away_team_id": "NYK",
+              "home_score": 89,
+              "away_score": 111
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022500757"
+            ]
+          },
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0022501168",
+              "game_date": "2026-04-09",
+              "home_team_id": "NYK",
+              "away_team_id": "BOS",
+              "home_score": 112,
+              "away_score": 106
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022501168"
+            ]
+          }
+        ],
+        "required_facts": [],
+        "claims": [],
+        "canonical_evidence_ids": [
+          "game:0022500018",
+          "game:0022500320",
+          "game:0022500757",
+          "game:0022501168"
+        ],
+        "notes": [
+          "Supplied conversation does not pin a game, event interval or valid evidence. The assistant's asserted decisive Boston run is not canonical proof. Ask for a game/date or cited interval."
+        ]
+      }
+    },
+    {
+      "id": "follow_ups-002",
+      "question": "Why was that stretch decisive?",
+      "issues": [
+        "original_answerability_requires_adjudication",
+        "original_route_requires_adjudication",
+        "question_requires_scope_or_definition"
+      ],
+      "proposed_label": {
+        "disposition": "clarify",
+        "answerable": false,
+        "expected_route": null,
+        "canonical_facts": [
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0022500018",
+              "game_date": "2025-10-24",
+              "home_team_id": "NYK",
+              "away_team_id": "BOS",
+              "home_score": 105,
+              "away_score": 95
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022500018"
+            ]
+          },
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0022500320",
+              "game_date": "2025-12-02",
+              "home_team_id": "BOS",
+              "away_team_id": "NYK",
+              "home_score": 123,
+              "away_score": 117
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022500320"
+            ]
+          },
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0022500757",
+              "game_date": "2026-02-08",
+              "home_team_id": "BOS",
+              "away_team_id": "NYK",
+              "home_score": 89,
+              "away_score": 111
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022500757"
+            ]
+          },
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0022501168",
+              "game_date": "2026-04-09",
+              "home_team_id": "NYK",
+              "away_team_id": "BOS",
+              "home_score": 112,
+              "away_score": 106
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022501168"
+            ]
+          }
+        ],
+        "required_facts": [],
+        "claims": [],
+        "canonical_evidence_ids": [
+          "game:0022500018",
+          "game:0022500320",
+          "game:0022500757",
+          "game:0022501168"
+        ],
+        "notes": [
+          "Supplied conversation does not pin a game, event interval or valid evidence. The assistant's asserted decisive Boston run is not canonical proof. Ask for a game/date or cited interval."
+        ]
+      }
+    },
+    {
+      "id": "follow_ups-003",
+      "question": "Who was on the floor then?",
+      "issues": [
+        "original_answerability_requires_adjudication",
+        "original_route_requires_adjudication",
+        "question_requires_scope_or_definition"
+      ],
+      "proposed_label": {
+        "disposition": "clarify",
+        "answerable": false,
+        "expected_route": null,
+        "canonical_facts": [
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0022500018",
+              "game_date": "2025-10-24",
+              "home_team_id": "NYK",
+              "away_team_id": "BOS",
+              "home_score": 105,
+              "away_score": 95
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022500018"
+            ]
+          },
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0022500320",
+              "game_date": "2025-12-02",
+              "home_team_id": "BOS",
+              "away_team_id": "NYK",
+              "home_score": 123,
+              "away_score": 117
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022500320"
+            ]
+          },
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0022500757",
+              "game_date": "2026-02-08",
+              "home_team_id": "BOS",
+              "away_team_id": "NYK",
+              "home_score": 89,
+              "away_score": 111
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022500757"
+            ]
+          },
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0022501168",
+              "game_date": "2026-04-09",
+              "home_team_id": "NYK",
+              "away_team_id": "BOS",
+              "home_score": 112,
+              "away_score": 106
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022501168"
+            ]
+          }
+        ],
+        "required_facts": [],
+        "claims": [],
+        "canonical_evidence_ids": [
+          "game:0022500018",
+          "game:0022500320",
+          "game:0022500757",
+          "game:0022501168"
+        ],
+        "notes": [
+          "Supplied conversation does not pin a game, event interval or valid evidence. The assistant's asserted decisive Boston run is not canonical proof. Ask for a game/date or cited interval.",
+          "Exact on-court lineup needs validated substitution reconstruction; player box-score participation is not lineup evidence."
+        ]
+      }
+    },
+    {
+      "id": "follow_ups-004",
+      "question": "How long did that run last?",
+      "issues": [
+        "original_answerability_requires_adjudication",
+        "original_route_requires_adjudication",
+        "question_requires_scope_or_definition"
+      ],
+      "proposed_label": {
+        "disposition": "clarify",
+        "answerable": false,
+        "expected_route": null,
+        "canonical_facts": [
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0022500018",
+              "game_date": "2025-10-24",
+              "home_team_id": "NYK",
+              "away_team_id": "BOS",
+              "home_score": 105,
+              "away_score": 95
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022500018"
+            ]
+          },
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0022500320",
+              "game_date": "2025-12-02",
+              "home_team_id": "BOS",
+              "away_team_id": "NYK",
+              "home_score": 123,
+              "away_score": 117
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022500320"
+            ]
+          },
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0022500757",
+              "game_date": "2026-02-08",
+              "home_team_id": "BOS",
+              "away_team_id": "NYK",
+              "home_score": 89,
+              "away_score": 111
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022500757"
+            ]
+          },
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0022501168",
+              "game_date": "2026-04-09",
+              "home_team_id": "NYK",
+              "away_team_id": "BOS",
+              "home_score": 112,
+              "away_score": 106
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022501168"
+            ]
+          }
+        ],
+        "required_facts": [],
+        "claims": [],
+        "canonical_evidence_ids": [
+          "game:0022500018",
+          "game:0022500320",
+          "game:0022500757",
+          "game:0022501168"
+        ],
+        "notes": [
+          "Supplied conversation does not pin a game, event interval or valid evidence. The assistant's asserted decisive Boston run is not canonical proof. Ask for a game/date or cited interval."
+        ]
+      }
+    },
+    {
+      "id": "follow_ups-005",
+      "question": "Did they recover after that?",
+      "issues": [
+        "original_answerability_requires_adjudication",
+        "original_route_requires_adjudication",
+        "question_requires_scope_or_definition"
+      ],
+      "proposed_label": {
+        "disposition": "clarify",
+        "answerable": false,
+        "expected_route": null,
+        "canonical_facts": [
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0022500018",
+              "game_date": "2025-10-24",
+              "home_team_id": "NYK",
+              "away_team_id": "BOS",
+              "home_score": 105,
+              "away_score": 95
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022500018"
+            ]
+          },
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0022500320",
+              "game_date": "2025-12-02",
+              "home_team_id": "BOS",
+              "away_team_id": "NYK",
+              "home_score": 123,
+              "away_score": 117
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022500320"
+            ]
+          },
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0022500757",
+              "game_date": "2026-02-08",
+              "home_team_id": "BOS",
+              "away_team_id": "NYK",
+              "home_score": 89,
+              "away_score": 111
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022500757"
+            ]
+          },
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0022501168",
+              "game_date": "2026-04-09",
+              "home_team_id": "NYK",
+              "away_team_id": "BOS",
+              "home_score": 112,
+              "away_score": 106
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022501168"
+            ]
+          }
+        ],
+        "required_facts": [],
+        "claims": [],
+        "canonical_evidence_ids": [
+          "game:0022500018",
+          "game:0022500320",
+          "game:0022500757",
+          "game:0022501168"
+        ],
+        "notes": [
+          "Supplied conversation does not pin a game, event interval or valid evidence. The assistant's asserted decisive Boston run is not canonical proof. Ask for a game/date or cited interval."
+        ]
+      }
+    },
+    {
+      "id": "follow_ups-006",
+      "question": "What did Brunson do during it?",
+      "issues": [
+        "original_answerability_requires_adjudication",
+        "original_route_requires_adjudication",
+        "question_requires_scope_or_definition"
+      ],
+      "proposed_label": {
+        "disposition": "clarify",
+        "answerable": false,
+        "expected_route": null,
+        "canonical_facts": [
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0022500018",
+              "game_date": "2025-10-24",
+              "home_team_id": "NYK",
+              "away_team_id": "BOS",
+              "home_score": 105,
+              "away_score": 95
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022500018"
+            ]
+          },
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0022500320",
+              "game_date": "2025-12-02",
+              "home_team_id": "BOS",
+              "away_team_id": "NYK",
+              "home_score": 123,
+              "away_score": 117
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022500320"
+            ]
+          },
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0022500757",
+              "game_date": "2026-02-08",
+              "home_team_id": "BOS",
+              "away_team_id": "NYK",
+              "home_score": 89,
+              "away_score": 111
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022500757"
+            ]
+          },
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0022501168",
+              "game_date": "2026-04-09",
+              "home_team_id": "NYK",
+              "away_team_id": "BOS",
+              "home_score": 112,
+              "away_score": 106
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022501168"
+            ]
+          }
+        ],
+        "required_facts": [],
+        "claims": [],
+        "canonical_evidence_ids": [
+          "game:0022500018",
+          "game:0022500320",
+          "game:0022500757",
+          "game:0022501168"
+        ],
+        "notes": [
+          "Supplied conversation does not pin a game, event interval or valid evidence. The assistant's asserted decisive Boston run is not canonical proof. Ask for a game/date or cited interval."
+        ]
+      }
+    },
+    {
+      "id": "follow_ups-007",
+      "question": "Show me the receipts for that.",
+      "issues": [
+        "original_answerability_requires_adjudication",
+        "original_route_requires_adjudication",
+        "question_requires_scope_or_definition"
+      ],
+      "proposed_label": {
+        "disposition": "clarify",
+        "answerable": false,
+        "expected_route": null,
+        "canonical_facts": [
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0022500018",
+              "game_date": "2025-10-24",
+              "home_team_id": "NYK",
+              "away_team_id": "BOS",
+              "home_score": 105,
+              "away_score": 95
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022500018"
+            ]
+          },
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0022500320",
+              "game_date": "2025-12-02",
+              "home_team_id": "BOS",
+              "away_team_id": "NYK",
+              "home_score": 123,
+              "away_score": 117
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022500320"
+            ]
+          },
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0022500757",
+              "game_date": "2026-02-08",
+              "home_team_id": "BOS",
+              "away_team_id": "NYK",
+              "home_score": 89,
+              "away_score": 111
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022500757"
+            ]
+          },
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0022501168",
+              "game_date": "2026-04-09",
+              "home_team_id": "NYK",
+              "away_team_id": "BOS",
+              "home_score": 112,
+              "away_score": 106
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022501168"
+            ]
+          }
+        ],
+        "required_facts": [],
+        "claims": [],
+        "canonical_evidence_ids": [
+          "game:0022500018",
+          "game:0022500320",
+          "game:0022500757",
+          "game:0022501168"
+        ],
+        "notes": [
+          "Supplied conversation does not pin a game, event interval or valid evidence. The assistant's asserted decisive Boston run is not canonical proof. Ask for a game/date or cited interval."
+        ]
+      }
+    },
+    {
+      "id": "follow_ups-008",
+      "question": "Was that their worst stretch?",
+      "issues": [
+        "original_answerability_requires_adjudication",
+        "original_route_requires_adjudication",
+        "question_requires_scope_or_definition"
+      ],
+      "proposed_label": {
+        "disposition": "clarify",
+        "answerable": false,
+        "expected_route": null,
+        "canonical_facts": [
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0022500018",
+              "game_date": "2025-10-24",
+              "home_team_id": "NYK",
+              "away_team_id": "BOS",
+              "home_score": 105,
+              "away_score": 95
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022500018"
+            ]
+          },
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0022500320",
+              "game_date": "2025-12-02",
+              "home_team_id": "BOS",
+              "away_team_id": "NYK",
+              "home_score": 123,
+              "away_score": 117
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022500320"
+            ]
+          },
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0022500757",
+              "game_date": "2026-02-08",
+              "home_team_id": "BOS",
+              "away_team_id": "NYK",
+              "home_score": 89,
+              "away_score": 111
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022500757"
+            ]
+          },
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0022501168",
+              "game_date": "2026-04-09",
+              "home_team_id": "NYK",
+              "away_team_id": "BOS",
+              "home_score": 112,
+              "away_score": 106
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022501168"
+            ]
+          }
+        ],
+        "required_facts": [],
+        "claims": [],
+        "canonical_evidence_ids": [
+          "game:0022500018",
+          "game:0022500320",
+          "game:0022500757",
+          "game:0022501168"
+        ],
+        "notes": [
+          "Supplied conversation does not pin a game, event interval or valid evidence. The assistant's asserted decisive Boston run is not canonical proof. Ask for a game/date or cited interval."
+        ]
+      }
+    },
+    {
+      "id": "follow_ups-009",
+      "question": "Compare that with the other Boston game.",
+      "issues": [
+        "original_answerability_requires_adjudication",
+        "original_route_requires_adjudication",
+        "question_requires_scope_or_definition"
+      ],
+      "proposed_label": {
+        "disposition": "clarify",
+        "answerable": false,
+        "expected_route": null,
+        "canonical_facts": [
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0022500018",
+              "game_date": "2025-10-24",
+              "home_team_id": "NYK",
+              "away_team_id": "BOS",
+              "home_score": 105,
+              "away_score": 95
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022500018"
+            ]
+          },
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0022500320",
+              "game_date": "2025-12-02",
+              "home_team_id": "BOS",
+              "away_team_id": "NYK",
+              "home_score": 123,
+              "away_score": 117
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022500320"
+            ]
+          },
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0022500757",
+              "game_date": "2026-02-08",
+              "home_team_id": "BOS",
+              "away_team_id": "NYK",
+              "home_score": 89,
+              "away_score": 111
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022500757"
+            ]
+          },
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0022501168",
+              "game_date": "2026-04-09",
+              "home_team_id": "NYK",
+              "away_team_id": "BOS",
+              "home_score": 112,
+              "away_score": 106
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022501168"
+            ]
+          }
+        ],
+        "required_facts": [],
+        "claims": [],
+        "canonical_evidence_ids": [
+          "game:0022500018",
+          "game:0022500320",
+          "game:0022500757",
+          "game:0022501168"
+        ],
+        "notes": [
+          "Supplied conversation does not pin a game, event interval or valid evidence. The assistant's asserted decisive Boston run is not canonical proof. Ask for a game/date or cited interval."
+        ]
+      }
+    },
+    {
+      "id": "follow_ups-010",
+      "question": "Tell me more about the final possession.",
+      "issues": [
+        "original_answerability_requires_adjudication",
+        "original_route_requires_adjudication",
+        "question_requires_scope_or_definition"
+      ],
+      "proposed_label": {
+        "disposition": "clarify",
+        "answerable": false,
+        "expected_route": null,
+        "canonical_facts": [
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0022500018",
+              "game_date": "2025-10-24",
+              "home_team_id": "NYK",
+              "away_team_id": "BOS",
+              "home_score": 105,
+              "away_score": 95
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022500018"
+            ]
+          },
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0022500320",
+              "game_date": "2025-12-02",
+              "home_team_id": "BOS",
+              "away_team_id": "NYK",
+              "home_score": 123,
+              "away_score": 117
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022500320"
+            ]
+          },
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0022500757",
+              "game_date": "2026-02-08",
+              "home_team_id": "BOS",
+              "away_team_id": "NYK",
+              "home_score": 89,
+              "away_score": 111
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022500757"
+            ]
+          },
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0022501168",
+              "game_date": "2026-04-09",
+              "home_team_id": "NYK",
+              "away_team_id": "BOS",
+              "home_score": 112,
+              "away_score": 106
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022501168"
+            ]
+          }
+        ],
+        "required_facts": [],
+        "claims": [],
+        "canonical_evidence_ids": [
+          "game:0022500018",
+          "game:0022500320",
+          "game:0022500757",
+          "game:0022501168"
+        ],
+        "notes": [
+          "Supplied conversation does not pin a game, event interval or valid evidence. The assistant's asserted decisive Boston run is not canonical proof. Ask for a game/date or cited interval."
+        ]
+      }
+    },
+    {
+      "id": "aliases_typos-001",
+      "question": "How did NYK do vs BOS?",
+      "issues": [
+        "original_route_requires_adjudication"
+      ],
+      "proposed_label": {
+        "disposition": "answer",
+        "answerable": true,
+        "expected_route": "table_rag",
+        "canonical_facts": [
+          {
+            "metric": "games",
+            "value": 4,
+            "scope": "BOS",
+            "canonical_evidence_ids": [
+              "game:0022500018",
+              "game:0022500320",
+              "game:0022500757",
+              "game:0022501168"
+            ]
+          },
+          {
+            "metric": "wins",
+            "value": 3,
+            "scope": "BOS",
+            "canonical_evidence_ids": [
+              "game:0022500018",
+              "game:0022500320",
+              "game:0022500757",
+              "game:0022501168"
+            ]
+          },
+          {
+            "metric": "losses",
+            "value": 1,
+            "scope": "BOS",
+            "canonical_evidence_ids": [
+              "game:0022500018",
+              "game:0022500320",
+              "game:0022500757",
+              "game:0022501168"
+            ]
+          }
+        ],
+        "required_facts": [
+          "BOS \u2014 games: 4",
+          "BOS \u2014 wins: 3",
+          "BOS \u2014 losses: 1"
+        ],
+        "claims": [
+          {
+            "text": "BOS \u2014 games: 4",
+            "accepted_phrasings": [],
+            "evidence_ids": [
+              "game:0022500018",
+              "game:0022500320",
+              "game:0022500757",
+              "game:0022501168"
+            ]
+          },
+          {
+            "text": "BOS \u2014 wins: 3",
+            "accepted_phrasings": [],
+            "evidence_ids": [
+              "game:0022500018",
+              "game:0022500320",
+              "game:0022500757",
+              "game:0022501168"
+            ]
+          },
+          {
+            "text": "BOS \u2014 losses: 1",
+            "accepted_phrasings": [],
+            "evidence_ids": [
+              "game:0022500018",
+              "game:0022500320",
+              "game:0022500757",
+              "game:0022501168"
+            ]
+          }
+        ],
+        "canonical_evidence_ids": [
+          "game:0022500018",
+          "game:0022500320",
+          "game:0022500757",
+          "game:0022501168"
+        ],
+        "notes": [
+          "Alias resolves an aggregate opponent record; original retrieval_rag route recommendation should be table_rag."
+        ]
+      }
+    },
+    {
+      "id": "aliases_typos-002",
+      "question": "What happened agianst the Celts?",
+      "issues": [
+        "original_answerability_requires_adjudication",
+        "original_route_requires_adjudication",
+        "question_requires_scope_or_definition"
+      ],
+      "proposed_label": {
+        "disposition": "clarify",
+        "answerable": false,
+        "expected_route": null,
+        "canonical_facts": [
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0022500018",
+              "game_date": "2025-10-24",
+              "home_team_id": "NYK",
+              "away_team_id": "BOS",
+              "home_score": 105,
+              "away_score": 95
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022500018"
+            ]
+          },
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0022500320",
+              "game_date": "2025-12-02",
+              "home_team_id": "BOS",
+              "away_team_id": "NYK",
+              "home_score": 123,
+              "away_score": 117
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022500320"
+            ]
+          },
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0022500757",
+              "game_date": "2026-02-08",
+              "home_team_id": "BOS",
+              "away_team_id": "NYK",
+              "home_score": 89,
+              "away_score": 111
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022500757"
+            ]
+          },
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0022501168",
+              "game_date": "2026-04-09",
+              "home_team_id": "NYK",
+              "away_team_id": "BOS",
+              "home_score": 112,
+              "away_score": 106
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022501168"
+            ]
+          }
+        ],
+        "required_facts": [],
+        "claims": [],
+        "canonical_evidence_ids": [
+          "game:0022500018",
+          "game:0022500320",
+          "game:0022500757",
+          "game:0022501168"
+        ],
+        "notes": [
+          "Typo/alias is understandable, but multiple matching opponent games require a date."
+        ]
+      }
+    },
+    {
+      "id": "aliases_typos-003",
+      "question": "How did JB play in that game?",
+      "issues": [
+        "original_answerability_requires_adjudication",
+        "original_route_requires_adjudication",
+        "question_requires_scope_or_definition"
+      ],
+      "proposed_label": {
+        "disposition": "clarify",
+        "answerable": false,
+        "expected_route": null,
+        "canonical_facts": [],
+        "required_facts": [],
+        "claims": [],
+        "canonical_evidence_ids": [],
+        "notes": [
+          "JB resolves to Jalen Brunson, but 'that game' has no provided context."
+        ]
+      }
+    },
+    {
+      "id": "aliases_typos-004",
+      "question": "Tell me about KAT vs the Raps.",
+      "issues": [
+        "original_route_requires_adjudication"
+      ],
+      "proposed_label": {
+        "disposition": "answer",
+        "answerable": true,
+        "expected_route": "table_rag",
+        "canonical_facts": [
+          {
+            "metric": "Karl-Anthony Towns: average points",
+            "value": 17.4,
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "box:0022500303:1626157",
+              "box:0022501202:1626157",
+              "box:0022500675:1626157",
+              "box:0022500887:1626157",
+              "box:0022501176:1626157"
+            ],
+            "player_name": "Karl-Anthony Towns",
+            "appearances": 5,
+            "numerator": 87,
+            "denominator": 5
+          }
+        ],
+        "required_facts": [
+          "archive \u2014 Karl-Anthony Towns: average points: 17.4"
+        ],
+        "claims": [
+          {
+            "text": "archive \u2014 Karl-Anthony Towns: average points: 17.4",
+            "accepted_phrasings": [],
+            "evidence_ids": [
+              "box:0022500303:1626157",
+              "box:0022501202:1626157",
+              "box:0022500675:1626157",
+              "box:0022500887:1626157",
+              "box:0022501176:1626157"
+            ]
+          }
+        ],
+        "canonical_evidence_ids": [
+          "box:0022500303:1626157",
+          "box:0022500675:1626157",
+          "box:0022500887:1626157",
+          "box:0022501176:1626157",
+          "box:0022501202:1626157"
+        ],
+        "notes": [
+          "Offer canonical scoring average for all games against this opponent, explicitly name the aggregate scope; subjective played-well language is not a factual label."
+        ]
+      }
+    },
+    {
+      "id": "aliases_typos-005",
+      "question": "What was the Knics biggest run?",
+      "issues": [
+        "original_answerability_requires_adjudication",
+        "original_route_requires_adjudication",
+        "question_requires_scope_or_definition"
+      ],
+      "proposed_label": {
+        "disposition": "clarify",
+        "answerable": false,
+        "expected_route": null,
+        "canonical_facts": [],
+        "required_facts": [],
+        "claims": [],
+        "canonical_evidence_ids": [],
+        "notes": [
+          "Typo is understandable; define scoring run or collapse before choosing a season-wide superlative."
+        ]
+      }
+    },
+    {
+      "id": "aliases_typos-006",
+      "question": "How did they do v ATL?",
+      "issues": [
+        "original_route_requires_adjudication"
+      ],
+      "proposed_label": {
+        "disposition": "answer",
+        "answerable": true,
+        "expected_route": "table_rag",
+        "canonical_facts": [
+          {
+            "metric": "games",
+            "value": 9,
+            "scope": "ATL",
+            "canonical_evidence_ids": [
+              "game:0022500435",
+              "game:0022500479",
+              "game:0022501143",
+              "game:0042500121",
+              "game:0042500122",
+              "game:0042500123",
+              "game:0042500124",
+              "game:0042500125",
+              "game:0042500126"
+            ]
+          },
+          {
+            "metric": "wins",
+            "value": 6,
+            "scope": "ATL",
+            "canonical_evidence_ids": [
+              "game:0022500435",
+              "game:0022500479",
+              "game:0022501143",
+              "game:0042500121",
+              "game:0042500122",
+              "game:0042500123",
+              "game:0042500124",
+              "game:0042500125",
+              "game:0042500126"
+            ]
+          },
+          {
+            "metric": "losses",
+            "value": 3,
+            "scope": "ATL",
+            "canonical_evidence_ids": [
+              "game:0022500435",
+              "game:0022500479",
+              "game:0022501143",
+              "game:0042500121",
+              "game:0042500122",
+              "game:0042500123",
+              "game:0042500124",
+              "game:0042500125",
+              "game:0042500126"
+            ]
+          }
+        ],
+        "required_facts": [
+          "ATL \u2014 games: 9",
+          "ATL \u2014 wins: 6",
+          "ATL \u2014 losses: 3"
+        ],
+        "claims": [
+          {
+            "text": "ATL \u2014 games: 9",
+            "accepted_phrasings": [],
+            "evidence_ids": [
+              "game:0022500435",
+              "game:0022500479",
+              "game:0022501143",
+              "game:0042500121",
+              "game:0042500122",
+              "game:0042500123",
+              "game:0042500124",
+              "game:0042500125",
+              "game:0042500126"
+            ]
+          },
+          {
+            "text": "ATL \u2014 wins: 6",
+            "accepted_phrasings": [],
+            "evidence_ids": [
+              "game:0022500435",
+              "game:0022500479",
+              "game:0022501143",
+              "game:0042500121",
+              "game:0042500122",
+              "game:0042500123",
+              "game:0042500124",
+              "game:0042500125",
+              "game:0042500126"
+            ]
+          },
+          {
+            "text": "ATL \u2014 losses: 3",
+            "accepted_phrasings": [],
+            "evidence_ids": [
+              "game:0022500435",
+              "game:0022500479",
+              "game:0022501143",
+              "game:0042500121",
+              "game:0042500122",
+              "game:0042500123",
+              "game:0042500124",
+              "game:0042500125",
+              "game:0042500126"
+            ]
+          }
+        ],
+        "canonical_evidence_ids": [
+          "game:0022500435",
+          "game:0022500479",
+          "game:0022501143",
+          "game:0042500121",
+          "game:0042500122",
+          "game:0042500123",
+          "game:0042500124",
+          "game:0042500125",
+          "game:0042500126"
+        ],
+        "notes": [
+          "Alias resolves an aggregate opponent record; original retrieval_rag route recommendation should be table_rag."
+        ]
+      }
+    },
+    {
+      "id": "aliases_typos-007",
+      "question": "What happened in the 4Q against CHI?",
+      "issues": [
+        "original_answerability_requires_adjudication",
+        "original_route_requires_adjudication",
+        "question_requires_scope_or_definition"
+      ],
+      "proposed_label": {
+        "disposition": "clarify",
+        "answerable": false,
+        "expected_route": null,
+        "canonical_facts": [
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0022500023",
+              "game_date": "2025-10-31",
+              "home_team_id": "CHI",
+              "away_team_id": "NYK",
+              "home_score": 135,
+              "away_score": 125
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022500023"
+            ]
+          },
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0022500153",
+              "game_date": "2025-11-02",
+              "home_team_id": "NYK",
+              "away_team_id": "CHI",
+              "home_score": 128,
+              "away_score": 116
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022500153"
+            ]
+          },
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0022500825",
+              "game_date": "2026-02-22",
+              "home_team_id": "CHI",
+              "away_team_id": "NYK",
+              "home_score": 99,
+              "away_score": 105
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022500825"
+            ]
+          },
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0022501123",
+              "game_date": "2026-04-03",
+              "home_team_id": "NYK",
+              "away_team_id": "CHI",
+              "home_score": 136,
+              "away_score": 96
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022501123"
+            ]
+          }
+        ],
+        "required_facts": [],
+        "claims": [],
+        "canonical_evidence_ids": [
+          "game:0022500023",
+          "game:0022500153",
+          "game:0022500825",
+          "game:0022501123"
+        ],
+        "notes": [
+          "Typo/alias is understandable, but multiple matching opponent games require a date."
+        ]
+      }
+    },
+    {
+      "id": "aliases_typos-008",
+      "question": "Did Mikal play well aginst Toronto?",
+      "issues": [
+        "original_route_requires_adjudication"
+      ],
+      "proposed_label": {
+        "disposition": "answer",
+        "answerable": true,
+        "expected_route": "table_rag",
+        "canonical_facts": [
+          {
+            "metric": "Mikal Bridges: average points",
+            "value": 16.6,
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "box:0022500303:1628969",
+              "box:0022501202:1628969",
+              "box:0022500675:1628969",
+              "box:0022500887:1628969",
+              "box:0022501176:1628969"
+            ],
+            "player_name": "Mikal Bridges",
+            "appearances": 5,
+            "numerator": 83,
+            "denominator": 5
+          }
+        ],
+        "required_facts": [
+          "archive \u2014 Mikal Bridges: average points: 16.6"
+        ],
+        "claims": [
+          {
+            "text": "archive \u2014 Mikal Bridges: average points: 16.6",
+            "accepted_phrasings": [],
+            "evidence_ids": [
+              "box:0022500303:1628969",
+              "box:0022501202:1628969",
+              "box:0022500675:1628969",
+              "box:0022500887:1628969",
+              "box:0022501176:1628969"
+            ]
+          }
+        ],
+        "canonical_evidence_ids": [
+          "box:0022500303:1628969",
+          "box:0022500675:1628969",
+          "box:0022500887:1628969",
+          "box:0022501176:1628969",
+          "box:0022501202:1628969"
+        ],
+        "notes": [
+          "Offer canonical scoring average for all games against this opponent, explicitly name the aggregate scope; subjective played-well language is not a factual label."
+        ]
+      }
+    },
+    {
+      "id": "aliases_typos-009",
+      "question": "How did OG look vs the C's?",
+      "issues": [
+        "original_route_requires_adjudication"
+      ],
+      "proposed_label": {
+        "disposition": "answer",
+        "answerable": true,
+        "expected_route": "table_rag",
+        "canonical_facts": [
+          {
+            "metric": "OG Anunoby: average points",
+            "value": 11.5,
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "box:0022500018:1628384",
+              "box:0022501168:1628384"
+            ],
+            "player_name": "OG Anunoby",
+            "appearances": 2,
+            "numerator": 23,
+            "denominator": 2
+          }
+        ],
+        "required_facts": [
+          "archive \u2014 OG Anunoby: average points: 11.5"
+        ],
+        "claims": [
+          {
+            "text": "archive \u2014 OG Anunoby: average points: 11.5",
+            "accepted_phrasings": [],
+            "evidence_ids": [
+              "box:0022500018:1628384",
+              "box:0022501168:1628384"
+            ]
+          }
+        ],
+        "canonical_evidence_ids": [
+          "box:0022500018:1628384",
+          "box:0022501168:1628384"
+        ],
+        "notes": [
+          "Offer canonical scoring average for all games against this opponent, explicitly name the aggregate scope; subjective played-well language is not a factual label."
+        ]
+      }
+    },
+    {
+      "id": "aliases_typos-010",
+      "question": "What was NY's worst collpase?",
+      "issues": [
+        "original_answerability_requires_adjudication",
+        "original_route_requires_adjudication",
+        "question_requires_scope_or_definition"
+      ],
+      "proposed_label": {
+        "disposition": "clarify",
+        "answerable": false,
+        "expected_route": null,
+        "canonical_facts": [],
+        "required_facts": [],
+        "claims": [],
+        "canonical_evidence_ids": [],
+        "notes": [
+          "Typo is understandable; define scoring run or collapse before choosing a season-wide superlative."
+        ]
+      }
+    },
+    {
+      "id": "unsupported-009",
+      "question": "What happened in the Lakers game?",
+      "issues": [
+        "question_requires_scope_or_definition"
+      ],
+      "proposed_label": {
+        "disposition": "clarify",
+        "answerable": false,
+        "expected_route": null,
+        "canonical_facts": [
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0022500708",
+              "game_date": "2026-02-01",
+              "home_team_id": "NYK",
+              "away_team_id": "LAL",
+              "home_score": 112,
+              "away_score": 100
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022500708"
+            ]
+          },
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0022500922",
+              "game_date": "2026-03-08",
+              "home_team_id": "LAL",
+              "away_team_id": "NYK",
+              "home_score": 110,
+              "away_score": 97
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022500922"
+            ]
+          }
+        ],
+        "required_facts": [],
+        "claims": [],
+        "canonical_evidence_ids": [
+          "game:0022500708",
+          "game:0022500922"
+        ],
+        "notes": [
+          "Lakers is an archived opponent with two games. This is ambiguous, not unsupported solely because it names Lakers."
+        ]
+      }
+    },
+    {
+      "id": "unsupported-010",
+      "question": "Which Boston game do you mean?",
+      "issues": [
+        "question_requires_scope_or_definition"
+      ],
+      "proposed_label": {
+        "disposition": "clarify",
+        "answerable": false,
+        "expected_route": null,
+        "canonical_facts": [
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0022500018",
+              "game_date": "2025-10-24",
+              "home_team_id": "NYK",
+              "away_team_id": "BOS",
+              "home_score": 105,
+              "away_score": 95
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022500018"
+            ]
+          },
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0022500320",
+              "game_date": "2025-12-02",
+              "home_team_id": "BOS",
+              "away_team_id": "NYK",
+              "home_score": 123,
+              "away_score": 117
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022500320"
+            ]
+          },
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0022500757",
+              "game_date": "2026-02-08",
+              "home_team_id": "BOS",
+              "away_team_id": "NYK",
+              "home_score": 89,
+              "away_score": 111
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022500757"
+            ]
+          },
+          {
+            "metric": "game_score",
+            "value": {
+              "nba_game_id": "0022501168",
+              "game_date": "2026-04-09",
+              "home_team_id": "NYK",
+              "away_team_id": "BOS",
+              "home_score": 112,
+              "away_score": 106
+            },
+            "scope": "archive",
+            "canonical_evidence_ids": [
+              "game:0022501168"
+            ]
+          }
+        ],
+        "required_facts": [],
+        "claims": [],
+        "canonical_evidence_ids": [
+          "game:0022500018",
+          "game:0022500320",
+          "game:0022500757",
+          "game:0022501168"
+        ],
+        "notes": [
+          "No prior game selection exists in the supplied context. List the archived Boston dates and ask which."
+        ]
+      }
+    },
+    {
+      "id": "unsupported-011",
+      "question": "Was that a good game?",
+      "issues": [
+        "question_requires_scope_or_definition"
+      ],
+      "proposed_label": {
+        "disposition": "clarify",
+        "answerable": false,
+        "expected_route": null,
+        "canonical_facts": [],
+        "required_facts": [],
+        "claims": [],
+        "canonical_evidence_ids": [],
+        "notes": [
+          "Missing game, player, time period or evaluation metric. Ask for the intended scope; generic language alone does not prove an out-of-archive request."
+        ]
+      }
+    },
+    {
+      "id": "unsupported-012",
+      "question": "What was the score?",
+      "issues": [
+        "question_requires_scope_or_definition"
+      ],
+      "proposed_label": {
+        "disposition": "clarify",
+        "answerable": false,
+        "expected_route": null,
+        "canonical_facts": [],
+        "required_facts": [],
+        "claims": [],
+        "canonical_evidence_ids": [],
+        "notes": [
+          "Missing game, player, time period or evaluation metric. Ask for the intended scope; generic language alone does not prove an out-of-archive request."
+        ]
+      }
+    },
+    {
+      "id": "unsupported-013",
+      "question": "Who was better?",
+      "issues": [
+        "question_requires_scope_or_definition"
+      ],
+      "proposed_label": {
+        "disposition": "clarify",
+        "answerable": false,
+        "expected_route": null,
+        "canonical_facts": [],
+        "required_facts": [],
+        "claims": [],
+        "canonical_evidence_ids": [],
+        "notes": [
+          "Missing game, player, time period or evaluation metric. Ask for the intended scope; generic language alone does not prove an out-of-archive request."
+        ]
+      }
+    },
+    {
+      "id": "unsupported-014",
+      "question": "Explain their defense.",
+      "issues": [
+        "question_requires_scope_or_definition"
+      ],
+      "proposed_label": {
+        "disposition": "clarify",
+        "answerable": false,
+        "expected_route": null,
+        "canonical_facts": [],
+        "required_facts": [],
+        "claims": [],
+        "canonical_evidence_ids": [],
+        "notes": [
+          "Missing game, player, time period or evaluation metric. Ask for the intended scope; generic language alone does not prove an out-of-archive request."
+        ]
+      }
+    }
+  ],
+  "blocking_integration_issues": [
+    "Canonical NBA IDs must map to verified candidate retrieval evidence IDs; current runtime IDs may differ.",
+    "Accepted phrase variants must be batch-reviewed. Exact English strings and numeric rounding cannot be inferred from a dry-run answer.",
+    "Do not treat clarified questions as removed semantic tests or claim Recall@5 from a smaller replacement set.",
+    "Original question, category, answerable and route fields are preserved. Proposed adjudications do not silently rewrite the evaluation set.",
+    "The evaluation harness currently treats all answerable=false cases as refused and cannot distinguish correct clarification from inappropriate refusal."
+  ]
+}

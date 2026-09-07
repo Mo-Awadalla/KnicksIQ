@@ -1,0 +1,36 @@
+{
+  "scope": "Local Qdrant v1.18 with restored production canonical data; does not verify cloud availability",
+  "manifest_sha256": "983b7e969a6cc3080926215fc7b02090e26ae37d1dec0dcce5e29b4037e4d9de",
+  "build_seconds": 73.08,
+  "collections": {
+    "knicks_possessions": {
+      "collection": "knicks_possessions__2025_26_20260714_1",
+      "count": 15864,
+      "scoped_hits": 5,
+      "wrong_version_hits": 0,
+      "passed": true
+    },
+    "knicks_games": {
+      "collection": "knicks_games__2025_26_20260714_1",
+      "count": 101,
+      "scoped_hits": 1,
+      "wrong_version_hits": 0,
+      "passed": true
+    },
+    "knicks_box_scores": {
+      "collection": "knicks_box_scores__2025_26_20260714_1",
+      "count": 2950,
+      "scoped_hits": 5,
+      "wrong_version_hits": 0,
+      "passed": true
+    },
+    "knicks_reports": {
+      "collection": "knicks_reports__2025_26_20260714_1",
+      "count": 101,
+      "scoped_hits": 1,
+      "wrong_version_hits": 0,
+      "passed": true
+    }
+  },
+  "aliases_promoted": false
+}
