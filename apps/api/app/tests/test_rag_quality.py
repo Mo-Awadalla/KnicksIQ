@@ -76,7 +76,7 @@ def test_classifier_routes_core_query_types():
     assert classify_query("What happened in Q4 after the timeout?").kind == "temporal"
     assert classify_query("How did the lineup with Brunson do?").kind == "lineup_conditioned"
     assert classify_query("What if the Knicks made two more threes?").kind == "counterfactual"
-    assert classify_query("How did NYK do vs BOS?").is_aggregative is False
+    assert classify_query("How did NYK do vs BOS?").is_aggregative is True
     assert (
         classify_query("Did the Knicks play better against Boston or Toronto?").is_aggregative
         is True
@@ -355,3 +355,23 @@ async def test_possession_search_applies_date_filter_before_retrieval(db_session
     )
     assert filters.dates == {"2099-01-01"}
     assert chunks == []
+
+
+def test_possession_evidence_carries_missing_scores_and_preserves_score_corrections():
+    events = [
+        _event(sequence=1, home_score=25, away_score=22),
+        _event(id=2, sequence=2, period=2, home_score=0, away_score=0),
+        _event(id=3, sequence=3, period=2, home_score=24, away_score=22),
+        _event(id=4, sequence=4, period=2, home_score=0, away_score=0),
+    ]
+    chunks = build_possession_chunks(_game(), events)
+    rows = [row for chunk in chunks for row in chunk.rows]
+    assert [(row["home_score"], row["away_score"]) for row in rows] == [
+        (25, 22),
+        (25, 22),
+        (24, 22),
+        (24, 22),
+    ]
+    assert rows[-1]["score_after"] == {"home": 24, "away": 22}
+    assert rows[-1]["score_margin"] == 2
+    assert events[-1].home_score == 0

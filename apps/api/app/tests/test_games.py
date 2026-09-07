@@ -167,3 +167,72 @@ async def test_detect_runs_endpoint_returns_202(client):
     job = (await client.get("/jobs/detect123")).json()
     assert job["job_type"] == "detect_runs"
     assert job["payload"] == {"game_id": 1}
+
+
+async def test_play_by_play_carries_placeholder_scores_across_periods_without_writes(client):
+    from app.models.game_event import GameEvent
+    from sqlalchemy import delete, select
+
+    async with AsyncSessionLocal() as session:
+        await session.execute(delete(GameEvent).where(GameEvent.game_id == 1))
+        session.add_all(
+            [
+                GameEvent(
+                    game_id=1,
+                    sequence=1,
+                    period=1,
+                    clock="00:01",
+                    event_type="made_shot",
+                    home_score=25,
+                    away_score=22,
+                    score_margin=3,
+                ),
+                GameEvent(
+                    game_id=1,
+                    sequence=2,
+                    period=2,
+                    clock="12:00",
+                    event_type="period_start",
+                    home_score=0,
+                    away_score=0,
+                    score_margin=0,
+                ),
+                GameEvent(
+                    game_id=1,
+                    sequence=3,
+                    period=2,
+                    clock="11:55",
+                    event_type="made_shot",
+                    home_score=25,
+                    away_score=24,
+                    score_margin=1,
+                ),
+                GameEvent(
+                    game_id=1,
+                    sequence=4,
+                    period=2,
+                    clock="11:54",
+                    event_type="timeout",
+                    home_score=0,
+                    away_score=0,
+                    score_margin=0,
+                ),
+            ]
+        )
+        await session.commit()
+
+    response = await client.get("/games/1/play-by-play?period=2")
+    assert response.status_code == 200
+    rows = response.json()
+    assert [(row["home_score"], row["away_score"], row["score_margin"]) for row in rows] == [
+        (25, 22, 3),
+        (25, 24, 1),
+        (25, 24, 1),
+    ]
+    async with AsyncSessionLocal() as session:
+        stored = (
+            await session.execute(
+                select(GameEvent).where(GameEvent.game_id == 1, GameEvent.sequence == 4)
+            )
+        ).scalar_one()
+        assert (stored.home_score, stored.away_score) == (0, 0)

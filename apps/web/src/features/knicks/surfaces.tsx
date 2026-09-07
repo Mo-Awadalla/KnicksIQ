@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useEffect, useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Link, useLocation, useNavigate } from '@tanstack/react-router'
 import {
@@ -217,6 +217,7 @@ function MetricStrip({
 function GameRow({ game }: { game: GameSummary }) {
   const result = resultForGame(game)
   const isWin = result === 'W'
+  const margin = game.home_team_id === 'NYK' ? game.margin : -game.margin
   return (
     <Link
       className='game-row'
@@ -246,10 +247,11 @@ function GameRow({ game }: { game: GameSummary }) {
         {game.away_score}—{game.home_score}
       </span>
       <span
-        className={`game-margin ${game.margin >= 0 ? 'positive' : 'negative'}`}
+        className={`game-margin ${margin >= 0 ? 'positive' : 'negative'}`}
+        aria-label={`Knicks margin: ${margin > 0 ? '+' : ''}${margin}`}
       >
-        {game.margin > 0 ? '+' : ''}
-        {game.margin}
+        {margin > 0 ? '+' : ''}
+        {margin}
       </span>
       <ChevronRight className='game-row-arrow' aria-hidden='true' />
     </Link>
@@ -261,7 +263,12 @@ function useArchivePosition() {
   const navigate = useNavigate()
   const params = new URLSearchParams(location.searchStr)
   const rawPage = Number(params.get('page') || 1)
-  const page = Number.isSafeInteger(rawPage) && rawPage > 0 ? rawPage : 1
+  const page =
+    Number.isSafeInteger(rawPage) &&
+    rawPage > 0 &&
+    Number.isSafeInteger((rawPage - 1) * 50)
+      ? rawPage
+      : 1
   const set = (values: Record<string, string | number>) => {
     const next: Record<string, string | number> = Object.fromEntries(params)
     Object.entries(values).forEach(([key, value]) => {
@@ -281,12 +288,22 @@ function Pagination({
   total: number
   onPage: (page: number) => void
 }) {
+  const totalPages = Math.max(0, Math.ceil(total / 50))
+  const current = Math.min(page, totalPages)
+  const start = Math.max(1, Math.min(current - 2, totalPages - 4))
+  const pages = [
+    ...new Set([
+      1,
+      ...Array.from(
+        { length: Math.min(5, totalPages) },
+        (_, index) => start + index
+      ),
+      totalPages,
+    ]),
+  ].filter((value) => value > 0 && value <= totalPages)
   return (
     <nav aria-label='Pagination' className='filter-row'>
-      {Array.from(
-        { length: Math.ceil(total / 50) },
-        (_, index) => index + 1
-      ).map((value) => (
+      {pages.map((value) => (
         <Button
           key={value}
           variant={page === value ? 'default' : 'outline'}
@@ -443,6 +460,7 @@ export function GamesPage() {
 
 function Scoreboard({ game }: { game: Awaited<ReturnType<typeof fetchGame>> }) {
   const homeWon = game.winner_team_id === game.home_team_id
+  const margin = game.home_team_id === 'NYK' ? game.margin : -game.margin
   return (
     <section className='scoreboard surface-panel' aria-label='Final score'>
       <div className='scoreboard-meta'>
@@ -475,8 +493,8 @@ function Scoreboard({ game }: { game: Awaited<ReturnType<typeof fetchGame>> }) {
             game.season_type.replace('_', ' ')}
         </span>
         <strong>
-          {game.margin > 0 ? '+' : ''}
-          {game.margin} margin
+          {margin > 0 ? '+' : ''}
+          {margin} Knicks margin
         </strong>
       </div>
     </section>
@@ -508,10 +526,13 @@ function RunsPanel({ runs }: { runs: ScoringRun[] }) {
           {runs.map((run) => (
             <div
               className={`run-row ${run.team_id === 'NYK' ? 'is-knicks' : ''}`}
-              key={run.id}
+              key={`${run.id}-${run.start_sequence ?? run.start_clock}-${run.team_id}`}
             >
               <span className='run-period'>
                 Q{run.period}
+                {run.end_period && run.end_period !== run.period
+                  ? `–Q${run.end_period}`
+                  : ''}
                 <small>
                   {run.start_clock}–{run.end_clock}
                 </small>
@@ -528,7 +549,13 @@ function RunsPanel({ runs }: { runs: ScoringRun[] }) {
   )
 }
 
-function PlayByPlayPanel({ events }: { events: GameEvent[] }) {
+function PlayByPlayPanel({
+  events,
+  homeTeamId,
+}: {
+  events: GameEvent[]
+  homeTeamId: string
+}) {
   return (
     <section className='surface-panel detail-panel' aria-labelledby='pbp-title'>
       <div className='surface-panel-header'>
@@ -551,30 +578,40 @@ function PlayByPlayPanel({ events }: { events: GameEvent[] }) {
                 <th scope='col'>Clock</th>
                 <th scope='col'>Event</th>
                 <th scope='col'>Score</th>
-                <th scope='col'>Margin</th>
+                <th scope='col'>Knicks margin</th>
               </tr>
             </thead>
             <tbody>
-              {events.map((event) => (
-                <tr key={event.id}>
-                  <td className='font-stats'>
-                    Q{event.period} {event.clock}
-                  </td>
-                  <td>
-                    <strong>{event.event_type}</strong>
-                    <span>{event.description}</span>
-                  </td>
-                  <td className='font-stats'>
-                    {event.away_score}—{event.home_score}
-                  </td>
-                  <td
-                    className={`font-stats ${event.score_margin > 0 ? 'positive' : event.score_margin < 0 ? 'negative' : ''}`}
+              {events.map((event) => {
+                const margin =
+                  homeTeamId === 'NYK'
+                    ? event.score_margin
+                    : -event.score_margin
+                return (
+                  <tr
+                    key={event.id}
+                    id={`event-${event.sequence}`}
+                    tabIndex={-1}
                   >
-                    {event.score_margin > 0 ? '+' : ''}
-                    {event.score_margin}
-                  </td>
-                </tr>
-              ))}
+                    <td className='font-stats'>
+                      Q{event.period} {event.clock}
+                    </td>
+                    <td>
+                      <strong>{event.event_type}</strong>
+                      <span>{event.description}</span>
+                    </td>
+                    <td className='font-stats'>
+                      {event.away_score}—{event.home_score}
+                    </td>
+                    <td
+                      className={`font-stats ${margin > 0 ? 'positive' : margin < 0 ? 'negative' : ''}`}
+                    >
+                      {margin > 0 ? '+' : ''}
+                      {margin}
+                    </td>
+                  </tr>
+                )
+              })}
             </tbody>
           </table>
         </div>
@@ -585,6 +622,7 @@ function PlayByPlayPanel({ events }: { events: GameEvent[] }) {
 
 export function GameDetailPage({ gameId }: { gameId: string }) {
   const id = Number(gameId)
+  const location = useLocation()
   const game = useQuery({
     queryKey: ['game', id],
     queryFn: () => fetchGame(id),
@@ -608,6 +646,16 @@ export function GameDetailPage({ gameId }: { gameId: string }) {
       game.isSuccess &&
       game.data.data_status !== 'summary_only',
   })
+
+  useEffect(() => {
+    if (!events.isSuccess || !/^event-\d+$/.test(location.hash)) return
+    const frame = requestAnimationFrame(() => {
+      const row = document.getElementById(location.hash)
+      row?.scrollIntoView({ block: 'center' })
+      row?.focus({ preventScroll: true })
+    })
+    return () => cancelAnimationFrame(frame)
+  }, [events.isSuccess, events.data, location.hash])
 
   if (game.isPending && Number.isSafeInteger(id) && id > 0)
     return (
@@ -681,7 +729,12 @@ export function GameDetailPage({ gameId }: { gameId: string }) {
       {events.isPending && game.data.data_status !== 'summary_only' ? (
         <SurfaceState kind='loading' message='Loading the sequence log…' />
       ) : null}
-      {events.isSuccess ? <PlayByPlayPanel events={events.data} /> : null}
+      {events.isSuccess ? (
+        <PlayByPlayPanel
+          events={events.data}
+          homeTeamId={game.data.home_team_id}
+        />
+      ) : null}
     </AppShell>
   )
 }
@@ -793,6 +846,85 @@ function ReportSection({
   )
 }
 
+function ReportSource({
+  source,
+  report,
+}: {
+  source: Report['sources'][number]
+  report: Report
+}) {
+  if (typeof source === 'string')
+    return <li className='report-source'>{source}</li>
+  if (!source || typeof source !== 'object') return null
+  const sourceType = typeof source.type === 'string' ? source.type : 'Source'
+  const claims = Array.isArray(source.claims) ? source.claims : []
+  const claim = claims.find(
+    (value): value is string => typeof value === 'string'
+  )
+  const playerNote = claim?.match(/^player_notes\[(\d+)\]$/)
+  const label = playerNote
+    ? `${report.player_notes[Number(playerNote[1])]?.split(':')[0] ?? 'Player'} box score`
+    : claim === 'turning_point'
+      ? 'Selected scoring interval'
+      : claim === 'best_stretch'
+        ? 'Favorable scoring interval'
+        : claim === 'worst_stretch'
+          ? 'Opponent scoring interval'
+          : sourceType === 'game'
+            ? 'Final score'
+            : sourceType.replace(/_/g, ' ')
+  const url = [source.source_url, source.url].find(
+    (value): value is string =>
+      typeof value === 'string' && /^https?:\/\//.test(value)
+  )
+  const start =
+    typeof source.start_sequence === 'number' &&
+    Number.isSafeInteger(source.start_sequence) &&
+    source.start_sequence >= 0
+      ? source.start_sequence
+      : undefined
+  const gameId =
+    typeof source.game_id === 'number' &&
+    Number.isSafeInteger(source.game_id) &&
+    source.game_id > 0
+      ? source.game_id
+      : report.game_id
+
+  return (
+    <li className='report-source'>
+      <strong>{label}</strong>
+      {typeof source.start_clock === 'string' &&
+      typeof source.end_clock === 'string' ? (
+        <p>
+          Q{String(source.start_period)} {source.start_clock}–Q
+          {String(source.end_period)} {source.end_clock}
+        </p>
+      ) : null}
+      {start !== undefined && typeof source.end_sequence === 'number' ? (
+        <p>
+          Events {start}–{source.end_sequence}, inclusive
+        </p>
+      ) : null}
+      <div className='report-source-links'>
+        {sourceType === 'play_by_play' && start !== undefined ? (
+          <Link
+            to='/games/$gameId'
+            params={{ gameId: String(gameId) }}
+            hash={`event-${start}`}
+          >
+            View {label.toLowerCase()} in game
+          </Link>
+        ) : null}
+        {url ? (
+          <a href={url} target='_blank' rel='noreferrer'>
+            {label} source<span className='sr-only'> (opens in a new tab)</span>
+          </a>
+        ) : null}
+      </div>
+    </li>
+  )
+}
+
 export function ReportDetailPage({ reportId }: { reportId: string }) {
   const id = Number(reportId)
   const report = useQuery({
@@ -850,14 +982,17 @@ export function ReportDetailPage({ reportId }: { reportId: string }) {
         </span>
       </div>
       <article className='surface-panel report-detail-panel'>
-        <ReportSection title='Selected scoring run' tone='orange'>
+        <p className='report-interval-note'>
+          Scoring intervals cover up to three minutes within one quarter.
+        </p>
+        <ReportSection title='Selected scoring interval' tone='orange'>
           <p>{item.turning_point}</p>
         </ReportSection>
         <div className='report-two-up'>
-          <ReportSection title='Best stretch' tone='blue'>
+          <ReportSection title='Favorable scoring interval' tone='blue'>
             <p>{item.best_stretch}</p>
           </ReportSection>
-          <ReportSection title='Worst stretch'>
+          <ReportSection title='Opponent scoring interval'>
             <p>{item.worst_stretch}</p>
           </ReportSection>
         </div>
@@ -870,41 +1005,25 @@ export function ReportDetailPage({ reportId }: { reportId: string }) {
             </ul>
           </ReportSection>
           <ReportSection title='Suggested adjustments'>
-            <ul>
-              {item.suggested_adjustments.map((note) => (
-                <li key={note}>{note}</li>
-              ))}
-            </ul>
+            {item.suggested_adjustments.length ? (
+              <ul>
+                {item.suggested_adjustments.map((note) => (
+                  <li key={note}>{note}</li>
+                ))}
+              </ul>
+            ) : (
+              <p>No adjustments are included in this report.</p>
+            )}
           </ReportSection>
         </div>
         {item.sources.length > 0 ? (
           <div className='report-sources'>
             <p className='surface-kicker'>Sources used</p>
-            <div>
+            <ul className='report-source-list'>
               {item.sources.map((source, index) => (
-                <Badge variant='outline' key={`${source.type}-${index}`}>
-                  {typeof source.source_url === 'string' &&
-                  /^https?:\/\//.test(source.source_url) ? (
-                    <a
-                      href={source.source_url}
-                      target='_blank'
-                      rel='noreferrer'
-                    >
-                      {source.type}
-                      <span className='sr-only'> (opens in a new tab)</span>
-                    </a>
-                  ) : typeof source.url === 'string' &&
-                    /^https?:\/\//.test(source.url) ? (
-                    <a href={source.url} target='_blank' rel='noreferrer'>
-                      {source.type}
-                      <span className='sr-only'> (opens in a new tab)</span>
-                    </a>
-                  ) : (
-                    source.type
-                  )}
-                </Badge>
+                <ReportSource key={index} source={source} report={item} />
               ))}
-            </div>
+            </ul>
           </div>
         ) : null}
       </article>

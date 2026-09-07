@@ -73,6 +73,9 @@ export interface ScoringRun {
   game_id: number
   team_id: string
   period: number
+  end_period?: number | null
+  start_sequence?: number | null
+  end_sequence?: number | null
   start_clock: string
   end_clock: string
   points_for: number

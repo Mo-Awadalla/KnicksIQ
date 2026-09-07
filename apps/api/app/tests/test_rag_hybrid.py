@@ -374,3 +374,36 @@ def test_reranker_failure_falls_back_to_fused_order():
 
     model = SimpleNamespace(predict=fail)
     assert rerank_candidates("query", candidates, top_n=1, model=model) == candidates[:1]
+
+
+async def test_optional_retrieval_work_does_not_block_request_event_loop(monkeypatch, db_session):
+    import threading
+
+    request_thread = threading.get_ident()
+    provider_threads = {}
+
+    def record_provider(name, result):
+        def provider(*_args, **_kwargs):
+            provider_threads[name] = threading.get_ident()
+            return result
+
+        return provider
+
+    monkeypatch.setattr(
+        "app.services.rag.get_settings",
+        lambda: SimpleNamespace(
+            rag_hybrid_enabled=True,
+            rag_qdrant_enabled=True,
+            rag_reranker_enabled=True,
+            rag_rerank_limit=20,
+        ),
+    )
+    monkeypatch.setattr("app.services.rag.is_qdrant_healthy", record_provider("health", True))
+    monkeypatch.setattr("app.services.rag.embed_texts", record_provider("embedding", [[0.0]]))
+    monkeypatch.setattr("app.services.rag.search_possessions", record_provider("search", []))
+    monkeypatch.setattr("app.services.rag.rerank_candidates", record_provider("rerank", []))
+
+    await search_possession_chunks(db_session, "What happened in the Knicks game against Toronto?")
+
+    assert set(provider_threads) == {"health", "embedding", "search", "rerank"}
+    assert all(thread != request_thread for thread in provider_threads.values())

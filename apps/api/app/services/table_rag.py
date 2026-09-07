@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import ast
 import asyncio
+import re
 from dataclasses import dataclass
 from types import MappingProxyType
 from typing import Any
@@ -14,6 +15,7 @@ from app.models.game_event import GameEvent
 from app.models.player import Player
 from app.services.releases import restrict_to_active_release
 from app.services.table_rag_templates import polars_summary, template_intent
+from app.services.team_scope import comparison_groups, scope_games, score_summary
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -413,6 +415,58 @@ def _answer_from_games(question: str, season: str, games: list[Game]) -> TableRa
                     f"{game.game_date} against {opponent}: NYK won "
                     f"{knicks_score}-{opponent_score} by {margin}."
                 )
+    elif intent == "average_margin":
+        answer = (
+            f"Across {len(games)} available {season} games, the Knicks averaged a "
+            f"{(points_for - points_against) / len(games):+.1f}-point margin."
+        )
+    elif intent == "points_allowed":
+        answer = (
+            f"Across {len(games)} available {season} games, the Knicks allowed "
+            f"{points_against / len(games):.1f} points per game ({points_against} total)."
+        )
+    elif intent in {"highest_scoring", "lowest_scoring"}:
+        pick = max if intent == "highest_scoring" else min
+        game = pick(games, key=lambda game: _knicks_scores(game)[0])
+        own, other, opponent = _knicks_scores(game)
+        label = "highest" if intent == "highest_scoring" else "lowest"
+        answer = (
+            f"The Knicks' {label}-scoring game was {game.game_date} against {opponent}: "
+            f"NYK scored {own} points (opponent {other})."
+        )
+        evidence = [_game_evidence(game)]
+    elif intent == "game_count":
+        answer = f"The Knicks played {len(games)} matching games in the available {season} archive."
+    elif intent == "score_threshold":
+        match = re.search(r"\b(at least|under|over|fewer than|more than)\s+(\d+)", q)
+        assert match is not None
+        operator, target = match[1], int(match[2])
+        against = "opponent" in q or "allow" in q
+
+        def passes(game: Game) -> bool:
+            own, other, _ = _knicks_scores(game)
+            value = other if against else own
+            return (
+                value >= target
+                if operator == "at least"
+                else value < target
+                if operator in {"under", "fewer than"}
+                else value > target
+            )
+
+        matching = [game for game in games if passes(game)]
+        subject = "opponents scored" if against else "NYK scored"
+        answer = (
+            f"In {len(matching)} of {len(games)} available {season} games, "
+            f"{subject} {operator} {target} points."
+        )
+        evidence = [_game_evidence(game) for game in matching]
+    elif intent in {"win_count", "loss_count"}:
+        count = wins if intent == "win_count" else losses
+        verb = "won" if intent == "win_count" else "lost"
+        answer = (
+            f"In the available {season} Knicks games, NYK {verb} {count} of {len(games)} games."
+        )
     elif intent == "record":
         answer = f"In the available {season} Knicks games, NYK is {wins}-{losses}."
     elif intent == "points_average":
@@ -456,7 +510,53 @@ async def answer_table_question(
     The function does not evaluate user code, import runtime modules from user
     input, open files, make network calls, or mutate source basketball tables.
     """
-    games = await asyncio.wait_for(_season_games(db, season), timeout=timeout_seconds)
+    all_games = await asyncio.wait_for(_season_games(db, season), timeout=timeout_seconds)
+    games = scope_games(question, all_games, window=False)
+    q = question.lower()
+    if "back-to-back" in q or "back to back" in q:
+        return TableRagResult(
+            answer=(
+                "Do you mean wins in the second game of a back-to-back, "
+                "or back-to-back sets where the Knicks won both games?"
+            ),
+            evidence=[],
+            warnings=[],
+        )
+    if "close games" in q and "blowout" in q:
+        return TableRagResult(
+            answer="What final-margin cutoffs should define close games and blowouts?",
+            evidence=[],
+            warnings=[],
+        )
+    if "stronger" in q and "offense" in q and "defense" in q:
+        return TableRagResult(
+            answer=(
+                "Which measure should I compare: points scored versus points allowed, "
+                "or the changes in those numbers over a particular game window?"
+            ),
+            evidence=[],
+            warnings=[],
+        )
+    if "compare" in q and re.search(r"\b(?:two|2)\b", q) and len(games) != 2:
+        dates = ", ".join(str(game.game_date) for game in games)
+        return TableRagResult(
+            answer=f"I found {len(games)} matching games: {dates}. Which two should I compare?",
+            evidence=[_game_evidence(game) for game in games],
+            warnings=[],
+        )
+    groups = comparison_groups(question, games)
+    if groups:
+        return await _answer_team_comparison(db, question, groups)
+    games = scope_games(question, all_games)
+    if template_intent(question) in {
+        "points_allowed",
+        "average_margin",
+        "highest_scoring",
+        "lowest_scoring",
+        "game_count",
+        "score_threshold",
+    }:
+        return _answer_from_games(question, season, games)
     swing_answer = await asyncio.wait_for(
         _answer_swing_question(db, question, season, games),
         timeout=timeout_seconds,
@@ -664,29 +764,32 @@ async def _answer_box_score_question(
         )
 
     if "quarter" in q or any(f"q{period}" in q for period in range(1, 5)):
-        requested_period = next(
-            (
-                period
-                for period in range(1, 5)
-                if f"q{period}" in q
-                or f"{period}st quarter" in q
-                or f"{period}nd quarter" in q
-                or f"{period}rd quarter" in q
-                or f"{period}th quarter" in q
-            ),
-            None,
-        )
-        stmt = select(PeriodScore.period, func.sum(PeriodScore.points)).where(
+        period_names = {1: "first", 2: "second", 3: "third", 4: "fourth"}
+        normalized = q.replace("-", " ")
+        requested_periods = [
+            period
+            for period in range(1, 5)
+            if re.search(
+                rf"\b(?:q{period}|{period}(?:st|nd|rd|th)? quarter|"
+                rf"{period_names[period]} quarter)\b",
+                normalized,
+            )
+        ]
+        stmt = select(PeriodScore.period, func.sum(PeriodScore.points), func.count()).where(
             PeriodScore.game_id.in_(game_ids), PeriodScore.team_id == "NYK"
         )
-        if requested_period:
-            stmt = stmt.where(PeriodScore.period == requested_period)
+        if requested_periods:
+            stmt = stmt.where(PeriodScore.period.in_(requested_periods))
         rows = (
             await db.execute(stmt.group_by(PeriodScore.period).order_by(PeriodScore.period))
         ).all()
         if not rows:
             return None
-        totals = ", ".join(f"Q{period}: {int(points)}" for period, points in rows)
+        totals = ", ".join(
+            f"Q{period}: {int(points)} total points "
+            f"({points / count:.1f} per game across {count} games)"
+            for period, points, count in rows
+        )
         return TableRagResult(
             answer=f"Knicks quarter scoring across available {season} games — {totals}.",
             evidence=evidence,
@@ -766,3 +869,67 @@ async def _answer_box_score_question(
             answer = f"The Knicks recorded {total_value} total {stat} in available {season} games."
         return TableRagResult(answer=answer, evidence=evidence, warnings=[])
     return None
+
+
+async def _answer_team_comparison(
+    db: AsyncSession, question: str, groups: list[tuple[str, list[Game]]]
+) -> TableRagResult:
+    q = question.lower()
+    games_by_id = {game.id: game for _, games in groups for game in games}
+    evidence = [_game_evidence(game) for game in games_by_id.values()]
+    answers: list[str] = []
+    for label, games in groups:
+        if not games:
+            answers.append(f"{label}: no matching games.")
+            continue
+        ids = [game.id for game in games]
+        if "bench" in q:
+            count, points = (
+                await db.execute(
+                    select(func.count(), func.sum(PlayerGameStat.points)).where(
+                        PlayerGameStat.game_id.in_(ids),
+                        PlayerGameStat.team_id == "NYK",
+                        PlayerGameStat.starter.is_(False),
+                    )
+                )
+            ).one()
+            answers.append(
+                (
+                    f"{label}: {int(points or 0)} bench points, "
+                    f"{float(points or 0) / len(games):.1f} per game across {len(games)} games."
+                )
+                if count
+                else f"{label}: no bench box-score data."
+            )
+        elif "turnover" in q or "shoot" in q:
+            rows = list(
+                (
+                    await db.execute(
+                        select(TeamGameStat).where(
+                            TeamGameStat.game_id.in_(ids), TeamGameStat.team_id == "NYK"
+                        )
+                    )
+                ).scalars()
+            )
+            if len(rows) != len(games):
+                answers.append(f"{label}: complete team box scores are unavailable.")
+            elif "turnover" in q:
+                total = sum(row.turnovers or 0 for row in rows)
+                answers.append(
+                    f"{label}: {total / len(rows):.1f} turnovers per game "
+                    f"({total} across {len(rows)} games)."
+                )
+            else:
+                made = sum(row.field_goals_made or 0 for row in rows)
+                attempts = sum(row.field_goals_attempted or 0 for row in rows)
+                answers.append(
+                    f"{label}: {100 * made / attempts:.1f}% field-goal shooting "
+                    f"({made}/{attempts})."
+                    if attempts
+                    else f"{label}: no field-goal attempts."
+                )
+        else:
+            answers.append(score_summary(label, games))
+    return TableRagResult(
+        answer="Knicks comparison\n" + "\n".join(answers), evidence=evidence, warnings=[]
+    )

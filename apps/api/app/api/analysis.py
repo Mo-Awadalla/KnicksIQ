@@ -10,11 +10,11 @@ import logging
 import re
 import time
 from collections import defaultdict, deque
-from datetime import UTC, datetime
+from datetime import UTC, date, datetime
 from typing import Annotated, Any
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Request, status
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -37,6 +37,7 @@ from app.services.conversation_state import (
 )
 from app.services.grounded_answer import GroundedAnswer, validate_grounded_answer
 from app.services.llm_planner import maybe_plan_query
+from app.services.narrative_scope import narrative_clarification
 from app.services.player_analytics import answer_player_question
 from app.services.possession_chunks import chunk_evidence
 from app.services.query_classifier import QueryClassifierResult, classify_query
@@ -59,6 +60,7 @@ from app.services.runtime_store import (
 )
 from app.services.table_rag import answer_table_question
 from app.services.team_aliases import team_ids_in_text
+from app.services.team_scope import scope_games, scores
 
 router = APIRouter(prefix="/analysis", tags=["analysis"])
 logger = logging.getLogger(__name__)
@@ -68,9 +70,20 @@ _requests_by_client: dict[str, deque[float]] = defaultdict(deque)
 _daily_requests_by_client: dict[str, deque[float]] = defaultdict(deque)
 
 
+def _validate_calendar_dates(value: str) -> str:
+    for candidate in re.findall(r"\b20\d{2}-\d{2}-\d{2}\b", value):
+        try:
+            date.fromisoformat(candidate)
+        except ValueError as exc:
+            raise ValueError("Use valid calendar dates in YYYY-MM-DD format") from exc
+    return value
+
+
 class AnalysisContextMessage(BaseModel):
     role: str
     content: str = Field(..., min_length=1, max_length=2000)
+
+    _validate_dates = field_validator("content")(_validate_calendar_dates)
 
 
 class AnalysisQueryRequest(BaseModel):
@@ -78,6 +91,8 @@ class AnalysisQueryRequest(BaseModel):
     season: str = "2025-26"
     context: list[AnalysisContextMessage] = Field(default_factory=list, max_length=4)
     conversation_state: ConversationState | None = None
+
+    _validate_dates = field_validator("question")(_validate_calendar_dates)
 
 
 class AnalysisCitation(BaseModel):
@@ -230,6 +245,7 @@ def _is_supported_question(question: str) -> bool:
         "margin",
         "offense",
         "player",
+        "perform",
         "playoff",
         "point",
         "possession",
@@ -278,8 +294,20 @@ def _is_supported_question(question: str) -> bool:
         "blowouts",
     )
     return (
-        any(term in q for term in team_terms) and any(term in q for term in basketball_terms)
-    ) or any(term in q for term in broad_archive_terms)
+        (any(term in q for term in team_terms) and any(term in q for term in basketball_terms))
+        or (
+            bool(team_ids_in_text(question))
+            and bool(re.search(r"\b(?:vs|v|versus|against|do|perform)\b", q))
+        )
+        or (
+            bool(re.search(r"\b20\d{2}-\d{2}-\d{2}\b", q))
+            and any(
+                term in q for term in ("game", "quarter", "minute", "possession", "score", "run")
+            )
+        )
+        or any(term in q for term in broad_archive_terms)
+        or (classify_query(question).is_aggregative and any(term in q for term in basketball_terms))
+    )
 
 
 def _requires_explicit_refusal(question: str) -> bool:
@@ -611,8 +639,17 @@ async def _matching_games(db: AsyncSession, question: str, season: str) -> list[
     )
     stmt = restrict_to_active_release(stmt)
     games = (await db.execute(stmt)).scalars().all()
-    opponent_ids = team_ids_in_text(question) - {"NYK"}
-    return [game for game in games if opponent_ids & {game.home_team_id, game.away_team_id}]
+    selected = scope_games(question, list(games))
+    q = question.lower()
+    if "closest" in q and selected:
+        minimum = min(abs(scores(game)[0] - scores(game)[1]) for game in selected)
+        selected = [game for game in selected if abs(scores(game)[0] - scores(game)[1]) == minimum]
+    elif "best defensive game" in q and selected:
+        minimum = min(scores(game)[1] for game in selected)
+        selected = [game for game in selected if scores(game)[1] == minimum]
+    if re.search(r"\b(?:the|boston|toronto|atlanta|chicago|charlotte) loss\b", q):
+        selected = [game for game in selected if scores(game)[0] < scores(game)[1]]
+    return selected
 
 
 async def _active_data_version(db: AsyncSession) -> str:
@@ -951,6 +988,23 @@ async def query_analysis(
             "resolved_query": resolved_query.model_dump(mode="json"),
             "conversation_state": conversation_state,
         }
+    reference_clarification = await narrative_clarification(
+        db,
+        question,
+        season=req.season,
+        prior_questions=[item.content for item in req.context if item.role == "user"],
+        references_only=True,
+        selected_game_ids=(req.conversation_state.game_ids if req.conversation_state else None),
+    )
+    if reference_clarification:
+        return AnalysisQueryResponse(
+            **response_metadata,
+            answer=_format_answer(direct_answer=reference_clarification),
+            route="clarification",
+            citations=[],
+            warnings=[],
+            tool_calls=[],
+        )
     analytics_t0 = time.perf_counter()
     player_answer = await answer_player_question(
         db,
@@ -1087,6 +1141,28 @@ async def query_analysis(
             analytics=analytics_payload,
         )
         return response
+    clarification = await narrative_clarification(
+        db,
+        question,
+        season=req.season,
+        prior_questions=[item.content for item in req.context if item.role == "user"],
+        selected_game_ids=(req.conversation_state.game_ids if req.conversation_state else None),
+    )
+    if clarification:
+        return AnalysisQueryResponse(
+            **response_metadata,
+            answer=_format_answer(direct_answer=clarification),
+            route="clarification",
+            citations=[],
+            warnings=[],
+            tool_calls=[],
+        )
+    selected_narrative_game = None
+    if "best defensive game" in question.lower():
+        defensive_games = await _matching_games(db, question, req.season)
+        if len(defensive_games) == 1:
+            selected_narrative_game = defensive_games[0]
+            question = f"{question} on {selected_narrative_game.game_date}"
     answer_mode = getattr(settings, "analysis_answer_mode", "deterministic")
     preplanned_retrieval_plan: RetrievalPlan | None = None
     preplan_latency_ms = 0
@@ -1196,7 +1272,7 @@ async def query_analysis(
     named_opponent_ids = team_ids_in_text(effective_question) - {"NYK"}
     planner = (
         None
-        if named_opponent_ids or answer_mode in {"llm_primary", "shadow"}
+        if named_opponent_ids or selected_narrative_game or answer_mode in {"llm_primary", "shadow"}
         else await maybe_plan_query(effective_question, classifier)
     )
     if planner:
@@ -1231,6 +1307,17 @@ async def query_analysis(
             )
             plan_latency_ms = int((time.perf_counter() - plan_t0) * 1000)
         retrieval_plan = _apply_resolved_filters(retrieval_plan, resolved_query)
+        if selected_narrative_game is not None:
+            retrieval_plan = retrieval_plan.model_copy(
+                update={
+                    "filters": retrieval_plan.filters.model_copy(
+                        update={
+                            "game_ids": [selected_narrative_game.id],
+                            "dates": [str(selected_narrative_game.game_date)],
+                        }
+                    ),
+                }
+            )
         plan_call = {
             "tool": (
                 "deterministic_retrieval_plan"
@@ -1387,6 +1474,8 @@ async def query_analysis(
 
     t0 = time.perf_counter()
     games = await _matching_games(db, effective_question, req.season)
+    if len(games) == 1 and not re.search(r"\b20\d{2}-\d{2}-\d{2}\b", effective_question):
+        effective_question = f"{effective_question} on {games[0].game_date}"
     tool_calls.append(
         {
             "tool": "get_games",
@@ -1418,6 +1507,9 @@ async def query_analysis(
         trace=retrieval_trace,
     )
     possession_evidence = [chunk_evidence(chunk) for chunk in possession_chunks]
+    if retrieval_filters.periods or retrieval_filters.last_minutes is not None:
+        # Whole-game summaries cannot serve as receipts for a narrower event window.
+        docs = []
     tool_calls.extend(retrieval_trace)
     tool_calls.append(
         {
@@ -1638,6 +1730,12 @@ async def query_analysis(
         citations=citations,
         tool_calls=tool_calls,
     )
+    if selected_narrative_game is not None:
+        response.answer = (
+            "Using fewest points allowed as the measure of best defensive game, "
+            f"the Knicks allowed {scores(selected_narrative_game)[1]} points "
+            f"on {selected_narrative_game.game_date}.\n\n{response.answer}"
+        )
     if cache_key and not response.degraded:
         await set_cached_answer(cache_key, response.model_dump(mode="json"))
     return response

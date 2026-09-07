@@ -52,11 +52,13 @@ const queryClient = new QueryClient({
         if (import.meta.env.DEV) console.log({ failureCount, error })
 
         if (failureCount >= 0 && import.meta.env.DEV) return false
-        if (failureCount > 3 && import.meta.env.PROD) return false
+        if (failureCount >= 1 && import.meta.env.PROD) return false
 
         return !(
           error instanceof AxiosError &&
-          [401, 403].includes(error.response?.status ?? 0)
+          error.response &&
+          error.response.status >= 400 &&
+          error.response.status < 500
         )
       },
       refetchOnWindowFocus: import.meta.env.PROD,
@@ -82,10 +84,6 @@ const queryClient = new QueryClient({
         }
         if (error.response?.status === 500) {
           toast.error('Internal Server Error!')
-          // Only navigate to error page in production to avoid disrupting HMR in development
-          if (import.meta.env.PROD) {
-            router.navigate({ to: '/500' })
-          }
         }
         if (error.response?.status === 403) {
           // router.navigate("/forbidden", { replace: true });

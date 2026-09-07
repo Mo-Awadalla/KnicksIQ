@@ -69,6 +69,28 @@ def test_detects_mixed_net_swing():
     assert "16-0" in run.summary
 
 
+def test_scoring_window_continues_from_regulation_into_five_minute_overtime():
+    events = [
+        make_event(1, 4, "0:30", "NYK", EventType.MADE_SHOT, points=3, home_score=3),
+        make_event(2, 4, "0:05", "NYK", EventType.MADE_SHOT, points=3, home_score=6),
+        make_event(3, 5, "4:40", "NYK", EventType.MADE_SHOT, points=3, home_score=9),
+    ]
+    runs = detect_impactful_runs(events, ImpactfulRunConfig(home_team_id="NYK", away_team_id="BOS"))
+    assert len(runs) == 1
+    assert (runs[0].period, runs[0].end_period, runs[0].points_for) == (4, 5, 9)
+
+
+def test_scoring_window_continues_between_overtime_periods():
+    events = [
+        make_event(1, 5, "0:30", "NYK", EventType.MADE_SHOT, points=3, home_score=3),
+        make_event(2, 5, "0:05", "NYK", EventType.MADE_SHOT, points=3, home_score=6),
+        make_event(3, 6, "4:40", "NYK", EventType.MADE_SHOT, points=3, home_score=9),
+    ]
+    runs = detect_impactful_runs(events, ImpactfulRunConfig(home_team_id="NYK", away_team_id="BOS"))
+    assert len(runs) == 1
+    assert (runs[0].period, runs[0].end_period, runs[0].points_for) == (5, 6, 9)
+
+
 def test_shows_early_8_0_but_does_not_highlight_it():
     events = [
         make_event(1, 1, "11:30", "NYK", EventType.MADE_SHOT, points=2, home_score=2),

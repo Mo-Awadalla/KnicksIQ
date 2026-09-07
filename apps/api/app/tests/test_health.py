@@ -29,3 +29,25 @@ async def test_ready_distinguishes_disabled_optional_services(client, monkeypatc
         "redis": "disabled",
         "openrouter": "disabled",
     }
+
+
+async def test_missing_release_schema_returns_not_ready(client):
+    from app.core.db import get_db
+
+    class MissingSchema:
+        async def execute(self, statement):
+            if str(statement) == "SELECT 1":
+                return None
+            raise RuntimeError("dataset_releases table missing")
+
+    async def unavailable_db():
+        yield MissingSchema()
+
+    app = client._transport.app
+    app.dependency_overrides[get_db] = unavailable_db
+    try:
+        response = await client.get("/health/ready")
+    finally:
+        app.dependency_overrides.clear()
+    assert response.status_code == 503
+    assert "postgres" in response.json()["required_failures"]
