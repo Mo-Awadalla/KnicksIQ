@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "id": "2025-26-verified-parity",
-  "tested_commit": null,
+  "tested_commit": "ec62fdaba2768b73630c91e13c8d088dff03ed72",
   "status": "blocked",
   "configuration": {
     "answer_mode": "shadow",
@@ -10,37 +10,67 @@
     "automatic_deployments": false
   },
   "hashes": {
-    "data": null,
-    "bundle": null,
-    "evaluation": "a546b99c36fedb59a475479016b0338fe113c4478d5165c4a5073d144ffdf482"
+    "data": "b2ad21c69175600c3192ef6133f8c11fd63890609a8204f92508a5fb04d05170",
+    "bundle": "65ba7fec37b4d0c72e0583ee0743fd67af21531a7ed9ee9f585577495b8560b1",
+    "evaluation": "7c3c549e6a540f4ce03a3fa4ba38821ddc6f7641c9d081270cff8607ec9b007e"
   },
-  "checks": {},
+  "checks": {
+    "backend": {
+      "status": "passed",
+      "tested_commit": "ec62fdaba2768b73630c91e13c8d088dff03ed72",
+      "path": "docs/release-evidence/final-verification-20260907.json",
+      "sha256": "f05b3089aca66631dad7cd986485bb44d3b1c52f6415fd7da8fad4a9f0998823"
+    },
+    "frontend": {
+      "status": "passed",
+      "tested_commit": "ec62fdaba2768b73630c91e13c8d088dff03ed72",
+      "path": "docs/release-evidence/final-verification-20260907.json",
+      "sha256": "f05b3089aca66631dad7cd986485bb44d3b1c52f6415fd7da8fad4a9f0998823"
+    }
+  },
   "approvals": {},
   "deployments": {
     "api": null,
     "web": null
   },
   "rollback": {
-    "api_deployment": null,
-    "web_deployment": null,
-    "data_version": null,
+    "api_deployment": "dep-d9drsfn7f7vs739biekg",
+    "web_deployment": "dep-d9f7aun7f7vs73c340d0",
+    "data_version": "2025-26.20260714.1",
     "qdrant_aliases": null
   },
   "review_policy": "Agents audit every report. Owner approves template, exceptions, final hash-bound audit summary and evaluation labels in batches. Unresolved checks block release.",
   "observations": {
-    "report_audit": "docs/release-evidence/report-audit-20260904/audit.json",
+    "report_audit": "docs/release-evidence/report-audit-20260907/audit.json",
     "live_dependencies": "docs/release-evidence/live-observation.json",
     "label_drafts": "docs/release-evidence/evaluation-label-drafts.jsonl",
-    "note": "Working-tree observations are not evidence for an exact tested Git commit.",
+    "note": "Only explicit check entries establish exact-commit gate evidence. Other observations retain their stated scope and limitations.",
     "frontend_dependency_audit": "docs/release-evidence/frontend-dependency-audit.json",
-    "local_validation": "docs/release-evidence/local-validation.json"
+    "local_validation": "docs/release-evidence/local-validation.json",
+    "report_baseline_binding": "docs/release-evidence/report-baseline-binding-20260907.json",
+    "label_review": "docs/release-evidence/evaluation-label-review-20260907/review.json",
+    "answer_review": "docs/release-evidence/answer-review-20260907.json",
+    "production_identity": "docs/release-evidence/production-post-migration-20260907.json",
+    "security": "docs/release-evidence/security-20260907.json",
+    "local_load": "docs/release-evidence/stress-local-20260907.json",
+    "final_verification": "docs/release-evidence/final-verification-20260907.json",
+    "local_vector": "docs/release-evidence/qdrant-local-20260907.json",
+    "cloud_vector": "docs/release-evidence/qdrant-cloud-20260907.json"
   },
   "remaining_external_checks": [
-    "Verified active archive identity and authenticated live retrieval target/filter probes",
-    "Owner label adjudication and hash-bound template/exception/audit approvals",
-    "Independent resolution of report run discrepancies without changing canonical basketball data",
-    "Docker-backed PostgreSQL migration and container security checks (Docker daemon unavailable locally)",
-    "Ten-concurrent-analyst warm load test against verified environment",
-    "Protected GitHub environment and Render service/deployment snapshot configuration"
-  ]
+    "Restore Qdrant Cloud connectivity and verify aliases, release filters and production semantic evaluation",
+    "Owner approval of report template, scoreboard-correction exception, audit summary and evaluation-label batches",
+    "Bind complete approved evaluation and production-environment evidence to the tested commit",
+    "Render CLI deployment followed by production smoke, browser and load checks"
+  ],
+  "services": {
+    "api": {
+      "id": "srv-d9cgko8js32c73bbvu10",
+      "url": "https://api.knicksiq.win"
+    },
+    "web": {
+      "id": "srv-d9cgko8js32c73bbvu1g",
+      "url": "https://www.knicksiq.win"
+    }
+  }
 }

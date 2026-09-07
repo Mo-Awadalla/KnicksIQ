@@ -1,7 +1,12 @@
 # Evaluation label drafts
 
+Superseded by the [September 7 question-by-question agent review](evaluation-label-review-20260907/review.md).
+Regenerate the new review with `python3 tools/release/draft_labels.py`; the older drafts below
+remain historical evidence. The new pack preserves all original labels and records proposed
+adjudications separately. No owner approval is implied.
+
 [120 machine-readable drafts](evaluation-label-drafts.jsonl) bind canonical facts and NBA game
-identities to the local baseline SHA-256. Regenerate with `python3 tools/release/draft_labels.py`.
+identities to the local baseline SHA-256.
 They are review material, not passing evaluation evidence. No label is owner-approved.
 
 Facts include scorelines, records, home/away splits, player totals and per-appearance rates,

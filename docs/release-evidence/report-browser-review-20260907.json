@@ -1,0 +1,838 @@
+{
+  "schema_version": 1,
+  "status": "browser_review_of_unapproved_candidate_fixtures",
+  "source": "docs/release-evidence/report-audit-20260907/report-repairs.json",
+  "source_sha256": "d03b326e094bbaf287a5a532394c873b66416311e27d089f9efa95060194dea5",
+  "api_parser": "app.api.reports.get_report using read-only in-memory fixture; no database writes",
+  "candidate_reviewed": false,
+  "reports_checked": 101,
+  "sources_checked": 707,
+  "interval_links_checked": 303,
+  "checks": [
+    "Production frontend renders all 101 reports without JavaScript errors",
+    "All source URLs match actual API serialization",
+    "All 303 internal links use internal game IDs and existing exact event sequences",
+    "Representative mobile interval navigation focuses exact event",
+    "390px report and homepage have no horizontal overflow"
+  ],
+  "screenshots": [
+    "/tmp/knicksiq-report-desktop.png",
+    "/tmp/knicksiq-report-mobile.png",
+    "/tmp/knicksiq-redesign-desktop.png",
+    "/tmp/knicksiq-redesign-mobile.png"
+  ],
+  "limits": [
+    "HTTP fixtures use real API serializer, canonical source events and corrected proposal; no candidate approval or database publication",
+    "Official source URLs inspected as DOM targets, not 707 separate external network navigations"
+  ],
+  "results": [
+    {
+      "nba_game_id": "0022500003",
+      "internal_game_id": 10001,
+      "report_id": 1,
+      "sources": 7,
+      "interval_links": 3,
+      "passed": true
+    },
+    {
+      "nba_game_id": "0022500018",
+      "internal_game_id": 10002,
+      "report_id": 2,
+      "sources": 7,
+      "interval_links": 3,
+      "passed": true
+    },
+    {
+      "nba_game_id": "0022500108",
+      "internal_game_id": 10003,
+      "report_id": 3,
+      "sources": 7,
+      "interval_links": 3,
+      "passed": true
+    },
+    {
+      "nba_game_id": "0022500125",
+      "internal_game_id": 10004,
+      "report_id": 4,
+      "sources": 7,
+      "interval_links": 3,
+      "passed": true
+    },
+    {
+      "nba_game_id": "0022500023",
+      "internal_game_id": 10005,
+      "report_id": 5,
+      "sources": 7,
+      "interval_links": 3,
+      "passed": true
+    },
+    {
+      "nba_game_id": "0022500153",
+      "internal_game_id": 10006,
+      "report_id": 6,
+      "sources": 7,
+      "interval_links": 3,
+      "passed": true
+    },
+    {
+      "nba_game_id": "0022500159",
+      "internal_game_id": 10007,
+      "report_id": 7,
+      "sources": 7,
+      "interval_links": 3,
+      "passed": true
+    },
+    {
+      "nba_game_id": "0022500175",
+      "internal_game_id": 10008,
+      "report_id": 8,
+      "sources": 7,
+      "interval_links": 3,
+      "passed": true
+    },
+    {
+      "nba_game_id": "0022500192",
+      "internal_game_id": 10009,
+      "report_id": 9,
+      "sources": 7,
+      "interval_links": 3,
+      "passed": true
+    },
+    {
+      "nba_game_id": "0022500208",
+      "internal_game_id": 10010,
+      "report_id": 10,
+      "sources": 7,
+      "interval_links": 3,
+      "passed": true
+    },
+    {
+      "nba_game_id": "0022500215",
+      "internal_game_id": 10011,
+      "report_id": 11,
+      "sources": 7,
+      "interval_links": 3,
+      "passed": true
+    },
+    {
+      "nba_game_id": "0022500039",
+      "internal_game_id": 10012,
+      "report_id": 12,
+      "sources": 7,
+      "interval_links": 3,
+      "passed": true
+    },
+    {
+      "nba_game_id": "0022500244",
+      "internal_game_id": 10013,
+      "report_id": 13,
+      "sources": 7,
+      "interval_links": 3,
+      "passed": true
+    },
+    {
+      "nba_game_id": "0022500262",
+      "internal_game_id": 10014,
+      "report_id": 14,
+      "sources": 7,
+      "interval_links": 3,
+      "passed": true
+    },
+    {
+      "nba_game_id": "0022500269",
+      "internal_game_id": 10015,
+      "report_id": 15,
+      "sources": 7,
+      "interval_links": 3,
+      "passed": true
+    },
+    {
+      "nba_game_id": "0022500285",
+      "internal_game_id": 10016,
+      "report_id": 16,
+      "sources": 7,
+      "interval_links": 3,
+      "passed": true
+    },
+    {
+      "nba_game_id": "0022500061",
+      "internal_game_id": 10017,
+      "report_id": 17,
+      "sources": 7,
+      "interval_links": 3,
+      "passed": true
+    },
+    {
+      "nba_game_id": "0022500074",
+      "internal_game_id": 10018,
+      "report_id": 18,
+      "sources": 7,
+      "interval_links": 3,
+      "passed": true
+    },
+    {
+      "nba_game_id": "0022500303",
+      "internal_game_id": 10019,
+      "report_id": 19,
+      "sources": 7,
+      "interval_links": 3,
+      "passed": true
+    },
+    {
+      "nba_game_id": "0022500320",
+      "internal_game_id": 10020,
+      "report_id": 20,
+      "sources": 7,
+      "interval_links": 3,
+      "passed": true
+    },
+    {
+      "nba_game_id": "0022500328",
+      "internal_game_id": 10021,
+      "report_id": 21,
+      "sources": 7,
+      "interval_links": 3,
+      "passed": true
+    },
+    {
+      "nba_game_id": "0022500343",
+      "internal_game_id": 10022,
+      "report_id": 22,
+      "sources": 7,
+      "interval_links": 3,
+      "passed": true
+    },
+    {
+      "nba_game_id": "0022500357",
+      "internal_game_id": 10023,
+      "report_id": 23,
+      "sources": 7,
+      "interval_links": 3,
+      "passed": true
+    },
+    {
+      "nba_game_id": "0022501202",
+      "internal_game_id": 10024,
+      "report_id": 24,
+      "sources": 7,
+      "interval_links": 3,
+      "passed": true
+    },
+    {
+      "nba_game_id": "0022501229",
+      "internal_game_id": 10025,
+      "report_id": 25,
+      "sources": 7,
+      "interval_links": 3,
+      "passed": true
+    },
+    {
+      "nba_game_id": "0022500372",
+      "internal_game_id": 10026,
+      "report_id": 26,
+      "sources": 7,
+      "interval_links": 3,
+      "passed": true
+    },
+    {
+      "nba_game_id": "0022500382",
+      "internal_game_id": 10027,
+      "report_id": 27,
+      "sources": 7,
+      "interval_links": 3,
+      "passed": true
+    },
+    {
+      "nba_game_id": "0022500398",
+      "internal_game_id": 10028,
+      "report_id": 28,
+      "sources": 7,
+      "interval_links": 3,
+      "passed": true
+    },
+    {
+      "nba_game_id": "0022500416",
+      "internal_game_id": 10029,
+      "report_id": 29,
+      "sources": 7,
+      "interval_links": 3,
+      "passed": true
+    },
+    {
+      "nba_game_id": "0022500009",
+      "internal_game_id": 10030,
+      "report_id": 30,
+      "sources": 7,
+      "interval_links": 3,
+      "passed": true
+    },
+    {
+      "nba_game_id": "0022500435",
+      "internal_game_id": 10031,
+      "report_id": 31,
+      "sources": 7,
+      "interval_links": 3,
+      "passed": true
+    },
+    {
+      "nba_game_id": "0022500454",
+      "internal_game_id": 10032,
+      "report_id": 32,
+      "sources": 7,
+      "interval_links": 3,
+      "passed": true
+    },
+    {
+      "nba_game_id": "0022500467",
+      "internal_game_id": 10033,
+      "report_id": 33,
+      "sources": 7,
+      "interval_links": 3,
+      "passed": true
+    },
+    {
+      "nba_game_id": "0022500479",
+      "internal_game_id": 10034,
+      "report_id": 34,
+      "sources": 7,
+      "interval_links": 3,
+      "passed": true
+    },
+    {
+      "nba_game_id": "0022500487",
+      "internal_game_id": 10035,
+      "report_id": 35,
+      "sources": 7,
+      "interval_links": 3,
+      "passed": true
+    },
+    {
+      "nba_game_id": "0022500502",
+      "internal_game_id": 10036,
+      "report_id": 36,
+      "sources": 7,
+      "interval_links": 3,
+      "passed": true
+    },
+    {
+      "nba_game_id": "0022500522",
+      "internal_game_id": 10037,
+      "report_id": 37,
+      "sources": 7,
+      "interval_links": 3,
+      "passed": true
+    },
+    {
+      "nba_game_id": "0022500538",
+      "internal_game_id": 10038,
+      "report_id": 38,
+      "sources": 7,
+      "interval_links": 3,
+      "passed": true
+    },
+    {
+      "nba_game_id": "0022500551",
+      "internal_game_id": 10039,
+      "report_id": 39,
+      "sources": 7,
+      "interval_links": 3,
+      "passed": true
+    },
+    {
+      "nba_game_id": "0022500576",
+      "internal_game_id": 10040,
+      "report_id": 40,
+      "sources": 7,
+      "interval_links": 3,
+      "passed": true
+    },
+    {
+      "nba_game_id": "0022500584",
+      "internal_game_id": 10041,
+      "report_id": 41,
+      "sources": 7,
+      "interval_links": 3,
+      "passed": true
+    },
+    {
+      "nba_game_id": "0022500596",
+      "internal_game_id": 10042,
+      "report_id": 42,
+      "sources": 7,
+      "interval_links": 3,
+      "passed": true
+    },
+    {
+      "nba_game_id": "0022500016",
+      "internal_game_id": 10043,
+      "report_id": 43,
+      "sources": 7,
+      "interval_links": 3,
+      "passed": true
+    },
+    {
+      "nba_game_id": "0022500622",
+      "internal_game_id": 10044,
+      "report_id": 44,
+      "sources": 7,
+      "interval_links": 3,
+      "passed": true
+    },
+    {
+      "nba_game_id": "0022500643",
+      "internal_game_id": 10045,
+      "report_id": 45,
+      "sources": 7,
+      "interval_links": 3,
+      "passed": true
+    },
+    {
+      "nba_game_id": "0022500665",
+      "internal_game_id": 10046,
+      "report_id": 46,
+      "sources": 7,
+      "interval_links": 3,
+      "passed": true
+    },
+    {
+      "nba_game_id": "0022500675",
+      "internal_game_id": 10047,
+      "report_id": 47,
+      "sources": 7,
+      "interval_links": 3,
+      "passed": true
+    },
+    {
+      "nba_game_id": "0022500690",
+      "internal_game_id": 10048,
+      "report_id": 48,
+      "sources": 7,
+      "interval_links": 3,
+      "passed": true
+    },
+    {
+      "nba_game_id": "0022500708",
+      "internal_game_id": 10049,
+      "report_id": 49,
+      "sources": 7,
+      "interval_links": 3,
+      "passed": true
+    },
+    {
+      "nba_game_id": "0022500718",
+      "internal_game_id": 10050,
+      "report_id": 50,
+      "sources": 7,
+      "interval_links": 3,
+      "passed": true
+    },
+    {
+      "nba_game_id": "0022500726",
+      "internal_game_id": 10051,
+      "report_id": 51,
+      "sources": 7,
+      "interval_links": 3,
+      "passed": true
+    },
+    {
+      "nba_game_id": "0022500742",
+      "internal_game_id": 10052,
+      "report_id": 52,
+      "sources": 7,
+      "interval_links": 3,
+      "passed": true
+    },
+    {
+      "nba_game_id": "0022500757",
+      "internal_game_id": 10053,
+      "report_id": 53,
+      "sources": 7,
+      "interval_links": 3,
+      "passed": true
+    },
+    {
+      "nba_game_id": "0022500771",
+      "internal_game_id": 10054,
+      "report_id": 54,
+      "sources": 7,
+      "interval_links": 3,
+      "passed": true
+    },
+    {
+      "nba_game_id": "0022500780",
+      "internal_game_id": 10055,
+      "report_id": 55,
+      "sources": 7,
+      "interval_links": 3,
+      "passed": true
+    },
+    {
+      "nba_game_id": "0022500796",
+      "internal_game_id": 10056,
+      "report_id": 56,
+      "sources": 7,
+      "interval_links": 3,
+      "passed": true
+    },
+    {
+      "nba_game_id": "0022500816",
+      "internal_game_id": 10057,
+      "report_id": 57,
+      "sources": 7,
+      "interval_links": 3,
+      "passed": true
+    },
+    {
+      "nba_game_id": "0022500825",
+      "internal_game_id": 10058,
+      "report_id": 58,
+      "sources": 7,
+      "interval_links": 3,
+      "passed": true
+    },
+    {
+      "nba_game_id": "0022500835",
+      "internal_game_id": 10059,
+      "report_id": 59,
+      "sources": 7,
+      "interval_links": 3,
+      "passed": true
+    },
+    {
+      "nba_game_id": "0022500860",
+      "internal_game_id": 10060,
+      "report_id": 60,
+      "sources": 7,
+      "interval_links": 3,
+      "passed": true
+    },
+    {
+      "nba_game_id": "0022500868",
+      "internal_game_id": 10061,
+      "report_id": 61,
+      "sources": 7,
+      "interval_links": 3,
+      "passed": true
+    },
+    {
+      "nba_game_id": "0022500887",
+      "internal_game_id": 10062,
+      "report_id": 62,
+      "sources": 7,
+      "interval_links": 3,
+      "passed": true
+    },
+    {
+      "nba_game_id": "0022500893",
+      "internal_game_id": 10063,
+      "report_id": 63,
+      "sources": 7,
+      "interval_links": 3,
+      "passed": true
+    },
+    {
+      "nba_game_id": "0022500911",
+      "internal_game_id": 10064,
+      "report_id": 64,
+      "sources": 7,
+      "interval_links": 3,
+      "passed": true
+    },
+    {
+      "nba_game_id": "0022500922",
+      "internal_game_id": 10065,
+      "report_id": 65,
+      "sources": 7,
+      "interval_links": 3,
+      "passed": true
+    },
+    {
+      "nba_game_id": "0022500935",
+      "internal_game_id": 10066,
+      "report_id": 66,
+      "sources": 7,
+      "interval_links": 3,
+      "passed": true
+    },
+    {
+      "nba_game_id": "0022500949",
+      "internal_game_id": 10067,
+      "report_id": 67,
+      "sources": 7,
+      "interval_links": 3,
+      "passed": true
+    },
+    {
+      "nba_game_id": "0022500962",
+      "internal_game_id": 10068,
+      "report_id": 68,
+      "sources": 7,
+      "interval_links": 3,
+      "passed": true
+    },
+    {
+      "nba_game_id": "0022500981",
+      "internal_game_id": 10069,
+      "report_id": 69,
+      "sources": 7,
+      "interval_links": 3,
+      "passed": true
+    },
+    {
+      "nba_game_id": "0022500994",
+      "internal_game_id": 10070,
+      "report_id": 70,
+      "sources": 7,
+      "interval_links": 3,
+      "passed": true
+    },
+    {
+      "nba_game_id": "0022501016",
+      "internal_game_id": 10071,
+      "report_id": 71,
+      "sources": 7,
+      "interval_links": 3,
+      "passed": true
+    },
+    {
+      "nba_game_id": "0022501034",
+      "internal_game_id": 10072,
+      "report_id": 72,
+      "sources": 7,
+      "interval_links": 3,
+      "passed": true
+    },
+    {
+      "nba_game_id": "0022501048",
+      "internal_game_id": 10073,
+      "report_id": 73,
+      "sources": 7,
+      "interval_links": 3,
+      "passed": true
+    },
+    {
+      "nba_game_id": "0022501063",
+      "internal_game_id": 10074,
+      "report_id": 74,
+      "sources": 7,
+      "interval_links": 3,
+      "passed": true
+    },
+    {
+      "nba_game_id": "0022501089",
+      "internal_game_id": 10075,
+      "report_id": 75,
+      "sources": 7,
+      "interval_links": 3,
+      "passed": true
+    },
+    {
+      "nba_game_id": "0022501102",
+      "internal_game_id": 10076,
+      "report_id": 76,
+      "sources": 7,
+      "interval_links": 3,
+      "passed": true
+    },
+    {
+      "nba_game_id": "0022501003",
+      "internal_game_id": 10077,
+      "report_id": 77,
+      "sources": 7,
+      "interval_links": 3,
+      "passed": true
+    },
+    {
+      "nba_game_id": "0022501123",
+      "internal_game_id": 10078,
+      "report_id": 78,
+      "sources": 7,
+      "interval_links": 3,
+      "passed": true
+    },
+    {
+      "nba_game_id": "0022501143",
+      "internal_game_id": 10079,
+      "report_id": 79,
+      "sources": 7,
+      "interval_links": 3,
+      "passed": true
+    },
+    {
+      "nba_game_id": "0022501168",
+      "internal_game_id": 10080,
+      "report_id": 80,
+      "sources": 7,
+      "interval_links": 3,
+      "passed": true
+    },
+    {
+      "nba_game_id": "0022501176",
+      "internal_game_id": 10081,
+      "report_id": 81,
+      "sources": 7,
+      "interval_links": 3,
+      "passed": true
+    },
+    {
+      "nba_game_id": "0022501190",
+      "internal_game_id": 10082,
+      "report_id": 82,
+      "sources": 7,
+      "interval_links": 3,
+      "passed": true
+    },
+    {
+      "nba_game_id": "0042500121",
+      "internal_game_id": 10083,
+      "report_id": 83,
+      "sources": 7,
+      "interval_links": 3,
+      "passed": true
+    },
+    {
+      "nba_game_id": "0042500122",
+      "internal_game_id": 10084,
+      "report_id": 84,
+      "sources": 7,
+      "interval_links": 3,
+      "passed": true
+    },
+    {
+      "nba_game_id": "0042500123",
+      "internal_game_id": 10085,
+      "report_id": 85,
+      "sources": 7,
+      "interval_links": 3,
+      "passed": true
+    },
+    {
+      "nba_game_id": "0042500124",
+      "internal_game_id": 10086,
+      "report_id": 86,
+      "sources": 7,
+      "interval_links": 3,
+      "passed": true
+    },
+    {
+      "nba_game_id": "0042500125",
+      "internal_game_id": 10087,
+      "report_id": 87,
+      "sources": 7,
+      "interval_links": 3,
+      "passed": true
+    },
+    {
+      "nba_game_id": "0042500126",
+      "internal_game_id": 10088,
+      "report_id": 88,
+      "sources": 7,
+      "interval_links": 3,
+      "passed": true
+    },
+    {
+      "nba_game_id": "0042500211",
+      "internal_game_id": 10089,
+      "report_id": 89,
+      "sources": 7,
+      "interval_links": 3,
+      "passed": true
+    },
+    {
+      "nba_game_id": "0042500212",
+      "internal_game_id": 10090,
+      "report_id": 90,
+      "sources": 7,
+      "interval_links": 3,
+      "passed": true
+    },
+    {
+      "nba_game_id": "0042500213",
+      "internal_game_id": 10091,
+      "report_id": 91,
+      "sources": 7,
+      "interval_links": 3,
+      "passed": true
+    },
+    {
+      "nba_game_id": "0042500214",
+      "internal_game_id": 10092,
+      "report_id": 92,
+      "sources": 7,
+      "interval_links": 3,
+      "passed": true
+    },
+    {
+      "nba_game_id": "0042500301",
+      "internal_game_id": 10093,
+      "report_id": 93,
+      "sources": 7,
+      "interval_links": 3,
+      "passed": true
+    },
+    {
+      "nba_game_id": "0042500302",
+      "internal_game_id": 10094,
+      "report_id": 94,
+      "sources": 7,
+      "interval_links": 3,
+      "passed": true
+    },
+    {
+      "nba_game_id": "0042500303",
+      "internal_game_id": 10095,
+      "report_id": 95,
+      "sources": 7,
+      "interval_links": 3,
+      "passed": true
+    },
+    {
+      "nba_game_id": "0042500304",
+      "internal_game_id": 10096,
+      "report_id": 96,
+      "sources": 7,
+      "interval_links": 3,
+      "passed": true
+    },
+    {
+      "nba_game_id": "0042500401",
+      "internal_game_id": 10097,
+      "report_id": 97,
+      "sources": 7,
+      "interval_links": 3,
+      "passed": true
+    },
+    {
+      "nba_game_id": "0042500402",
+      "internal_game_id": 10098,
+      "report_id": 98,
+      "sources": 7,
+      "interval_links": 3,
+      "passed": true
+    },
+    {
+      "nba_game_id": "0042500403",
+      "internal_game_id": 10099,
+      "report_id": 99,
+      "sources": 7,
+      "interval_links": 3,
+      "passed": true
+    },
+    {
+      "nba_game_id": "0042500404",
+      "internal_game_id": 10100,
+      "report_id": 100,
+      "sources": 7,
+      "interval_links": 3,
+      "passed": true
+    },
+    {
+      "nba_game_id": "0042500405",
+      "internal_game_id": 10101,
+      "report_id": 101,
+      "sources": 7,
+      "interval_links": 3,
+      "passed": true
+    }
+  ]
+}

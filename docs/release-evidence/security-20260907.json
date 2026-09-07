@@ -1,0 +1,33 @@
+{
+  "api": {
+    "image": "knicksiq-api:latest",
+    "image_id": "sha256:9d2e43491ae6e589ea1bbc4a6170b68469303604762ddbdd6c7cc44cb793bafc",
+    "critical_fixable_vulnerabilities": 0,
+    "scope": "Trivy CRITICAL with available fixes; unfixed vulnerabilities excluded"
+  },
+  "web": {
+    "image": "knicksiq-web:latest",
+    "image_id": "sha256:26608f555044f068126fe4ee649a1c7ebd67f5704419373c5e3e40053588c342",
+    "critical_fixable_vulnerabilities": 0,
+    "scope": "Trivy CRITICAL with available fixes; unfixed vulnerabilities excluded"
+  },
+  "frontend_dependencies": {
+    "vulnerabilities": {
+      "info": 0,
+      "low": 0,
+      "moderate": 0,
+      "high": 0,
+      "critical": 0
+    },
+    "dependencies": 198,
+    "devDependencies": 0,
+    "optionalDependencies": 86,
+    "totalDependencies": 284
+  },
+  "git_history": {
+    "scanner": "Gitleaks",
+    "commits_scanned": 26,
+    "leaks": 0,
+    "scope": "Committed Git history; current working tree not included"
+  }
+}

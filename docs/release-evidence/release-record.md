@@ -1,14 +1,11 @@
 # Release evidence
 
 Record: `2025-26-verified-parity`
-Tested commit: `unverified`
+Tested commit: `ec62fdaba2768b73630c91e13c8d088dff03ed72`
 Deployment gate: **BLOCKED**
 
 Generated from release-record.json; this view is not approval evidence.
 
-- missing exact tested Git commit
-- missing data hash
-- missing bundle hash
 - active_archive_identity: missing passing evidence for tested commit
 - report_audit: missing passing evidence for tested commit
 - retrieval_targets: missing passing evidence for tested commit
@@ -16,8 +13,6 @@ Generated from release-record.json; this view is not approval evidence.
 - evaluation: missing passing evidence for tested commit
 - evaluation_services_disabled: missing passing evidence for tested commit
 - production_router_contracts: missing passing evidence for tested commit
-- backend: missing passing evidence for tested commit
-- frontend: missing passing evidence for tested commit
 - migrations_loader: missing passing evidence for tested commit
 - security: missing passing evidence for tested commit
 - desktop_mobile_keyboard: missing passing evidence for tested commit

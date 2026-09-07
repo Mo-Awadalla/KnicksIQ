@@ -1,0 +1,32 @@
+{
+  "api": {
+    "commit": {
+      "createdAt": "2026-07-18T17:50:50Z",
+      "id": "b5845f632741e91cd4f88fe7d0116bf0a4a7cd00",
+      "message": "Redesign KnicksIQ season archive"
+    },
+    "createdAt": "2026-07-18T17:56:14.976516Z",
+    "finishedAt": "2026-07-18T17:57:57.408366Z",
+    "id": "dep-d9drsfn7f7vs739biekg",
+    "startedAt": "2026-07-18T17:56:14.950261Z",
+    "status": "live",
+    "trigger": "manual",
+    "updatedAt": "2026-09-07T21:20:18.339282Z"
+  },
+  "web": {
+    "commit": {
+      "createdAt": "2026-07-20T19:21:49Z",
+      "id": "d3002336b62a24b96c26bf14e1fe50c05ba2386d",
+      "message": "Simplify archive and gate analyst readiness"
+    },
+    "createdAt": "2026-07-20T19:22:34.332523Z",
+    "finishedAt": "2026-07-20T19:23:10.841666Z",
+    "id": "dep-d9f7aun7f7vs73c340d0",
+    "startedAt": "2026-07-20T19:22:34.330674Z",
+    "status": "live",
+    "trigger": "api",
+    "updatedAt": "2026-07-20T19:23:10.841825Z"
+  },
+  "data_version": "2025-26.20260714.1",
+  "qdrant_aliases": null
+}

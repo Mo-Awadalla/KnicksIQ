@@ -1,0 +1,26 @@
+{
+  "observed_at": "2026-09-07T21:25:29.635183+00:00",
+  "base_url": "http://127.0.0.1:8010",
+  "data_version": "2025-26.20260714.1",
+  "readiness": {
+    "status": "ready",
+    "data_version": "2025-26.20260714.1",
+    "required_failures": [],
+    "optional_dependencies": {
+      "qdrant": "disabled",
+      "redis": "configured",
+      "openrouter": "degraded"
+    }
+  },
+  "scope": "Warm cached analyst response and archive metadata; ten users per scenario",
+  "metrics": {
+    "concurrency": 10,
+    "archive_p95_ms": 102.9659579944564,
+    "analyst_p95_ms": 474.38487500767224,
+    "error_rate": 0.0,
+    "requests": 2338,
+    "analyst_requests": 10
+  },
+  "errors": [],
+  "passed": true
+}
