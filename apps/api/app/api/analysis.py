@@ -1734,7 +1734,9 @@ async def query_analysis(
         response.answer = (
             "Using fewest points allowed as the measure of best defensive game, "
             f"the Knicks allowed {scores(selected_narrative_game)[1]} points "
-            f"on {selected_narrative_game.game_date}.\n\n{response.answer}"
+            f"on {selected_narrative_game.game_date}. "
+            "This identifies the lowest opponent score; the selected play receipts alone "
+            f"do not establish why the defense succeeded.\n\n{response.answer}"
         )
     if cache_key and not response.degraded:
         await set_cached_answer(cache_key, response.model_dump(mode="json"))

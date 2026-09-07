@@ -6,6 +6,7 @@ from pathlib import Path
 spec = importlib.util.spec_from_file_location(
     "draft_labels", Path(__file__).with_name("draft_labels.py")
 )
+assert spec is not None and spec.loader is not None
 labels = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(labels)
 

@@ -109,9 +109,11 @@ async def narrative_clarification(
             f"{game.away_team_id if game.home_team_id == 'NYK' else game.home_team_id}"
             for game in candidates[:8]
         )
+        shown = f". Showing the first 8: {choices}. " if len(candidates) > 8 else f": {choices}. "
         return (
-            f"Which game do you mean? I found {len(candidates)} matching games: {choices}. "
-            "Please choose a date before I describe the sequence."
+            f"Which game do you mean? I found {len(candidates)} matching games"
+            + shown
+            + "Please choose a date before I describe the sequence."
         )
     if re.search(
         r"\b(?:biggest run|scoring run|most damaging|largest deficit|collapse|collpase|"

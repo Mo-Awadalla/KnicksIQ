@@ -9,6 +9,7 @@ from app.models.game import Game
 from app.models.generated_stat_fact import GeneratedStatFact
 from app.models.player import Player
 from app.services.player_analytics import (
+    _answer_text,
     _parse_plan,
     _resolve_players,
     _window_limitation,
@@ -738,3 +739,34 @@ async def test_biggest_win_selects_canonical_game_before_player_aggregation(db_s
     assert boston is not None
     assert boston.analytics["results"][0]["raw_values"]["points"] == 18
     assert boston.analytics["results"][0]["source_game_ids"] == [games[2].id]
+
+
+async def test_shooting_percentage_answer_does_not_claim_per_appearance(db_session) -> None:
+    await _seed_release_stats(db_session)
+    answer = await answer_player_question(
+        db_session,
+        question="What was JB's field goal percentage this season?",
+        season="2025-26",
+    )
+    assert answer is not None
+    assert "field goal percentage" in answer.answer.lower()
+    assert "per appearance" not in answer.answer
+    assert "total" not in answer.answer
+
+
+def test_percentage_leaderboard_wording_preserves_sample_without_per_game_unit() -> None:
+    answer = _answer_text(
+        {
+            "type": "leaderboard",
+            "stat": "true_shooting_percentage",
+            "aggregation_mode": "average",
+            "entries": [
+                {
+                    "player_name": "Jalen Brunson",
+                    "display_values": {"true_shooting_percentage": "60.0%"},
+                    "sample_size": 10,
+                }
+            ],
+        }
+    )
+    assert answer == "Jalen Brunson led at 60.0% across 10 appearances."

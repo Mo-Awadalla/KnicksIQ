@@ -4,6 +4,7 @@ import importlib.util
 from pathlib import Path
 
 spec = importlib.util.spec_from_file_location("audit", Path(__file__).with_name("audit.py"))
+assert spec is not None and spec.loader is not None
 audit = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(audit)
 GAME = {"home_team_id": "NYK", "away_team_id": "BOS"}

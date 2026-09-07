@@ -1124,6 +1124,7 @@ async def test_best_defensive_game_binds_lowest_points_allowed_before_retrieval(
     body = response.json()
     assert body["route"] == "retrieval_rag"
     assert "fewest points allowed" in body["answer"]
+    assert "do not establish why the defense succeeded" in body["answer"]
     assert str(allowed(best)) in body["answer"]
     assert best["game_date"] in body["answer"]
     assert body["citations"]
@@ -1149,3 +1150,29 @@ async def test_season_run_superlative_preserves_scope_and_requests_metric(client
     assert "time window" in body["answer"]
     assert "Which game" not in body["answer"]
     assert body["citations"] == []
+
+
+async def test_narrative_game_choices_disclose_truncated_dates(client, db_session):
+    for offset in range(9):
+        db_session.add(
+            Game(
+                nba_game_id=f"clarify-atl-{offset}",
+                season="2025-26",
+                game_date=date(2026, 3, 1) + timedelta(days=offset),
+                home_team_id="NYK",
+                away_team_id="ATL",
+                home_score=110,
+                away_score=100,
+                status="final",
+                season_type="regular",
+            )
+        )
+    await db_session.commit()
+    response = await client.post(
+        "/analysis/query", json={"question": "Explain the Knicks game against Atlanta."}
+    )
+    body = response.json()
+    assert body["route"] == "clarification"
+    assert "Showing the first 8:" in body["answer"]
+    assert "2026-03-01" in body["answer"]
+    assert "2026-03-09" not in body["answer"]
