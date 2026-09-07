@@ -1,4 +1,5 @@
-.archive-page {
+.archive-page,
+.analyst-thread {
   --archive-ink: var(--surface-ink);
   --archive-ink-soft: var(--surface-ink-raised);
   --archive-paper: var(--surface-paper);
@@ -13,6 +14,9 @@
   --archive-line-light: var(--line-on-ink);
   --archive-ease-out: var(--ease-out);
   --archive-ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+}
+
+.archive-page {
   min-height: 100svh;
   overflow-x: clip;
   background: var(--archive-paper);
@@ -493,7 +497,6 @@
 
 .archive-degraded {
   margin-bottom: 1rem;
-  border-left: 3px solid #d5a006;
   background: #fff7dc;
   padding: 0.8rem 1rem;
   color: #5e4904;

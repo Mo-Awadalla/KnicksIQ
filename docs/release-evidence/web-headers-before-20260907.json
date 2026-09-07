@@ -1,0 +1,22 @@
+[
+  {
+    "path": "/*",
+    "name": "Referrer-Policy",
+    "value": "strict-origin-when-cross-origin"
+  },
+  {
+    "path": "/*",
+    "name": "X-Content-Type-Options",
+    "value": "nosniff"
+  },
+  {
+    "path": "/*",
+    "name": "Strict-Transport-Security",
+    "value": "max-age=31536000; includeSubDomains"
+  },
+  {
+    "path": "/*",
+    "name": "Content-Security-Policy",
+    "value": "default-src 'self'; connect-src 'self' https://api.knicksiq.win; img-src 'self' data:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; frame-ancestors 'none'; base-uri 'self'; form-action https://formspree.io"
+  }
+]

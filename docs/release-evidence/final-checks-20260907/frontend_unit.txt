@@ -1,0 +1,19 @@
+$ vitest run --browser.headless
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - `__dirname` (vite.config.ts:21:25). Use `import.meta.dirname` instead
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(node:84960) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+
+ RUN  v4.1.4 /private/tmp/knicksiq-production-ready-20260907/apps/web
+      API started at http://127.0.0.1:51204/
+
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - `__dirname` (vite.config.ts:21:25). Use `import.meta.dirname` instead
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ Test Files  7 passed (7)
+      Tests  46 passed (46)
+   Start at  17:53:26
+   Duration  2.69s (transform 0ms, setup 0ms, import 1.83s, tests 499ms, environment 0ms)
+

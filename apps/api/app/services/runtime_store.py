@@ -10,7 +10,7 @@ from typing import Any
 
 from app.core.config import get_settings
 
-ANSWER_CACHE_SCHEMA_VERSION = "v2"
+ANSWER_CACHE_SCHEMA_VERSION = "v3"
 
 
 def answer_cache_key(

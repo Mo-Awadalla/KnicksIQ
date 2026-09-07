@@ -20,6 +20,7 @@ from app.models.player import Player
 from app.services.analytics_planner import maybe_refine_analytics_plan
 from app.services.pattern_facts import generate_pattern_facts
 from app.services.team_aliases import TEAM_ALIASES as _TEAM_ALIASES
+from app.services.team_aliases import team_ids_in_text
 from basketball_core.analytics import (
     STAT_REGISTRY,
     AnalyticsOperation,
@@ -64,6 +65,7 @@ _ALIASES = {
     "karl towns": "Karl-Anthony Towns",
     "jb": "Jalen Brunson",
     "og": "OG Anunoby",
+    "mikal": "Mikal Bridges",
 }
 _ANALYTICS_TERMS = (
     "average",
@@ -98,6 +100,8 @@ _ANALYTICS_TERMS = (
     "dnp",
     "available",
     "availability",
+    "starts",
+    "games started",
 )
 _DISCOVERY_TERMS = ("notable", "surprising", "interesting", "discover")
 _UNSUPPORTED_CONCEPTS = (
@@ -312,7 +316,7 @@ def _has_opponent_context(question: str) -> bool:
     return (
         _asks_opponent_plus_minus_leader(question)
         or any(term in f" {q} " for term in (" opponent ", " against ", " opposing "))
-        or any(re.search(rf"\b{re.escape(alias)}\b", q) for alias in _TEAM_ALIASES)
+        or bool(team_ids_in_text(question) - {"NYK"})
     )
 
 
@@ -384,8 +388,37 @@ def _resolve_players(question: str, players: list[Player]) -> tuple[list[Player]
     return list(exact_by_person.values()), []
 
 
+def _asks_starts(question: str) -> bool:
+    return bool(
+        re.search(
+            r"\bhow many games\b.*\bstart(?:ed)?\b|\b(?:total |game )?starts\b", question.lower()
+        )
+    )
+
+
+def _asks_player_summary(question: str) -> bool:
+    q = question.lower()
+    return bool(
+        re.search(r"\btell me about\b|\bhow did\b.*\b(?:play|look)\b", q)
+        or re.search(r"\b(?:did|does)\b.*\bplay(?:ed)? well\b", q)
+        or re.search(r"\bwhat did\b.*\bdo\b", q)
+    )
+
+
+def _game_selector(question: str) -> str | None:
+    if re.search(r"\b(?:biggest|largest) win\b", question.lower()):
+        return "largest_win_margin"
+    return None
+
+
 def _is_player_intelligence(question: str, resolved: list[Player]) -> bool:
     q = question.lower()
+    if (
+        resolved
+        and _asks_player_summary(q)
+        and (_has_opponent_context(question) or _game_selector(q))
+    ):
+        return True
     if any(term in q for term in ("who beat the knicks", "beat the knicks by", "knicks loss")):
         return False
     if _asks_opponent_plus_minus_leader(question):
@@ -528,8 +561,10 @@ def _ambiguity(question: str, context_text: str) -> str | None:
         term in full for term in ("standard deviation", "lowest scoring")
     ):
         return "consistent"
-    if re.search(r"\bbetter\b", q) and not any(
-        term in full for term in ("use points", "true shooting", "points rebounds and assists")
+    if (
+        re.search(r"\bbetter\b", q)
+        and not stat_keys_in_text(full)
+        and not any(term in full for term in ("scoring", "rebounding", "shooting"))
     ):
         return "better"
     return None
@@ -625,7 +660,9 @@ def _timeframe(text: str) -> tuple[Timeframe, dict[str, str | int | bool]]:
         return Timeframe(kind="full_archive", label="full 2025-26 archive"), filters
     if "playoff" in q or "postseason" in q:
         return Timeframe(kind="playoffs", label="2025-26 playoffs"), filters
-    return Timeframe(kind="regular_season", label="2025-26 regular season"), filters
+    if re.search(r"\bregular[- ]season\b", q):
+        return Timeframe(kind="regular_season", label="2025-26 regular season"), filters
+    return Timeframe(kind="full_archive", label="full 2025-26 archive"), filters
 
 
 def _has_explicit_timeframe(text: str) -> bool:
@@ -642,6 +679,14 @@ def _has_explicit_timeframe(text: str) -> bool:
 def _parse_plan(text: str, resolved: list[Player]) -> AnalyticsPlan:
     q = text.lower()
     timeframe, filters = _timeframe(text)
+    if (
+        resolved
+        and timeframe.kind == "last_n"
+        and not re.search(r"\b(?:archive|team|knicks) games\b|\bknicks['’]? last\b", q)
+    ):
+        timeframe = timeframe.model_copy(
+            update={"unit": "appearances", "label": f"last {timeframe.last_n} appearances"}
+        )
     opponent_plus_minus_leader = _asks_opponent_plus_minus_leader(text)
     stats = stat_keys_in_text(text)
     if opponent_plus_minus_leader:
@@ -662,9 +707,14 @@ def _parse_plan(text: str, resolved: list[Player]) -> AnalyticsPlan:
         stats = ["points"]
     if "scoring" in q and "points" not in stats:
         stats.insert(0, "points")
+    if "rebounding" in q and "rebounds" not in stats:
+        stats.insert(0, "rebounds")
     has_explicit_stats = bool(stats)
     if not stats:
-        stats = ["points"]
+        stats = ["points", "rebounds", "assists"] if _asks_player_summary(q) else ["points"]
+    game_selector = _game_selector(q)
+    if game_selector:
+        filters["game_selector"] = game_selector
 
     threshold = None
     threshold_match = re.search(
@@ -718,6 +768,21 @@ def _parse_plan(text: str, resolved: list[Player]) -> AnalyticsPlan:
     ):
         operation = AnalyticsOperation.SPLIT
         output = OutputType.COMPARISON
+    elif (
+        len(resolved) == 1
+        and "compare" in q
+        and (
+            ("before" in q and "after" in q and re.search(r"all[- ]star", q))
+            or (_parse_last_count(q) and "season" in q)
+        )
+    ):
+        operation = AnalyticsOperation.PERIOD_COMPARISON
+        output = OutputType.COMPARISON
+        filters["comparison_window"] = (
+            "all_star" if re.search(r"all[- ]star", q) else "last_n_vs_season"
+        )
+        if filters["comparison_window"] == "all_star":
+            timeframe = Timeframe(kind="full_archive", label="full 2025-26 archive")
     elif len(resolved) >= 2 or "compare" in q or " versus " in q:
         operation = AnalyticsOperation.PLAYER_COMPARISON
         output = OutputType.COMPARISON
@@ -770,10 +835,9 @@ def _parse_plan(text: str, resolved: list[Player]) -> AnalyticsPlan:
         filters["starter"] = True
     if re.search(r"\b(?:off the bench|as a reserve)\b", q):
         filters["starter"] = False
-    for alias, team_id in _TEAM_ALIASES.items():
-        if re.search(rf"\b{re.escape(alias)}\b", q):
-            filters["opponent"] = team_id
-            break
+    opponents = team_ids_in_text(text) - {"NYK"}
+    if len(opponents) == 1:
+        filters["opponent"] = next(iter(opponents))
     if opponent_plus_minus_leader:
         filters["player_scope"] = "opponents"
 
@@ -784,6 +848,7 @@ def _parse_plan(text: str, resolved: list[Player]) -> AnalyticsPlan:
             r"\bhow many\s+(?:points?|rebounds?|assists?|steals?|blocks?|double|triple)", q
         )
         or re.search(r"\bmost\s+(?:points?|rebounds?|assists?|steals?|blocks?)\b", q)
+        or (operation == AnalyticsOperation.LEADERBOARD and not asks_average)
     )
     if opponent_plus_minus_leader:
         aggregation_mode = "total"
@@ -793,6 +858,10 @@ def _parse_plan(text: str, resolved: list[Player]) -> AnalyticsPlan:
         aggregation_mode = "total"
     else:
         aggregation_mode = "average"
+
+    if _asks_starts(text):
+        stats = ["starts"]
+        aggregation_mode = "total"
 
     return AnalyticsPlan(
         resolved_players=[
@@ -883,6 +952,7 @@ def _select_window(
     games: list[Game], rows: list[dict[str, Any]], plan: AnalyticsPlan
 ) -> tuple[list[Game], list[dict[str, Any]]]:
     timeframe = plan.timeframe
+    period_comparison = plan.operations[0] == AnalyticsOperation.PERIOD_COMPARISON
     scoped_games = games
     if timeframe.kind == "regular_season":
         scoped_games = [game for game in games if game.season_type == "regular"]
@@ -894,7 +964,7 @@ def _select_window(
             scoped_games = [game for game in games if game.season_type == "regular"]
         elif scope == "playoffs":
             scoped_games = [game for game in games if game.season_type in {"play_in", "playoffs"}]
-        if timeframe.unit == "archive_games":
+        if timeframe.unit == "archive_games" and not period_comparison:
             scoped_games = scoped_games[-int(timeframe.last_n or 1) :]
     elif timeframe.kind in {"date_range", "month"}:
         start_date = date.fromisoformat(timeframe.start_date) if timeframe.start_date else None
@@ -910,18 +980,24 @@ def _select_window(
     player_ids = {player.player_id for player in plan.resolved_players}
     if player_ids:
         selected = [row for row in selected if row["player_id"] in player_ids]
-    if timeframe.kind == "last_n" and timeframe.unit == "appearances" and player_ids:
+    if (
+        timeframe.kind == "last_n"
+        and timeframe.unit == "appearances"
+        and player_ids
+        and not period_comparison
+    ):
         by_player: dict[int, list[dict[str, Any]]] = defaultdict(list)
         for row in selected:
             if row["appeared"]:
                 by_player[row["player_id"]].append(row)
         keep = {
-            row["game_id"]
+            (row["player_id"], row["game_id"])
             for player_rows in by_player.values()
             for row in player_rows[-int(timeframe.last_n or 1) :]
         }
-        selected = [row for row in selected if row["game_id"] in keep]
-        scoped_games = [game for game in scoped_games if game.id in keep]
+        selected = [row for row in selected if (row["player_id"], row["game_id"]) in keep]
+        keep_game_ids = {game_id for _, game_id in keep}
+        scoped_games = [game for game in scoped_games if game.id in keep_game_ids]
     for key, value in plan.filters.items():
         if key == "outcome":
             selected = [row for row in selected if row["win"] is (value == "win")]
@@ -951,6 +1027,19 @@ def _select_window(
         scoped_games = [
             game for game in scoped_games if opponent in {game.home_team_id, game.away_team_id}
         ]
+    if plan.filters.get("game_selector") == "largest_win_margin" and scoped_games:
+
+        def margin(game: Game) -> int:
+            return (
+                game.home_score - game.away_score
+                if game.home_team_id == "NYK"
+                else game.away_score - game.home_score
+            )
+
+        biggest = max(margin(game) for game in scoped_games)
+        scoped_games = [game for game in scoped_games if margin(game) == biggest and biggest > 0]
+        selected_ids = {game.id for game in scoped_games}
+        selected = [row for row in selected if row["game_id"] in selected_ids]
     return scoped_games, selected
 
 
@@ -1012,7 +1101,9 @@ def _common_result(
 def _aggregate_result(plan: AnalyticsPlan, rows: list[dict[str, Any]]) -> dict[str, Any]:
     appearances = [row for row in rows if row["appeared"]]
     name = plan.resolved_players[0].full_name if plan.resolved_players else "Selected players"
-    result = _common_result("aggregate", f"{name} — {plan.timeframe.label}", plan, rows)
+    opponent = plan.filters.get("opponent")
+    scope = f"{plan.timeframe.label} versus {opponent}" if opponent else plan.timeframe.label
+    result = _common_result("aggregate", f"{name} — {scope}", plan, rows)
     values, averages, totals = _mode_values(plan, appearances)
     result["raw_values"] = values
     result["display_values"] = {key: _display(key, value) for key, value in values.items()}
@@ -1100,11 +1191,20 @@ def _period_result(plan: AnalyticsPlan, rows: list[dict[str, Any]]) -> dict[str,
     size = plan.timeframe.last_n or min(5, max(1, len(appearances) // 2))
     recent = appearances[-size:]
     prior = appearances[:-size]
-    result = _common_result(
-        "period_comparison", "Recent appearances versus prior baseline", plan, rows
-    )
+    groups = [("Recent", recent), ("Prior baseline", prior)]
+    title = "Recent appearances versus prior baseline"
+    if plan.filters.get("comparison_window") == "all_star":
+        groups = [
+            ("Before All-Star break", [row for row in appearances if row["date"] <= "2026-02-15"]),
+            ("After All-Star break", [row for row in appearances if row["date"] > "2026-02-15"]),
+        ]
+        title = "Before versus after the 2026 All-Star break"
+    elif plan.filters.get("comparison_window") == "last_n_vs_season":
+        groups = [(f"Last {size} appearances", recent), ("Full season", appearances)]
+        title = "Recent appearances versus full season"
+    result = _common_result("period_comparison", title, plan, rows)
     result["groups"] = []
-    for label, group in (("Recent", recent), ("Prior baseline", prior)):
+    for label, group in groups:
         values, averages, totals = _mode_values(plan, group)
         result["groups"].append(
             {
@@ -1119,7 +1219,7 @@ def _period_result(plan: AnalyticsPlan, rows: list[dict[str, Any]]) -> dict[str,
                 "source_game_ids": sorted({row["game_id"] for row in group}),
             }
         )
-    if len(recent) < 4 or len(prior) < 4:
+    if any(len(group) < 4 for _, group in groups):
         result["warnings"].append("Period comparisons need at least four appearances per side.")
     return result
 
@@ -1569,6 +1669,13 @@ def _execute(plan: AnalyticsPlan, rows: list[dict[str, Any]], text: str) -> dict
     return _aggregate_result(plan, rows)
 
 
+def _aggregation_label(stat: str, mode: str) -> str:
+    definition = STAT_REGISTRY[stat]
+    if definition.kind in {"percentage", "ratio"} or stat.endswith("_percentage"):
+        return ""
+    return "total" if mode == "total" else "per appearance"
+
+
 def _answer_text(result: dict[str, Any]) -> str:
     result_type = result["type"]
     if result_type == "aggregate":
@@ -1580,20 +1687,24 @@ def _answer_text(result: dict[str, Any]) -> str:
         mode = result.get("aggregation_mode", "average")
         if mode == "both":
             averages = ", ".join(
-                f"{STAT_REGISTRY[key].label.lower()} {value} per appearance"
+                (
+                    f"{STAT_REGISTRY[key].label.lower()} {value} "
+                    f"{_aggregation_label(key, 'average')}"
+                ).strip()
                 for key, value in result["per_appearance_display_values"].items()
             )
             totals = ", ".join(
-                f"{STAT_REGISTRY[key].label.lower()} {value} total"
+                (
+                    f"{STAT_REGISTRY[key].label.lower()} {value} {_aggregation_label(key, 'total')}"
+                ).strip()
                 for key, value in result["total_display_values"].items()
             )
             return (
                 f"{result['title']}: {averages}; {totals} across "
                 f"{result['sample_size']} appearances."
             )
-        suffix = "total" if mode == "total" else "per appearance"
         values = ", ".join(
-            f"{STAT_REGISTRY[key].label.lower()} {value} {suffix}"
+            f"{STAT_REGISTRY[key].label.lower()} {value} {_aggregation_label(key, mode)}".strip()
             for key, value in result["display_values"].items()
         )
         return f"{result['title']}: {values} across {result['sample_size']} appearances."
@@ -1624,9 +1735,10 @@ def _answer_text(result: dict[str, Any]) -> str:
                 f"with a cumulative plus-minus of {value:+.1f} across "
                 f"{leader['sample_size']} appearances."
             )
-        label = "total" if mode == "total" else "per appearance"
+        label = _aggregation_label(stat, mode)
+        value_label = f"{leader['display_values'][stat]} {label}".strip()
         return (
-            f"{leader['player_name']} led at {leader['display_values'][stat]} {label} "
+            f"{leader['player_name']} led at {value_label} "
             f"across {leader['sample_size']} appearances."
         )
     if result_type == "streak":
@@ -1847,6 +1959,12 @@ async def answer_player_question(
     players = await _archive_players(db, release_id)
     context = context or []
     combined, substantive_question = _fold_question(question, context)
+    # Normalize a known connective typo before resolving an opponent; player names
+    # remain subject to the existing exact/curated/ambiguity-aware resolver.
+    combined = re.sub(r"\baginst\b", "against", combined, flags=re.IGNORECASE)
+    substantive_question = re.sub(
+        r"\baginst\b", "against", substantive_question, flags=re.IGNORECASE
+    )
     resolved, ambiguous_players = _resolve_players(combined, players)
     if not resolved and resolved_player_ids:
         resolved = [player for player in players if player.id in set(resolved_player_ids)]
@@ -1919,7 +2037,11 @@ async def answer_player_question(
             "I could not resolve that player unambiguously in the active-release archive.",
         )
     clarification_selection = _is_clarification_selection(question, context)
-    planning_text = combined if clarification_selection else question
+    planning_text = (
+        combined
+        if clarification_selection
+        else re.sub(r"\baginst\b", "against", question, flags=re.IGNORECASE)
+    )
     deterministic_plan = _parse_plan(planning_text, resolved)
     if (
         combined != question
@@ -1939,6 +2061,27 @@ async def answer_player_question(
     if window_limitation:
         return _limited_answer(combined, window_limitation, plan=plan)
     selected_games, rows = _select_window(games, all_rows, plan)
+    if plan.filters.get("game_selector") and len(selected_games) > 1:
+        return _limited_answer(
+            combined,
+            "Several archive games tie for that winning margin. Specify a game date.",
+            plan=plan,
+        )
+    if plan.filters.get("game_selector") and len(selected_games) == 1:
+        game = selected_games[0]
+        own = game.home_score if game.home_team_id == "NYK" else game.away_score
+        other = game.away_score if game.home_team_id == "NYK" else game.home_score
+        opponent = game.away_team_id if game.home_team_id == "NYK" else game.home_team_id
+        plan = plan.model_copy(
+            update={
+                "timeframe": Timeframe(
+                    kind="date_range",
+                    start_date=game.game_date.isoformat(),
+                    end_date=game.game_date.isoformat(),
+                    label=f"{game.game_date} NYK {own}-{other} {opponent}",
+                )
+            }
+        )
     if resolved_game_ids:
         allowed_game_ids = set(resolved_game_ids)
         selected_games = [game for game in selected_games if game.id in allowed_game_ids]

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import json
 import logging
 import re
@@ -50,6 +51,7 @@ class RetrievalFilters:
     team_ids: set[str]
     player_terms: set[str]
     periods: set[int]
+    last_minutes: int | None = None
 
     def as_dict(self) -> dict[str, Any]:
         return {
@@ -57,6 +59,7 @@ class RetrievalFilters:
             "team_ids": sorted(self.team_ids),
             "player_terms": sorted(self.player_terms),
             "periods": sorted(self.periods),
+            **({"last_minutes": self.last_minutes} if self.last_minutes is not None else {}),
         }
 
 
@@ -76,6 +79,22 @@ def build_metadata_filters(query: str) -> RetrievalFilters:
     dates = set(re.findall(r"\b20\d{2}-\d{2}-\d{2}\b", q))
     team_ids = team_ids_in_text(query)
     periods = {int(match) for match in re.findall(r"\b(?:q|quarter\s*)([1-4])\b", q)}
+    normalized = q.replace("-", " ")
+    for period, name in enumerate(("first", "second", "third", "fourth"), 1):
+        if re.search(
+            rf"\b(?:{name} quarter|{period}(?:st|nd|rd|th) quarter|{period}q)\b", normalized
+        ):
+            periods.add(period)
+    if "after halftime" in normalized or "second half" in normalized:
+        periods.update({3, 4})
+    if "first half" in normalized:
+        periods.update({1, 2})
+    minutes_match = re.search(r"\b(?:last|final)\s+(\d+|one|two|three|four|five)\s+minutes?\b", q)
+    minute_words = {"one": 1, "two": 2, "three": 3, "four": 4, "five": 5}
+    last_minutes = None
+    if minutes_match:
+        value = minutes_match[1]
+        last_minutes = int(value) if value.isdigit() else minute_words[value]
     player_terms = {
         token
         for token in _tokens(query)
@@ -97,6 +116,7 @@ def build_metadata_filters(query: str) -> RetrievalFilters:
         team_ids=team_ids,
         player_terms=player_terms,
         periods=periods,
+        last_minutes=last_minutes,
     )
 
 
@@ -123,6 +143,55 @@ def _passes_filters(chunk: PossessionChunk, filters: RetrievalFilters) -> bool:
         if not filters.periods & chunk_periods:
             return False
     return True
+
+
+def _clip_temporal_chunk(
+    chunk: PossessionChunk, filters: RetrievalFilters, final_periods: dict[int, int]
+) -> PossessionChunk | None:
+    if not filters.periods and filters.last_minutes is None:
+        return chunk
+    periods = filters.periods
+    if not periods and filters.last_minutes is not None:
+        periods = {final_periods.get(chunk.game_id, 4)}
+    rows = [
+        row
+        for row in chunk.rows
+        if row.get("period") in periods
+        and (
+            filters.last_minutes is None
+            or _clock_seconds(str(row.get("clock", ""))) <= filters.last_minutes * 60
+        )
+    ]
+    if not rows:
+        return None
+    if rows == chunk.rows:
+        return chunk
+    before, after = rows[0]["score_before"], rows[-1]["score_after"]
+    metadata = {
+        **chunk.metadata,
+        "start_period": rows[0]["period"],
+        "end_period": rows[-1]["period"],
+        "start_clock": rows[0]["clock"],
+        "end_clock": rows[-1]["clock"],
+        "row_count": len(rows),
+        "score_before": before,
+        "score_after": after,
+        "margin_before": before["home"] - before["away"],
+        "margin_after": after["home"] - after["away"],
+        "player_names": sorted({row["player_name"] for row in rows if row.get("player_name")}),
+        "player_ids": sorted({row["player_id"] for row in rows if row.get("player_id")}),
+        "unit_type": "event_window",
+        "possession_result": None,
+    }
+    return PossessionChunk(
+        chunk_id=chunk.chunk_id,
+        game_id=chunk.game_id,
+        metadata=metadata,
+        rows=rows,
+        text=" ".join(
+            f"Q{row['period']} {row['clock']} {row.get('description', '')}" for row in rows
+        ),
+    )
 
 
 def _bm25ish_score(query_tokens: set[str], text: str) -> float:
@@ -399,7 +468,17 @@ async def search_possession_chunks(
                 ),
             )
         )
-    chunks = [chunk for chunk in chunks if _passes_filters(chunk, filters)]
+    final_periods = {
+        game_id: max(event.period for event in events)
+        for game_id, events in events_by_game.items()
+        if events
+    }
+    chunks = [
+        clipped
+        for chunk in chunks
+        if _passes_filters(chunk, filters)
+        if (clipped := _clip_temporal_chunk(chunk, filters, final_periods)) is not None
+    ]
 
     t0 = time.perf_counter()
     lexical, player_rank = _lexical_rank_chunks(query, chunks)
@@ -426,12 +505,12 @@ async def search_possession_chunks(
     dense_rank: list[tuple[PossessionChunk, float]] = []
     if settings.rag_hybrid_enabled and settings.rag_qdrant_enabled:
         try:
-            if is_qdrant_healthy():
+            if await asyncio.to_thread(is_qdrant_healthy):
                 t0 = time.perf_counter()
                 query_embedding: list[float] | str = (
                     query
                     if getattr(settings, "rag_qdrant_cloud_inference", False)
-                    else embed_texts([query])[0]
+                    else (await asyncio.to_thread(embed_texts, [query]))[0]
                 )
                 if trace is not None:
                     trace.append(
@@ -446,14 +525,21 @@ async def search_possession_chunks(
                         }
                     )
                 t0 = time.perf_counter()
-                dense_results = search_possessions(
+                dense_results = await asyncio.to_thread(
+                    search_possessions,
                     query_embedding,
                     qdrant_filters,
                     max(limit * 10, settings.rag_rerank_limit, 20),
                 )
                 dense_rank = [
-                    (_chunk_from_payload(result.id, result.payload), result.score)
+                    (clipped, result.score)
                     for result in dense_results
+                    if (
+                        clipped := _clip_temporal_chunk(
+                            _chunk_from_payload(result.id, result.payload), filters, final_periods
+                        )
+                    )
+                    is not None
                 ]
                 if trace is not None:
                     trace.append(
@@ -512,7 +598,8 @@ async def search_possession_chunks(
     )
     if should_rerank and merged:
         t0 = time.perf_counter()
-        merged = rerank_candidates(
+        merged = await asyncio.to_thread(
+            rerank_candidates,
             query,
             merged[: min(20, settings.rag_rerank_limit)],
             top_n=limit,

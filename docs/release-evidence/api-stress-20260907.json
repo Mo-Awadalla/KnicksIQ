@@ -1,0 +1,153 @@
+{
+  "checks": [
+    {
+      "command": "uv run --all-packages pytest apps/api/app/tests apps/worker/worker_app/tests -q --tb=short --show-capture=no",
+      "duration_seconds": 12.05,
+      "output_path": "/tmp/knicksiq-api-worker-v5-tests.txt",
+      "result": "254 passed, 1 warning",
+      "warning": "Qdrant client could not obtain server version in optional dependency test"
+    },
+    {
+      "command": "KNICKSIQ_POSTGRES_TEST=1 DB_URL=<isolated migrated PostgreSQL database> AI_PROVIDER=mock RAG_LLM_PLANNER_ENABLED=false RAG_QDRANT_ENABLED=false RAG_HYBRID_ENABLED=false REDIS_URL=<empty> PUBLIC_CHAT_RATE_LIMIT_PER_MINUTE=10000 PUBLIC_CHAT_RATE_LIMIT_PER_DAY=100000 uv run --all-packages pytest apps/api/app/tests/test_analysis.py apps/api/app/tests/test_query_resolution.py apps/api/app/tests/test_archive_retrieval.py apps/api/app/tests/test_games.py apps/api/app/tests/test_health.py apps/api/app/tests/test_release_bundle.py -q",
+      "duration_seconds": 30.53,
+      "result": "72 passed",
+      "scope_note": "Executed before later team/narrative additions; later additions passed SQLite suite and canonical PostgreSQL HTTP evaluation."
+    },
+    {
+      "command": "uv run pyright apps/api/app/services/narrative_scope.py apps/api/app/services/team_scope.py apps/api/app/services/table_rag.py apps/api/app/services/rag.py apps/api/app/api/analysis.py apps/api/app/tests/test_team_scope.py apps/api/app/tests/test_analysis.py",
+      "result": "0 errors, 0 warnings"
+    },
+    {
+      "command": "uv run ruff check <changed API modules and tests>",
+      "result": "All checks passed"
+    },
+    {
+      "command": "uv run --all-packages pytest apps/api/app/tests/test_analysis.py -q",
+      "duration_seconds": 5.01,
+      "result": "47 passed, 1 warning"
+    }
+  ],
+  "data_mutations": "Only disposable test databases were mutated. Canonical archive and restored production database were read-only for this agent.",
+  "evaluation_captures": [
+    {
+      "bytes": 2710278,
+      "concurrency": 4,
+      "database_scope": "development database with historical releases; not authoritative for semantic evidence",
+      "http_statuses": {
+        "200": 120
+      },
+      "max_ms": 8555.35,
+      "p50_ms": 191.29,
+      "p95_ms": 4575.95,
+      "path": "/tmp/knicksiq-evaluation-observations.json",
+      "requests": 120,
+      "sha256": "af134c8e0ff2b0acebfea9e66e96ca79f4d0bb1d601060de6ec8b6066c114a8b"
+    },
+    {
+      "bytes": 2702130,
+      "concurrency": 4,
+      "database_scope": "development database with historical releases; not authoritative for semantic evidence",
+      "http_statuses": {
+        "200": 120
+      },
+      "max_ms": 9036.24,
+      "p50_ms": 208.64,
+      "p95_ms": 4632.3,
+      "path": "/tmp/knicksiq-evaluation-observations-v2.json",
+      "requests": 120,
+      "sha256": "fe4d7ab2856e0ba8d7c5d8a74be3318406320baba8af09c2f358f7925980f07b"
+    },
+    {
+      "bytes": 2612194,
+      "concurrency": 4,
+      "database_scope": "production-only PostgreSQL18 restore, read only",
+      "http_statuses": {
+        "200": 120
+      },
+      "max_ms": 3887.04,
+      "p50_ms": 209.05,
+      "p95_ms": 2423.54,
+      "path": "/tmp/knicksiq-evaluation-observations-v3.json",
+      "requests": 120,
+      "sha256": "0a53a51f0ed88f5a78a6f9283a32896f366831d1aba0fe6e7832ce29ad6e0bd6"
+    },
+    {
+      "bytes": 1337797,
+      "concurrency": 4,
+      "database_scope": "production-only PostgreSQL18 restore, read only",
+      "http_statuses": {
+        "200": 120
+      },
+      "max_ms": 4480.78,
+      "p50_ms": 111.17,
+      "p95_ms": 1569.45,
+      "path": "/tmp/knicksiq-evaluation-observations-v4.json",
+      "requests": 120,
+      "sha256": "29c6d41b60acd4ccf54781c7a72278b5583981eae0bc700cca33e607fd4a9e55"
+    },
+    {
+      "bytes": 1257963,
+      "concurrency": 4,
+      "database_scope": "production-only PostgreSQL18 restore, read only",
+      "http_statuses": {
+        "200": 120
+      },
+      "max_ms": 529.63,
+      "p50_ms": 113.28,
+      "p95_ms": 301.89,
+      "path": "/tmp/knicksiq-evaluation-observations-v5.json",
+      "requests": 120,
+      "sha256": "09917e770dbc1045d4c6670b4ec9f082e692626f505c940cc90a00a59929c96e"
+    }
+  ],
+  "evaluation_labels": {
+    "canonical_case_count": 120,
+    "canonical_questions_unchanged": true,
+    "review_status": "Independent proposed labels; owner approval pending. Do not treat raw HTTP success or original unlabeled evaluation metrics as answer correctness."
+  },
+  "external_retrieval": {
+    "collections_and_aliases_verified": false,
+    "dns": "resolves",
+    "notes": "Cannot infer credential validity or vector/index health from failed TLS handshake.",
+    "production_credentials_match_local": true,
+    "secret_values_recorded": false,
+    "tcp_ports_443_6333": "connect",
+    "tls_ports_443_6333": "ConnectionResetError errno54 before HTTP/authentication"
+  },
+  "fixed_failure_classes": [
+    "Invalid ISO date questions and context produced500; now422",
+    "Unmigrated readiness produced500; now503",
+    "Synchronous optional retrieval blocked request event loop; offloaded",
+    "Legacy missing scoreboards reset PBP and possession evidence; read-time carry-forward without DB writes",
+    "Win/loss counts, points allowed, margin, scoring extrema and threshold counts selected wrong metrics",
+    "Opponent/location/date/lastN/regular-season scopes ignored in team answers",
+    "Team comparison groups incorrectly collapsed into season totals",
+    "Real development reads included superseded releases",
+    "Missing game/event references and ambiguous narrative claims produced unrelated receipts",
+    "Named quarter and final-minute requests included out-of-window receipts",
+    "Cached responses required contract version bump to discard prior incorrect answers",
+    "Best defensive game now explicitly uses fewest points allowed and binds unique game before narrative retrieval",
+    "Season-wide run/deficit/collapse superlatives retain season scope while asking for metric/window"
+  ],
+  "recorded_at_utc": "2026-09-07T21:51:53.342981+00:00",
+  "remaining_findings_at_capture_v4": [
+    "Superseded by V5 after player alias/descriptive-game and narrative scope corrections; see independent review artifact for final disposition."
+  ],
+  "remaining_findings_at_capture_v5": [
+    "Independent all120 answer/disposition review pending reviewer signoff",
+    "Qdrant connectivity and vector/index health unverified externally",
+    "Proposed canonical evaluation labels still require owner approval"
+  ],
+  "seeded_stress": {
+    "concurrency": 25,
+    "database": "isolated SQLite seed",
+    "http_200": 500,
+    "limitation": "Not evidence of deployed external-provider capacity",
+    "max_ms": 280.2,
+    "p50_ms": 71.4,
+    "p95_ms": 179.7,
+    "requests": 500,
+    "transport": "in-process ASGI"
+  },
+  "status": "local regression verification complete; external retrieval and independent final answer review remain open"
+}

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 from typing import Annotated
 
 from fastapi import APIRouter, Depends
@@ -31,13 +32,9 @@ async def health() -> dict[str, str]:
 async def ready(db: Annotated[AsyncSession, Depends(get_db)]):
     settings = get_settings()
     failures: list[str] = []
+    release = None
     try:
         await db.execute(text("SELECT 1"))
-    except Exception:  # noqa: BLE001
-        failures.append("postgres")
-
-    release = None
-    if not failures:
         release = (
             await db.execute(
                 select(DatasetRelease).where(
@@ -46,6 +43,8 @@ async def ready(db: Annotated[AsyncSession, Depends(get_db)]):
                 )
             )
         ).scalar_one_or_none()
+    except Exception:  # noqa: BLE001
+        failures.append("postgres")
     if settings.require_active_release and not settings.test_mode and release is None:
         failures.append("active_release")
     if settings.is_production:
@@ -61,7 +60,7 @@ async def ready(db: Annotated[AsyncSession, Depends(get_db)]):
             "disabled"
             if not settings.rag_qdrant_enabled
             else "ok"
-            if is_qdrant_healthy()
+            if await asyncio.to_thread(is_qdrant_healthy)
             else "degraded"
         ),
         "redis": "configured" if settings.redis_url else "disabled",
@@ -85,10 +84,11 @@ async def ready(db: Annotated[AsyncSession, Depends(get_db)]):
 @router.get("/health/rag")
 async def rag_health() -> dict[str, object]:
     settings = get_settings()
+    healthy = await asyncio.to_thread(is_qdrant_healthy)
     return {
-        "status": "ok" if is_qdrant_healthy() else "degraded",
+        "status": "ok" if healthy else "degraded",
         "qdrant_enabled": settings.rag_qdrant_enabled,
-        "qdrant_healthy": is_qdrant_healthy(),
+        "qdrant_healthy": healthy,
     }
 
 

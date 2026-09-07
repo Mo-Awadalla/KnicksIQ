@@ -98,6 +98,21 @@ def test_qdrant_collections_index_every_filterable_payload_field():
 
 
 async def test_lexical_archive_search_is_independent_of_dense_results(db_session):
+    from app.models.dataset_release import DatasetRelease
+    from app.models.game import Game
+    from sqlalchemy import update
+
+    release = DatasetRelease(
+        version="test-seed",
+        season="2025-26",
+        source="test",
+        manifest_sha256="a" * 64,
+        validation_passed=True,
+        status="active",
+    )
+    db_session.add(release)
+    await db_session.flush()
+    await db_session.execute(update(Game).values(release_id=release.id))
     trace: list[dict] = []
 
     results = await search_archive_lexical(

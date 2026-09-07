@@ -1,0 +1,6 @@
+{
+  "migration": "0005_player_analytics_views",
+  "games": 101,
+  "reports": 101,
+  "release": "2025-26.20260714.1"
+}

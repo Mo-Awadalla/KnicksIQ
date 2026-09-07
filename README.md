@@ -11,7 +11,7 @@ are declined rather than invented.
 - `apps/api`: read-only production FastAPI service.
 - Neon Free Postgres: authoritative factual data and active release metadata.
 - Render Free Key Value: ephemeral shared rate limits, response caching, and AI budget state.
-- Qdrant is disabled for the free beta; Postgres/lexical retrieval remains authoritative.
+- Qdrant Cloud provides optional hybrid retrieval; Postgres/lexical retrieval remains authoritative when it is unavailable.
 - OpenRouter: optional phrasing of already-computed facts.
 - Sentry: scrubbed exception, trace, alert, and uptime monitoring.
 

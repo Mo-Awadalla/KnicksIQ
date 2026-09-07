@@ -76,6 +76,8 @@ def classify_query(question: str) -> QueryClassifierResult:
         and not re.search(r"\bvs\.?\b", q)
         and not re.search(r"\bcompare\s+(?:that|this)\b", q)
     )
+    if re.search(r"\bhow (?:did|have)\b.+\bdo(?:ne)?\s+(?:vs\.?|v|versus|against)\b", q):
+        is_aggregative = True
     if re.search(r"\bwhat did .+ do\b", q) or " explain " in q:
         is_aggregative = False
     if is_aggregative:

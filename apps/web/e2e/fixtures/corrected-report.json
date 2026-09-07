@@ -1,0 +1,243 @@
+{
+  "source": "docs/release-evidence/report-audit-20260907/report-repairs.json",
+  "source_sha256": "d03b326e094bbaf287a5a532394c873b66416311e27d089f9efa95060194dea5",
+  "candidate_reviewed": false,
+  "api_parser": "app.api.reports.get_report using read-only in-memory fixture; no database writes",
+  "report": {
+    "id": 1,
+    "game_id": 10001,
+    "title": "NYK 119, CLE 111",
+    "summary": "NYK defeated CLE 119-111 on 2025-10-22.",
+    "turning_point": "Selected scoring interval: NYK scored 14 points and allowed 0 points from Q4 11:11 to Q4 08:45 (events 365-385, inclusive).",
+    "best_stretch": "Selected scoring interval: NYK scored 14 points and allowed 0 points from Q4 11:11 to Q4 08:45 (events 365-385, inclusive).",
+    "worst_stretch": "Selected scoring interval: CLE scored 12 points and allowed 2 points from Q3 07:53 to Q3 04:58 (events 263-302, inclusive).",
+    "player_notes": [
+      "Donovan Mitchell: 31 points, 2 rebounds, 5 assists.",
+      "OG Anunoby: 24 points, 14 rebounds, 2 assists.",
+      "Jalen Brunson: 23 points, 4 rebounds, 5 assists."
+    ],
+    "suggested_adjustments": [],
+    "sources": [
+      {
+        "claims": [
+          "title",
+          "summary"
+        ],
+        "type": "game",
+        "nba_game_id": "0022500003",
+        "fields": [
+          "home_score",
+          "away_score",
+          "home_team_id",
+          "away_team_id",
+          "game_date"
+        ],
+        "game_id": 10001,
+        "source_url": "https://www.nba.com/game/0022500003/box-score",
+        "source_name": "NBA.com box score"
+      },
+      {
+        "claims": [
+          "player_notes[0]"
+        ],
+        "type": "traditional_box_score",
+        "nba_game_id": "0022500003",
+        "nba_player_id": 1628378,
+        "fields": [
+          "points",
+          "rebounds",
+          "assists"
+        ],
+        "row_sha256": "769414bfcec94fe871b27cf3cb89177922c3a27e2ae6c610cdd26362bddfd812",
+        "game_id": 10001,
+        "source_url": "https://www.nba.com/game/0022500003/box-score",
+        "source_name": "NBA.com box score"
+      },
+      {
+        "claims": [
+          "player_notes[1]"
+        ],
+        "type": "traditional_box_score",
+        "nba_game_id": "0022500003",
+        "nba_player_id": 1628384,
+        "fields": [
+          "points",
+          "rebounds",
+          "assists"
+        ],
+        "row_sha256": "341667a9fcef91d31c5c12660b27a141fe13d4e3f6ad079b31a70ee3ad5e962a",
+        "game_id": 10001,
+        "source_url": "https://www.nba.com/game/0022500003/box-score",
+        "source_name": "NBA.com box score"
+      },
+      {
+        "claims": [
+          "player_notes[2]"
+        ],
+        "type": "traditional_box_score",
+        "nba_game_id": "0022500003",
+        "nba_player_id": 1628973,
+        "fields": [
+          "points",
+          "rebounds",
+          "assists"
+        ],
+        "row_sha256": "fcc8289a01f01aa1238e3192bb7f935d94782435efcb08b0e7865824334f5120",
+        "game_id": 10001,
+        "source_url": "https://www.nba.com/game/0022500003/box-score",
+        "source_name": "NBA.com box score"
+      },
+      {
+        "claims": [
+          "turning_point"
+        ],
+        "type": "play_by_play",
+        "nba_game_id": "0022500003",
+        "team_id": "NYK",
+        "points_for": 14,
+        "points_against": 0,
+        "start_period": 4,
+        "end_period": 4,
+        "start_clock": "11:11",
+        "end_clock": "08:45",
+        "start_sequence": 365,
+        "end_sequence": 385,
+        "baseline_sequence": 364,
+        "baseline_score": {
+          "home": 87,
+          "away": 89
+        },
+        "end_score": {
+          "home": 101,
+          "away": 89
+        },
+        "game_id": 10001,
+        "source_url": "https://stats.nba.com/stats/playbyplayv3?GameID=0022500003&StartPeriod=0&EndPeriod=14",
+        "source_name": "NbaApiDataSource"
+      },
+      {
+        "claims": [
+          "best_stretch"
+        ],
+        "type": "play_by_play",
+        "nba_game_id": "0022500003",
+        "team_id": "NYK",
+        "points_for": 14,
+        "points_against": 0,
+        "start_period": 4,
+        "end_period": 4,
+        "start_clock": "11:11",
+        "end_clock": "08:45",
+        "start_sequence": 365,
+        "end_sequence": 385,
+        "baseline_sequence": 364,
+        "baseline_score": {
+          "home": 87,
+          "away": 89
+        },
+        "end_score": {
+          "home": 101,
+          "away": 89
+        },
+        "game_id": 10001,
+        "source_url": "https://stats.nba.com/stats/playbyplayv3?GameID=0022500003&StartPeriod=0&EndPeriod=14",
+        "source_name": "NbaApiDataSource"
+      },
+      {
+        "claims": [
+          "worst_stretch"
+        ],
+        "type": "play_by_play",
+        "nba_game_id": "0022500003",
+        "team_id": "CLE",
+        "points_for": 12,
+        "points_against": 2,
+        "start_period": 3,
+        "end_period": 3,
+        "start_clock": "07:53",
+        "end_clock": "04:58",
+        "start_sequence": 263,
+        "end_sequence": 302,
+        "baseline_sequence": 262,
+        "baseline_score": {
+          "home": 77,
+          "away": 63
+        },
+        "end_score": {
+          "home": 79,
+          "away": 75
+        },
+        "game_id": 10001,
+        "source_url": "https://stats.nba.com/stats/playbyplayv3?GameID=0022500003&StartPeriod=0&EndPeriod=14",
+        "source_name": "NbaApiDataSource"
+      }
+    ],
+    "tool_calls": [],
+    "created_at": "2026-09-07T00:00:00Z"
+  },
+  "game": {
+    "away_score": 111,
+    "away_team_id": "CLE",
+    "data_status": "analysis_ready",
+    "game_date": "2025-10-22",
+    "game_label": null,
+    "home_score": 119,
+    "home_team_id": "NYK",
+    "nba_game_id": "0022500003",
+    "season": "2025-26",
+    "season_type": "regular",
+    "series_game_number": null,
+    "series_name": null,
+    "source_fetched_at": "2026-07-02T17:34:48.243949+00:00",
+    "source_game_id": "0022500003",
+    "source_name": "NbaApiDataSource",
+    "source_payload_hash": "1d0190811246218c975f0d38c29e533504888475e6fd25349d48b8723eb88b8d",
+    "source_url": "https://stats.nba.com/stats/playbyplayv3?GameID=0022500003&StartPeriod=0&EndPeriod=14",
+    "status": "final",
+    "id": 10001,
+    "winner_team_id": "NYK",
+    "margin": 8
+  },
+  "events": [
+    {
+      "away_score": 65,
+      "clock": "07:53",
+      "description": "Mitchell 6' Driving Layup (20 PTS)",
+      "event_type": "made_shot",
+      "home_score": 77,
+      "nba_game_id": "0022500003",
+      "nba_player_id": 1628378,
+      "period": 3,
+      "score_margin": 12,
+      "sequence": 263,
+      "shot_distance_ft": 6,
+      "shot_result": "made",
+      "shot_type": "unknown",
+      "team_id": "CLE",
+      "id": 263,
+      "game_id": 10001,
+      "player_id": 1628378,
+      "player_name": "Donovan Mitchell"
+    },
+    {
+      "away_score": 89,
+      "clock": "11:11",
+      "description": "Anunoby Putback Dunk (17 PTS)",
+      "event_type": "made_shot",
+      "home_score": 89,
+      "nba_game_id": "0022500003",
+      "nba_player_id": 1628384,
+      "period": 4,
+      "score_margin": 0,
+      "sequence": 365,
+      "shot_distance_ft": null,
+      "shot_result": "made",
+      "shot_type": "unknown",
+      "team_id": "NYK",
+      "id": 365,
+      "game_id": 10001,
+      "player_id": 1628384,
+      "player_name": "OG Anunoby"
+    }
+  ]
+}

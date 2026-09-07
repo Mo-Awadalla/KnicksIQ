@@ -1,0 +1,16 @@
+{
+  "api": {
+    "image": "knicksiq-api:latest",
+    "image_id": "sha256:495a583a395cddc9f98ac7385a243145624e8b09ef909ef80d38c74fdac9bfb9",
+    "critical_fixable_vulnerabilities": 0,
+    "scanner": "Trivy",
+    "scope": "CRITICAL vulnerabilities with available fixes; excludes unfixed vulnerabilities"
+  },
+  "web": {
+    "image": "knicksiq-web:latest",
+    "image_id": "sha256:bec1fa0c29b63aa4581f080a7d3da87b7cf5b8d13f5909f0f542eaa578817007",
+    "critical_fixable_vulnerabilities": 0,
+    "scanner": "Trivy",
+    "scope": "CRITICAL vulnerabilities with available fixes; excludes unfixed vulnerabilities"
+  }
+}
