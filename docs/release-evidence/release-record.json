@@ -55,7 +55,20 @@
     "local_load": "docs/release-evidence/stress-local-20260907.json",
     "final_verification": "docs/release-evidence/final-verification-20260907.json",
     "local_vector": "docs/release-evidence/qdrant-local-20260907.json",
-    "cloud_vector": "docs/release-evidence/qdrant-cloud-20260907.json"
+    "cloud_vector": "docs/release-evidence/qdrant-cloud-20260907.json",
+    "border_followup": {
+      "commit": "a460cd28c7f63bfaa2f03f5a9a5bce120b5b5507",
+      "changed_files": [
+        "apps/web/src/features/knicks/archive.css",
+        "apps/web/src/features/knicks/surfaces.css"
+      ],
+      "triage": {
+        "fixed": 4,
+        "suppressed": 0,
+        "standing": 0
+      },
+      "verification": "Production frontend build, 2 report browser tests, formatting, empty detector result, desktop/mobile inspection with no overflow. Earlier full-suite evidence retains its original tested commit."
+    }
   },
   "remaining_external_checks": [
     "Restore Qdrant Cloud connectivity and verify aliases, release filters and production semantic evaluation",
@@ -72,5 +85,6 @@
       "id": "srv-d9cgko8js32c73bbvu1g",
       "url": "https://www.knicksiq.win"
     }
-  }
+  },
+  "candidate_commit": "a460cd28c7f63bfaa2f03f5a9a5bce120b5b5507"
 }

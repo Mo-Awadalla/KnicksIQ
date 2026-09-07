@@ -1,6 +1,6 @@
 # Production deployment handoff
 
-Application deployment is pending. Tested source commit: `ec62fdaba2768b73630c91e13c8d088dff03ed72` on `codex/production-ready-20260907`.
+Application deployment is pending. Current candidate is `a460cd28c7f63bfaa2f03f5a9a5bce120b5b5507` after the four border fixes. The follow-up passes production frontend build, two report browser tests, formatting and the design detector; desktop/mobile review shows no overflow. Rebind the final release evidence to this candidate before deployment. Earlier full-suite tested source commit: `ec62fdaba2768b73630c91e13c8d088dff03ed72` on `codex/production-ready-20260907`.
 
 The isolated checkout is `/tmp/knicksiq-production-ready-20260907`. The original working tree is preserved, including concurrent homepage edits.
 
