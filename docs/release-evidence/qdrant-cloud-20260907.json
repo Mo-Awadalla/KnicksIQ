@@ -1,0 +1,16 @@
+{
+  "host": "7d08a626-0ea9-44d2-a091-8dd24109892e.us-east-1-1.aws.cloud.qdrant.io",
+  "checked_at": "2026-09-07T21:54:54Z",
+  "checks": [
+    {
+      "port": 443,
+      "passed": false,
+      "error": "[Errno 54] Connection reset by peer"
+    },
+    {
+      "port": 6333,
+      "passed": false,
+      "error": "[Errno 54] Connection reset by peer"
+    }
+  ]
+}

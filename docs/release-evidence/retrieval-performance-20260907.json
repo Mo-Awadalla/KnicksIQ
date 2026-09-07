@@ -1,0 +1,468 @@
+{
+  "reviewed_at_utc": "2026-09-07T21:37:14.449388+00:00",
+  "method": "Read-only source and recorded request trace review; no retrieval code changed. Reported load concurrency 4. p95 uses nearest-rank method.",
+  "runs": [
+    {
+      "path": "/tmp/knicksiq-evaluation-observations.json",
+      "sha256": "af134c8e0ff2b0acebfea9e66e96ca79f4d0bb1d601060de6ec8b6066c114a8b",
+      "scope": "Earlier non-production database contained multiple releases; active-release restriction bypassed outside production. Also earlier routing implementation.",
+      "routes": {
+        "None": {
+          "count": 40,
+          "p95_ms": 514.6,
+          "max_ms": 3726.96,
+          "over_4000_ms": 0
+        },
+        "all": {
+          "count": 120,
+          "p95_ms": 4575.95,
+          "max_ms": 8555.35,
+          "over_4000_ms": 14
+        },
+        "retrieval_rag": {
+          "count": 32,
+          "p95_ms": 5113.04,
+          "max_ms": 8555.35,
+          "over_4000_ms": 14
+        },
+        "table_rag": {
+          "count": 48,
+          "p95_ms": 565.84,
+          "max_ms": 566.62,
+          "over_4000_ms": 0
+        }
+      },
+      "slowest": [
+        {
+          "id": "single_game_narrative-014",
+          "question": "What happened in the final two minutes against Boston?",
+          "latency_ms": 8555.35,
+          "steps": [
+            {
+              "tool": "get_games",
+              "latency_ms": 43,
+              "result_count": 9
+            },
+            {
+              "tool": "search_season_docs",
+              "latency_ms": 149,
+              "result_count": 0
+            },
+            {
+              "tool": "lexical_search",
+              "latency_ms": 51,
+              "result_count": 1130
+            },
+            {
+              "tool": "rrf",
+              "result_count": 20
+            },
+            {
+              "tool": "retrieval_result",
+              "result_count": 5
+            },
+            {
+              "tool": "search_possession_chunks",
+              "latency_ms": 1420,
+              "result_count": 5
+            }
+          ]
+        },
+        {
+          "id": "single_game_narrative-019",
+          "question": "How did the Knicks answer Toronto's late run?",
+          "latency_ms": 5113.04,
+          "steps": [
+            {
+              "tool": "get_games",
+              "latency_ms": 4082,
+              "result_count": 11
+            },
+            {
+              "tool": "search_season_docs",
+              "latency_ms": 26,
+              "result_count": 0
+            },
+            {
+              "tool": "lexical_search",
+              "latency_ms": 69,
+              "result_count": 1552
+            },
+            {
+              "tool": "rrf",
+              "result_count": 20
+            },
+            {
+              "tool": "retrieval_result",
+              "result_count": 5
+            },
+            {
+              "tool": "search_possession_chunks",
+              "latency_ms": 630,
+              "result_count": 5
+            }
+          ]
+        },
+        {
+          "id": "single_game_narrative-020",
+          "question": "What was the key sequence in the Boston loss?",
+          "latency_ms": 5106.05,
+          "steps": [
+            {
+              "tool": "get_games",
+              "latency_ms": 4044,
+              "result_count": 9
+            },
+            {
+              "tool": "search_season_docs",
+              "latency_ms": 55,
+              "result_count": 0
+            },
+            {
+              "tool": "lexical_search",
+              "latency_ms": 49,
+              "result_count": 1130
+            },
+            {
+              "tool": "rrf",
+              "result_count": 20
+            },
+            {
+              "tool": "retrieval_result",
+              "result_count": 5
+            },
+            {
+              "tool": "search_possession_chunks",
+              "latency_ms": 616,
+              "result_count": 5
+            }
+          ]
+        },
+        {
+          "id": "single_game_narrative-006",
+          "question": "Tell the story of the closest Knicks game.",
+          "latency_ms": 4793.99,
+          "steps": [
+            {
+              "tool": "get_games",
+              "latency_ms": 185,
+              "result_count": 0
+            },
+            {
+              "tool": "search_season_docs",
+              "latency_ms": 42,
+              "result_count": 3
+            },
+            {
+              "tool": "lexical_search",
+              "latency_ms": 1632,
+              "result_count": 31728
+            },
+            {
+              "tool": "rrf",
+              "result_count": 20
+            },
+            {
+              "tool": "retrieval_result",
+              "result_count": 5
+            },
+            {
+              "tool": "search_possession_chunks",
+              "latency_ms": 4409,
+              "result_count": 5
+            }
+          ]
+        },
+        {
+          "id": "single_game_narrative-015",
+          "question": "Explain the Knicks' best defensive game.",
+          "latency_ms": 4705.83,
+          "steps": [
+            {
+              "tool": "get_games",
+              "latency_ms": 22,
+              "result_count": 0
+            },
+            {
+              "tool": "search_season_docs",
+              "latency_ms": 138,
+              "result_count": 3
+            },
+            {
+              "tool": "lexical_search",
+              "latency_ms": 1329,
+              "result_count": 31728
+            },
+            {
+              "tool": "rrf",
+              "result_count": 20
+            },
+            {
+              "tool": "retrieval_result",
+              "result_count": 5
+            },
+            {
+              "tool": "search_possession_chunks",
+              "latency_ms": 4340,
+              "result_count": 5
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "path": "/tmp/knicksiq-evaluation-observations-v3.json",
+      "sha256": "0a53a51f0ed88f5a78a6f9283a32896f366831d1aba0fe6e7832ce29ad6e0bd6",
+      "scope": "Restored production-only canonical database, updated active-release filtering and route fixes; providers disabled.",
+      "routes": {
+        "None": {
+          "count": 27,
+          "p95_ms": 532.54,
+          "max_ms": 1815.29,
+          "over_4000_ms": 0
+        },
+        "all": {
+          "count": 120,
+          "p95_ms": 2423.54,
+          "max_ms": 3887.04,
+          "over_4000_ms": 0
+        },
+        "retrieval_rag": {
+          "count": 37,
+          "p95_ms": 2562.85,
+          "max_ms": 3887.04,
+          "over_4000_ms": 0
+        },
+        "table_rag": {
+          "count": 56,
+          "p95_ms": 367.63,
+          "max_ms": 421.13,
+          "over_4000_ms": 0
+        }
+      },
+      "slowest": [
+        {
+          "id": "single_game_narrative-013",
+          "question": "How did the bench affect the Toronto game?",
+          "latency_ms": 3887.04,
+          "steps": [
+            {
+              "tool": "get_games",
+              "latency_ms": 19,
+              "result_count": 5
+            },
+            {
+              "tool": "search_season_docs",
+              "latency_ms": 7,
+              "result_count": 0
+            },
+            {
+              "tool": "lexical_search",
+              "latency_ms": 34,
+              "result_count": 776
+            },
+            {
+              "tool": "rrf",
+              "result_count": 20
+            },
+            {
+              "tool": "retrieval_result",
+              "result_count": 5
+            },
+            {
+              "tool": "search_possession_chunks",
+              "latency_ms": 2165,
+              "result_count": 5
+            }
+          ]
+        },
+        {
+          "id": "single_game_narrative-006",
+          "question": "Tell the story of the closest Knicks game.",
+          "latency_ms": 2562.85,
+          "steps": [
+            {
+              "tool": "get_games",
+              "latency_ms": 15,
+              "result_count": 0
+            },
+            {
+              "tool": "search_season_docs",
+              "latency_ms": 2,
+              "result_count": 0
+            },
+            {
+              "tool": "lexical_search",
+              "latency_ms": 698,
+              "result_count": 15864
+            },
+            {
+              "tool": "rrf",
+              "result_count": 20
+            },
+            {
+              "tool": "retrieval_result",
+              "result_count": 5
+            },
+            {
+              "tool": "search_possession_chunks",
+              "latency_ms": 2258,
+              "result_count": 5
+            }
+          ]
+        },
+        {
+          "id": "single_game_narrative-017",
+          "question": "What happened immediately after the Knicks took the lead against Chicago?",
+          "latency_ms": 2535.26,
+          "steps": [
+            {
+              "tool": "get_games",
+              "latency_ms": 112,
+              "result_count": 4
+            },
+            {
+              "tool": "search_season_docs",
+              "latency_ms": 11,
+              "result_count": 0
+            },
+            {
+              "tool": "lexical_search",
+              "latency_ms": 32,
+              "result_count": 628
+            },
+            {
+              "tool": "rrf",
+              "result_count": 20
+            },
+            {
+              "tool": "retrieval_result",
+              "result_count": 5
+            },
+            {
+              "tool": "search_possession_chunks",
+              "latency_ms": 137,
+              "result_count": 5
+            }
+          ]
+        },
+        {
+          "id": "single_game_narrative-011",
+          "question": "What did Towns do in the biggest win?",
+          "latency_ms": 2509.49,
+          "steps": [
+            {
+              "tool": "get_games",
+              "latency_ms": 7,
+              "result_count": 0
+            },
+            {
+              "tool": "search_season_docs",
+              "latency_ms": 2,
+              "result_count": 0
+            },
+            {
+              "tool": "lexical_search",
+              "latency_ms": 709,
+              "result_count": 15864
+            },
+            {
+              "tool": "rrf",
+              "result_count": 20
+            },
+            {
+              "tool": "retrieval_result",
+              "result_count": 5
+            },
+            {
+              "tool": "search_possession_chunks",
+              "latency_ms": 2357,
+              "result_count": 5
+            }
+          ]
+        },
+        {
+          "id": "single_game_narrative-012",
+          "question": "Which plays swung the Charlotte game?",
+          "latency_ms": 2499.77,
+          "steps": [
+            {
+              "tool": "get_games",
+              "latency_ms": 76,
+              "result_count": 4
+            },
+            {
+              "tool": "search_season_docs",
+              "latency_ms": 628,
+              "result_count": 0
+            },
+            {
+              "tool": "lexical_search",
+              "latency_ms": 27,
+              "result_count": 589
+            },
+            {
+              "tool": "rrf",
+              "result_count": 20
+            },
+            {
+              "tool": "retrieval_result",
+              "result_count": 5
+            },
+            {
+              "tool": "search_possession_chunks",
+              "latency_ms": 1681,
+              "result_count": 5
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "findings": [
+    {
+      "source": "apps/api/app/services/rag.py:search_possession_chunks",
+      "observation": "Legacy narrative fallback loads every matching event as an ORM entity, rebuilds possession chunks each request, then runs synchronous local ranking on the async event loop. Earlier broad queries ranked 31728 chunks, with lexical scoring 1312-1632 ms and total possession search 4125-4409 ms."
+    },
+    {
+      "source": "apps/api/app/services/rag.py:_lexical_rank_chunks",
+      "observation": "Per chunk JSON-serializes full metadata, tokenizes it plus chunk text, counts each query term by scanning the token list, and separately tokenizes player names. CPU work can delay unrelated concurrent requests; earlier get_games traces reached 4044-4082 ms despite other instances taking 2-47 ms. Event-loop blocking inference, not a measured DB execution plan."
+    },
+    {
+      "source": "apps/api/app/services/releases.py:restrict_to_active_release",
+      "observation": "Earlier non-production release bypass caused duplicate games/chunks. Current API agent fixed scope and V3 used the production-only restored database."
+    }
+  ],
+  "microbenchmark": {
+    "scope": "12850 representative repeated live event descriptions plus JSON rows, 6 query terms, single process; not end-to-end",
+    "original_list_count_ms": 123,
+    "Counter_all_tokens_ms": 139,
+    "restricted_query_token_regex_ms": 106,
+    "scores_equal": true,
+    "decision": "Rejected blanket Counter replacement because measured slower; restricted regex modest microbenchmark gain does not justify source change while gate passes."
+  },
+  "recommendations": [
+    {
+      "priority": "now",
+      "action": "Use only canonical active-release-equivalent dataset and current routing for final gate; obsolete mixed-release measurements are not production performance evidence."
+    },
+    {
+      "priority": "if_latency_regresses",
+      "action": "Replace full ORM event hydration with exact-field outer-joined player-name projection and verify identical chunk IDs/text/rows/ranking on same data."
+    },
+    {
+      "priority": "if_event_loop_blocking_is_confirmed",
+      "action": "Move pure chunk construction/ranking to a bounded executor using plain immutable input projections; benchmark concurrency and memory before adoption. Preserve every candidate and all ranking semantics."
+    },
+    {
+      "priority": "if_repeated_broad_queries_dominate",
+      "action": "Consider a bounded release-version-keyed derived chunk/token cache only with immutable release identity and invalidation on activation; do not cache by game ID alone."
+    }
+  ],
+  "limits": [
+    "V1 to V3 is not an isolated A/B test: both database scope and route code changed.",
+    "Provider-disabled local load does not prove latency with embedding/reranking/LLM services or production resource limits.",
+    "Passing transport/performance gates does not establish answer correctness; independent V3 semantic review remains required."
+  ],
+  "latest_local_four_second_gate_passes": true
+}

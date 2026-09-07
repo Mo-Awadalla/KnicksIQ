@@ -1,0 +1,54 @@
+{
+  "tested_commit": "ec62fdaba2768b73630c91e13c8d088dff03ed72",
+  "checked_at": "2026-09-07T21:57:10.228567+00:00",
+  "backend": {
+    "passed": 312,
+    "ruff": "passed",
+    "pyright_errors": 0
+  },
+  "frontend": {
+    "unit_passed": 46,
+    "browser_passed": 27,
+    "lint_errors": 0,
+    "existing_lint_warnings": 2,
+    "format": "passed",
+    "production_build": "passed"
+  },
+  "containers": {
+    "api_build": "passed",
+    "web_build": "passed"
+  },
+  "render_blueprint_valid": true,
+  "logs": {
+    "backend": {
+      "path": "docs/release-evidence/final-checks-20260907/backend.txt",
+      "sha256": "b57c6b1afc004b2de12d78d2522439293e4b4ae0496416c82f8c4eaa7ccfbf19"
+    },
+    "ruff": {
+      "path": "docs/release-evidence/final-checks-20260907/ruff.txt",
+      "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18"
+    },
+    "pyright": {
+      "path": "docs/release-evidence/final-checks-20260907/pyright.txt",
+      "sha256": "6d88a1b220adb7a3d62092b6e38431f0b3fe8babe9864fab90e5849766260332"
+    },
+    "frontend_unit": {
+      "path": "docs/release-evidence/final-checks-20260907/frontend_unit.txt",
+      "sha256": "9a3e7dfcde054ffbf373ac3869e3c9f598703bd15ab211811cb8bd669d07e8a8"
+    },
+    "browser": {
+      "path": "docs/release-evidence/final-checks-20260907/browser.txt",
+      "sha256": "5afa60f7b0cf6030536525d0e70ce9ec4bbe2c078122f4f4b8f1447b5c415ac9"
+    },
+    "blueprint": {
+      "path": "docs/release-evidence/final-checks-20260907/blueprint.txt",
+      "sha256": "ea3549f81156fa2805cb06d953eb80d942954a98bd2ae7eecc69de204c7fb6e1"
+    }
+  },
+  "limitations": [
+    "Browser tests use mocked API contracts; production end-to-end smoke is pending.",
+    "120 question independent review and local load evidence precede the final wording-only code changes; they are observations, not exact-commit launch gate metrics.",
+    "Production Qdrant TLS resets block cloud index validation and rollback alias capture.",
+    "Prepared corrected reports and proposed evaluation labels have no owner approval."
+  ]
+}
