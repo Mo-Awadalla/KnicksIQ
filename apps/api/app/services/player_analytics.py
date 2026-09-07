@@ -1669,6 +1669,13 @@ def _execute(plan: AnalyticsPlan, rows: list[dict[str, Any]], text: str) -> dict
     return _aggregate_result(plan, rows)
 
 
+def _aggregation_label(stat: str, mode: str) -> str:
+    definition = STAT_REGISTRY[stat]
+    if definition.kind in {"percentage", "ratio"} or stat.endswith("_percentage"):
+        return ""
+    return "total" if mode == "total" else "per appearance"
+
+
 def _answer_text(result: dict[str, Any]) -> str:
     result_type = result["type"]
     if result_type == "aggregate":
@@ -1680,20 +1687,24 @@ def _answer_text(result: dict[str, Any]) -> str:
         mode = result.get("aggregation_mode", "average")
         if mode == "both":
             averages = ", ".join(
-                f"{STAT_REGISTRY[key].label.lower()} {value} per appearance"
+                (
+                    f"{STAT_REGISTRY[key].label.lower()} {value} "
+                    f"{_aggregation_label(key, 'average')}"
+                ).strip()
                 for key, value in result["per_appearance_display_values"].items()
             )
             totals = ", ".join(
-                f"{STAT_REGISTRY[key].label.lower()} {value} total"
+                (
+                    f"{STAT_REGISTRY[key].label.lower()} {value} {_aggregation_label(key, 'total')}"
+                ).strip()
                 for key, value in result["total_display_values"].items()
             )
             return (
                 f"{result['title']}: {averages}; {totals} across "
                 f"{result['sample_size']} appearances."
             )
-        suffix = "total" if mode == "total" else "per appearance"
         values = ", ".join(
-            f"{STAT_REGISTRY[key].label.lower()} {value} {suffix}"
+            f"{STAT_REGISTRY[key].label.lower()} {value} {_aggregation_label(key, mode)}".strip()
             for key, value in result["display_values"].items()
         )
         return f"{result['title']}: {values} across {result['sample_size']} appearances."
@@ -1724,9 +1735,10 @@ def _answer_text(result: dict[str, Any]) -> str:
                 f"with a cumulative plus-minus of {value:+.1f} across "
                 f"{leader['sample_size']} appearances."
             )
-        label = "total" if mode == "total" else "per appearance"
+        label = _aggregation_label(stat, mode)
+        value_label = f"{leader['display_values'][stat]} {label}".strip()
         return (
-            f"{leader['player_name']} led at {leader['display_values'][stat]} {label} "
+            f"{leader['player_name']} led at {value_label} "
             f"across {leader['sample_size']} appearances."
         )
     if result_type == "streak":

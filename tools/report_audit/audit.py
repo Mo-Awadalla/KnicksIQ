@@ -12,6 +12,7 @@ import json
 import re
 from collections import defaultdict
 from pathlib import Path
+from typing import Any
 
 RUN = re.compile(r"([A-Z]{3}) produced a (\d+)-(\d+) run in Q(\d+) from ([\d:]+) to ([\d:]+)\.")
 EXACT_RUN = re.compile(
@@ -269,7 +270,7 @@ def audit(payload):
                     "row_sha256": digest(stat),
                 }
             )
-        repaired = dict(report, reviewed=False)
+        repaired: dict[str, Any] = dict(report, reviewed=False)
         # A later countdown clock proves the single-quarter description is impossible.
         cross_period = any(
             (m := RUN.fullmatch(report[field])) and m.group(6) > m.group(5)
@@ -291,6 +292,7 @@ def audit(payload):
                         }
                     )
             else:
+                assert run is not None
                 cross_period |= run["start_period"] != run["end_period"]
                 evidence.append(
                     {"claims": [field], "type": "play_by_play", "nba_game_id": game_id, **run}
@@ -306,6 +308,7 @@ def audit(payload):
             if error:
                 issues.append("worst_stretch:" + error)
             else:
+                assert run is not None
                 cross_period |= run["start_period"] != run["end_period"]
                 evidence.append(
                     {
@@ -323,7 +326,11 @@ def audit(payload):
             run, error = resolve_run(
                 f"{opponent} produced a {pf}-{pa} run in Q{sp} from {sc} to {ec}.", game, events
             )
-            if error or str(run["end_period"]) != ep:
+            if not error:
+                assert run is not None
+                if str(run["end_period"]) != ep:
+                    error = "end_period_mismatch"
+            if error:
                 issues.append("worst_stretch:" + (error or "end_period_mismatch"))
                 if run:
                     evidence.append(
@@ -336,6 +343,7 @@ def audit(payload):
                         }
                     )
             else:
+                assert run is not None
                 cross_period |= run["start_period"] != run["end_period"]
                 evidence.append(
                     {

@@ -41,10 +41,12 @@ test('landing keyboard submission preserves newlines and recovers from a failed 
     } })
   })
   await page.goto('/')
+  // The route loads asynchronously; wait for the archive before sending a raw key.
+  const question = page.getByRole('textbox', { name: 'Ask the archive' })
+  await expect(question).toBeEnabled()
   await page.keyboard.press('Tab')
   await expect(page.getByRole('link', { name: 'Skip to archive search' })).toBeFocused()
   await page.keyboard.press('Enter')
-  const question = page.getByRole('textbox', { name: 'Ask the archive' })
   await question.fill('How did the Knicks play')
   await question.press('Shift+Enter')
   await expect(question).toHaveValue('How did the Knicks play\n')

@@ -6,6 +6,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
 spec = importlib.util.spec_from_file_location("repair", Path(__file__).with_name("repair.py"))
+assert spec is not None and spec.loader is not None
 repair = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(repair)
 
