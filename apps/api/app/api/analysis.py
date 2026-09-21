@@ -88,7 +88,7 @@ class AnalysisContextMessage(BaseModel):
 
 
 class AnalysisQueryRequest(BaseModel):
-    question: str = Field(..., min_length=3, max_length=1200)
+    question: str = Field(..., min_length=1, max_length=1200)
     season: str = "2025-26"
     context: list[AnalysisContextMessage] = Field(default_factory=list, max_length=12)
     conversation_state: ConversationState | None = None
@@ -99,6 +99,13 @@ class AnalysisQueryRequest(BaseModel):
     expected_revision: int = Field(default=0, ge=0)
 
     _validate_dates = field_validator("question")(_validate_calendar_dates)
+
+    @field_validator("question")
+    @classmethod
+    def _validate_nonblank(cls, value: str) -> str:
+        if not value.strip():
+            raise ValueError("Question must not be blank")
+        return value
 
 
 class AnalysisCitation(BaseModel):
@@ -351,6 +358,16 @@ def _requires_explicit_refusal(question: str) -> bool:
                 "future",
                 "next season",
             )
+        )
+    )
+
+
+def _is_greeting(question: str) -> bool:
+    return bool(
+        re.fullmatch(
+            r"(?:hi|hello|hey|hiya|yo)(?:\s+there)?[!.?]*",
+            question.strip(),
+            re.IGNORECASE,
         )
     )
 
@@ -901,6 +918,23 @@ async def query_analysis(
 ) -> AnalysisQueryResponse:
     settings = get_settings()
     redis_degraded = await _rate_limit(request)
+    response_metadata = {
+        "request_id": getattr(request.state, "request_id", ""),
+        "data_version": await _active_data_version(db),
+        "degraded": redis_degraded,
+    }
+    question = req.question.strip()
+    if _is_greeting(question):
+        return AnalysisQueryResponse(
+            **response_metadata,
+            route="greeting",
+            answer=(
+                "Hi — ask me about an archived Knicks game, player stat, streak, "
+                "opponent, or turning point."
+            ),
+            citations=[],
+            tool_calls=[],
+        )
     if getattr(settings, "analyst_evidence_loop_enabled", False):
         try:
             async with asyncio.timeout(settings.analyst_deadline_seconds):
@@ -911,12 +945,6 @@ async def query_analysis(
                 citations=[],
                 degraded=True,
             )
-    response_metadata = {
-        "request_id": getattr(request.state, "request_id", ""),
-        "data_version": await _active_data_version(db),
-        "degraded": redis_degraded,
-    }
-    question = req.question.strip()
     structured_conversation_enabled = getattr(
         settings,
         "rag_structured_conversation_state_enabled",

@@ -988,6 +988,28 @@ async def test_public_analysis_unsupported_table_question_is_not_generic_dump(cl
     assert body["warnings"]
 
 
+async def test_public_analysis_accepts_short_greeting(client):
+    response = await client.post(
+        "/analysis/query",
+        json={"question": "hi"},
+    )
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["route"] == "greeting"
+    assert body["answer"].startswith("Hi")
+    assert body["citations"] == []
+
+
+async def test_public_analysis_rejects_blank_question(client):
+    response = await client.post(
+        "/analysis/query",
+        json={"question": "  "},
+    )
+
+    assert response.status_code == 422
+
+
 @pytest.mark.parametrize("invalid_date", ["2025-02-30", "2025-13-01", "2025-00-10"])
 async def test_invalid_calendar_dates_are_rejected(client, invalid_date):
     response = await client.post(
