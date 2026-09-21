@@ -128,7 +128,6 @@ class Settings(BaseSettings):
     analyst_input_tokens: int = Field(default=8000, ge=1000, le=8000)
     analyst_call_reservation_usd: float = Field(default=0.01, gt=0)
 
-
     public_chat_rate_limit_per_minute: int = 10
     public_chat_rate_limit_per_day: int = 100
     public_chat_max_prompt_chars: int = 1200

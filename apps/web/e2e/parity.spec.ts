@@ -73,6 +73,14 @@ test('analyst retains full conversation across client navigation with bounded co
   await page.route('**/api/analysis/query', (route) => {
     const body = route.request().postDataJSON()
     contexts.push(body.context.length)
+    const turn = contexts.length
+    const firstTurn = Math.max(1, turn - 6)
+    expect(body.context).toEqual(
+      Array.from({ length: turn - firstTurn }, (_, index) => [
+        { role: 'user', content: `Question ${firstTurn + index}` },
+        { role: 'assistant', content: `Answer ${firstTurn + index}` },
+      ]).flat()
+    )
     return route.fulfill({ json: {
       answer: `Answer ${contexts.length}`, warnings: [], citations: [], analytics: null,
       refused: false, degraded: false, request_id: `q${contexts.length}`, data_version: 'parity.1',
@@ -80,20 +88,20 @@ test('analyst retains full conversation across client navigation with bounded co
     } })
   })
   await page.goto('/analyst')
-  for (let i = 1; i <= 5; i++) {
+  for (let i = 1; i <= 8; i++) {
     const box = page.getByRole('textbox', { name: 'Ask a season question' })
     await expect(box).toBeEnabled()
     await box.fill(`Question ${i}`)
     await box.press('Enter')
     await expect(page.getByText(`Answer ${i}`, { exact: true })).toBeVisible()
   }
-  expect(contexts).toEqual([0, 2, 4, 4, 4])
+  expect(contexts).toEqual([0, 2, 4, 6, 8, 10, 12, 12])
   const { default: AxeBuilder } = await import('@axe-core/playwright')
   const populated = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa']).analyze()
   expect(populated.violations.filter((v) => ['serious', 'critical'].includes(v.impact || ''))).toEqual([])
   await page.getByRole('navigation', { name: 'Primary navigation' }).getByRole('link', { name: 'Archive', exact: true }).click()
   await expect(page.getByText('Answer 1', { exact: true })).toBeVisible()
-  await expect(page.getByText('Answer 5', { exact: true })).toBeVisible()
+  await expect(page.getByText('Answer 8', { exact: true })).toBeVisible()
 })
 
 test('readiness has a slow-start message, deadline and explicit retry', async ({ page }) => {
