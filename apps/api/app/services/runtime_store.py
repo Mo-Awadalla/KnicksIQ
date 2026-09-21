@@ -5,7 +5,6 @@ from __future__ import annotations
 import hashlib
 import hmac
 import json
-from datetime import UTC, datetime
 from typing import Any
 
 from app.core.config import get_settings
@@ -109,18 +108,6 @@ async def reserve_ai_budget(estimated_cost_usd: float = 0.01) -> bool:
     settings = get_settings()
     if settings.test_mode:
         return True
-    redis = await _redis()
-    if redis is None:
-        return False
-    key = f"ai-budget:{datetime.now(UTC):%Y-%m}"
-    try:
-        spent = float(await redis.incrbyfloat(key, estimated_cost_usd))
-        await redis.expire(key, 35 * 86_400, nx=True)
-        if spent > settings.openrouter_monthly_cutoff_usd:
-            await redis.incrbyfloat(key, -estimated_cost_usd)
-            return False
-        return True
-    except Exception:  # noqa: BLE001
-        return False
-    finally:
-        await redis.aclose()
+    from app.services.analyst_budget import BudgetReservation
+
+    return await BudgetReservation.reserve(estimated_cost_usd) is not None

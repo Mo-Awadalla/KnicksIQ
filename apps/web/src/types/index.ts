@@ -223,6 +223,10 @@ export interface AnalyticsPayload {
 }
 
 export interface AnalysisResponse {
+  session_token?: string | null
+  revision?: number | null
+  state_committed?: boolean
+  llm_validated?: boolean
   answer: string
   route?: string | null
   classifier?: Record<string, unknown>
@@ -248,6 +252,8 @@ export interface AnalysisResponse {
     metric: string | null
     route: string | null
     data_version: string | null
+    discovery_question?: string | null
+    seen_fact_ids?: string[]
   } | null
 }
 

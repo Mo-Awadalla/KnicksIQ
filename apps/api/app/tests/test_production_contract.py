@@ -41,7 +41,7 @@ def test_render_blueprint_enables_the_grounded_ai_configuration():
     api = next(service for service in blueprint["services"] if service["name"] == "knicksiq-api")
     env = {item["key"]: item.get("value") for item in api["envVars"]}
 
-    model = "nvidia/nemotron-3-ultra-550b-a55b:free"
+    model = "nex-agi/nex-n2.5-mini:free"
     assert env["AI_PROVIDER"] == "openrouter"
     assert env["AI_CHAT_MODEL"] == model
     assert env["OPENROUTER_ALLOWED_MODELS"] == f'["{model}"]'

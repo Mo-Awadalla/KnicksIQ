@@ -1,4 +1,5 @@
 import { useEffect, useState, useSyncExternalStore } from 'react'
+import { isAxiosError } from 'axios'
 import {
   useIsMutating,
   useMutation,
@@ -14,6 +15,18 @@ type Message = AnalysisContextMessage & {
 }
 let thread: Message[] = []
 let version: string | undefined
+let sessionToken: string | undefined
+let revision = 0
+let submitting = false
+let retryTurn:
+  | {
+      question: string
+      context: AnalysisContextMessage[]
+      turn_id: string
+      expected_revision: number
+      session_token?: string
+    }
+  | undefined
 const listeners = new Set<() => void>()
 function publish(messages: Message[]) {
   thread = messages
@@ -75,12 +88,52 @@ export function useAnalyst() {
       nextQuestion,
       context,
       state,
+      turn,
     }: {
       nextQuestion: string
       context: AnalysisContextMessage[]
       state?: AnalysisResponse['conversation_state']
+      turn: NonNullable<typeof retryTurn>
     }) => {
-      const response = await askAnalyst(nextQuestion, '2025-26', context, state)
+      let response: AnalysisResponse
+      try {
+        response = await askAnalyst(
+          nextQuestion,
+          '2025-26',
+          context,
+          state,
+          turn
+        )
+      } catch (error) {
+        if (isAxiosError(error) && error.response?.status === 409) {
+          const reason = String(error.response.data?.detail?.reason ?? '')
+          if (/^\d+$/.test(reason)) {
+            revision = Number(reason)
+            if (retryTurn) retryTurn.expected_revision = revision
+          } else if (reason === 'turn_id_reused') {
+            retryTurn = undefined
+          }
+          throw Object.assign(
+            new Error(
+              'The conversation changed or is still processing. Retry your question.'
+            ),
+            { cause: error }
+          )
+        }
+        throw error
+      }
+      if (
+        response.state_committed &&
+        response.session_token &&
+        response.revision != null
+      ) {
+        sessionToken = response.session_token
+        revision = response.revision
+        retryTurn = undefined
+      } else if (response.revision === undefined) {
+        // Compatibility with the deterministic endpoint before the rollout flag is enabled.
+        retryTurn = undefined
+      }
       if (
         version &&
         response.data_version &&
@@ -94,11 +147,14 @@ export function useAnalyst() {
       }
       return response
     },
-    onSuccess: (response) => {
+    onSettled: () => {
+      submitting = false
+    },
+    onSuccess: (response, { turn }) => {
       publish([
-        ...thread,
+        ...thread.filter((message) => message.id !== `${turn.turn_id}:answer`),
         {
-          id: crypto.randomUUID(),
+          id: `${turn.turn_id}:answer`,
           role: 'assistant',
           content: response.answer,
           response,
@@ -114,20 +170,31 @@ export function useAnalyst() {
   })
   const submit = (value = question) => {
     const nextQuestion = value.trim()
-    if (!archiveReady || pending || !nextQuestion) return
+    if (!archiveReady || pending || submitting || !nextQuestion) return
+    submitting = true
     const context = messages
-      .slice(-4)
-      .map(({ role, content }) => ({ role, content }))
+      .slice(-12)
+      .map(({ role, content }) => ({ role, content: content.slice(0, 2000) }))
     const state = [...messages]
       .reverse()
       .find((message) => message.response?.conversation_state)
       ?.response?.conversation_state
-    publish([
-      ...messages,
-      { id: crypto.randomUUID(), role: 'user', content: nextQuestion },
-    ])
+    const retry = retryTurn?.question === nextQuestion ? retryTurn : undefined
+    const turn = retry ?? {
+      question: nextQuestion,
+      context,
+      turn_id: crypto.randomUUID(),
+      expected_revision: revision,
+      session_token: sessionToken,
+    }
+    retryTurn = turn
+    if (!retry)
+      publish([
+        ...messages,
+        { id: crypto.randomUUID(), role: 'user', content: nextQuestion },
+      ])
     setQuestion('')
-    analyst.mutate({ nextQuestion, context, state })
+    analyst.mutate({ nextQuestion, context: turn.context, state, turn })
   }
   return {
     question,
