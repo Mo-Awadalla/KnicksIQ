@@ -2,63 +2,63 @@
 name: KnicksIQ Homepage
 description: A Knicks season program on warm paper.
 colors:
-  signal-blue: "#006bb6"
-  signal-blue-deep: "#004f8c"
-  signal-orange: "#f58426"
-  surface-ink: "#071b2d"
-  surface-paper: "#f3eee5"
-  surface-sheet: "#fffdf9"
-  text-muted: "#5c6874"
-  text-on-ink: "#ffffff"
-  line-subtle: "rgb(7 27 45 / 14%)"
+  signal-blue: '#006bb6'
+  signal-blue-deep: '#004f8c'
+  signal-orange: '#f58426'
+  surface-ink: '#071b2d'
+  surface-paper: '#f3eee5'
+  surface-sheet: '#fffdf9'
+  text-muted: '#5c6874'
+  text-on-ink: '#ffffff'
+  line-subtle: 'rgb(7 27 45 / 14%)'
 typography:
   display:
-    fontFamily: "Barlow Condensed, Arial Narrow, sans-serif"
-    fontSize: "clamp(4.5rem, 8.7vw, 8rem)"
+    fontFamily: 'Barlow Condensed, Arial Narrow, sans-serif'
+    fontSize: 'clamp(4.5rem, 8.7vw, 8rem)'
     fontWeight: 800
     lineHeight: 0.9
-    letterSpacing: "-0.025em"
+    letterSpacing: '-0.025em'
   headline:
-    fontFamily: "Barlow Condensed, Arial Narrow, sans-serif"
-    fontSize: "clamp(2.5rem, 5vw, 4.5rem)"
+    fontFamily: 'Barlow Condensed, Arial Narrow, sans-serif'
+    fontSize: 'clamp(2.5rem, 5vw, 4.5rem)'
     fontWeight: 800
-    letterSpacing: "-0.02em"
+    letterSpacing: '-0.02em'
   body:
-    fontFamily: "Söhne, Sohne, Helvetica Neue, Helvetica, Arial, system-ui, sans-serif"
-    fontSize: "0.94rem"
+    fontFamily: 'Söhne, Sohne, Helvetica Neue, Helvetica, Arial, system-ui, sans-serif'
+    fontSize: '0.94rem'
     lineHeight: 1.65
   navigation:
-    fontSize: "0.85rem"
+    fontSize: '0.85rem'
     fontWeight: 650
 rounded:
-  prompt: "4px"
-  field: "6px"
-  button: "8px"
-  panel: "12px"
+  prompt: '4px'
+  field: '6px'
+  button: '8px'
+  panel: '12px'
 spacing:
-  gutter: "clamp(1.25rem, 4vw, 4rem)"
-  panel: "2rem"
-  section: "4rem"
+  gutter: 'clamp(1.25rem, 4vw, 4rem)'
+  panel: '2rem'
+  section: '4rem'
 components:
   button-primary:
-    backgroundColor: "{colors.signal-blue}"
-    textColor: "{colors.text-on-ink}"
-    rounded: "{rounded.button}"
-    padding: "8px 16px"
+    backgroundColor: '{colors.signal-blue}'
+    textColor: '{colors.text-on-ink}'
+    rounded: '{rounded.button}'
+    padding: '8px 16px'
   button-archive:
-    backgroundColor: "{colors.signal-orange}"
-    textColor: "{colors.surface-ink}"
-    rounded: "{rounded.field}"
-    width: "100%"
+    backgroundColor: '{colors.signal-orange}'
+    textColor: '{colors.surface-ink}'
+    rounded: '{rounded.field}'
+    width: '100%'
   question-field:
-    backgroundColor: "{colors.surface-paper}"
-    textColor: "{colors.surface-ink}"
-    rounded: "{rounded.field}"
-    padding: "1rem 1.1rem"
+    backgroundColor: '{colors.surface-paper}'
+    textColor: '{colors.surface-ink}'
+    rounded: '{rounded.field}'
+    padding: '1rem 1.1rem'
   question-panel:
-    backgroundColor: "{colors.surface-sheet}"
-    rounded: "{rounded.panel}"
-    padding: "{spacing.panel}"
+    backgroundColor: '{colors.surface-sheet}'
+    rounded: '{rounded.panel}'
+    padding: '{spacing.panel}'
 ---
 
 # Design System: KnicksIQ Homepage
@@ -72,6 +72,7 @@ The reconstructed homepage pairs compressed sports headlines and a panoramic Gar
 This is a scoped record of `SeasonArchivePage`, not a global redesign specification. Its source of truth is `archive.tsx` and `landing.css`, with inherited tokens in `../../styles/theme.css`. The existing KnicksIQ mark and credited arena photograph remain identity assets. Page strategy lives in the root `.impeccable/landing-direction.md`.
 
 **Key Characteristics:**
+
 - Condensed display type with generous page margins.
 - Blue navigation and orange emphasis against paper and ink.
 - Flat editorial sections with softly rounded functional panels.
