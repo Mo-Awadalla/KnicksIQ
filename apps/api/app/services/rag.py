@@ -540,6 +540,8 @@ async def search_possession_chunks(
                         )
                     )
                     is not None
+                    and clipped.game_id in game_ids
+                    and _passes_filters(clipped, filters)
                 ]
                 if trace is not None:
                     trace.append(

@@ -18,7 +18,7 @@ from app.models.report import Report  # noqa: E402
 from app.models.scoring_run import ScoringRun  # noqa: E402
 
 
-def test_openrouter_requests_require_zero_data_retention(monkeypatch):
+def test_openrouter_requests_allow_data_collection_and_fallbacks(monkeypatch):
     from app.services.report_llm import OpenAICompatibleLLMAdapter
 
     captured: dict = {}
@@ -41,16 +41,12 @@ def test_openrouter_requests_require_zero_data_retention(monkeypatch):
     adapter = OpenAICompatibleLLMAdapter(
         base_url="https://openrouter.ai/api/v1",
         api_key="test-key",
-        model="nvidia/nemotron-3-ultra-550b-a55b:free",
+        model="nex-agi/nex-n2.5-mini:free",
     )
 
     assert adapter._generate_sync("system", "user") == "{}"
-    assert captured["model"] == "nvidia/nemotron-3-ultra-550b-a55b:free"
-    assert captured["provider"] == {
-        "zdr": True,
-        "data_collection": "deny",
-        "allow_fallbacks": False,
-    }
+    assert captured["model"] == "nex-agi/nex-n2.5-mini:free"
+    assert captured["provider"] == {"allow_fallbacks": True}
 
 
 @pytest.fixture(scope="function")

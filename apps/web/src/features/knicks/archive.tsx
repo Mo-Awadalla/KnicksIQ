@@ -76,7 +76,7 @@ export function AnswerPanel({
         <CardHeader>
           <h3 className='archive-answer-heading' tabIndex={-1}>
             <Sparkles className='archive-orange-text size-5' />
-            {answer.refused ? 'Archive boundary' : 'Answer'}
+            Answer
           </h3>
           {answer.warnings.length > 0 ? (
             <CardDescription>{answer.warnings.join(' ')}</CardDescription>

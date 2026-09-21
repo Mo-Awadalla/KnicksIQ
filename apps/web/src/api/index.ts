@@ -101,13 +101,15 @@ export async function askAnalyst(
   question: string,
   season = '2025-26',
   context: AnalysisContextMessage[] = [],
-  conversationState?: AnalysisResponse['conversation_state']
+  conversationState?: AnalysisResponse['conversation_state'],
+  turn?: { session_token?: string; turn_id: string; expected_revision: number }
 ) {
   const r = await api.post<AnalysisResponse>('/analysis/query', {
     question,
     season,
     context,
     conversation_state: conversationState,
+    ...turn,
   })
   return r.data
 }

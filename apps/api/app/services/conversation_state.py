@@ -25,6 +25,8 @@ class ConversationState(BaseModel):
     metric: str | None = None
     route: str | None = None
     data_version: str | None = None
+    discovery_question: str | None = Field(default=None, max_length=1200)
+    seen_fact_ids: list[str] = Field(default_factory=list, max_length=200)
 
 
 _FOLLOW_UP_RE = re.compile(

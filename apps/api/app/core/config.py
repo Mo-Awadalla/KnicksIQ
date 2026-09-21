@@ -54,12 +54,12 @@ class Settings(BaseSettings):
     ai_provider: str = "mock"
     ai_base_url: str = "https://api.openai.com/v1"
     ai_api_key: str | None = None
-    ai_chat_model: str = "nvidia/nemotron-3-ultra-550b-a55b:free"
+    ai_chat_model: str = "nex-agi/nex-n2.5-mini:free"
     ai_embedding_model: str = "text-embedding-3-small"
-    ai_request_timeout_seconds: float = 2.5
+    ai_request_timeout_seconds: float = 20.0
 
     openrouter_api_key: str | None = None
-    openrouter_summary_model: str = "nvidia/nemotron-3-ultra-550b-a55b:free"
+    openrouter_summary_model: str = "nex-agi/nex-n2.5-mini:free"
     qdrant_url: str | None = None
     qdrant_api_key: str | None = None
     qdrant_host: str = "localhost"
@@ -118,11 +118,21 @@ class Settings(BaseSettings):
     analysis_answer_mode: Literal["deterministic", "shadow", "llm_primary"] = "deterministic"
     analysis_shadow_sample_rate: float = Field(default=0.1, ge=0, le=1)
     analysis_prompt_version: str = "v1"
+    analyst_evidence_loop_enabled: bool = False
+    analyst_provider_format: Literal["json_object", "json_schema"] = "json_object"
+    analyst_deadline_seconds: float = Field(default=30, gt=0, le=30)
+    analyst_investigation_seconds: float = Field(default=20, gt=0, le=20)
+    analyst_max_model_calls: int = Field(default=6, ge=2, le=6)
+    analyst_max_tool_rounds: int = Field(default=2, ge=1, le=2)
+    analyst_evidence_tokens: int = Field(default=6000, ge=100, le=6000)
+    analyst_input_tokens: int = Field(default=8000, ge=1000, le=8000)
+    analyst_call_reservation_usd: float = Field(default=0.01, gt=0)
+
 
     public_chat_rate_limit_per_minute: int = 10
     public_chat_rate_limit_per_day: int = 100
     public_chat_max_prompt_chars: int = 1200
-    public_chat_max_context_messages: int = 4
+    public_chat_max_context_messages: int = 12
     dataset_season: str = "2025-26"
     require_active_release: bool = True
     sentry_dsn: str | None = None

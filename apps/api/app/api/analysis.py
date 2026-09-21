@@ -11,7 +11,7 @@ import re
 import time
 from collections import defaultdict, deque
 from datetime import UTC, date, datetime
-from typing import Annotated, Any
+from typing import Annotated, Any, Literal
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Request, status
 from pydantic import BaseModel, Field, field_validator
@@ -35,6 +35,7 @@ from app.services.conversation_state import (
     resolve_conversation_delta,
     state_from_resolved,
 )
+from app.services.fact_discovery import discover_fact, is_discovery
 from app.services.grounded_answer import GroundedAnswer, validate_grounded_answer
 from app.services.llm_planner import maybe_plan_query
 from app.services.narrative_scope import narrative_clarification
@@ -80,7 +81,7 @@ def _validate_calendar_dates(value: str) -> str:
 
 
 class AnalysisContextMessage(BaseModel):
-    role: str
+    role: Literal["user", "assistant"]
     content: str = Field(..., min_length=1, max_length=2000)
 
     _validate_dates = field_validator("content")(_validate_calendar_dates)
@@ -89,8 +90,13 @@ class AnalysisContextMessage(BaseModel):
 class AnalysisQueryRequest(BaseModel):
     question: str = Field(..., min_length=3, max_length=1200)
     season: str = "2025-26"
-    context: list[AnalysisContextMessage] = Field(default_factory=list, max_length=4)
+    context: list[AnalysisContextMessage] = Field(default_factory=list, max_length=12)
     conversation_state: ConversationState | None = None
+    session_token: str | None = Field(default=None, pattern=r"^[a-f0-9]{64}$")
+    turn_id: str | None = Field(
+        default=None, min_length=16, max_length=80, pattern=r"^[a-zA-Z0-9_-]+$"
+    )
+    expected_revision: int = Field(default=0, ge=0)
 
     _validate_dates = field_validator("question")(_validate_calendar_dates)
 
@@ -127,6 +133,10 @@ class AnalysisQueryResponse(BaseModel):
         exclude=get_settings().is_production,
     )
     conversation_state: ConversationState | None = None
+    session_token: str | None = None
+    revision: int | None = None
+    state_committed: bool = False
+    llm_validated: bool = False
 
 
 def _client_id(request: Request) -> str:
@@ -320,6 +330,10 @@ def _requires_explicit_refusal(question: str) -> bool:
             term in q
             for term in (
                 "today",
+                "right now",
+                "currently",
+                "current season",
+                "current stats",
                 "tonight",
                 "tomorrow",
                 "yesterday",
@@ -887,6 +901,16 @@ async def query_analysis(
 ) -> AnalysisQueryResponse:
     settings = get_settings()
     redis_degraded = await _rate_limit(request)
+    if getattr(settings, "analyst_evidence_loop_enabled", False):
+        try:
+            async with asyncio.timeout(settings.analyst_deadline_seconds):
+                return await _query_evidence_analyst(req, request, db)
+        except TimeoutError:
+            return AnalysisQueryResponse(
+                answer="The archive could not be verified within this turn's deadline.",
+                citations=[],
+                degraded=True,
+            )
     response_metadata = {
         "request_id": getattr(request.state, "request_id", ""),
         "data_version": await _active_data_version(db),
@@ -917,13 +941,27 @@ async def query_analysis(
                 "Question asks outside the available Knicks season data or live/current coverage."
             ],
             answer=(
-                "Short answer\n"
-                "I can only answer grounded questions about available Knicks 2025-26 "
-                "regular-season or playoff games. I do not have live, current, future, "
-                "injury, or trade coverage."
+                "I don't have live injury, trade, current-game, or future updates. "
+                "I can help with the Knicks games in the 2025-26 archive."
             ),
             citations=[],
             tool_calls=[],
+        )
+    if is_discovery(question):
+        discovery = await discover_fact(
+            db,
+            question=question,
+            season=req.season,
+            prior=req.conversation_state,
+            context=[item.model_dump() for item in req.context],
+        )
+        return AnalysisQueryResponse(
+            **response_metadata,
+            answer=discovery.answer,
+            route=discovery.route,
+            conversation_state=discovery.state,
+            citations=[AnalysisCitation.model_validate(item) for item in discovery.citations],
+            tool_calls=[{"tool": "discover_fact", "result_count": len(discovery.citations)}],
         )
     resolved_query: ResolvedQuery | None = None
     if getattr(settings, "rag_query_resolution_v2_enabled", False) or (
@@ -1741,3 +1779,113 @@ async def query_analysis(
     if cache_key and not response.degraded:
         await set_cached_answer(cache_key, response.model_dump(mode="json"))
     return response
+
+
+async def _query_evidence_analyst(
+    req: AnalysisQueryRequest,
+    request: Request,
+    db: AsyncSession,
+) -> AnalysisQueryResponse:
+    from app.services.analyst_loop import AnalystLoop
+    from app.services.analyst_sessions import SessionConflict, SessionTurn, SessionUnavailable
+    from app.services.analyst_tools import AnalystTools
+
+    started = time.monotonic()
+    release = (
+        await db.execute(
+            select(DatasetRelease).where(
+                DatasetRelease.status == "active",
+                DatasetRelease.validation_passed.is_(True),
+            )
+        )
+    ).scalar_one_or_none()
+    if release is None:
+        return AnalysisQueryResponse(
+            answer="No verified archive release is available.", citations=[], degraded=True
+        )
+    if not req.turn_id:
+        # Legacy clients get a factual response; they cannot supply authoritative state.
+        turn = None
+    else:
+        try:
+            turn = await SessionTurn.begin(
+                req.session_token,
+                req.turn_id,
+                req.expected_revision,
+                {
+                    "question": req.question,
+                    "season": req.season,
+                    "context": [m.model_dump() for m in req.context],
+                },
+            )
+        except SessionConflict as exc:
+            raise HTTPException(
+                status_code=409,
+                detail={
+                    "reason": exc.reason,
+                    "session_token": req.session_token,
+                    "turn_id": req.turn_id,
+                },
+            ) from exc
+        except SessionUnavailable:
+            turn = None
+    if turn and turn.replay is not None:
+        return AnalysisQueryResponse.model_validate(turn.replay)
+    tools = AnalystTools(db, release, req.question, req.season, turn.state if turn else {})
+    try:
+        async with asyncio.timeout(
+            max(0.001, get_settings().analyst_deadline_seconds - (time.monotonic() - started))
+        ):
+            await tools.prepare()
+        loop = AnalystLoop(tools, [m.model_dump() for m in req.context], started=started)
+        result = await loop.run(
+            allow_model=bool(turn)
+            and get_settings().analysis_answer_mode in {"llm_primary", "shadow"}
+        )
+        state = result.pop("state")
+        if get_settings().analysis_answer_mode == "shadow":
+            logger.info(
+                "analyst_shadow_verification",
+                extra={
+                    "validated": result["llm_validated"],
+                    "model_calls": loop.calls,
+                    "tool_rounds": loop.rounds,
+                    "data_version": release.version,
+                    "latency_ms": round((time.monotonic() - started) * 1000),
+                    "model": get_settings().ai_chat_model,
+                },
+            )
+        # Shadow exercises the same reserved, validated path but delivers only backend facts.
+        if get_settings().analysis_answer_mode == "shadow" and result["llm_validated"]:
+            result = loop.render_fallback("Shadow verification; deterministic delivery.")
+            state = result.pop("state")
+        response = AnalysisQueryResponse(
+            **result, request_id=getattr(request.state, "request_id", "")
+        )
+        if turn:
+            response.session_token = turn.token
+            response.revision = turn.revision + 1
+            response.state_committed = True
+            if not await turn.commit(response.model_dump(mode="json"), state):
+                response.session_token = None
+                response.revision = None
+                response.state_committed = False
+                response.degraded = True
+                response.warnings.append(
+                    "Conversation state could not be committed. Retry the same turn."
+                )
+        else:
+            response.warnings.append(
+                "Stateless factual fallback: conversation storage unavailable."
+            )
+        return response
+    except TimeoutError:
+        return AnalysisQueryResponse(
+            answer="The archive could not be verified within this turn's deadline.",
+            citations=[],
+            degraded=True,
+            data_version=release.version,
+        )
+    finally:
+        if turn:
+            await turn.abort()

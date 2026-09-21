@@ -88,7 +88,7 @@ async def build_rag_artifacts(
     *,
     season: str,
     out_dir: Path,
-    summary_model: str = "nvidia/nemotron-3-ultra-550b-a55b:free",
+    summary_model: str = "nex-agi/nex-n2.5-mini:free",
     game_limit: int | None = None,
     game_order: str = GAME_ORDER_DATE,
     reset_qdrant: bool = False,

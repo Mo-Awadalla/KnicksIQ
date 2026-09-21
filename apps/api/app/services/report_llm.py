@@ -23,6 +23,11 @@ from app.core.config import get_settings
 class LLMAdapter(ABC):
     """Interface for a report-generating LLM."""
 
+    max_tokens: int = 500
+    timeout_seconds: float = 20
+    response_schema: dict[str, Any] | None = None
+    last_metadata: dict[str, Any] = {}
+
     @abstractmethod
     async def generate(self, *, system: str, user: str) -> str:
         """Return the raw LLM response. Implementations should return JSON."""
@@ -61,6 +66,8 @@ class OpenAICompatibleLLMAdapter(LLMAdapter):
         self.timeout_seconds = timeout_seconds
         self.response_format_json = response_format_json
         self.max_tokens = max_tokens
+        self.response_schema: dict[str, Any] | None = None
+        self.last_metadata: dict[str, Any] = {}
 
     async def generate(self, *, system: str, user: str) -> str:
         import asyncio
@@ -78,12 +85,18 @@ class OpenAICompatibleLLMAdapter(LLMAdapter):
             "max_tokens": self.max_tokens,
         }
         if "openrouter.ai" in self.base_url:
-            payload_body["provider"] = {
-                "zdr": True,
-                "data_collection": "deny",
-                "allow_fallbacks": False,
+            # The configured OpenRouter account is allowed to use providers that
+            # collect data. Keep fallbacks enabled, while requiring parameter
+            # support below whenever a structured response is requested.
+            payload_body["provider"] = {"allow_fallbacks": True}
+        if self.response_schema is not None:
+            payload_body["response_format"] = {
+                "type": "json_schema",
+                "json_schema": {"name": "analyst", "strict": True, "schema": self.response_schema},
             }
-        if self.response_format_json:
+            if "openrouter.ai" in self.base_url:
+                payload_body["provider"]["require_parameters"] = True
+        elif self.response_format_json:
             payload_body["response_format"] = {"type": "json_object"}
         payload = json.dumps(payload_body).encode("utf-8")
         req = urllib.request.Request(
@@ -102,9 +115,30 @@ class OpenAICompatibleLLMAdapter(LLMAdapter):
                 context=_ssl_context(),
             ) as response:
                 body = json.loads(response.read().decode("utf-8"))
+        except urllib.error.HTTPError as exc:
+            detail = exc.read().decode("utf-8", errors="replace").strip()
+            if not detail:
+                detail = str(exc.reason)
+            raise RuntimeError(
+                f"AI provider request failed (HTTP {exc.code}): {detail[:1000]}"
+            ) from exc
         except urllib.error.URLError as exc:
             raise RuntimeError(f"AI provider request failed: {exc}") from exc
-        return body["choices"][0]["message"]["content"]
+        if not isinstance(body, dict):
+            raise RuntimeError("AI provider returned a non-object response")
+        if body.get("error") is not None:
+            detail = json.dumps(body["error"], ensure_ascii=False)
+            raise RuntimeError(f"AI provider returned an error: {detail[:1000]}")
+        choices = body.get("choices")
+        if not isinstance(choices, list) or not choices:
+            detail = json.dumps(body, ensure_ascii=False)
+            raise RuntimeError(f"AI provider response omitted choices: {detail[:1000]}")
+        message = choices[0].get("message") if isinstance(choices[0], dict) else None
+        content = message.get("content") if isinstance(message, dict) else None
+        if not isinstance(content, str):
+            raise RuntimeError("AI provider response omitted message content")
+        self.last_metadata = {key: body.get(key) for key in ("id", "model", "provider", "usage")}
+        return content
 
 
 def get_llm_adapter(*, response_format_json: bool = True) -> LLMAdapter:
