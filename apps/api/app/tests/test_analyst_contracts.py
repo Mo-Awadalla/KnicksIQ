@@ -296,7 +296,9 @@ async def test_bounded_loop_and_revalidated_explanation(db_session, local_redis,
     assert result["llm_validated"] and loop2.calls == 2 and loop2.rounds == 0
 
 
-async def test_bad_provider_output_counts_call_and_falls_back(db_session, local_redis, monkeypatch):
+async def test_bad_provider_output_counts_call_and_falls_back(
+    db_session, local_redis, monkeypatch, caplog
+):
     await local_redis.set(f"ai-budget:{datetime.now(UTC):%Y-%m}", 0)
     tools, _ = await make_tools(db_session)
 
@@ -308,6 +310,10 @@ async def test_bad_provider_output_counts_call_and_falls_back(db_session, local_
     loop = AnalystLoop(tools, [])
     result = await loop.run()
     assert not result["llm_validated"] and loop.calls == 1
+    failure = next(r for r in caplog.records if r.message.startswith("analyst_execution_failed"))
+    assert failure.error_type == "ValidationError"
+    assert failure.model_calls == 1
+    assert "invented" not in caplog.text
     assert result["state"]["delivered_fact_ids"] == []
 
 
@@ -380,8 +386,88 @@ async def test_whole_records_fit_budget_and_provenance_is_resolvable(db_session)
         assert all(ref in tools.evidence for ref in claim["supporting_evidence_ids"])
 
 
-async def test_repair_is_rechecked_and_never_investigates(db_session, local_redis, monkeypatch):
-    monkeypatch.setattr(get_settings(), "ai_request_timeout_seconds", 1.0)
+async def test_review_spans_preserve_decimal_punctuation_and_full_coverage(db_session):
+    tools, _ = await make_tools(db_session)
+    loop = AnalystLoop(tools, [{"role": "user", "content": "Untrusted context"}])
+    answer = ProposedAnswer(
+        text="Ask about a 25.5-point average.  Why?\nAsk about archive games—only."
+    )
+    payload = loop.payload(AnswerReview, answer=answer, review=True)
+    spans = payload["review_spans"]
+    assert spans == ["Ask about a 25.5-point average.  ", "Why?\n", "Ask about archive games—only."]
+    assert "context" not in payload
+    review = AnswerReview(
+        assertions=[
+            AssertionReview(
+                text=span,
+                assertion_type="conversational",
+                verdict="supported",
+                offending_text=None,
+                supporting_claim_ids=[],
+                supporting_evidence_ids=[],
+                reason="Format fixture.",
+            )
+            for span in spans
+        ]
+    )
+    assert validate_review(review, answer, {}, {})
+    truncated = review.model_copy(update={"assertions": review.assertions[:-1]})
+    assert not validate_review(truncated, answer, {}, {})
+    stripped = review.model_copy(
+        update={
+            "assertions": [a.model_copy(update={"text": a.text.strip()}) for a in review.assertions]
+        }
+    )
+    assert not validate_review(stripped, answer, {}, {})
+
+
+async def test_scoped_schema_rejects_invented_ids_and_partial_claim_values(db_session):
+    from copy import deepcopy
+
+    from app.services.analyst_loop import scoped_response_schema
+    from app.services.evidence_contracts import Action
+    from jsonschema import Draft202012Validator
+
+    tools, _ = await make_tools(db_session)
+    result = await tools.execute(ToolCall(name="discover_facts", question=tools.question))
+    loop = AnalystLoop(tools, [])
+    loop.results.append(result)
+    payload = loop.payload(Action)
+    claim = payload["claims"][0]
+    candidate = next(c for c in payload["candidates"] if claim["claim_id"] in c["claim_ids"])
+    answer = {
+        "action": "answer_from_available_evidence",
+        "tools": [],
+        "answer": {
+            "text": claim["statement"],
+            "claims": [
+                {
+                    "claim_id": claim["claim_id"],
+                    "displayed_value": claim["value"],
+                    "decimal_places": None,
+                }
+            ],
+            "evidence_ids": [],
+            "fact_ids": [candidate["fact_id"]],
+        },
+    }
+    validator = Draft202012Validator(scoped_response_schema(Action, payload))
+    assert validator.is_valid(answer)
+    wrong = deepcopy(answer)
+    wrong["answer"]["claims"][0]["displayed_value"] = {"points": 47}
+    assert not validator.is_valid(wrong)
+    wrong = deepcopy(answer)
+    wrong["answer"]["fact_ids"] = ["invented"]
+    assert not validator.is_valid(wrong)
+    # The ordinary schema remains reusable and is not mutated by release-scoping.
+    assert "enum" not in Action.model_json_schema()["$defs"]["ClaimUse"]
+
+
+@pytest.mark.parametrize("request_timeout", [1.0, 20.0])
+async def test_repair_is_rechecked_and_never_investigates(
+    db_session, local_redis, monkeypatch, request_timeout
+):
+    monkeypatch.setattr(get_settings(), "ai_request_timeout_seconds", request_timeout)
     await local_redis.set(f"ai-budget:{datetime.now(UTC):%Y-%m}", 0)
     tools, _ = await make_tools(db_session)
 

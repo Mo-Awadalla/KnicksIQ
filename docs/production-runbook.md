@@ -24,6 +24,26 @@ Production serves one immutable 2025–26 archive release. The API never migrate
 - OpenRouter or budget exhaustion: deterministic phrasing remains available. Do not raise the $8 application cutoff without owner approval; the provider guardrail is $9.
 - Sentry: application availability is unaffected. Use Render logs and synthetic checks until restored.
 
+### Analyst reports “Model or budget unavailable”
+
+A healthy Redis connection is not sufficient: model calls require the current
+`ai-budget:YYYY-MM` ledger. The free Redis instance has no persistence, and a lost
+ledger or a new month blocks reservations until an administrator reconciles it.
+Do not restore a missing ledger to zero automatically.
+
+Check provider billing, the current ledger and its `:reservations` hash. Preserve
+existing charges and outstanding or uncertain calls. Restore only a missing key
+with `SET NX`, without an expiry, using a conservative reconciled total below the
+existing cutoff. Verify with a new turn ID: committed sessions replay their
+original response, including a fallback, by design. Check `llm_validated`, not
+just HTTP 200 or `state_committed`.
+
+On 2026-09-22 the production ledger was absent while Redis sessions worked.
+Provider monthly usage was $0, lifetime usage was $0.00084725, and the reservation
+hash was empty. The missing ledger was restored at $0.07, covering lifetime usage
+plus a conservative six-call allowance. The $8 cutoff was not changed. Subsequent
+model validation/time-limit failures are separate from this repaired budget block.
+
 ## Elevated errors
 
 Correlate the public `request_id` with scrubbed API logs. Do not request or copy user prompts. Check Postgres pool saturation and statement timeouts first, then optional dependency timeouts. Roll back when the error rate exceeds 1% and the cause is release-specific.

@@ -54,12 +54,13 @@ class Settings(BaseSettings):
     ai_provider: str = "mock"
     ai_base_url: str = "https://api.openai.com/v1"
     ai_api_key: str | None = None
-    ai_chat_model: str = "nex-agi/nex-n2.5-mini:free"
+    ai_chat_model: str = "deepseek/deepseek-v4.1-flash"
     ai_embedding_model: str = "text-embedding-3-small"
     ai_request_timeout_seconds: float = 20.0
+    ai_reasoning_effort: Literal["none", "minimal", "low", "medium", "high"] | None = None
 
     openrouter_api_key: str | None = None
-    openrouter_summary_model: str = "nex-agi/nex-n2.5-mini:free"
+    openrouter_summary_model: str = "deepseek/deepseek-v4.1-flash"
     qdrant_url: str | None = None
     qdrant_api_key: str | None = None
     qdrant_host: str = "localhost"

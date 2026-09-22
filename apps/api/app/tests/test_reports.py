@@ -18,8 +18,18 @@ from app.models.report import Report  # noqa: E402
 from app.models.scoring_run import ScoringRun  # noqa: E402
 
 
-def test_openrouter_requests_allow_data_collection_and_fallbacks(monkeypatch):
-    from app.services.report_llm import OpenAICompatibleLLMAdapter
+@pytest.mark.parametrize("effort", [None, "none", "medium"])
+def test_openrouter_requests_allow_data_collection_and_fallbacks(monkeypatch, effort):
+    from app.core.config import get_settings
+    from app.services.report_llm import OpenAICompatibleLLMAdapter, get_llm_adapter
+
+    settings = get_settings()
+    monkeypatch.setattr(settings, "test_mode", False)
+    monkeypatch.setattr(settings, "ai_provider", "openrouter")
+    monkeypatch.setattr(settings, "ai_base_url", "https://openrouter.ai/api/v1")
+    monkeypatch.setattr(settings, "ai_api_key", "test-key")
+    monkeypatch.setattr(settings, "ai_chat_model", "deepseek/deepseek-v4.1-flash")
+    monkeypatch.setattr(settings, "ai_reasoning_effort", effort, raising=False)
 
     captured: dict = {}
 
@@ -38,15 +48,20 @@ def test_openrouter_requests_allow_data_collection_and_fallbacks(monkeypatch):
         return FakeResponse()
 
     monkeypatch.setattr("urllib.request.urlopen", fake_urlopen)
-    adapter = OpenAICompatibleLLMAdapter(
-        base_url="https://openrouter.ai/api/v1",
-        api_key="test-key",
-        model="nex-agi/nex-n2.5-mini:free",
-    )
+    adapter = get_llm_adapter()
+    assert isinstance(adapter, OpenAICompatibleLLMAdapter)
 
     assert adapter._generate_sync("system", "user") == "{}"
-    assert captured["model"] == "nex-agi/nex-n2.5-mini:free"
-    assert captured["provider"] == {"allow_fallbacks": True}
+    assert captured["model"] == "deepseek/deepseek-v4.1-flash"
+    assert captured["provider"] == {
+        "allow_fallbacks": True,
+        "sort": "latency",
+        "require_parameters": True,
+    }
+    if effort is None:
+        assert "reasoning" not in captured
+    else:
+        assert captured["reasoning"] == {"effort": effort}
 
 
 @pytest.fixture(scope="function")
