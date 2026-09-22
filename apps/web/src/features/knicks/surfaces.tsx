@@ -29,6 +29,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { AnswerPanel } from './archive'
+import { MEMORY_NOTE } from './conversation'
 import './surfaces.css'
 import { useAnalyst } from './use-analyst'
 
@@ -1038,6 +1039,10 @@ export function AnalystPage() {
     messages,
     analyst,
     submit,
+    retry,
+    retryQuestion,
+    newChat,
+    notice,
     archiveReady,
     archiveFailed,
     slow,
@@ -1088,6 +1093,31 @@ export function AnalystPage() {
             />
           )}
           <div className='analyst-form'>
+            <div className='mb-3 flex flex-wrap items-center justify-between gap-2'>
+              <p className='text-sm text-muted-foreground'>{MEMORY_NOTE}</p>
+              <Button
+                type='button'
+                variant='outline'
+                onClick={() => {
+                  newChat()
+                  requestAnimationFrame(() =>
+                    document.getElementById('analyst-question')?.focus()
+                  )
+                }}
+              >
+                New chat
+              </Button>
+            </div>
+            {notice && (
+              <p role='status' className='mb-3 text-sm'>
+                {notice}
+              </p>
+            )}
+            {retryQuestion && !analyst.error && !analyst.isPending && (
+              <Button type='button' variant='outline' onClick={retry}>
+                Retry question
+              </Button>
+            )}
             <label htmlFor='analyst-question'>Ask a season question</label>
             <Textarea
               id='analyst-question'
@@ -1157,9 +1187,7 @@ export function AnalystPage() {
                   ? 'The analyst could not answer that request. Retry shortly if it timed out or reached a rate limit.'
                   : 'You are offline. Reconnect to search the archive.'
               }
-              onRetry={() =>
-                analyst.variables && analyst.mutate(analyst.variables)
-              }
+              onRetry={retryQuestion ? retry : undefined}
             />
           ) : null}
           {analyst.isPending ? (
@@ -1175,13 +1203,18 @@ export function AnalystPage() {
               </p>
             </div>
           ) : null}
-          {messages.map((message) => (
+          {messages.map((message, index) => (
             <div key={message.id}>
-              {message.response ? (
+              {message.boundary ? (
+                <p role='status' className='archive-boundary'>
+                  {message.boundary}
+                </p>
+              ) : message.response ? (
                 <AnswerPanel
                   answer={message.response}
                   onClarification={submit}
                   disabled={!archiveReady || analyst.isPending}
+                  showFollowUps={index === messages.length - 1}
                 />
               ) : (
                 <p className='archive-question'>{message.content}</p>

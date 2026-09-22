@@ -13,6 +13,9 @@ from app.services.runtime_store import _redis
 
 TTL = 86_400
 _BEGIN = """
+if redis.call('EXISTS', KEYS[1]) == 0 and ARGV[6] == '1' then
+  return {'conflict', 'session_expired'}
+end
 local old = redis.call('HGET', KEYS[1], 'turn:' .. ARGV[1])
 if old then
   local t = cjson.decode(old)
@@ -64,6 +67,7 @@ class SessionTurn:
     async def begin(
         cls, token: str | None, turn_id: str, revision: int, request: dict[str, Any]
     ) -> SessionTurn:
+        supplied_token = token is not None
         # Deterministic opaque token makes first-turn transport retries replayable too.
         token = (
             token
@@ -82,7 +86,16 @@ class SessionTurn:
             raise SessionUnavailable()
         try:
             status, value = await redis.eval(
-                _BEGIN, 2, turn.key, turn.key + ":lease", turn_id, digest, revision, turn.owner, TTL
+                _BEGIN,
+                2,
+                turn.key,
+                turn.key + ":lease",
+                turn_id,
+                digest,
+                revision,
+                turn.owner,
+                TTL,
+                1 if supplied_token else 0,
             )
             status, value = status.decode(), value.decode()
             if status == "conflict":

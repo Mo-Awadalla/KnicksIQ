@@ -83,7 +83,7 @@ async def evaluate(base_url: str, repetitions: int) -> dict[str, Any]:
                 turn_id = uuid.uuid4().hex
                 request = dict(
                     question=question,
-                    context=context[-12:],
+                    context=context[-10:],
                     session_token=token,
                     expected_revision=revision,
                     turn_id=turn_id,
