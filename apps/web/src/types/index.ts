@@ -224,6 +224,8 @@ export interface AnalyticsPayload {
 
 export interface AnalysisResponse {
   session_token?: string | null
+  session_expires_at?: string | null
+  follow_up_questions?: string[]
   revision?: number | null
   state_committed?: boolean
   llm_validated?: boolean
