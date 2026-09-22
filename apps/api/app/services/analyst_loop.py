@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import asyncio
 import json
+import logging
+import re
 import time
 from typing import Any, TypeVar
 
@@ -30,6 +32,7 @@ from app.services.report_llm import get_llm_adapter
 from pydantic import BaseModel
 
 Schema = TypeVar("Schema", bound=BaseModel)
+logger = logging.getLogger(__name__)
 
 
 def encoded(value: Any) -> str:
@@ -56,6 +59,56 @@ def compact_schema(schema: type) -> dict[str, Any]:
 
     result = strip(schema.model_json_schema())
     result["title"] = schema.__name__
+    return result
+
+
+def scoped_response_schema(schema: type[BaseModel], payload: dict[str, Any]) -> dict[str, Any]:
+    """Constrain provider output to references and complete values actually supplied."""
+    result = schema.model_json_schema()
+    definitions = result.get("$defs", {})
+    uses = []
+    for claim in payload["claims"]:
+        uses.append(
+            {
+                "claim_id": claim["claim_id"],
+                "displayed_value": claim["value"],
+                "decimal_places": None,
+            }
+        )
+        if type(claim["value"]) in (int, float):
+            uses.extend(
+                {
+                    "claim_id": claim["claim_id"],
+                    "displayed_value": round(claim["value"], places),
+                    "decimal_places": places,
+                }
+                for places in range(4)
+            )
+    if "ClaimUse" in definitions and uses:
+        definitions["ClaimUse"] = {"enum": uses}
+
+    def restrict_array(properties: dict[str, Any], key: str, values: list[str]) -> None:
+        if values:
+            properties[key]["items"] = {"type": "string", "enum": values}
+        else:
+            properties[key]["maxItems"] = 0
+
+    answer_schema = result if schema is ProposedAnswer else definitions.get("ProposedAnswer")
+    if answer_schema:
+        properties = answer_schema["properties"]
+        if not uses:
+            properties["claims"]["maxItems"] = 0
+        restrict_array(properties, "fact_ids", [c["fact_id"] for c in payload["candidates"]])
+        restrict_array(properties, "evidence_ids", [e["evidence_id"] for e in payload["evidence"]])
+    if schema is AnswerReview:
+        properties = definitions["AssertionReview"]["properties"]
+        properties["text"]["enum"] = payload["review_spans"]
+        restrict_array(
+            properties, "supporting_claim_ids", [c["claim_id"] for c in payload["claims"]]
+        )
+        restrict_array(
+            properties, "supporting_evidence_ids", [e["evidence_id"] for e in payload["evidence"]]
+        )
     return result
 
 
@@ -120,6 +173,13 @@ class AnalystLoop:
         if review:
             # Fresh context: no writer history, tool planning, or self-declared support verdicts.
             payload["proposed_answer"] = answer.model_dump(mode="json") if answer else None
+            # Preserve punctuation and whitespace at backend-defined review boundaries.
+            # A span fails if any assertion within it is unsupported.
+            payload["review_spans"] = (
+                re.findall(r".+?(?:[.!?](?:\s+|$)|$)", answer.text, flags=re.DOTALL)
+                if answer
+                else []
+            )
             claims = [self.sent_claims[u.claim_id] for u in answer.claims] if answer else []
             evidence = list(self.sent_evidence.values())
             candidates = []
@@ -219,6 +279,7 @@ class AnalystLoop:
         review: bool = False,
         answer: ProposedAnswer | None = None,
         repair: str | None = None,
+        timeout_seconds: float | None = None,
     ) -> Schema:
         if self.calls >= self.settings.analyst_max_model_calls or self.remaining() <= 0:
             raise TimeoutError("Model-call or deadline limit")
@@ -229,9 +290,12 @@ class AnalystLoop:
         if review:
             system = (
                 "Independently review EVERY assertion in the entire proposed answer, including "
-                "introductions, qualifiers, transitions and conclusions. Return ordered exact "
-                "text spans which concatenate byte-for-byte to proposed_answer.text, preserving "
-                "whitespace. Split compound assertions when their support differs. Verdicts are "
+                "introductions, qualifiers, transitions and conclusions. Return ONE assertion "
+                "for EACH review_spans entry in order, copying its text exactly, including "
+                "trailing spaces and punctuation. Do not split, merge, or paraphrase spans. "
+                "Every assertion within a span must be supported for that span to pass; if "
+                "any part is unsupported or insufficient, mark the entire span accordingly "
+                "and identify the offending part. Verdicts are "
                 "supported, unsupported, insufficient_evidence. Check subjects, metric-value "
                 "relationships, units, signs, denominator, filters, window, baseline, release, "
                 "rounding and citations against immutable claims. Every factual span needs actual "
@@ -242,20 +306,24 @@ class AnalystLoop:
             )
         else:
             system = (
-                "You are KnicksIQ, a conversational analyst. Use balanced investigation and "
-                "grounded interpretation. Choose controlled tools to investigate, then write "
-                "natural concise prose. Return JSON matching schema. An answer action includes "
-                "its proposed answer; call_tools has tools and null answer. No hidden tools or "
-                "external knowledge. Scope comes from the backend. Answer mixed requests with "
-                "supported archive facts and a concise live-coverage limitation. Claims are "
-                "immutable: reference IDs and exact displayed values (decimal_places only for "
-                "rounding). Reference every factual claim used, and selected discovery fact_ids. "
-                "Do not invent claim objects or references. Evidence retrieval is not an aggregate "
-                "population. You may explain why an observed stat is interesting without inventing "
-                "causes. Explain prior facts directly when available; ask clarification for "
-                "ambiguous entities. Never claim selection of an extreme proves improvement. "
-                "For a different player use discover_facts. The backend excludes the last subject. "
-                "When no tool rounds remain, return an answer action, never call_tools."
+                "You are KnicksIQ. Return JSON matching schema, using backend evidence only. "
+                "For interesting stats or another player, call discover_facts FIRST with the "
+                "user's question unchanged. Empty claims means call a tool before stating stats. "
+                "get_player_stats calculates player metrics; get_team_stats gives team totals; "
+                "compare_windows compares populations; search_archive finds narrative examples; "
+                "get_evidence expands returned references. Answer once evidence is sufficient. "
+                "call_tools requires tools and null answer. Answer actions require an answer "
+                "object containing text, claims, evidence_ids and fact_ids, never null. "
+                "Include EVERY used claim in answer.claims: copy claim_id and ENTIRE value into "
+                "displayed_value, including every object key. Use each claim once. Only numeric "
+                "rounding uses decimal_places. Copy selected candidates[].fact_id into fact_ids "
+                "and evidence[].evidence_id into evidence_ids exactly; never shorten IDs. "
+                "For one stat, select ONE fact and explain an observed contrast in two short "
+                "sentences. Avoid evaluative labels like efficient, dominant or all-around "
+                "without a supporting metric/baseline. Do not infer causes or rankings. "
+                "Explain prior facts directly. Clarify ambiguous subjects. For mixed requests, "
+                "answer the archive portion and briefly state the live-data gap. Scope is "
+                "backend-controlled. When no tool rounds remain, return an answer action."
             )
         if repair:
             system += " Repair unsupported wording using existing evidence only. No investigation."
@@ -265,20 +333,23 @@ class AnalystLoop:
         adapter.max_tokens = 600 if schema is Action and not self.tools.claims else 1200
         if hasattr(adapter, "response_schema"):
             adapter.response_schema = (
-                schema.model_json_schema()
+                scoped_response_schema(schema, payload)
                 if self.settings.analyst_provider_format == "json_schema"
                 else None
             )
+        call_timeout = min(
+            self.remaining(),
+            self.settings.ai_request_timeout_seconds,
+            timeout_seconds if timeout_seconds is not None else float("inf"),
+        )
         if hasattr(adapter, "timeout_seconds"):
-            adapter.timeout_seconds = min(
-                self.remaining(), self.settings.ai_request_timeout_seconds
-            )
+            adapter.timeout_seconds = call_timeout
         self.calls += 1  # Failed and malformed calls count too.
         self.costs.append(None)
         started = time.monotonic()
         try:
             raw = await asyncio.wait_for(
-                adapter.generate(system=system, user=encoded(payload)), timeout=self.remaining()
+                adapter.generate(system=system, user=encoded(payload)), timeout=call_timeout
             )
             metadata = getattr(adapter, "last_metadata", {})
             self.costs[-1] = (metadata.get("usage") or {}).get("cost")
@@ -306,7 +377,21 @@ class AnalystLoop:
                 if allow_model and await self.reserve(3):
                     return await self.investigate()
                 return await self.fallback("Model or budget unavailable.")
-        except Exception:
+        except Exception as exc:
+            # Record the failing stage without prompts, evidence, or provider response bodies.
+            logger.warning(
+                "analyst_execution_failed error_type=%s stage=%s model_calls=%s tool_rounds=%s",
+                type(exc).__name__,
+                self.trace[-1]["stage"] if self.trace else "admission",
+                self.calls,
+                self.rounds,
+                extra={
+                    "error_type": type(exc).__name__,
+                    "model_calls": self.calls,
+                    "tool_rounds": self.rounds,
+                    "stage": self.trace[-1]["stage"] if self.trace else "admission",
+                },
+            )
             return self.render_fallback(
                 "A generated explanation could not be verified on this turn."
             )
@@ -346,18 +431,33 @@ class AnalystLoop:
             if supported:
                 return self.render(action.answer, llm=True)
             # Only one repair, with capacity and time for both revision and review.
+            # Split remaining time between the calls instead of demanding two full
+            # 20-second provider timeouts inside a 30-second application deadline.
+            repair_timeout = min(
+                self.settings.ai_request_timeout_seconds, (self.remaining() - 0.5) / 2
+            )
+            observed_call_seconds = max(
+                (item["latency_ms"] / 1000 for item in self.trace), default=1.0
+            )
             if self.calls + 2 <= self.settings.analyst_max_model_calls and (
-                self.remaining() >= 2 * self.settings.ai_request_timeout_seconds + 0.25
+                repair_timeout >= max(1.0, observed_call_seconds)
             ):
                 available = sum(slots for _, slots in self.reservations) - self.calls
                 if available >= 2 or await self.reserve(2 - available):
-                    repaired = await self.model(ProposedAnswer, answer=action.answer, repair=reason)
-                    supported, _ = await self.validate(repaired)
+                    repaired = await self.model(
+                        ProposedAnswer,
+                        answer=action.answer,
+                        repair=reason,
+                        timeout_seconds=repair_timeout,
+                    )
+                    supported, _ = await self.validate(repaired, timeout_seconds=repair_timeout)
                     if supported:
                         return self.render(repaired, llm=True)
             return self.render_fallback("Proposed wording did not pass evidence review.")
 
-    async def validate(self, answer: ProposedAnswer) -> tuple[bool, str]:
+    async def validate(
+        self, answer: ProposedAnswer, *, timeout_seconds: float | None = None
+    ) -> tuple[bool, str]:
         if not validate_structure(
             answer,
             self.sent_claims,
@@ -367,7 +467,9 @@ class AnalystLoop:
         ):
             return False, "Invalid claim value, release, baseline or reference."
         try:
-            review = await self.model(AnswerReview, review=True, answer=answer)
+            review = await self.model(
+                AnswerReview, review=True, answer=answer, timeout_seconds=timeout_seconds
+            )
         except (ValueError, RuntimeError):
             return False, "Reviewer failed or returned malformed output."
         if not validate_review(review, answer, self.sent_claims, self.sent_evidence):

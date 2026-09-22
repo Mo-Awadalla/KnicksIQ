@@ -9,7 +9,7 @@ from typing import Any, Literal
 from pydantic import BaseModel, ConfigDict, Field
 
 CONTRACT_VERSION = "analyst-evidence-v1"
-PROMPT_VERSION = "analyst-balanced-v1"
+PROMPT_VERSION = "analyst-balanced-v2"
 VALIDATOR_VERSION = "whole-answer-v1"
 INTERPRETATION_POLICY = (
     "Explain observed magnitude, contrast and basketball meaning. Never infer unobserved "

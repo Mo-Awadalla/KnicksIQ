@@ -4,7 +4,8 @@ The opt-in `ANALYST_EVIDENCE_LOOP_ENABLED=true` route replaces the discovery ear
 return and legacy planner/generator chain with one bounded orchestrator. It uses
 the existing configured model, six controlled tools, immutable backend claims,
 a separate whole-answer reviewer, and one optional revision/re-review. The default
-flag remains **false** pending provider capability tests and reviewed promotion.
+local default remains **false**. The production Blueprint enables the loop and
+`llm_primary` following the owner’s explicit production activation request.
 `ANALYSIS_ANSWER_MODE=deterministic` provides immediate model-free rollback with
 the flag enabled. `shadow` exercises the same metered loop and delivers facts.
 
@@ -110,14 +111,19 @@ completion, naturalness and latency classifications must be supplied separately.
 Missing measurements fail the gate helper. Existing release approvals remain
 required; this implementation does not automatically promote or deploy.
 
-The previous NVIDIA free model produced HTTP 404 because its endpoint did not
-match the enforced privacy and structured-output constraints. The configured
-model is now `nex-agi/nex-n2.5-mini:free`, which advertises structured outputs;
-a fresh provider probe passed Action, ProposedAnswer and AnswerReview in both
-JSON-object and strict JSON-schema modes. This is a capability check only.
-Actual-model six-turn runs, five-trial evaluation, reviewer calibration, warm
-p95 and shadow promotion remain **not passed**. See
-`release-evidence/analyst-evidence-v1/`.
+The production model is `deepseek/deepseek-v4.1-flash`, selected explicitly by the
+owner on 2026-09-22. Production uses JSON-object output with local schema checks,
+`AI_REASONING_EFFORT=none`, latency-prioritized OpenRouter routing, and required
+parameter support. This keeps provider reasoning from consuming the bounded JSON
+output allowance. The independent whole-answer review remains mandatory.
+The production application cutoff is now $2, matching the owner’s available
+credit; the original $8 default was not increased.
+
+DeepSeek passed Action, ProposedAnswer and AnswerReview capability probes and
+produced validated discovery answers against the active archive. These smoke
+checks are not a completed release evaluation: repeated six-turn completion,
+held-out human reviewer calibration, Recall@5 and warm p95 gates remain unproven.
+Earlier NVIDIA and Nex probe artifacts are historical, not evidence for DeepSeek.
 
 Development conversations and a separate held-out reviewer challenge draft live
 under `app/evaluation/analyst-fixtures/`. Draft expected verdicts are explicitly

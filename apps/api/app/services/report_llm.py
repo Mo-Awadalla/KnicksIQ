@@ -59,6 +59,7 @@ class OpenAICompatibleLLMAdapter(LLMAdapter):
         timeout_seconds: float = 20.0,
         response_format_json: bool = True,
         max_tokens: int = 500,
+        reasoning_effort: str | None = None,
     ) -> None:
         self.base_url = base_url.rstrip("/")
         self.api_key = api_key
@@ -66,6 +67,7 @@ class OpenAICompatibleLLMAdapter(LLMAdapter):
         self.timeout_seconds = timeout_seconds
         self.response_format_json = response_format_json
         self.max_tokens = max_tokens
+        self.reasoning_effort = reasoning_effort
         self.response_schema: dict[str, Any] | None = None
         self.last_metadata: dict[str, Any] = {}
 
@@ -88,7 +90,9 @@ class OpenAICompatibleLLMAdapter(LLMAdapter):
             # The configured OpenRouter account is allowed to use providers that
             # collect data. Keep fallbacks enabled, while requiring parameter
             # support below whenever a structured response is requested.
-            payload_body["provider"] = {"allow_fallbacks": True}
+            payload_body["provider"] = {"allow_fallbacks": True, "sort": "latency"}
+            if self.reasoning_effort is not None:
+                payload_body["reasoning"] = {"effort": self.reasoning_effort}
         if self.response_schema is not None:
             payload_body["response_format"] = {
                 "type": "json_schema",
@@ -98,6 +102,8 @@ class OpenAICompatibleLLMAdapter(LLMAdapter):
                 payload_body["provider"]["require_parameters"] = True
         elif self.response_format_json:
             payload_body["response_format"] = {"type": "json_object"}
+            if "openrouter.ai" in self.base_url:
+                payload_body["provider"]["require_parameters"] = True
         payload = json.dumps(payload_body).encode("utf-8")
         req = urllib.request.Request(
             f"{self.base_url}/chat/completions",
@@ -156,6 +162,7 @@ def get_llm_adapter(*, response_format_json: bool = True) -> LLMAdapter:
         timeout_seconds=settings.ai_request_timeout_seconds,
         response_format_json=response_format_json,
         max_tokens=getattr(settings, "rag_generation_max_output_tokens", 500),
+        reasoning_effort=settings.ai_reasoning_effort,
     )
 
 

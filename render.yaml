@@ -42,15 +42,17 @@ services:
       - key: AI_API_KEY
         sync: false
       - key: AI_CHAT_MODEL
-        value: nex-agi/nex-n2.5-mini:free
+        value: deepseek/deepseek-v4.1-flash
+      - key: AI_REASONING_EFFORT
+        value: none
       - key: AI_REQUEST_TIMEOUT_SECONDS
         value: "20"
       - key: OPENROUTER_ALLOWED_MODELS
-        value: '["nex-agi/nex-n2.5-mini:free"]'
+        value: '["deepseek/deepseek-v4.1-flash"]'
       - key: OPENROUTER_SUMMARY_MODEL
-        value: nex-agi/nex-n2.5-mini:free
+        value: deepseek/deepseek-v4.1-flash
       - key: OPENROUTER_MONTHLY_CUTOFF_USD
-        value: "8"
+        value: "2"
       - key: SENTRY_DSN
         sync: false
       - key: CORS_ORIGINS
@@ -74,7 +76,11 @@ services:
       - key: RAG_LLM_PLANNER_ENABLED
         value: "true"
       - key: ANALYSIS_ANSWER_MODE
-        value: shadow
+        value: llm_primary
+      - key: ANALYST_EVIDENCE_LOOP_ENABLED
+        value: "true"
+      - key: ANALYST_PROVIDER_FORMAT
+        value: json_object
       - key: ANALYSIS_SHADOW_SAMPLE_RATE
         value: "0.1"
       - key: ANALYSIS_PROMPT_VERSION
