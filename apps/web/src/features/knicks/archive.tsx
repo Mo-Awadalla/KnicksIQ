@@ -15,6 +15,7 @@ import { Field, FieldGroup, FieldLabel } from '@/components/ui/field'
 import { Textarea } from '@/components/ui/textarea'
 import { AnalyticsCards } from './analytics-cards'
 import './archive.css'
+import { MEMORY_NOTE } from './conversation'
 import './landing.css'
 import { useAnalyst } from './use-analyst'
 
@@ -65,10 +66,12 @@ export function AnswerPanel({
   answer,
   onClarification,
   disabled,
+  showFollowUps = false,
 }: {
   answer: AnalysisResponse
   onClarification: (value: string) => void
   disabled: boolean
+  showFollowUps?: boolean
 }) {
   return (
     <section>
@@ -90,6 +93,24 @@ export function AnswerPanel({
             </p>
           ) : null}
           <p className='archive-answer-copy'>{answer.answer}</p>
+          {showFollowUps && !!answer.follow_up_questions?.length && (
+            <div
+              className='mt-4 flex flex-wrap gap-2'
+              aria-label='Follow-up questions'
+            >
+              {answer.follow_up_questions.map((followUp) => (
+                <Button
+                  key={followUp}
+                  type='button'
+                  variant='outline'
+                  disabled={disabled}
+                  onClick={() => onClarification(followUp)}
+                >
+                  {followUp}
+                </Button>
+              ))}
+            </div>
+          )}
           {answer.analytics?.clarification ? (
             <fieldset className='mt-4'>
               <legend className='mb-3 text-sm font-semibold'>
@@ -150,6 +171,10 @@ export function SeasonArchivePage() {
     messages,
     analyst,
     submit,
+    retry,
+    retryQuestion,
+    newChat,
+    notice,
     archiveReady,
     archiveFailed,
     archiveChecking,
@@ -340,6 +365,18 @@ export function SeasonArchivePage() {
                         Ask the archive
                       </FieldLabel>
                     </h3>
+                    <Button
+                      type='button'
+                      variant='outline'
+                      onClick={() => {
+                        newChat()
+                        requestAnimationFrame(() =>
+                          document.getElementById('archive-question')?.focus()
+                        )
+                      }}
+                    >
+                      New chat
+                    </Button>
                     {archiveReady ? (
                       <p className='archive-console-hint'>
                         Enter to search · Shift + Enter for a new line
@@ -377,6 +414,17 @@ export function SeasonArchivePage() {
                       </div>
                     )}
                   </div>
+                  <p className='text-sm text-muted-foreground'>{MEMORY_NOTE}</p>
+                  {notice && (
+                    <p role='status' className='text-sm'>
+                      {notice}
+                    </p>
+                  )}
+                  {retryQuestion && !analyst.error && !analyst.isPending && (
+                    <Button type='button' variant='outline' onClick={retry}>
+                      Retry question
+                    </Button>
+                  )}
                   <fieldset
                     className='archive-console-controls'
                     disabled={!archiveReady || analyst.isPending}
@@ -480,9 +528,8 @@ export function SeasonArchivePage() {
                       : 'You are offline. Reconnect to search the archive.'}
                     <Button
                       disabled={!archiveReady || analyst.isPending}
-                      onClick={() =>
-                        analyst.variables && analyst.mutate(analyst.variables)
-                      }
+                      onClick={retry}
+                      hidden={!retryQuestion}
                     >
                       Retry question
                     </Button>
@@ -491,8 +538,16 @@ export function SeasonArchivePage() {
               ) : null}
               {messages.length > 0 ? (
                 <ol className='archive-message-list'>
-                  {messages.map((message) =>
-                    message.role === 'user' ? (
+                  {messages.map((message, index) =>
+                    message.boundary ? (
+                      <li
+                        key={message.id}
+                        role='status'
+                        className='archive-boundary'
+                      >
+                        {message.boundary}
+                      </li>
+                    ) : message.role === 'user' ? (
                       <li key={message.id}>
                         <p className='archive-question'>
                           <span className='sr-only'>You asked: </span>
@@ -505,6 +560,7 @@ export function SeasonArchivePage() {
                           answer={message.response}
                           onClarification={submit}
                           disabled={analyst.isPending}
+                          showFollowUps={index === messages.length - 1}
                         />
                       </li>
                     ) : null

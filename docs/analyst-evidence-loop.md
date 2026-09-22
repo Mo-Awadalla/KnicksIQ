@@ -49,15 +49,16 @@ both calls. Replies remain buffered. No prompt logging is introduced.
 
 ## Session API
 
-Send up to twelve user/assistant messages as context, plus:
+Send previous user/assistant messages as context, plus:
 
 ```json
 {"question":"Give me an interesting stat", "turn_id":"client-generated-uuid",
  "session_token":null, "expected_revision":0}
 ```
 
-Replies preserve `answer` and `citations` and add `session_token`, `revision`,
-`state_committed`, and `llm_validated`. The opaque token is a bearer secret; do not
+Replies preserve `answer` and `citations` and add `follow_up_questions` (zero to two),
+`session_token`, `revision`, `session_expires_at`, `state_committed`, and
+`llm_validated`. The opaque token is a bearer secret; do not
 log it. Redis owns subject/scope origins, intent, claims/receipts, delivered facts,
 families, release and revision. Client `conversation_state` is ignored by the new
 route. Active release identity is pinned and prior references are revalidated
@@ -71,9 +72,27 @@ expire after 24 hours of inactivity. Redis loss gives an explicitly stateless
 factual response; a failed commit never claims a committed revision. The browser
 retains turn IDs for retry and prevents synchronous duplicate submission.
 
+Both chat surfaces share a transcript that remains fully visible. Each request sends
+the ten previous individual messages, excluding the current question. The API keeps
+at least a UTF-8-safe opening excerpt of every retained message, then restores
+newest detail within a 2,000-byte serialized history allowance. Server session
+state separately retains topic, scope, and verified claims. Transcript text has no
+evidence authority and is absent from the independent answer reviewer. The writer
+returns short answers by default and can offer two follow-up questions in the same
+call. The reviewer checks suggestions in its existing call; rejected suggestions
+are omitted while a valid answer survives.
+
+The browser stores a versioned transcript, session identity, expiry, archive version,
+and exact pending turn in `sessionStorage`. Reload exposes Retry for an interrupted
+turn. New chat aborts in-flight work and clears the active conversation. A 409 with
+`session_expired` starts a visible new-conversation boundary, keeps older messages
+readable, and leaves the submitted question ready for Retry or editing. Archive
+changes similarly invalidate the old context. Storage failure leaves the in-memory
+chat usable and displays a refresh-recovery notice.
+
 ## Budget operations
 
-The application cutoff remains $8. Reservations, cutoff checks and settlement are
+The configured production cutoff remains $2. Reservations, cutoff checks and settlement are
 atomic. The expected three-call path is reserved before generation; further
 investigation/repair reserves remaining capacity before execution. Unknown usage
 and uncertain timeouts retain conservative charges. Reported cost settles actual

@@ -1,5 +1,20 @@
 # Production deployment handoff
 
+## Conversation feature verification (2026-09-22)
+
+The homepage and Analyst page now share a persistent, versioned conversation with
+ten previous messages of model context, current topic and verified facts. Reviewed
+follow-up suggestions, New chat, interrupted-turn Retry, session expiry boundaries,
+and archive-change invalidation are implemented locally. The full backend suite passed
+342 tests. The frontend passed 47 browser unit tests, lint
+with two pre-existing warnings, TypeScript and production build. All 34 browser
+tests passed, including refresh, expiry, storage failure and late callbacks.
+Graphify was refreshed. The production-model capability probe stopped at
+`budget_unavailable` before making a provider call; real-provider conversation
+quality remains unmeasured. See the current working tree for the uncommitted
+implementation. This feature does not change the release gates below or authorize
+deployment.
+
 Application deployment is pending. Current candidate is `a460cd28c7f63bfaa2f03f5a9a5bce120b5b5507` after the four border fixes. The follow-up passes production frontend build, two report browser tests, formatting and the design detector; desktop/mobile review shows no overflow. Rebind the final release evidence to this candidate before deployment. Earlier full-suite tested source commit: `ec62fdaba2768b73630c91e13c8d088dff03ed72` on `codex/production-ready-20260907`.
 
 The isolated checkout is `/tmp/knicksiq-production-ready-20260907`. The original working tree is preserved, including concurrent homepage edits.

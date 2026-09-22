@@ -1,11 +1,14 @@
 import { describe, expect, it } from 'vitest'
-import { retainLastFour } from './conversation'
+import { recentContext } from './conversation'
 
 describe('analyst conversation context', () => {
-  it('retains only the four newest user and assistant messages', () => {
-    const messages = [1, 2, 3, 4].map((content) => ({ content }))
-    expect(
-      retainLastFour(messages, { content: 5 }).map((item) => item.content)
-    ).toEqual([2, 3, 4, 5])
+  it('retains ten previous messages in order', () => {
+    const messages = Array.from({ length: 11 }, (_, index) => ({
+      role: index % 2 ? ('assistant' as const) : ('user' as const),
+      content: String(index),
+    }))
+    expect(recentContext(messages).map((item) => item.content)).toEqual(
+      Array.from({ length: 10 }, (_, index) => String(index + 1))
+    )
   })
 })

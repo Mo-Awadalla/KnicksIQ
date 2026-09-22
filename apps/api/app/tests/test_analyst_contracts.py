@@ -97,6 +97,10 @@ async def test_session_race_replay_conflict_and_atomic_commit(local_redis):
         "fact:1"
     ]
     assert 86000 < await local_redis.ttl(first.key) <= 86400
+    await local_redis.delete(first.key)
+    with pytest.raises(SessionConflict) as expired:
+        await SessionTurn.begin(first.token, "expired-turn-identity", 1, {"question": "stat"})
+    assert expired.value.reason == "session_expired"
 
 
 async def test_atomic_budget_never_resets_missing_ledger(local_redis, monkeypatch):
@@ -294,6 +298,36 @@ async def test_bounded_loop_and_revalidated_explanation(db_session, local_redis,
     loop2 = AnalystLoop(followup, [])
     result = await loop2.run()
     assert result["llm_validated"] and loop2.calls == 2 and loop2.rounds == 0
+
+
+async def test_ten_short_prior_messages_still_reach_writer(db_session, local_redis, monkeypatch):
+    await local_redis.set(f"ai-budget:{datetime.now(UTC):%Y-%m}", 0)
+    tools, _ = await make_tools(db_session)
+    adapter = ScriptedAdapter()
+    monkeypatch.setattr(analyst_loop, "get_llm_adapter", lambda: adapter)
+    context = [
+        {"role": "user" if index % 2 == 0 else "assistant", "content": f"Turn {index}"}
+        for index in range(10)
+    ]
+    result = await AnalystLoop(tools, context).run()
+    assert result["llm_validated"], result
+    assert adapter.prompts[0]["context"] == context
+
+
+async def test_provider_schema_growth_uses_factual_fallback(db_session, local_redis, monkeypatch):
+    await local_redis.set(f"ai-budget:{datetime.now(UTC):%Y-%m}", 0)
+    monkeypatch.setattr(get_settings(), "analyst_provider_format", "json_schema")
+    tools, _ = await make_tools(db_session)
+
+    class SchemaAdapter(ScriptedAdapter):
+        response_schema: dict | None = None
+
+    adapter = SchemaAdapter()
+    monkeypatch.setattr(analyst_loop, "get_llm_adapter", lambda: adapter)
+    result = await AnalystLoop(tools, []).run()
+    assert not result["llm_validated"]
+    assert len(adapter.prompts) == 1
+    assert result["answer"]
 
 
 async def test_bad_provider_output_counts_call_and_falls_back(
