@@ -210,6 +210,10 @@ class AnalystTools:
         self, game: Game, stat: PlayerGameStat | None = None, player: Player | None = None
     ) -> Evidence:
         identity = f"{self.release.version}:game:{game.id}"
+        if stat is not None and player is not None:
+            identity += f":player:{player.id}"
+        if identity in self.evidence:
+            return self.evidence[identity]
         data: dict[str, Any] = {
             "date": str(game.game_date),
             "season_type": game.season_type,
@@ -219,7 +223,6 @@ class AnalystTools:
             "away_score": game.away_score,
         }
         if stat is not None and player is not None:
-            identity += f":player:{player.id}"
             data.update(
                 subject_id=f"player:{player.id}",
                 player=player.full_name,
@@ -682,6 +685,7 @@ class AnalystTools:
             [{"nba_player_id": key, "full_name": p.full_name} for key, p in players.items()],
         )
         by_source = {g.nba_game_id: g for g in games}
+        rows_by_game_player = {(s.game_id, p.id): (s, p) for s, p in self.rows}
         for fact in catalog:
             if fact["fingerprint"] in seen or not set(fact["source_game_ids"]) <= by_source.keys():
                 continue
@@ -695,8 +699,8 @@ class AnalystTools:
             receipts = [
                 self.receipt(g, s, p)
                 for g in selected
-                for s, p in self.rows
-                if s.game_id == g.id and p.id == player.id
+                if (g.id, player.id) in rows_by_game_player
+                for s, p in [rows_by_game_player[(g.id, player.id)]]
             ]
             eligibility = {
                 "policy_version": fact["detector_version"],

@@ -637,11 +637,22 @@ async def test_six_turn_conversation_protocol(client, local_redis, monkeypatch):
     assert outputs[5]["citations"]
 
 
-async def test_catalog_preserves_baselines_and_qualifier_population(db_session):
+async def test_catalog_preserves_baselines_and_qualifier_population(db_session, monkeypatch):
+    from collections import Counter
     from datetime import date, timedelta
 
     from app.models.box_score import PlayerGameStat
     from app.models.game import Game
+    from app.services import analyst_tools
+
+    evidence_type = analyst_tools.Evidence
+    constructed = Counter()
+
+    def counted_evidence(**kwargs):
+        constructed[kwargs["evidence_id"]] += 1
+        return evidence_type(**kwargs)
+
+    monkeypatch.setattr(analyst_tools, "Evidence", counted_evidence)
 
     tools, player = await make_tools(db_session)
     for i in range(14):
@@ -691,6 +702,8 @@ async def test_catalog_preserves_baselines_and_qualifier_population(db_session):
     assert not set(recent.game_ids) & set(prior.game_ids)
     ranks = [c for c in tools.claims.values() if c.metric_id.endswith(":qualifier_rank")]
     assert ranks and all(c.eligibility["minimum_appearances"] == 4 for c in ranks)
+    source_receipts = {key: count for key, count in constructed.items() if ":game:" in key}
+    assert source_receipts and max(source_receipts.values()) == 1
 
 
 def test_release_gates_require_actual_metrics_and_human_labels():
