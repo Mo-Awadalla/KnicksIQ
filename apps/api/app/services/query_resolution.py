@@ -167,7 +167,7 @@ def _name_candidates(question: str) -> list[str]:
         if words and not all(word in _NAME_STOPWORDS for word in words):
             candidates.append(normalized)
             if len(words) == 2:
-                candidates.extend(words)
+                candidates.extend(word for word in words if word not in _NAME_STOPWORDS)
     return list(dict.fromkeys(candidates))
 
 
