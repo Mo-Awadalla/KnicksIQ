@@ -14,7 +14,7 @@ local source snapshot; it is not a fresh audit of the current production databas
 The exact content is in `reports.diff`, `replacement-reports.json`, and
 `rollback-reports.json`. `review.json` contains source-file hashes, canonical data
 identity, per-report before/after hashes, both full audits and the policy. `SHA256SUMS`
-binds those four files. Rollback reports are the local baseline snapshot; verify they
+binds those four files and the observed production binding. Rollback reports are the local baseline snapshot; verify they
 match production before using them for rollback. The existing production backup and
 app/index rollback targets must also be pinned again before activation.
 
@@ -59,3 +59,28 @@ python3 tools/report_audit/prepare_review.py \
   --output docs/release-evidence/report-review-20260928
 uv run pytest tools/report_audit apps/api/app/tests/test_reports_api.py -q
 ```
+
+## Fresh observed production identity (partial binding)
+
+The already captured `reliability-20260928/live-before.json` identifies active release
+`1`, version `2025-26.20260714.1`, manifest
+`269b0db08fd07a1dbe53e6a388a313fe6afc04ace3cd3294dc9610c981c4b9fd`.
+All 101 stored `content_sha256` values match the local baseline when reconstructed
+using the existing release loader's representation (internal game ID and release ID).
+Report 80's separately captured public title, summary and three interval narratives
+also match the local baseline. See `observed-production-binding.json`, now included
+in `SHA256SUMS`; this comparison made no additional production requests.
+
+These stored hashes are ingestion-time metadata. They were not freshly recomputed
+from all current production rows, so they cannot exclude an in-place row change.
+The full fresh canonical/report-row audit and production rollback export remain
+unverified. The rollback snapshot above remains a local baseline, not a freshly
+exported production backup. The September 7 canonical-row comparison is historical.
+
+A prepared `bind_production.py` utility establishes a repeatable-read, read-only
+transaction and compares every canonical and report row. Its attempted production
+read failed in the sandbox; automatic approval review rejected escalation because
+it considered production report contents and metadata export insufficiently authorized.
+No production snapshot was written. Obtain explicit approval for that read/export
+before rerunning the utility; no workaround or retry was used. Owner content approval
+and activation remain separate, unchanged gates.
