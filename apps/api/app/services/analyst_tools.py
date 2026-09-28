@@ -18,7 +18,7 @@ from app.services.archive_retrieval import (
     search_archive_vectors,
 )
 from app.services.evidence_contracts import Candidate, Evidence, ToolCall, ToolResult, VerifiedClaim
-from app.services.query_resolution import ResolvedQuery, resolve_query
+from app.services.query_resolution import ResolvedQuery, is_record_request, resolve_query
 from basketball_core.analytics.catalog import _windows, build_fact_catalog
 from basketball_core.analytics.registry import STAT_REGISTRY
 from sqlalchemy import select
@@ -106,6 +106,8 @@ class AnalystTools:
         if followup:
             updates = {}
             for key in ("player_ids", "season_type", "opponent_id", "home_away", "game_result"):
+                if key == "game_result" and is_record_request(self.question):
+                    continue
                 if not getattr(self.scope, key) and prior.get(key):
                     updates[key] = prior[key]
             if self.different:
@@ -546,6 +548,8 @@ class AnalystTools:
         )
 
     def team(self, scope: ResolvedQuery, games: list[Game]) -> ToolResult:
+        if is_record_request(self.question):
+            games = [g for g in games if g.status == "final" and g.home_score != g.away_score]
         if scope.relative_game_count:
             games = games[-scope.relative_game_count :]
         evidence = [self.receipt(g) for g in games]

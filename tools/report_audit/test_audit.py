@@ -164,3 +164,29 @@ def test_exact_wrong_period_and_absent_sequence_cannot_pass():
     ]
     assert audit.verify_exact_run(exact_text(), GAME, events)[1] == "exact_clock_mismatch"
     assert audit.verify_exact_run(exact_text(start=3), GAME, events)[1] == "missing_exact_boundary"
+
+
+def test_report80_diagnosed_intervals_include_opponent_scoring():
+    import json
+
+    fixture = json.loads(Path(__file__).with_name("report80_fixture.json").read_text())
+    for text, bounds, before, after in [
+        (
+            "BOS produced a 16-4 run in Q3 from 06:11 to 02:22.",
+            (260, 296),
+            {"home": 72, "away": 62},
+            {"home": 76, "away": 78},
+        ),
+        (
+            "NYK produced a 12-4 run in Q3 from 11:41 to 09:33.",
+            (222, 231),
+            {"home": 54, "away": 53},
+            {"home": 66, "away": 57},
+        ),
+    ]:
+        evidence, error = audit.resolve_run(text, fixture["game"], fixture["events"])
+        assert error is None
+        assert (evidence["start_sequence"], evidence["end_sequence"]) == bounds
+        assert evidence["baseline_score"] == before
+        assert evidence["end_score"] == after
+        assert evidence["points_against"] == 4
