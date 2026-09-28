@@ -10,6 +10,7 @@ from app.models.game import Game
 from app.services.analyst_loop import AnalystLoop
 from app.services.analyst_tools import AnalystTools
 from app.services.evidence_contracts import ToolCall
+from app.tests.test_analyst_contracts import local_redis  # noqa: F401
 from app.tests.test_player_intelligence import _seed_release_stats
 from sqlalchemy import select
 
@@ -48,8 +49,10 @@ async def test_record_population(db_session, phrase, scope):
     tools = await record_tools(db_session, release, f"What were their {phrase} {scope}?")
     result = await tools.execute(ToolCall(name="get_team_stats", question=tools.question))
     values = {c.metric_id: c.value for c in result.claims}
+    assert tools.scope is not None
     assert tools.scope.game_result is None
     assert (values["wins"], values["losses"]) == (2, 1)
+    assert isinstance(values["wins"], int) and isinstance(values["losses"], int)
     assert values["wins"] + values["losses"] == result.claims[0].sample_size == 3
 
 
@@ -64,6 +67,7 @@ async def test_record_population(db_session, phrase, scope):
 async def test_explicit_result_subset(db_session, question, result, expected):
     release = await seed_record(db_session)
     tools = await record_tools(db_session, release, question)
+    assert tools.scope is not None
     assert tools.scope.game_result == result
     facts = await tools.execute(ToolCall(name="get_team_stats", question=question))
     values = {c.metric_id: c.value for c in facts.claims}
@@ -76,6 +80,7 @@ async def test_record_followup_clears_only_result(db_session):
     tools = await record_tools(
         db_session, release, "And what was their overall record?", tools.state
     )
+    assert tools.scope is not None
     assert tools.scope.game_result is None
     assert tools.scope.home_away == "home"
     assert tools.scope.opponent_id == "BOS"
@@ -105,18 +110,24 @@ async def test_retrieval_failure_returns_unavailable_once(db_session, monkeypatc
     assert retrieve.await_count == 1
 
 
+@pytest.mark.usefixtures("local_redis")
 async def test_api_record_and_failure(client, monkeypatch):
     from app.core.db import AsyncSessionLocal
 
     async with AsyncSessionLocal() as db:
         await seed_record(db)
     monkeypatch.setattr(get_settings(), "analyst_evidence_loop_enabled", True)
+    monkeypatch.setattr(get_settings(), "analysis_answer_mode", "llm_primary")
     monkeypatch.setattr(AnalystLoop, "reserve", AsyncMock(return_value=True))
     monkeypatch.setattr(
         AnalystLoop, "investigate", AsyncMock(side_effect=RuntimeError("controlled"))
     )
-    for question in ["What were their wins and losses?", "What was their record?"]:
-        response = await client.post("/analysis/query", json={"question": question})
+    for index, question in enumerate(
+        ["What were their wins and losses?", "What was their record?"]
+    ):
+        response = await client.post(
+            "/analysis/query", json={"question": question, "turn_id": f"reliability-record-{index}"}
+        )
         assert response.status_code == 200
         result = response.json()
         assert "wins: 2" in result["answer"] and "losses: 1" in result["answer"]
@@ -153,7 +164,12 @@ async def test_current_evidence_reused_and_prior_facts_not_reused(db_session, mo
     monkeypatch.setattr(loop, "investigate", AsyncMock(side_effect=RuntimeError("review failure")))
     result = await loop.run()
     assert result["citations"] and retrieve.await_count == 0
-    # A populated claims dictionary alone must not suppress current-question retrieval.
+    # Exact prior record totals can be reused, but unrelated team points cannot.
+    assert (await AnalystLoop(tools, []).run(allow_model=False))["citations"]
+    assert retrieve.await_count == 0
+    tools.claims = {
+        key: claim for key, claim in tools.claims.items() if claim.metric_id == "points"
+    }
     new_loop = AnalystLoop(tools, [])
     result = await new_loop.run(allow_model=False)
     assert result["citations"] and retrieve.await_count == 1
@@ -168,9 +184,73 @@ async def test_budget_denial_and_exhausted_deadline(db_session, monkeypatch):
     monkeypatch.setattr(loop, "model", model)
     assert (await loop.run())["citations"]
     assert model.await_count == 0
+    tools.claims.clear()
     loop = AnalystLoop(tools, [], started=time.monotonic() - 1000)
     retrieve = AsyncMock(side_effect=AssertionError("deadline exhausted"))
     monkeypatch.setattr(tools, "execute", retrieve)
     result = await loop.run(allow_model=False)
     assert not result["citations"] and "unavailable" in result["answer"].lower()
     assert retrieve.await_count == 0
+
+
+def test_regular_season_is_not_a_fuzzy_player_name():
+    from app.models.player import Player
+    from app.services.query_resolution import _resolve_player_mentions
+
+    player = Player(id=314, full_name="Tari Eason", team_id="HOU", nba_player_id=314)
+    resolved, _ = _resolve_player_mentions(
+        "What was the Knicks record in the 2025-26 regular season?",
+        [player],
+        typo_threshold=0.86,
+    )
+    assert resolved == []
+
+
+async def test_api_retrieval_failure_is_unavailable(client, monkeypatch):
+    from app.core.db import AsyncSessionLocal
+
+    async with AsyncSessionLocal() as db:
+        await seed_record(db)
+    monkeypatch.setattr(get_settings(), "analyst_evidence_loop_enabled", True)
+    monkeypatch.setattr(AnalystTools, "execute", AsyncMock(side_effect=RuntimeError("controlled")))
+    response = await client.post("/analysis/query", json={"question": "What was their record?"})
+    assert response.status_code == 200
+    result = response.json()
+    assert "unavailable" in result["answer"].lower()
+    assert result["degraded"] and not result["citations"] and not result["llm_validated"]
+
+
+async def test_record_excludes_undecided_games(db_session):
+    release = await seed_record(db_session)
+    games = list(
+        (
+            await db_session.execute(
+                select(Game).where(Game.release_id == release.id).order_by(Game.id)
+            )
+        ).scalars()
+    )
+    games[0].status = "scheduled"
+    games[1].home_score = games[1].away_score
+    await db_session.commit()
+    tools = await record_tools(db_session, release, "What was their record?")
+    result = await AnalystLoop(tools, []).run(allow_model=False)
+    assert "wins: 0" in result["answer"] and "losses: 1" in result["answer"]
+    assert result["citations"]
+
+
+async def test_provider_timeout_reserves_recovery_window(db_session, monkeypatch):
+    release = await seed_record(db_session)
+    tools = await record_tools(db_session, release, "What was their record?")
+    loop = AnalystLoop(tools, [])
+    monkeypatch.setattr(get_settings(), "analyst_deadline_seconds", 0.9)
+    monkeypatch.setattr(loop, "reserve", AsyncMock(return_value=True))
+
+    async def slow_provider():
+        await asyncio.sleep(10)
+
+    monkeypatch.setattr(loop, "investigate", slow_provider)
+    started = time.monotonic()
+    result = await loop.run()
+    assert time.monotonic() - started < 0.9
+    assert "wins: 2" in result["answer"] and "losses: 1" in result["answer"]
+    assert result["citations"] and loop.recovery_ran

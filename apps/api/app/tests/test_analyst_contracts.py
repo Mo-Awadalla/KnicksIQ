@@ -348,7 +348,7 @@ async def test_bad_provider_output_counts_call_and_falls_back(
     assert failure.error_type == "ValidationError"
     assert failure.model_calls == 1
     assert "invented" not in caplog.text
-    assert result["state"]["delivered_fact_ids"] == []
+    assert result["citations"] and result["state"]["delivered_fact_ids"]
 
 
 async def test_release_change_drops_old_claims_and_scope_transition(db_session):
