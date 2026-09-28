@@ -1874,15 +1874,20 @@ async def _query_evidence_analyst(
             await tools.prepare()
         loop = AnalystLoop(tools, [m.model_dump() for m in req.context], started=started)
         loop.request_id = getattr(request.state, "request_id", "")
+        settings = get_settings()
+        answer_mode = settings.analysis_answer_mode
+        shadow_sampled = answer_mode == "shadow" and _sample_shadow(
+            loop.request_id, settings.analysis_shadow_sample_rate
+        )
         result = await loop.run(
-            allow_model=bool(turn)
-            and get_settings().analysis_answer_mode in {"llm_primary", "shadow"}
+            allow_model=bool(turn) and (answer_mode == "llm_primary" or shadow_sampled)
         )
         state = result.pop("state")
-        if get_settings().analysis_answer_mode == "shadow":
+        if answer_mode == "shadow":
             logger.info(
                 "analyst_shadow_verification",
                 extra={
+                    "sampled": shadow_sampled,
                     "validated": result["llm_validated"],
                     "model_calls": loop.calls,
                     "tool_rounds": loop.rounds,
@@ -1892,7 +1897,7 @@ async def _query_evidence_analyst(
                 },
             )
         # Shadow exercises the same reserved, validated path but delivers only backend facts.
-        if get_settings().analysis_answer_mode == "shadow" and result["llm_validated"]:
+        if answer_mode == "shadow" and result["llm_validated"]:
             result = loop.render_fallback("Shadow verification; deterministic delivery.")
             state = result.pop("state")
         response = AnalysisQueryResponse(
