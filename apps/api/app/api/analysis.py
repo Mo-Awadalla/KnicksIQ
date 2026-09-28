@@ -10,7 +10,7 @@ import logging
 import re
 import time
 from collections import defaultdict, deque
-from datetime import UTC, date, datetime
+from datetime import UTC, date, datetime, timedelta
 from typing import Annotated, Any, Literal
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Request, status
@@ -30,6 +30,7 @@ from app.services.archive_retrieval import (
     search_archive_lexical,
     search_archive_vectors,
 )
+from app.services.conversation_memory import bounded_history
 from app.services.conversation_state import (
     ConversationState,
     resolve_conversation_delta,
@@ -90,7 +91,7 @@ class AnalysisContextMessage(BaseModel):
 class AnalysisQueryRequest(BaseModel):
     question: str = Field(..., min_length=1, max_length=1200)
     season: str = "2025-26"
-    context: list[AnalysisContextMessage] = Field(default_factory=list, max_length=12)
+    context: list[AnalysisContextMessage] = Field(default_factory=list, max_length=100)
     conversation_state: ConversationState | None = None
     session_token: str | None = Field(default=None, pattern=r"^[a-f0-9]{64}$")
     turn_id: str | None = Field(
@@ -120,6 +121,7 @@ class AnalysisCitation(BaseModel):
 
 class AnalysisQueryResponse(BaseModel):
     answer: str
+    follow_up_questions: list[str] = Field(default_factory=list, max_length=2)
     route: str | None = Field(default=None, exclude=get_settings().is_production)
     classifier: dict[str, Any] = Field(default_factory=dict, exclude=get_settings().is_production)
     evidence: list[dict[str, Any]] = Field(
@@ -141,6 +143,7 @@ class AnalysisQueryResponse(BaseModel):
     )
     conversation_state: ConversationState | None = None
     session_token: str | None = None
+    session_expires_at: datetime | None = None
     revision: int | None = None
     state_committed: bool = False
     llm_validated: bool = False
@@ -419,7 +422,7 @@ def _analysis_context(
         "classifier": classifier.as_dict() if classifier else {},
         "chat_context": [
             {"role": item.role, "content": item.content}
-            for item in (chat_context or [])[-6:]
+            for item in (chat_context or [])[-10:]
             if item.role in {"user", "assistant"}
         ],
         "games": [
@@ -550,9 +553,9 @@ async def _generate_llm_answer(
         "If the classifier is counterfactual, provide a historical baseline and a "
         "clearly labeled hypothetical adjustment, not a full simulation. "
         "Do not use backend terms like RAG, vector search, embeddings, chunks, Qdrant, "
-        "lexical retrieval, seeded data, or cached. Structure the answer as: "
-        "Short answer, Key evidence, Receipts, and Limitation only when needed. "
-        "Keep the answer concise and mention concrete dates, opponents, scores, "
+        "lexical retrieval, seeded data, or cached. Answer directly in one or two "
+        "sentences by default; explain more when the user asks for depth. "
+        "Mention concrete dates, opponents, scores, "
         "runs, stretches, or play-by-play details when present."
     )
     user = json.dumps(
@@ -605,7 +608,8 @@ async def _generate_grounded_answer(
         "an array named claims. Every claim must contain text and one or more "
         "evidence_ids. Write only evidence-linked claims supported by the provided "
         "archive evidence. Treat computed facts as authoritative. Never use outside, "
-        "live, current, injury, trade, or future knowledge. Keep the answer concise. "
+        "live, current, injury, trade, or future knowledge. Answer briefly by default "
+        "and explain more when requested. "
         "Do not mention backend systems, retrieval, validation, or evidence IDs."
     )
     if getattr(get_settings(), "rag_typed_grounding_enabled", False):
@@ -633,7 +637,7 @@ async def _generate_grounded_answer(
         "season": season,
         "context": [
             {"role": item.role, "content": item.content}
-            for item in (chat_context or [])[-4:]
+            for item in (chat_context or [])[-10:]
             if item.role in {"user", "assistant"}
         ],
         "evidence": compact_evidence,
@@ -888,7 +892,7 @@ def _schedule_shadow(
 def _contextual_question(question: str, context: list[AnalysisContextMessage]) -> str:
     recent = [
         f"{item.role}: {item.content.strip()}"
-        for item in context[-6:]
+        for item in context[-10:]
         if item.role in {"user", "assistant"} and item.content.strip()
     ]
     if not recent:
@@ -917,6 +921,9 @@ async def query_analysis(
     db: Annotated[AsyncSession, Depends(get_db)],
 ) -> AnalysisQueryResponse:
     settings = get_settings()
+    req.context = [
+        AnalysisContextMessage.model_validate(item) for item in bounded_history(req.context)
+    ]
     redis_degraded = await _rate_limit(request)
     response_metadata = {
         "request_id": getattr(request.state, "request_id", ""),
@@ -1892,10 +1899,12 @@ async def _query_evidence_analyst(
         )
         if turn:
             response.session_token = turn.token
+            response.session_expires_at = datetime.now(UTC) + timedelta(seconds=86_400)
             response.revision = turn.revision + 1
             response.state_committed = True
             if not await turn.commit(response.model_dump(mode="json"), state):
                 response.session_token = None
+                response.session_expires_at = None
                 response.revision = None
                 response.state_committed = False
                 response.degraded = True
