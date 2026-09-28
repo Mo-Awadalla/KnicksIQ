@@ -44,7 +44,7 @@ jobs:
       - name: Unit and integration tests
         env:
           TEST_MODE: "true"
-        run: uv run pytest --maxfail=1
+        run: uv run pytest apps packages tools/report_audit --maxfail=1
       - name: Empty database migration and expand-only rollback
         run: |
           uv run alembic upgrade head
