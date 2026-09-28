@@ -1,0 +1,94 @@
+(node:95134) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+[2m[WebServer] [22m(node:95143) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[2m[WebServer] [22m(Use `node --trace-warnings ...` to show where the warning was created)
+[2m[WebServer] [22m[2m$ tsc -b && vite build[22m
+[2m[WebServer] [22m(node:95165) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[2m[WebServer] [22m(Use `node --trace-warnings ...` to show where the warning was created)
+[2m[WebServer] [22m(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+[2m[WebServer] [22m  - `__dirname` (vite.config.ts:21:25). Use `import.meta.dirname` instead
+[2m[WebServer] [22mSet `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+[2m[WebServer] [22m(node:95165) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+[2m[WebServer] [22m(node:95171) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[2m[WebServer] [22m(Use `node --trace-warnings ...` to show where the warning was created)
+[2m[WebServer] [22m[2m$ vite preview --host 127.0.0.1 --port 4173[22m
+[2m[WebServer] [22m(node:95179) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[2m[WebServer] [22m(Use `node --trace-warnings ...` to show where the warning was created)
+[2m[WebServer] [22m(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+[2m[WebServer] [22m  - `__dirname` (vite.config.ts:21:25). Use `import.meta.dirname` instead
+[2m[WebServer] [22mSet `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+[2m[WebServer] [22m(node:95179) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+
+Running 2 tests using 1 worker
+
+(node:95188) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:95188) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(node:95188) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 e2e/parity.spec.ts:398:3 › a delayed answer focus cannot steal the next question on / (5.7s)
+(node:95212) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:95212) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(node:95212) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  2 e2e/parity.spec.ts:398:3 › a delayed answer focus cannot steal the next question on /analyst (5.4s)
+
+
+  1) e2e/parity.spec.ts:398:3 › a delayed answer focus cannot steal the next question on / ─────────
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeFocused[2m([22m[2m)[22m failed
+
+    Locator:  getByRole('textbox', { name: 'Ask the archive' })
+    Expected: focused
+    Received: inactive
+    Timeout:  5000ms
+
+    Call log:
+    [2m  - Expect "toBeFocused" with timeout 5000ms[22m
+    [2m  - waiting for getByRole('textbox', { name: 'Ask the archive' })[22m
+    [2m    9 × locator resolved to <textarea rows="3" maxlength="1200" data-slot="textarea" id="archive-question" enterkeyhint="search" placeholder="Ask about a game, streak, opponent, player, or turning point…" class="flex field-sizing-content min-h-16 w-full rounded-md border border-input bg-transparent px-3 py-2 text-base shadow-xs transition-[color,box-shadow] outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 ari…>Next question</textarea>[22m
+    [2m      - unexpected value "inactive"[22m
+
+
+      431 |     await box.fill('Next question')
+      432 |     await page.evaluate(() => (window as unknown as { flushAnswerFrames: () => void }).flushAnswerFrames())
+    > 433 |     await expect(box).toBeFocused()
+          |                       ^
+      434 |     await page.keyboard.press('Enter')
+      435 |     await expect(page.getByText('Answer 2', { exact: true })).toBeVisible()
+      436 |     expect(requests).toBe(2)
+        at /Users/mohamedawadalla/Projects/KnicksIQ/apps/web/e2e/parity.spec.ts:433:23
+
+    Error Context: test-results/parity-a-delayed-answer-fo-46ad4-steal-the-next-question-on-/error-context.md
+
+  2) e2e/parity.spec.ts:398:3 › a delayed answer focus cannot steal the next question on /analyst ──
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeFocused[2m([22m[2m)[22m failed
+
+    Locator:  getByRole('textbox', { name: 'Ask a season question' })
+    Expected: focused
+    Received: inactive
+    Timeout:  5000ms
+
+    Call log:
+    [2m  - Expect "toBeFocused" with timeout 5000ms[22m
+    [2m  - waiting for getByRole('textbox', { name: 'Ask a season question' })[22m
+    [2m    9 × locator resolved to <textarea rows="5" maxlength="1200" data-slot="textarea" id="analyst-question" placeholder="Ask about a game, streak, opponent, player, or turning point…" class="flex field-sizing-content min-h-16 w-full rounded-md border border-input bg-transparent px-3 py-2 text-base shadow-xs transition-[color,box-shadow] outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-destr…>Next question</textarea>[22m
+    [2m      - unexpected value "inactive"[22m
+
+
+      431 |     await box.fill('Next question')
+      432 |     await page.evaluate(() => (window as unknown as { flushAnswerFrames: () => void }).flushAnswerFrames())
+    > 433 |     await expect(box).toBeFocused()
+          |                       ^
+      434 |     await page.keyboard.press('Enter')
+      435 |     await expect(page.getByText('Answer 2', { exact: true })).toBeVisible()
+      436 |     expect(requests).toBe(2)
+        at /Users/mohamedawadalla/Projects/KnicksIQ/apps/web/e2e/parity.spec.ts:433:23
+
+    Error Context: test-results/parity-a-delayed-answer-fo-f1be4-he-next-question-on-analyst/error-context.md
+
+  2 failed
+    e2e/parity.spec.ts:398:3 › a delayed answer focus cannot steal the next question on / ──────────
+    e2e/parity.spec.ts:398:3 › a delayed answer focus cannot steal the next question on /analyst ───

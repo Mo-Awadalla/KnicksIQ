@@ -1,0 +1,55 @@
+(node:91808) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+
+Running 8 tests using 1 worker
+
+(node:91815) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:91815) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(node:91815) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 e2e/parity.spec.ts:78:1 › analyst retains full conversation across client navigation with bounded context (3.1s)
+  ✘  2 e2e/parity.spec.ts:117:1 › follow-up submits immediately and New chat clears both surfaces (5.7s)
+(node:93306) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:93306) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(node:93306) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  3 e2e/parity.spec.ts:146:1 › interrupted request retries the exact turn after reload (677ms)
+  ✓  4 e2e/parity.spec.ts:173:1 › session expiry keeps the question and retries with fresh context (515ms)
+  ✓  5 e2e/parity.spec.ts:208:1 › late response cannot restore a chat after New chat (427ms)
+  ✓  6 e2e/parity.spec.ts:229:1 › storage failure leaves chat usable and explains refresh recovery (376ms)
+  ✓  7 e2e/parity.spec.ts:245:1 › archive version change keeps history and starts fresh context (710ms)
+  ✓  8 e2e/parity.spec.ts:359:1 › corrupted storage leaves chat usable with a recovery notice (487ms)
+
+
+  1) e2e/parity.spec.ts:117:1 › follow-up submits immediately and New chat clears both surfaces ────
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeFocused[2m([22m[2m)[22m failed
+
+    Locator:  getByRole('textbox', { name: 'Ask a season question' })
+    Expected: focused
+    Received: inactive
+    Timeout:  5000ms
+
+    Call log:
+    [2m  - Expect "toBeFocused" with timeout 5000ms[22m
+    [2m  - waiting for getByRole('textbox', { name: 'Ask a season question' })[22m
+    [2m    9 × locator resolved to <textarea rows="5" maxlength="1200" data-slot="textarea" id="analyst-question" placeholder="Ask about a game, streak, opponent, player, or turning point…" class="flex field-sizing-content min-h-16 w-full rounded-md border border-input bg-transparent px-3 py-2 text-base shadow-xs transition-[color,box-shadow] outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-destr…></textarea>[22m
+    [2m      - unexpected value "inactive"[22m
+
+
+      138 |   await expect(page.getByText('Answer 1', { exact: true })).toBeVisible()
+      139 |   await page.getByRole('button', { name: 'New chat' }).click()
+    > 140 |   await expect(page.getByRole('textbox', { name: 'Ask a season question' })).toBeFocused()
+          |                                                                              ^
+      141 |   await expect(page.getByText('Answer 1', { exact: true })).toHaveCount(0)
+      142 |   await page.reload()
+      143 |   await expect(page.getByText('Answer 2', { exact: true })).toHaveCount(0)
+        at /Users/mohamedawadalla/Projects/KnicksIQ/apps/web/e2e/parity.spec.ts:140:78
+
+    Error Context: test-results/parity-follow-up-submits-i-69e6e-w-chat-clears-both-surfaces/error-context.md
+
+  1 failed
+    e2e/parity.spec.ts:117:1 › follow-up submits immediately and New chat clears both surfaces ─────
+  7 passed (13.3s)

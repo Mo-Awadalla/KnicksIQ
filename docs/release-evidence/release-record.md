@@ -1,7 +1,7 @@
 # Release evidence
 
 Record: `2025-26-verified-parity`
-Tested commit: `ec62fdaba2768b73630c91e13c8d088dff03ed72`
+Tested commit: `62948bab49896bd0687686e0170b6d193dbdc52f`
 Deployment gate: **BLOCKED**
 
 Generated from release-record.json; this view is not approval evidence.
@@ -36,12 +36,8 @@ Generated from release-record.json; this view is not approval evidence.
 - evaluation_services_disabled: all 120 reviewed labels required
 - warm latency/concurrency/error gates not met
 - accessibility: zero serious/critical findings required
-- template: missing owner approval bound to content
-- exceptions: missing owner approval bound to content
-- report_audit: missing owner approval bound to content
 - evaluation_labels: missing owner approval bound to content
 - launch: missing owner approval bound to content
-- missing coordinated rollback targets
 
 Agents verify every report against canonical evidence. The owner
 approves the template, exceptions, and final content-hash-bound audit

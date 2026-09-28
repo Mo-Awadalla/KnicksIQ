@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "id": "2025-26-verified-parity",
-  "tested_commit": "ec62fdaba2768b73630c91e13c8d088dff03ed72",
+  "tested_commit": "62948bab49896bd0687686e0170b6d193dbdc52f",
   "status": "blocked",
   "configuration": {
     "answer_mode": "shadow",
@@ -11,33 +11,60 @@
   },
   "hashes": {
     "data": "b2ad21c69175600c3192ef6133f8c11fd63890609a8204f92508a5fb04d05170",
-    "bundle": "65ba7fec37b4d0c72e0583ee0743fd67af21531a7ed9ee9f585577495b8560b1",
+    "bundle": "549af2edd0d195eff60bb318bdc58a8c8e217ea0359c0684d492d5292dcb595b",
     "evaluation": "7c3c549e6a540f4ce03a3fa4ba38821ddc6f7641c9d081270cff8607ec9b007e"
   },
   "checks": {
     "backend": {
       "status": "passed",
-      "tested_commit": "ec62fdaba2768b73630c91e13c8d088dff03ed72",
-      "path": "docs/release-evidence/final-verification-20260907.json",
-      "sha256": "f05b3089aca66631dad7cd986485bb44d3b1c52f6415fd7da8fad4a9f0998823"
+      "tested_commit": "62948bab49896bd0687686e0170b6d193dbdc52f",
+      "path": "docs/release-evidence/reliability-20260928/verification.json",
+      "sha256": "0abf67d79c4ade30f0b54aca69550e5e410cf429853d7e87f5909fef04cbd5a1",
+      "scope": "Local final candidate and all five hosted CI checks; hosted staging not implied"
     },
     "frontend": {
       "status": "passed",
-      "tested_commit": "ec62fdaba2768b73630c91e13c8d088dff03ed72",
-      "path": "docs/release-evidence/final-verification-20260907.json",
-      "sha256": "f05b3089aca66631dad7cd986485bb44d3b1c52f6415fd7da8fad4a9f0998823"
+      "tested_commit": "62948bab49896bd0687686e0170b6d193dbdc52f",
+      "path": "docs/release-evidence/reliability-20260928/verification.json",
+      "sha256": "0abf67d79c4ade30f0b54aca69550e5e410cf429853d7e87f5909fef04cbd5a1",
+      "scope": "Local final candidate and all five hosted CI checks; hosted staging not implied"
     }
   },
-  "approvals": {},
+  "approvals": {
+    "template": {
+      "owner": "project owner via explicit chat approval",
+      "approved_at": "2026-09-28T19:16:50.303336+00:00",
+      "path": "docs/release-evidence/report-review-20260928/owner-content-approval.json",
+      "sha256": "985f7cc22c13d6a29b5d4588578bc779e8e6ff1b4ed03f813d0237f2bb0b1734"
+    },
+    "exceptions": {
+      "owner": "project owner via explicit chat approval",
+      "approved_at": "2026-09-28T19:16:50.303336+00:00",
+      "path": "docs/release-evidence/report-review-20260928/owner-content-approval.json",
+      "sha256": "985f7cc22c13d6a29b5d4588578bc779e8e6ff1b4ed03f813d0237f2bb0b1734"
+    },
+    "report_audit": {
+      "owner": "project owner via explicit chat approval",
+      "approved_at": "2026-09-28T19:16:50.303336+00:00",
+      "path": "docs/release-evidence/report-review-20260928/owner-content-approval.json",
+      "sha256": "985f7cc22c13d6a29b5d4588578bc779e8e6ff1b4ed03f813d0237f2bb0b1734"
+    }
+  },
   "deployments": {
     "api": null,
     "web": null
   },
   "rollback": {
-    "api_deployment": "dep-d9drsfn7f7vs739biekg",
-    "web_deployment": "dep-d9f7aun7f7vs73c340d0",
+    "api_deployment": "dep-datb8759fdbs73b2gsq0",
+    "web_deployment": "dep-datb8r67bikc73csq7l0",
     "data_version": "2025-26.20260714.1",
-    "qdrant_aliases": null
+    "qdrant_aliases": {
+      "knicks_box_scores": "knicks_box_scores__2025_26_20260714_1",
+      "knicks_games": "knicks_games__2025_26_20260714_1",
+      "knicks_possessions": "knicks_possessions__2025_26_20260714_1",
+      "knicks_reports": "knicks_reports__2025_26_20260714_1"
+    },
+    "reports_snapshot": "docs/release-evidence/report-review-20260928/production-rollback-reports.json"
   },
   "review_policy": "Agents audit every report. Owner approves template, exceptions, final hash-bound audit summary and evaluation labels in batches. Unresolved checks block release.",
   "observations": {
@@ -68,13 +95,52 @@
         "standing": 0
       },
       "verification": "Production frontend build, 2 report browser tests, formatting, empty detector result, desktop/mobile inspection with no overflow. Earlier full-suite evidence retains its original tested commit."
-    }
+    },
+    "reliability_release": "docs/release-evidence/reliability-20260928/verification.json",
+    "report_review": "docs/release-evidence/report-review-20260928/README.md",
+    "production_observed_deployments": {
+      "api": {
+        "commit": {
+          "createdAt": "2026-09-28T18:22:09Z",
+          "id": "98d21753910b16440970d9081a2e352a4aacdb8d",
+          "message": "Merge pull request #1 from Mo-Awadalla/codex/chat-memory-release-20260922\n\nShare ten-message analyst conversations across chat surfaces"
+        },
+        "createdAt": "2026-09-28T18:38:20.147566Z",
+        "finishedAt": "2026-09-28T18:39:28.119338Z",
+        "id": "dep-datb8759fdbs73b2gsq0",
+        "startedAt": "2026-09-28T18:38:20.116631Z",
+        "status": "live",
+        "trigger": "api",
+        "updatedAt": "2026-09-28T18:39:57.503789Z"
+      },
+      "web": {
+        "commit": {
+          "createdAt": "2026-09-28T18:22:09Z",
+          "id": "98d21753910b16440970d9081a2e352a4aacdb8d",
+          "message": "Merge pull request #1 from Mo-Awadalla/codex/chat-memory-release-20260922\n\nShare ten-message analyst conversations across chat surfaces"
+        },
+        "createdAt": "2026-09-28T18:39:40.316938Z",
+        "finishedAt": "2026-09-28T18:40:13.085838Z",
+        "id": "dep-datb8r67bikc73csq7l0",
+        "startedAt": "2026-09-28T18:39:40.3153Z",
+        "status": "live",
+        "trigger": "api",
+        "updatedAt": "2026-09-28T18:40:13.086238Z"
+      }
+    },
+    "code_only_pr": "https://github.com/Mo-Awadalla/KnicksIQ/pull/2",
+    "code_only_source_equivalence": "docs/release-evidence/reliability-20260928/code-only-source-equivalence.json",
+    "approved_report_bundle": "docs/release-evidence/report-review-20260928/approved-bundle.json",
+    "production_baseline": "docs/release-evidence/report-review-20260928/production-binding.json",
+    "merged_code_commit": "e003db2d7f179c8d490d90155f260ec0eeb31620"
   },
   "remaining_external_checks": [
-    "Restore Qdrant Cloud connectivity and verify aliases, release filters and production semantic evaluation",
-    "Owner approval of report template, scoreboard-correction exception, audit summary and evaluation-label batches",
-    "Bind complete approved evaluation and production-environment evidence to the tested commit",
-    "Render CLI deployment followed by production smoke, browser and load checks"
+    "Owner-approved evaluation labels and final launch/deployment approval are still missing",
+    "Bind full final-candidate retrieval/evaluation/environment/staging evidence to the release gate",
+    "Separate budgeted live-provider authorization/check; no provider calls made",
+    "Publish/stage approved bundle and rebuild candidate indexes only through the gated release process",
+    "After activation/deployment verify live records, reports, summaries, indexed content and refresh/retry",
+    "Production-derived evidence remains local; GitHub publication was rejected and is not approved"
   ],
   "services": {
     "api": {
@@ -86,5 +152,5 @@
       "url": "https://www.knicksiq.win"
     }
   },
-  "candidate_commit": "a460cd28c7f63bfaa2f03f5a9a5bce120b5b5507"
+  "candidate_commit": "62948bab49896bd0687686e0170b6d193dbdc52f"
 }

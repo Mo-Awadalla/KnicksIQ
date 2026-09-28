@@ -1,5 +1,11 @@
 # Production deployment handoff
 
+## Reconciled 2026-09-28
+
+The historical entries below are superseded by [current verification](reliability-20260928/verification.json) and [report review](report-review-20260928/README.md). PR #1 is already deployed on API/web at `98d2175`. PR #2 is merged at `e003db2`; candidate `62948ba` passed all five CI checks and final local suites. It is not deployed. Existing persistence was verified on the served frontend with mocked API responses; the new candidate also fixes a reproducible delayed-focus race.
+
+The exact 101-report batch is owner-approved. The separately approved full read-only production audit/export completed and matches all baseline rows. A validated approved bundle and fresh local report rollback snapshot are prepared, not activated. Current data remains `2025-26.20260714.1`. Qdrant connectivity has recovered; current rollback aliases are captured. Evaluation-label approval, final environment/retrieval/staging evidence, a separately authorized provider check and launch approval remain gates. No production writes or deployments occurred in this reliability pass. Newly gathered production evidence remains local because GitHub publication was rejected and not approved.
+
 ## Conversation feature verification (2026-09-22)
 
 The homepage and Analyst page now share a persistent, versioned conversation with
