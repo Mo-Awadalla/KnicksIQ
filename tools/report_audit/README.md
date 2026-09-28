@@ -43,3 +43,13 @@ The canonical basketball collections remain unchanged. All repaired reports have
 `reviewed=false`, and approval maps are empty. Passing factual verification is separate from
 owner review of the template, exception and final summary, or verification of active production
 identity. This command cannot approve, activate or deploy the candidate.
+
+## Hash-bound review package
+
+`prepare_review.py BASELINE REPLACEMENT --output DIRECTORY` audits the complete local
+baseline read-only, independently verifies the replacement, and requires exact
+regeneration under the existing correction policy. It writes a full before/after diff,
+replacement and rollback report snapshots, source identity and content hashes. It also
+reproduces Report 80's diagnosed 16–4 and 12–4 intervals. It never approves or activates.
+The production identity and rollback snapshot must be freshly pinned before publication.
+See `docs/release-evidence/report-review-20260928/README.md` for the prepared batch.
