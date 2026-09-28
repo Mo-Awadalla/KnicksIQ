@@ -8,6 +8,7 @@ import re
 from typing import Any
 
 from app.core.config import get_settings
+from app.evaluation.trace_capture import record_search, record_tool
 from app.models.box_score import PlayerGameStat
 from app.models.dataset_release import DatasetRelease
 from app.models.game import Game
@@ -18,7 +19,12 @@ from app.services.archive_retrieval import (
     search_archive_vectors,
 )
 from app.services.evidence_contracts import Candidate, Evidence, ToolCall, ToolResult, VerifiedClaim
-from app.services.query_resolution import ResolvedQuery, is_record_request, resolve_query
+from app.services.query_resolution import (
+    ResolvedQuery,
+    is_game_score_request,
+    is_record_request,
+    resolve_query,
+)
 from basketball_core.analytics.catalog import _windows, build_fact_catalog
 from basketball_core.analytics.registry import STAT_REGISTRY
 from sqlalchemy import select
@@ -327,14 +333,21 @@ class AnalystTools:
             self.issued_evidence_ids.update(
                 ref for c in result.claims for ref in c.supporting_evidence_ids
             )
+            record_tool(
+                {"call": call.model_dump(mode="json"), "result": result.model_dump(mode="json")}
+            )
             return result
         except Exception as exc:
             # Do not disclose provider/database errors or turn failure into absence.
-            return ToolResult(
+            result = ToolResult(
                 status="dependency_failure",
                 message=f"{call.name} unavailable",
                 scope={"error_type": type(exc).__name__},
             )
+            record_tool(
+                {"call": call.model_dump(mode="json"), "result": result.model_dump(mode="json")}
+            )
+            return result
 
     async def _execute(self, call: ToolCall) -> ToolResult:
         assert self.scope is not None
@@ -548,6 +561,44 @@ class AnalystTools:
         )
 
     def team(self, scope: ResolvedQuery, games: list[Game]) -> ToolResult:
+        if is_game_score_request(self.question):
+            if len(games) != 1:
+                return ToolResult(
+                    status="ambiguous_entity",
+                    message="Which game score?",
+                    choices=[str(g.game_date) for g in games],
+                )
+            game = games[0]
+            if game.status != "final":
+                return ToolResult(
+                    status="unsupported_metric_or_scope",
+                    message="A final score is not available for this archived game.",
+                )
+            evidence = [self.receipt(game)]
+            knicks, opponent = self.score(game)
+            opponent_id = game.away_team_id if game.home_team_id == "NYK" else game.home_team_id
+            claim = self.claim(
+                subject="team:NYK",
+                metric="game_score",
+                value={"NYK": knicks, opponent_id: opponent},
+                unit="points by team",
+                games=games,
+                evidence=evidence,
+                scope=scope,
+                sample=1,
+                denominator=None,
+                eligibility={"game": "final archived Knicks game"},
+                statement=(
+                    f"Final score on {game.game_date}: NYK {knicks}, {opponent_id} {opponent}."
+                ),
+            )
+            return ToolResult(
+                status="ok",
+                message="Archived final score.",
+                claims=[claim],
+                evidence=evidence,
+                scope=scope.model_dump(mode="json"),
+            )
         if is_record_request(self.question):
             games = [g for g in games if g.status == "final" and g.home_score != g.away_score]
         if scope.relative_game_count:
@@ -925,6 +976,21 @@ class AnalystTools:
             if e.metadata.get("data_version") == self.release.version
             and e.metadata.get("game_id") in {g.id for g in games}
         ]
+        record_search(
+            {
+                "release": self.release.version,
+                "question": call.question,
+                "filters": filters,
+                "lexical_evidence_ids": [
+                    f"{self.release.version}:{e.evidence_id}" for e in lexical
+                ],
+                "dense_evidence_ids": [f"{self.release.version}:{e.evidence_id}" for e in dense],
+                "candidate_evidence_ids": [e.evidence_id for e in evidence],
+                "returned_evidence_ids": [e.evidence_id for e in evidence[:5]],
+                "evidence": [e.model_dump(mode="json") for e in evidence],
+                "dense_failed": failure,
+            }
+        )
         return ToolResult(
             status=("incomplete_coverage" if failure else "ok")
             if evidence

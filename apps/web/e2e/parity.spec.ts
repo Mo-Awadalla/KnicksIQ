@@ -1,4 +1,4 @@
-import { expect, test } from 'playwright/test'
+import { expect, test } from './network-fixture'
 
 const api = (path: string) => (process.env.PLAYWRIGHT_API_URL || (process.env.PLAYWRIGHT_BASE_URL
   ? 'https://api.knicksiq.win' : '**/api')) + path

@@ -1821,6 +1821,7 @@ async def _query_evidence_analyst(
     request: Request,
     db: AsyncSession,
 ) -> AnalysisQueryResponse:
+    from app.evaluation.trace_capture import record_turn
     from app.services.analyst_loop import AnalystLoop
     from app.services.analyst_sessions import SessionConflict, SessionTurn, SessionUnavailable
     from app.services.analyst_tools import AnalystTools
@@ -1865,6 +1866,7 @@ async def _query_evidence_analyst(
         except SessionUnavailable:
             turn = None
     if turn and turn.replay is not None:
+        record_turn({"replayed": True, "model_calls": 0})
         return AnalysisQueryResponse.model_validate(turn.replay)
     tools = AnalystTools(db, release, req.question, req.season, turn.state if turn else {})
     try:
@@ -1883,6 +1885,18 @@ async def _query_evidence_analyst(
             allow_model=bool(turn) and (answer_mode == "llm_primary" or shadow_sampled)
         )
         state = result.pop("state")
+        record_turn(
+            {
+                "request_id": loop.request_id,
+                "answer_mode": answer_mode,
+                "sampled": shadow_sampled,
+                "model_calls": loop.calls,
+                "model_validated": result["llm_validated"],
+                "replayed": False,
+                "release": release.version,
+                "committed_evidence_proposal": state,
+            }
+        )
         if answer_mode == "shadow":
             logger.info(
                 "analyst_shadow_verification",
@@ -1900,6 +1914,7 @@ async def _query_evidence_analyst(
         if answer_mode == "shadow" and result["llm_validated"]:
             result = loop.render_fallback("Shadow verification; deterministic delivery.")
             state = result.pop("state")
+        record_turn({"delivered_mode": result["route"]})
         response = AnalysisQueryResponse(
             **result, request_id=getattr(request.state, "request_id", "")
         )
@@ -1921,8 +1936,16 @@ async def _query_evidence_analyst(
             response.warnings.append(
                 "Stateless factual fallback: conversation storage unavailable."
             )
+        record_turn(
+            {
+                "state_committed": response.state_committed,
+                "revision": response.revision,
+                "delivered_state": state,
+            }
+        )
         return response
     except TimeoutError:
+        record_turn({"error": "deadline_exceeded", "state_committed": False})
         return AnalysisQueryResponse(
             answer="The archive could not be verified within this turn's deadline.",
             citations=[],
