@@ -134,3 +134,44 @@ async def test_report_101_reachable_with_stable_tied_order(client, db_session):
         ids.extend(item["id"] for item in page)
     assert len(set(ids)) == 101
     assert ids == sorted(ids, reverse=True)
+
+
+async def test_report_summary_detail_and_stored_narrative_agree(client, db_session):
+    import json
+
+    from app.models.report import Report
+
+    interval = (
+        "Selected scoring interval: NYK scored 12 points and allowed 4 points "
+        "from Q3 11:41 to Q3 09:33 (events 222-231, inclusive)."
+    )
+    stored = Report(
+        game_id=1,
+        title="NYK 112, BOS 106",
+        summary="NYK defeated BOS 112-106 on 2026-04-09.",
+        best_stretch=interval,
+        turning_point=interval,
+        worst_stretch=interval,
+        sources_json=json.dumps(
+            [
+                {
+                    "type": "play_by_play",
+                    "claims": ["best_stretch"],
+                    "points_for": 12,
+                    "points_against": 4,
+                    "start_sequence": 222,
+                    "end_sequence": 231,
+                }
+            ]
+        ),
+    )
+    db_session.add(stored)
+    await db_session.commit()
+    detail = (await client.get(f"/reports/{stored.id}")).json()
+    summary = next(r for r in (await client.get("/reports")).json() if r["id"] == stored.id)
+    assert summary["title"] == detail["title"] == stored.title
+    assert summary["summary"] == detail["summary"] == stored.summary
+    for field in ("best_stretch", "turning_point", "worst_stretch"):
+        assert detail[field] == getattr(stored, field) == interval
+    assert detail["sources"][0]["points_for"] == 12
+    assert detail["sources"][0]["points_against"] == 4
