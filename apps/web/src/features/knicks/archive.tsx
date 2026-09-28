@@ -17,6 +17,7 @@ import { AnalyticsCards } from './analytics-cards'
 import './archive.css'
 import { MEMORY_NOTE } from './conversation'
 import './landing.css'
+import { SourceValues } from './source-values'
 import { useAnalyst } from './use-analyst'
 
 const KNICKS_SEASON = '2025-26'
@@ -34,14 +35,33 @@ function ReceiptCard({ citation }: { citation: AnalysisCitation }) {
     <Card className='archive-receipt'>
       <CardContent className='space-y-3 p-4'>
         <div className='flex flex-wrap items-center gap-2'>
-          <Badge className='archive-citation-badge'>{citation.type}</Badge>
+          <Badge className='archive-citation-badge'>
+            {(
+              {
+                verified_claim: 'Verified statistic',
+                archive: 'Archive source',
+                game: 'Game result',
+                report: 'Game report',
+                player_stat: 'Player statistics',
+                play_by_play: 'Play-by-play',
+              } as Record<string, string>
+            )[citation.type] ?? citation.type.replace(/_/g, ' ')}
+          </Badge>
           <span className='archive-game-title archive-ink-text text-sm font-semibold'>
             {citation.title}
           </span>
         </div>
-        <p className='archive-ink-soft-text text-sm leading-6'>
-          Supports: {citation.claim}
-        </p>
+        <div className='archive-ink-soft-text text-sm leading-6'>
+          <SourceValues text={citation.claim} />
+        </div>
+        {import.meta.env.DEV && (
+          <details>
+            <summary>Developer diagnostics</summary>
+            <pre className='overflow-x-auto text-xs'>
+              {JSON.stringify(citation.metadata, null, 2)}
+            </pre>
+          </details>
+        )}
         {citation.source_url ? (
           <a
             className='archive-blue-text text-xs font-medium underline underline-offset-2'
@@ -138,11 +158,11 @@ export function AnswerPanel({
         <AnalyticsCards analytics={answer.analytics} />
       ) : null}
 
-      <div>
-        <h3 className='archive-receipts-heading'>
+      <details>
+        <summary className='archive-receipts-heading cursor-pointer'>
           <FileText className='archive-blue-text size-5' />
-          Receipts
-        </h3>
+          Sources ({answer.citations.length})
+        </summary>
         {answer.citations.length > 0 ? (
           <div className='archive-receipt-grid'>
             {answer.citations.map((citation, index) => (
@@ -159,7 +179,7 @@ export function AnswerPanel({
             </CardContent>
           </Card>
         )}
-      </div>
+      </details>
     </section>
   )
 }
@@ -185,7 +205,13 @@ export function SeasonArchivePage() {
 
   useEffect(() => {
     if (!analyst.isSuccess) return
+    const focusAtResponse = document.activeElement
     const frame = requestAnimationFrame(() => {
+      if (
+        document.activeElement !== focusAtResponse ||
+        focusAtResponse?.matches('input, textarea, [contenteditable="true"]')
+      )
+        return
       const headings = resultsRef.current?.querySelectorAll<HTMLElement>(
         '.archive-answer-heading'
       )

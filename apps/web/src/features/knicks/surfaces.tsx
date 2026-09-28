@@ -30,6 +30,7 @@ import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { AnswerPanel } from './archive'
 import { MEMORY_NOTE } from './conversation'
+import { SourceValues } from './source-values'
 import './surfaces.css'
 import { useAnalyst } from './use-analyst'
 
@@ -855,7 +856,11 @@ function ReportSource({
   report: Report
 }) {
   if (typeof source === 'string')
-    return <li className='report-source'>{source}</li>
+    return (
+      <li className='report-source'>
+        <SourceValues text={source} />
+      </li>
+    )
   if (!source || typeof source !== 'object') return null
   const sourceType = typeof source.type === 'string' ? source.type : 'Source'
   const claims = Array.isArray(source.claims) ? source.claims : []

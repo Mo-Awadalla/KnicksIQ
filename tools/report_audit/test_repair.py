@@ -70,3 +70,41 @@ def test_full_repair_preserves_canonical_data_and_requires_owner_review():
     for key in payload["data"]:
         if key != "reports":
             assert payload["data"][key] == candidate["data"][key]
+
+
+def test_repair_is_deterministic_and_narrative_matches_stored_interval_facts():
+    import json
+
+    from test_audit import valid_payload
+
+    first = repair.repair(valid_payload())
+    second = repair.repair(valid_payload())
+    assert first == second
+    candidate, _, _ = first
+    for report in candidate["data"]["reports"]:
+        for source in json.loads(report["sources_json"]):
+            if "points_for" in source:
+                for field in source["claims"]:
+                    assert report[field] == repair.describe(source)
+                    assert "unanswered" not in report[field].lower()
+
+
+def test_audit_rejects_stale_structured_facts_and_false_unanswered_narrative():
+    import json
+
+    from test_audit import valid_payload
+
+    candidate, _, _ = repair.repair(valid_payload())
+    report = candidate["data"]["reports"][0]
+    sources = json.loads(report["sources_json"])
+    source = next(s for s in sources if "points_for" in s)
+    field = source["claims"][0]
+    source["points_for"] += 1
+    source["points_against"] = 1
+    report["sources_json"] = json.dumps(sources)
+    report[field] += " Unanswered."
+    candidate["review_manifest"]["candidates"]["game"] = repair.report_hash(report)
+    result, proposal = repair.audit(candidate)
+    assert f"{field}:stored_interval_mismatch" in result["reports"][0]["issues"]
+    assert f"{field}:false_unanswered_claim" in result["reports"][0]["issues"]
+    assert proposal["reports"] == []

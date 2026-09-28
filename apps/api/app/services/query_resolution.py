@@ -136,6 +136,17 @@ def _normalize(value: str) -> str:
     return re.sub(r"[^a-z0-9]+", " ", ascii_value.lower()).strip()
 
 
+def is_record_request(question: str) -> bool:
+    """A record spans both outcomes; explicit subsets still take precedence."""
+    q = _normalize(question.replace("–", "-").replace("—", "-"))
+    if re.search(r"\b(?:only|in)\s+(?:wins?|loss(?:es)?)\b", q):
+        return False
+    return bool(
+        re.search(r"\brecord\b", q)
+        or (re.search(r"\bwins?\b", q) and re.search(r"\bloss(?:es)?\b", q))
+    )
+
+
 def _player_aliases(player: Player) -> set[str]:
     normalized = _normalize(player.full_name)
     parts = normalized.split()
@@ -156,7 +167,7 @@ def _name_candidates(question: str) -> list[str]:
         if words and not all(word in _NAME_STOPWORDS for word in words):
             candidates.append(normalized)
             if len(words) == 2:
-                candidates.extend(words)
+                candidates.extend(word for word in words if word not in _NAME_STOPWORDS)
     return list(dict.fromkeys(candidates))
 
 
@@ -240,6 +251,9 @@ def _periods(question: str) -> list[int]:
     q = _normalize(question)
     values = {int(value) for value in re.findall(r"\bq([1-9])\b", q)}
     values.update(int(value) for value in re.findall(r"\b([1-9])(?:st|nd|rd|th) quarter\b", q))
+    for period, ordinal in enumerate(("first", "second", "third", "fourth"), start=1):
+        if re.search(rf"\b{ordinal} quarter\b", q):
+            values.add(period)
     if "first half" in q:
         values.update({1, 2})
     if "second half" in q:
@@ -380,7 +394,13 @@ async def resolve_query(
         else None
     )
     game_result = (
-        "W" if re.search(r"\bwins?\b", q) else "L" if re.search(r"\bloss(?:es)?\b", q) else None
+        None
+        if is_record_request(question)
+        else "W"
+        if re.search(r"\bwins?\b", q)
+        else "L"
+        if re.search(r"\bloss(?:es)?\b", q)
+        else None
     )
 
     candidates = games
@@ -388,7 +408,7 @@ async def resolve_query(
         candidates = [
             game for game in candidates if opponent_id in {game.home_team_id, game.away_team_id}
         ]
-    if explicit_dates:
+    if explicit_dates and not re.search(r"\b(between|from|through|until)\b", q):
         candidates = [game for game in candidates if game.game_date in explicit_dates]
     if season_type:
         candidates = [game for game in candidates if game.season_type == season_type]
@@ -412,7 +432,7 @@ async def resolve_query(
         ]
 
     descriptive_reference = bool(
-        explicit_dates
+        (bool(explicit_dates) and not re.search(r"\b(between|from|through|until)\b", q))
         or "overtime game" in q
         or re.search(r"\bgame where\b", q)
         or (

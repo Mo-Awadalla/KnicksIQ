@@ -356,6 +356,35 @@ def audit(payload):
                 repaired["worst_stretch"] = factual_run(run)
         else:
             issues.append("worst_stretch:unsupported_format")
+        # Corrected reports carry interval facts as well as prose. Verify both
+        # representations; a valid sentence must not certify stale stored evidence.
+        stored_sources = json.loads(report.get("sources_json", "[]"))
+        for source in stored_sources:
+            if not isinstance(source, dict) or "points_for" not in source:
+                continue
+            for field in source.get("claims", []):
+                matching = next((e for e in evidence if field in e["claims"]), None)
+                keys = (
+                    "nba_game_id",
+                    "team_id",
+                    "points_for",
+                    "points_against",
+                    "start_period",
+                    "end_period",
+                    "start_clock",
+                    "end_clock",
+                    "start_sequence",
+                    "end_sequence",
+                    "baseline_score",
+                    "end_score",
+                )
+                if matching is None or any(source.get(k) != matching.get(k) for k in keys):
+                    issues.append(f"{field}:stored_interval_mismatch")
+                if (
+                    source.get("points_against", 0)
+                    and "unanswered" in report.get(field, "").lower()
+                ):
+                    issues.append(f"{field}:false_unanswered_claim")
         repaired["sources_json"] = json.dumps(evidence, separators=(",", ":"))
         repaired["tool_trace_json"] = json.dumps(
             [{"audit_policy": POLICY["id"], "canonical_data_sha256": canonical_hash}],

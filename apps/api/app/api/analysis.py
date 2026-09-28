@@ -1873,6 +1873,7 @@ async def _query_evidence_analyst(
         ):
             await tools.prepare()
         loop = AnalystLoop(tools, [m.model_dump() for m in req.context], started=started)
+        loop.request_id = getattr(request.state, "request_id", "")
         result = await loop.run(
             allow_model=bool(turn)
             and get_settings().analysis_answer_mode in {"llm_primary", "shadow"}

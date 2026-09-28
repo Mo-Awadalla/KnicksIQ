@@ -30,6 +30,7 @@ from app.services.evidence_contracts import (
     validate_review,
     validate_structure,
 )
+from app.services.query_resolution import is_record_request
 from app.services.report_llm import get_llm_adapter
 from pydantic import BaseModel
 
@@ -141,6 +142,8 @@ class AnalystLoop:
         self.costs: list[float | None] = []
         self.last_answer: ProposedAnswer | None = None
         self.accepted_suggestions: list[str] = []
+        self.recovery_ran = False
+        self.request_id = ""
 
     def remaining(self) -> float:
         return self.settings.analyst_deadline_seconds - (time.monotonic() - self.started)
@@ -405,29 +408,37 @@ class AnalystLoop:
             )
 
     async def run(self, *, allow_model: bool = True) -> dict[str, Any]:
+        failure = None
         try:
-            async with asyncio.timeout(max(0.001, self.remaining())):
-                if allow_model and await self.reserve(3):
-                    return await self.investigate()
-                return await self.fallback("Model or budget unavailable.")
-        except Exception as exc:
-            # Record the failing stage without prompts, evidence, or provider response bodies.
-            logger.warning(
-                "analyst_execution_failed error_type=%s stage=%s model_calls=%s tool_rounds=%s",
-                type(exc).__name__,
-                self.trace[-1]["stage"] if self.trace else "admission",
-                self.calls,
-                self.rounds,
-                extra={
-                    "error_type": type(exc).__name__,
-                    "model_calls": self.calls,
-                    "tool_rounds": self.rounds,
-                    "stage": self.trace[-1]["stage"] if self.trace else "admission",
-                },
-            )
-            return self.render_fallback(
-                "A generated explanation could not be verified on this turn."
-            )
+            # Leave recovery and response finalization inside the overall request budget.
+            investigation_budget = max(0.001, self.remaining() - 2.5)
+            try:
+                async with asyncio.timeout(investigation_budget):
+                    if allow_model and await self.reserve(3):
+                        return await self.investigate()
+            except Exception as exc:
+                failure = exc
+            result = await self.fallback("Model or budget unavailable.")
+            if failure is not None:
+                logger.warning(
+                    "analyst_execution_failed request_id=%s error_type=%s stage=%s "
+                    "recovery_ran=%s recovered_facts=%s",
+                    self.request_id,
+                    type(failure).__name__,
+                    self.trace[-1]["stage"] if self.trace else "admission",
+                    self.recovery_ran,
+                    bool(result["citations"]),
+                    extra={
+                        "request_id": self.request_id,
+                        "error_type": type(failure).__name__,
+                        "stage": self.trace[-1]["stage"] if self.trace else "admission",
+                        "model_calls": self.calls,
+                        "tool_rounds": self.rounds,
+                        "recovery_ran": self.recovery_ran,
+                        "recovered_facts": bool(result["citations"]),
+                    },
+                )
+            return result
         finally:
             await self.settle()
 
@@ -445,7 +456,7 @@ class AnalystLoop:
                     raise ValueError("Tool-call limit")
                 remaining_slots = sum(slots for _, slots in self.reservations) - self.calls
                 if remaining_slots < 2 and not await self.reserve(2 - remaining_slots):
-                    return self.render_fallback("Budget unavailable for investigation and review.")
+                    return await self.fallback("Budget unavailable for investigation and review.")
                 self.rounds += 1
                 # One AsyncSession cannot run concurrent database operations.
                 for call in action.tools:
@@ -486,7 +497,7 @@ class AnalystLoop:
                     supported, _ = await self.validate(repaired, timeout_seconds=repair_timeout)
                     if supported:
                         return self.render(repaired, llm=True)
-            return self.render_fallback("Proposed wording did not pass evidence review.")
+            return await self.fallback("Proposed wording did not pass evidence review.")
 
     async def validate(
         self, answer: ProposedAnswer, *, timeout_seconds: float | None = None
@@ -512,8 +523,83 @@ class AnalystLoop:
         )
         return True, ""
 
+    def fallback_claims(self) -> list[VerifiedClaim]:
+        """Only release/scope-matched facts can answer a failed turn.
+
+        Prior claims may be valid historical facts without answering this question.
+        Reuse current tool work only when its complete population and metric match.
+        """
+        scope = self.tools.scope
+        if (
+            scope is None
+            or scope.requires_clarification
+            or scope.periods
+            or self.tools.season != self.tools.release.season
+            or any(
+                season != self.tools.release.season
+                for season in re.findall(r"\b20\d{2}-\d{2}(?!-\d{2})\b", self.tools.question)
+            )
+        ):
+            return []
+        games = self.tools.selected_games(scope)
+        if is_record_request(self.tools.question) and not scope.player_ids:
+            games = [g for g in games if g.status == "final" and g.home_score != g.away_score]
+        if scope.relative_game_count:
+            games = games[-scope.relative_game_count :]
+        expected_games = {g.id for g in games}
+        discovery = re_search_discovery(self.tools.question)
+        claims = []
+        results = list(self.results)
+        if is_record_request(self.tools.question) and not scope.player_ids:
+            # Revalidated prior record totals are reusable only for the exact population.
+            results.append(
+                ToolResult(status="ok", message="", claims=list(self.tools.claims.values()))
+            )
+        for result in results:
+            for claim in result.claims:
+                if claim.release_id != self.tools.release.version:
+                    continue
+                if not claim.supporting_evidence_ids or any(
+                    ref not in self.tools.evidence
+                    or self.tools.evidence[ref].release_id != self.tools.release.version
+                    for ref in claim.supporting_evidence_ids
+                ):
+                    continue
+                if discovery:
+                    relevant = (
+                        bool(result.candidates) and set(claim.game_ids or []) <= expected_games
+                    )
+                else:
+                    subject = (
+                        claim.subject_id in {f"player:{pid}" for pid in scope.player_ids}
+                        if scope.player_ids
+                        else claim.subject_id == "team:NYK"
+                    )
+                    population = expected_games
+                    if scope.player_ids:
+                        population = {
+                            stat.game_id
+                            for stat, _ in self.tools.rows
+                            if f"player:{stat.player_id}" == claim.subject_id
+                            and stat.minutes > 0
+                            and stat.game_id in expected_games
+                        }
+                    relevant = subject and set(claim.game_ids or []) == population
+                    if scope.player_ids:
+                        relevant = relevant and claim.metric_id.split(":")[0] == (
+                            scope.metric or "points"
+                        )
+                if relevant:
+                    claims.append(claim)
+        if is_record_request(self.tools.question) and not scope.player_ids:
+            claims = [c for c in claims if c.metric_id in {"wins", "losses"}]
+            if {c.metric_id for c in claims} != {"wins", "losses"}:
+                return []
+        return list({c.claim_id: c for c in claims}.values())
+
     async def fallback(self, reason: str) -> dict[str, Any]:
-        if not self.tools.claims:
+        if not self.fallback_claims() and not self.recovery_ran and self.remaining() > 0.5:
+            self.recovery_ran = True
             question = self.tools.question
             name = (
                 "discover_facts"
@@ -522,15 +608,20 @@ class AnalystLoop:
                 if self.tools.scope and self.tools.scope.player_ids
                 else "get_team_stats"
             )
-            self.results.append(await self.tools.execute(ToolCall(name=name, question=question)))
+            try:
+                async with asyncio.timeout(max(0.001, self.remaining() - 0.5)):
+                    self.results.append(
+                        await self.tools.execute(ToolCall(name=name, question=question))
+                    )
+            except Exception:
+                # Cancellation is a BaseException and intentionally propagates.
+                pass
         return self.render_fallback(reason)
 
     def render_fallback(self, reason: str) -> dict[str, Any]:
         from app.services.evidence_contracts import ClaimUse
 
-        claims = [c for r in self.results for c in r.claims]
-        if not claims:
-            claims = list(self.tools.claims.values())
+        claims = self.fallback_claims()
         claims = claims[:3]
         text = " ".join(c.statement for c in claims)
         if not text:
@@ -539,7 +630,7 @@ class AnalystLoop:
                     r.message + (" " + "; ".join(r.choices) if r.choices else "")
                     for r in reversed(self.results)
                 ),
-                "I could not verify an answer from the available archive on this turn.",
+                "Verified archive facts are unavailable on this turn. Please try again.",
             )
         if re_search_live(self.tools.question):
             text += " I don't have live injury or current-status updates."

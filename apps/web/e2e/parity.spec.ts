@@ -1,5 +1,8 @@
 import { expect, test } from 'playwright/test'
 
+const api = (path: string) => (process.env.PLAYWRIGHT_API_URL || (process.env.PLAYWRIGHT_BASE_URL
+  ? 'https://api.knicksiq.win' : '**/api')) + path
+
 const games = Array.from({ length: 101 }, (_, index) => ({
   id: index + 1, nba_game_id: `nba-${index + 1}`, season: '2025-26',
   game_date: '2026-01-01', home_team_id: 'NYK', away_team_id: 'BOS',
@@ -8,17 +11,21 @@ const games = Array.from({ length: 101 }, (_, index) => ({
 }))
 
 test.beforeEach(async ({ page }) => {
-  await page.route('**/api/archive/status*', (route) => route.fulfill({ json: {
+  // Remote artifact checks use fixtures too: never spend provider budget.
+  if (process.env.PLAYWRIGHT_BASE_URL || process.env.PLAYWRIGHT_API_URL) {
+    await page.route('https://api.knicksiq.win/**', (route) => route.abort())
+  }
+  await page.route(api('/archive/status*'), (route) => route.fulfill({ json: {
     season: '2025-26', data_version: 'parity.1', games: 101, matching_games: 101,
     regular_season_games: 101, postseason_games: 0, reports: 101, capabilities: [],
   } }))
-  await page.route('**/api/games?*', (route) => {
+  await page.route(api('/games?*'), (route) => {
     const url = new URL(route.request().url())
     const offset = Number(url.searchParams.get('offset') || 0)
     const limit = Number(url.searchParams.get('limit') || 50)
     return route.fulfill({ json: games.slice(offset, offset + limit) })
   })
-  await page.route('**/api/reports?*', (route) => {
+  await page.route(api('/reports?*'), (route) => {
     const url = new URL(route.request().url())
     const offset = Number(url.searchParams.get('offset') || 0)
     return route.fulfill({ json: games.slice(offset, offset + 50).map((game) => ({
@@ -29,7 +36,7 @@ test.beforeEach(async ({ page }) => {
 
 for (const path of ['games', 'reports']) {
   test(`${path}: extreme page URLs do not crash pagination`, async ({ page }) => {
-    await page.route('**/api/archive/status*', async (route) => {
+    await page.route(api('/archive/status*'), async (route) => {
       await new Promise((resolve) => setTimeout(resolve, 500))
       await route.fulfill({ json: { games: 101, reports: 101, matching_games: 101 } })
     })
@@ -39,7 +46,7 @@ for (const path of ['games', 'reports']) {
   })
   test(`${path}: server errors stay on the page and can be retried`, async ({ page }) => {
     let fail = true
-    await page.route(`**/api/${path}?*`, (route) => route.fulfill(fail
+    await page.route(api(`/${path}?*`), (route) => route.fulfill(fail
       ? { status: 500, json: { detail: 'Temporary failure' } }
       : { json: [] }))
     await page.goto(`/${path}`)
@@ -70,7 +77,7 @@ for (const path of ['games', 'reports']) {
 
 test('analyst retains full conversation across client navigation with bounded context', async ({ page }) => {
   const contexts: number[] = []
-  await page.route('**/api/analysis/query', (route) => {
+  await page.route(api('/analysis/query'), (route) => {
     const body = route.request().postDataJSON()
     contexts.push(body.context.length)
     const turn = contexts.length
@@ -109,7 +116,7 @@ test('analyst retains full conversation across client navigation with bounded co
 
 test('follow-up submits immediately and New chat clears both surfaces', async ({ page }) => {
   const questions: string[] = []
-  await page.route('**/api/analysis/query', (route) => {
+  await page.route(api('/analysis/query'), (route) => {
     const body = route.request().postDataJSON()
     questions.push(body.question)
     return route.fulfill({ json: {
@@ -139,7 +146,7 @@ test('follow-up submits immediately and New chat clears both surfaces', async ({
 test('interrupted request retries the exact turn after reload', async ({ page }) => {
   let firstTurn = ''
   let calls = 0
-  await page.route('**/api/analysis/query', (route) => {
+  await page.route(api('/analysis/query'), (route) => {
     calls++
     const body = route.request().postDataJSON()
     if (calls === 1) {
@@ -165,7 +172,7 @@ test('interrupted request retries the exact turn after reload', async ({ page })
 
 test('session expiry keeps the question and retries with fresh context', async ({ page }) => {
   const requests: { turn_id: string }[] = []
-  await page.route('**/api/analysis/query', (route) => {
+  await page.route(api('/analysis/query'), (route) => {
     const body = route.request().postDataJSON()
     requests.push(body)
     if (requests.length === 1) return route.fulfill({ json: {
@@ -200,7 +207,7 @@ test('session expiry keeps the question and retries with fresh context', async (
 
 test('late response cannot restore a chat after New chat', async ({ page }) => {
   let finish: (() => void) | undefined
-  await page.route('**/api/analysis/query', async (route) => {
+  await page.route(api('/analysis/query'), async (route) => {
     await new Promise<void>((resolve) => { finish = resolve })
     try { await route.fulfill({ json: {
       answer: 'Late answer.', warnings: [], citations: [], degraded: false,
@@ -223,7 +230,7 @@ test('storage failure leaves chat usable and explains refresh recovery', async (
   await page.addInitScript(() => {
     Storage.prototype.setItem = () => { throw new Error('Storage disabled') }
   })
-  await page.route('**/api/analysis/query', (route) => route.fulfill({ json: {
+  await page.route(api('/analysis/query'), (route) => route.fulfill({ json: {
     answer: 'In-memory answer.', warnings: [], citations: [], degraded: false,
     refused: false, data_version: 'parity.1',
   } }))
@@ -237,11 +244,11 @@ test('storage failure leaves chat usable and explains refresh recovery', async (
 
 test('archive version change keeps history and starts fresh context', async ({ page }) => {
   let version = 'parity.1'
-  await page.route('**/api/archive/status*', (route) => route.fulfill({ json: {
+  await page.route(api('/archive/status*'), (route) => route.fulfill({ json: {
     season: '2025-26', data_version: version, games: 101,
   } }))
   const requests: { context: unknown[]; session_token?: string }[] = []
-  await page.route('**/api/analysis/query', (route) => {
+  await page.route(api('/analysis/query'), (route) => {
     const body = route.request().postDataJSON()
     requests.push(body)
     return route.fulfill({ json: {
@@ -268,7 +275,7 @@ test('archive version change keeps history and starts fresh context', async ({ p
 
 test('stateless reply remains readable without carrying its session context', async ({ page }) => {
   const contexts: unknown[][] = []
-  await page.route('**/api/analysis/query', (route) => {
+  await page.route(api('/analysis/query'), (route) => {
     const body = route.request().postDataJSON()
     contexts.push(body.context)
     return route.fulfill({ json: {
@@ -292,7 +299,7 @@ test('stateless reply remains readable without carrying its session context', as
 
 test('readiness has a slow-start message, deadline and explicit retry', async ({ page }) => {
   await page.clock.install()
-  await page.route('**/api/archive/status*', () => new Promise(() => {}))
+  await page.route(api('/archive/status*'), () => new Promise(() => {}))
   await page.goto('/analyst')
   await expect(page.getByText('Preparing archive')).toBeVisible()
   await page.clock.runFor(5001)
@@ -300,7 +307,7 @@ test('readiness has a slow-start message, deadline and explicit retry', async ({
   await page.clock.runFor(55001)
   await expect(page.getByText('Archive unavailable', { exact: true })).toBeVisible()
   await expect(page.getByRole('textbox')).toBeDisabled()
-  await page.route('**/api/archive/status*', (route) => route.fulfill({ json: {
+  await page.route(api('/archive/status*'), (route) => route.fulfill({ json: {
     games: 101, data_version: 'parity.1',
   } }))
   await page.getByRole('button', { name: 'Try again' }).click()
@@ -310,9 +317,9 @@ test('readiness has a slow-start message, deadline and explicit retry', async ({
 test('game evidence failure stays distinct from empty and never requests bad stretches', async ({ page }) => {
   const requested: string[] = []
   page.on('request', (request) => requested.push(request.url()))
-  await page.route('**/api/games/101', (route) => route.fulfill({ json: games[100] }))
-  await page.route('**/api/games/101/runs', (route) => route.fulfill({ status: 503, json: {} }))
-  await page.route('**/api/games/101/play-by-play', (route) => route.fulfill({ json: [] }))
+  await page.route(api('/games/101'), (route) => route.fulfill({ json: games[100] }))
+  await page.route(api('/games/101/runs'), (route) => route.fulfill({ status: 503, json: {} }))
+  await page.route(api('/games/101/play-by-play'), (route) => route.fulfill({ json: [] }))
   await page.goto('/games/101?page=3')
   await expect(page.getByText('Runs could not be loaded.')).toBeVisible({ timeout: 15000 })
   await expect(page.getByText('No play-by-play events were returned for this game.')).toBeVisible()
@@ -324,10 +331,10 @@ test('game evidence failure stays distinct from empty and never requests bad str
 
 test('away wins show the Knicks margin in the ledger and game evidence', async ({ page }) => {
   const game = { ...games[100], home_team_id: 'SAS', away_team_id: 'NYK', home_score: 90, away_score: 94, margin: -4 }
-  await page.route('**/api/games?*', (route) => route.fulfill({ json: [game] }))
-  await page.route('**/api/games/101', (route) => route.fulfill({ json: game }))
-  await page.route('**/api/games/101/runs', (route) => route.fulfill({ json: [] }))
-  await page.route('**/api/games/101/play-by-play', (route) => route.fulfill({ json: [{ id: 1, period: 4, clock: '00:07', event_type: 'free_throw', description: 'Made free throw', away_score: 94, home_score: 90, score_margin: -4 }] }))
+  await page.route(api('/games?*'), (route) => route.fulfill({ json: [game] }))
+  await page.route(api('/games/101'), (route) => route.fulfill({ json: game }))
+  await page.route(api('/games/101/runs'), (route) => route.fulfill({ json: [] }))
+  await page.route(api('/games/101/play-by-play'), (route) => route.fulfill({ json: [{ id: 1, period: 4, clock: '00:07', event_type: 'free_throw', description: 'Made free throw', away_score: 94, home_score: 90, score_margin: -4 }] }))
   await page.goto('/games')
   await expect(page.locator('.game-margin')).toHaveText('+4')
   await page.locator('.game-row').click()
@@ -346,5 +353,89 @@ for (const width of [390, 1440]) {
       expect(results.violations.filter((v) => ['serious', 'critical'].includes(v.impact || ''))).toEqual([])
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true)
     }
+  })
+}
+
+test('corrupted storage leaves chat usable with a recovery notice', async ({ page }) => {
+  await page.addInitScript(() => {
+    sessionStorage.setItem('knicksiq-conversation-v1', '{broken')
+  })
+  await page.route(api('/analysis/query'), (route) => route.fulfill({ json: {
+    answer: 'Recovered conversation.', warnings: [], citations: [], degraded: false,
+    refused: false, data_version: 'parity.1',
+  } }))
+  await page.goto('/analyst')
+  await expect(page.getByText('Refresh recovery is unavailable in this browser.')).toBeVisible()
+  const box = page.getByRole('textbox', { name: 'Ask a season question' })
+  await box.fill('What happened?')
+  await box.press('Enter')
+  await expect(page.getByText('Recovered conversation.')).toBeVisible()
+})
+
+test('sources expand into readable facts while retaining fallback warnings', async ({ page }) => {
+  await page.route(api('/analysis/query'), (route) => route.fulfill({ json: {
+    answer: 'Knicks wins: 2. Knicks losses: 1.', warnings: ['Archive coverage only.'],
+    citations: [{ type: 'verified_claim', title: 'Team record',
+      claim: '{"wins":2,"losses":1}', source_name: 'NBA.com',
+      source_url: 'https://www.nba.com/game/test', metadata: { internal: true } }],
+    degraded: true, refused: false, data_version: 'parity.1', llm_validated: false,
+  } }))
+  await page.goto('/analyst')
+  const box = page.getByRole('textbox', { name: 'Ask a season question' })
+  await box.fill('What was their record?')
+  await box.press('Enter')
+  await expect(page.getByText('Knicks wins: 2. Knicks losses: 1.')).toBeVisible()
+  await expect(page.getByText('Archive coverage only.')).toBeVisible()
+  await expect(page.getByText('Verified statistic', { exact: true })).not.toBeVisible()
+  await page.getByText('Sources (1)', { exact: true }).click()
+  await expect(page.getByText('Verified statistic', { exact: true })).toBeVisible()
+  await expect(page.locator('dt').filter({ hasText: /^wins$/i })).toBeVisible()
+  await expect(page.getByRole('link', { name: /Source: NBA.com/ })).toHaveAttribute('href', 'https://www.nba.com/game/test')
+  await expect(page.getByText('Developer diagnostics')).toHaveCount(0)
+})
+
+for (const surface of ['/', '/analyst']) {
+  test(`a delayed answer focus cannot steal the next question on ${surface}`, async ({ page }) => {
+    await page.addInitScript(() => {
+      const original = window.requestAnimationFrame.bind(window)
+      const cancel = window.cancelAnimationFrame.bind(window)
+      const queued = new Map<number, FrameRequestCallback>()
+      let next = 100000
+      const controls = window as typeof window & { holdAnswerFrames: boolean; flushAnswerFrames: () => void }
+      controls.holdAnswerFrames = false
+      window.requestAnimationFrame = (callback) => {
+        if (!controls.holdAnswerFrames) return original(callback)
+        const id = next++
+        queued.set(id, callback)
+        return id
+      }
+      window.cancelAnimationFrame = (id) => { queued.delete(id); cancel(id) }
+      controls.flushAnswerFrames = () => {
+        controls.holdAnswerFrames = false
+        const callbacks = [...queued.values()]
+        queued.clear()
+        callbacks.forEach((callback) => callback(performance.now()))
+      }
+    })
+    let requests = 0
+    await page.route(api('/analysis/query'), (route) => route.fulfill({ json: {
+      answer: `Answer ${++requests}`, warnings: [], citations: [], degraded: false,
+      refused: false, data_version: 'parity.1',
+    } }))
+    await page.goto(surface)
+    const box = page.getByRole('textbox', { name: surface === '/' ? 'Ask the archive' : 'Ask a season question' })
+    await box.fill('First question')
+    await page.evaluate(() => { (window as unknown as { holdAnswerFrames: boolean }).holdAnswerFrames = true })
+    await box.press('Enter')
+    await expect(page.getByText('Answer 1', { exact: true })).toBeVisible()
+    await box.fill('Next question')
+    await page.evaluate(() => (window as unknown as { flushAnswerFrames: () => void }).flushAnswerFrames())
+    await expect(box).toBeFocused()
+    await page.keyboard.press('Enter')
+    await expect(page.getByText('Answer 2', { exact: true })).toBeVisible()
+    expect(requests).toBe(2)
+    await test.info().attach('next-turn-recovered', {
+      body: await page.screenshot(), contentType: 'image/png',
+    })
   })
 }
