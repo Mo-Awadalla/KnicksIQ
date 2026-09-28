@@ -1,0 +1,30 @@
+[
+  {
+    "timestamp": "2026-09-22T13:41:51.789084205Z",
+    "message": "analyst_execution_failed error_type=TimeoutError stage=orchestrate model_calls=1 tool_rounds=1"
+  },
+  {
+    "timestamp": "2026-09-28T18:15:11.716918914Z",
+    "message": "analyst_execution_failed error_type=ValidationError stage=orchestrate model_calls=1 tool_rounds=0"
+  },
+  {
+    "timestamp": "2026-09-28T18:15:21.21341855Z",
+    "message": "analyst_execution_failed error_type=ValidationError stage=orchestrate model_calls=1 tool_rounds=0"
+  },
+  {
+    "timestamp": "2026-09-28T18:15:35.702356041Z",
+    "message": "analyst_execution_failed error_type=ValidationError stage=orchestrate model_calls=1 tool_rounds=0"
+  },
+  {
+    "timestamp": "2026-09-28T18:15:55.362980874Z",
+    "message": "analyst_execution_failed error_type=ValueError stage=review model_calls=4 tool_rounds=2"
+  },
+  {
+    "timestamp": "2026-09-28T18:17:26.824856534Z",
+    "message": "analyst_execution_failed error_type=ValidationError stage=orchestrate model_calls=1 tool_rounds=0"
+  },
+  {
+    "timestamp": "2026-09-28T18:18:01.094052443Z",
+    "message": "analyst_execution_failed error_type=ValidationError stage=orchestrate model_calls=1 tool_rounds=0"
+  }
+]

@@ -1,0 +1,19 @@
+(node:89240) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+
+Running 7 tests using 1 worker
+
+(node:89247) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:89247) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(node:89247) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 e2e/parity.spec.ts:75:1 › analyst retains full conversation across client navigation with bounded context (2.4s)
+  ✓  2 e2e/parity.spec.ts:114:1 › follow-up submits immediately and New chat clears both surfaces (752ms)
+  ✓  3 e2e/parity.spec.ts:143:1 › interrupted request retries the exact turn after reload (771ms)
+  ✓  4 e2e/parity.spec.ts:170:1 › session expiry keeps the question and retries with fresh context (527ms)
+  ✓  5 e2e/parity.spec.ts:205:1 › late response cannot restore a chat after New chat (416ms)
+  ✓  6 e2e/parity.spec.ts:226:1 › storage failure leaves chat usable and explains refresh recovery (506ms)
+  ✓  7 e2e/parity.spec.ts:242:1 › archive version change keeps history and starts fresh context (743ms)
+
+  7 passed (7.0s)

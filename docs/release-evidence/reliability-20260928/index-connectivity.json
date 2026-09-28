@@ -1,0 +1,22 @@
+{
+  "mutation_performed": false,
+  "aliases": [
+    {
+      "alias_name": "knicks_box_scores",
+      "collection_name": "knicks_box_scores__2025_26_20260714_1"
+    },
+    {
+      "alias_name": "knicks_games",
+      "collection_name": "knicks_games__2025_26_20260714_1"
+    },
+    {
+      "alias_name": "knicks_possessions",
+      "collection_name": "knicks_possessions__2025_26_20260714_1"
+    },
+    {
+      "alias_name": "knicks_reports",
+      "collection_name": "knicks_reports__2025_26_20260714_1"
+    }
+  ],
+  "status": "reachable"
+}

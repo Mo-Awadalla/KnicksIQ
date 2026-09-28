@@ -1,0 +1,30 @@
+[
+  {
+    "commit": {
+      "createdAt": "2026-09-28T18:22:09Z",
+      "id": "98d21753910b16440970d9081a2e352a4aacdb8d",
+      "message": "Merge pull request #1 from Mo-Awadalla/codex/chat-memory-release-20260922\n\nShare ten-message analyst conversations across chat surfaces"
+    },
+    "createdAt": "2026-09-28T18:39:40.316938Z",
+    "finishedAt": "2026-09-28T18:40:13.085838Z",
+    "id": "dep-datb8r67bikc73csq7l0",
+    "startedAt": "2026-09-28T18:39:40.3153Z",
+    "status": "live",
+    "trigger": "api",
+    "updatedAt": "2026-09-28T18:40:13.086238Z"
+  },
+  {
+    "commit": {
+      "createdAt": "2026-09-21T22:21:38Z",
+      "id": "7c373c7263bb05d10aeee048a2d6d1e433579aed",
+      "message": "Fix CI formatting, conversation coverage, and AnyIO security patch"
+    },
+    "createdAt": "2026-09-21T22:26:02.035506Z",
+    "finishedAt": "2026-09-21T22:26:31.687948Z",
+    "id": "dep-daoqtun40ujc738bh540",
+    "startedAt": "2026-09-21T22:26:02.033167Z",
+    "status": "deactivated",
+    "trigger": "api",
+    "updatedAt": "2026-09-28T18:40:13.084091Z"
+  }
+]

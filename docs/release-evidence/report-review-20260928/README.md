@@ -1,4 +1,4 @@
-# Report correction review — prepared, not approved or activated
+# Report correction review — content approved, not activated
 
 This batch reuses the existing `canonical-score-intervals-v2` proposal in
 `release-artifacts/2025-26/release-corrected-unreviewed.json`. Regeneration from the
@@ -8,8 +8,8 @@ change canonical basketball rows, select a new policy, grant approval, or publis
 The read-only audit of all 101 reports in the local baseline finds 101 reports with
 unresolved interval claims, including 40 contradictory single-quarter clock ranges.
 All 101 final scores and 303 player lines match. The replacement passes all 101
-reports, 303 player lines and 303 scoring interval checks. This is an audit of the
-local source snapshot; it is not a fresh audit of the current production database.
+reports, 303 player lines and 303 scoring interval checks. The original review audited the local source snapshot. The subsequently authorized
+fresh full production audit below confirms that snapshot matches production.
 
 The exact content is in `reports.diff`, `replacement-reports.json`, and
 `rollback-reports.json`. `review.json` contains source-file hashes, canonical data
@@ -60,7 +60,7 @@ python3 tools/report_audit/prepare_review.py \
 uv run pytest tools/report_audit apps/api/app/tests/test_reports_api.py -q
 ```
 
-## Fresh observed production identity (partial binding)
+## Historical partial binding — superseded by the fresh full audit below
 
 The already captured `reliability-20260928/live-before.json` identifies active release
 `1`, version `2025-26.20260714.1`, manifest
@@ -84,3 +84,9 @@ it considered production report contents and metadata export insufficiently auth
 No production snapshot was written. Obtain explicit approval for that read/export
 before rerunning the utility; no workaround or retry was used. Owner content approval
 and activation remain separate, unchanged gates.
+
+## Owner approval and fresh production binding (2026-09-28)
+
+The owner explicitly approved the exact 101-report content hash in this chat, including the existing policy and documented scoreboard exception. `owner-content-approval.json` records the decision. The separately approved read-only export completed in a repeatable-read/read-only transaction: every row in all 8 compared collections matches the baseline. `production-binding.json` holds the fresh audit; `production-rollback-reports.json` is the local rollback snapshot. No production writes occurred.
+
+`approved-bundle.json` identifies the validated local bundle with a new release version. Only reviewed flags, approval metadata and the version changed; all approved narrative hashes and canonical basketball rows remain unchanged. The bundle is not staged or activated. Earlier unapproved snapshots and their hashes are intentionally preserved as the exact reviewed input. Evaluation-label and launch approvals and remaining release checks are still required. Production-derived evidence must remain local unless separately authorized for publication.
