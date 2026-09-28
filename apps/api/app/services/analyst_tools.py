@@ -548,6 +548,8 @@ class AnalystTools:
         )
 
     def team(self, scope: ResolvedQuery, games: list[Game]) -> ToolResult:
+        if is_record_request(self.question):
+            games = [g for g in games if g.status == "final" and g.home_score != g.away_score]
         if scope.relative_game_count:
             games = games[-scope.relative_game_count :]
         evidence = [self.receipt(g) for g in games]
