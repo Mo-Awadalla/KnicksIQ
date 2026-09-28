@@ -251,6 +251,9 @@ def _periods(question: str) -> list[int]:
     q = _normalize(question)
     values = {int(value) for value in re.findall(r"\bq([1-9])\b", q)}
     values.update(int(value) for value in re.findall(r"\b([1-9])(?:st|nd|rd|th) quarter\b", q))
+    for period, ordinal in enumerate(("first", "second", "third", "fourth"), start=1):
+        if re.search(rf"\b{ordinal} quarter\b", q):
+            values.add(period)
     if "first half" in q:
         values.update({1, 2})
     if "second half" in q:
