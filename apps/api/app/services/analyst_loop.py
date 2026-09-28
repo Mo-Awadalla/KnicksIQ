@@ -530,7 +530,16 @@ class AnalystLoop:
         Reuse current tool work only when its complete population and metric match.
         """
         scope = self.tools.scope
-        if scope is None:
+        if (
+            scope is None
+            or scope.requires_clarification
+            or scope.periods
+            or self.tools.season != self.tools.release.season
+            or any(
+                season != self.tools.release.season
+                for season in re.findall(r"\b20\d{2}-\d{2}(?!-\d{2})\b", self.tools.question)
+            )
+        ):
             return []
         games = self.tools.selected_games(scope)
         if is_record_request(self.tools.question) and not scope.player_ids:

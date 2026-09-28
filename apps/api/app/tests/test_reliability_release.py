@@ -254,3 +254,20 @@ async def test_provider_timeout_reserves_recovery_window(db_session, monkeypatch
     assert time.monotonic() - started < 0.9
     assert "wins: 2" in result["answer"] and "losses: 1" in result["answer"]
     assert result["citations"] and loop.recovery_ran
+
+
+@pytest.mark.parametrize(
+    "question",
+    [
+        "What was their record in the 2024-25 season?",
+        "What was their record in the first quarter?",
+    ],
+)
+async def test_prior_record_cannot_answer_unsupported_current_scope(db_session, question):
+    release = await seed_record(db_session)
+    tools = await record_tools(db_session, release, "What was their record?")
+    previous = await AnalystLoop(tools, []).run(allow_model=False)
+    current = await record_tools(db_session, release, question, previous["state"])
+    result = await AnalystLoop(current, []).run(allow_model=False)
+    assert not result["citations"]
+    assert "wins: 2" not in result["answer"]
