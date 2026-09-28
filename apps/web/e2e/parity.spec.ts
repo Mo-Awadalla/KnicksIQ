@@ -393,3 +393,49 @@ test('sources expand into readable facts while retaining fallback warnings', asy
   await expect(page.getByRole('link', { name: /Source: NBA.com/ })).toHaveAttribute('href', 'https://www.nba.com/game/test')
   await expect(page.getByText('Developer diagnostics')).toHaveCount(0)
 })
+
+for (const surface of ['/', '/analyst']) {
+  test(`a delayed answer focus cannot steal the next question on ${surface}`, async ({ page }) => {
+    await page.addInitScript(() => {
+      const original = window.requestAnimationFrame.bind(window)
+      const cancel = window.cancelAnimationFrame.bind(window)
+      const queued = new Map<number, FrameRequestCallback>()
+      let next = 100000
+      const controls = window as typeof window & { holdAnswerFrames: boolean; flushAnswerFrames: () => void }
+      controls.holdAnswerFrames = false
+      window.requestAnimationFrame = (callback) => {
+        if (!controls.holdAnswerFrames) return original(callback)
+        const id = next++
+        queued.set(id, callback)
+        return id
+      }
+      window.cancelAnimationFrame = (id) => { queued.delete(id); cancel(id) }
+      controls.flushAnswerFrames = () => {
+        controls.holdAnswerFrames = false
+        const callbacks = [...queued.values()]
+        queued.clear()
+        callbacks.forEach((callback) => callback(performance.now()))
+      }
+    })
+    let requests = 0
+    await page.route(api('/analysis/query'), (route) => route.fulfill({ json: {
+      answer: `Answer ${++requests}`, warnings: [], citations: [], degraded: false,
+      refused: false, data_version: 'parity.1',
+    } }))
+    await page.goto(surface)
+    const box = page.getByRole('textbox', { name: surface === '/' ? 'Ask the archive' : 'Ask a season question' })
+    await box.fill('First question')
+    await page.evaluate(() => { (window as unknown as { holdAnswerFrames: boolean }).holdAnswerFrames = true })
+    await box.press('Enter')
+    await expect(page.getByText('Answer 1', { exact: true })).toBeVisible()
+    await box.fill('Next question')
+    await page.evaluate(() => (window as unknown as { flushAnswerFrames: () => void }).flushAnswerFrames())
+    await expect(box).toBeFocused()
+    await page.keyboard.press('Enter')
+    await expect(page.getByText('Answer 2', { exact: true })).toBeVisible()
+    expect(requests).toBe(2)
+    await test.info().attach('next-turn-recovered', {
+      body: await page.screenshot(), contentType: 'image/png',
+    })
+  })
+}

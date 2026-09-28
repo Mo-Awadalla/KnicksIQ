@@ -360,7 +360,15 @@ export function useAnalyst() {
             'Conversation state was unavailable. Start a new conversation from here.'
           )
         }
+        const focusAtResponse = document.activeElement
         requestAnimationFrame(() => {
+          if (
+            generation !== chat.generation ||
+            chat.pending ||
+            chat.question.trim() ||
+            document.activeElement !== focusAtResponse
+          )
+            return
           const headings = document.querySelectorAll<HTMLElement>(
             '.archive-answer-heading'
           )

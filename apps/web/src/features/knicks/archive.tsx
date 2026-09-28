@@ -205,7 +205,13 @@ export function SeasonArchivePage() {
 
   useEffect(() => {
     if (!analyst.isSuccess) return
+    const focusAtResponse = document.activeElement
     const frame = requestAnimationFrame(() => {
+      if (
+        document.activeElement !== focusAtResponse ||
+        focusAtResponse?.matches('input, textarea, [contenteditable="true"]')
+      )
+        return
       const headings = resultsRef.current?.querySelectorAll<HTMLElement>(
         '.archive-answer-heading'
       )
