@@ -1,8 +1,9 @@
-# Proposed release policy: verification and delivery are separate stages
+# Release policy: verification and delivery are separate stages
 
-Status: proposal requiring explicit owner approval; not an implemented gate change.
-The existing release validator still requires shadow at 0.1. No production
-setting or existing gate is waived by this document.
+Status: approved by the owner in the release-readiness instruction. The validator
+now distinguishes pre-promotion readiness from deployment authorization. Its
+implementation requires a new candidate and verification. This document neither
+changes production configuration nor supplies final promotion authorization.
 
 ## Pre-promotion verification
 
@@ -26,20 +27,29 @@ configuration instead of requiring the final serving mode to remain shadow.
 Require both the preceding shadow gate and primary-mode production-profile
 verification before the release can be eligible for promotion.
 
-Proposed validator delta: replace the current single `configuration` mode check
+The validator replaces the former single `configuration` mode check
 with **two required** checks: `pre_promotion_configuration` must be shadow/0.1;
 `launch_configuration` must be llm_primary. Neither can satisfy the other.
 Keep every existing required check, quality threshold, 120-case denominator,
-content-bound approval and final record-hash authorization. Require an owner
-approval bound to this policy document before implementing the validator delta.
-A later implementation changes tracked code and therefore requires a new
-candidate SHA and its CI; this proposal alone does not unblock the old gate.
+content-bound approval and final record-hash authorization. The readiness CLI
+uses `--readiness`; it does not require or manufacture final launch approval.
+The deployment command still requires launch approval plus an owner-controlled
+digest matching the exact completed record. Post-promotion acceptance is a later
+stage and cannot be represented as completed by a readiness pass.
+
+The shadow artifact must bind the candidate, bundle, expectations and stage
+configuration, cover all 120 original cases, and record actual deterministic
+sample membership, model calls, validation and delivery. Configuration alone
+does not satisfy the shadow gate. The implementation changes tracked code and
+requires a new candidate SHA and its own CI.
 
 ## Authorization sequence
 
-1. Request staging-write authorization naming the destination, candidate bundle,
-   release version and physical collections. No alias promotion, active release
-   change or serving deployment is included.
+1. Resolve and record the exact existing destinations, candidate bundle, release
+   version and physical collections. The readiness instruction conditionally
+   authorizes create-only, isolated preparation within existing capacity. Stop
+   any path whose isolation, identity or capacity cannot be established. No alias
+   promotion, active production release change or serving deployment is included.
 2. After authorized staging creates those resources, verify staged schema,
    loaded rows, vectors, counts, payloads, filters, release isolation, dependencies,
    rollback availability and both configured modes. Keep evidence local. Paid

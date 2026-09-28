@@ -147,6 +147,33 @@ def is_record_request(question: str) -> bool:
     )
 
 
+def is_game_score_request(question: str) -> bool:
+    """A game result, excluding scoring averages and individual point totals."""
+    q = _normalize(question)
+    return bool(re.search(r"\b(?:the|final) score\b|\bscore (?:against|on|of)\b", q))
+
+
+def _explicit_dates(question: str) -> tuple[list[date], str | None]:
+    """Parse fully specified dates; never infer an omitted year or repair a date."""
+    matches: list[tuple[int, tuple[int, int, int]]] = []
+    for match in re.finditer(r"\b(20\d{2})-(\d{2})-(\d{2})\b", question):
+        year, month, day = match.groups()
+        matches.append((match.start(), (int(year), int(month), int(day))))
+    months = "|".join(_MONTHS)
+    for match in re.finditer(
+        rf"\b({months})\s+(\d{{1,2}})(?:st|nd|rd|th)?\b(?:,?\s+(20\d{{2}})\b)?",
+        question.lower(),
+    ):
+        month, day, year = match.groups()
+        if year is None:
+            return [], "missing_date_year"
+        matches.append((match.start(), (int(year), _MONTHS[month], int(day))))
+    try:
+        return [date(*parts) for _, parts in sorted(matches)], None
+    except ValueError:
+        return [], "invalid_date"
+
+
 def _player_aliases(player: Player) -> set[str]:
     normalized = _normalize(player.full_name)
     parts = normalized.split()
@@ -349,9 +376,7 @@ async def resolve_query(
     q = _normalize(question)
     team_ids = sorted(team_ids_in_text(question) - {"NYK"})
     opponent_id = team_ids[0] if len(team_ids) == 1 else None
-    explicit_dates = [
-        date.fromisoformat(value) for value in re.findall(r"\b20\d{2}-\d{2}-\d{2}\b", question)
-    ]
+    explicit_dates, date_error = _explicit_dates(question)
     date_start = explicit_dates[0] if explicit_dates else None
     date_end = explicit_dates[-1] if explicit_dates else None
     latest_date = games[-1].game_date if games else None
@@ -362,11 +387,13 @@ async def resolve_query(
     elif re.search(r"\b(?:last|previous)\s+game\b", q):
         relative_count = 1
 
-    if latest_date and "this month" in q:
+    if not explicit_dates and not date_error and latest_date and "this month" in q:
         date_start = latest_date.replace(day=1)
         date_end = latest_date
-    else:
-        named_month = next((month for name, month in _MONTHS.items() if name in q), None)
+    elif not explicit_dates and not date_error:
+        named_month = next(
+            (month for name, month in _MONTHS.items() if re.search(rf"\b{name}\b", q)), None
+        )
         if named_month and games:
             month_dates = [game.game_date for game in games if game.game_date.month == named_month]
             if month_dates:
@@ -432,7 +459,8 @@ async def resolve_query(
         ]
 
     descriptive_reference = bool(
-        (bool(explicit_dates) and not re.search(r"\b(between|from|through|until)\b", q))
+        is_game_score_request(question)
+        or (bool(explicit_dates) and not re.search(r"\b(between|from|through|until)\b", q))
         or "overtime game" in q
         or re.search(r"\bgame where\b", q)
         or (
@@ -508,6 +536,10 @@ async def resolve_query(
             f"{game.game_date}: {game.away_team_id} at {game.home_team_id}"
             for game in candidates[:8]
         ]
+
+    if date_error:
+        clarification_reason = date_error
+        clarification_options = ["Please provide a valid calendar date including the year."]
 
     return ResolvedQuery(
         intent=intent,

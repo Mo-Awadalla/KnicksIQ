@@ -30,7 +30,7 @@ from app.services.evidence_contracts import (
     validate_review,
     validate_structure,
 )
-from app.services.query_resolution import is_record_request
+from app.services.query_resolution import is_game_score_request, is_record_request
 from app.services.report_llm import get_llm_adapter
 from pydantic import BaseModel
 
@@ -591,6 +591,8 @@ class AnalystLoop:
                         )
                 if relevant:
                     claims.append(claim)
+        if is_game_score_request(self.tools.question) and not scope.player_ids:
+            claims = [c for c in claims if c.metric_id == "game_score"]
         if is_record_request(self.tools.question) and not scope.player_ids:
             claims = [c for c in claims if c.metric_id in {"wins", "losses"}]
             if {c.metric_id for c in claims} != {"wins", "losses"}:
