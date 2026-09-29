@@ -517,7 +517,28 @@ class AnalystLoop:
         except (ValueError, RuntimeError):
             return False, "Reviewer failed or returned malformed output."
         if not validate_review(review, answer, self.sent_claims, self.sent_evidence):
-            return False, encoded(review.model_dump())
+            # The repair already receives the complete proposed answer. Repeating
+            # every reviewed span, support ID and accepted suggestion can exhaust
+            # its input budget before the provider is called. Feedback has no
+            # evidence authority; keep only bounded failure guidance. Both the
+            # complete claim records and the next independent review stay intact.
+            failures = []
+            for index, item in enumerate(review.assertions):
+                if item.verdict != "supported" or item.offending_text is not None:
+                    failure = {"span_index": index, "verdict": item.verdict, "reason": item.reason}
+                    if token_upper_bound(encoded(failures + [failure])) > 1000:
+                        break
+                    failures.append(failure)
+            return False, encoded(
+                {
+                    "instruction": (
+                        "Whole-answer review failed. Remove unsupported assertions; "
+                        "use only existing claims and evidence. "
+                        "The full answer will be reviewed again."
+                    ),
+                    "failed_spans": failures,
+                }
+            )
         self.accepted_suggestions = accepted_follow_ups(
             review, answer, self.sent_claims, self.sent_evidence
         )
