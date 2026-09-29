@@ -43,7 +43,7 @@ from app.services.narrative_scope import narrative_clarification
 from app.services.player_analytics import answer_player_question
 from app.services.possession_chunks import chunk_evidence
 from app.services.query_classifier import QueryClassifierResult, classify_query
-from app.services.query_resolution import ResolvedQuery, resolve_query
+from app.services.query_resolution import ResolvedQuery, is_live_only_score_request, resolve_query
 from app.services.rag import SearchResult, search_possession_chunks, search_season_docs
 from app.services.releases import restrict_to_active_release
 from app.services.report_llm import get_llm_adapter
@@ -1881,9 +1881,27 @@ async def _query_evidence_analyst(
         shadow_sampled = answer_mode == "shadow" and _sample_shadow(
             loop.request_id, settings.analysis_shadow_sample_rate
         )
-        result = await loop.run(
-            allow_model=bool(turn) and (answer_mode == "llm_primary" or shadow_sampled)
-        )
+        if is_live_only_score_request(req.question):
+            result = {
+                "answer": (
+                    "I don't have live game scores. "
+                    "I can answer questions about archived Knicks games."
+                ),
+                "follow_up_questions": [],
+                "citations": [],
+                "warnings": [],
+                "degraded": False,
+                "route": None,
+                "refused": True,
+                "data_version": release.version,
+                "state": tools.state.copy(),
+                "tool_calls": [],
+                "llm_validated": False,
+            }
+        else:
+            result = await loop.run(
+                allow_model=bool(turn) and (answer_mode == "llm_primary" or shadow_sampled)
+            )
         state = result.pop("state")
         record_turn(
             {

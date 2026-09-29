@@ -153,6 +153,24 @@ def is_game_score_request(question: str) -> bool:
     return bool(re.search(r"\b(?:the|final) score\b|\bscore (?:against|on|of)\b", q))
 
 
+def is_live_only_score_request(question: str) -> bool:
+    """A current score request with no separate archived target to answer."""
+    q = _normalize(question)
+    if not re.search(r"\bscore\b", q) or not re.search(
+        r"\b(?:live|current|tonight|today|now)\b", q
+    ):
+        return False
+    archival_target = re.search(
+        r"\b(?:archive|historical|previous|last season|average|rebounds|assists)\b",
+        q,
+    ) or re.search(r"\b20\d{2} \d{2} \d{2}\b", q)
+    dated_target = re.search(
+        rf"\b(?:{'|'.join(_MONTHS)})\s+\d{{1,2}}(?:st|nd|rd|th)?\b",
+        question.lower(),
+    )
+    return not (archival_target or dated_target)
+
+
 def _explicit_dates(question: str) -> tuple[list[date], str | None]:
     """Parse fully specified dates; never infer an omitted year or repair a date."""
     matches: list[tuple[int, tuple[int, int, int]]] = []

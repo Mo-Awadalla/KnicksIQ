@@ -635,7 +635,10 @@ class AnalystLoop:
                 "Verified archive facts are unavailable on this turn. Please try again.",
             )
         if re_search_live(self.tools.question):
-            text += " I don't have live injury or current-status updates."
+            if re.search(r"\bscore\b", self.tools.question, re.I):
+                text += " I don't have live game scores."
+            else:
+                text += " I don't have live injury or current-status updates."
         answer = ProposedAnswer(
             text=text,
             claims=[ClaimUse(claim_id=c.claim_id, displayed_value=c.value) for c in claims],
