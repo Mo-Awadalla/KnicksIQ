@@ -132,6 +132,8 @@ def evaluation_request_id(expectations_hash: str, mode: str, case_id: str) -> st
 
 def validate_shadow_stage(record: dict[str, Any], root: Path) -> list[str]:
     """Check actual fixed-cohort execution, not a declared configuration or status."""
+    from app.evaluation.release_runner import load_contract
+
     item = record.get("checks", {}).get("shadow_evaluation", {})
     try:
         path = root / item["path"]
@@ -148,31 +150,36 @@ def validate_shadow_stage(record: dict[str, Any], root: Path) -> list[str]:
             or payload.get("passed") is not True
         ):
             raise ValueError("stage identity/configuration/scope")
+        contract_item = record["evaluation_contract"]
+        contract_path = root / contract_item["path"]
+        approval_item = record["approvals"]["evaluation_labels"]
+        approval_path = root / approval_item["path"]
+        if (
+            sha256(contract_path) != expected
+            or contract_item["sha256"] != expected
+            or sha256(approval_path) != approval_item["sha256"]
+        ):
+            raise ValueError("frozen expectations or approval hash")
+        cases = load_contract(contract_path, approval_path)["cases"]
         ids = fixed_case_ids()
-        unsupported = {
-            case["id"]
-            for case in (
-                json.loads(line)
-                for line in (Path(__file__).parents[1] / "evaluation/questions.jsonl")
-                .read_text()
-                .splitlines()
-                if line.strip()
-            )
-            if case["answerable"] is False and case.get("expected_route") is None
-        }
         turns = payload["turns"]
-        if payload.get("case_ids") != ids or [t["case_id"] for t in turns] != ids:
+        if (
+            payload.get("case_ids") != ids
+            or [t["case_id"] for t in turns] != ids
+            or [c["id"] for c in cases] != ids
+        ):
             raise ValueError("fixed cohort coverage")
         selected = 0
-        for turn in turns:
+        for turn, case in zip(turns, cases, strict=True):
             request_id = evaluation_request_id(expected, "shadow", turn["case_id"])
             sampled = (
                 int.from_bytes(hashlib.sha256(request_id.encode()).digest()[:4], "big")
                 / (2**32 - 1)
                 < 0.1
             )
-            live_refusal = turn["case_id"] in unsupported
-            selected += sampled and not live_refusal
+            disposition = case["disposition"]
+            answer = disposition == "answer"
+            selected += sampled and answer
             calls = turn.get("model_calls")
             if (
                 turn.get("request_id") != request_id
@@ -180,14 +187,18 @@ def validate_shadow_stage(record: dict[str, Any], root: Path) -> list[str]:
                 or type(calls) is not int
                 or not 0 <= calls <= 6
                 or (not sampled and calls != 0)
-                or (live_refusal and (calls != 0 or turn.get("model_validated") is not False))
-                or (
-                    sampled
-                    and not live_refusal
-                    and (calls == 0 or turn.get("model_validated") is not True)
+                or (not answer and (calls != 0 or turn.get("model_validated") is not False))
+                or (answer and sampled and (calls == 0 or turn.get("model_validated") is not True))
+                or (answer and not sampled and turn.get("model_validated") is not False)
+                or turn.get("delivered_mode")
+                != (
+                    "factual_fallback"
+                    if answer
+                    else "clarification"
+                    if disposition == "clarify"
+                    else None
                 )
-                or turn.get("delivered_mode") != (None if live_refusal else "factual_fallback")
-                or turn.get("refused") is not live_refusal
+                or turn.get("refused") is not (disposition == "refuse")
                 or turn.get("state_committed") is not True
                 or turn.get("replayed") is not False
                 or turn.get("error") is not None
