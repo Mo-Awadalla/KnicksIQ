@@ -172,12 +172,12 @@ def test_invalid_shadow_evidence_blocks_readiness(tmp_path, defect):
         selected["request_id"] = "chosen"
     if defect == "duplicate_turn":
         payload["turns"][-1] = copy.deepcopy(payload["turns"][0])
-    if defect == "boolean_only":
-        payload = {"passed": True}
     if defect == "unsupported_archive":
         unsupported = next(t for t in payload["turns"] if t["refused"])
         unsupported["refused"] = False
         unsupported["delivered_mode"] = "factual_fallback"
+    if defect == "boolean_only":
+        payload = {"passed": True}
     record["checks"]["shadow_evaluation"].update(artifact(tmp_path, "shadow_evaluation", payload))
     assert any("shadow" in f for f in gate.validate_readiness(record, tmp_path))
 
