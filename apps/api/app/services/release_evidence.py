@@ -149,6 +149,17 @@ def validate_shadow_stage(record: dict[str, Any], root: Path) -> list[str]:
         ):
             raise ValueError("stage identity/configuration/scope")
         ids = fixed_case_ids()
+        unsupported = {
+            case["id"]
+            for case in (
+                json.loads(line)
+                for line in (Path(__file__).parents[1] / "evaluation/questions.jsonl")
+                .read_text()
+                .splitlines()
+                if line.strip()
+            )
+            if case["answerable"] is False and case.get("expected_route") is None
+        }
         turns = payload["turns"]
         if payload.get("case_ids") != ids or [t["case_id"] for t in turns] != ids:
             raise ValueError("fixed cohort coverage")
@@ -160,7 +171,8 @@ def validate_shadow_stage(record: dict[str, Any], root: Path) -> list[str]:
                 / (2**32 - 1)
                 < 0.1
             )
-            selected += sampled
+            live_refusal = turn["case_id"] in unsupported
+            selected += sampled and not live_refusal
             calls = turn.get("model_calls")
             if (
                 turn.get("request_id") != request_id
@@ -168,8 +180,14 @@ def validate_shadow_stage(record: dict[str, Any], root: Path) -> list[str]:
                 or type(calls) is not int
                 or not 0 <= calls <= 6
                 or (not sampled and calls != 0)
-                or (sampled and (calls == 0 or turn.get("model_validated") is not True))
-                or turn.get("delivered_mode") != "factual_fallback"
+                or (live_refusal and (calls != 0 or turn.get("model_validated") is not False))
+                or (
+                    sampled
+                    and not live_refusal
+                    and (calls == 0 or turn.get("model_validated") is not True)
+                )
+                or turn.get("delivered_mode") != (None if live_refusal else "factual_fallback")
+                or turn.get("refused") is not live_refusal
                 or turn.get("state_committed") is not True
                 or turn.get("replayed") is not False
                 or turn.get("error") is not None

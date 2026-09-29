@@ -4,7 +4,8 @@ Failure matrix: configuration-only shadow; absent/altered/wrong-candidate eviden
 missing/duplicate turns; chosen sample instead of fixed IDs; unsampled calls;
 selected fallback counted as model success; primary delivery in shadow; altered
 expectations; missing owner labels; readiness requiring premature launch approval;
-missing/mismatched final record digest; legacy single-stage record accepted.
+missing/mismatched final record digest; legacy single-stage record accepted;
+pure unsupported live questions forced into irrelevant archive/model answers.
 """
 
 import copy
@@ -78,27 +79,31 @@ def ready_record(root):
             "approved_at": "2026-01-01",
             **artifact(root, name + "-approval", {}),
         }
-    ids = [
-        json.loads(line)["id"]
+    questions = [
+        json.loads(line)
         for line in (Path(gate.__file__).parents[1] / "evaluation/questions.jsonl")
         .read_text()
         .splitlines()
     ]
+    ids = [item["id"] for item in questions]
     turns = []
-    for case_id in ids:
+    for item in questions:
+        case_id = item["id"]
         request_id = hashlib.sha256(f"{expectations}:shadow:{case_id}".encode()).hexdigest()
         sampled = (
             int.from_bytes(hashlib.sha256(request_id.encode()).digest()[:4], "big") / (2**32 - 1)
             < 0.1
         )
+        refusal = not item["answerable"]
         turns.append(
             {
                 "case_id": case_id,
                 "request_id": request_id,
                 "sampled": sampled,
-                "model_calls": 2 if sampled else 0,
-                "model_validated": sampled,
-                "delivered_mode": "factual_fallback",
+                "model_calls": 2 if sampled and not refusal else 0,
+                "model_validated": sampled and not refusal,
+                "delivered_mode": None if refusal else "factual_fallback",
+                "refused": refusal,
                 "state_committed": True,
                 "replayed": False,
                 "error": None,
@@ -144,11 +149,12 @@ def test_readiness_precedes_launch_approval(tmp_path):
         "chosen_request_id",
         "duplicate_turn",
         "boolean_only",
+        "unsupported_archive",
     ],
 )
 def test_invalid_shadow_evidence_blocks_readiness(tmp_path, defect):
     record, payload = ready_record(tmp_path)
-    selected = next(t for t in payload["turns"] if t["sampled"])
+    selected = next(t for t in payload["turns"] if t["sampled"] and not t["refused"])
     unsampled = next(t for t in payload["turns"] if not t["sampled"])
     if defect == "unsampled_call":
         unsampled["model_calls"] = 1
@@ -168,6 +174,10 @@ def test_invalid_shadow_evidence_blocks_readiness(tmp_path, defect):
         payload["turns"][-1] = copy.deepcopy(payload["turns"][0])
     if defect == "boolean_only":
         payload = {"passed": True}
+    if defect == "unsupported_archive":
+        unsupported = next(t for t in payload["turns"] if t["refused"])
+        unsupported["refused"] = False
+        unsupported["delivered_mode"] = "factual_fallback"
     record["checks"]["shadow_evaluation"].update(artifact(tmp_path, "shadow_evaluation", payload))
     assert any("shadow" in f for f in gate.validate_readiness(record, tmp_path))
 
