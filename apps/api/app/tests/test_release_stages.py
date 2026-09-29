@@ -6,15 +6,18 @@ selected fallback counted as model success; primary delivery in shadow; altered
 expectations; missing owner labels; readiness requiring premature launch approval;
 missing/mismatched final record digest; legacy single-stage record accepted;
 pure unsupported live questions forced into irrelevant archive/model answers.
+New failure matrix: a forged or changed frozen contract; a clarification scored
+as refusal (or reverse); sampled non-answer cases counted as model success; an
+owner approval whose exact expectations hash differs from the frozen contract.
 """
 
 import copy
 import hashlib
 import json
-from pathlib import Path
 
 import pytest
 from app.services import release_evidence as gate
+from app.tests.test_release_evaluation import fixture_contract
 
 
 def artifact(root, name, payload):
@@ -24,7 +27,20 @@ def artifact(root, name, payload):
 
 
 def ready_record(root):
-    commit, bundle, expectations = "a" * 40, "b" * 64, "c" * 64
+    commit, bundle = "a" * 40, "b" * 64
+    contract = fixture_contract()
+    for case in contract["cases"]:
+        if case["id"].startswith("unsupported-"):
+            case["disposition"] = (
+                "clarify"
+                if case["id"] in {f"unsupported-{n:03}" for n in range(9, 15)}
+                else "refuse"
+            )
+        elif case["id"] != "single_game_narrative-001":
+            case["disposition"] = "answer"
+            case["facts"] = [{"source": "synthetic fixture"}]
+    contract_artifact = artifact(root, "frozen-contract", contract)
+    expectations = contract_artifact["sha256"]
     record = {
         "id": "synthetic",
         "tested_commit": commit,
@@ -38,6 +54,7 @@ def ready_record(root):
             "analyst_evidence_loop_enabled": True,
         },
         "hashes": {"data": "d" * 64, "bundle": bundle, "evaluation": expectations},
+        "evaluation_contract": contract_artifact,
         "checks": {},
         "approvals": {},
         "rollback": {
@@ -74,35 +91,43 @@ def ready_record(root):
     }
     record["checks"]["accessibility"]["metrics"] = {"serious": 0, "critical": 0}
     for name in ["template", "exceptions", "report_audit", "evaluation_labels"]:
+        approval_content = (
+            {
+                "owner": "synthetic owner",
+                "approved_at": "2026-01-01",
+                "expectations_sha256": expectations,
+            }
+            if name == "evaluation_labels"
+            else {}
+        )
         record["approvals"][name] = {
             "owner": "synthetic owner",
             "approved_at": "2026-01-01",
-            **artifact(root, name + "-approval", {}),
+            **artifact(root, name + "-approval", approval_content),
         }
-    questions = [
-        json.loads(line)
-        for line in (Path(gate.__file__).parents[1] / "evaluation/questions.jsonl")
-        .read_text()
-        .splitlines()
-    ]
-    ids = [item["id"] for item in questions]
+    cases = contract["cases"]
+    ids = [item["id"] for item in cases]
     turns = []
-    for item in questions:
+    for item in cases:
         case_id = item["id"]
         request_id = hashlib.sha256(f"{expectations}:shadow:{case_id}".encode()).hexdigest()
         sampled = (
             int.from_bytes(hashlib.sha256(request_id.encode()).digest()[:4], "big") / (2**32 - 1)
             < 0.1
         )
-        refusal = not item["answerable"]
+        disposition = item["disposition"]
+        answer = disposition == "answer"
+        refusal = disposition == "refuse"
         turns.append(
             {
                 "case_id": case_id,
                 "request_id": request_id,
                 "sampled": sampled,
-                "model_calls": 2 if sampled and not refusal else 0,
-                "model_validated": sampled and not refusal,
-                "delivered_mode": None if refusal else "factual_fallback",
+                "model_calls": 2 if sampled and answer else 0,
+                "model_validated": sampled and answer,
+                "delivered_mode": (
+                    "factual_fallback" if answer else "clarification" if not refusal else None
+                ),
                 "refused": refusal,
                 "state_committed": True,
                 "replayed": False,
@@ -150,11 +175,15 @@ def test_readiness_precedes_launch_approval(tmp_path):
         "duplicate_turn",
         "boolean_only",
         "unsupported_archive",
+        "clarify_as_refusal",
+        "refuse_as_clarify",
     ],
 )
 def test_invalid_shadow_evidence_blocks_readiness(tmp_path, defect):
     record, payload = ready_record(tmp_path)
-    selected = next(t for t in payload["turns"] if t["sampled"] and not t["refused"])
+    selected = next(
+        t for t in payload["turns"] if t["sampled"] and t["delivered_mode"] == "factual_fallback"
+    )
     unsampled = next(t for t in payload["turns"] if not t["sampled"])
     if defect == "unsampled_call":
         unsampled["model_calls"] = 1
@@ -176,9 +205,37 @@ def test_invalid_shadow_evidence_blocks_readiness(tmp_path, defect):
         unsupported = next(t for t in payload["turns"] if t["refused"])
         unsupported["refused"] = False
         unsupported["delivered_mode"] = "factual_fallback"
+    if defect == "clarify_as_refusal":
+        clarification = next(t for t in payload["turns"] if t["delivered_mode"] == "clarification")
+        clarification["refused"] = True
+        clarification["delivered_mode"] = None
+    if defect == "refuse_as_clarify":
+        refusal = next(t for t in payload["turns"] if t["refused"])
+        refusal["refused"] = False
+        refusal["delivered_mode"] = "clarification"
     if defect == "boolean_only":
         payload = {"passed": True}
     record["checks"]["shadow_evaluation"].update(artifact(tmp_path, "shadow_evaluation", payload))
+    assert any("shadow" in f for f in gate.validate_readiness(record, tmp_path))
+
+
+def test_shadow_uses_exact_frozen_contract_and_owner_signature(tmp_path):
+    record, _ = ready_record(tmp_path)
+    assert gate.validate_readiness(record, tmp_path) == []
+    record["evaluation_contract"]["sha256"] = "0" * 64
+    assert any("shadow" in f for f in gate.validate_readiness(record, tmp_path))
+    record, _ = ready_record(tmp_path)
+    record["approvals"]["evaluation_labels"].update(
+        artifact(
+            tmp_path,
+            "evaluation_labels-approval",
+            {
+                "owner": "synthetic owner",
+                "approved_at": "2026-01-01",
+                "expectations_sha256": "0" * 64,
+            },
+        )
+    )
     assert any("shadow" in f for f in gate.validate_readiness(record, tmp_path))
 
 
