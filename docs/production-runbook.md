@@ -14,14 +14,21 @@ Production serves one immutable 2025–26 archive release. The API never migrate
 1. Preserve the failed database and record the active release version and bundle SHA-256.
 2. Create or reset the Neon database, run `alembic upgrade head`, then run `knicksiq-load-release <bundle> --sha256 <sha> --activate`.
 3. The loader is transactional and idempotent. It must complete without NBA.com access.
-4. Rebuild Qdrant from Postgres with `knicksiq-build-rag-index --season 2025-26 --data-version <version> --reset-qdrant`. Confirm Recall@5 before the alias switch.
+4. Prepare Qdrant from the restored, validated release with `knicksiq-build-rag-index --season 2025-26 --data-version <version>`. Never combine a versioned build with `--reset-qdrant`. All four inactive targets are preflighted before writes; complete matching candidates are reused without embeddings/upserts, and conflicting/partial or aliased resources are rejected without overwrites/deletes. Retain old collections for coordinated rollback; rebuilding them destructively is not rollback. Use an explicitly approved new release identity when source/embedding identity changes. Validate counts, source mappings, server payload indexes, release filters and Recall@5 before a separately authorized alias switch.
 5. Target core archive RPO is zero from the immutable bundle and RTO is under four hours.
 
 ## Dependency outage
 
 - Qdrant: leave the API up; responses fall back to deterministic Postgres answers with `degraded=true`. Rebuild or resume the cluster, validate counts and Recall@5, then switch aliases.
-- Redis: AI synthesis and shared caching are disabled during the outage. In-process limits protect one instance and deterministic facts remain available. A restarted free Key Value instance loses only reconstructible rate-limit, cache, and AI budget state.
-- OpenRouter or budget exhaustion: deterministic phrasing remains available. Do not raise the $8 application cutoff without owner approval; the provider guardrail is $9.
+- Redis: AI synthesis and shared caching are disabled during the outage.
+  In-process limits protect one instance and deterministic facts remain available.
+  A restarted free Key Value instance can lose its monthly ledger and reservations;
+  model calls remain blocked until accounting is conservatively reconciled.
+  Never reset the ledger to zero.
+- OpenRouter or budget exhaustion: deterministic phrasing remains available.
+  Do not raise the $2 monthly application cutoff without owner approval.
+  Verification must enforce its approved cumulative request and cost caps;
+  ordinary reservations are not provider-enforced per-call price ceilings.
 - Sentry: application availability is unaffected. Use Render logs and synthetic checks until restored.
 
 ### Analyst reports “Model or budget unavailable”

@@ -9,7 +9,7 @@ Start the local dependencies and API:
 docker compose up -d postgres qdrant api
 ```
 
-Build a fresh possession collection for the 10 most recent cached Knicks games:
+Build inactive physical collections for the 10 most recent games of a validated release:
 
 ```sh
 DB_URL=postgresql+asyncpg://knicksiq:knicksiq@localhost:5432/knicksiq \
@@ -23,17 +23,28 @@ uv run --package knicksiq-worker knicksiq-build-rag-index \
   --data-version RELEASE_VERSION \
   --out-dir rag-artifacts \
   --game-limit 10 \
-  --game-order recent \
-  --reset-qdrant
+  --game-order recent
 ```
 
-The release build creates immutable physical collections for game summaries,
-box-score facts, reviewed reports, and possessions. It validates every point
-count before promoting all stable aliases in one operation. Each collection
-also receives payload indexes for every supported release/date/team/player/
-period filter, which Qdrant Cloud requires for filtered queries. Possession
-summaries are deterministic and provider-free; this command never calls
-OpenRouter.
+The release build prepares immutable physical collections for game summaries,
+box-score facts, reviewed reports, and possessions. It preflights all four targets
+and live aliases before any remote write. Complete candidates are reused only
+when every source ID, payload, release, dense-vector schema, required payload
+index, and stored embedding model/mode/document identity matches; reuse makes no
+embedding or upsert calls. Conflicting or partial resources fail without changing
+any existing target. Missing collections are created, never reset or deleted.
+Aliases are **not** promoted by indexing.
+
+Each collection receives payload indexes for every supported release/date/team/
+player/period filter, required by Qdrant Cloud. Embedded Qdrant cannot establish
+server-index enforcement and does not satisfy hosted reuse/readiness verification.
+`--reset-qdrant` is rejected with `--data-version`; it remains available only for
+explicitly disposable, unversioned local indexes. Keep immutable rollback
+collections and active aliases intact. For a changed source or embedding identity,
+use a separately approved release version, not a destructive rebuild.
+
+Possession summaries are deterministic and provider-free; indexing never calls
+OpenRouter. Embeddings may still be billed when cloud inference is enabled.
 
 `RAG_EMBEDDING_DEVICE=cpu` is a useful override on Apple Silicon when MPS is
 slower for this compact model. An optional paid deployment can use Qdrant Cloud Inference instead of
@@ -49,9 +60,14 @@ RAG_EMBEDDING_MODEL=sentence-transformers/all-MiniLM-L6-v2 \
 uv run --package knicksiq-worker knicksiq-build-rag-index \
   --season 2025-26 \
   --data-version RELEASE_VERSION \
-  --out-dir /tmp/knicksiq-rag-index \
-  --reset-qdrant
+  --out-dir /tmp/knicksiq-rag-index
 ```
+
+Use only an authorized isolated database and exact candidate collection allowlist.
+Verify account/project identities and available provisioned quota before writes.
+Cloud embeddings require separate counted spending admission; do not enable this
+example to bypass a provider budget gate. A failed/partial upload leaves resources
+intact and blocks reuse; do not clear them to force a pass.
 
 After indexing, restart the local API if it was already running:
 

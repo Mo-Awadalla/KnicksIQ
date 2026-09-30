@@ -51,9 +51,18 @@ state.
 3. Load the validated bundle with `knicksiq-load-release <bundle> --sha256
    <sha>`. Stage it first; do not activate it until the image and deterministic
    retrieval checks have passed.
-4. Build Qdrant from the active Neon release using
-   `knicksiq-build-rag-index --season 2025-26 --data-version <version>
-   --reset-qdrant`. Validate counts and Recall@5 before promoting its aliases.
+4. Prepare Qdrant from the validated staged release in an authorized isolated
+   database using `knicksiq-build-rag-index --season 2025-26 --data-version <version>`.
+   Resolve the exact four physical collection destinations and existing account/
+   project quota before writes. The versioned path is create-only, preflights all
+   four targets and aliases before writing, and never promotes aliases.
+   Complete identity-matching candidates are reused without embedding/upsert
+   calls. Conflicting, partial or already-aliased targets fail closed; never use
+   `--reset-qdrant` or delete retained collections to force a rebuild.
+   Validate hosted counts, dimensions, source/payload/embedding identities, server
+   payload indexes, release filters and Recall@5 before promoting aliases under
+   the separate hash-bound production authorization. Account for billed cloud
+   embeddings within the approved provider budget.
 5. Activate the matching Postgres release and Qdrant aliases.
 6. Manually deploy the immutable API and web artifacts in `shadow` mode.
 7. Render uses `GET /health/live` for deploy health checks so the first deploy

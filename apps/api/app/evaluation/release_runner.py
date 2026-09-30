@@ -266,8 +266,11 @@ async def collect(
     contract = load_contract(contract_path, approval_path)
     initial = file_hash(contract_path)
     settings = get_settings()
-    if urlsplit(settings.effective_db_url).hostname not in {None, "127.0.0.1", "localhost"}:
-        raise ValueError("Runner requires a separately verified isolated database binding")
+    database = urlsplit(settings.effective_db_url)
+    if database.hostname not in {None, "127.0.0.1", "localhost"} and (
+        mode == "disabled" or execution is None
+    ):
+        raise ValueError("Hosted databases require explicit counted isolation verification")
     if mode not in {"primary", "shadow", "disabled"}:
         raise ValueError("Unknown execution mode")
     request_ids = [evaluation_request_id(initial, mode, c["id"]) for c in contract["cases"]]
@@ -278,6 +281,12 @@ async def collect(
     )
     identity = {
         "mode": mode,
+        "database": {
+            "scheme": database.scheme,
+            "host": database.hostname,
+            "port": database.port,
+            "name": database.path.removeprefix("/"),
+        },
         "expectations_sha256": initial,
         "request_ids": request_ids,
         "shadow_membership": shadow_membership,
