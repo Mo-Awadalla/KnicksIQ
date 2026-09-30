@@ -75,7 +75,8 @@ async def test_game_score_scope_and_replay(
     response = await client.post("/analysis/query", json=payload)
     assert response.status_code == 200, response.text
     body = response.json()
-    assert body["state_committed"] and body["route"] == "factual_fallback"
+    assert body["state_committed"]
+    assert body["route"] == ("clarification" if expected == "clarify" else "factual_fallback")
     if expected == "score":
         assert "113" in body["answer"] and "100" in body["answer"]
         assert "2026-01-03" in body["answer"] and "BOS" in body["answer"]

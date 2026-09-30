@@ -365,6 +365,41 @@ def _requires_explicit_refusal(question: str) -> bool:
     )
 
 
+def _requires_evidence_refusal(question: str) -> bool:
+    """Refuse unavailable coverage while preserving a separate archive request."""
+
+    def unavailable(clause: str) -> bool:
+        return bool(
+            re.search(
+                r"\b(?:202[7-9]|20[3-9]\d)(?:-\d{2}-\d{2})?\b"
+                r"|\b2026-(?:0[7-9]|1[0-2])-\d{2}\b"
+                r"|\b(?:will|today|tonight|tomorrow|yesterday|currently|current|upcoming|"
+                r"live|injur\w*|trades?|future|betting)\b"
+                r"|\b(?:right now|next game|next season)\b",
+                clause,
+                re.I,
+            )
+        )
+
+    def archive_clause(clause: str) -> bool:
+        return _is_supported_question(clause) or bool(
+            team_ids_in_text(clause)
+            and re.search(
+                r"\b(?:average|assists?|rebounds?|points?|record|wins?|loss(?:es)?|"
+                r"games?|score|quarters?|possessions?|runs?|season)\b",
+                clause,
+                re.I,
+            )
+        )
+
+    if is_live_only_score_request(question):
+        return True
+    if not unavailable(question):
+        return False
+    clauses = re.split(r"\b(?:and|but|also)\b|[;?]", question, flags=re.I)
+    return not any(archive_clause(clause) and not unavailable(clause) for clause in clauses)
+
+
 def _is_greeting(question: str) -> bool:
     return bool(
         re.fullmatch(
@@ -1881,18 +1916,38 @@ async def _query_evidence_analyst(
         shadow_sampled = answer_mode == "shadow" and _sample_shadow(
             loop.request_id, settings.analysis_shadow_sample_rate
         )
-        if is_live_only_score_request(req.question):
+        clarification = None
+        refusal = _requires_evidence_refusal(req.question)
+        if not refusal:
+            if tools.scope and tools.scope.requires_clarification:
+                clarification = "Which subject or game did you mean? " + "; ".join(
+                    tools.scope.clarification_options
+                )
+            elif not tools.claims:
+                # Committed, release-revalidated claims already scope an explanation.
+                clarification = await narrative_clarification(
+                    db,
+                    req.question,
+                    season=req.season,
+                    prior_questions=[],
+                    selected_game_ids=tools.scope.game_ids if tools.scope else None,
+                )
+        if refusal or clarification:
             result = {
-                "answer": (
+                "answer": clarification
+                or (
                     "I don't have live game scores. "
                     "I can answer questions about archived Knicks games."
+                    if is_live_only_score_request(req.question)
+                    else "I don't have live, current, injury, trade, betting or future coverage. "
+                    "I can answer questions about games in the 2025-26 Knicks archive."
                 ),
                 "follow_up_questions": [],
                 "citations": [],
                 "warnings": [],
                 "degraded": False,
-                "route": None,
-                "refused": True,
+                "route": "clarification" if clarification else None,
+                "refused": refusal,
                 "data_version": release.version,
                 "state": tools.state.copy(),
                 "tool_calls": [],
