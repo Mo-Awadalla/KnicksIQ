@@ -31,6 +31,14 @@ the provider and telemetry disabled. It permits zero paid requests. Keep all
 expectations, approvals, captures, source mappings and reviews in private local
 evidence; final scoring requires complete output-bound assertion review.
 
+## Hosted browser routing evidence
+
+Hosted CI retains the `browser-network-evidence` artifact for 14 days. Its
+synthetic Playwright report includes `network-destinations` attachments with
+allowed origins, requested destinations and blocked requests. This verifies
+fixture-routing controls, not hosted staging connectivity or model quality.
+Private release inputs and evaluation artifacts are not uploaded.
+
 ## Development diagnostic harness
 
 The diagnostic harness below is not the frozen release runner and cannot replace
