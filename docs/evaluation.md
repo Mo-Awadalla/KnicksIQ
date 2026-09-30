@@ -33,6 +33,10 @@ evidence; final scoring requires complete output-bound assertion review.
 
 ## Hosted browser routing evidence
 
+Backend CI installs Redis so the SQL/HTTP/Redis reservation, shadow, replay and
+retrieval-trace regressions execute on Ubuntu instead of skipping for a missing
+server binary.
+
 Hosted CI retains the `browser-network-evidence` artifact for 14 days. Its
 synthetic Playwright report includes `network-destinations` attachments with
 allowed origins, requested destinations and blocked requests. This verifies
