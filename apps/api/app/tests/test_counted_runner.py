@@ -37,6 +37,12 @@ async def test_counted_runner_stops_and_retains_failed_turn(
 
     settings = get_settings()
     for name, value in {
+        "test_mode": False,
+        "db_url": (
+            "postgresql+asyncpg://synthetic:synthetic@unapproved-hosted.example.invalid/candidate"
+            if preflight_failure
+            else "sqlite+aiosqlite:///:memory:"
+        ),
         "analyst_evidence_loop_enabled": True,
         "analysis_answer_mode": "llm_primary" if mode == "primary" else "shadow",
         "analysis_shadow_sample_rate": 0.1,
@@ -77,6 +83,8 @@ async def test_counted_runner_stops_and_retains_failed_turn(
         assert len(identity["request_ids"]) == 120
         assert identity["expectations_sha256"] == file_hash(contract)
         if preflight_failure:
+            if identity["database"]["host"] == "unapproved-hosted.example.invalid":
+                raise ValueError("unapproved hosted database")
             raise ValueError("unavailable verified monthly allowance")
 
     async def request_bound(payload):
