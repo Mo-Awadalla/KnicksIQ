@@ -117,6 +117,7 @@ class ToolCall(Contract):
             "three_pointers_made",
             "plus_minus",
             "minutes",
+            "double_doubles",
         ]
         | None
     ) = None
