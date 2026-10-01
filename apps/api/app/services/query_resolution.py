@@ -5,7 +5,7 @@ from __future__ import annotations
 import re
 import unicodedata
 from collections import defaultdict
-from datetime import date
+from datetime import date, timedelta
 from difflib import SequenceMatcher
 from typing import Literal
 
@@ -45,10 +45,16 @@ _METRICS = {
     "point": "points",
     "points": "points",
     "scoring": "points",
+    "scorer": "points",
+    "scorers": "points",
     "rebound": "rebounds",
     "rebounds": "rebounds",
+    "rebounding": "rebounds",
     "assist": "assists",
     "assists": "assists",
+    "assisting": "assists",
+    "double double": "double_doubles",
+    "double doubles": "double_doubles",
     "steal": "steals",
     "steals": "steals",
     "block": "blocks",
@@ -59,6 +65,13 @@ _METRICS = {
     "three": "three_pointers_made",
     "threes": "three_pointers_made",
 }
+
+
+def all_star_end(season: str) -> date | None:
+    """Supported archive calendar boundary, verified at nba.com/allstar/2026."""
+    return {"2025-26": date(2026, 2, 15)}.get(season)
+
+
 _NAME_STOPWORDS = {
     "against",
     "average",
@@ -422,6 +435,18 @@ async def resolve_query(
     elif explicit_dates and "before" in q:
         date_start = games[0].game_date if games else None
         date_end = explicit_dates[0]
+    calendar_error = None
+    if "all star" in q:
+        boundary = all_star_end(games[0].season) if games else None
+        if boundary is None:
+            calendar_error = "unsupported_all_star_boundary"
+        elif not explicit_dates and not date_error:
+            before, after = "before" in q, "after" in q
+            if before and not after:
+                date_end = min(date_end, boundary) if date_end else boundary
+            elif after and not before:
+                start = boundary + timedelta(days=1)
+                date_start = max(date_start, start) if date_start else start
 
     season_type = (
         "playoffs"
@@ -550,6 +575,9 @@ async def resolve_query(
     if date_error:
         clarification_reason = date_error
         clarification_options = ["Please provide a valid calendar date including the year."]
+    elif calendar_error:
+        clarification_reason = calendar_error
+        clarification_options = ["Please provide the All-Star break boundary date for this season."]
 
     return ResolvedQuery(
         intent=intent,

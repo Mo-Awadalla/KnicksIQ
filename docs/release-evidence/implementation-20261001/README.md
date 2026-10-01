@@ -231,8 +231,30 @@ The existing surname policy prefers a unique Knicks player; it resolves Bridges
 to Mikal without changing that policy.
 
 Roster proof establishes identity consistency, not correctness of every returned
-statistic. The retained responses separately expose generic scoring averages
-for rebounding, double-double and before/after All-Star questions; those require
-further implementation and fresh quality proof. The authoritative current audit
+statistic. The retained responses separately exposed generic scoring averages
+for rebounding, double-double and before/after All-Star questions. The authoritative current audit
 is `roster-audit-e2e/first/implementation-register.json`, which binds the loader
 source and both latest owner directions. No release gold or launch is approved.
+
+The [requested statistic failure modes](requested-player-stats-failure-modes.md)
+and six HTTP specifications preceded those statistic fixes. All six first failed
+against independently computed raw-bundle values, then passed. Rebounding and
+assisting wording resolves to the requested metric; explicit requested metrics
+cannot be replaced by an unrelated model tool metric. Double-doubles count
+observed appearances with ten or more in at least two of points, rebounds,
+assists, steals and blocks. Triple-doubles qualify; DNP rows do not.
+
+Before/after All-Star comparisons now keep both complete scoped populations,
+appearance denominators, dates, source receipts and baseline claims in a single
+combined claim. The 2025-26 boundary is February 15, 2026, independently verified
+from [the official NBA calendar](https://www.nba.com/allstar/2026); unsupported
+seasons request a supported boundary date. A requested regular-season scope
+excludes postseason, while the all-phase archive includes it explicitly.
+
+All 616 app/package/report-audit checks pass in `stats-regression/`, with fresh
+HTTP receipts and unchanged original questions. `stats-red/`, `stats-complete/`,
+`stats-verification.json` and `STATS-SHA256SUMS` preserve the before/after proof.
+Repeat the focused checks with the safe environment above, a new
+`KNICKSIQ_STATS_ARTIFACT_DIR`, and
+`apps/api/app/tests/test_requested_player_stats_http.py`. These deterministic
+checks do not approve gold or establish actual paid-provider or hosted readiness.
