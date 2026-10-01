@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+import math
 import time
 import uuid
 from concurrent.futures import ThreadPoolExecutor, TimeoutError
@@ -21,6 +22,17 @@ GAMES_COLLECTION = "knicks_games"
 POSSESSIONS_COLLECTION = "knicks_possessions"
 ROSTER_COLLECTION = "knicks_roster"
 QDRANT_NAMESPACE = uuid.UUID("f5af0efd-b2f7-4f7c-b0fd-09d2e5166c90")
+PAYLOAD_INDEX_TYPES = {
+    "data_version": "keyword",
+    "date": "keyword",
+    "team_ids": "keyword",
+    "season_type": "keyword",
+    "game_id": "integer",
+    "player_ids": "integer",
+    "player_names": "keyword",
+    "start_period": "integer",
+    "end_period": "integer",
+}
 
 
 @dataclass(frozen=True)
@@ -108,18 +120,12 @@ def create_payload_indexes(collection_name: str, *, client: Any | None = None) -
     from qdrant_client import models
 
     resolved: Any = client or get_qdrant_client()
-    schemas = {
-        "data_version": models.PayloadSchemaType.KEYWORD,
-        "date": models.PayloadSchemaType.KEYWORD,
-        "team_ids": models.PayloadSchemaType.KEYWORD,
-        "season_type": models.PayloadSchemaType.KEYWORD,
-        "game_id": models.PayloadSchemaType.INTEGER,
-        "player_ids": models.PayloadSchemaType.INTEGER,
-        "player_names": models.PayloadSchemaType.KEYWORD,
-        "start_period": models.PayloadSchemaType.INTEGER,
-        "end_period": models.PayloadSchemaType.INTEGER,
-    }
-    for field_name, field_schema in schemas.items():
+    for field_name, field_type in PAYLOAD_INDEX_TYPES.items():
+        field_schema = (
+            models.PayloadSchemaType.KEYWORD
+            if field_type == "keyword"
+            else models.PayloadSchemaType.INTEGER
+        )
         resolved.create_payload_index(
             collection_name=collection_name,
             field_name=field_name,
@@ -194,25 +200,32 @@ def inspect_retrieval_targets(client: Any | None = None) -> dict[str, Any]:
     return result
 
 
-def validate_candidate_collection(collection: str, data_version: str, expected_count: int) -> None:
+def validate_candidate_collection(
+    collection: str,
+    data_version: str,
+    expected_count: int,
+    *,
+    client: Any | None = None,
+) -> None:
     """Verify stored counts and release isolation, not only write acknowledgements."""
     from qdrant_client import models
 
-    client = get_qdrant_client()
-    info = client.get_collection(collection)
+    resolved: Any = client or get_qdrant_client()
+    info = resolved.get_collection(collection)
     vector = info.config.params.vectors
+    distance = getattr(vector, "distance", "")
     if (
         getattr(vector, "size", None) != get_settings().rag_qdrant_vector_size
-        or str(getattr(vector, "distance", "")).lower() != "cosine"
+        or str(getattr(distance, "value", distance)).lower() != "cosine"
     ):
         raise RuntimeError("Candidate vector configuration mismatch")
-    count = client.count(collection_name=collection, exact=True).count
-    scoped = client.count(
+    count = resolved.count(collection_name=collection, exact=True).count
+    scoped = resolved.count(
         collection_name=collection,
         exact=True,
         count_filter=build_qdrant_filter({"data_version": data_version}),
     ).count
-    other = client.count(
+    other = resolved.count(
         collection_name=collection,
         exact=True,
         count_filter=models.Filter(
@@ -228,12 +241,105 @@ def validate_candidate_collection(collection: str, data_version: str, expected_c
         raise RuntimeError("Candidate stored count or release payload mismatch")
 
 
-def ensure_candidate_not_serving(collection: str) -> None:
-    """Never reset a physical collection that is reachable through a live alias."""
+def preflight_candidate_collections(
+    collections: dict[str, list[dict[str, Any]]],
+    data_version: str,
+    *,
+    client: Any,
+) -> set[str]:
+    """Check every target before writes; complete matching candidates are immutable."""
+    aliases = client.get_aliases().aliases
     if any(
-        alias.collection_name == collection for alias in get_qdrant_client().get_aliases().aliases
+        alias.collection_name in collections or alias.alias_name in collections for alias in aliases
     ):
-        raise RuntimeError("Candidate collection is already serving an alias; use a new version")
+        raise RuntimeError("Candidate collection is already serving an alias")
+    existing = {item.name for item in client.get_collections().collections}
+    reusable = set()
+    settings = get_settings()
+    for collection, records in collections.items():
+        if not records or any(
+            record["payload"].get("data_version") != data_version for record in records
+        ):
+            raise RuntimeError(
+                f"Candidate source records are empty or outside release: {collection}"
+            )
+        if len({str(qdrant_point_id(str(record["id"]))) for record in records}) != len(records):
+            raise RuntimeError(f"Duplicate candidate source IDs: {collection}")
+        for record in records:
+            identity = record["payload"].get("_index_embedding", {})
+            if (
+                not isinstance(identity, dict)
+                or identity.get("model") != settings.rag_embedding_model
+                or identity.get("mode")
+                != ("cloud" if settings.rag_qdrant_cloud_inference else "local")
+                or not identity.get("document_sha256")
+            ):
+                raise RuntimeError(
+                    f"Candidate embedding identity is missing or mismatched: {collection}"
+                )
+        if collection in existing:
+            validate_candidate_identity(collection, data_version, records, client=client)
+            reusable.add(collection)
+    return reusable
+
+
+def validate_candidate_identity(
+    collection: str,
+    data_version: str,
+    records: list[dict[str, Any]],
+    *,
+    client: Any,
+) -> None:
+    """Require full source/payload/embedding identity and usable dense vectors/indexes."""
+    validate_candidate_collection(collection, data_version, len(records), client=client)
+    info = client.get_collection(collection)
+    for field, field_type in PAYLOAD_INDEX_TYPES.items():
+        index = info.payload_schema.get(field)
+        data_type = getattr(index, "data_type", None)
+        if index is None or getattr(data_type, "value", data_type) != field_type:
+            raise RuntimeError(f"Candidate payload index mismatch: {collection}/{field}")
+    expected = {
+        str(qdrant_point_id(str(record["id"]))): {
+            **record["payload"],
+            "chunk_id": record["id"],
+        }
+        for record in records
+    }
+    settings = get_settings()
+    offset = None
+    seen = set()
+    while True:
+        points, next_offset = client.scroll(
+            collection_name=collection,
+            offset=offset,
+            limit=512,
+            with_payload=True,
+            with_vectors=True,
+        )
+        for point in points:
+            point_id = str(point.id)
+            vector = point.vector
+            if (
+                point_id in seen
+                or point_id not in expected
+                or point.payload != expected[point_id]
+                or not isinstance(vector, list)
+                or len(vector) != settings.rag_qdrant_vector_size
+                or any(
+                    not isinstance(value, (int, float)) or not math.isfinite(value)
+                    for value in vector
+                )
+                or not any(vector)
+            ):
+                raise RuntimeError(f"Candidate source, payload or vector mismatch: {collection}")
+            seen.add(point_id)
+        if next_offset is None:
+            break
+        if next_offset == offset or not points:
+            raise RuntimeError(f"Candidate scroll did not advance: {collection}")
+        offset = next_offset
+    if seen != expected.keys():
+        raise RuntimeError(f"Candidate source IDs are incomplete: {collection}")
 
 
 def is_qdrant_healthy(client: Any | None = None) -> bool:

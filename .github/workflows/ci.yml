@@ -37,6 +37,11 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+      - name: Install Redis for atomic integration regressions
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y redis-server
+          redis-server --version
       - run: uv sync --all-packages --all-extras --dev
       - run: uv run ruff check apps packages migrations
       - run: uv run ruff format --check apps packages migrations
@@ -94,6 +99,14 @@ jobs:
           VITE_PUBLIC_URL: https://www.knicksiq.win
       - run: pnpm test
       - run: pnpm e2e
+      - name: Preserve synthetic browser routing evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: browser-network-evidence
+          path: apps/web/playwright-report
+          if-no-files-found: error
+          retention-days: 14
 
   containers:
     runs-on: ubuntu-latest
