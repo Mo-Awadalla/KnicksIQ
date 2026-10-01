@@ -28,7 +28,7 @@ class NarrativeSelection:
 
 def select_narrative(question: str, games: list[Game]) -> NarrativeSelection | None:
     """Select defined extremes from the user's already release-filtered population."""
-    q = question.lower()
+    q = re.sub(r"[-–—]", " ", question.lower())
     final = [g for g in games if g.status == "final"]
     if not final:
         return None
@@ -63,6 +63,17 @@ def select_narrative(question: str, games: list[Game]) -> NarrativeSelection | N
         value = max(scores(g)[0] for g in final)
         selected = [g for g in final if scores(g)[0] == value]
         definition = "Most Knicks points in a final archived game; all tied games."
+    elif "lowest scoring game" in q:
+        value = min(scores(g)[0] for g in final)
+        selected = [g for g in final if scores(g)[0] == value]
+        definition = "Fewest Knicks points in a final archived game; all tied games."
+    elif re.search(r"\b(?:worst|biggest|largest) loss\b", q) and "margin" in q:
+        losses = [g for g in final if scores(g)[0] < scores(g)[1]]
+        if not losses:
+            return None
+        value = min(scores(g)[0] - scores(g)[1] for g in losses)
+        selected = [g for g in losses if scores(g)[0] - scores(g)[1] == value]
+        definition = "Most negative Knicks final scoring margin; all tied games."
     else:
         return None
     return NarrativeSelection("game_stories", selected, definition)

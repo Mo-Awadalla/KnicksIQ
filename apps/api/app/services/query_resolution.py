@@ -106,6 +106,7 @@ class ResolvedQuery(BaseModel):
     date_start: date | None = None
     date_end: date | None = None
     relative_game_count: int | None = None
+    relative_game_order: Literal["first", "last"] = "last"
     periods: list[int] = Field(default_factory=list)
     season_type: Literal["regular", "play_in", "playoffs"] | None = None
     home_away: Literal["home", "away"] | None = None
@@ -281,6 +282,17 @@ def _resolve_player_mentions(
                 ambiguous.update({player.id: player for player in matches})
             remaining = re.sub(rf"\b{re.escape(alias)}\b", " ", remaining)
 
+    # A unique Knicks first name is an exact canonical name match. Resolve it
+    # before fuzzy candidates can mistake ordinary prose ("well") for Wells.
+    first_names: dict[str, list[Player]] = defaultdict(list)
+    for player in players:
+        if player.team_id == "NYK":
+            first_names[_normalize(player.full_name).split()[0]].append(player)
+    for first_name, matches in first_names.items():
+        if len(matches) == 1 and re.search(rf"\b{re.escape(first_name)}\b", remaining):
+            resolved[matches[0].id] = matches[0]
+            remaining = re.sub(rf"\b{re.escape(first_name)}\b", " ", remaining)
+
     if allow_fuzzy and not resolved and not ambiguous:
         for candidate in _name_candidates(question):
             scores = [
@@ -413,7 +425,7 @@ async def resolve_query(
     date_end = explicit_dates[-1] if explicit_dates else None
     latest_date = games[-1].game_date if games else None
     relative_count: int | None = None
-    count_match = re.search(r"\blast\s+(\d+)\s+games?\b", q)
+    count_match = re.search(r"\b(?:last|final|first)\s+(\d+)\s+(?:regular season\s+)?games?\b", q)
     if count_match:
         relative_count = max(1, min(int(count_match.group(1)), 82))
     elif re.search(r"\b(?:last|previous)\s+game\b", q):
@@ -551,8 +563,13 @@ async def resolve_query(
         descriptive_reference = True
 
     resolved_game_ids: list[int] = []
-    if relative_count:
-        resolved_game_ids = [game.id for game in candidates[-relative_count:]]
+    if relative_count and not player_ids:
+        selected = (
+            candidates[:relative_count]
+            if count_match and "first" in count_match[0]
+            else candidates[-relative_count:]
+        )
+        resolved_game_ids = [game.id for game in selected]
     elif all_tied_games:
         resolved_game_ids = [game.id for game in candidates]
     elif descriptive_reference:
@@ -588,6 +605,7 @@ async def resolve_query(
         date_start=date_start,
         date_end=date_end,
         relative_game_count=relative_count,
+        relative_game_order="first" if count_match and "first" in count_match[0] else "last",
         periods=_periods(question),
         season_type=season_type,
         home_away=home_away,

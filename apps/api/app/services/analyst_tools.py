@@ -260,6 +260,9 @@ class AnalystTools:
                 player=player.full_name,
                 **{m: getattr(stat, m) for m in METRICS},
             )
+            data.update(
+                three_pointers_attempted=stat.three_pointers_attempted, starter=stat.starter
+            )
         evidence = Evidence(
             evidence_id=identity,
             release_id=self.release.version,
@@ -435,6 +438,7 @@ class AnalystTools:
             "date_end",
             "periods",
             "relative_game_count",
+            "relative_game_order",
         ):
             authoritative = getattr(self.scope, key)
             if authoritative:
@@ -534,7 +538,15 @@ class AnalystTools:
                 claims=first.claims + second.claims + comparisons,
                 evidence=first.evidence + second.evidence,
             )
-        return self.player(scope, games, metric, call.aggregation)
+        if re.search(r"\btotal\b", self.question, re.I):
+            aggregation = "total"
+        else:
+            aggregation = call.aggregation
+        if re.search(r"\bthree[ -]point percentage\b", self.question, re.I):
+            metric = "three_point_percentage"
+        elif re.search(r"\b(?:games?|times)\b.*\bstart(?:ed)?\b", self.question, re.I):
+            metric = "starts"
+        return self.player(scope, games, metric, aggregation)
 
     def all_star_comparison(
         self, scope: ResolvedQuery, games: list[Game], metric: str
@@ -633,8 +645,6 @@ class AnalystTools:
     def player(
         self, scope: ResolvedQuery, games: list[Game], metric: str, aggregation: str
     ) -> ToolResult:
-        if scope.relative_game_count and "appearance" not in self.question.lower():
-            games = games[-scope.relative_game_count :]
         game_map = {g.id: g for g in games}
         claims, evidence = [], []
         missing = False
@@ -644,12 +654,23 @@ class AnalystTools:
             ]
             # Zero minutes means observed DNP, not an appearance; missing rows remain unknown.
             absent = sorted(set(game_map) - {s.game_id for s, _ in all_rows})
-            rows = [(s, p) for s, p in all_rows if s.minutes > 0]
+            rows = sorted(
+                [(s, p) for s, p in all_rows if s.minutes > 0],
+                key=lambda row: (
+                    game_map[row[0].game_id].game_date,
+                    game_map[row[0].game_id].nba_game_id,
+                ),
+            )
             if scope.relative_game_count:
-                rows = rows[-scope.relative_game_count :]
+                rows = (
+                    rows[: scope.relative_game_count]
+                    if scope.relative_game_order == "first"
+                    else rows[-scope.relative_game_count :]
+                )
             if not rows:
                 continue
             count = len(rows)
+            attempts = 0
             if metric == "double_doubles":
                 aggregation = "total"
                 value = sum(
@@ -660,6 +681,15 @@ class AnalystTools:
                     >= 2
                     for s, _ in rows
                 )
+            elif metric == "three_point_percentage":
+                aggregation = "percentage"
+                attempts = sum(s.three_pointers_attempted for s, _ in rows)
+                if not attempts:
+                    continue
+                value = sum(s.three_pointers_made for s, _ in rows) / attempts * 100
+            elif metric == "starts":
+                aggregation = "total"
+                value = sum(bool(s.starter) for s, _ in rows)
             else:
                 value = sum(getattr(s, metric) for s, _ in rows)
             if aggregation == "average":
@@ -676,10 +706,18 @@ class AnalystTools:
                 f"{name}: {value:.1f} {unit} across {count} observed appearances "
                 f"in the {self.release.season} {scope.season_type or 'all-phase'} archive."
             )
+            if metric == "three_point_percentage":
+                statement = (
+                    f"{name}: {value:.1f}% from three, "
+                    f"{sum(s.three_pointers_made for s, _ in rows)} makes in {attempts} attempts "
+                    f"across {count} observed appearances."
+                )
             claims.append(
                 self.claim(
                     subject=f"player:{player_id}",
-                    metric=f"{metric}:{aggregation}",
+                    metric=metric
+                    if metric in {"three_point_percentage", "starts"}
+                    else f"{metric}:{aggregation}",
                     value=value,
                     unit=unit,
                     games=[game_map[s.game_id] for s, _ in rows],
@@ -687,14 +725,16 @@ class AnalystTools:
                     statement=statement,
                     scope=scope,
                     sample=count,
-                    denominator=count if aggregation == "average" else None,
+                    denominator=attempts
+                    if metric == "three_point_percentage"
+                    else count
+                    if aggregation == "average"
+                    else None,
                     limitations=limitations,
                     window={
-                        "date_start": str(games[0].game_date),
-                        "date_end": str(games[-1].game_date),
-                    }
-                    if games
-                    else None,
+                        "date_start": str(game_map[rows[0][0].game_id].game_date),
+                        "date_end": str(game_map[rows[-1][0].game_id].game_date),
+                    },
                 )
             )
         return ToolResult(
@@ -752,7 +792,11 @@ class AnalystTools:
         if is_record_request(self.question):
             games = [g for g in games if g.status == "final" and g.home_score != g.away_score]
         if scope.relative_game_count:
-            games = games[-scope.relative_game_count :]
+            games = (
+                games[: scope.relative_game_count]
+                if scope.relative_game_order == "first"
+                else games[-scope.relative_game_count :]
+            )
         evidence = [self.receipt(g) for g in games]
         wins = sum(self.score(g)[0] > self.score(g)[1] for g in games)
         values = {
@@ -761,6 +805,41 @@ class AnalystTools:
             "points": sum(self.score(g)[0] for g in games),
             "margin": sum(self.score(g)[0] - self.score(g)[1] for g in games),
         }
+        question = self.question.lower()
+        denominator = None
+        threshold = re.search(r"\b(at least|under|over|more than|fewer than)\s+(\d+)\b", question)
+        if threshold and re.search(r"\bhow many games\b", question):
+            cutoff = int(threshold[2])
+            observed = [
+                self.score(g)[1 if re.search(r"\b(opponents?|allow|hold)\b", question) else 0]
+                for g in games
+            ]
+            count = sum(
+                v >= cutoff
+                if threshold[1] == "at least"
+                else v < cutoff
+                if threshold[1] in {"under", "fewer than"}
+                else v > cutoff
+                for v in observed
+            )
+            values = {"games:count": count}
+        elif not is_record_request(self.question) and re.search(
+            r"\b(average|per game|points allowed)\b", question
+        ):
+            metric = (
+                "margin"
+                if "margin" in question
+                else "points_allowed"
+                if re.search(r"\b(allow(?:ed)?|opponents?)\b", question)
+                else "points"
+            )
+            total = (
+                sum(self.score(g)[1] for g in games)
+                if metric == "points_allowed"
+                else values[metric]
+            )
+            denominator = len(games)
+            values = {f"{metric}:average": total / denominator}
         claims = [
             self.claim(
                 subject="team:NYK",
@@ -771,7 +850,7 @@ class AnalystTools:
                 evidence=evidence,
                 scope=scope,
                 sample=len(games),
-                denominator=None,
+                denominator=denominator,
                 eligibility={"game": "archived Knicks game"},
                 statement=f"Knicks {metric}: {value} over {len(games)} archived games.",
             )

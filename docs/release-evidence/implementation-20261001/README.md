@@ -331,3 +331,53 @@ python tools/release/check_archive_sources.py \
 
 This establishes source integrity and receipt consistency. Semantic relevance,
 approved gold, hosted provenance and release readiness remain separate open checks.
+
+The full local question inspection then exposed unrelated generic totals in
+explicit average, threshold, percentage, starts and window requests. The
+[archive statistic failure modes](requested-archive-statistics-failure-modes.md)
+and HTTP specification preceded the fixes. Fourteen requests first failed and
+then passed independently calculated typed values and full source populations.
+Three additional defined extrema failed before their fix; all 17 now pass.
+Highest/lowest scoring and worst loss by margin retain every tied game.
+
+First and final game windows select the requested end of the archive. Player
+windows select observed appearances before taking N. Total player points,
+summed-makes shooting percentage and starter flags retain their true raw
+fields and denominators. A unique canonical Knicks first name resolves before
+fuzzy prose, correcting the Mikal question's erroneous Wells match. Existing
+undefined measures and ten-message game-reference rules remain in force.
+All 68 focused existing resolver, analyst, player-statistic and context checks
+pass in `archive-stats-regression-final/`; the 17 requests and six existing
+narrative checks pass in `archive-stats-extrema-final/`. Repeat the HTTP check
+with the safe environment above, a fresh `KNICKSIQ_ARCHIVE_STATS_ARTIFACT_DIR`,
+and `apps/api/app/tests/test_requested_archive_statistics_http.py`.
+
+An additional Hart last-five-appearances check exposed misleading full-archive
+window dates. Player claim windows now use the actual observed appearance dates.
+All 18 requests pass alongside six existing player-statistic and seven discovery
+checks in `archive-stats-final/`. The original immutable 120-question probe also
+passes independently in `archive-stats-cohort-final/`; this checks trace capture
+and paid-dispatch denial, not answer correctness for every original question.
+The cohort exports its full source units from the same disposable database used
+for the captured queries. The initial verifier input mixed approved-release
+cohort captures with `analytics-test` cancellation fixtures. Verification
+correctly rejected that foreign source in `archive-stats-source-verification/`;
+its failure and scope diagnosis are retained. The isolated canonical cohort
+verifies successfully in `archive-stats-cohort-source-verification/`, including
+all 49 units and 16 actual ranked unit receipts. Candidate indexes and runtime
+receipts must share their release and SQL identities.
+
+The owner identified the project's `.env` as the credential source. Read-only
+provider checks authenticated that key and observed $30 purchased and
+$27.958149308 used, leaving approximately $2.04. They issued no completion or
+mutation. This file's Redis points to localhost and its database is a different
+resource from the isolated `.env.rc.local` database. These observations do not
+certify hosted dependency readiness or authorize production state mutations.
+
+The [current independent source review](source-relevance-review.md) records all
+50 semantic cases against the latest actual captures. Seven settled target sets
+remain unchanged; 38 new candidate target sets are identified, including the
+independently relevant canonical JB identity source. Five measure-specific target
+sets remain unresolved, so the full expectation contract cannot yet be frozen.
+The exact candidate records, source/observation hashes and reasons are retained
+in `source-relevance-proposal.json`. This review approves no gold or launch.
