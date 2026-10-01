@@ -51,17 +51,30 @@ state.
 3. Load the validated bundle with `knicksiq-load-release <bundle> --sha256
    <sha>`. Stage it first; do not activate it until the image and deterministic
    retrieval checks have passed.
-4. Build Qdrant from the active Neon release using
-   `knicksiq-build-rag-index --season 2025-26 --data-version <version>
-   --reset-qdrant`. Validate counts and Recall@5 before promoting its aliases.
-5. Activate the matching Postgres release and Qdrant aliases.
-6. Manually deploy the immutable API and web artifacts in `shadow` mode.
+4. Prepare Qdrant from the validated staged release in an authorized isolated
+   database using `knicksiq-build-rag-index --season 2025-26 --data-version <version>`.
+   Resolve the exact four physical collection destinations and existing account/
+   project quota before writes. The versioned path is create-only, preflights all
+   four targets and aliases before writing, and never promotes aliases.
+   Complete identity-matching candidates are reused without embedding/upsert
+   calls. Conflicting, partial or already-aliased targets fail closed; never use
+   `--reset-qdrant` or delete retained collections to force a rebuild.
+   Validate hosted counts, dimensions, source/payload/embedding identities, server
+   payload indexes, release filters and Recall@5 before promoting aliases under
+   the separate hash-bound production authorization. Account for billed cloud
+   embeddings within the approved provider budget.
+5. Complete pre-promotion readiness and obtain separate hash-bound owner
+   authorization before any deployment, content activation or alias promotion.
+6. Use the verified coordinator below to deploy the exact tested API and web
+   commits with `llm_primary` as the final serving mode, then optionally activate
+   the previously validated matching Postgres release and candidate Qdrant aliases.
 7. Render uses `GET /health/live` for deploy health checks so the first deploy
    can complete before release data is loaded. Before go-live, require
    `GET /health/ready` to return
-   200 with the expected data version. Run one archive and one deterministic
-analyst synthetic before go-live. Promote to `llm_primary` only after the
-shadow gates in `docs/evaluation.md` pass.
+   200 with the expected data version. Run the approved archive and analyst served
+   acceptance checks; any model calls require an explicitly accounted authorized
+   budget. The isolated 10% shadow and primary-quality gates must pass before
+   promotion. Shadow verification is not the production serving configuration.
 
 When migrating an existing Blueprint, Render does not delete the old managed
 Postgres instance or replace an existing `sync: false` value automatically.

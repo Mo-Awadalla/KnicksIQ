@@ -30,7 +30,7 @@ from app.services.evidence_contracts import (
     validate_review,
     validate_structure,
 )
-from app.services.query_resolution import is_record_request
+from app.services.query_resolution import is_game_score_request, is_record_request
 from app.services.report_llm import get_llm_adapter
 from pydantic import BaseModel
 
@@ -517,7 +517,28 @@ class AnalystLoop:
         except (ValueError, RuntimeError):
             return False, "Reviewer failed or returned malformed output."
         if not validate_review(review, answer, self.sent_claims, self.sent_evidence):
-            return False, encoded(review.model_dump())
+            # The repair already receives the complete proposed answer. Repeating
+            # every reviewed span, support ID and accepted suggestion can exhaust
+            # its input budget before the provider is called. Feedback has no
+            # evidence authority; keep only bounded failure guidance. Both the
+            # complete claim records and the next independent review stay intact.
+            failures = []
+            for index, item in enumerate(review.assertions):
+                if item.verdict != "supported" or item.offending_text is not None:
+                    failure = {"span_index": index, "verdict": item.verdict, "reason": item.reason}
+                    if token_upper_bound(encoded(failures + [failure])) > 1000:
+                        break
+                    failures.append(failure)
+            return False, encoded(
+                {
+                    "instruction": (
+                        "Whole-answer review failed. Remove unsupported assertions; "
+                        "use only existing claims and evidence. "
+                        "The full answer will be reviewed again."
+                    ),
+                    "failed_spans": failures,
+                }
+            )
         self.accepted_suggestions = accepted_follow_ups(
             review, answer, self.sent_claims, self.sent_evidence
         )
@@ -591,6 +612,8 @@ class AnalystLoop:
                         )
                 if relevant:
                     claims.append(claim)
+        if is_game_score_request(self.tools.question) and not scope.player_ids:
+            claims = [c for c in claims if c.metric_id == "game_score"]
         if is_record_request(self.tools.question) and not scope.player_ids:
             claims = [c for c in claims if c.metric_id in {"wins", "losses"}]
             if {c.metric_id for c in claims} != {"wins", "losses"}:
@@ -633,7 +656,10 @@ class AnalystLoop:
                 "Verified archive facts are unavailable on this turn. Please try again.",
             )
         if re_search_live(self.tools.question):
-            text += " I don't have live injury or current-status updates."
+            if re.search(r"\bscore\b", self.tools.question, re.I):
+                text += " I don't have live game scores."
+            else:
+                text += " I don't have live injury or current-status updates."
         answer = ProposedAnswer(
             text=text,
             claims=[ClaimUse(claim_id=c.claim_id, displayed_value=c.value) for c in claims],

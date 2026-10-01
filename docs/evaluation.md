@@ -10,7 +10,43 @@ versions. It does not retain questions, answers, evidence text, or claim
 comparisons. Promotion to `llm_primary` requires the release gates plus analyst
 p95 below four seconds and errors below one percent.
 
-## Offline harness
+## Fixed-cohort release execution
+
+Use `app.evaluation.release_runner` with the frozen 120-case contract and its
+separate hash-bound owner approval. All 50 original semantic cases remain in the
+enabled retrieval denominator; a clarification does not substitute for a ranked
+retrieval trace. The runner captures the analyst execution being scored.
+
+Primary and shadow collection require an explicit `CountedRun`. Its environment
+verifier receives the selected database scheme, host, port and name, without
+credentials. It must verify the exact isolated staging binding, candidate,
+dependencies and real monthly accounting before application execution. Hosted
+databases are admitted only through this verifier; providing metadata or an
+approval boolean is not isolation proof. Every provider request additionally
+requires current conservative pricing verification and durable cumulative caps.
+The CLI supplies no default paid-execution verifier.
+
+Service-disabled collection remains local-database-only, with Qdrant, Redis,
+the provider and telemetry disabled. It permits zero paid requests. Keep all
+expectations, approvals, captures, source mappings and reviews in private local
+evidence; final scoring requires complete output-bound assertion review.
+
+## Hosted browser routing evidence
+
+Backend CI installs Redis so the SQL/HTTP/Redis reservation, shadow, replay and
+retrieval-trace regressions execute on Ubuntu instead of skipping for a missing
+server binary.
+
+Hosted CI retains the `browser-network-evidence` artifact for 14 days. Its
+synthetic Playwright report includes `network-destinations` attachments with
+allowed origins, requested destinations and blocked requests. This verifies
+fixture-routing controls, not hosted staging connectivity or model quality.
+Private release inputs and evaluation artifacts are not uploaded.
+
+## Development diagnostic harness
+
+The diagnostic harness below is not the frozen release runner and cannot replace
+its owner-approved contract, assertion review or release evidence.
 
 The committed candidate set is
 `apps/api/app/evaluation/questions.jsonl`. It contains 120 questions in the

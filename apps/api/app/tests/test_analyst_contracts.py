@@ -581,6 +581,73 @@ async def test_route_commits_replays_and_ignores_client_authority(client, local_
     assert len(adapter.prompts) == 5
 
 
+@pytest.mark.parametrize("repair_supported", [True, False])
+async def test_large_review_feedback_reaches_repair_without_waiving_review(
+    client, local_redis, monkeypatch, tmp_path, repair_supported
+):
+    """Failure matrix: verbose verdict overflow, rejected repair, replay, budget cap."""
+    from app.core.db import AsyncSessionLocal
+
+    settings = get_settings()
+    monkeypatch.setattr(settings, "analyst_evidence_loop_enabled", True)
+    monkeypatch.setattr(settings, "analysis_answer_mode", "llm_primary")
+    await local_redis.set(f"ai-budget:{datetime.now(UTC):%Y-%m}", 0)
+    async with AsyncSessionLocal() as db:
+        await _seed_release_stats(db)
+
+    class VerboseReviewAdapter(ScriptedAdapter):
+        async def generate(self, *, system, user):
+            payload = json.loads(user)
+            if payload["schema"]["title"] == "ProposedAnswer":
+                self.prompts.append(payload)
+                answer = payload["proposed_answer"]
+                if repair_supported:
+                    answer["text"] = answer["text"].replace(" A new tactic caused this.", "")
+                return json.dumps(answer)
+            raw = await super().generate(system=system, user=user)
+            value = json.loads(raw)
+            if payload["schema"]["title"] == "Action" and value.get("answer"):
+                value["answer"]["text"] = (
+                    (value["answer"]["text"] + " ") * 8
+                ).rstrip() + " A new tactic caused this."
+            if payload["schema"]["title"] == "AnswerReview":
+                template = value["assertions"][0]
+                value["assertions"] = []
+                for span in payload["review_spans"]:
+                    unsupported = "tactic" in span
+                    value["assertions"].append(
+                        {
+                            **template,
+                            "text": span,
+                            "verdict": "unsupported" if unsupported else "supported",
+                            "offending_text": span if unsupported else None,
+                            "reason": "No causal source." if unsupported else "Verified. " * 50,
+                        }
+                    )
+            return json.dumps(value)
+
+    adapter = VerboseReviewAdapter()
+    monkeypatch.setattr(analyst_loop, "get_llm_adapter", lambda: adapter)
+    request = {
+        "question": "Give me an interesting stat",
+        "turn_id": "verbose-review-turn-0001",
+        "expected_revision": 0,
+    }
+    response = await client.post("/analysis/query", json=request)
+    body = response.json()
+    titles = [p["schema"]["title"] for p in adapter.prompts]
+    (tmp_path / "review-repair-evidence.json").write_text(
+        json.dumps({"response": body, "stages": titles, "repair_supported": repair_supported})
+    )
+    assert response.status_code == 200
+    assert titles == ["Action", "Action", "AnswerReview", "ProposedAnswer", "AnswerReview"]
+    assert body["llm_validated"] is repair_supported
+    assert "tactic" not in body["answer"]
+    replay = await client.post("/analysis/query", json=request)
+    assert replay.json() == body and len(adapter.prompts) == 5
+    assert float(await local_redis.get(f"ai-budget:{datetime.now(UTC):%Y-%m}")) <= 0.05
+
+
 async def test_redis_failure_gives_explicit_stateless_facts(client, monkeypatch):
     from app.core.db import AsyncSessionLocal
 

@@ -7,12 +7,18 @@ release status. Historical local preflight results do not establish current depl
 Generate the view and run the fail-closed gate from the repository root:
 
 ```sh
-uv run --package knicksiq-api python -m app.services.release_evidence docs/release-evidence/release-record.json --render
+uv run --package knicksiq-api python -m app.services.release_evidence docs/release-evidence/release-record.json --readiness --render
 ```
 
-The launch configuration is 10% shadow with deterministic answers delivered to users. Automatic
-Render deployments stay disabled. Both NOW workstreams block deployment. NEXT and LATER are
-outside this release gate and hosting remains unchanged.
+Pre-promotion verification requires recorded 10% shadow execution with deterministic
+answers delivered by the isolated candidate. The final serving configuration is
+`llm_primary`, unsampled, with deterministic fallback and the unchanged $2 monthly
+cutoff. Both stages must pass; neither configuration alone establishes readiness.
+Readiness does not supply final launch approval or the owner-controlled record
+digest required by the deployment coordinator.
+
+Automatic Render deployments stay disabled. Both NOW workstreams block deployment.
+NEXT and LATER are outside this release gate and hosting remains unchanged.
 
 Agents verify all reports against canonical evidence. The owner approves the corrected template,
 exceptions and final hash-bound audit summary rather than each write-up. A reviewed flag alone

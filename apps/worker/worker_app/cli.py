@@ -334,7 +334,7 @@ def _build_rag_index_parser() -> argparse.ArgumentParser:
     parser.add_argument("--out-dir", default="rag-artifacts")
     parser.add_argument(
         "--data-version",
-        help="Validated release version; builds a physical collection then switches the alias.",
+        help="Validated release; create/reuse inactive physical collections without alias changes.",
     )
     parser.add_argument(
         "--game-limit",
@@ -351,7 +351,7 @@ def _build_rag_index_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--reset-qdrant",
         action="store_true",
-        help="Recreate the configured possessions collection before upserting.",
+        help="Reset unversioned possessions only; incompatible with --data-version.",
     )
     return parser
 
@@ -359,6 +359,8 @@ def _build_rag_index_parser() -> argparse.ArgumentParser:
 def build_rag_index_main() -> None:
     parser = _build_rag_index_parser()
     args = parser.parse_args()
+    if args.data_version and args.reset_qdrant:
+        parser.error("--data-version is create-only and cannot be combined with --reset-qdrant")
     result = asyncio.run(
         _build_rag_index(
             args.season,
