@@ -541,6 +541,11 @@ def audit(evidence_root: Path, handoff: Path, expected_bundle: str) -> dict[str,
         ROOT / "docs/release-evidence/implementation-20261001/confirmed-context-decision.json"
     )
     context_decision = read_json(context_decision_path)
+    decision_directory = context_decision_path.parent
+    spending_path = decision_directory / "confirmed-spending-direction.json"
+    staging_path = decision_directory / "confirmed-staging-plan-decision.json"
+    spending = read_json(spending_path)
+    staging = read_json(staging_path)
     if (
         context_decision["clarification"] != "Which game?"
         or context_decision["evaluation_gold_approved"]
@@ -577,6 +582,8 @@ def audit(evidence_root: Path, handoff: Path, expected_bundle: str) -> dict[str,
             "audit_source_sha256": file_hash(Path(__file__)),
             "canonical_reviewer_sha256": file_hash(Path(__file__).with_name("draft_labels.py")),
             "confirmed_context_decision_sha256": file_hash(context_decision_path),
+            "confirmed_spending_direction_sha256": file_hash(spending_path),
+            "confirmed_staging_decision_sha256": file_hash(staging_path),
             "application_source_sha256": {
                 relative: file_hash(ROOT / relative)
                 for relative in (
@@ -588,6 +595,7 @@ def audit(evidence_root: Path, handoff: Path, expected_bundle: str) -> dict[str,
                     "apps/api/app/services/analyst_loop.py",
                     "apps/api/app/services/narrative_scope.py",
                     "apps/api/app/services/evidence_contracts.py",
+                    "apps/api/app/services/release_bundle.py",
                 )
             },
         },
@@ -596,6 +604,8 @@ def audit(evidence_root: Path, handoff: Path, expected_bundle: str) -> dict[str,
         "semantic_case_count": 50,
         "dispositions": dict(Counter(row["disposition"] for row in rows)),
         "confirmed_context_decision": context_decision,
+        "confirmed_spending_direction": spending,
+        "confirmed_staging_decision": staging,
         "owner_decisions": [
             "Preserve gates; genuine bounded canonical discovery "
             "with no paid model calls/reservations.",
@@ -657,10 +667,16 @@ def audit(evidence_root: Path, handoff: Path, expected_bundle: str) -> dict[str,
             "unknown_reservation_preserved_usd": provider["unknown_reserved_usd"],
             "journal_reset": False,
             "journal_reopened": False,
-            "primary_cap": {"requests": 720, "usd": 0.50},
-            "shadow_cap": {"requests": "6 * actual fixed selected turns", "usd": 0.50},
-            "combined_usd": 1.10,
-            "monthly_cutoff_usd": 2,
+            "primary_cap": {"requests": 720},
+            "shadow_cap": {"requests": "6 * actual fixed selected turns"},
+            "historical_test_dollar_caps_enforced": False,
+            "historical_test_dollar_caps_usd": {
+                "primary": 0.50,
+                "shadow": 0.50,
+                "combined": 1.10,
+                "monthly": 2,
+            },
+            "production_budget_configuration_changed": False,
             "workload_reservations": "Required before evaluation; not yet admitted",
         },
         "runtime_dependencies": (
