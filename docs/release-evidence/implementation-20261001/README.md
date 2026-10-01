@@ -6,7 +6,7 @@ on candidate `bf4439bbcd69e328c1d65c52e9a73dcbe4942cbe`. The owner's subsequent
 [context decision](confirmed-context-decision.json) corrects the earlier claim
 that an unspecified game demonstrated an identity-relevance incompatibility.
 Complete tied-game narratives and canonical Boston scoring runs are also implemented.
-Gold remains unfrozen. Bounded retrieval discovery, guarded paid orchestration,
+Gold remains unfrozen. Bounded retrieval discovery is implemented. Guarded paid orchestration,
 release evaluation, load, recovery, rollback and launch remain open.
 
 The implementation worktree is
@@ -74,10 +74,13 @@ new source mapping was manufactured.
 Paid admission separately remains blocked. The stopped original smoke still
 accounts for five attempted requests and $0.0322179 spent or reserved, including
 $0.03205728 of unknown cancellation cost. Its journal was not reset or reopened.
-September's unavailable ledger does not certify October headroom. Primary stays
-at 720 requests/$0.50; shadow retains its actual-selection-dependent request cap
-and $0.50 limit; combined/monthly limits stay $1.10/$2. Original load/recovery
-reservations are still required before evaluation. No paid or remote request,
+September's unavailable ledger does not certify October headroom. The owner
+subsequently instructed [not to worry about testing spending](confirmed-spending-direction.json),
+so the historical testing dollar caps no longer block necessary validation.
+The primary 720-request ceiling, actual-selection-dependent shadow request
+ceiling, original load/recovery workloads, accurate cumulative accounting and
+unknown reservations remain requirements. Production budget configuration is
+unchanged. No paid or remote request,
 new reservation, production mutation, freeze or approval occurred.
 
 The [audit failure modes](failure-modes.md), CLI E2E specification and
@@ -209,3 +212,27 @@ rewriting prior manifests. The authoritative current offline register is
 HTTP checks in a fresh output directory with the same safe environment above,
 set `KNICKSIQ_DISCOVERY_ARTIFACT_DIR`, and run
 `apps/api/app/tests/test_canonical_discovery_http.py`. No new unit tests were added.
+
+The owner [retained the current staging plans](confirmed-staging-plan-decision.json).
+Both proposed Render forms were cancelled: the API remains Free, and no new
+Redis service or recurring charge was added. This decision does not establish
+the missing isolated dependency or capacity evidence.
+
+The approved bundle loader now synchronizes player names, teams, positions and
+jersey numbers by NBA player ID when activating a release, including an already
+loaded active release. Staging preserves existing metadata. NBA IDs, SQL row
+identities and stat foreign keys stay stable. The prior loader retained incorrect
+seed names for 17 archive players, creating false Towns and Bridges ambiguities.
+The [roster failure modes](canonical-roster-failure-modes.md) and retained red HTTP
+run precede the fix. The HTTP check records all canonical roster fields and six
+questions through two activations, repairs deliberately stale metadata on the
+second activation, and verifies exact replay without constructing a provider.
+The existing surname policy prefers a unique Knicks player; it resolves Bridges
+to Mikal without changing that policy.
+
+Roster proof establishes identity consistency, not correctness of every returned
+statistic. The retained responses separately expose generic scoring averages
+for rebounding, double-double and before/after All-Star questions; those require
+further implementation and fresh quality proof. The authoritative current audit
+is `roster-audit-e2e/first/implementation-register.json`, which binds the loader
+source and both latest owner directions. No release gold or launch is approved.

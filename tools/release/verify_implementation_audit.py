@@ -76,6 +76,18 @@ def main() -> None:
         assert register["semantic_closure"] == "BLOCKED"
         assert register["owner_approval"] is None and register["frozen"] is False
         assert register["remote_requests"] == 0 and register["paid_requests"] == 0
+        assert (
+            register["confirmed_spending_direction"]["owner_statement"]
+            == "do not worry about spending"
+        )
+        assert register["paid_admission"]["historical_test_dollar_caps_enforced"] is False
+        assert register["paid_admission"]["primary_cap"]["requests"] == 720
+        assert register["paid_admission"]["journal_reset"] is False
+        assert (
+            register["confirmed_staging_decision"]["owner_answer"]
+            == "Keep the current staging plans"
+        )
+        assert register["confirmed_staging_decision"]["recurring_charges_added"] == 0
         assert register["baseline_integrity"]["verified_checksum_files"] == 485
         cases = {
             r["id"]: r for r in json.loads((first / "expectation-review.json").read_text())["cases"]
