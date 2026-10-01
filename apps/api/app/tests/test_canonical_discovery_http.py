@@ -11,12 +11,15 @@ import pytest
 from app.core.config import get_settings
 from app.core.db import AsyncSessionLocal
 from app.evaluation.trace_capture import capture_turn
+from app.models.game import Game
 from app.services import analyst_loop, analyst_tools
+from app.services.archive_units import build_archive_units
 from app.services.release_bundle import load_release_bundle
 from app.tests.test_analyst_contracts import local_redis  # noqa: F401
 from app.tests.test_canonical_narrative_http import BUNDLE, SHA
 from app.tests.test_player_intelligence import _seed_release_stats
 from httpx import ASGITransport, AsyncClient
+from sqlalchemy import select
 
 QUESTIONS = Path(__file__).resolve().parents[1] / "evaluation/questions.jsonl"
 QUESTIONS_SHA = "a546b99c36fedb59a475479016b0338fe113c4478d5165c4a5073d144ffdf482"
@@ -106,7 +109,19 @@ async def test_original_cohort_records_real_local_discovery(
 ):
     attempts = configure(monkeypatch, "disabled")
     async with AsyncSessionLocal() as db:
-        await load_release_bundle(db, BUNDLE, expected_sha256=SHA, activate=True)
+        loaded = await load_release_bundle(db, BUNDLE, expected_sha256=SHA, activate=True)
+        if os.environ.get("KNICKSIQ_DISCOVERY_ARTIFACT_DIR"):
+            games = list(
+                (
+                    await db.execute(select(Game).where(Game.release_id == loaded.release_id))
+                ).scalars()
+            )
+            units = await build_archive_units(db, games, loaded.version)
+            directory = Path(os.environ["KNICKSIQ_DISCOVERY_ARTIFACT_DIR"])
+            directory.mkdir(parents=True, exist_ok=True)
+            with (directory / "archive_units.jsonl").open("x") as artifact:
+                for unit in units:
+                    artifact.write(json.dumps(unit, sort_keys=True) + "\n")
     before = QUESTIONS.read_bytes()
     assert hashlib.sha256(before).hexdigest() == QUESTIONS_SHA
     rows = [json.loads(line) for line in before.splitlines() if line.strip()]

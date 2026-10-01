@@ -581,8 +581,12 @@ class AnalystLoop:
         games = self.tools.selected_games(scope)
         if is_record_request(self.tools.question) and not scope.player_ids:
             games = [g for g in games if g.status == "final" and g.home_score != g.away_score]
-        if scope.relative_game_count:
-            games = games[-scope.relative_game_count :]
+        if scope.relative_game_count and not scope.player_ids:
+            games = (
+                games[: scope.relative_game_count]
+                if scope.relative_game_order == "first"
+                else games[-scope.relative_game_count :]
+            )
         expected_games = {g.id for g in games}
         discovery = re_search_discovery(self.tools.question)
         claims = []
@@ -614,18 +618,40 @@ class AnalystLoop:
                     )
                     population = expected_games
                     if scope.player_ids:
-                        population = {
-                            stat.game_id
-                            for stat, _ in self.tools.rows
-                            if f"player:{stat.player_id}" == claim.subject_id
-                            and stat.minutes > 0
-                            and stat.game_id in expected_games
-                        }
+                        appearance_games = sorted(
+                            {
+                                stat.game_id
+                                for stat, _ in self.tools.rows
+                                if f"player:{stat.player_id}" == claim.subject_id
+                                and stat.minutes > 0
+                                and stat.game_id in expected_games
+                            },
+                            key=lambda identity: (
+                                next(g.game_date for g in games if g.id == identity),
+                                identity,
+                            ),
+                        )
+                        if scope.relative_game_count:
+                            appearance_games = (
+                                appearance_games[: scope.relative_game_count]
+                                if scope.relative_game_order == "first"
+                                else appearance_games[-scope.relative_game_count :]
+                            )
+                        population = set(appearance_games)
                     relevant = subject and set(claim.game_ids or []) == population
                     if scope.player_ids:
-                        relevant = relevant and claim.metric_id.split(":")[0] == (
-                            scope.metric or "points"
+                        expected_metric = (
+                            "three_point_percentage"
+                            if re.search(
+                                r"\bthree[ -]point percentage\b", self.tools.question, re.I
+                            )
+                            else "starts"
+                            if re.search(
+                                r"\b(?:games?|times)\b.*\bstart(?:ed)?\b", self.tools.question, re.I
+                            )
+                            else scope.metric or "points"
                         )
+                        relevant = relevant and claim.metric_id.split(":")[0] == expected_metric
                 if relevant:
                     claims.append(claim)
         if is_game_score_request(self.tools.question) and not scope.player_ids:
