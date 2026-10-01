@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "owner_statement": "do not worry about spending",
+  "scope": "Completing the confirmed release implementation and validation",
+  "implementation_direction": "Do not treat the previous testing dollar caps or cost optimization as a blocker to necessary release work.",
+  "preserved_requirements": [
+    "Keep accurate request, reservation and charge records, including unknown charges.",
+    "Do not reset, reopen or falsely resume the original stopped smoke journal.",
+    "Preserve workload sizes, request ceilings, evidence integrity and readiness thresholds.",
+    "Use isolated staging resources and do not mutate production sessions or accounting.",
+    "Production launch still requires passing readiness and content-bound owner approval."
+  ],
+  "new_numeric_test_budget": null,
+  "new_recurring_service_subscription_finalized": false,
+  "production_budget_configuration_changed": false,
+  "production_launch_approved": false
+}

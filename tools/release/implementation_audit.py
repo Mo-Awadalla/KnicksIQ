@@ -559,12 +559,13 @@ def audit(evidence_root: Path, handoff: Path, expected_bundle: str) -> dict[str,
         raise ValueError("Retained provider stop condition changed")
     register = {
         "schema_version": 1,
-        "status": "IMPLEMENTED_REVIEW_CONTEXT_AND_NARRATIVE_PENDING_RELEASE_GATES",
+        "status": "IMPLEMENTED_REVIEW_CONTEXT_NARRATIVE_AND_DISCOVERY_PENDING_RELEASE_GATES",
         "base_candidate": CANDIDATE,
         "implementation_branch": "codex/release-implementation-20261001",
         "scope": (
             "Offline canonical review, coverage feasibility, ten-message game-context fix, "
-            "complete tied game stories and Boston unanswered scoring runs; "
+            "complete tied game stories, Boston unanswered scoring runs and bounded local "
+            "canonical discovery before clarification/admission; "
             "no release quality/promotion claim"
         ),
         "inputs": {
@@ -624,7 +625,7 @@ def audit(evidence_root: Path, handoff: Path, expected_bundle: str) -> dict[str,
             {
                 "step": 4,
                 "name": "bounded discovery and guarded orchestration",
-                "status": "context_and_narratives_implemented_discovery_and_orchestration_pending",
+                "status": "context_narratives_discovery_implemented_guarded_orchestration_pending",
             },
             {
                 "step": 5,
@@ -642,7 +643,8 @@ def audit(evidence_root: Path, handoff: Path, expected_bundle: str) -> dict[str,
         "semantic_closure": "BLOCKED",
         "semantic_closure_reasons": [
             "43 new target sets still require independent source relevance and current mapping.",
-            "All 50 members require actual ranked retrieval captures, including clarifications.",
+            "All 50 members need release-bound ranked captures and independently verified "
+            "current source mappings; local HTTP discovery proof is not a frozen evaluation.",
             "Evaluation gold has no content-bound owner approval or freeze.",
         ],
         "frozen": False,
@@ -672,7 +674,8 @@ def audit(evidence_root: Path, handoff: Path, expected_bundle: str) -> dict[str,
         "ranked_receipts_created": 0,
         "affected_prior_proof": (
             "Application context resolution, play-in parsing, tied story selection, measure "
-            "clarifications and Boston run computation changed. Prior engineering, "
+            "clarifications, Boston run computation, local retrieval before clarification "
+            "and cancellation cleanup changed. Prior engineering, "
             "evaluation, load and readiness receipts remain historical for their original "
             "source bindings; affected checks require fresh proof. New local HTTP receipts "
             "prove only their stated behavior and do not pass any blocked release gate. "

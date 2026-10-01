@@ -27,6 +27,7 @@ from app.services.query_resolution import (
     is_record_request,
     resolve_query,
 )
+from app.services.team_aliases import team_ids_in_text
 from basketball_core.analytics.catalog import _windows, build_fact_catalog
 from basketball_core.analytics.registry import STAT_REGISTRY
 from sqlalchemy import select
@@ -66,6 +67,7 @@ class AnalystTools:
         self.rows: list[tuple[PlayerGameStat, Player]] = []
         self.scope: ResolvedQuery | None = None
         self.narrative: NarrativeSelection | None = None
+        self.discovery: ToolResult | None = None
         self.different = bool(re.search(r"\bdifferent player\b", question, re.I))
 
     async def prepare(self) -> None:
@@ -966,19 +968,89 @@ class AnalystTools:
             scope=scope.model_dump(mode="json"),
         )
 
-    async def search(self, call: ToolCall, scope: ResolvedQuery, games: list[Game]) -> ToolResult:
+    async def canonical_discovery(self) -> ToolResult:
+        """Search local records before admission without changing authoritative scope."""
+        if self.discovery is not None:
+            return self.discovery
+        if self.scope is None:
+            raise ValueError("Canonical discovery requires prepared request scope")
+        scope = self.scope
+        games = self.selected_games(scope) if self.season == self.release.season else []
+        names = sorted({p.full_name for _, p in self.rows if p.id in scope.player_ids})[:3]
+        teams = {scope.opponent_id} if scope.opponent_id else set()
+        if scope.clarification_reason == "missing_conversation_game":
+            teams.update(
+                team_ids_in_text(" ".join(m["content"] for m in self.context[-10:])) - {"NYK"}
+            )
+        # Context team names are search terms only. They cannot establish the
+        # game or make an unverified assistant account authoritative.
+        anchors = names + sorted(teams)
+        expansion = " OR ".join(json.dumps(value) for value in anchors)
+        # Tool questions retain their existing cap. Only ordinary independently
+        # resolved identities expand the user's bounded search query.
+        query = self.question[: max(0, 1200 - len(expansion) - 4)]
+        query += " OR " + expansion if expansion else ""
+        try:
+            async with asyncio.timeout(2):
+                self.discovery = await self.search(
+                    ToolCall(name="search_archive", question=query),
+                    scope,
+                    games,
+                    local_only=True,
+                    purpose="canonical_discovery",
+                )
+        except Exception as exc:
+            record_search(
+                {
+                    "purpose": "canonical_discovery",
+                    "status": "dependency_failure",
+                    "release": self.release.version,
+                    "question": self.question,
+                    "query": query,
+                    "filters": {**scope.planner_filters(), "game_ids": [g.id for g in games]},
+                    "candidate_evidence_ids": [],
+                    "returned_evidence_ids": [],
+                    "lexical_evidence_ids": [],
+                    "dense_evidence_ids": [],
+                    "evidence": [],
+                    "dense_failed": False,
+                    "error_type": type(exc).__name__,
+                }
+            )
+            self.discovery = ToolResult(
+                status="dependency_failure",
+                message="Local archive discovery is unavailable on this turn.",
+            )
+        for item in self.discovery.evidence:
+            self.evidence[item.evidence_id] = item
+            self.issued_evidence_ids.add(item.evidence_id)
+        return self.discovery
+
+    async def search(
+        self,
+        call: ToolCall,
+        scope: ResolvedQuery,
+        games: list[Game],
+        *,
+        local_only: bool = False,
+        purpose: str = "analyst_search",
+    ) -> ToolResult:
         filters = scope.planner_filters()
         filters["game_ids"] = [g.id for g in games]
-        lexical = await search_archive_lexical(
-            self.db,
-            query=call.question,
-            collections=["games", "box_scores", "reports", "possessions"],
-            filters=filters,
-            data_version=self.release.version,
-            limit=20,
+        lexical = (
+            await search_archive_lexical(
+                self.db,
+                query=call.question,
+                collections=["games", "box_scores", "reports", "possessions"],
+                filters=filters,
+                data_version=self.release.version,
+                limit=20,
+            )
+            if games
+            else []
         )
         dense, failure = [], False
-        if get_settings().rag_qdrant_enabled:
+        if games and not local_only and get_settings().rag_qdrant_enabled:
             try:
                 dense = await asyncio.to_thread(
                     search_archive_vectors,
@@ -1008,8 +1080,11 @@ class AnalystTools:
         ]
         record_search(
             {
+                "purpose": purpose,
+                "status": "ok",
                 "release": self.release.version,
-                "question": call.question,
+                "question": self.question if local_only else call.question,
+                "query": call.question,
                 "filters": filters,
                 "lexical_evidence_ids": [
                     f"{self.release.version}:{e.evidence_id}" for e in lexical

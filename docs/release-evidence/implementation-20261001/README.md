@@ -172,3 +172,40 @@ audit register is `narrative-audit-e2e/first/implementation-register.json`.
 To repeat the narrative HTTP checks, use the same safe environment as above,
 set `KNICKSIQ_NARRATIVE_ARTIFACT_DIR` to a fresh receipt directory, and run
 `apps/api/app/tests/test_canonical_narrative_http.py`. No unit tests were added.
+
+Bounded canonical discovery now runs before clarification and model admission in
+an evidence-loop turn. It searches local release-scoped SQL only, at most twenty
+candidate records, and captures the actual top five in order. Canonical names
+resolved from ordinary player aliases and opponent IDs can expand the bounded
+query. For an unidentified conversation reference, team names in the preceding
+ten messages can be search terms; they do not establish a game or verify an
+assistant's narrative. Retrieval cannot remove approved clarification or supply
+a missing game. No evaluation ID, gold target, provider, dense embedding or paid
+reservation participates in this preflight.
+
+A two-second local discovery timeout/failure produces an explicit failed capture
+and degradation; it prevents model dispatch. Cancellation cleanup is shielded
+for at most one second and releases only the request's owned conversation lease.
+It does not release, reset or reopen any paid accounting reservation. The new
+HTTP cancellation check first reproduced a retained lease and a rejected exact
+retry, then verified lease removal and successful retry/replay after the fix.
+
+The [discovery failure modes](canonical-discovery-failure-modes.md) and seven HTTP
+checks cover the original 120-question probe, primary and sampled-shadow
+clarifications, canonical alias/context search terms, SQL failure, cancellation,
+replay/conflict behavior and zero paid/dense/reservation attempts. These are
+engineering checks against fixture SQL and disposable Redis, not admitted
+primary/services-disabled/shadow release evaluations. Their original question
+and context bytes remain unchanged. Capture presence and nonempty results alone
+do not establish source relevance or retrieval recall. Approved gold, complete
+aggregates, independent source manifests and the isolated release environment
+remain requirements.
+
+Private discovery proof is retained in `discovery-complete/`,
+`discovery-regression/` and `discovery-audit-e2e/`; failed runs remain retained.
+`discovery-verification.json` and `DISCOVERY-SHA256SUMS` bind this phase without
+rewriting prior manifests. The authoritative current offline register is
+`discovery-audit-e2e/first/implementation-register.json`. Repeat the discovery
+HTTP checks in a fresh output directory with the same safe environment above,
+set `KNICKSIQ_DISCOVERY_ARTIFACT_DIR`, and run
+`apps/api/app/tests/test_canonical_discovery_http.py`. No new unit tests were added.
