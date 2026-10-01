@@ -381,3 +381,26 @@ independently relevant canonical JB identity source. Five measure-specific targe
 sets remain unresolved, so the full expectation contract cannot yet be frozen.
 The exact candidate records, source/observation hashes and reasons are retained
 in `source-relevance-proposal.json`. This review approves no gold or launch.
+
+Publication preparation uses a separate checkout under
+`/private/tmp/KnicksIQ-release-publish-20261001` because the current permission
+profile makes the original implementation worktree read-only. The owner chose
+to publish only the new release work; older main-checkout edits remain untouched.
+The portable [synthetic archive](../../../apps/api/app/tests/fixtures/README.md)
+lets CI execute the same HTTP assertions without publishing the private approved
+archive. Set `KNICKSIQ_APPROVED_BUNDLE` explicitly for the original pinned-data
+checks. Synthetic CI results cannot replace source approval or model-quality gates.
+
+The counted journal now binds the exact owner spending direction when removing
+historical testing dollar caps. Counts, actual shadow membership, positive price
+bounds, stopped/pending journals, unknown costs and production monthly accounting
+remain enforced. [Failure modes](verification-spending-failure-modes.md) and HTTP
+specifications preceded the change. This is one accounting step, not completion
+of guarded live orchestration or a supported resume of the original smoke.
+
+A free temporary Upstash dependency experiment was also attempted. It returned
+credentials, but five TCP checks at the application's 200 ms connection timeout,
+a longer TCP control and a REST connectivity control timed out. No state was
+written to it; no Render plan, provider completion or production state changed.
+Its documented three-day expiry is retained. It remains unadmitted, and credentials
+stay in ignored private files in the original implementation checkout.

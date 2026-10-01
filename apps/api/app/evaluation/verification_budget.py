@@ -8,11 +8,16 @@ here. Unknown spend stays reserved; any execution/accounting failure stops work.
 
 from __future__ import annotations
 
+import hashlib
 import sqlite3
 from collections.abc import Awaitable, Callable, Iterator
 from contextlib import closing, contextmanager
 from pathlib import Path
 from typing import Any
+
+# Exact retained owner instruction for this verification goal. This journal
+# cannot use an unrelated approval or change production monthly accounting.
+SPENDING_DIRECTION_SHA256 = "23fb2fdecaabe72e38c7944b9566d1ac9358748a85f84fb5c5f4e653b28acda2"
 
 
 class VerificationBudget:
@@ -48,6 +53,35 @@ class VerificationBudget:
                 raise ValueError("Verification preflight identity mismatch")
             if db.execute("SELECT count(*) FROM calls WHERE status = 'pending'").fetchone()[0]:
                 raise ValueError("Unreconciled in-flight verification request")
+            self._spending_direction(db)
+
+    @staticmethod
+    def _spending_direction(db: sqlite3.Connection) -> str | None:
+        exists = db.execute(
+            "SELECT 1 FROM sqlite_master WHERE type='table' AND name='spending_direction'"
+        ).fetchone()
+        if not exists:
+            return None
+        rows = db.execute("SELECT sha256 FROM spending_direction").fetchall()
+        if rows != [(SPENDING_DIRECTION_SHA256,)]:
+            raise ValueError("Invalid verification spending-direction binding")
+        return SPENDING_DIRECTION_SHA256
+
+    def apply_spending_direction(self, path: Path) -> None:
+        """Lift only historical testing dollar caps, without resetting history."""
+        if hashlib.sha256(path.read_bytes()).hexdigest() != SPENDING_DIRECTION_SHA256:
+            raise ValueError("Spending direction differs from the retained owner instruction")
+        with self._connect() as db:
+            db.execute("BEGIN IMMEDIATE")
+            if db.execute("SELECT stopped FROM identity").fetchone()[0]:
+                raise ValueError("Cannot change a stopped verification journal")
+            if db.execute("SELECT 1 FROM calls WHERE status='pending' LIMIT 1").fetchone():
+                raise ValueError("Cannot change an in-flight verification journal")
+            if self._spending_direction(db) is None:
+                db.execute("CREATE TABLE spending_direction (sha256 TEXT NOT NULL)")
+                db.execute(
+                    "INSERT INTO spending_direction VALUES (?)", (SPENDING_DIRECTION_SHA256,)
+                )
 
     @contextmanager
     def _connect(self) -> Iterator[sqlite3.Connection]:
@@ -73,11 +107,12 @@ class VerificationBudget:
                 "SELECT count(*), coalesce(sum(amount), 0) FROM calls WHERE stage=?", (stage,)
             ).fetchone()
             total = db.execute("SELECT coalesce(sum(amount), 0) FROM calls").fetchone()[0]
+            enforce_dollars = self._spending_direction(db) is None
             if (
                 not cap
                 or count >= cap[0]
-                or cost + bound_nusd > cap[1]
-                or total + bound_nusd > 1_100_000_000
+                or (enforce_dollars and cost + bound_nusd > cap[1])
+                or (enforce_dollars and total + bound_nusd > 1_100_000_000)
             ):
                 raise ValueError("Cumulative verification request or cost cap exceeded")
             cursor = db.execute(
@@ -148,6 +183,8 @@ class VerificationBudget:
             ).fetchall()
             return {
                 "stopped": bool(db.execute("SELECT stopped FROM identity").fetchone()[0]),
+                "spending_direction_sha256": self._spending_direction(db),
+                "historical_dollar_caps_enforced": self._spending_direction(db) is None,
                 "reserved_or_spent_nusd": sum(row[2] for row in rows),
                 "stages": {
                     name: {
