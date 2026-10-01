@@ -310,6 +310,18 @@ def review_expectations(payload: dict, questions: list[dict], historical: dict) 
                 "Confirmed unanchored clarification; unverified assistant narrative "
                 "is not committed state."
             ]
+            row["game_reference_policy"] = {
+                "history_messages": 10,
+                "canonical_game_identity_required": True,
+                "context_statistics_are_evidence": False,
+                "missing_game_clarification": "Which game?",
+            }
+            if row["id"] == "aliases_typos-003":
+                row["clarification"] = "Which game?"
+                row["decision_basis"].append(
+                    "Owner confirmed that game references require an identifiable game "
+                    "in the preceding ten messages; this case has no context."
+                )
         if row["id"] == "single_game_narrative-006":
             selected = canonical.extreme(lambda game: abs(canonical.margin(game)), False)
             row.update(
@@ -372,7 +384,7 @@ def identity_dossier(payload: dict, material: dict, alias_source: Path) -> dict:
     ]
     return {
         "case_id": "aliases_typos-003",
-        "status": "BLOCKED_UNPROVEN_IDENTITY_RELEVANCE",
+        "status": "EXPECTED_GAME_CLARIFICATION_IDENTITY_HYPOTHESIS_PENDING",
         "canonical_player": players[0],
         "canonical_player_sha256": digest(players[0]),
         "resolver_alias": {
@@ -391,15 +403,22 @@ def identity_dossier(payload: dict, material: dict, alias_source: Path) -> dict:
             "The canonical player row supports the NBA ID and full name. The curated resolver "
             "recognizes JB, but it is application policy, not independent alias evidence. "
             "The retained corpus has game-scoped boxes, summaries, reports and event chunks. "
-            "An arbitrary Brunson performance is not evidence about 'that game'. No game or "
-            "report interval is identified. Identity relevance cannot be certified from this "
-            "retained corpus; a new independently supported identity source would need ingestion, "
-            "scope/manifest verification and independent relevance/content review."
+            "The immutable question supplies no conversation game, so Which game? is the "
+            "expected product response. This absence does not demonstrate failure of identity "
+            "source relevance. The candidate player source remains a hypothesis requiring "
+            "independent relevance adjudication and actual ingestion/scope/receipt mapping "
+            "before any new semantic target can be approved."
         ),
-        "hard_stop": (
-            "Retain clarification and stop semantic closure; "
-            "owner approval cannot create missing evidence."
-        ),
+        "expected_disposition": "clarify",
+        "clarification": "Which game?",
+        "history_messages": 10,
+        "demonstrated_identity_incompatibility": False,
+        "hard_stop": None,
+        "remaining_semantic_requirements": [
+            "Independent source relevance adjudication for the unchanged question.",
+            "Verified current document/receipt mappings and actual ranked captures.",
+            "Content-bound evaluation gold approval; clarification earns no retrieval credit.",
+        ],
         "canonical_identity_candidate_exists": True,
         "candidate_canonical_source": f"player:{players[0]['nba_player_id']}",
         "candidate_is_gold": False,
@@ -518,6 +537,16 @@ def audit(evidence_root: Path, handoff: Path, expected_bundle: str) -> dict[str,
     if file_hash(handoff) != HANDOFF_SHA256:
         raise ValueError("Confirmed handoff binding changed")
     rows = review_expectations(payload, questions, read_json(review_path))
+    context_decision_path = (
+        ROOT / "docs/release-evidence/implementation-20261001/confirmed-context-decision.json"
+    )
+    context_decision = read_json(context_decision_path)
+    if (
+        context_decision["clarification"] != "Which game?"
+        or context_decision["evaluation_gold_approved"]
+        or context_decision["production_launch_approved"]
+    ):
+        raise ValueError("Unexpected scope of confirmed game-context decision")
     material = read_json(material_path)
     identity = identity_dossier(
         payload, material, ROOT / "apps/api/app/services/query_resolution.py"
@@ -530,11 +559,12 @@ def audit(evidence_root: Path, handoff: Path, expected_bundle: str) -> dict[str,
         raise ValueError("Retained provider stop condition changed")
     register = {
         "schema_version": 1,
-        "status": "IMPLEMENTED_OFFLINE_STAGES_BLOCKED_SEMANTIC_CLOSURE",
+        "status": "IMPLEMENTED_REVIEW_AND_GAME_CONTEXT_PENDING_RELEASE_GATES",
         "base_candidate": CANDIDATE,
         "implementation_branch": "codex/release-implementation-20261001",
         "scope": (
-            "Offline canonical review and coverage feasibility; no runtime quality/promotion claim"
+            "Offline canonical review, coverage feasibility and ten-message game-context fix; "
+            "no release quality/promotion claim"
         ),
         "inputs": {
             "handoff_sha256": file_hash(handoff),
@@ -544,11 +574,22 @@ def audit(evidence_root: Path, handoff: Path, expected_bundle: str) -> dict[str,
             "current_isolated_index_material_sha256": file_hash(material_path),
             "audit_source_sha256": file_hash(Path(__file__)),
             "canonical_reviewer_sha256": file_hash(Path(__file__).with_name("draft_labels.py")),
+            "confirmed_context_decision_sha256": file_hash(context_decision_path),
+            "application_source_sha256": {
+                relative: file_hash(ROOT / relative)
+                for relative in (
+                    "apps/api/app/api/analysis.py",
+                    "apps/api/app/services/analyst_tools.py",
+                    "apps/api/app/services/game_reference.py",
+                    "apps/api/app/services/query_resolution.py",
+                )
+            },
         },
         "baseline_integrity": integrity,
         "case_count": 120,
         "semantic_case_count": 50,
         "dispositions": dict(Counter(row["disposition"] for row in rows)),
+        "confirmed_context_decision": context_decision,
         "owner_decisions": [
             "Preserve gates; genuine bounded canonical discovery "
             "with no paid model calls/reservations.",
@@ -568,17 +609,17 @@ def audit(evidence_root: Path, handoff: Path, expected_bundle: str) -> dict[str,
             {
                 "step": 2,
                 "name": "120 expectations / 50 coverage and feasibility",
-                "status": "completed_with_incompatibility",
+                "status": "review_completed_source_adjudication_pending",
             },
             {
                 "step": 3,
                 "name": "supported gold and approved freeze",
-                "status": "blocked_identity_relevance",
+                "status": "pending_supported_sources_and_content_bound_approval",
             },
             {
                 "step": 4,
                 "name": "bounded discovery and guarded orchestration",
-                "status": "dependent_on_semantic_closure",
+                "status": "game_context_fix_implemented_discovery_and_orchestration_pending",
             },
             {
                 "step": 5,
@@ -594,6 +635,11 @@ def audit(evidence_root: Path, handoff: Path, expected_bundle: str) -> dict[str,
             {"step": 8, "name": "final bindings / readiness / digest", "status": "blocked"},
         ],
         "semantic_closure": "BLOCKED",
+        "semantic_closure_reasons": [
+            "43 new target sets still require independent source relevance and current mapping.",
+            "All 50 members require actual ranked retrieval captures, including clarifications.",
+            "Evaluation gold has no content-bound owner approval or freeze.",
+        ],
         "frozen": False,
         "owner_approval": None,
         "paid_admission": {
@@ -620,8 +666,11 @@ def audit(evidence_root: Path, handoff: Path, expected_bundle: str) -> dict[str,
         "production_mutations": 0,
         "ranked_receipts_created": 0,
         "affected_prior_proof": (
-            "No application/config/corpus changes made; new runtime behavior and gold "
-            "remain unimplemented at the explicit evidence stop."
+            "Application context resolution and play-in parsing changed. Prior engineering, "
+            "evaluation, load and readiness receipts remain historical for their original "
+            "source bindings; affected checks require fresh proof. New local HTTP receipts "
+            "prove only their stated behavior and do not pass any blocked release gate. "
+            "No production configuration or approved corpus changed."
         ),
     }
     return {

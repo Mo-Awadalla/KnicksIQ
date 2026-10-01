@@ -1,0 +1,12 @@
+{
+  "decision": "ten_message_game_reference",
+  "authority": "Owner clarification in this conversation after commit 7d64908",
+  "instruction": "that must identify a previously discussed game within the same last 10 messages; otherwise ask which game",
+  "missing_context_disposition": "clarify",
+  "clarification": "Which game?",
+  "identity_relevance_is_a_demonstrated_blocker": false,
+  "canonical_identity_candidate_may_be_investigated": true,
+  "evaluation_gold_approved": false,
+  "original_questions_contexts_and_50_semantic_members_preserved": true,
+  "production_launch_approved": false
+}

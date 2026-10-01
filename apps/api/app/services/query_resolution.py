@@ -426,7 +426,8 @@ async def resolve_query(
         "playoffs"
         if "playoff" in q or "postseason" in q
         else "play_in"
-        if "play in" in q
+        if re.search(r"\bplay[-_]in\b", question, re.I)
+        or re.search(r"\b(?:the|nba) play in\b|\bplay in (?:tournament|round)\b", q)
         else "regular"
         if "regular season" in q
         else None
