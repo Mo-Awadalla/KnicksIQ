@@ -18,6 +18,7 @@ from app.services.archive_retrieval import (
     search_archive_lexical,
     search_archive_vectors,
 )
+from app.services.archive_units import accepts_unit
 from app.services.canonical_narrative import NarrativeSelection, build_narrative, select_narrative
 from app.services.evidence_contracts import Candidate, Evidence, ToolCall, ToolResult, VerifiedClaim
 from app.services.game_reference import resolve_game_reference
@@ -1152,8 +1153,11 @@ class AnalystTools:
         local_only: bool = False,
         purpose: str = "analyst_search",
     ) -> ToolResult:
-        filters = scope.planner_filters()
+        filters: dict[str, Any] = scope.planner_filters()
         filters["game_ids"] = [g.id for g in games]
+        filters["unanchored_game_reference"] = (
+            scope.clarification_reason == "missing_conversation_game"
+        )
         lexical = (
             await search_archive_lexical(
                 self.db,
@@ -1180,7 +1184,7 @@ class AnalystTools:
                 )
             except Exception:
                 failure = True
-        found = fuse_archive_evidence(lexical, dense, limit=20)
+        found = fuse_archive_evidence(lexical, dense, limit=20, filters=filters)
         evidence = [
             Evidence(
                 evidence_id=f"{self.release.version}:{e.evidence_id}",
@@ -1189,11 +1193,36 @@ class AnalystTools:
                 game_id=e.metadata.get("game_id"),
                 source_name=e.metadata.get("source_name"),
                 source_url=e.metadata.get("source_url"),
-                metadata=e.metadata,
+                metadata={
+                    key: value
+                    for key, value in e.metadata.items()
+                    if key
+                    not in {
+                        "retrieval_sources",
+                        "fusion_components",
+                        "component_ranks",
+                        "exact_match_fields",
+                        "_index_embedding",
+                        "chunk_id",
+                    }
+                },
             )
             for e in found
             if e.metadata.get("data_version") == self.release.version
-            and e.metadata.get("game_id") in {g.id for g in games}
+            and (
+                e.metadata.get("game_id") in {g.id for g in games}
+                if not e.metadata.get("unit_type")
+                else accepts_unit(
+                    e.metadata,
+                    games=self.games,
+                    players=list({p.id: p for _, p in self.rows}.values()),
+                    selected_game_ids={g.id for g in games},
+                    player_ids=scope.player_ids,
+                    periods=scope.periods,
+                    version=self.release.version,
+                )
+                and e.text == e.metadata.get("text")
+            )
         ]
         record_search(
             {
@@ -1210,6 +1239,20 @@ class AnalystTools:
                 "candidate_evidence_ids": [e.evidence_id for e in evidence],
                 "returned_evidence_ids": [e.evidence_id for e in evidence[:5]],
                 "evidence": [e.model_dump(mode="json") for e in evidence],
+                "ranking": [
+                    {
+                        "evidence_id": f"{self.release.version}:{e.evidence_id}",
+                        "score": e.score,
+                        "retrieval_sources": e.metadata.get("retrieval_sources", []),
+                        "fusion_components": e.metadata.get("fusion_components", []),
+                        "component_ranks": e.metadata.get("component_ranks", {}),
+                        "exact_match_fields": e.metadata.get("exact_match_fields", []),
+                        "index_embedding": e.metadata.get("_index_embedding"),
+                    }
+                    for e in found
+                    if f"{self.release.version}:{e.evidence_id}"
+                    in {r.evidence_id for r in evidence}
+                ],
                 "dense_failed": failure,
             }
         )

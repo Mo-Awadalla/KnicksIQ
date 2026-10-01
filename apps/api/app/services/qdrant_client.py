@@ -33,6 +33,12 @@ PAYLOAD_INDEX_TYPES = {
     "start_period": "integer",
     "end_period": "integer",
 }
+UNIT_PAYLOAD_INDEX_TYPES = {
+    "game_ids": "integer",
+    "dates": "keyword",
+    "season_types": "keyword",
+    "unit_type": "keyword",
+}
 
 
 @dataclass(frozen=True)
@@ -100,7 +106,9 @@ def ensure_collections(client: Any | None = None) -> None:
         create_collection(collection, client=resolved)
 
 
-def create_collection(collection_name: str, *, client: Any | None = None) -> None:
+def create_collection(
+    collection_name: str, *, client: Any | None = None, include_archive_units: bool = False
+) -> None:
     """Create a collection with the configured dense-vector schema."""
     from qdrant_client import models
 
@@ -112,15 +120,20 @@ def create_collection(collection_name: str, *, client: Any | None = None) -> Non
             distance=models.Distance.COSINE,
         ),
     )
-    create_payload_indexes(collection_name, client=resolved)
+    create_payload_indexes(
+        collection_name, client=resolved, include_archive_units=include_archive_units
+    )
 
 
-def create_payload_indexes(collection_name: str, *, client: Any | None = None) -> None:
+def create_payload_indexes(
+    collection_name: str, *, client: Any | None = None, include_archive_units: bool = False
+) -> None:
     """Create indexes required by Qdrant Cloud for strict metadata filters."""
     from qdrant_client import models
 
     resolved: Any = client or get_qdrant_client()
-    for field_name, field_type in PAYLOAD_INDEX_TYPES.items():
+    fields = {**PAYLOAD_INDEX_TYPES, **(UNIT_PAYLOAD_INDEX_TYPES if include_archive_units else {})}
+    for field_name, field_type in fields.items():
         field_schema = (
             models.PayloadSchemaType.KEYWORD
             if field_type == "keyword"
@@ -293,7 +306,10 @@ def validate_candidate_identity(
     """Require full source/payload/embedding identity and usable dense vectors/indexes."""
     validate_candidate_collection(collection, data_version, len(records), client=client)
     info = client.get_collection(collection)
-    for field, field_type in PAYLOAD_INDEX_TYPES.items():
+    fields = dict(PAYLOAD_INDEX_TYPES)
+    if any(r["payload"].get("_index_embedding", {}).get("source_unit_schema") for r in records):
+        fields.update(UNIT_PAYLOAD_INDEX_TYPES)
+    for field, field_type in fields.items():
         index = info.payload_schema.get(field)
         data_type = getattr(index, "data_type", None)
         if index is None or getattr(data_type, "value", data_type) != field_type:
@@ -386,9 +402,18 @@ def build_qdrant_filter(filters: dict[str, Any] | None):
     from qdrant_client import models
 
     must: list[Any] = []
+    archive_units = get_settings().rag_archive_source_units_enabled
     dates = set(filters.get("dates") or [])
     if dates:
-        must.append(models.FieldCondition(key="date", match=_match_any(dates)))
+        condition = models.FieldCondition(key="date", match=_match_any(dates))
+        if archive_units:
+            must.append(
+                models.Filter(
+                    should=[condition, models.FieldCondition(key="dates", match=_match_any(dates))]
+                )
+            )
+        else:
+            must.append(condition)
     team_ids = set(filters.get("team_ids") or [])
     if team_ids:
         must.append(models.FieldCondition(key="team_ids", match=_match_any(team_ids)))
@@ -407,7 +432,10 @@ def build_qdrant_filter(filters: dict[str, Any] | None):
         must.append(models.Filter(should=should))
     game_ids = set(filters.get("game_ids") or [])
     if game_ids:
-        must.append(models.FieldCondition(key="game_id", match=_match_any(game_ids)))
+        if not archive_units:
+            must.append(models.FieldCondition(key="game_id", match=_match_any(game_ids)))
+        else:
+            must.append(_unit_game_filter(models, game_ids, filters))
     data_version = filters.get("data_version")
     if data_version:
         must.append(
@@ -415,7 +443,18 @@ def build_qdrant_filter(filters: dict[str, Any] | None):
         )
     season_types = set(filters.get("season_types") or [])
     if season_types:
-        must.append(models.FieldCondition(key="season_type", match=_match_any(season_types)))
+        condition = models.FieldCondition(key="season_type", match=_match_any(season_types))
+        if archive_units:
+            must.append(
+                models.Filter(
+                    should=[
+                        condition,
+                        models.FieldCondition(key="season_types", match=_match_any(season_types)),
+                    ]
+                )
+            )
+        else:
+            must.append(condition)
     player_names = set(filters.get("player_names") or [])
     if player_names:
         must.append(models.FieldCondition(key="player_names", match=_match_any(player_names)))
@@ -423,6 +462,27 @@ def build_qdrant_filter(filters: dict[str, Any] | None):
     if player_ids:
         must.append(models.FieldCondition(key="player_ids", match=_match_any(player_ids)))
     return models.Filter(must=must) if must else None
+
+
+def _unit_game_filter(models: Any, game_ids: set[Any], filters: dict[str, Any]):
+    alternatives = [
+        models.FieldCondition(key="game_id", match=_match_any(game_ids)),
+        models.FieldCondition(key="game_ids", match=_match_any(game_ids)),
+    ]
+    if filters.get("player_ids"):
+        alternatives.append(
+            models.Filter(
+                must=[
+                    models.FieldCondition(
+                        key="unit_type", match=models.MatchValue(value="player_identity")
+                    ),
+                    models.FieldCondition(
+                        key="player_ids", match=_match_any(set(filters["player_ids"]))
+                    ),
+                ]
+            )
+        )
+    return models.Filter(should=alternatives)
 
 
 def upsert_points(

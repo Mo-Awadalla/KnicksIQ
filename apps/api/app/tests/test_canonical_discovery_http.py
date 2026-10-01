@@ -87,7 +87,14 @@ def assert_search(receipt):
     assert len(search["candidate_evidence_ids"]) <= 20
     assert search["returned_evidence_ids"] == search["candidate_evidence_ids"][:5]
     assert all(e["release_id"] == search["release"] for e in search["evidence"])
-    assert all(e["game_id"] in search["filters"]["game_ids"] for e in search["evidence"])
+    for item in search["evidence"]:
+        if item["game_id"] is not None:
+            assert item["game_id"] in search["filters"]["game_ids"]
+        elif item["metadata"]["unit_type"] == "multigame_aggregate":
+            assert set(item["metadata"]["game_ids"]) <= set(search["filters"]["game_ids"])
+        else:
+            assert item["metadata"]["unit_type"] == "player_identity"
+            assert set(item["metadata"]["player_ids"]) <= set(search["filters"]["player_ids"])
     return search
 
 
