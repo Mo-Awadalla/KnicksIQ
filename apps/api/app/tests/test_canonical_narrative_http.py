@@ -1,4 +1,4 @@
-"""Confirmed narrative policies via real HTTP, bundle loader, SQL and Redis."""
+"""Narrative policies via HTTP/SQL/Redis; synthetic CI or opt-in approved data."""
 
 import json
 import os
@@ -22,10 +22,14 @@ from sqlalchemy import select
 BUNDLE = Path(
     os.environ.get(
         "KNICKSIQ_APPROVED_BUNDLE",
-        "/Users/mohamedawadalla/Projects/KnicksIQ/release-artifacts/2025-26/reliability-approved-20260928.json.gz",
+        str(Path(__file__).with_name("fixtures") / "synthetic-archive.json.gz"),
     )
 )
-SHA = "549af2edd0d195eff60bb318bdc58a8c8e217ea0359c0684d492d5292dcb595b"
+SHA = (
+    "549af2edd0d195eff60bb318bdc58a8c8e217ea0359c0684d492d5292dcb595b"
+    if os.environ.get("KNICKSIQ_APPROVED_BUNDLE")
+    else "9f1218913c4c5e65a7db619d837905df2b851dc79066ee70154760487db2f0d9"
+)
 CLOSEST = {"0022500372", "0022501016", "0042500122", "0042500123", "0042500402", "0042500404"}
 
 
