@@ -13,6 +13,7 @@ from collections import defaultdict, deque
 from datetime import UTC, date, datetime, timedelta
 from typing import Annotated, Any, Literal
 
+import anyio
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Request, status
 from pydantic import BaseModel, Field, field_validator
 from sqlalchemy import select
@@ -1950,6 +1951,8 @@ async def _query_evidence_analyst(
                     prior_questions=[],
                     selected_game_ids=tools.scope.game_ids if tools.scope else None,
                 )
+        discovery = await tools.canonical_discovery() if not refusal else None
+        discovery_failed = bool(discovery and discovery.status == "dependency_failure")
         if refusal or clarification:
             result = {
                 "answer": clarification
@@ -1962,8 +1965,8 @@ async def _query_evidence_analyst(
                 ),
                 "follow_up_questions": [],
                 "citations": [],
-                "warnings": [],
-                "degraded": False,
+                "warnings": [discovery.message] if discovery_failed and discovery else [],
+                "degraded": discovery_failed,
                 "route": "clarification" if clarification else None,
                 "refused": refusal,
                 "data_version": release.version,
@@ -1972,9 +1975,15 @@ async def _query_evidence_analyst(
                 "llm_validated": False,
             }
         else:
-            result = await loop.run(
-                allow_model=bool(turn) and (answer_mode == "llm_primary" or shadow_sampled)
-            )
+            if discovery_failed and discovery:
+                # No model or recovery query may follow a failed database preflight.
+                loop.results.append(discovery)
+                loop.recovery_ran = True
+                result = loop.render_fallback(discovery.message)
+            else:
+                result = await loop.run(
+                    allow_model=bool(turn) and (answer_mode == "llm_primary" or shadow_sampled)
+                )
         state = result.pop("state")
         record_turn(
             {
@@ -2045,4 +2054,7 @@ async def _query_evidence_analyst(
         )
     finally:
         if turn:
-            await turn.abort()
+            # A cancelled ASGI task still releases only its own conversation
+            # lease. Paid accounting and uncertain reservations remain untouched.
+            with anyio.move_on_after(1, shield=True):
+                await turn.abort()

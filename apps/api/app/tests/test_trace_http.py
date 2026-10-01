@@ -6,7 +6,9 @@ or internal diagnostics escaping into the public response.
 """
 
 import json
+import os
 from datetime import UTC, datetime
+from pathlib import Path
 
 import pytest
 from app.core.config import get_settings
@@ -63,17 +65,30 @@ async def test_actual_search_trace_and_committed_replay(
         response = await client.post("/analysis/query", json=payload)
     assert response.status_code == 200, response.text
     body = response.json()
-    assert body["state_committed"] and body["citations"]
+    directory = Path(os.environ.get("KNICKSIQ_TRACE_ARTIFACT_DIR", str(tmp_path)))
+    directory.mkdir(parents=True, exist_ok=True)
+    artifact = directory / f"trace-http-{retrieval_failure}.json"
+    receipt = {"response": body, "capture": captured}
+    with artifact.open("x") as retained:
+        json.dump(receipt, retained, indent=2)
+    record_property("synthetic_trace_artifact", str(artifact))
+    assert body["state_committed"]
     assert captured["turn"]["state_committed"] is True
     assert captured["turn"]["revision"] == body["revision"]
     assert "capture" not in body and "searches" not in body
-    search_result = next(t for t in captured["tools"] if t["call"]["name"] == "search_archive")
+    preflight = [s for s in captured["searches"] if s["purpose"] == "canonical_discovery"]
+    assert len(preflight) == 1
     if retrieval_failure:
-        assert not captured["searches"]
-        assert search_result["result"]["status"] == "dependency_failure"
+        assert preflight[0]["status"] == "dependency_failure"
+        assert preflight[0]["candidate_evidence_ids"] == preflight[0]["returned_evidence_ids"] == []
+        assert not captured["tools"] and not adapter.prompts
+        assert captured["turn"]["model_calls"] == 0
+        assert body["degraded"] and body["citations"] == []
     else:
-        assert len(captured["searches"]) == 1
-        search = captured["searches"][0]
+        assert body["citations"] and preflight[0]["status"] == "ok"
+        assert len(captured["searches"]) == 2
+        search_result = next(t for t in captured["tools"] if t["call"]["name"] == "search_archive")
+        search = next(s for s in captured["searches"] if s["purpose"] == "analyst_search")
         actual_ids = [e["evidence_id"] for e in search_result["result"]["evidence"]]
         assert actual_ids and search["candidate_evidence_ids"] == actual_ids
         assert search["returned_evidence_ids"] == actual_ids[:5]
@@ -82,11 +97,9 @@ async def test_actual_search_trace_and_committed_replay(
     calls = len(adapter.prompts)
     with capture_turn() as replay_capture:
         replay = await client.post("/analysis/query", json=payload)
+    receipt["replay"] = replay_capture
+    receipt["replay_response"] = replay.json()
+    artifact.write_text(json.dumps(receipt, indent=2))
     assert replay.json() == body and len(adapter.prompts) == calls
     assert not replay_capture["searches"] and not replay_capture["tools"]
     assert replay_capture["turn"]["replayed"]
-    artifact = tmp_path / "trace-http.json"
-    artifact.write_text(
-        json.dumps({"response": body, "capture": captured, "replay": replay_capture}, indent=2)
-    )
-    record_property("synthetic_trace_artifact", str(artifact))
