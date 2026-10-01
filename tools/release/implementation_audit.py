@@ -559,11 +559,12 @@ def audit(evidence_root: Path, handoff: Path, expected_bundle: str) -> dict[str,
         raise ValueError("Retained provider stop condition changed")
     register = {
         "schema_version": 1,
-        "status": "IMPLEMENTED_REVIEW_AND_GAME_CONTEXT_PENDING_RELEASE_GATES",
+        "status": "IMPLEMENTED_REVIEW_CONTEXT_AND_NARRATIVE_PENDING_RELEASE_GATES",
         "base_candidate": CANDIDATE,
         "implementation_branch": "codex/release-implementation-20261001",
         "scope": (
-            "Offline canonical review, coverage feasibility and ten-message game-context fix; "
+            "Offline canonical review, coverage feasibility, ten-message game-context fix, "
+            "complete tied game stories and Boston unanswered scoring runs; "
             "no release quality/promotion claim"
         ),
         "inputs": {
@@ -582,6 +583,10 @@ def audit(evidence_root: Path, handoff: Path, expected_bundle: str) -> dict[str,
                     "apps/api/app/services/analyst_tools.py",
                     "apps/api/app/services/game_reference.py",
                     "apps/api/app/services/query_resolution.py",
+                    "apps/api/app/services/canonical_narrative.py",
+                    "apps/api/app/services/analyst_loop.py",
+                    "apps/api/app/services/narrative_scope.py",
+                    "apps/api/app/services/evidence_contracts.py",
                 )
             },
         },
@@ -619,7 +624,7 @@ def audit(evidence_root: Path, handoff: Path, expected_bundle: str) -> dict[str,
             {
                 "step": 4,
                 "name": "bounded discovery and guarded orchestration",
-                "status": "game_context_fix_implemented_discovery_and_orchestration_pending",
+                "status": "context_and_narratives_implemented_discovery_and_orchestration_pending",
             },
             {
                 "step": 5,
@@ -666,7 +671,8 @@ def audit(evidence_root: Path, handoff: Path, expected_bundle: str) -> dict[str,
         "production_mutations": 0,
         "ranked_receipts_created": 0,
         "affected_prior_proof": (
-            "Application context resolution and play-in parsing changed. Prior engineering, "
+            "Application context resolution, play-in parsing, tied story selection, measure "
+            "clarifications and Boston run computation changed. Prior engineering, "
             "evaluation, load and readiness receipts remain historical for their original "
             "source bindings; affected checks require fresh proof. New local HTTP receipts "
             "prove only their stated behavior and do not pass any blocked release gate. "

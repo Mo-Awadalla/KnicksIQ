@@ -18,6 +18,7 @@ from app.services.archive_retrieval import (
     search_archive_lexical,
     search_archive_vectors,
 )
+from app.services.canonical_narrative import NarrativeSelection, build_narrative, select_narrative
 from app.services.evidence_contracts import Candidate, Evidence, ToolCall, ToolResult, VerifiedClaim
 from app.services.game_reference import resolve_game_reference
 from app.services.query_resolution import (
@@ -64,6 +65,7 @@ class AnalystTools:
         self.games: list[Game] = []
         self.rows: list[tuple[PlayerGameStat, Player]] = []
         self.scope: ResolvedQuery | None = None
+        self.narrative: NarrativeSelection | None = None
         self.different = bool(re.search(r"\bdifferent player\b", question, re.I))
 
     async def prepare(self) -> None:
@@ -123,6 +125,20 @@ class AnalystTools:
             if self.different:
                 updates["player_ids"] = []
             self.scope = self.scope.model_copy(update=updates)
+        if not self.scope.player_ids and (
+            not self.scope.requires_clarification
+            or self.scope.clarification_reason == "ambiguous_game"
+        ):
+            self.narrative = select_narrative(self.question, self.selected_games(self.scope))
+            if self.narrative:
+                self.scope = self.scope.model_copy(
+                    update={
+                        "game_ids": [g.id for g in self.narrative.games],
+                        "requires_clarification": False,
+                        "clarification_reason": None,
+                        "clarification_options": [],
+                    }
+                )
         unknown_subject = re.search(r"\babout\s+(.+?)[?.!]*$", self.question, re.I)
         if (
             unknown_subject
@@ -330,6 +346,7 @@ class AnalystTools:
     async def execute(self, call: ToolCall) -> ToolResult:
         try:
             result = await self._execute(call)
+            self.claims.update({c.claim_id: c for c in result.claims})
             for item in result.evidence:
                 self.evidence[item.evidence_id] = item
                 self.issued_evidence_ids.add(item.evidence_id)
@@ -384,6 +401,15 @@ class AnalystTools:
                 status="unsupported_metric_or_scope",
                 message=f"Available season: {self.release.season}.",
             )
+        if call.name == "get_game_narrative" or (
+            self.narrative and call.name in {"get_team_stats", "discover_facts"}
+        ):
+            if not self.narrative:
+                return ToolResult(
+                    status="unsupported_metric_or_scope",
+                    message="A defined game-story selection is required.",
+                )
+            return await build_narrative(self.db, self.release, self.narrative)
         # Resolve model suggestions locally, but they may only narrow the user's scope.
         scope = await resolve_query(
             self.db, call.question, intent=call.name, data_version=self.release.version

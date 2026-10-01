@@ -410,6 +410,12 @@ class AnalystLoop:
     async def run(self, *, allow_model: bool = True) -> dict[str, Any]:
         failure = None
         try:
+            if self.tools.narrative:
+                self.results.append(
+                    await self.tools.execute(
+                        ToolCall(name="get_game_narrative", question=self.tools.question)
+                    )
+                )
             # Leave recovery and response finalization inside the overall request budget.
             investigation_budget = max(0.001, self.remaining() - 2.5)
             try:
@@ -502,6 +508,16 @@ class AnalystLoop:
     async def validate(
         self, answer: ProposedAnswer, *, timeout_seconds: float | None = None
     ) -> tuple[bool, str]:
+        if self.tools.narrative:
+            from app.services.canonical_narrative import complete_narrative_text
+
+            declared = [
+                self.tools.claims[u.claim_id]
+                for u in answer.claims
+                if u.claim_id in self.tools.claims
+            ]
+            if not complete_narrative_text(answer.text, declared):
+                return False, "Every selected game and tied run must appear in the narrative."
         if not validate_structure(
             answer,
             self.sent_claims,
@@ -625,7 +641,9 @@ class AnalystLoop:
             self.recovery_ran = True
             question = self.tools.question
             name = (
-                "discover_facts"
+                "get_game_narrative"
+                if self.tools.narrative
+                else "discover_facts"
                 if re_search_discovery(question)
                 else "get_player_stats"
                 if self.tools.scope and self.tools.scope.player_ids
@@ -661,10 +679,14 @@ class AnalystLoop:
             else:
                 text += " I don't have live injury or current-status updates."
         answer = ProposedAnswer(
-            text=text,
+            text=text if len(text) <= 6000 else "Complete canonical game narrative follows.",
             claims=[ClaimUse(claim_id=c.claim_id, displayed_value=c.value) for c in claims],
         )
-        return self.render(answer, llm=False, warning=reason)
+        response = self.render(answer, llm=False, warning=reason)
+        # Backend statements are already verified. Preserve all stories when
+        # the model's bounded text format cannot hold the complete selection.
+        response["answer"] = text
+        return response
 
     def render(self, answer: ProposedAnswer, *, llm: bool, warning: str = "") -> dict[str, Any]:
         claims = [self.tools.claims[u.claim_id] for u in answer.claims]
