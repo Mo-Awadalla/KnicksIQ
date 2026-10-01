@@ -5,6 +5,7 @@ reference fix are implemented on `codex/release-implementation-20261001`, based
 on candidate `bf4439bbcd69e328c1d65c52e9a73dcbe4942cbe`. The owner's subsequent
 [context decision](confirmed-context-decision.json) corrects the earlier claim
 that an unspecified game demonstrated an identity-relevance incompatibility.
+Complete tied-game narratives and canonical Boston scoring runs are also implemented.
 Gold remains unfrozen. Bounded retrieval discovery, guarded paid orchestration,
 release evaluation, load, recovery, rollback and launch remain open.
 
@@ -145,3 +146,29 @@ These tests launch disposable Redis on localhost and use fixture SQL. They do
 not access production sessions or budget state. The normal release path requires
 the evidence loop enabled; the legacy loop-disabled deployment remains outside
 this new HTTP proof.
+
+The narrative phase has fresh proof in `narrative-regression-final/` and
+`narrative-audit-e2e/`. All 602 existing and new checks pass. The six new HTTP
+checks retain 16 receipts covering the original approved archive, both maximum
+Boston runs, quarter boundaries and Knicks free throws, invalid score
+corrections, tied extremes, foreign and non-final game exclusion, 100 tied
+games beyond the model text limit, and complete versus incomplete model prose.
+The two model-review checks use an explicit synthetic adapter; they do not
+establish paid provider quality. Four older HTTP assertions were updated from
+generic wording to the approved clarification inputs.
+
+Canonical narrative evidence includes every represented game/period row and,
+for Boston runs, the complete ordered event table used to establish the maxima.
+It has no representative game ID. All stories remain in deterministic delivery
+if the complete narrative exceeds the model format. A model response must name
+every selected game and both endpoints of every tied run before evidence review
+can accept it. Final scores and period totals do not justify causal stories.
+
+These source changes invalidate affected older runtime proofs. The historical
+root manifest remains unchanged; `narrative-verification.json` and the separate
+`NARRATIVE-SHA256SUMS` bind this phase's retained evidence. The new authoritative
+audit register is `narrative-audit-e2e/first/implementation-register.json`.
+
+To repeat the narrative HTTP checks, use the same safe environment as above,
+set `KNICKSIQ_NARRATIVE_ARTIFACT_DIR` to a fresh receipt directory, and run
+`apps/api/app/tests/test_canonical_narrative_http.py`. No unit tests were added.

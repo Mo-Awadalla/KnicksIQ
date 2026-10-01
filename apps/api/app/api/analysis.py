@@ -30,6 +30,7 @@ from app.services.archive_retrieval import (
     search_archive_lexical,
     search_archive_vectors,
 )
+from app.services.canonical_narrative import measure_clarification
 from app.services.conversation_memory import HISTORY_MESSAGES, bounded_history
 from app.services.conversation_state import (
     ConversationState,
@@ -1932,14 +1933,15 @@ async def _query_evidence_analyst(
         clarification = None
         refusal = _requires_evidence_refusal(req.question)
         if not refusal:
-            if tools.scope and tools.scope.requires_clarification:
+            clarification = measure_clarification(req.question)
+            if not clarification and tools.scope and tools.scope.requires_clarification:
                 clarification = (
                     "Which game?"
                     if tools.scope.clarification_reason == "missing_conversation_game"
                     else "Which subject or game did you mean? "
                     + "; ".join(tools.scope.clarification_options)
                 )
-            elif not tools.claims:
+            elif not clarification and not tools.claims and not tools.narrative:
                 # Committed, release-revalidated claims already scope an explanation.
                 clarification = await narrative_clarification(
                     db,

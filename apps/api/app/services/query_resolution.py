@@ -15,6 +15,7 @@ from app.models.game import Game
 from app.models.game_event import GameEvent
 from app.models.player import Player
 from app.services.team_aliases import team_ids_in_text
+from app.services.team_scope import scores
 from pydantic import BaseModel, ConfigDict, Field
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -488,30 +489,18 @@ async def resolve_query(
             and "games" not in q
         )
     )
+    all_tied_games = False
     if ("biggest win" in q or "best win" in q) and candidates:
-        candidates = [
-            max(
-                candidates,
-                key=lambda game: (
-                    (game.home_score if game.home_team_id == "NYK" else game.away_score)
-                    - (game.away_score if game.home_team_id == "NYK" else game.home_score),
-                    game.game_date,
-                    game.id,
-                ),
-            )
-        ]
+        wins = [g for g in candidates if g.status == "final" and scores(g)[0] > scores(g)[1]]
+        maximum = max((scores(g)[0] - scores(g)[1] for g in wins), default=None)
+        candidates = [g for g in wins if scores(g)[0] - scores(g)[1] == maximum]
+        all_tied_games = True
         descriptive_reference = True
     if "best defensive game" in q and candidates:
-        candidates = [
-            min(
-                candidates,
-                key=lambda game: (
-                    game.away_score if game.home_team_id == "NYK" else game.home_score,
-                    game.game_date,
-                    game.id,
-                ),
-            )
-        ]
+        finals = [g for g in candidates if g.status == "final"]
+        minimum = min((scores(g)[1] for g in finals), default=None)
+        candidates = [g for g in finals if scores(g)[1] == minimum]
+        all_tied_games = True
         descriptive_reference = True
     if "overtime game" in q and game_ids:
         overtime_ids = set(
@@ -539,6 +528,8 @@ async def resolve_query(
     resolved_game_ids: list[int] = []
     if relative_count:
         resolved_game_ids = [game.id for game in candidates[-relative_count:]]
+    elif all_tied_games:
+        resolved_game_ids = [game.id for game in candidates]
     elif descriptive_reference:
         if "most recent" in q and candidates:
             resolved_game_ids = [candidates[-1].id]
