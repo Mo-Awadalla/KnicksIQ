@@ -55,7 +55,7 @@ The query parser also distinguishes the verb “play in that game” from the NB
 play-in phase.
 
 The identity investigation found Jalen Brunson's canonical player row, NBA ID
-`1628973`, and the curated `JB` alias. The 19,016-document retained corpus has
+`1628973`, and the curated `JB` alias. The original 19,016-document retained corpus has
 no `JB` mention or standalone player-identity document. This inventory leaves
 identity relevance unadjudicated; it does not establish incompatibility.
 `aliases_typos-003` has empty immutable context and should clarify. Its proposed
@@ -68,8 +68,9 @@ All 50 coverage entries distinguish settled targets, candidate support and
 missing runtime/relevance proof. The previous 94.333% bound is conditional on
 one-source documents and the broad matching-game proposal. The scorer can union
 nine actual canonical sources from one genuinely complete aggregate receipt;
-the current corpus contains no such aggregate. No ranked retrieval receipt or
-new source mapping was manufactured.
+that original corpus contains no such aggregate. New source-unit implementation
+and actual local HTTP proof are described below. No ranked receipt or source
+mapping was manufactured.
 
 Paid admission separately remains blocked. The stopped original smoke still
 accounts for five attempted requests and $0.0322179 spent or reserved, including
@@ -258,3 +259,75 @@ Repeat the focused checks with the safe environment above, a new
 `KNICKSIQ_STATS_ARTIFACT_DIR`, and
 `apps/api/app/tests/test_requested_player_stats_http.py`. These deterministic
 checks do not approve gold or establish actual paid-provider or hosted readiness.
+
+Complete opponent result and player identity units are now derived from canonical
+SQL using one recipe for every opponent and player, without evaluation inputs.
+For the approved archive, the offline index contains 29 opponent units and 20
+player identity units. Opponent units retain every game's NBA identity, date,
+phase, teams, score and result, with explicit full populations and source hashes.
+They have no representative game ID. Player units distinguish canonical roster
+fields from the project's curated alias policy and cannot establish a missing
+game or performance fact.
+
+The [archive-unit failure modes](archive-unit-failure-modes.md) and HTTP
+specification preceded implementation. Retained red proof first had only
+individual game documents. New HTTP proof retrieves the complete nine-game
+Atlanta result document in the actual top five, compares every retained row and
+text fact against the independent approved raw bundle, and only then resolves
+its nine canonical source mappings through the unchanged mapping path.
+A regular-season request excludes the broader unit. The JB identity document
+is also actually ranked; the unanchored question still asks “Which game?” with
+no asserted performance fact. Repeated index builds produce identical unit bytes.
+
+Scope and content are revalidated against current SQL before a unit enters the
+analyst tool result. Fusion distinguishes game-less unit identities and uses
+actual term occurrences and exact requested populations. A complete opponent
+population and an identity for an unanchored named player can receive ordinary
+scope-match boosts; no evaluation target or case ID participates. These actual
+retrieval results do not establish all 50 semantic cases' approved relevance.
+
+`--index-revision source-units-v1` selects a new immutable physical namespace for
+changed source content. It does not change aliases or reset existing collections.
+Unit-aware candidates receive the four additional payload indexes in every
+collection; the stored embedding identity records the unit recipe. Existing
+production dense query filters remain compatible by default. Enable
+`RAG_ARCHIVE_SOURCE_UNITS_ENABLED=true` only with the independently verified new
+candidate index, and bind that configuration in future release evidence.
+
+The broad unit-phase run retained 609 passes and eight failures: two legacy
+index compatibility checks and six older HTTP assertions that assumed every
+document had one game ID. Compatibility was restored without changing those
+unit tests; the HTTP assertions now verify complete game populations or explicit
+player identity scopes. All 34 focused retrieval/index/worker/discovery checks
+then passed in `units-final-http/`. The original full 120-question local probe
+still denies every provider, dense and reservation attempt. These are local
+engineering results; PostgreSQL, hosted index enforcement, source approval,
+counted provider quality and the original release workloads remain pending.
+
+The subsequent full run passed all 617 app/package/report-audit checks in
+`units-regression-final/`. After separating query-dependent ranking details
+from immutable source facts, 15 focused HTTP/retrieval checks passed in
+`units-stable-source-final/`, including the original 120-question probe. A
+source retrieved through two different queries now has an identical evidence
+body; actual scores and fusion details remain in the separate search capture.
+
+The independent, network-denied CLI reads the pinned raw bundle and alias policy
+without importing the runtime source builder. It verifies all 49 units and six
+actual ranked unit receipts, reproduces identical output bytes, and rejects
+re-signed wrong facts, inflated sources, aliases, extra text/fields, missing or
+duplicate units. The [source-verification failure modes](archive-source-verification-failure-modes.md)
+preceded the CLI specification. Retained negative controls include a red run
+that exposed acceptance of unsupported identity prose in an unobserved unit.
+`source-verifier-independent-final/` contains the corrected verification and
+its exact repeat. Repeat with a new output directory:
+
+```sh
+python tools/release/check_archive_sources.py \
+  --bundle /Users/mohamedawadalla/Projects/KnicksIQ/release-artifacts/2025-26/reliability-approved-20260928.json.gz \
+  --units release-artifacts/implementation-20261001/units-stable-source-final/units/index/archive_units.jsonl \
+  --observations release-artifacts/implementation-20261001/units-stable-source-final/units \
+  --output /private/tmp/knicksiq-source-verification-repeat
+```
+
+This establishes source integrity and receipt consistency. Semantic relevance,
+approved gold, hosted provenance and release readiness remain separate open checks.

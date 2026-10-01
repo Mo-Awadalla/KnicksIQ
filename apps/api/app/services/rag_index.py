@@ -5,6 +5,7 @@ from __future__ import annotations
 import hashlib
 import json
 import logging
+import re
 import time
 from pathlib import Path
 from typing import Any
@@ -15,6 +16,7 @@ from app.models.dataset_release import DatasetRelease
 from app.models.game import Game
 from app.models.game_event import GameEvent
 from app.models.report import Report
+from app.services.archive_units import UNIT_RECIPE, build_archive_units
 from app.services.embeddings import embed_texts
 from app.services.possession_chunks import build_possession_chunks
 from app.services.qdrant_client import (
@@ -96,11 +98,16 @@ async def build_rag_artifacts(
     game_order: str = GAME_ORDER_DATE,
     reset_qdrant: bool = False,
     data_version: str | None = None,
+    index_revision: str | None = None,
 ) -> dict[str, Any]:
     """Write derived possession chunks and table exports without mutating source data."""
     started_at = time.perf_counter()
     if data_version and reset_qdrant:
         raise ValueError("Versioned candidate indexing is create-only; --reset-qdrant is forbidden")
+    if index_revision and (
+        not data_version or not re.fullmatch(r"[a-z0-9][a-z0-9-]{0,47}", index_revision)
+    ):
+        raise ValueError("An index revision requires a release and an alphanumeric/hyphen identity")
     out_dir.mkdir(parents=True, exist_ok=True)
     games_stmt = (
         select(Game)
@@ -115,6 +122,10 @@ async def build_rag_artifacts(
         )
     all_games = list((await db.execute(games_stmt)).scalars().all())
     games = _select_games(all_games, game_limit=game_limit, game_order=game_order)
+    archive_units = await build_archive_units(db, games, data_version) if data_version else []
+    with (out_dir / "archive_units.jsonl").open("w") as unit_file:
+        for record in archive_units:
+            unit_file.write(json.dumps(record, sort_keys=True) + "\n")
     game_ids = [game.id for game in games]
     logger.info(
         "rag_index_games_selected",
@@ -215,19 +226,30 @@ async def build_rag_artifacts(
     candidate_aliases: dict[str, str] = {}
     settings = get_settings()
     possession_collection = (
-        versioned_collection(settings.rag_qdrant_possessions_collection, data_version)
+        versioned_collection(
+            settings.rag_qdrant_possessions_collection,
+            f"{data_version}__{index_revision}" if index_revision else data_version,
+        )
         if data_version
         else settings.rag_qdrant_possessions_collection
     )
     reused_collections: list[str] = []
     if settings.rag_qdrant_enabled and data_version:
         supporting_records = await _release_supporting_records(db, games, data_version)
+        for record in archive_units:
+            kind = record["payload"]["unit_type"]
+            collection = (
+                settings.rag_qdrant_games_collection
+                if kind == "multigame_aggregate"
+                else settings.rag_qdrant_box_scores_collection
+            )
+            supporting_records[collection].append(record)
         collections = {
             settings.rag_qdrant_possessions_collection: possession_records,
             **supporting_records,
         }
         counts, candidate_aliases, reused_collections = _prepare_release_collections(
-            collections, data_version
+            collections, data_version, index_revision=index_revision
         )
         qdrant_upserted = (
             0 if possession_collection in reused_collections else len(possession_records)
@@ -297,6 +319,9 @@ async def build_rag_artifacts(
         "qdrant_upserted": qdrant_upserted,
         "qdrant_supporting_counts": supporting_counts,
         "data_version": data_version,
+        "index_revision": index_revision,
+        "archive_source_units": len(archive_units),
+        "archive_units_path": str(out_dir / "archive_units.jsonl"),
         "candidate_aliases": candidate_aliases,
         "aliases_promoted": False,
         "qdrant_reused_collections": reused_collections,
@@ -430,13 +455,19 @@ async def _release_supporting_records(
 def _prepare_release_collections(
     collections: dict[str, list[dict[str, Any]]],
     data_version: str,
+    *,
+    index_revision: str | None = None,
 ) -> tuple[dict[str, int], dict[str, str], list[str]]:
     """Preflight the complete release, then create only missing inactive targets."""
     settings = get_settings()
-    aliases = {alias: versioned_collection(alias, data_version) for alias in collections}
+    namespace = f"{data_version}__{index_revision}" if index_revision else data_version
+    aliases = {alias: versioned_collection(alias, namespace) for alias in collections}
     if len(set(aliases.values())) != 4:
         raise RuntimeError("Candidate indexing requires four distinct collection destinations")
     documents: dict[str, list[str]] = {}
+    has_units = any(
+        record["payload"].get("unit_type") for records in collections.values() for record in records
+    )
     for alias, records in collections.items():
         texts = [
             _embedding_text(record)
@@ -451,6 +482,8 @@ def _prepare_release_collections(
                 "mode": "cloud" if settings.rag_qdrant_cloud_inference else "local",
                 "document_sha256": hashlib.sha256(text.encode()).hexdigest(),
             }
+            if has_units:
+                record["payload"]["_index_embedding"]["source_unit_schema"] = UNIT_RECIPE
     client = get_qdrant_client()
     targets = {aliases[alias]: records for alias, records in collections.items()}
     reusable = preflight_candidate_collections(targets, data_version, client=client)
@@ -458,7 +491,10 @@ def _prepare_release_collections(
     # leave a rebuilt possession index. Provider create conflicts stop, never reset.
     for collection in targets:
         if collection not in reusable:
-            create_collection(collection, client=client)
+            if has_units:
+                create_collection(collection, client=client, include_archive_units=True)
+            else:
+                create_collection(collection, client=client)
     counts = {}
     for alias, records in collections.items():
         physical = aliases[alias]

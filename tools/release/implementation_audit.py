@@ -596,6 +596,12 @@ def audit(evidence_root: Path, handoff: Path, expected_bundle: str) -> dict[str,
                     "apps/api/app/services/narrative_scope.py",
                     "apps/api/app/services/evidence_contracts.py",
                     "apps/api/app/services/release_bundle.py",
+                    "apps/api/app/services/archive_units.py",
+                    "apps/api/app/services/archive_retrieval.py",
+                    "apps/api/app/services/rag_index.py",
+                    "apps/api/app/services/qdrant_client.py",
+                    "apps/api/app/core/config.py",
+                    "apps/worker/worker_app/cli.py",
                 )
             },
         },
@@ -606,6 +612,15 @@ def audit(evidence_root: Path, handoff: Path, expected_bundle: str) -> dict[str,
         "confirmed_context_decision": context_decision,
         "confirmed_spending_direction": spending,
         "confirmed_staging_decision": staging,
+        "new_source_unit_support": {
+            "recipe": "archive-source-units-v1",
+            "types": ["complete opponent results", "canonical player identity"],
+            "inputs": "canonical release SQL and project alias policy; no evaluation inputs",
+            "independent_source_adjudication": "pending",
+            "gold_approval": None,
+            "hosted_candidate_index": "not written or promoted",
+            "legacy_dense_queries": "preserved until a new unit-aware index is verified",
+        },
         "owner_decisions": [
             "Preserve gates; genuine bounded canonical discovery "
             "with no paid model calls/reservations.",
@@ -691,11 +706,14 @@ def audit(evidence_root: Path, handoff: Path, expected_bundle: str) -> dict[str,
         "affected_prior_proof": (
             "Application context resolution, play-in parsing, tied story selection, measure "
             "clarifications, Boston run computation, local retrieval before clarification "
-            "and cancellation cleanup changed. Prior engineering, "
+            "and cancellation cleanup changed. Approved player identity activation, "
+            "requested player metrics, All-Star populations and new canonical archive source "
+            "units also changed. Prior engineering, "
             "evaluation, load and readiness receipts remain historical for their original "
             "source bindings; affected checks require fresh proof. New local HTTP receipts "
             "prove only their stated behavior and do not pass any blocked release gate. "
-            "No production configuration or approved corpus changed."
+            "No production configuration or approved compressed bundle changed. New source "
+            "units still require source review and a fresh immutable candidate index."
         ),
     }
     return {

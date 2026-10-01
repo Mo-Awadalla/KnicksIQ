@@ -88,6 +88,7 @@ class Settings(BaseSettings):
     rag_lexical_candidate_limit: int = Field(default=30, ge=1, le=200)
     rag_dense_candidate_limit: int = Field(default=30, ge=1, le=200)
     rag_fused_candidate_limit: int = Field(default=20, ge=1, le=100)
+    rag_archive_source_units_enabled: bool = False
     rag_final_evidence_limit: int = Field(default=5, ge=1, le=20)
     rag_rrf_k: int = Field(default=60, ge=1, le=1000)
     rag_lexical_weight: float = Field(default=1.25, ge=0)
