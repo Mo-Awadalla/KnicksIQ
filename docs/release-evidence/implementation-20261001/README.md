@@ -1,10 +1,12 @@
 # Confirmed release implementation, October 1
 
-The offline baseline/register and canonical review/coverage stages are implemented
-on `codex/release-implementation-20261001`, based on candidate
-`bf4439bbcd69e328c1d65c52e9a73dcbe4942cbe`. Implementation stopped at the handoff's
-explicit evidence condition for `aliases_typos-003`. Gold remains unfrozen and
-the runtime, evaluation, load, recovery, rollback and launch stages remain open.
+The offline baseline/register, canonical review/coverage and ten-message game
+reference fix are implemented on `codex/release-implementation-20261001`, based
+on candidate `bf4439bbcd69e328c1d65c52e9a73dcbe4942cbe`. The owner's subsequent
+[context decision](confirmed-context-decision.json) corrects the earlier claim
+that an unspecified game demonstrated an identity-relevance incompatibility.
+Gold remains unfrozen. Bounded retrieval discovery, guarded paid orchestration,
+release evaluation, load, recovery, rollback and launch remain open.
 
 The implementation worktree is
 `/Users/mohamedawadalla/.codex/worktrees/release-implementation/KnicksIQ`.
@@ -36,16 +38,30 @@ The five approved measure clarifications and eleven game-anchor requirements
 are recorded per case. Follow-ups retain their immutable original contexts;
 the assistant's unverified narrative is not treated as committed evidence.
 
-The identity investigation found the canonical player row for Jalen Brunson,
-NBA ID `1628973`, and the application's curated `JB` resolver alias. The
-19,016-document retained corpus contains no `JB` mention and no standalone
-player-identity document. The canonical player row is a candidate identity
-source; it supplies no referenced game or performance interval. An arbitrary
-Brunson box/event would introduce an unrequested game. Mapping identity to
-game performances would inflate support. Independent relevance for a new
-identity-only semantic target has not been established, so the dossier retains
-an empty target set and the mandatory semantic-closure stop. This does not
-claim that future independent identity evidence is impossible.
+“How did JB play in that game?” now resolves a unique canonical game identified
+in the preceding ten messages. Missing, ambiguous, expired or unavailable game
+references return “Which game?” before model admission. A newer invalid target
+cannot fall back to an older game; stale committed scope cannot replace a
+missing in-window anchor. Context identifies the game, while statistics come
+from active-release rows. An assistant's unsupported score does not become a
+fact. Verified-statistic explanations keep their existing behavior.
+
+Deterministic identity resolution uses the complete ten validated messages,
+including identities beyond an older message's model excerpt. The model still
+receives the existing 2,000-byte bounded history. Session replay binds the full
+in-window transcript, so a changed game outside that excerpt produces a conflict.
+The query parser also distinguishes the verb “play in that game” from the NBA
+play-in phase.
+
+The identity investigation found Jalen Brunson's canonical player row, NBA ID
+`1628973`, and the curated `JB` alias. The 19,016-document retained corpus has
+no `JB` mention or standalone player-identity document. This inventory leaves
+identity relevance unadjudicated; it does not establish incompatibility.
+`aliases_typos-003` has empty immutable context and should clarify. Its proposed
+identity source still needs independent relevance and current receipt mapping
+before it can become evaluation gold. Its targets remain empty pending that
+work. The historical `identity-incompatibility.json` output name is retained for
+compatibility; its contents explicitly report no demonstrated incompatibility.
 
 All 50 coverage entries distinguish settled targets, candidate support and
 missing runtime/relevance proof. The previous 94.333% bound is conditional on
@@ -63,21 +79,28 @@ and $0.50 limit; combined/monthly limits stay $1.10/$2. Original load/recovery
 reservations are still required before evaluation. No paid or remote request,
 new reservation, production mutation, freeze or approval occurred.
 
-The [failure modes](failure-modes.md) and CLI E2E checks were written before the
-implementation. The retained red run failed because the command did not yet
-exist. The final E2E run passed with socket creation denied, reproduced identical
-artifact bytes in two fresh directories, rejected an existing destination, and
-retained failures for a wrong bundle binding and missing baseline. Ruff lint,
-format checks and `git diff --check` passed. Graphify was updated using AST
-extraction. These checks prove the offline command's scope; they do not replace
-any of the original six blocked readiness checks or model-quality gates.
+The [audit failure modes](failure-modes.md), CLI E2E specification and
+[context failure modes](context-reference-failure-modes.md) were written before
+their implementations. Retained red HTTP runs reproduced missing-context,
+ignored-anchor, play-in parsing and long-message replay failures. HTTP checks
+exercise the actual ASGI route, SQL and dedicated local Redis. They retain
+requests, responses, tool captures, exact replays, conflicts, provider-attempt
+counts and unchanged budget receipts before assertions. No new unit tests were
+written. Verification passed 577 app/package checks, 19 report-audit checks,
+26 targeted HTTP cases, repository Ruff checks and scoped Pyright. The
+network-denied CLI reproduced identical bytes in two fresh directories and
+retained its negative controls. Results are bound in the retained artifacts.
+These checks do not replace
+the original six blocked readiness checks or model-quality gates.
 
 Private, ignored evidence is retained under
 `release-artifacts/implementation-20261001/`. The authoritative new audit outputs
-are `e2e-final/first/implementation-register.json`, `expectation-review.json`,
+are `e2e-verified-final/first/implementation-register.json`, `expectation-review.json`,
 `semantic-coverage.json`, `identity-incompatibility.json` and `SHA256SUMS`.
-`e2e-final/e2e-result.json` binds every check and output. Earlier failed and
-successful runs remain in separate directories.
+`e2e-verified-final/e2e-result.json` binds every CLI check and output.
+`verification.json` records source hashes, final HTTP/API counts and commands;
+`SHA256SUMS` binds retained evidence. Earlier failed and successful runs remain
+in separate directories and retain their historical source scope.
 
 To repeat the complete network-denied CLI E2E verification from this worktree,
 choose a new output path; an existing path is deliberately rejected:
@@ -94,12 +117,31 @@ verifies the four review outputs. The command is pinned to the exact confirmed
 handoff, approved bundle, questions and retained baseline record. It has no
 credential, provider, database, approval, freeze or deployment path.
 
-Resume semantic closure only when independently supported identity relevance
-and source/receipt mapping exist for the unchanged case; finish all remaining
-source adjudication and obtain the required content-bound gold approval before
-release evaluations. The handoff's confirmed product decisions stand. Paid
+Complete independent source adjudication and current receipt mappings for all
+remaining target sets, then obtain content-bound gold approval before release
+evaluations. Missing game context is an expected clarification, and earns no
+retrieval credit on its own. The handoff's confirmed product decisions stand. Paid
 execution additionally requires the original request inventory and exact
 cancellation attribution, a fresh ledger, isolated runtime dependencies and
 enforced current price/route/tokenizer bounds. Production launch requires
 passing readiness and separate owner approval bound to the final record digest,
 targets and rollback.
+
+To repeat the HTTP checks with safe local dependencies and fresh retained receipts:
+
+```sh
+context_artifacts=$(mktemp -d /private/tmp/knicksiq-context-check.XXXXXX)
+PYTHONPATH=apps/api:packages/basketball-core/src:apps/worker:apps/mcp \
+TEST_MODE=true AI_PROVIDER=mock AI_API_KEY= OPENROUTER_API_KEY= REDIS_URL= \
+KNICKSIQ_POSTGRES_TEST=0 RAG_QDRANT_ENABLED=false \
+RAG_QDRANT_CLOUD_INFERENCE=false RAG_LLM_PLANNER_ENABLED=false \
+KNICKSIQ_CONTEXT_ARTIFACT_DIR="$context_artifacts/receipts" \
+/Users/mohamedawadalla/Projects/KnicksIQ/.venv/bin/python -m pytest \
+  apps/api/app/tests/test_game_reference_http.py -q -o junit_family=legacy \
+  --junitxml="$context_artifacts/results.xml"
+```
+
+These tests launch disposable Redis on localhost and use fixture SQL. They do
+not access production sessions or budget state. The normal release path requires
+the evidence loop enabled; the legacy loop-disabled deployment remains outside
+this new HTTP proof.

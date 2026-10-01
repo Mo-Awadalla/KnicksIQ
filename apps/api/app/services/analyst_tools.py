@@ -19,6 +19,7 @@ from app.services.archive_retrieval import (
     search_archive_vectors,
 )
 from app.services.evidence_contracts import Candidate, Evidence, ToolCall, ToolResult, VerifiedClaim
+from app.services.game_reference import resolve_game_reference
 from app.services.query_resolution import (
     ResolvedQuery,
     is_game_score_request,
@@ -51,9 +52,11 @@ class AnalystTools:
         question: str,
         season: str,
         state: dict[str, Any],
+        context: list[dict[str, str]] | None = None,
     ):
         self.db, self.release, self.question, self.season = db, release, question, season
         self.state = state
+        self.context = context or []
         self.claims: dict[str, VerifiedClaim] = {}
         self.evidence: dict[str, Evidence] = {}
         self.candidates: dict[str, Candidate] = {}
@@ -94,6 +97,7 @@ class AnalystTools:
         self.scope = await resolve_query(
             self.db, self.question, intent="analyst", data_version=self.release.version
         )
+        self.scope = resolve_game_reference(self.question, self.scope, self.context, self.games)
         if (
             self.scope.date_start
             and self.scope.date_end

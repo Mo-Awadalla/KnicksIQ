@@ -30,7 +30,7 @@ from app.services.archive_retrieval import (
     search_archive_lexical,
     search_archive_vectors,
 )
-from app.services.conversation_memory import bounded_history
+from app.services.conversation_memory import HISTORY_MESSAGES, bounded_history
 from app.services.conversation_state import (
     ConversationState,
     resolve_conversation_delta,
@@ -956,6 +956,8 @@ async def query_analysis(
     db: Annotated[AsyncSession, Depends(get_db)],
 ) -> AnalysisQueryResponse:
     settings = get_settings()
+    # Resolve identity from all ten validated messages; only model context is shortened.
+    reference_context = [message.model_dump() for message in req.context[-HISTORY_MESSAGES:]]
     req.context = [
         AnalysisContextMessage.model_validate(item) for item in bounded_history(req.context)
     ]
@@ -980,7 +982,9 @@ async def query_analysis(
     if getattr(settings, "analyst_evidence_loop_enabled", False):
         try:
             async with asyncio.timeout(settings.analyst_deadline_seconds):
-                return await _query_evidence_analyst(req, request, db)
+                return await _query_evidence_analyst(
+                    req, request, db, reference_context=reference_context
+                )
         except TimeoutError:
             return AnalysisQueryResponse(
                 answer="The archive could not be verified within this turn's deadline.",
@@ -1855,6 +1859,8 @@ async def _query_evidence_analyst(
     req: AnalysisQueryRequest,
     request: Request,
     db: AsyncSession,
+    *,
+    reference_context: list[dict[str, str]],
 ) -> AnalysisQueryResponse:
     from app.evaluation.trace_capture import record_turn
     from app.services.analyst_loop import AnalystLoop
@@ -1886,7 +1892,7 @@ async def _query_evidence_analyst(
                 {
                     "question": req.question,
                     "season": req.season,
-                    "context": [m.model_dump() for m in req.context],
+                    "context": reference_context,
                 },
             )
         except SessionConflict as exc:
@@ -1903,7 +1909,14 @@ async def _query_evidence_analyst(
     if turn and turn.replay is not None:
         record_turn({"replayed": True, "model_calls": 0})
         return AnalysisQueryResponse.model_validate(turn.replay)
-    tools = AnalystTools(db, release, req.question, req.season, turn.state if turn else {})
+    tools = AnalystTools(
+        db,
+        release,
+        req.question,
+        req.season,
+        turn.state if turn else {},
+        context=reference_context,
+    )
     try:
         async with asyncio.timeout(
             max(0.001, get_settings().analyst_deadline_seconds - (time.monotonic() - started))
@@ -1920,8 +1933,11 @@ async def _query_evidence_analyst(
         refusal = _requires_evidence_refusal(req.question)
         if not refusal:
             if tools.scope and tools.scope.requires_clarification:
-                clarification = "Which subject or game did you mean? " + "; ".join(
-                    tools.scope.clarification_options
+                clarification = (
+                    "Which game?"
+                    if tools.scope.clarification_reason == "missing_conversation_game"
+                    else "Which subject or game did you mean? "
+                    + "; ".join(tools.scope.clarification_options)
                 )
             elif not tools.claims:
                 # Committed, release-revalidated claims already scope an explanation.
