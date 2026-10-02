@@ -20,7 +20,7 @@ TEST_MODE=true PYTHONPATH=apps/api:packages/basketball-core/src \
 ```
 
 Expected SHA256:
-`9f1218913c4c5e65a7db619d837905df2b851dc79066ee70154760487db2f0d9`.
+`122f26722193a87349d7183ab42a479b8603c779b69f0a34bc1035356c556707`.
 
 To repeat the approved-archive checks locally, explicitly set
 `KNICKSIQ_APPROVED_BUNDLE` to the existing approved gzip file. That path retains

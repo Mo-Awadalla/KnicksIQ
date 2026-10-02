@@ -49,7 +49,9 @@ jobs:
       - name: Unit and integration tests
         env:
           TEST_MODE: "true"
-        run: uv run pytest apps packages tools/report_audit --maxfail=1 --junitxml=ci-artifacts/backend.xml --basetemp=ci-artifacts/pytest
+        run: |
+          mkdir -p ci-artifacts
+          uv run pytest apps packages tools/report_audit --maxfail=1 --junitxml=ci-artifacts/backend.xml --basetemp=ci-artifacts/pytest
       - name: Preserve backend HTTP and accounting evidence
         if: always()
         uses: actions/upload-artifact@v4
