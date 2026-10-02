@@ -23,7 +23,7 @@ def build(output: Path) -> str:
         (1629011, "Mitchell Robinson", "C", "23"),
         (1630540, "Miles McBride", "PG", "2"),
         *(
-            (identity, f"Synthetic Player {i}", "PF", str(i + 40))
+            (identity, f"Synthetic Reserve{chr(65 + i)}", "PF", str(i + 40))
             for i, identity in enumerate(
                 [1628368, 1629216, 1629723, 1641748, 1627752, *range(9900100, 9900108)]
             )

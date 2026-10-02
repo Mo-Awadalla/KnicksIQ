@@ -18,3 +18,8 @@ CI must execute the complete checks with disposable SQL/Redis, retain JUnit and
 HTTP receipts, and continue the existing PostgreSQL, frontend, container and
 security jobs. Failed runs are retained. A passing CI run does not authorize
 production launch or resolve the remaining source/gold/dependency gates.
+
+## Hosted CI findings, 2026-10-02
+
+- Pytest cannot create a nested base temporary directory when its parent artifact directory does not exist. Create the parent before invoking the retained HTTP suite.
+- Numbered synthetic player surnames can match numeric game windows (for example, “last 10 games” matched “Synthetic Player 10”). Give fabricated players distinct nonnumeric surnames so the fixture does not introduce unrelated identities into the established HTTP scenarios. Retain every assertion and regenerate the pinned fixture digest.
