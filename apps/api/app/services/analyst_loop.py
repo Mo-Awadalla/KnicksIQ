@@ -221,7 +221,13 @@ class AnalystLoop:
             claims = list({c.claim_id: c for r in self.results for c in r.claims}.values())
             if not claims:
                 claims = list(self.tools.claims.values())
-            evidence = list({e.evidence_id: e for r in self.results for e in r.evidence}.values())
+            evidence_by_id = {e.evidence_id: e for r in self.results for e in r.evidence}
+            # Current discovery remains useful when a tool result is too large to send.
+            # Do not revive unrelated evidence hydrated from earlier conversation turns.
+            if self.tools.discovery:
+                for item in self.tools.discovery.evidence:
+                    evidence_by_id.setdefault(item.evidence_id, item)
+            evidence = list(evidence_by_id.values())
             if not evidence:
                 evidence = list(self.tools.evidence.values())
             candidates = list(self.tools.candidates.values())
@@ -267,6 +273,17 @@ class AnalystLoop:
             evidence_size += size
             sent_claims.update({c.claim_id: c for c in group})
             sent_candidates.update({c.fact_id: c for c in related})
+        if not review and self.tools.narrative:
+            required = {
+                c.claim_id
+                for result in self.results
+                for c in result.claims
+                if c.metric_id == "canonical_game_narrative"
+            }
+            if not required <= sent_claims.keys():
+                # A partial narrative cannot pass completeness validation. Preserve the
+                # full backend answer instead of spending calls on an empty factual input.
+                raise ValueError("Complete narrative claims exceed model input budget")
         # Prioritize evidence supporting the retained claims.
         refs = {ref for c in sent_claims.values() for ref in c.supporting_evidence_ids}
         evidence.sort(key=lambda e: e.evidence_id not in refs)
