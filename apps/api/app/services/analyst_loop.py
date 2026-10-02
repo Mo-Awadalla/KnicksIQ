@@ -410,6 +410,12 @@ class AnalystLoop:
     async def run(self, *, allow_model: bool = True) -> dict[str, Any]:
         failure = None
         try:
+            if self.tools.narrative:
+                self.results.append(
+                    await self.tools.execute(
+                        ToolCall(name="get_game_narrative", question=self.tools.question)
+                    )
+                )
             # Leave recovery and response finalization inside the overall request budget.
             investigation_budget = max(0.001, self.remaining() - 2.5)
             try:
@@ -502,6 +508,16 @@ class AnalystLoop:
     async def validate(
         self, answer: ProposedAnswer, *, timeout_seconds: float | None = None
     ) -> tuple[bool, str]:
+        if self.tools.narrative:
+            from app.services.canonical_narrative import complete_narrative_text
+
+            declared = [
+                self.tools.claims[u.claim_id]
+                for u in answer.claims
+                if u.claim_id in self.tools.claims
+            ]
+            if not complete_narrative_text(answer.text, declared):
+                return False, "Every selected game and tied run must appear in the narrative."
         if not validate_structure(
             answer,
             self.sent_claims,
@@ -565,8 +581,12 @@ class AnalystLoop:
         games = self.tools.selected_games(scope)
         if is_record_request(self.tools.question) and not scope.player_ids:
             games = [g for g in games if g.status == "final" and g.home_score != g.away_score]
-        if scope.relative_game_count:
-            games = games[-scope.relative_game_count :]
+        if scope.relative_game_count and not scope.player_ids:
+            games = (
+                games[: scope.relative_game_count]
+                if scope.relative_game_order == "first"
+                else games[-scope.relative_game_count :]
+            )
         expected_games = {g.id for g in games}
         discovery = re_search_discovery(self.tools.question)
         claims = []
@@ -598,18 +618,40 @@ class AnalystLoop:
                     )
                     population = expected_games
                     if scope.player_ids:
-                        population = {
-                            stat.game_id
-                            for stat, _ in self.tools.rows
-                            if f"player:{stat.player_id}" == claim.subject_id
-                            and stat.minutes > 0
-                            and stat.game_id in expected_games
-                        }
+                        appearance_games = sorted(
+                            {
+                                stat.game_id
+                                for stat, _ in self.tools.rows
+                                if f"player:{stat.player_id}" == claim.subject_id
+                                and stat.minutes > 0
+                                and stat.game_id in expected_games
+                            },
+                            key=lambda identity: (
+                                next(g.game_date for g in games if g.id == identity),
+                                identity,
+                            ),
+                        )
+                        if scope.relative_game_count:
+                            appearance_games = (
+                                appearance_games[: scope.relative_game_count]
+                                if scope.relative_game_order == "first"
+                                else appearance_games[-scope.relative_game_count :]
+                            )
+                        population = set(appearance_games)
                     relevant = subject and set(claim.game_ids or []) == population
                     if scope.player_ids:
-                        relevant = relevant and claim.metric_id.split(":")[0] == (
-                            scope.metric or "points"
+                        expected_metric = (
+                            "three_point_percentage"
+                            if re.search(
+                                r"\bthree[ -]point percentage\b", self.tools.question, re.I
+                            )
+                            else "starts"
+                            if re.search(
+                                r"\b(?:games?|times)\b.*\bstart(?:ed)?\b", self.tools.question, re.I
+                            )
+                            else scope.metric or "points"
                         )
+                        relevant = relevant and claim.metric_id.split(":")[0] == expected_metric
                 if relevant:
                     claims.append(claim)
         if is_game_score_request(self.tools.question) and not scope.player_ids:
@@ -625,7 +667,9 @@ class AnalystLoop:
             self.recovery_ran = True
             question = self.tools.question
             name = (
-                "discover_facts"
+                "get_game_narrative"
+                if self.tools.narrative
+                else "discover_facts"
                 if re_search_discovery(question)
                 else "get_player_stats"
                 if self.tools.scope and self.tools.scope.player_ids
@@ -661,10 +705,14 @@ class AnalystLoop:
             else:
                 text += " I don't have live injury or current-status updates."
         answer = ProposedAnswer(
-            text=text,
+            text=text if len(text) <= 6000 else "Complete canonical game narrative follows.",
             claims=[ClaimUse(claim_id=c.claim_id, displayed_value=c.value) for c in claims],
         )
-        return self.render(answer, llm=False, warning=reason)
+        response = self.render(answer, llm=False, warning=reason)
+        # Backend statements are already verified. Preserve all stories when
+        # the model's bounded text format cannot hold the complete selection.
+        response["answer"] = text
+        return response
 
     def render(self, answer: ProposedAnswer, *, llm: bool, warning: str = "") -> dict[str, Any]:
         claims = [self.tools.claims[u.claim_id] for u in answer.claims]

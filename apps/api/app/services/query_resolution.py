@@ -5,7 +5,7 @@ from __future__ import annotations
 import re
 import unicodedata
 from collections import defaultdict
-from datetime import date
+from datetime import date, timedelta
 from difflib import SequenceMatcher
 from typing import Literal
 
@@ -15,6 +15,7 @@ from app.models.game import Game
 from app.models.game_event import GameEvent
 from app.models.player import Player
 from app.services.team_aliases import team_ids_in_text
+from app.services.team_scope import scores
 from pydantic import BaseModel, ConfigDict, Field
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -44,10 +45,16 @@ _METRICS = {
     "point": "points",
     "points": "points",
     "scoring": "points",
+    "scorer": "points",
+    "scorers": "points",
     "rebound": "rebounds",
     "rebounds": "rebounds",
+    "rebounding": "rebounds",
     "assist": "assists",
     "assists": "assists",
+    "assisting": "assists",
+    "double double": "double_doubles",
+    "double doubles": "double_doubles",
     "steal": "steals",
     "steals": "steals",
     "block": "blocks",
@@ -58,6 +65,13 @@ _METRICS = {
     "three": "three_pointers_made",
     "threes": "three_pointers_made",
 }
+
+
+def all_star_end(season: str) -> date | None:
+    """Supported archive calendar boundary, verified at nba.com/allstar/2026."""
+    return {"2025-26": date(2026, 2, 15)}.get(season)
+
+
 _NAME_STOPWORDS = {
     "against",
     "average",
@@ -92,6 +106,7 @@ class ResolvedQuery(BaseModel):
     date_start: date | None = None
     date_end: date | None = None
     relative_game_count: int | None = None
+    relative_game_order: Literal["first", "last"] = "last"
     periods: list[int] = Field(default_factory=list)
     season_type: Literal["regular", "play_in", "playoffs"] | None = None
     home_away: Literal["home", "away"] | None = None
@@ -267,6 +282,17 @@ def _resolve_player_mentions(
                 ambiguous.update({player.id: player for player in matches})
             remaining = re.sub(rf"\b{re.escape(alias)}\b", " ", remaining)
 
+    # A unique Knicks first name is an exact canonical name match. Resolve it
+    # before fuzzy candidates can mistake ordinary prose ("well") for Wells.
+    first_names: dict[str, list[Player]] = defaultdict(list)
+    for player in players:
+        if player.team_id == "NYK":
+            first_names[_normalize(player.full_name).split()[0]].append(player)
+    for first_name, matches in first_names.items():
+        if len(matches) == 1 and re.search(rf"\b{re.escape(first_name)}\b", remaining):
+            resolved[matches[0].id] = matches[0]
+            remaining = re.sub(rf"\b{re.escape(first_name)}\b", " ", remaining)
+
     if allow_fuzzy and not resolved and not ambiguous:
         for candidate in _name_candidates(question):
             scores = [
@@ -399,7 +425,7 @@ async def resolve_query(
     date_end = explicit_dates[-1] if explicit_dates else None
     latest_date = games[-1].game_date if games else None
     relative_count: int | None = None
-    count_match = re.search(r"\blast\s+(\d+)\s+games?\b", q)
+    count_match = re.search(r"\b(?:last|final|first)\s+(\d+)\s+(?:regular season\s+)?games?\b", q)
     if count_match:
         relative_count = max(1, min(int(count_match.group(1)), 82))
     elif re.search(r"\b(?:last|previous)\s+game\b", q):
@@ -421,12 +447,25 @@ async def resolve_query(
     elif explicit_dates and "before" in q:
         date_start = games[0].game_date if games else None
         date_end = explicit_dates[0]
+    calendar_error = None
+    if "all star" in q:
+        boundary = all_star_end(games[0].season) if games else None
+        if boundary is None:
+            calendar_error = "unsupported_all_star_boundary"
+        elif not explicit_dates and not date_error:
+            before, after = "before" in q, "after" in q
+            if before and not after:
+                date_end = min(date_end, boundary) if date_end else boundary
+            elif after and not before:
+                start = boundary + timedelta(days=1)
+                date_start = max(date_start, start) if date_start else start
 
     season_type = (
         "playoffs"
         if "playoff" in q or "postseason" in q
         else "play_in"
-        if "play in" in q
+        if re.search(r"\bplay[-_]in\b", question, re.I)
+        or re.search(r"\b(?:the|nba) play in\b|\bplay in (?:tournament|round)\b", q)
         else "regular"
         if "regular season" in q
         else None
@@ -487,30 +526,18 @@ async def resolve_query(
             and "games" not in q
         )
     )
+    all_tied_games = False
     if ("biggest win" in q or "best win" in q) and candidates:
-        candidates = [
-            max(
-                candidates,
-                key=lambda game: (
-                    (game.home_score if game.home_team_id == "NYK" else game.away_score)
-                    - (game.away_score if game.home_team_id == "NYK" else game.home_score),
-                    game.game_date,
-                    game.id,
-                ),
-            )
-        ]
+        wins = [g for g in candidates if g.status == "final" and scores(g)[0] > scores(g)[1]]
+        maximum = max((scores(g)[0] - scores(g)[1] for g in wins), default=None)
+        candidates = [g for g in wins if scores(g)[0] - scores(g)[1] == maximum]
+        all_tied_games = True
         descriptive_reference = True
     if "best defensive game" in q and candidates:
-        candidates = [
-            min(
-                candidates,
-                key=lambda game: (
-                    game.away_score if game.home_team_id == "NYK" else game.home_score,
-                    game.game_date,
-                    game.id,
-                ),
-            )
-        ]
+        finals = [g for g in candidates if g.status == "final"]
+        minimum = min((scores(g)[1] for g in finals), default=None)
+        candidates = [g for g in finals if scores(g)[1] == minimum]
+        all_tied_games = True
         descriptive_reference = True
     if "overtime game" in q and game_ids:
         overtime_ids = set(
@@ -536,8 +563,15 @@ async def resolve_query(
         descriptive_reference = True
 
     resolved_game_ids: list[int] = []
-    if relative_count:
-        resolved_game_ids = [game.id for game in candidates[-relative_count:]]
+    if relative_count and not player_ids:
+        selected = (
+            candidates[:relative_count]
+            if count_match and "first" in count_match[0]
+            else candidates[-relative_count:]
+        )
+        resolved_game_ids = [game.id for game in selected]
+    elif all_tied_games:
+        resolved_game_ids = [game.id for game in candidates]
     elif descriptive_reference:
         if "most recent" in q and candidates:
             resolved_game_ids = [candidates[-1].id]
@@ -558,6 +592,9 @@ async def resolve_query(
     if date_error:
         clarification_reason = date_error
         clarification_options = ["Please provide a valid calendar date including the year."]
+    elif calendar_error:
+        clarification_reason = calendar_error
+        clarification_options = ["Please provide the All-Star break boundary date for this season."]
 
     return ResolvedQuery(
         intent=intent,
@@ -568,6 +605,7 @@ async def resolve_query(
         date_start=date_start,
         date_end=date_end,
         relative_game_count=relative_count,
+        relative_game_order="first" if count_match and "first" in count_match[0] else "last",
         periods=_periods(question),
         season_type=season_type,
         home_away=home_away,

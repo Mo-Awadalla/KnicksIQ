@@ -13,6 +13,7 @@ from collections import defaultdict, deque
 from datetime import UTC, date, datetime, timedelta
 from typing import Annotated, Any, Literal
 
+import anyio
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Request, status
 from pydantic import BaseModel, Field, field_validator
 from sqlalchemy import select
@@ -30,7 +31,8 @@ from app.services.archive_retrieval import (
     search_archive_lexical,
     search_archive_vectors,
 )
-from app.services.conversation_memory import bounded_history
+from app.services.canonical_narrative import measure_clarification
+from app.services.conversation_memory import HISTORY_MESSAGES, bounded_history
 from app.services.conversation_state import (
     ConversationState,
     resolve_conversation_delta,
@@ -956,6 +958,8 @@ async def query_analysis(
     db: Annotated[AsyncSession, Depends(get_db)],
 ) -> AnalysisQueryResponse:
     settings = get_settings()
+    # Resolve identity from all ten validated messages; only model context is shortened.
+    reference_context = [message.model_dump() for message in req.context[-HISTORY_MESSAGES:]]
     req.context = [
         AnalysisContextMessage.model_validate(item) for item in bounded_history(req.context)
     ]
@@ -980,7 +984,9 @@ async def query_analysis(
     if getattr(settings, "analyst_evidence_loop_enabled", False):
         try:
             async with asyncio.timeout(settings.analyst_deadline_seconds):
-                return await _query_evidence_analyst(req, request, db)
+                return await _query_evidence_analyst(
+                    req, request, db, reference_context=reference_context
+                )
         except TimeoutError:
             return AnalysisQueryResponse(
                 answer="The archive could not be verified within this turn's deadline.",
@@ -1855,6 +1861,8 @@ async def _query_evidence_analyst(
     req: AnalysisQueryRequest,
     request: Request,
     db: AsyncSession,
+    *,
+    reference_context: list[dict[str, str]],
 ) -> AnalysisQueryResponse:
     from app.evaluation.trace_capture import record_turn
     from app.services.analyst_loop import AnalystLoop
@@ -1886,7 +1894,7 @@ async def _query_evidence_analyst(
                 {
                     "question": req.question,
                     "season": req.season,
-                    "context": [m.model_dump() for m in req.context],
+                    "context": reference_context,
                 },
             )
         except SessionConflict as exc:
@@ -1903,7 +1911,14 @@ async def _query_evidence_analyst(
     if turn and turn.replay is not None:
         record_turn({"replayed": True, "model_calls": 0})
         return AnalysisQueryResponse.model_validate(turn.replay)
-    tools = AnalystTools(db, release, req.question, req.season, turn.state if turn else {})
+    tools = AnalystTools(
+        db,
+        release,
+        req.question,
+        req.season,
+        turn.state if turn else {},
+        context=reference_context,
+    )
     try:
         async with asyncio.timeout(
             max(0.001, get_settings().analyst_deadline_seconds - (time.monotonic() - started))
@@ -1919,11 +1934,15 @@ async def _query_evidence_analyst(
         clarification = None
         refusal = _requires_evidence_refusal(req.question)
         if not refusal:
-            if tools.scope and tools.scope.requires_clarification:
-                clarification = "Which subject or game did you mean? " + "; ".join(
-                    tools.scope.clarification_options
+            clarification = measure_clarification(req.question)
+            if not clarification and tools.scope and tools.scope.requires_clarification:
+                clarification = (
+                    "Which game?"
+                    if tools.scope.clarification_reason == "missing_conversation_game"
+                    else "Which subject or game did you mean? "
+                    + "; ".join(tools.scope.clarification_options)
                 )
-            elif not tools.claims:
+            elif not clarification and not tools.claims and not tools.narrative:
                 # Committed, release-revalidated claims already scope an explanation.
                 clarification = await narrative_clarification(
                     db,
@@ -1932,6 +1951,8 @@ async def _query_evidence_analyst(
                     prior_questions=[],
                     selected_game_ids=tools.scope.game_ids if tools.scope else None,
                 )
+        discovery = await tools.canonical_discovery() if not refusal else None
+        discovery_failed = bool(discovery and discovery.status == "dependency_failure")
         if refusal or clarification:
             result = {
                 "answer": clarification
@@ -1944,8 +1965,8 @@ async def _query_evidence_analyst(
                 ),
                 "follow_up_questions": [],
                 "citations": [],
-                "warnings": [],
-                "degraded": False,
+                "warnings": [discovery.message] if discovery_failed and discovery else [],
+                "degraded": discovery_failed,
                 "route": "clarification" if clarification else None,
                 "refused": refusal,
                 "data_version": release.version,
@@ -1954,9 +1975,15 @@ async def _query_evidence_analyst(
                 "llm_validated": False,
             }
         else:
-            result = await loop.run(
-                allow_model=bool(turn) and (answer_mode == "llm_primary" or shadow_sampled)
-            )
+            if discovery_failed and discovery:
+                # No model or recovery query may follow a failed database preflight.
+                loop.results.append(discovery)
+                loop.recovery_ran = True
+                result = loop.render_fallback(discovery.message)
+            else:
+                result = await loop.run(
+                    allow_model=bool(turn) and (answer_mode == "llm_primary" or shadow_sampled)
+                )
         state = result.pop("state")
         record_turn(
             {
@@ -2027,4 +2054,7 @@ async def _query_evidence_analyst(
         )
     finally:
         if turn:
-            await turn.abort()
+            # A cancelled ASGI task still releases only its own conversation
+            # lease. Paid accounting and uncertain reservations remain untouched.
+            with anyio.move_on_after(1, shield=True):
+                await turn.abort()

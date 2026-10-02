@@ -1,0 +1,26 @@
+{
+  "schema_version": 1,
+  "owner_answer": "Keep the current staging plans",
+  "supersedes_any_inferred_hosting_upgrade_authorization": true,
+  "staging_api": {
+    "name": "knicksiq-rc-api-va-20260930",
+    "service_id": "srv-daupnnc1nsns73f7f5mg",
+    "region": "Virginia",
+    "retained_plan": "Free",
+    "retained_memory_mb": 512,
+    "retained_cpu": 0.1,
+    "last_deployed_commit_observed": "bf4439bbcd69e328c1d65c52e9a73dcbe4942cbe",
+    "proposed_2gb_upgrade_applied": false,
+    "pending_upgrade_form_cancelled": true
+  },
+  "proposed_isolated_redis": {
+    "name": "knicksiq-rc-redis-va-20261001",
+    "region": "Virginia",
+    "monthly_usd": 10,
+    "created": false,
+    "pending_creation_form_cancelled": true
+  },
+  "recurring_charges_added": 0,
+  "production_mutations": 0,
+  "next_direction": "Continue implementation and local verification with current staging plans. Do not apply the declined $35/month hosting proposal."
+}

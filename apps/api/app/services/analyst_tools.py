@@ -18,13 +18,18 @@ from app.services.archive_retrieval import (
     search_archive_lexical,
     search_archive_vectors,
 )
+from app.services.archive_units import accepts_unit
+from app.services.canonical_narrative import NarrativeSelection, build_narrative, select_narrative
 from app.services.evidence_contracts import Candidate, Evidence, ToolCall, ToolResult, VerifiedClaim
+from app.services.game_reference import resolve_game_reference
 from app.services.query_resolution import (
     ResolvedQuery,
+    all_star_end,
     is_game_score_request,
     is_record_request,
     resolve_query,
 )
+from app.services.team_aliases import team_ids_in_text
 from basketball_core.analytics.catalog import _windows, build_fact_catalog
 from basketball_core.analytics.registry import STAT_REGISTRY
 from sqlalchemy import select
@@ -51,9 +56,11 @@ class AnalystTools:
         question: str,
         season: str,
         state: dict[str, Any],
+        context: list[dict[str, str]] | None = None,
     ):
         self.db, self.release, self.question, self.season = db, release, question, season
         self.state = state
+        self.context = context or []
         self.claims: dict[str, VerifiedClaim] = {}
         self.evidence: dict[str, Evidence] = {}
         self.candidates: dict[str, Candidate] = {}
@@ -61,6 +68,8 @@ class AnalystTools:
         self.games: list[Game] = []
         self.rows: list[tuple[PlayerGameStat, Player]] = []
         self.scope: ResolvedQuery | None = None
+        self.narrative: NarrativeSelection | None = None
+        self.discovery: ToolResult | None = None
         self.different = bool(re.search(r"\bdifferent player\b", question, re.I))
 
     async def prepare(self) -> None:
@@ -94,6 +103,7 @@ class AnalystTools:
         self.scope = await resolve_query(
             self.db, self.question, intent="analyst", data_version=self.release.version
         )
+        self.scope = resolve_game_reference(self.question, self.scope, self.context, self.games)
         if (
             self.scope.date_start
             and self.scope.date_end
@@ -119,6 +129,20 @@ class AnalystTools:
             if self.different:
                 updates["player_ids"] = []
             self.scope = self.scope.model_copy(update=updates)
+        if not self.scope.player_ids and (
+            not self.scope.requires_clarification
+            or self.scope.clarification_reason == "ambiguous_game"
+        ):
+            self.narrative = select_narrative(self.question, self.selected_games(self.scope))
+            if self.narrative:
+                self.scope = self.scope.model_copy(
+                    update={
+                        "game_ids": [g.id for g in self.narrative.games],
+                        "requires_clarification": False,
+                        "clarification_reason": None,
+                        "clarification_options": [],
+                    }
+                )
         unknown_subject = re.search(r"\babout\s+(.+?)[?.!]*$", self.question, re.I)
         if (
             unknown_subject
@@ -175,7 +199,7 @@ class AnalystTools:
             "seasons": [self.release.season],
             "season_types": sorted({g.season_type for g in self.games}),
             "data_types": ["game_scores", "player_box_scores", "archive_evidence"],
-            "metrics": list(METRICS),
+            "metrics": [*METRICS, "double_doubles"],
             "team_metrics": ["wins", "losses", "points", "margin"],
             "games": len(self.games),
             "box_score_rows": len(self.rows),
@@ -235,6 +259,9 @@ class AnalystTools:
                 subject_id=f"player:{player.id}",
                 player=player.full_name,
                 **{m: getattr(stat, m) for m in METRICS},
+            )
+            data.update(
+                three_pointers_attempted=stat.three_pointers_attempted, starter=stat.starter
             )
         evidence = Evidence(
             evidence_id=identity,
@@ -326,6 +353,7 @@ class AnalystTools:
     async def execute(self, call: ToolCall) -> ToolResult:
         try:
             result = await self._execute(call)
+            self.claims.update({c.claim_id: c for c in result.claims})
             for item in result.evidence:
                 self.evidence[item.evidence_id] = item
                 self.issued_evidence_ids.add(item.evidence_id)
@@ -380,6 +408,15 @@ class AnalystTools:
                 status="unsupported_metric_or_scope",
                 message=f"Available season: {self.release.season}.",
             )
+        if call.name == "get_game_narrative" or (
+            self.narrative and call.name in {"get_team_stats", "discover_facts"}
+        ):
+            if not self.narrative:
+                return ToolResult(
+                    status="unsupported_metric_or_scope",
+                    message="A defined game-story selection is required.",
+                )
+            return await build_narrative(self.db, self.release, self.narrative)
         # Resolve model suggestions locally, but they may only narrow the user's scope.
         scope = await resolve_query(
             self.db, call.question, intent=call.name, data_version=self.release.version
@@ -401,6 +438,7 @@ class AnalystTools:
             "date_end",
             "periods",
             "relative_game_count",
+            "relative_game_order",
         ):
             authoritative = getattr(self.scope, key)
             if authoritative:
@@ -431,6 +469,17 @@ class AnalystTools:
                 choices=sorted({p.full_name for _, p in self.rows}),
             )
         metric = call.metric or scope.metric or "points"
+        if self.scope.metric:
+            if call.metric and call.metric != self.scope.metric:
+                return ToolResult(
+                    status="unsupported_metric_or_scope",
+                    message="The tool metric differs from the user's requested statistic.",
+                )
+            metric = self.scope.metric
+        if call.name == "get_player_stats" and re.search(
+            r"\bbefore\s+and\s+after\s+(?:the\s+)?all[ -]star\b", self.question, re.I
+        ):
+            return self.all_star_comparison(scope, games, metric)
         if call.name == "compare_windows":
             if not call.baseline_question:
                 return ToolResult(
@@ -489,13 +538,113 @@ class AnalystTools:
                 claims=first.claims + second.claims + comparisons,
                 evidence=first.evidence + second.evidence,
             )
-        return self.player(scope, games, metric, call.aggregation)
+        if re.search(r"\btotal\b", self.question, re.I):
+            aggregation = "total"
+        else:
+            aggregation = call.aggregation
+        if re.search(r"\bthree[ -]point percentage\b", self.question, re.I):
+            metric = "three_point_percentage"
+        elif re.search(r"\b(?:games?|times)\b.*\bstart(?:ed)?\b", self.question, re.I):
+            metric = "starts"
+        return self.player(scope, games, metric, aggregation)
+
+    def all_star_comparison(
+        self, scope: ResolvedQuery, games: list[Game], metric: str
+    ) -> ToolResult:
+        boundary = all_star_end(self.release.season)
+        if boundary is None:
+            return ToolResult(
+                status="unsupported_metric_or_scope",
+                message="An independently supported All-Star boundary is required.",
+            )
+        populations = {
+            "before": [g for g in games if g.game_date <= boundary],
+            "after": [g for g in games if g.game_date > boundary],
+        }
+        results = {
+            label: self.player(scope, population, metric, "average")
+            for label, population in populations.items()
+        }
+        claims, evidence = [], []
+        for player_id in scope.player_ids:
+            subject = f"player:{player_id}"
+            baselines = {
+                label: next((c for c in result.claims if c.subject_id == subject), None)
+                for label, result in results.items()
+            }
+            before, after = baselines["before"], baselines["after"]
+            if (
+                before is None
+                or after is None
+                or not isinstance(before.value, (int, float))
+                or not isinstance(after.value, (int, float))
+            ):
+                return ToolResult(
+                    status="incomplete_coverage",
+                    message="Both comparison populations require observed player appearances.",
+                )
+            sources = [
+                e
+                for result in results.values()
+                for e in result.evidence
+                if e.metadata.get("subject_id") == subject
+            ]
+            evidence.extend(sources)
+            name = next(p.full_name for _, p in self.rows if p.id == player_id)
+            window: dict[str, Any] = {
+                label: {
+                    "game_ids": claim.game_ids,
+                    "sample_size": claim.sample_size,
+                    "dates": claim.window,
+                }
+                for label, claim in (("before", before), ("after", after))
+            }
+            window.update(
+                boundary=boundary.isoformat(), source_url="https://www.nba.com/allstar/2026"
+            )
+            values = {"before": before.value, "after": after.value}
+            values["delta"] = float(after.value) - float(before.value)
+            claims.append(
+                self.claim(
+                    subject=subject,
+                    metric=f"{metric}:window_comparison",
+                    value=values,
+                    unit=f"{metric} per appearance",
+                    games=[
+                        g
+                        for g in games
+                        if g.id in set((before.game_ids or []) + (after.game_ids or []))
+                    ],
+                    evidence=sources,
+                    statement=(
+                        f"{name}: before the All-Star break, {float(before.value):.1f} {metric} "
+                        f"per appearance over {before.sample_size} observed appearances; after, "
+                        f"{float(after.value):.1f} over {after.sample_size}. Boundary: {boundary}; "
+                        f"{scope.season_type or 'all-phase'} {self.release.season} archive."
+                    ),
+                    scope=scope,
+                    sample=(before.sample_size or 0) + (after.sample_size or 0),
+                    denominator=None,
+                    baseline=[before.claim_id, after.claim_id],
+                    limitations=list(
+                        dict.fromkeys(before.coverage_limitations + after.coverage_limitations)
+                    ),
+                    window=window,
+                )
+            )
+        return ToolResult(
+            status="incomplete_coverage"
+            if any(r.status != "ok" for r in results.values())
+            else "ok",
+            message="Complete scoped before/after populations "
+            "with observed appearance denominators.",
+            claims=claims,
+            evidence=evidence,
+        )
 
     def player(
         self, scope: ResolvedQuery, games: list[Game], metric: str, aggregation: str
     ) -> ToolResult:
-        if scope.relative_game_count and "appearance" not in self.question.lower():
-            games = games[-scope.relative_game_count :]
         game_map = {g.id: g for g in games}
         claims, evidence = [], []
         missing = False
@@ -505,13 +654,44 @@ class AnalystTools:
             ]
             # Zero minutes means observed DNP, not an appearance; missing rows remain unknown.
             absent = sorted(set(game_map) - {s.game_id for s, _ in all_rows})
-            rows = [(s, p) for s, p in all_rows if s.minutes > 0]
+            rows = sorted(
+                [(s, p) for s, p in all_rows if s.minutes > 0],
+                key=lambda row: (
+                    game_map[row[0].game_id].game_date,
+                    game_map[row[0].game_id].nba_game_id,
+                ),
+            )
             if scope.relative_game_count:
-                rows = rows[-scope.relative_game_count :]
+                rows = (
+                    rows[: scope.relative_game_count]
+                    if scope.relative_game_order == "first"
+                    else rows[-scope.relative_game_count :]
+                )
             if not rows:
                 continue
             count = len(rows)
-            value = sum(getattr(s, metric) for s, _ in rows)
+            attempts = 0
+            if metric == "double_doubles":
+                aggregation = "total"
+                value = sum(
+                    sum(
+                        getattr(s, key) >= 10
+                        for key in ("points", "rebounds", "assists", "steals", "blocks")
+                    )
+                    >= 2
+                    for s, _ in rows
+                )
+            elif metric == "three_point_percentage":
+                aggregation = "percentage"
+                attempts = sum(s.three_pointers_attempted for s, _ in rows)
+                if not attempts:
+                    continue
+                value = sum(s.three_pointers_made for s, _ in rows) / attempts * 100
+            elif metric == "starts":
+                aggregation = "total"
+                value = sum(bool(s.starter) for s, _ in rows)
+            else:
+                value = sum(getattr(s, metric) for s, _ in rows)
             if aggregation == "average":
                 value /= count
             receipts = [self.receipt(game_map[s.game_id], s, p) for s, p in rows]
@@ -526,10 +706,18 @@ class AnalystTools:
                 f"{name}: {value:.1f} {unit} across {count} observed appearances "
                 f"in the {self.release.season} {scope.season_type or 'all-phase'} archive."
             )
+            if metric == "three_point_percentage":
+                statement = (
+                    f"{name}: {value:.1f}% from three, "
+                    f"{sum(s.three_pointers_made for s, _ in rows)} makes in {attempts} attempts "
+                    f"across {count} observed appearances."
+                )
             claims.append(
                 self.claim(
                     subject=f"player:{player_id}",
-                    metric=f"{metric}:{aggregation}",
+                    metric=metric
+                    if metric in {"three_point_percentage", "starts"}
+                    else f"{metric}:{aggregation}",
                     value=value,
                     unit=unit,
                     games=[game_map[s.game_id] for s, _ in rows],
@@ -537,14 +725,16 @@ class AnalystTools:
                     statement=statement,
                     scope=scope,
                     sample=count,
-                    denominator=count if aggregation == "average" else None,
+                    denominator=attempts
+                    if metric == "three_point_percentage"
+                    else count
+                    if aggregation == "average"
+                    else None,
                     limitations=limitations,
                     window={
-                        "date_start": str(games[0].game_date),
-                        "date_end": str(games[-1].game_date),
-                    }
-                    if games
-                    else None,
+                        "date_start": str(game_map[rows[0][0].game_id].game_date),
+                        "date_end": str(game_map[rows[-1][0].game_id].game_date),
+                    },
                 )
             )
         return ToolResult(
@@ -602,7 +792,11 @@ class AnalystTools:
         if is_record_request(self.question):
             games = [g for g in games if g.status == "final" and g.home_score != g.away_score]
         if scope.relative_game_count:
-            games = games[-scope.relative_game_count :]
+            games = (
+                games[: scope.relative_game_count]
+                if scope.relative_game_order == "first"
+                else games[-scope.relative_game_count :]
+            )
         evidence = [self.receipt(g) for g in games]
         wins = sum(self.score(g)[0] > self.score(g)[1] for g in games)
         values = {
@@ -611,6 +805,41 @@ class AnalystTools:
             "points": sum(self.score(g)[0] for g in games),
             "margin": sum(self.score(g)[0] - self.score(g)[1] for g in games),
         }
+        question = self.question.lower()
+        denominator = None
+        threshold = re.search(r"\b(at least|under|over|more than|fewer than)\s+(\d+)\b", question)
+        if threshold and re.search(r"\bhow many games\b", question):
+            cutoff = int(threshold[2])
+            observed = [
+                self.score(g)[1 if re.search(r"\b(opponents?|allow|hold)\b", question) else 0]
+                for g in games
+            ]
+            count = sum(
+                v >= cutoff
+                if threshold[1] == "at least"
+                else v < cutoff
+                if threshold[1] in {"under", "fewer than"}
+                else v > cutoff
+                for v in observed
+            )
+            values = {"games:count": count}
+        elif not is_record_request(self.question) and re.search(
+            r"\b(average|per game|points allowed)\b", question
+        ):
+            metric = (
+                "margin"
+                if "margin" in question
+                else "points_allowed"
+                if re.search(r"\b(allow(?:ed)?|opponents?)\b", question)
+                else "points"
+            )
+            total = (
+                sum(self.score(g)[1] for g in games)
+                if metric == "points_allowed"
+                else values[metric]
+            )
+            denominator = len(games)
+            values = {f"{metric}:average": total / denominator}
         claims = [
             self.claim(
                 subject="team:NYK",
@@ -621,7 +850,7 @@ class AnalystTools:
                 evidence=evidence,
                 scope=scope,
                 sample=len(games),
-                denominator=None,
+                denominator=denominator,
                 eligibility={"game": "archived Knicks game"},
                 statement=f"Knicks {metric}: {value} over {len(games)} archived games.",
             )
@@ -936,19 +1165,92 @@ class AnalystTools:
             scope=scope.model_dump(mode="json"),
         )
 
-    async def search(self, call: ToolCall, scope: ResolvedQuery, games: list[Game]) -> ToolResult:
-        filters = scope.planner_filters()
+    async def canonical_discovery(self) -> ToolResult:
+        """Search local records before admission without changing authoritative scope."""
+        if self.discovery is not None:
+            return self.discovery
+        if self.scope is None:
+            raise ValueError("Canonical discovery requires prepared request scope")
+        scope = self.scope
+        games = self.selected_games(scope) if self.season == self.release.season else []
+        names = sorted({p.full_name for _, p in self.rows if p.id in scope.player_ids})[:3]
+        teams = {scope.opponent_id} if scope.opponent_id else set()
+        if scope.clarification_reason == "missing_conversation_game":
+            teams.update(
+                team_ids_in_text(" ".join(m["content"] for m in self.context[-10:])) - {"NYK"}
+            )
+        # Context team names are search terms only. They cannot establish the
+        # game or make an unverified assistant account authoritative.
+        anchors = names + sorted(teams)
+        expansion = " OR ".join(json.dumps(value) for value in anchors)
+        # Tool questions retain their existing cap. Only ordinary independently
+        # resolved identities expand the user's bounded search query.
+        query = self.question[: max(0, 1200 - len(expansion) - 4)]
+        query += " OR " + expansion if expansion else ""
+        try:
+            async with asyncio.timeout(2):
+                self.discovery = await self.search(
+                    ToolCall(name="search_archive", question=query),
+                    scope,
+                    games,
+                    local_only=True,
+                    purpose="canonical_discovery",
+                )
+        except Exception as exc:
+            record_search(
+                {
+                    "purpose": "canonical_discovery",
+                    "status": "dependency_failure",
+                    "release": self.release.version,
+                    "question": self.question,
+                    "query": query,
+                    "filters": {**scope.planner_filters(), "game_ids": [g.id for g in games]},
+                    "candidate_evidence_ids": [],
+                    "returned_evidence_ids": [],
+                    "lexical_evidence_ids": [],
+                    "dense_evidence_ids": [],
+                    "evidence": [],
+                    "dense_failed": False,
+                    "error_type": type(exc).__name__,
+                }
+            )
+            self.discovery = ToolResult(
+                status="dependency_failure",
+                message="Local archive discovery is unavailable on this turn.",
+            )
+        for item in self.discovery.evidence:
+            self.evidence[item.evidence_id] = item
+            self.issued_evidence_ids.add(item.evidence_id)
+        return self.discovery
+
+    async def search(
+        self,
+        call: ToolCall,
+        scope: ResolvedQuery,
+        games: list[Game],
+        *,
+        local_only: bool = False,
+        purpose: str = "analyst_search",
+    ) -> ToolResult:
+        filters: dict[str, Any] = scope.planner_filters()
         filters["game_ids"] = [g.id for g in games]
-        lexical = await search_archive_lexical(
-            self.db,
-            query=call.question,
-            collections=["games", "box_scores", "reports", "possessions"],
-            filters=filters,
-            data_version=self.release.version,
-            limit=20,
+        filters["unanchored_game_reference"] = (
+            scope.clarification_reason == "missing_conversation_game"
+        )
+        lexical = (
+            await search_archive_lexical(
+                self.db,
+                query=call.question,
+                collections=["games", "box_scores", "reports", "possessions"],
+                filters=filters,
+                data_version=self.release.version,
+                limit=20,
+            )
+            if games
+            else []
         )
         dense, failure = [], False
-        if get_settings().rag_qdrant_enabled:
+        if games and not local_only and get_settings().rag_qdrant_enabled:
             try:
                 dense = await asyncio.to_thread(
                     search_archive_vectors,
@@ -961,7 +1263,7 @@ class AnalystTools:
                 )
             except Exception:
                 failure = True
-        found = fuse_archive_evidence(lexical, dense, limit=20)
+        found = fuse_archive_evidence(lexical, dense, limit=20, filters=filters)
         evidence = [
             Evidence(
                 evidence_id=f"{self.release.version}:{e.evidence_id}",
@@ -970,16 +1272,44 @@ class AnalystTools:
                 game_id=e.metadata.get("game_id"),
                 source_name=e.metadata.get("source_name"),
                 source_url=e.metadata.get("source_url"),
-                metadata=e.metadata,
+                metadata={
+                    key: value
+                    for key, value in e.metadata.items()
+                    if key
+                    not in {
+                        "retrieval_sources",
+                        "fusion_components",
+                        "component_ranks",
+                        "exact_match_fields",
+                        "_index_embedding",
+                        "chunk_id",
+                    }
+                },
             )
             for e in found
             if e.metadata.get("data_version") == self.release.version
-            and e.metadata.get("game_id") in {g.id for g in games}
+            and (
+                e.metadata.get("game_id") in {g.id for g in games}
+                if not e.metadata.get("unit_type")
+                else accepts_unit(
+                    e.metadata,
+                    games=self.games,
+                    players=list({p.id: p for _, p in self.rows}.values()),
+                    selected_game_ids={g.id for g in games},
+                    player_ids=scope.player_ids,
+                    periods=scope.periods,
+                    version=self.release.version,
+                )
+                and e.text == e.metadata.get("text")
+            )
         ]
         record_search(
             {
+                "purpose": purpose,
+                "status": "ok",
                 "release": self.release.version,
-                "question": call.question,
+                "question": self.question if local_only else call.question,
+                "query": call.question,
                 "filters": filters,
                 "lexical_evidence_ids": [
                     f"{self.release.version}:{e.evidence_id}" for e in lexical
@@ -988,6 +1318,20 @@ class AnalystTools:
                 "candidate_evidence_ids": [e.evidence_id for e in evidence],
                 "returned_evidence_ids": [e.evidence_id for e in evidence[:5]],
                 "evidence": [e.model_dump(mode="json") for e in evidence],
+                "ranking": [
+                    {
+                        "evidence_id": f"{self.release.version}:{e.evidence_id}",
+                        "score": e.score,
+                        "retrieval_sources": e.metadata.get("retrieval_sources", []),
+                        "fusion_components": e.metadata.get("fusion_components", []),
+                        "component_ranks": e.metadata.get("component_ranks", {}),
+                        "exact_match_fields": e.metadata.get("exact_match_fields", []),
+                        "index_embedding": e.metadata.get("_index_embedding"),
+                    }
+                    for e in found
+                    if f"{self.release.version}:{e.evidence_id}"
+                    in {r.evidence_id for r in evidence}
+                ],
                 "dense_failed": failure,
             }
         )

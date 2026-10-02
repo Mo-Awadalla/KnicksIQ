@@ -99,6 +99,7 @@ class ToolCall(Contract):
     name: Literal[
         "get_player_stats",
         "get_team_stats",
+        "get_game_narrative",
         "compare_windows",
         "discover_facts",
         "search_archive",
@@ -116,6 +117,7 @@ class ToolCall(Contract):
             "three_pointers_made",
             "plus_minus",
             "minutes",
+            "double_doubles",
         ]
         | None
     ) = None
