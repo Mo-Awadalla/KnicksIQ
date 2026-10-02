@@ -106,6 +106,9 @@ uv run --package knicksiq-worker knicksiq-load-release \
 
 ## Verification
 
+For an isolated Docker stack with the approved archive, persistent Redis, and
+real HTTP verification, see [Local Docker staging](docs/local-docker-staging.md).
+
 Backend:
 
 ```bash
