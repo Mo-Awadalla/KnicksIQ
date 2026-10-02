@@ -5,6 +5,7 @@ from __future__ import annotations
 import re
 
 from app.models.game import Game
+from app.services.canonical_narrative import measure_clarification
 from app.services.query_classifier import classify_query
 from app.services.releases import restrict_to_active_release
 from app.services.team_aliases import team_ids_in_text
@@ -33,6 +34,9 @@ async def narrative_clarification(
     selected_game_ids: list[int] | None = None,
 ) -> str | None:
     q = question.lower()
+    clarification = measure_clarification(question)
+    if clarification and not references_only:
+        return clarification
     if re.search(r"\b(?:python|coding|leetcode|compiler|yankees|mets)\b", q):
         return None
     if (

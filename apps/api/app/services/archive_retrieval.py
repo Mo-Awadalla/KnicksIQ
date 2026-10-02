@@ -15,13 +15,14 @@ from app.models.game import Game
 from app.models.game_event import GameEvent
 from app.models.player import Player
 from app.models.report import Report
+from app.services.archive_units import build_archive_units
 from app.services.embeddings import embed_texts
 from app.services.qdrant_client import get_qdrant_client, search_collection_batch
 from app.services.retrieval_fusion import (
     diversify_by_game,
     weighted_reciprocal_rank_fusion,
 )
-from sqlalchemy import String, case, cast, func, literal, or_, select
+from sqlalchemy import String, cast, column, func, literal, or_, select, union_all
 from sqlalchemy.ext.asyncio import AsyncSession
 
 _TOKEN_RE = re.compile(r"[a-z0-9]+")
@@ -37,6 +38,8 @@ class ArchiveEvidence:
 
 
 def _canonical_key(collection: str, metadata: dict[str, Any], fallback: str) -> str:
+    if metadata.get("unit_type") in {"multigame_aggregate", "player_identity"}:
+        return f"unit:{metadata.get('source_document_id', fallback)}"
     game_id = metadata.get("game_id", "archive")
     if collection == "games":
         source_id = game_id
@@ -185,7 +188,14 @@ def _lexical_match(db: AsyncSession, text_expression: Any, query: str) -> tuple[
         return literal(True), literal(0.0)
     predicates = [func.lower(text_expression).contains(token) for token in tokens]
     rank = sum(
-        (case((func.lower(text_expression).contains(token), 1), else_=0) for token in tokens),
+        (
+            (
+                func.length(func.lower(text_expression))
+                - func.length(func.replace(func.lower(text_expression), token, ""))
+            )
+            / len(token)
+            for token in tokens
+        ),
         literal(0),
     )
     return or_(*predicates), rank
@@ -424,6 +434,59 @@ async def search_archive_lexical(
                 )
             )
 
+    if release_id is not None:
+        selected = list(
+            (
+                await db.execute(
+                    select(Game)
+                    .where(Game.release_id == release_id, *game_clauses)
+                    .order_by(Game.game_date, Game.id)
+                )
+            ).scalars()
+        )
+        records = await build_archive_units(db, selected, data_version)
+        eligible = [
+            r
+            for r in records
+            if (
+                r["payload"]["unit_type"] == "multigame_aggregate"
+                and "games" in collections
+                and not clean.get("player_ids")
+                and not clean.get("periods")
+            )
+            or (
+                r["payload"]["unit_type"] == "player_identity"
+                and "box_scores" in collections
+                and set(r["payload"]["player_ids"]) & set(clean.get("player_ids") or [])
+            )
+        ]
+        statements = []
+        for index, record in enumerate(eligible):
+            match, rank = _lexical_match(db, literal(record["payload"]["text"]), query)
+            statements.append(
+                select(literal(index).label("unit_index"), rank.label("rank")).where(match)
+            )
+        if statements:
+            statement = (
+                union_all(*statements)
+                .order_by(column("rank").desc(), column("unit_index"))
+                .limit(limit)
+            )
+            for index, score in (await db.execute(statement)).all():
+                record = eligible[index]
+                payload = record["payload"]
+                evidence.append(
+                    ArchiveEvidence(
+                        evidence_id=f"lexical:units:{record['id']}",
+                        collection="games"
+                        if payload["unit_type"] == "multigame_aggregate"
+                        else "box_scores",
+                        text=payload["text"],
+                        score=float(score or 0),
+                        metadata={**payload, "retrieval_sources": ["lexical"]},
+                    )
+                )
+
     evidence.sort(key=lambda item: (-item.score, item.evidence_id))
     result = evidence[:limit]
     if trace is not None:
@@ -494,6 +557,12 @@ def fuse_archive_evidence(
             scoped_filters["game_ids"]
         ):
             exact_fields.append("game_id")
+        unit_games = set(candidate.metadata.get("game_ids") or [])
+        requested_games = set(scoped_filters.get("game_ids") or [])
+        if unit_games and requested_games and unit_games <= requested_games:
+            exact_fields.append("game_id")
+            if unit_games == requested_games:
+                exact_fields.append("complete_game_population")
         if scoped_filters.get("dates") and candidate.metadata.get("date") in set(
             scoped_filters["dates"]
         ):
@@ -503,6 +572,13 @@ def fuse_archive_evidence(
                 candidate.metadata.get(field) or []
             ):
                 exact_fields.append(field)
+        if (
+            scoped_filters.get("unanchored_game_reference")
+            and candidate.metadata.get("unit_type") == "player_identity"
+            and set(candidate.metadata.get("player_ids") or [])
+            == set(scoped_filters.get("player_ids") or [])
+        ):
+            exact_fields.append("unanchored_player_identity")
         if scoped_filters.get("periods"):
             start = int(candidate.metadata.get("start_period") or 0)
             end = int(candidate.metadata.get("end_period") or start)

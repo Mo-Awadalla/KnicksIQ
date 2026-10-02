@@ -350,6 +350,7 @@ async def collect(
                 "analysis_shadow_sample_rate",
                 "analyst_evidence_loop_enabled",
                 "rag_qdrant_enabled",
+                "rag_archive_source_units_enabled",
                 "ai_provider",
                 "public_chat_rate_limit_per_minute",
                 "public_chat_rate_limit_per_day",
