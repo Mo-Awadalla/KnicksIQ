@@ -2,12 +2,14 @@
 
 import json
 import os
-from datetime import UTC, datetime
+from datetime import UTC, date, datetime
 from pathlib import Path
 
 from app.core.config import get_settings
 from app.core.db import AsyncSessionLocal
 from app.evaluation.trace_capture import capture_turn
+from app.models.box_score import PlayerGameStat
+from app.models.game import Game
 from app.services import analyst_loop
 from app.services.analyst_tools import AnalystTools
 from app.services.evidence_contracts import Evidence
@@ -144,8 +146,37 @@ async def test_current_discovery_survives_oversized_result_http(
 ):
     settings = configure(monkeypatch)
     async with AsyncSessionLocal() as db:
-        await _seed_release_stats(db)
-    question = "What did Jalen Brunson average against Boston?"
+        release, player = await _seed_release_stats(db)
+        # Four appearances produce a compact, real aggregate receipt instead
+        # of two large raw box scores, leaving room to test discovery priority.
+        for day in (4, 5):
+            game = Game(
+                release_id=release.id,
+                nba_game_id=f"payload-{day}",
+                season=release.season,
+                game_date=date(2026, 1, day),
+                home_team_id="NYK",
+                away_team_id="BOS",
+                home_score=110,
+                away_score=100,
+                status="final",
+                season_type="regular",
+                source_name="test",
+            )
+            db.add(game)
+            await db.flush()
+            db.add(
+                PlayerGameStat(
+                    release_id=release.id,
+                    game_id=game.id,
+                    player_id=player.id,
+                    team_id="NYK",
+                    minutes=30,
+                    points=day * 10,
+                )
+            )
+        await db.commit()
+    question = "Brunson's average against Boston?"
     adapter = SyntheticAdapter(
         {"name": "get_player_stats", "question": question, "metric": "points"}
     )
@@ -178,6 +209,11 @@ async def test_current_discovery_survives_oversized_result_http(
             oversized=oversized.model_dump(mode="json"),
             unrelated=unrelated.model_dump(mode="json"),
             claims=[c.model_dump(mode="json") for c in result.claims],
+            supporting_evidence={
+                ref: self.evidence[ref].model_dump(mode="json")
+                for claim in result.claims
+                for ref in claim.supporting_evidence_ids
+            },
         )
         return result.model_copy(update={"evidence": [oversized, priority, priority]})
 
@@ -195,22 +231,29 @@ async def test_current_discovery_survives_oversized_result_http(
     expected_order = [seam["priority_id"]] + [
         e["evidence_id"] for e in seam["discovery"] if e["evidence_id"] != seam["priority_id"]
     ]
-    assert ids[0] == seam["priority_id"]
+    support_ids = set(seam["supporting_evidence"])
+    assert support_ids <= set(ids)
+    assert set(ids[: len(support_ids)]) == support_ids
+    discovery_ids = [identity for identity in ids if identity not in support_ids]
+    assert discovery_ids[0] == seam["priority_id"]
     assert len(ids) == len(set(ids))
     assert seam["oversized"]["evidence_id"] not in ids
     assert seam["unrelated"]["evidence_id"] not in ids
-    assert len(ids) >= 2, (
+    assert len(discovery_ids) >= 2, (
         "A nonempty oversized result must not suppress compact canonical discovery"
     )
-    assert ids == [identity for identity in expected_order if identity in ids]
+    assert discovery_ids == [identity for identity in expected_order if identity in discovery_ids]
     originals = {e["evidence_id"]: e for e in seam["discovery"]}
+    originals.update(seam["supporting_evidence"])
     assert all(e == originals[e["evidence_id"]] for e in packed["evidence"])
     assert packed["claims"] == seam["claims"]
     for request in adapter.inputs:
         assert request["input_bytes"] <= settings.analyst_input_tokens
         payload = request["user"]
-        retained_size = sum(encoded_size([c]) for c in payload["claims"]) + sum(
-            encoded_size(e) for e in payload["evidence"]
+        retained_size = (
+            sum(encoded_size([c]) for c in payload["claims"])
+            + sum(encoded_size(e) for e in payload["evidence"])
+            + sum(encoded_size([use]) for use in payload.get("claim_uses", []))
         )
         assert retained_size <= settings.analyst_evidence_tokens
 
