@@ -1,6 +1,6 @@
 # Current source relevance review
 
-The original 120-question expectation review and all 50 semantic members are retained. Seven settled target sets remain byte-equivalent in content, including all nine Atlanta games. The latest review identifies 43 new independently supported candidate target sets, with no unresolved source sets. These remain proposals: owner approval and gold freeze are pending.
+The original 120-question expectation review and all 50 semantic members are retained. Seven settled target sets remain byte-equivalent in content, including all nine Atlanta games. The owner approved all 43 new independently supported target sets through the content-bound gold request. Gold is frozen; retrieval quality and production launch are not approved.
 
 Review artifact: `release-artifacts/source-support-20261003/source-units/source-relevance-proposal.json`.
 SHA256: `c7dcebe6631ecce5226b626763f18e3b1e21660cbc3ff0602e790f99a5cd2b4d`.
@@ -19,7 +19,7 @@ The five approved measure clarifications remain in force. Pinned per-action evid
 
 All 50 case records bind the original question/context, canonical fact digest, actual top-five IDs, captured response hash and independently verified unit receipts where available. The full 184-unit corpus and 67 actual ranked unit receipts are independently verified. A correct clarification or supported source does not imply passing retrieval: complete proposed-target coverage from ranked units alone is observed in 37 of 50 cases.
 
-The next dependent step is content-bound owner approval of the full 120-case expectations and 50-case source targets before freezing gold. Guarded counted execution, the three original cohorts, hosted dependency/load/recovery/rollback evidence and final digest-bound launch approval remain open. Production and current staging plans are unchanged.
+The next dependent step is dense inference qualification and guarded counted execution with the frozen contract. The three original cohorts, hosted dependency/load/recovery/rollback evidence and final digest-bound launch approval remain open. Production and current staging plans are unchanged.
 
 ## Measure-source audit failure modes
 
@@ -323,8 +323,9 @@ witnesses for explicitly named alternatives and preserve their clarification
 dispositions. No original question/context, member, threshold, request ceiling
 or accounting state changed. Proposal SHA-256:
 `c7dcebe6631ecce5226b626763f18e3b1e21660cbc3ff0602e790f99a5cd2b4d`.
-The content still requires owner approval before any gold freeze or paid
-release workload; supported source facts are not owner-approved relevance.
+This proposal was subsequently approved through the exact content-bound request
+recorded below. The sealed proposal itself remains unchanged; approval is separate
+from source support and from a passing release evaluation.
 
 The unchanged 120-case expectation review is separately bound by SHA-256
 `7fe3139dec0853c52aee59113531c51e34ec486153be8b0bdfd6b9cf8832bfa9`:
@@ -332,3 +333,23 @@ The unchanged 120-case expectation review is separately bound by SHA-256
 not adapt targets to ranking: ranked units alone cover every proposed target
 in 37 of 50 cases. Raw-row and hybrid-retrieval quality still require the original
 release evaluations; source support must not be presented as passing recall.
+
+## Content-bound owner gold approval
+
+The owner selected “Approve pinned gold contract” for request SHA-256
+`49018b1844daeb45ead3ee2f673331795fc15e93c0ab53febb5dbb3aff62861e`.
+The [recorded direction](confirmed-gold-direction.json) binds both approved
+input digests: the unchanged 120-case review and the complete 50-case target
+proposal above. The frozen contract is retained privately in
+`release-artifacts/source-support-20261003/gold-review/frozen-expectations.json`,
+with SHA-256
+`60184f109dd9d9f3cb1a68adf6d39f477711324792a4ff6aa75b12fd8eb15dfe`.
+
+The mechanical freeze copies every expectation value and all 50 target arrays,
+marks decisions settled and attaches the recorded approval. Forty-six otherwise
+empty rationale fields receive only the content-bound owner approval provenance;
+existing rationale, facts, dispositions, questions and contexts are unchanged.
+The actual release runner accepts the frozen file and its separately hash-bound
+approval: 120 cases, 50 semantic members and all nine Atlanta targets. No model
+transmission or reservation occurred. This approval permits gold and subsequent
+release verification, not merge, readiness, metric defaults or production launch.

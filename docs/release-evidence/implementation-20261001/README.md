@@ -6,8 +6,9 @@ on candidate `bf4439bbcd69e328c1d65c52e9a73dcbe4942cbe`. The owner's subsequent
 [context decision](confirmed-context-decision.json) corrects the earlier claim
 that an unspecified game demonstrated an identity-relevance incompatibility.
 Complete tied-game narratives and canonical Boston scoring runs are also implemented.
-Gold remains unfrozen. Bounded retrieval discovery is implemented. Guarded paid orchestration,
-release evaluation, load, recovery, rollback and launch remain open.
+Gold is frozen after [content-bound owner approval](confirmed-gold-direction.json).
+Bounded retrieval discovery is implemented. Dense qualification, guarded paid
+orchestration, release evaluation, load, recovery, rollback and launch remain open.
 
 The implementation worktree is
 `/Users/mohamedawadalla/.codex/worktrees/release-implementation/KnicksIQ`.
@@ -380,8 +381,10 @@ Seven settled target sets remain unchanged; 43 new sets include canonical JB
 identity and fine event/period sources for all five measure clarifications.
 All 184 source units and 67 actual ranked unit receipts are independently
 verified. Exact proposals remain in the private `source-support-20261003/source-units/`
-evidence. Full 120-case expectation and source-target approval is still required
-before freezing gold; source support does not certify retrieval recall or launch.
+evidence. The owner approved the exact 120-case expectations and 50-case targets;
+the frozen contract is accepted by the actual release runner. See the
+[gold approval and frozen-file digest](source-relevance-review.md#content-bound-owner-gold-approval).
+Source support and gold approval do not certify retrieval recall or launch.
 
 Publication preparation uses a separate checkout under
 `/private/tmp/KnicksIQ-release-publish-20261001` because the current permission
