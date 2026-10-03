@@ -404,3 +404,15 @@ a longer TCP control and a REST connectivity control timed out. No state was
 written to it; no Render plan, provider completion or production state changed.
 Its documented three-day expiry is retained. It remains unadmitted, and credentials
 stay in ignored private files in the original implementation checkout.
+
+The October 3 [measure-source audit](source-relevance-review.md#october-3-source-integrity-findings)
+adds a network-denied CLI and 25 passing subprocess E2E cases. All 101 games
+have complete verified period populations, establishing distinct fewest-Q3-point
+and worst-Q3-margin candidates without changing clarification policy. A raw
+scoring-sequence discrepancy in Milwaukee game `0022500125` is corroborated by
+the official NBA page; only 100 games pass that raw sequence check. Exploratory
+point reconstruction matches period and player box totals but does not approve
+repaired intermediate scores. Evidence stays in the main project's ignored
+`release-artifacts/source-support-20261003/`. Gold, complete indexed source
+mappings, dense retrieval, guarded live orchestration and the original release
+workloads remain open.
