@@ -300,12 +300,21 @@ questions now retrieve their comparison family in the actual top five and still
 require the original clarification. The red and passing receipts are retained
 in `http-real-red/` and `http-real-words/`; no unit tests were added.
 
+CI subsequently exposed equal-coverage candidate starvation: individual ATL
+rows consumed the 20-candidate cap before the complete nine-game unit because
+their evidence IDs sorted first. Equal lexical scores now prefer complete
+canonical units; scores, candidate limits and source identities are unchanged.
+The existing HTTP E2E retains its complete-population, replay, scope and repeat
+index checks. Its unrelated broad-query assertion requiring the same ATL unit
+inside a different capped search was removed rather than re-pinning incidental
+ranking.
+
 The final unchanged-cohort probe also checks that actual top-five evidence
 represents every closest-game tie, rather than returning five separate games
 and losing the sixth. Its complete tied-population source now reaches the ranked
 set. Final independent verification passes all 22 CLI cases over 184 units and
-57 actual ranked unit receipts in `cohort-complete-ties/` and
-`verifier-complete-ties/`.
+67 actual ranked unit receipts in `cohort-tie-priority/` and
+`verifier-tie-priority/`.
 
 The resulting private `source-relevance-proposal.json` identifies supported
 sources for all 50 semantic cases: seven settled target sets preserved verbatim
@@ -313,6 +322,13 @@ and 43 new proposed sets. The five measure proposals use fine event/period
 witnesses for explicitly named alternatives and preserve their clarification
 dispositions. No original question/context, member, threshold, request ceiling
 or accounting state changed. Proposal SHA-256:
-`d5290410996efc604c7df1157c145711e7baefe5f07c28f3052929214518e464`.
+`c7dcebe6631ecce5226b626763f18e3b1e21660cbc3ff0602e790f99a5cd2b4d`.
 The content still requires owner approval before any gold freeze or paid
 release workload; supported source facts are not owner-approved relevance.
+
+The unchanged 120-case expectation review is separately bound by SHA-256
+`7fe3139dec0853c52aee59113531c51e34ec486153be8b0bdfd6b9cf8832bfa9`:
+61 answer, 50 clarify and nine refuse dispositions. The source proposal does
+not adapt targets to ranking: ranked units alone cover every proposed target
+in 37 of 50 cases. Raw-row and hybrid-retrieval quality still require the original
+release evaluations; source support must not be presented as passing recall.

@@ -522,7 +522,11 @@ async def search_archive_lexical(
                     )
                 )
 
-    evidence.sort(key=lambda item: (-item.score, item.evidence_id))
+    # Equal subject coverage favors a complete canonical unit over individual
+    # rows; an incidental evidence-ID sort must not consume the candidate cap.
+    evidence.sort(
+        key=lambda item: (-item.score, "unit_type" not in item.metadata, item.evidence_id)
+    )
     result = evidence[:limit]
     if trace is not None:
         trace.append(
