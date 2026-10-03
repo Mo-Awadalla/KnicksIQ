@@ -416,3 +416,14 @@ repaired intermediate scores. Evidence stays in the main project's ignored
 `release-artifacts/source-support-20261003/`. Gold, complete indexed source
 mappings, dense retrieval, guarded live orchestration and the original release
 workloads remain open.
+
+The owner subsequently selected
+[independent derived-source validation](confirmed-scoring-source-direction.json).
+The resulting [per-action source check](source-relevance-review.md#complete-independent-per-action-derived-source-verification)
+matches every original event to primary NBA action-list order and reconciles all
+101 games, 816 periods and 2,748 player box rows. It retains the raw scoreboards,
+153 incorrect canonical event classifications and the running-caption discrepancy.
+`tools/release/check_derived_scoring.py` exercises the independent offline CLI with
+network denied, including corruption controls. This closes per-action scoring
+provenance only: target definitions, indexed/ranked relevance, owner gold approval
+and full release workloads remain open.

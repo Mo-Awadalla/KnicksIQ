@@ -109,3 +109,78 @@ actual indexed/ranked mappings. All 120 questions, 50 semantic members, seven
 settled target sets, approved clarifications, thresholds and existing budgets
 remain unchanged. No completion request, reservation, freeze, merge or launch
 occurred.
+
+## Approved derived-source validation failure modes
+
+The owner selected [independent derived-source validation](confirmed-scoring-source-direction.json),
+not an archive rewrite, target approval or gold freeze. The CLI subprocess
+boundary remains the E2E seam; this matrix precedes its implementation.
+
+- Bind the complete original schedule, bundle content and every supplied NBA
+  capture. Reject missing/foreign games, duplicate action identities, changed
+  source actors, descriptions, clocks, event kinds or scoring values.
+- Match canonical event order to actual NBA action-list order, not sorted action
+  numbers. Reject reordered canonical scoring actions and unmatched NBA scoring
+  attempts. Do not silently discard a game or manufacture a matching receipt.
+- Use explicit NBA field-goal result/value and explicit free-throw attempt/miss
+  descriptions. Reject unknown scoring kinds and ambiguous or conflicting
+  scoring fields. Do not use erroneous intermediate scoreboards, cumulative
+  `PTS` captions, or the canonical parser's free-throw result as scoring authority.
+- Check every derived period total and every player's points, field-goal makes
+  and attempts, three-point makes and attempts, and free-throw makes and attempts
+  against separate canonical period/box rows. Reject partial or mismatching
+  coverage even when the game's final total happens to match.
+- Retain both raw and derived score states, source/action hashes and all ignored
+  score/caption discrepancies. Quarter breaks and non-scoring actions contribute
+  zero; any opponent point ends an unanswered run.
+- Refuse output overwrites, retain failure evidence, reproduce identical bytes,
+  and deny network/provider access inside the verifier. Missing support stays
+  rejected; aggregate agreement or owner direction never creates missing facts.
+
+## Complete independent per-action derived-source verification
+
+Following the confirmed direction, 101 NBA play-by-play page captures are retained:
+100 fresh bounded requests and the existing Milwaukee capture. The two earlier
+page diagnostics remain counted separately. There were no automatic retries,
+provider completions or paid reservations.
+
+`tools/release/verify_derived_scoring.py` verifies each canonical event against
+the captured primary list by period, projected clock, description, team and actor,
+in strictly increasing primary-list order. Every primary field-goal/free-throw
+attempt must be matched. `actionId` is unique within a game; `actionNumber` is
+neither unique nor ordered and is never used to sort or deduplicate actions.
+Explicit primary attempt fields establish each contribution; independently stored
+period and player box rows reconcile all seven shooting/point fields.
+
+The complete real archive passes this derived-source check: 101 games, 46,500
+events, 816 period rows and 2,748 player box rows. This does not reverse the raw
+scoreboard audit's blocked result. The Milwaukee event 197 contributes one Knicks
+point, producing 52/66 rather than raw 55/66; event 198 contributes three Milwaukee
+points, producing 55/66 rather than raw 55/65. Both representations remain retained.
+
+Primary matching also exposes 153 canonical event-kind discrepancies: violations
+and ejections were classified as missed shots. They are zero-point primary actions,
+not field-goal attempts. Canonical classifications, free-throw result flags and
+the one inconsistent running `PTS` caption are explicitly excluded as scoring
+authority, not silently repaired. All canonical row and primary action/capture
+hashes remain bound to the derived receipts.
+
+The network-denied CLI E2E includes deterministic repeats, refusal to overwrite,
+wrong bundle binding, changed primary identity/actor/clock/description/scoring
+fields, missing/reordered attempts, and period/player shooting mismatches.
+Private evidence is under
+`release-artifacts/source-support-20261003/derived-source/`.
+
+```sh
+/Users/mohamedawadalla/Projects/KnicksIQ/.venv/bin/python \
+  tools/release/check_derived_scoring.py \
+  --bundle /Users/mohamedawadalla/Projects/KnicksIQ/release-artifacts/2025-26/reliability-approved-20260928.json.gz \
+  --official-dir /Users/mohamedawadalla/Projects/KnicksIQ/release-artifacts/source-support-20261003/derived-source/official \
+  --output /private/tmp/knicksiq-derived-source-recheck-NEW
+```
+
+The recipe creates independently supported proposed trajectories, not retrieval
+documents, ranked receipts, approved target sets or frozen gold. The five measure
+definitions and the complete indexed/ranked mappings still require adjudication.
+No original question, context, settled target, request ceiling or production
+configuration changed.
