@@ -435,3 +435,27 @@ remain available. The CLI has 21 passing network-denied E2E cases; it binds the
 trajectory and independent source-review digests and rejects reduced populations.
 These are proposal facts, not metric defaults, ranked mappings, approved targets
 or a gold freeze. The five approved measure clarifications still stand.
+
+The [release-scoped comparison source store](source-relevance-review.md#release-scoped-comparison-source-integration)
+now binds independently supplied bundle, trajectory, source-review and comparison
+digests to the full canonical SQL projection without rewriting the archive.
+The complete exported inventory is 184 source units, including all 101 game
+scoring units and 12 explicit scope/family comparisons. An independent,
+network-denied verifier exercises 22 retained CLI E2E cases. The new HTTP check
+uses actual SQL, ASGI and isolated Redis, including idempotent replay, conflict,
+source-corruption rejection and unchanged accounting.
+
+Run `tools/release/import_comparison_source.py --help` for the explicit local
+SQLite import/export command. Its `--initialize-empty` mode rejects an existing
+store; all four input SHA-256 values are required. The independent unit verifier
+also requires `--comparison-proof` and `--comparison-proof-sha256` together for
+derived units. The trusted proof file binds the four input paths and digests.
+Private repeatable evidence remains in `release-artifacts/source-support-20261003/source-units/`.
+
+The existing source HTTP E2E can use the exact approved proof via
+`KNICKSIQ_DISCOVERY_COMPARISON_INPUTS`; without that opt-in it uses the independent
+portable two-game fixture. For the full original cohort, also set
+`KNICKSIQ_APPROVED_BUNDLE` and a fresh `KNICKSIQ_DISCOVERY_ARTIFACT_DIR`, then run
+`apps/api/app/tests/test_canonical_discovery_http.py::test_original_cohort_records_real_local_discovery`.
+Neither fixture execution nor local pre-admission capture approves targets,
+freezes gold, transmits provider requests or completes the full release gates.

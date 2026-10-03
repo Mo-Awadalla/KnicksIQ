@@ -14,9 +14,10 @@ from app.evaluation.trace_capture import capture_turn
 from app.models.game import Game
 from app.services import analyst_loop, analyst_tools
 from app.services.archive_units import build_archive_units
+from app.services.comparison_sources import import_comparison_source
 from app.services.release_bundle import load_release_bundle
 from app.tests.test_analyst_contracts import local_redis  # noqa: F401
-from app.tests.test_canonical_narrative_http import BUNDLE, SHA
+from app.tests.test_canonical_narrative_http import BUNDLE, CLOSEST, SHA
 from app.tests.test_player_intelligence import _seed_release_stats
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy import select
@@ -110,6 +111,14 @@ async def test_original_cohort_records_real_local_discovery(
     attempts = configure(monkeypatch, "disabled")
     async with AsyncSessionLocal() as db:
         loaded = await load_release_bundle(db, BUNDLE, expected_sha256=SHA, activate=True)
+        proof_path = os.environ.get("KNICKSIQ_DISCOVERY_COMPARISON_INPUTS")
+        if proof_path:
+            proof = json.loads(Path(proof_path).read_text())
+            await import_comparison_source(
+                db,
+                **{name: Path(path) for name, path in proof["paths"].items()},
+                expected_hashes=proof["expected_hashes"],
+            )
         if os.environ.get("KNICKSIQ_DISCOVERY_ARTIFACT_DIR"):
             games = list(
                 (
@@ -161,8 +170,16 @@ async def test_original_cohort_records_real_local_discovery(
     }
     save(tmp_path, "cohort-summary", final)
     assert len(receipts) == 120 and len(semantic) == 50
-    for _, receipt in semantic:
-        assert_search(receipt)
+    for case, receipt in semantic:
+        search = assert_search(receipt)
+        if proof_path and case["id"] == "single_game_narrative-006":
+            ranked_refs = {
+                ref
+                for evidence in search["evidence"]
+                if evidence["evidence_id"] in search["returned_evidence_ids"]
+                for ref in evidence["metadata"].get("canonical_sources", [])
+            }
+            assert {f"game:{identity}" for identity in CLOSEST} <= ranked_refs
     assert QUESTIONS.read_bytes() == before
     assert attempts == {"provider": 0, "dense": 0, "reservations": 0}
     assert final["budget_after"] == "0.125"

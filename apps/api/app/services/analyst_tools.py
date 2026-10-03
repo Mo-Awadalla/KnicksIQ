@@ -18,7 +18,7 @@ from app.services.archive_retrieval import (
     search_archive_lexical,
     search_archive_vectors,
 )
-from app.services.archive_units import accepts_unit
+from app.services.archive_units import accepts_unit, build_archive_units
 from app.services.canonical_narrative import NarrativeSelection, build_narrative, select_narrative
 from app.services.evidence_contracts import Candidate, Evidence, ToolCall, ToolResult, VerifiedClaim
 from app.services.game_reference import resolve_game_reference
@@ -1237,6 +1237,10 @@ class AnalystTools:
         filters["unanchored_game_reference"] = (
             scope.clarification_reason == "missing_conversation_game"
         )
+        # One verified corpus backs both lexical retrieval and receipt admission.
+        unit_records = (
+            await build_archive_units(self.db, games, self.release.version) if games else []
+        )
         lexical = (
             await search_archive_lexical(
                 self.db,
@@ -1245,6 +1249,7 @@ class AnalystTools:
                 filters=filters,
                 data_version=self.release.version,
                 limit=20,
+                unit_records=unit_records,
             )
             if games
             else []
@@ -1293,8 +1298,7 @@ class AnalystTools:
                 if not e.metadata.get("unit_type")
                 else accepts_unit(
                     e.metadata,
-                    games=self.games,
-                    players=list({p.id: p for _, p in self.rows}.values()),
+                    unit_records=unit_records,
                     selected_game_ids={g.id for g in games},
                     player_ids=scope.player_ids,
                     periods=scope.periods,

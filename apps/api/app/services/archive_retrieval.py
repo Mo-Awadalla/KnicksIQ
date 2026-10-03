@@ -15,14 +15,14 @@ from app.models.game import Game
 from app.models.game_event import GameEvent
 from app.models.player import Player
 from app.models.report import Report
-from app.services.archive_units import build_archive_units
+from app.services.archive_units import build_archive_units, unit_is_in_scope, unit_search_text
 from app.services.embeddings import embed_texts
 from app.services.qdrant_client import get_qdrant_client, search_collection_batch
 from app.services.retrieval_fusion import (
     diversify_by_game,
     weighted_reciprocal_rank_fusion,
 )
-from sqlalchemy import String, cast, column, func, literal, or_, select, union_all
+from sqlalchemy import String, case, cast, column, func, literal, or_, select, union_all
 from sqlalchemy.ext.asyncio import AsyncSession
 
 _TOKEN_RE = re.compile(r"[a-z0-9]+")
@@ -38,7 +38,11 @@ class ArchiveEvidence:
 
 
 def _canonical_key(collection: str, metadata: dict[str, Any], fallback: str) -> str:
-    if metadata.get("unit_type") in {"multigame_aggregate", "player_identity"}:
+    if metadata.get("unit_type") in {
+        "multigame_aggregate",
+        "player_identity",
+        "game_scoring_comparison",
+    }:
         return f"unit:{metadata.get('source_document_id', fallback)}"
     game_id = metadata.get("game_id", "archive")
     if collection == "games":
@@ -64,6 +68,22 @@ def _canonical_key(collection: str, metadata: dict[str, Any], fallback: str) -> 
 
 def _tokens(text: str) -> set[str]:
     return {token for token in _TOKEN_RE.findall(text.lower()) if len(token) > 2}
+
+
+def _source_query(query: str, source_texts: list[str]) -> str:
+    """Repair only unique adjacent transpositions in actual source vocabulary."""
+    vocabulary = set().union(*(_tokens(text) for text in source_texts))
+    corrections = {}
+    for token in _tokens(query):
+        if len(token) < 5 or not token.isalpha() or token in vocabulary:
+            continue
+        candidates = {
+            token[:index] + token[index + 1] + token[index] + token[index + 2 :]
+            for index in range(len(token) - 1)
+        } & vocabulary
+        if len(candidates) == 1:
+            corrections[token] = candidates.pop()
+    return _TOKEN_RE.sub(lambda match: corrections.get(match[0], match[0]), query.lower())
 
 
 def _collection_alias(kind: str) -> str:
@@ -176,8 +196,24 @@ def _game_filter_clauses(filters: dict[str, Any]) -> list[Any]:
     return clauses
 
 
-def _lexical_match(db: AsyncSession, text_expression: Any, query: str) -> tuple[Any, Any]:
+def _lexical_match(
+    db: AsyncSession,
+    text_expression: Any,
+    query: str,
+    *,
+    source_subject: bool = False,
+) -> tuple[Any, Any]:
     """Return a backend-appropriate match predicate and rank expression."""
+    if source_subject:
+        predicates = [
+            func.lower(text_expression).regexp_match(f"(^|[^a-z0-9]){token}([^a-z0-9]|$)")
+            for token in sorted(_tokens(query))
+        ]
+        if not predicates:
+            return literal(False), literal(0.0)
+        # A repeated team name or schema key must not outrank distinct subject
+        # matches. This source-unit rule is identical on PostgreSQL and SQLite.
+        return or_(*predicates), sum((case((p, 1), else_=0) for p in predicates), literal(0))
     if db.bind and db.bind.dialect.name == "postgresql":
         vector = func.to_tsvector("simple", func.coalesce(text_expression, ""))
         tsquery = func.websearch_to_tsquery("simple", query)
@@ -186,18 +222,11 @@ def _lexical_match(db: AsyncSession, text_expression: Any, query: str) -> tuple[
     tokens = sorted(_tokens(lowered))
     if not tokens:
         return literal(True), literal(0.0)
-    predicates = [func.lower(text_expression).contains(token) for token in tokens]
-    rank = sum(
-        (
-            (
-                func.length(func.lower(text_expression))
-                - func.length(func.replace(func.lower(text_expression), token, ""))
-            )
-            / len(token)
-            for token in tokens
-        ),
-        literal(0),
-    )
+    predicates = [
+        func.lower(text_expression).regexp_match(f"(^|[^a-z0-9]){token}([^a-z0-9]|$)")
+        for token in tokens
+    ]
+    rank = sum((case((predicate, 1), else_=0) for predicate in predicates), literal(0))
     return or_(*predicates), rank
 
 
@@ -210,6 +239,7 @@ async def search_archive_lexical(
     data_version: str,
     limit: int,
     trace: list[dict[str, Any]] | None = None,
+    unit_records: list[dict[str, Any]] | None = None,
 ) -> list[ArchiveEvidence]:
     """Search PostgreSQL independently of Qdrant, always scoped to one release."""
     started = time.perf_counter()
@@ -435,34 +465,38 @@ async def search_archive_lexical(
             )
 
     if release_id is not None:
-        selected = list(
-            (
-                await db.execute(
-                    select(Game)
-                    .where(Game.release_id == release_id, *game_clauses)
-                    .order_by(Game.game_date, Game.id)
-                )
-            ).scalars()
-        )
-        records = await build_archive_units(db, selected, data_version)
+        if unit_records is None:
+            selected = list(
+                (
+                    await db.execute(
+                        select(Game)
+                        .where(Game.release_id == release_id, *game_clauses)
+                        .order_by(Game.game_date, Game.id)
+                    )
+                ).scalars()
+            )
+            unit_records = await build_archive_units(db, selected, data_version)
         eligible = [
             r
-            for r in records
-            if (
-                r["payload"]["unit_type"] == "multigame_aggregate"
-                and "games" in collections
-                and not clean.get("player_ids")
-                and not clean.get("periods")
+            for r in unit_records
+            if unit_is_in_scope(
+                r["payload"],
+                set(clean.get("game_ids") or r["payload"].get("game_ids") or []),
+                clean.get("player_ids") or [],
+                clean.get("periods") or [],
             )
-            or (
-                r["payload"]["unit_type"] == "player_identity"
+            and (
+                r["payload"]["unit_type"] in {"multigame_aggregate", "game_scoring_comparison"}
+                and "games" in collections
+                or r["payload"]["unit_type"] == "player_identity"
                 and "box_scores" in collections
-                and set(r["payload"]["player_ids"]) & set(clean.get("player_ids") or [])
             )
         ]
+        source_texts = [unit_search_text(record["payload"]) for record in eligible]
+        source_query = _source_query(query, source_texts)
         statements = []
-        for index, record in enumerate(eligible):
-            match, rank = _lexical_match(db, literal(record["payload"]["text"]), query)
+        for index, text in enumerate(source_texts):
+            match, rank = _lexical_match(db, literal(text), source_query, source_subject=True)
             statements.append(
                 select(literal(index).label("unit_index"), rank.label("rank")).where(match)
             )
@@ -479,7 +513,8 @@ async def search_archive_lexical(
                     ArchiveEvidence(
                         evidence_id=f"lexical:units:{record['id']}",
                         collection="games"
-                        if payload["unit_type"] == "multigame_aggregate"
+                        if payload["unit_type"]
+                        in {"multigame_aggregate", "game_scoring_comparison"}
                         else "box_scores",
                         text=payload["text"],
                         score=float(score or 0),
