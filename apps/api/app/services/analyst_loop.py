@@ -203,6 +203,7 @@ class AnalystLoop:
             payload.update(
                 question=self.tools.question,
                 context=self.context,
+                claim_uses=[],
                 results=[
                     {
                         "status": r.status,
@@ -221,7 +222,13 @@ class AnalystLoop:
             claims = list({c.claim_id: c for r in self.results for c in r.claims}.values())
             if not claims:
                 claims = list(self.tools.claims.values())
-            evidence = list({e.evidence_id: e for r in self.results for e in r.evidence}.values())
+            evidence_by_id = {e.evidence_id: e for r in self.results for e in r.evidence}
+            # Current discovery remains useful when a tool result is too large to send.
+            # Do not revive unrelated evidence hydrated from earlier conversation turns.
+            if self.tools.discovery:
+                for item in self.tools.discovery.evidence:
+                    evidence_by_id.setdefault(item.evidence_id, item)
+            evidence = list(evidence_by_id.values())
             if not evidence:
                 evidence = list(self.tools.evidence.values())
             candidates = list(self.tools.candidates.values())
@@ -246,6 +253,14 @@ class AnalystLoop:
             group = [self.tools.claims[ref] for ref in sorted(group_ids) if ref not in sent_claims]
             data = [c.model_dump(mode="json") for c in group]
             size = token_upper_bound(encoded(data))
+            uses = [
+                {"claim_id": c.claim_id, "displayed_value": c.value, "decimal_places": None}
+                for c in group
+            ]
+            if not review:
+                # Keep the exact typed output form with its immutable claim, including
+                # for providers that support JSON objects without enforcing a schema.
+                size += token_upper_bound(encoded(uses))
             related = [
                 c
                 for c in candidates
@@ -257,6 +272,8 @@ class AnalystLoop:
                 "claims": payload["claims"] + data,
                 "candidates": payload["candidates"] + [c.model_dump() for c in related],
             }
+            if not review:
+                candidate_payload["claim_uses"] = payload["claim_uses"] + uses
             if evidence_size + size > self.settings.analyst_evidence_tokens or (
                 token_upper_bound(encoded(candidate_payload)) > limit
             ):
@@ -267,8 +284,28 @@ class AnalystLoop:
             evidence_size += size
             sent_claims.update({c.claim_id: c for c in group})
             sent_candidates.update({c.fact_id: c for c in related})
+        if not review and self.tools.narrative:
+            required = {
+                c.claim_id
+                for result in self.results
+                for c in result.claims
+                if c.metric_id == "canonical_game_narrative"
+            }
+            if not required <= sent_claims.keys():
+                # A partial narrative cannot pass completeness validation. Preserve the
+                # full backend answer instead of spending calls on an empty factual input.
+                raise ValueError("Complete narrative claims exceed model input budget")
         # Prioritize evidence supporting the retained claims.
         refs = {ref for c in sent_claims.values() for ref in c.supporting_evidence_ids}
+        if not review:
+            # Aggregate receipts live in the registry even when tools return only
+            # their raw source rows. Resolve just the retained claims' references.
+            evidence_by_id = {item.evidence_id: item for item in evidence}
+            for ref in sorted(refs):
+                item = self.tools.evidence.get(ref)
+                if item is not None and item.release_id == self.tools.release.version:
+                    evidence_by_id.setdefault(ref, item)
+            evidence = list(evidence_by_id.values())
         evidence.sort(key=lambda e: e.evidence_id not in refs)
         for item in evidence:
             data = item.model_dump(mode="json")
@@ -318,6 +355,8 @@ class AnalystLoop:
                 "its text exactly. Reject unsupported factual premises, irrelevant scope, and "
                 "questions the archive cannot support. A rejected suggestion does not affect "
                 "the answer verdict. Use the supplied interpretation policy. "
+                "Keep each reason to one short sentence, at most 500 characters. Put supporting "
+                "IDs in their dedicated fields instead of repeating them in reason. "
                 "Return JSON matching schema."
             )
         else:
@@ -330,9 +369,11 @@ class AnalystLoop:
                 "get_evidence expands returned references. Answer once evidence is sufficient. "
                 "call_tools requires tools and null answer. Answer actions require an answer "
                 "object containing text, claims, evidence_ids and fact_ids, never null. "
-                "Include EVERY used claim in answer.claims: copy claim_id and ENTIRE value into "
-                "displayed_value, including every object key. Use each claim once. Only numeric "
-                "rounding uses decimal_places. Copy selected candidates[].fact_id into fact_ids "
+                "Include EVERY used claim in answer.claims by copying its claim_uses entry. "
+                "displayed_value is the exact JSON value, never the statement sentence. "
+                "Preserve its type and every object key. Use each claim once. Only numeric "
+                "rounding may change the value, with matching decimal_places. "
+                "Copy selected candidates[].fact_id into fact_ids "
                 "and evidence[].evidence_id into evidence_ids exactly; never shorten IDs. "
                 "Answer briefly by default, usually in one or two short sentences. Explain "
                 "more deeply when asked. Include up to two relevant follow_up_questions "
@@ -525,7 +566,11 @@ class AnalystLoop:
             self.sent_candidates,
             self.tools.release.version,
         ):
-            return False, "Invalid claim value, release, baseline or reference."
+            return False, (
+                "Invalid claim value, release, baseline or reference. Copy claim_uses entries "
+                "for answer.claims: displayed_value must preserve the JSON value/type, never "
+                "the statement sentence. Use only supplied references."
+            )
         try:
             review = await self.model(
                 AnswerReview, review=True, answer=answer, timeout_seconds=timeout_seconds

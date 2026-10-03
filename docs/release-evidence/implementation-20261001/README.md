@@ -404,3 +404,34 @@ a longer TCP control and a REST connectivity control timed out. No state was
 written to it; no Render plan, provider completion or production state changed.
 Its documented three-day expiry is retained. It remains unadmitted, and credentials
 stay in ignored private files in the original implementation checkout.
+
+The October 3 [measure-source audit](source-relevance-review.md#october-3-source-integrity-findings)
+adds a network-denied CLI and 25 passing subprocess E2E cases. All 101 games
+have complete verified period populations, establishing distinct fewest-Q3-point
+and worst-Q3-margin candidates without changing clarification policy. A raw
+scoring-sequence discrepancy in Milwaukee game `0022500125` is corroborated by
+the official NBA page; only 100 games pass that raw sequence check. Exploratory
+point reconstruction matches period and player box totals but does not approve
+repaired intermediate scores. Evidence stays in the main project's ignored
+`release-artifacts/source-support-20261003/`. Gold, complete indexed source
+mappings, dense retrieval, guarded live orchestration and the original release
+workloads remain open.
+
+The owner subsequently selected
+[independent derived-source validation](confirmed-scoring-source-direction.json).
+The resulting [per-action source check](source-relevance-review.md#complete-independent-per-action-derived-source-verification)
+matches every original event to primary NBA action-list order and reconciles all
+101 games, 816 periods and 2,748 player box rows. It retains the raw scoreboards,
+153 incorrect canonical event classifications and the running-caption discrepancy.
+`tools/release/check_derived_scoring.py` exercises the independent offline CLI with
+network denied, including corruption controls. This closes per-action scoring
+provenance only: target definitions, indexed/ranked relevance, owner gold approval
+and full release workloads remain open.
+
+Complete [pinned measure comparisons](source-relevance-review.md#complete-pinned-comparison-evidence)
+now distinguish 12 quantitative alternatives across the full 101-game archive,
+82 regular-season games and 19 postseason games. All tied source boundaries
+remain available. The CLI has 21 passing network-denied E2E cases; it binds the
+trajectory and independent source-review digests and rejects reduced populations.
+These are proposal facts, not metric defaults, ranked mappings, approved targets
+or a gold freeze. The five approved measure clarifications still stand.
