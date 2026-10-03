@@ -16,7 +16,7 @@ from app.models.dataset_release import DatasetRelease
 from app.models.game import Game
 from app.models.game_event import GameEvent
 from app.models.report import Report
-from app.services.archive_units import UNIT_RECIPE, build_archive_units
+from app.services.archive_units import UNIT_RECIPE, build_archive_units, unit_search_text
 from app.services.embeddings import embed_texts
 from app.services.possession_chunks import build_possession_chunks
 from app.services.qdrant_client import (
@@ -240,7 +240,7 @@ async def build_rag_artifacts(
             kind = record["payload"]["unit_type"]
             collection = (
                 settings.rag_qdrant_games_collection
-                if kind == "multigame_aggregate"
+                if kind in {"multigame_aggregate", "game_scoring_comparison"}
                 else settings.rag_qdrant_box_scores_collection
             )
             supporting_records[collection].append(record)
@@ -472,7 +472,7 @@ def _prepare_release_collections(
         texts = [
             _embedding_text(record)
             if alias == settings.rag_qdrant_possessions_collection
-            else str(record["payload"]["semantic_summary"])
+            else unit_search_text(record["payload"])
             for record in records
         ]
         documents[alias] = texts

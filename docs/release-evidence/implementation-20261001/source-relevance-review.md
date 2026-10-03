@@ -255,3 +255,64 @@ rejection and contribution/period corruption controls. Private outputs are in
 The paired `derived-source-review.json` is required beside the trajectory file.
 No question, context, semantic member, settled target set or threshold changed.
 This evidence is still not indexed/ranked retrieval proof or owner-approved gold.
+
+## Release-scoped comparison source integration
+
+`ComparisonSource` stores the independently pinned comparison, source-review,
+trajectory and approved-bundle digests separately from canonical archive rows.
+Import independently recomputes the 12 measures and every tied boundary, checks
+complete game/period/event coverage, and binds the full SQL source projection.
+An identical import is idempotent; changed proof or canonical SQL data cannot
+silently replace or admit a verified source. Migration `0006_comparison_sources`
+is expand-only and preserves imported proof when the application is rolled back.
+
+The complete source corpus contains 184 units: the original 29 opponent and
+20 identity units, 12 scope/family comparison units, 101 single-game scoring
+units, and 22 complete tied-final-margin story groups. Aggregate units have no
+representative scalar game ID. Comparison references are actual metric event
+or period witnesses, not generic game IDs that inflate unrelated retrieval
+credit. All alternatives remain descriptive; no metric or scope default, causal
+claim, target approval or gold freeze is introduced.
+
+`tools/release/import_comparison_source.py` requires an explicit local SQLite
+path and all four independently supplied input digests. `--initialize-empty`
+refuses an existing store. Its export is local-only, with Qdrant disabled.
+`tools/release/verify_archive_sources.py` now independently checks the complete
+comparison/story inventory and actual ranked receipts against pinned evidence,
+without importing the application unit builder. The network-denied CLI E2E
+passes 22 cases, including re-signed wrong measures, reduced populations,
+inflated references, omitted physical witnesses and unsupported source claims.
+
+Private evidence is under
+`release-artifacts/source-support-20261003/source-units/`. The original
+120-question HTTP probe retains all original contexts and 50 semantic cases,
+with provider/dense dispatch and reservations denied. These local integrity
+checks do not replace the primary, services-disabled, shadow or load release gates.
+
+The real-data five-question HTTP E2E initially exposed a ranked-source miss for
+the original `collpase` question. Ranking now uses the supported source subject
+instead of repeated proof JSON keys, gives one credit per matched query term,
+and uses word boundaries rather than matching `run` inside `Brunson` or `the`
+inside referee names. Unique adjacent-letter transpositions are repaired only
+against eligible source vocabulary. Dense descriptors remain compact while
+returned evidence preserves the full physical proof payload. All five original
+questions now retrieve their comparison family in the actual top five and still
+require the original clarification. The red and passing receipts are retained
+in `http-real-red/` and `http-real-words/`; no unit tests were added.
+
+The final unchanged-cohort probe also checks that actual top-five evidence
+represents every closest-game tie, rather than returning five separate games
+and losing the sixth. Its complete tied-population source now reaches the ranked
+set. Final independent verification passes all 22 CLI cases over 184 units and
+57 actual ranked unit receipts in `cohort-complete-ties/` and
+`verifier-complete-ties/`.
+
+The resulting private `source-relevance-proposal.json` identifies supported
+sources for all 50 semantic cases: seven settled target sets preserved verbatim
+and 43 new proposed sets. The five measure proposals use fine event/period
+witnesses for explicitly named alternatives and preserve their clarification
+dispositions. No original question/context, member, threshold, request ceiling
+or accounting state changed. Proposal SHA-256:
+`d5290410996efc604c7df1157c145711e7baefe5f07c28f3052929214518e464`.
+The content still requires owner approval before any gold freeze or paid
+release workload; supported source facts are not owner-approved relevance.
