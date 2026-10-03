@@ -374,13 +374,14 @@ mutation. This file's Redis points to localhost and its database is a different
 resource from the isolated `.env.rc.local` database. These observations do not
 certify hosted dependency readiness or authorize production state mutations.
 
-The [current independent source review](source-relevance-review.md) records all
-50 semantic cases against the latest actual captures. Seven settled target sets
-remain unchanged; 38 new candidate target sets are identified, including the
-independently relevant canonical JB identity source. Five measure-specific target
-sets remain unresolved, so the full expectation contract cannot yet be frozen.
-The exact candidate records, source/observation hashes and reasons are retained
-in `source-relevance-proposal.json`. This review approves no gold or launch.
+The [current independent source review](source-relevance-review.md) now records
+supported source proposals for all 50 semantic cases against actual captures.
+Seven settled target sets remain unchanged; 43 new sets include canonical JB
+identity and fine event/period sources for all five measure clarifications.
+All 184 source units and 67 actual ranked unit receipts are independently
+verified. Exact proposals remain in the private `source-support-20261003/source-units/`
+evidence. Full 120-case expectation and source-target approval is still required
+before freezing gold; source support does not certify retrieval recall or launch.
 
 Publication preparation uses a separate checkout under
 `/private/tmp/KnicksIQ-release-publish-20261001` because the current permission
