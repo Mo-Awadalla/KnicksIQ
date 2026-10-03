@@ -427,3 +427,11 @@ matches every original event to primary NBA action-list order and reconciles all
 network denied, including corruption controls. This closes per-action scoring
 provenance only: target definitions, indexed/ranked relevance, owner gold approval
 and full release workloads remain open.
+
+Complete [pinned measure comparisons](source-relevance-review.md#complete-pinned-comparison-evidence)
+now distinguish 12 quantitative alternatives across the full 101-game archive,
+82 regular-season games and 19 postseason games. All tied source boundaries
+remain available. The CLI has 21 passing network-denied E2E cases; it binds the
+trajectory and independent source-review digests and rejects reduced populations.
+These are proposal facts, not metric defaults, ranked mappings, approved targets
+or a gold freeze. The five approved measure clarifications still stand.
