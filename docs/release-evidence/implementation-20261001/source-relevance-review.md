@@ -184,3 +184,74 @@ documents, ranked receipts, approved target sets or frozen gold. The five measur
 definitions and the complete indexed/ranked mappings still require adjudication.
 No original question, context, settled target, request ceiling or production
 configuration changed.
+
+## Measure-comparison evidence failure modes
+
+Comparison evidence must precede target selection; it does not choose a default
+for any of the five approved clarifications. The next CLI/E2E seam is specified
+before implementation:
+
+- Require exact input trajectory bytes, unique game/source identities, complete
+  contiguous event order, actor-consistent integer contributions, consistent
+  before/after states and complete reconciled period pairs. Reject corrupt or
+  partial inputs; never certify a maximum from a silently reduced population.
+- Keep complete archive, regular-season and postseason populations separate.
+  Retain empty populations explicitly and preserve every tied game/window.
+- Distinguish Q3 points from Q3 margin; observed deficits from deficits later
+  tied, led or followed by a final win; unanswered points from unrestricted
+  net-margin gain; positive leads surrendered from unrestricted margin decline.
+  Final-loss-only surrendered leads are a separate comparison.
+- Use chronological scoring boundaries. An opponent point ends an unanswered
+  run; zero-point events and quarter breaks do not. Report boundary source IDs
+  and all actual scoring source IDs without unsupported causal attribution.
+- Unrestricted within-game net windows are explicitly labelled unrestricted,
+  not substituted for a user-selected clock/period window or damage criterion.
+  Clarification remains required for missing metric, boundary or season scope.
+- Produce deterministic, hash-bound evidence and reject overwrites. Network,
+  provider calls, retrieval ranking, owner approval and gold freeze stay absent.
+
+## Complete pinned comparison evidence
+
+`tools/release/build_measure_comparisons.py` now consumes both the exact pinned
+trajectory bytes and their independently verified source-review bytes. It rejects
+reduced/duplicate populations and rechecks contribution states and period pairs.
+The report covers all 101 original games, separately retaining 82 regular-season
+and 19 postseason games, with 12 explicitly labelled measures and all tied
+game/window boundaries. Boundary references use existing event IDs and explicit
+before/after states, including the initial state before the first event.
+
+The complete-archive alternatives materially differ:
+
+| Comparison | Value | Game source |
+| --- | --- | --- |
+| Fewest Q3 NYK points | 11 | `0022500835` |
+| Worst Q3 NYK margin | -15 | `0022500003`, `0022500125`, `0022500816` |
+| Largest observed deficit | 43 | `0022500742` |
+| Largest deficit later recovered to at least a tie / a lead / an eventual win | 29 | `0042500404` |
+| Largest NYK unanswered run | 23 | `0022500343` |
+| Largest NYK unrestricted within-game net-margin gain | 65 | `0042500126` |
+| Largest opponent unanswered run | 17 | `0022501016` |
+| Largest unrestricted within-game NYK margin decline | 47 | `0022500742` |
+| Largest positive NYK lead surrendered, also ending in a loss | 19 | `0022500467` |
+
+These are quantitative candidate comparisons, not answers to an unspecified
+measure and not causal claims. Unrestricted scoring-boundary windows are not a
+substitute for a selected clock/period window or damage criterion. The original
+five clarifications remain unchanged.
+
+`tools/release/check_measure_comparisons.py` passes 21 network-denied CLI E2E
+cases, including full real-data coverage, two-phase tie/erasure/run-boundary
+fixtures, deterministic repeats, refusal to overwrite, partial-population
+rejection and contribution/period corruption controls. Private outputs are in
+`release-artifacts/source-support-20261003/measure-comparisons/e2e-verified/`.
+
+```sh
+/Users/mohamedawadalla/Projects/KnicksIQ/.venv/bin/python \
+  tools/release/check_measure_comparisons.py \
+  --trajectories /Users/mohamedawadalla/Projects/KnicksIQ/release-artifacts/source-support-20261003/derived-source/e2e-final/approved/derived-scoring-events.jsonl \
+  --output /private/tmp/knicksiq-measure-comparison-recheck-NEW
+```
+
+The paired `derived-source-review.json` is required beside the trajectory file.
+No question, context, semantic member, settled target set or threshold changed.
+This evidence is still not indexed/ranked retrieval proof or owner-approved gold.
