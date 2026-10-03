@@ -1,13 +1,13 @@
 # Current source relevance review
 
-The original 120-question expectation review and all 50 semantic members are retained. Seven settled target sets remain byte-equivalent in content, including all nine Atlanta games. The new review identifies 38 candidate target sets and leaves five measure-dependent target sets unresolved. These are proposals, with no owner approval or freeze.
+The original 120-question expectation review and all 50 semantic members are retained. Seven settled target sets remain byte-equivalent in content, including all nine Atlanta games. The latest review identifies 43 new independently supported candidate target sets, with no unresolved source sets. These remain proposals: owner approval and gold freeze are pending.
 
-Review artifact: `release-artifacts/implementation-20261001/source-relevance-proposal.json`.
-SHA256: `e24a016ee325d36e722068ea3f079871bf90a456e34a65e713f2537bab92f180`.
+Review artifact: `release-artifacts/source-support-20261003/source-units/source-relevance-proposal.json`.
+SHA256: `c7dcebe6631ecce5226b626763f18e3b1e21660cbc3ff0602e790f99a5cd2b4d`.
 
 The actual canonical JB identity document is independently relevant to recognizing Jalen Brunson while asking “Which game?” when the immutable context contains no identified game. This establishes no missing game or performance facts. An identified game in the preceding ten messages still permits an answer from canonical rows.
 
-The five approved measure clarifications remain in force. Current word matches and generic result documents do not establish their missing measure-specific retrieval targets. No new metric default, excluded semantic member or manufactured mapping is introduced.
+The five approved measure clarifications remain in force. Pinned per-action evidence now supplies fine event/period sources for their named alternatives; no metric, interval or scope default is introduced. The table below retains the earlier source gaps, superseded by the verified comparison integration described later in this review.
 
 | Case | Question | Missing source support |
 | --- | --- | --- |
@@ -17,9 +17,9 @@ The five approved measure clarifications remain in force. Current word matches a
 | aliases_typos-005 | What was the Knics biggest run? | The actual running-layup descriptions do not establish unanswered-run versus net-window-gain definitions, boundaries or the requested scope. |
 | aliases_typos-010 | What was NY's worst collpase? | The current rankings contain generic result/box documents and a selected positive scoring interval. They do not define a lead surrendered versus margin decline or a season-wide worst collapse. |
 
-All 50 case records bind the original question/context, canonical fact digest, actual top-five IDs, captured response hash and independently verified unit receipts where available. A correct clarification or canonical answer does not imply passing retrieval. The tied closest-game stories and Boston runs have canonical fact support; their complete indexed/ranked source mappings still need proof.
+All 50 case records bind the original question/context, canonical fact digest, actual top-five IDs, captured response hash and independently verified unit receipts where available. The full 184-unit corpus and 67 actual ranked unit receipts are independently verified. A correct clarification or supported source does not imply passing retrieval: complete proposed-target coverage from ranked units alone is observed in 37 of 50 cases.
 
-Next dependent release steps require supported targets for all 50 cases, complete current receipt mapping, then content-bound owner approval of the full frozen expectations. Guarded counted execution, the three original cohorts, hosted dependency/load/recovery/rollback evidence and final digest-bound launch approval remain open. Production and current staging plans are unchanged.
+The next dependent step is content-bound owner approval of the full 120-case expectations and 50-case source targets before freezing gold. Guarded counted execution, the three original cohorts, hosted dependency/load/recovery/rollback evidence and final digest-bound launch approval remain open. Production and current staging plans are unchanged.
 
 ## Measure-source audit failure modes
 
