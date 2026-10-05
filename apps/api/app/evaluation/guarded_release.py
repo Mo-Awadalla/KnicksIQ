@@ -83,6 +83,7 @@ GOAL_ANCHOR = "release-execution-20261003/guarded-original120-goal.json"
 SUCCESSOR_AUTHORIZATION_SHA256 = "ad46e2cd9ce9b1bbd4142d6f156da6f81ca9c3e9d3c9ef956bb9dad067ba8dce"
 # Read-only owner safety inventory accompanying this one exact authorization.
 SUCCESSOR_MONTHLY_FLOOR_NUSD = 372_507_682
+KNOWN_COST_AUTHORIZATION_SHA256 = "327a6cc2e080c223858cca75b87402416c813eacb0e8528f85592793e74f9e0c"
 PRIOR_PROBE = (
     "docker-staging-20261002/claim-value-format-20261002/review-format-fix/run-1/probe.json"
 )
@@ -218,7 +219,7 @@ class MonthlyLedger:
                 "Unresolved, changed retained, or foreign monthly reservations",
             )
             require(
-                self.floor <= total < MONTHLY_CUTOFF,
+                nusd(self.floor) <= nusd(total) and total < MONTHLY_CUTOFF,
                 "Historical charge floor or real $2 cutoff violated",
             )
             require(
@@ -1269,10 +1270,14 @@ class GuardedSession:
             )
             self.binding = db.execute("SELECT binding FROM identity").fetchone()[0]
             stored = json.loads(db.execute("SELECT binding FROM guard_goal").fetchone()[0])
-            self.subject_namespace = stored.get("successor", {}).get("authorization_sha256")
+            self.subject_namespace = self.binding if stored.get("successor") else None
         self.subject_clients = (
             {
-                request_id: f"guarded-successor-{self.subject_namespace}-{index + 1}"
+                request_id: (
+                    f"guarded-successor-{self.subject_namespace}-load"
+                    if self.stage == "load"
+                    else f"guarded-successor-{self.subject_namespace}-{index + 1}"
+                )
                 for index, request_id in enumerate(bound_ids)
             }
             if self.subject_namespace
@@ -1287,6 +1292,7 @@ class GuardedSession:
         )
         self.execution.failed = self.failed
         self.execution.subject_namespace = self.subject_namespace
+        self.revalidate = None
         adapter_factory = self.execution.adapter
 
         def diagnosed_adapter(stage, reasoning_effort):
@@ -1384,6 +1390,8 @@ class GuardedSession:
 
     async def verify_request(self, payload: dict) -> int:
         self.execution.check()
+        if self.revalidate is not None:
+            self.revalidate()
         turn = _turn.get()
         require(
             turn is not None and turn["mode"] == self.mode and not turn.get("prepared"),
@@ -1417,7 +1425,8 @@ class GuardedSession:
             "Missing aggregate historical goal accounting",
         )
         require(
-            historical_amount + snapshot["reserved_or_spent_nusd"] + bound <= 2_000_000_000,
+            historical_amount + sum(row["amount_nusd"] for row in snapshot["calls"]) + bound
+            <= 2_000_000_000,
             "Aggregate historical goal + actual payload exceeds $2",
         )
         candidates = [
@@ -1585,8 +1594,11 @@ def successor_lineage(
     )
     if authorization is None:
         return None
+    authorization_sha = file_hash(authorization.resolve())
+    if authorization_sha == KNOWN_COST_AUTHORIZATION_SHA256:
+        return known_cost_lineage(root, goal, authorization, predecessor_goal)
     require(
-        file_hash(authorization.resolve()) == SUCCESSOR_AUTHORIZATION_SHA256,
+        authorization_sha == SUCCESSOR_AUTHORIZATION_SHA256,
         "Successor authorization differs from exact owner safety choice",
     )
     approved = json.loads(authorization.read_text())
@@ -1723,6 +1735,554 @@ def successor_lineage(
     }
 
 
+def successor_anchor(root: Path, lineage: dict | None) -> Path:
+    anchor = root / GOAL_ANCHOR
+    if lineage is None:
+        return anchor
+    identity = lineage["authorization_sha256"]
+    if identity == KNOWN_COST_AUTHORIZATION_SHA256:
+        identity += "-" + lineage["predecessor_journal_sha256"]
+    else:
+        require(identity == SUCCESSOR_AUTHORIZATION_SHA256, "Foreign successor authorization")
+    return anchor.with_name("guarded-counted-successor-" + identity + ".json")
+
+
+def evidence_goal(root: Path, declared: str) -> Path:
+    relative = Path(declared).relative_to("/evidence")
+    goal = (root / relative).resolve()
+    require(
+        goal.is_relative_to(root) and goal != root and ".." not in relative.parts,
+        "Substituted ancestor evidence path",
+    )
+    return goal
+
+
+def admitted_binding_sha(stored: dict) -> str:
+    # Admission seals identity before adding inspected resources and the actual
+    # Redis admission floor. Retain that historical convention for old journals.
+    identity = {
+        key: value for key, value in stored.items() if key not in {"resources", "redis_run_id"}
+    }
+    identity["historical_floor_nusd"] = 72_217_900
+    return digest(identity)
+
+
+def admission_seal(stored: dict) -> dict:
+    return {
+        "monthly_floor_nusd": stored["historical_floor_nusd"],
+        "resources_sha256": digest(stored["resources"]),
+        "redis_run_id": stored["redis_run_id"],
+    }
+
+
+def protocol_sources() -> dict[str, str]:
+    services = Path(__file__).resolve().parent.parent / "services"
+    return {
+        name: file_hash(services / name)
+        for name in ("analyst_loop.py", "evidence_contracts.py", "analyst_tools.py")
+    }
+
+
+def stage_limits(selected: int) -> dict[str, tuple[int, int]]:
+    return {
+        "smoke": (9, 100_000_000),
+        "primary": (720, 500_000_000),
+        "shadow": (6 * selected, 500_000_000),
+        "load": (66, 660_000_000),
+    }
+
+
+def target_resources(resources: dict) -> dict:
+    return {
+        **resources,
+        "docker": {
+            name: value for name, value in resources.get("docker", {}).items() if name != "verifier"
+        },
+    }
+
+
+def validate_protocol_stop(
+    goal: Path,
+    stored: dict,
+    fresh: list[dict],
+    receipts: list[dict],
+    normal: list[dict],
+    phases: dict,
+) -> list[dict]:
+    """Require settled local financial joins and durable typed-protocol evidence."""
+    joined = {row["journal_ticket"]: row for row in receipts}
+    normals = {row["identity"]: row for row in normal}
+    require(
+        fresh and len(joined) == len(receipts) == len(fresh) and len(normals) == len(normal),
+        "Missing or duplicate fresh financial provenance",
+    )
+    tickets = [ticket for row in normal for ticket in row["tickets"]]
+    require(
+        sorted(tickets) == sorted(row["id"] for row in fresh) and len(tickets) == len(set(tickets)),
+        "Fresh normal ticket inventory differs",
+    )
+    for reservation in normal:
+        require(
+            reservation["settled"] is True
+            and reservation["uncertain"] is False
+            and type(reservation.get("cost_nusd")) is int
+            and type(reservation.get("slots")) is int
+            and 0 < reservation["slots"] <= 6
+            and reservation.get("used") == len(reservation["tickets"]) <= reservation["slots"]
+            and money(reservation["amount"]) == Decimal("0.01") * reservation["slots"]
+            and 0 <= reservation["cost_nusd"] <= nusd(reservation["amount"])
+            and reservation["cost_nusd"]
+            == sum(joined[ticket]["cost_nusd"] for ticket in reservation["tickets"]),
+            "New normal reservation is held, uncertain or incompletely settled",
+        )
+    for call in fresh:
+        receipt = joined.get(call["id"], {})
+        reservation = normals.get(receipt.get("normal_reservation_id"), {})
+        require(
+            call["status"] == "settled"
+            and call["error"] is None
+            and receipt.get("status") == "settled"
+            and receipt.get("cost_nusd") == receipt.get("reported_cost_nusd") == call["amount_nusd"]
+            and type(receipt.get("bound_nusd")) is int
+            and 0 <= call["amount_nusd"] <= receipt["bound_nusd"]
+            and receipt["bound_nusd"] > 0
+            and receipt.get("journal_binding") == admitted_binding_sha(stored)
+            and receipt.get("stage") == call["stage"]
+            and receipt.get("mode") == ("shadow" if call["stage"] == "load" else call["stage"])
+            and call["id"] in reservation.get("tickets", [])
+            and reservation.get("request_id") == receipt.get("request_id")
+            and reservation.get("case_id") == receipt.get("case_id")
+            and receipt.get("model") == stored["model"]
+            and receipt.get("provider") == PROVIDER
+            and receipt.get("route") == stored["route"]
+            and receipt.get("provider_key_sha256") == stored["provider_key_sha256"],
+            "Fresh provider cost, bound, identity or normal joins differ",
+        )
+        directory = goal / call["stage"]
+        raw_path = directory / f"response-{call['id']:06d}.body"
+        raw = raw_path.read_bytes()
+        require(
+            hashlib.sha256(raw).hexdigest() == receipt.get("raw_response_sha256")
+            and raw_path.stat().st_mode & 0o777 == 0o600,
+            "Fresh private wire evidence differs",
+        )
+        body = json.loads(raw)
+        require(
+            isinstance(body["id"], str)
+            and bool(body["id"])
+            and body["id"] == receipt.get("provider_generation_id")
+            and body["model"] == stored["model"]
+            and body["provider"] == PROVIDER
+            and nusd(body["usage"]["cost"]) == call["amount_nusd"]
+            and digest(body) == receipt.get("response_sha256")
+            and body["choices"][0].get("finish_reason") == receipt.get("finish_reason"),
+            "Fresh wire generation/cost differs from settled receipt",
+        )
+        request = json.loads((directory / f"request-{call['id']:06d}.json").read_text())
+        require(
+            digest(request["payload"]) == receipt.get("payload_sha256")
+            and all(
+                request["join"].get(key) == value
+                for key, value in receipt.items()
+                if key in request["join"] and key != "status"
+            ),
+            "Fresh private request provenance differs",
+        )
+    failures = []
+    for stage, status in phases.items():
+        if status != "failed":
+            continue
+        local = [call for call in fresh if call["stage"] == stage]
+        require(bool(local), "Failed stage has no fresh settled protocol call")
+        ticket = local[-1]["id"]
+        receipt = joined[ticket]
+        path = goal / stage / f"protocol-failure-{ticket:06d}.json"
+        diagnosis = json.loads(path.read_text())
+        require(
+            diagnosis.get("journal_ticket") == ticket
+            and diagnosis.get("request_id") == receipt["request_id"]
+            and diagnosis.get("raw_response_sha256") == receipt["raw_response_sha256"]
+            and diagnosis.get("finish_reason") == receipt.get("finish_reason")
+            and diagnosis.get("error_type") == "ValidationError"
+            and isinstance(diagnosis.get("errors"), list)
+            and bool(diagnosis["errors"])
+            and all(
+                isinstance(error.get("loc"), list) and isinstance(error.get("type"), str)
+                for error in diagnosis["errors"]
+            ),
+            "Stopped stage lacks exact private typed-protocol diagnosis",
+        )
+        summary = json.loads((goal / stage / "execution-summary.json").read_text())
+        require(
+            summary["status"] == "failed"
+            and summary["mode"] == receipt["mode"]
+            and summary["calls"] == receipts
+            and summary["accounting"]["calls"] == fresh,
+            "Stopped protocol stage summary differs from local journal",
+        )
+        failures.append(
+            {
+                "journal_ticket": ticket,
+                "stage": stage,
+                "diagnosis_sha256": file_hash(path),
+                "raw_response_sha256": receipt["raw_response_sha256"],
+            }
+        )
+    require(bool(failures), "Predecessor is not an actual failed protocol stage")
+    return failures
+
+
+def known_cost_lineage(root: Path, goal: Path, authorization: Path, predecessor_goal: Path) -> dict:
+    approved = json.loads(authorization.read_text())
+    from app.api.analysis import _sample_shadow
+
+    cases = load_contract(root / GOLD, root / APPROVAL)["cases"]
+    selected = sum(
+        _sample_shadow(evaluation_request_id(FROZEN[GOLD], "shadow", case["id"]), 0.1)
+        for case in cases
+    )
+    limits = stage_limits(selected)
+    require(
+        approved["schema_version"] == 1
+        and approved["user_safety_choice"] == "Finish original live tests"
+        and approved["preserve_all_predecessor_charges_and_reservations"] is True
+        and approved["original_case_and_request_limits_remain"] is True
+        and approved["stop_on_any_new_financial_uncertainty"] is True
+        and approved["deploy_or_alias_promotion_authorized"] is False
+        and approved["monthly_cutoff_usd_remains"] == "2"
+        and approved["expected_frozen_contract_sha256"] == FROZEN[GOLD]
+        and approved["prior_authorization_sha256"] == SUCCESSOR_AUTHORIZATION_SHA256
+        and approved["request_caps"] == {name: cap for name, (cap, _) in limits.items()}
+        and type(approved["minimum_verified_monthly_authority_nusd"]) is int
+        and approved["minimum_verified_monthly_authority_nusd"] >= 372_549_812,
+        "Known-cost grant changes preserved owner limits or stop policy",
+    )
+    original = evidence_goal(root, approved["original_goal"])
+    initial = evidence_goal(root, approved["initial_predecessor_goal"])
+    predecessor = predecessor_goal.resolve()
+    require(
+        predecessor.is_relative_to(root) and predecessor not in {root, goal, original},
+        "Known-cost successor substitutes or reuses a predecessor",
+    )
+    expected_fixed = goal_binding(
+        root, MonthlyLedger(month=f"{datetime.now(UTC):%Y-%m}", historical_floor="0.0722179")
+    )
+    source_fields = {
+        "guarded_cli_sha256",
+        "runner_sha256",
+        "load_harness_sha256",
+        "verification_budget_sha256",
+        "verification_adapter_sha256",
+        "historical_floor_nusd",
+    }
+    seen: set[Path] = set()
+
+    def lineage_for(node: dict) -> dict:
+        return {
+            "authorization_sha256": KNOWN_COST_AUTHORIZATION_SHA256,
+            "predecessor_goal": "/evidence/" + node["goal"].relative_to(root).as_posix(),
+            "predecessor_journal_sha256": node["journal_sha256"],
+            "predecessor_binding_sha256": node["binding_sha256"],
+            "predecessor_binding": node["stored"],
+            "calls": node["calls"],
+            "receipts": node["receipts"],
+            "normal_reservations": node["normal_reservations"],
+            "retained_reservations": approved["retained_original_reservations"],
+            "authoritative_monthly_floor_nusd": approved["minimum_verified_monthly_authority_nusd"],
+            "fresh_calls": node["fresh_calls"],
+            "ancestor_journals": node["ancestor_journals"],
+            "protocol_failures": node["protocol_failures"],
+            "initial_predecessor_goal": approved["initial_predecessor_goal"],
+            "initial_predecessor_journal_sha256": approved["initial_predecessor_journal_sha256"],
+            "original_goal": approved["original_goal"],
+            "original_journal_sha256": approved["original_journal_sha256"],
+            "request_caps": approved["request_caps"],
+        }
+
+    def read_ancestor(path: Path, expected_sha: str | None = None) -> dict:
+        require(path not in seen and path != goal, "Cycle or substituted ancestor in lineage")
+        seen.add(path)
+        journal = path / "goal.sqlite"
+        journal_sha = file_hash(journal)
+        if path == original:
+            require(journal_sha == approved["original_journal_sha256"], "Original journal changed")
+        if path == initial:
+            require(
+                journal_sha == approved["initial_predecessor_journal_sha256"],
+                "Initial known-cost predecessor journal changed",
+            )
+        require(expected_sha is None or journal_sha == expected_sha, "Ancestor journal SHA differs")
+        artifact_path = path / "goal-binding.json"
+        artifact_sha = file_hash(artifact_path)
+        artifact = json.loads(artifact_path.read_text())
+        db = sqlite3.connect(journal.as_uri() + "?mode=ro", uri=True)
+        try:
+            require(
+                db.execute("SELECT binding, stopped FROM identity").fetchall()
+                == [(artifact["binding_sha256"], 1)],
+                "Ancestor is not the actual stopped bound goal",
+            )
+            stored = json.loads(db.execute("SELECT binding FROM guard_goal").fetchone()[0])
+            require(
+                artifact == {"binding_sha256": artifact["binding_sha256"], **stored}
+                and admitted_binding_sha(stored) == artifact["binding_sha256"]
+                and all(
+                    stored.get(field) == json.loads(json.dumps(value))
+                    for field, value in expected_fixed.items()
+                    if field not in source_fields
+                ),
+                "Ancestor artifact, source-independent binding or identity differs",
+            )
+            if (
+                stored.get("successor", {}).get("authorization_sha256")
+                == KNOWN_COST_AUTHORIZATION_SHA256
+            ):
+                require(
+                    stored.get("admission") == admission_seal(stored),
+                    "Ancestor admitted floor, resources or Redis identity changed",
+                )
+            require(
+                {
+                    name: (cap, cost)
+                    for name, cap, cost in db.execute(
+                        "SELECT name, request_cap, cost_cap FROM stages"
+                    )
+                }
+                == limits
+                and db.execute("SELECT sha256 FROM spending_direction").fetchall()
+                == [(SPENDING_DIRECTION_SHA256,)],
+                "Ancestor frozen stage limits or spending direction changed",
+            )
+            phases = dict(db.execute("SELECT mode, status FROM guard_runs"))
+            require(
+                "failed" in phases.values()
+                and "started" not in phases.values()
+                and all(status in {"failed", "complete"} for status in phases.values()),
+                "Ancestor phase is not actually stopped",
+            )
+            fresh = [
+                dict(zip(("id", "stage", "amount_nusd", "status", "error"), row, strict=True))
+                for row in db.execute(
+                    "SELECT id, stage, amount, status, error FROM calls ORDER BY id"
+                )
+            ]
+            inherited = [
+                dict(zip(("id", "stage", "amount_nusd", "status", "error"), row, strict=True))
+                for row in VerificationBudget._inherited(db)
+            ]
+            receipt_rows = [
+                (ticket, json.loads(raw), generation)
+                for ticket, raw, generation in db.execute(
+                    "SELECT ticket, receipt, generation FROM guard_receipts ORDER BY ticket"
+                )
+            ]
+            normal_rows = [
+                (identity, json.loads(raw))
+                for identity, raw in db.execute(
+                    "SELECT identity, receipt FROM guard_normal ORDER BY identity"
+                )
+            ]
+            require(
+                all(
+                    row["journal_ticket"] == ticket
+                    and (path == original or row.get("provider_generation_id") == generation)
+                    for ticket, row, generation in receipt_rows
+                )
+                and all(row["identity"] == identity for identity, row in normal_rows),
+                "Ancestor SQLite receipt or reservation keys differ from private provenance",
+            )
+            receipts = [row for _, row, _ in receipt_rows]
+            normal = [row for _, row in normal_rows]
+        finally:
+            db.close()
+        require(
+            journal_sha == file_hash(journal) and artifact_sha == file_hash(artifact_path),
+            "Immutable ancestor changed while reading",
+        )
+        own_lineage = stored.get("successor")
+        anchor = json.loads(successor_anchor(root, own_lineage).read_text())
+        require(
+            anchor["goal_dir"] == str(path)
+            and anchor["binding_sha256"] == artifact["binding_sha256"],
+            "Ancestor differs from its own exclusive admitted anchor",
+        )
+        require(
+            all(
+                type(call["id"]) is int
+                and call["id"] > 0
+                and type(call["amount_nusd"]) is int
+                and call["amount_nusd"] >= 0
+                and call["stage"] in limits
+                for call in fresh + inherited
+            ),
+            "Invalid ancestor counted exposure",
+        )
+        ancestor_calls, ancestor_receipts, ancestor_normal, journals = [], [], [], []
+        initial_seen = path == initial
+        if path == original:
+            require(not own_lineage and not inherited and fresh, "Substituted original chain root")
+            joined = {row["journal_ticket"]: row for row in receipts}
+            normals = {row["identity"]: row for row in normal}
+            require(
+                len(joined) == len(receipts) == len(fresh) and len(normals) == len(normal),
+                "Original provenance contains duplicates or omissions",
+            )
+            for call in fresh:
+                receipt = joined.get(call["id"], {})
+                require(
+                    call["status"] in {"settled", "failed"}
+                    and receipt.get("journal_binding") == artifact["binding_sha256"]
+                    and receipt.get("stage") == call["stage"]
+                    and call["id"]
+                    in normals.get(receipt.get("normal_reservation_id"), {}).get("tickets", [])
+                    and (
+                        receipt.get("status") == "settled"
+                        and receipt.get("cost_nusd") == call["amount_nusd"]
+                        if call["status"] == "settled"
+                        else receipt.get("status") == "uncertain"
+                    ),
+                    "Original owner-authorized financial joins differ",
+                )
+            retained = {row["identity"]: row["amount"] for row in normal if row["settled"] is False}
+            require(
+                retained == approved["retained_original_reservations"]
+                and len(retained) == 2
+                and sorted(retained.values()) == ["0.02", "0.03"],
+                "Original retained hold identity or amounts changed",
+            )
+            failures = []
+        else:
+            require(isinstance(own_lineage, dict), "Foreign non-successor ancestor")
+            parent = read_ancestor(
+                evidence_goal(root, own_lineage["predecessor_goal"]),
+                own_lineage["predecessor_journal_sha256"],
+            )
+            ancestor_calls = parent["calls"]
+            ancestor_receipts = parent["receipts"]
+            ancestor_normal = parent["normal_reservations"]
+            journals = parent["ancestor_journals"]
+            require(
+                inherited == ancestor_calls
+                and own_lineage["predecessor_binding_sha256"] == parent["binding_sha256"]
+                and own_lineage["predecessor_binding"] == parent["stored"]
+                and own_lineage["calls"] == ancestor_calls
+                and own_lineage["receipts"] == ancestor_receipts
+                and own_lineage["normal_reservations"] == ancestor_normal
+                and own_lineage["retained_reservations"]
+                == approved["retained_original_reservations"]
+                and stored["redis_run_id"] == parent["stored"]["redis_run_id"]
+                and target_resources(stored["resources"])
+                == target_resources(parent["stored"]["resources"]),
+                "Ancestor inherited rows, provenance, holds or target resources changed",
+            )
+            if path == initial:
+                require(
+                    parent["goal"] == original
+                    and own_lineage["authorization_sha256"] == SUCCESSOR_AUTHORIZATION_SHA256,
+                    "Initial stop is not the original authorized successor",
+                )
+            else:
+                require(
+                    parent["initial_seen"] and own_lineage == lineage_for(parent),
+                    "Descendant does not belong to this exact owner-granted chain",
+                )
+            failures = validate_protocol_stop(path, stored, fresh, receipts, normal, phases)
+            initial_seen = initial_seen or parent["initial_seen"]
+        all_calls = ancestor_calls + fresh
+        all_receipts = ancestor_receipts + receipts
+        all_normal = ancestor_normal + normal
+        generations = [
+            row["provider_generation_id"]
+            for row in all_receipts
+            if row.get("provider_generation_id") is not None
+        ]
+        require(
+            len({call["id"] for call in all_calls}) == len(all_calls)
+            and len({row["journal_ticket"] for row in all_receipts}) == len(all_receipts)
+            and len({row["identity"] for row in all_normal}) == len(all_normal)
+            and len(generations) == len(set(generations))
+            and all(
+                sum(call["stage"] == stage for call in all_calls) <= cap
+                for stage, (cap, _) in limits.items()
+            ),
+            "Duplicate ancestor provenance or exhausted original stage inventory",
+        )
+        if path == initial:
+            require(
+                sum(call["stage"] == "primary" for call in all_calls)
+                == approved["inherited_primary_requests_at_authorization"],
+                "Initial owner-authorized primary inventory differs",
+            )
+        return {
+            "goal": path,
+            "journal_sha256": journal_sha,
+            "binding_sha256": artifact["binding_sha256"],
+            "stored": stored,
+            "fresh_calls": fresh,
+            "calls": all_calls,
+            "receipts": all_receipts,
+            "normal_reservations": all_normal,
+            "initial_seen": initial_seen,
+            "protocol_failures": failures,
+            "ancestor_journals": journals
+            + [
+                {
+                    "goal": "/evidence/" + path.relative_to(root).as_posix(),
+                    "journal_sha256": journal_sha,
+                    "binding_sha256": artifact["binding_sha256"],
+                }
+            ],
+        }
+
+    node = read_ancestor(predecessor)
+    require(node["initial_seen"], "Predecessor is not a descendant of the granted initial stop")
+    require(file_hash(authorization) == KNOWN_COST_AUTHORIZATION_SHA256, "Owner grant changed")
+    return lineage_for(node)
+
+
+def validate_admitted_goal(goal: Path, budget: VerificationBudget, binding: dict) -> dict:
+    """Join the current artifact and journal to the recomputed owner/pred/source pair."""
+    with budget._connect() as db:
+        stored = json.loads(db.execute("SELECT binding FROM guard_goal").fetchone()[0])
+        identity = db.execute("SELECT binding FROM identity").fetchone()[0]
+    artifact = json.loads((goal / "goal-binding.json").read_text())
+    require(
+        artifact == {"binding_sha256": identity, **stored}
+        and admitted_binding_sha(stored) == identity
+        and all(
+            stored.get(field) == json.loads(json.dumps(value))
+            for field, value in binding.items()
+            if field != "historical_floor_nusd"
+        )
+        and set(stored) == set(binding) | {"resources", "redis_run_id"}
+        and type(stored["historical_floor_nusd"]) is int,
+        "Current admitted artifact, owner/pred pair or source changed",
+    )
+    require(
+        budget.snapshot()["inherited_calls"] == binding.get("successor", {}).get("calls", []),
+        "Current ancestral counted inventory changed",
+    )
+    lineage = binding.get("successor", {})
+    if lineage.get("authorization_sha256") == KNOWN_COST_AUTHORIZATION_SHA256:
+        with budget._connect() as db:
+            actual_limits = {
+                name: (cap, cost)
+                for name, cap, cost in db.execute("SELECT name, request_cap, cost_cap FROM stages")
+            }
+        require(
+            stored["admission"] == admission_seal(stored)
+            and actual_limits == stage_limits(lineage["request_caps"]["shadow"] // 6)
+            and stored["historical_floor_nusd"]
+            >= max(
+                lineage["authoritative_monthly_floor_nusd"],
+                lineage["predecessor_binding"]["historical_floor_nusd"]
+                + sum(row["amount_nusd"] for row in lineage["fresh_calls"]),
+            ),
+            "Admitted floor, resources, Redis identity or frozen limits changed",
+        )
+    return stored
+
+
 def goal_context(root: Path, goal: Path, args) -> tuple[MonthlyLedger, dict, Path]:
     lineage = successor_lineage(
         root,
@@ -1734,7 +2294,7 @@ def goal_context(root: Path, goal: Path, args) -> tuple[MonthlyLedger, dict, Pat
         max(
             lineage["authoritative_monthly_floor_nusd"],
             lineage["predecessor_binding"]["historical_floor_nusd"]
-            + sum(call["amount_nusd"] for call in lineage["calls"]),
+            + sum(call["amount_nusd"] for call in lineage.get("fresh_calls", lineage["calls"])),
         )
         if lineage
         else 72_217_900
@@ -1764,9 +2324,12 @@ def goal_context(root: Path, goal: Path, args) -> tuple[MonthlyLedger, dict, Pat
                 )
         ledger.run_id = predecessor["redis_run_id"]
         binding["successor"] = lineage
-        anchor = anchor.with_name(
-            "guarded-counted-successor-" + lineage["authorization_sha256"] + ".json"
-        )
+        anchor = successor_anchor(root, lineage)
+        if lineage["authorization_sha256"] == KNOWN_COST_AUTHORIZATION_SHA256:
+            binding["protocol_sources"] = protocol_sources()
+            artifact_path = goal / "goal-binding.json"
+            if artifact_path.is_file():
+                binding["admission"] = json.loads(artifact_path.read_text())["admission"]
     return ledger, binding, anchor
 
 
@@ -1877,6 +2440,17 @@ async def run(args) -> None:
         # spend. Retain any extra existing charges as part of this goal's history.
         current = await ledger.read()
         binding["historical_floor_nusd"] = nusd(current["amount_usd"])
+        if (
+            binding.get("successor", {}).get("authorization_sha256")
+            == KNOWN_COST_AUTHORIZATION_SHA256
+        ):
+            require(
+                target_resources(binding["resources"])
+                == target_resources(binding["successor"]["predecessor_binding"]["resources"]),
+                "Fresh admission changed original target resources",
+            )
+            binding["admission"] = admission_seal(binding)
+            binding_sha = admitted_binding_sha(binding)
         durable_json(
             anchor_path,
             {
@@ -1920,6 +2494,10 @@ async def run(args) -> None:
         path.is_file(), "Run admit once before counted collection; no fresh journal/restart bypass"
     )
     budget = VerificationBudget(path, binding=binding_sha)
+    admitted = validate_admitted_goal(goal, budget, binding)
+    require(
+        nusd(ledger.floor) <= admitted["historical_floor_nusd"], "Admitted monthly floor lowered"
+    )
     require(
         budget.snapshot()["inherited_calls"] == binding.get("successor", {}).get("calls", []),
         "Successor inherited counted request inventory changed",
@@ -1963,6 +2541,9 @@ async def run(args) -> None:
         api_key=key,
         mode=args.mode,
         run_dir=run_dir,
+    )
+    session.revalidate = lambda: validate_admitted_goal(
+        goal, budget, goal_context(root, goal, args)[1]
     )
     status = "failed"
     try:

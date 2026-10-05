@@ -78,6 +78,16 @@ Knicks scoring. A recent-versus-season comparison clears only the baseline's
 explicit game/date/relative window and retains its other requested filters.
 Both operands use the corresponding positive-minute player appearances.
 
+The advertised player and team metric vocabularies also define `ToolCall.metric`.
+Team-only selectors are rejected for player calculations and window comparisons
+before dispatch; raw player-column calculations retain their existing metric set.
+Once both scope-matched record counts exist, the loop drafts a `ProposedAnswer`
+directly instead of resending the larger tool-orchestration schema. Both canonical
+claim IDs are mandatory, are packed atomically, and retain their complete
+population and provenance. A missing count or an over-budget pair triggers the
+complete factual fallback. The existing repair, whole-answer review, call
+accounting, deadlines and original input/output limits still apply.
+
 Quarter calculations currently support team points per game only. Quarter totals,
 other quarter box-score statistics, and player quarter statistics remain
 unsupported rather than being answered with a different metric. Statistical game
@@ -205,22 +215,31 @@ reservation has a trusted settled receipt, its known cost and unused slots
 settle normally; genuinely uncertain exposure remains held. The runner cannot
 silently fall back and continue paying for later cohort cases.
 
-A stopped original journal and its exclusive anchor remain immutable. Only the
-exact, separately recorded owner grant permits `--successor-authorization` with
-`--predecessor-goal`; both flags are required by collection and load. The successor
-has its own exclusive authorization-specific anchor and retains all predecessor
-requests, known costs, uncertainty and normal holds. The 26 previous primary
-requests still count against the original 720 ceiling. The verified monthly
-authority cannot decrease, the $2 cutoff does not change, and inherited holds
-cannot be reused, released or replaced by fresh reservations.
+Stopped journals, goal bindings and their exclusive anchors remain immutable.
+The original single-successor owner grant remains limited to its one attempt.
+A separate exact known-cost-continuation grant permits fresh descendants only
+after a verified source fix: the predecessor must have a ticket-joined private
+protocol failure, and every fresh transmission and normal reservation must have
+trusted, non-uncertain settlement. New financial uncertainty blocks continuation.
+Both `--successor-authorization` and `--predecessor-goal` remain required.
 
-The private controller namespaces internal first-turn session identity for this
-successor; external frozen turn/request IDs and shadow membership stay unchanged.
+Every descendant inherits all ancestral requests, costs, original uncertainty
+and exact retained holds. The initial continuation includes all 27 prior primary
+requests against the unchanged 720 ceiling. Each predecessor can admit only one
+child, using an exclusive grant-and-predecessor-journal anchor. The monthly
+authority cannot decrease; its minimum adds only the immediate predecessor's
+fresh settled costs, not ancestral charges or held amounts again. The $2 cutoff
+and original stage limits remain unchanged. Old holds cannot be reused, released
+or replaced by fresh reservations.
+
+Internal session and private quota identities use the admitted goal binding,
+not the shared grant, so later descendants cannot replay earlier attempts.
+External frozen turn/request IDs and shadow membership stay unchanged.
 Ordinary session behavior is restored when the controller exits. Exact provider
 response bytes are durably retained with mode `0600` before status, JSON or schema
-parsing. Ticket-joined private protocol diagnostics retain the raw SHA, typed
-validation locations/types and finish reason. These bytes are diagnostic evidence,
-not a license to retry a stopped successor or bypass a quality gate.
+parsing. Private diagnostics retain the ticket, raw SHA, typed validation
+locations/types and finish reason. Neither those bytes nor a new source hash
+authorize resuming a stopped journal or bypassing a quality gate.
 
 The resource network is internal and cannot reach OpenRouter. For paid verification,
 attach only the disposable verifier to both exact admitted resource and outbound

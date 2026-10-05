@@ -237,6 +237,7 @@ class AnalystLoop:
             raise ValueError("Required review/action context exceeds input budget")
         sent_claims, sent_evidence, sent_candidates = {}, {}, {}
         evidence_size = 0
+        record_ids = {claim.claim_id for claim in self._paired_record_claims()}
         for claim in claims:
             # Claim + all baseline claims are an indivisible record group. Evidence details
             # can be omitted, since complete IDs remain resolvable in the server registry.
@@ -247,6 +248,8 @@ class AnalystLoop:
                 for ref in candidate.claim_ids
             }
             group_ids = {claim.claim_id, *claim.baseline_claim_ids, *candidate_refs}
+            if claim.claim_id in record_ids:
+                group_ids.update(record_ids)
             group_ids.update(
                 ref for cid in list(group_ids) for ref in self.tools.claims[cid].baseline_claim_ids
             )
@@ -285,6 +288,8 @@ class AnalystLoop:
             evidence_size += size
             sent_claims.update({c.claim_id: c for c in group})
             sent_candidates.update({c.fact_id: c for c in related})
+        if not review and not record_ids <= sent_claims.keys():
+            raise ValueError("Complete requested record exceeds model input budget")
         if not review and self.tools.narrative:
             required = {
                 c.claim_id
@@ -327,6 +332,18 @@ class AnalystLoop:
             self.sent_candidates = sent_candidates
         return payload
 
+    def _paired_record_claims(self) -> list[VerifiedClaim]:
+        if (
+            self.tools.scope is None
+            or self.tools.scope.player_ids
+            or not is_record_request(self.tools.question)
+        ):
+            return []
+        claims = [
+            claim for claim in self.fallback_claims() if claim.metric_id in {"wins", "losses"}
+        ]
+        return claims if {claim.metric_id for claim in claims} == {"wins", "losses"} else []
+
     async def model(
         self,
         schema: type[Schema],
@@ -364,14 +381,29 @@ class AnalystLoop:
                 "IDs in their dedicated fields instead of repeating them in reason. "
                 "Return JSON matching schema."
             )
+        elif schema is ProposedAnswer:
+            system = (
+                "Write a grounded final answer. Return ONE ProposedAnswer JSON object matching "
+                "the supplied schema, with text, claims, evidence_ids, fact_ids and "
+                "follow_up_questions. Never wrap it in action or answer. Use backend evidence "
+                "only and copy EVERY used claim_uses entry into claims. Preserve each exact "
+                "displayed_value JSON type and object key; only explicit numeric rounding with "
+                "matching decimal_places may change a value. State every requested record "
+                "count, not only one side of wins/losses. Copy supporting evidence and selected "
+                "fact IDs exactly. Use the supplied interpretation policy. Do not investigate, "
+                "infer causes, rankings or unsupported evaluative labels. Answer briefly unless "
+                "the user asks for detail. Answer supported archive portions of mixed requests "
+                "and briefly state the live-data gap. Include up to two relevant follow-up "
+                "questions the archive can answer, or an empty list."
+            )
         else:
             system = (
                 "You are KnicksIQ. Return JSON matching schema, using backend evidence only. "
                 "For interesting stats or another player, call discover_facts FIRST with the "
                 "user's question unchanged. Empty claims means call a tool before stating stats. "
-                "get_player_stats calculates player metrics; get_team_stats gives team totals; "
-                "compare_windows compares populations; search_archive finds narrative examples; "
-                "get_evidence expands returned references. Answer once evidence is sufficient. "
+                "Tools: get_player_stats (players), get_team_stats (team totals), "
+                "compare_windows (populations), search_archive (narrative), get_evidence "
+                "(references). Answer once evidence is sufficient. "
                 "call_tools requires tools and null answer. Answer actions require an answer "
                 "object containing text, claims, evidence_ids and fact_ids, never null. "
                 "Include EVERY used claim in answer.claims by copying its claim_uses entry. "
@@ -496,36 +528,45 @@ class AnalystLoop:
 
     async def investigate(self) -> dict[str, Any]:
         while True:
-            action = await self.model(Action)
-            if action.action == "call_tools":
-                if action.answer is not None or not action.tools:
-                    raise ValueError("Malformed tool action")
-                if self.rounds >= self.settings.analyst_max_tool_rounds or (
-                    time.monotonic() - self.started >= self.settings.analyst_investigation_seconds
-                ):
-                    raise TimeoutError("Investigation limit")
-                if self.tool_count + len(action.tools) > 6:
-                    raise ValueError("Tool-call limit")
-                remaining_slots = sum(slots for _, slots in self.reservations) - self.calls
-                if remaining_slots < 2 and not await self.reserve(2 - remaining_slots):
-                    return await self.fallback("Budget unavailable for investigation and review.")
-                self.rounds += 1
-                # One AsyncSession cannot run concurrent database operations.
-                for call in action.tools:
-                    if (
+            if self._paired_record_claims():
+                # The backend already has the complete requested record. Draft it
+                # directly instead of spending input on another tool/action schema.
+                answer = await self.model(ProposedAnswer)
+            else:
+                action = await self.model(Action)
+                if action.action == "call_tools":
+                    if action.answer is not None or not action.tools:
+                        raise ValueError("Malformed tool action")
+                    if self.rounds >= self.settings.analyst_max_tool_rounds or (
                         time.monotonic() - self.started
                         >= self.settings.analyst_investigation_seconds
                     ):
-                        break
-                    self.tool_count += 1
-                    self.results.append(await self.tools.execute(call))
-                continue
-            if action.tools or action.answer is None:
-                raise ValueError("Malformed answer action")
-            self.last_answer = action.answer
-            supported, reason = await self.validate(action.answer)
+                        raise TimeoutError("Investigation limit")
+                    if self.tool_count + len(action.tools) > 6:
+                        raise ValueError("Tool-call limit")
+                    remaining_slots = sum(slots for _, slots in self.reservations) - self.calls
+                    if remaining_slots < 2 and not await self.reserve(2 - remaining_slots):
+                        return await self.fallback(
+                            "Budget unavailable for investigation and review."
+                        )
+                    self.rounds += 1
+                    # One AsyncSession cannot run concurrent database operations.
+                    for call in action.tools:
+                        if (
+                            time.monotonic() - self.started
+                            >= self.settings.analyst_investigation_seconds
+                        ):
+                            break
+                        self.tool_count += 1
+                        self.results.append(await self.tools.execute(call))
+                    continue
+                if action.tools or action.answer is None:
+                    raise ValueError("Malformed answer action")
+                answer = action.answer
+            self.last_answer = answer
+            supported, reason = await self.validate(answer)
             if supported:
-                return self.render(action.answer, llm=True)
+                return self.render(answer, llm=True)
             # Only one repair, with capacity and time for both revision and review.
             # Split remaining time between the calls instead of demanding two full
             # 20-second provider timeouts inside a 30-second application deadline.
@@ -542,7 +583,7 @@ class AnalystLoop:
                 if available >= 2 or await self.reserve(2 - available):
                     repaired = await self.model(
                         ProposedAnswer,
-                        answer=action.answer,
+                        answer=answer,
                         repair=reason,
                         timeout_seconds=repair_timeout,
                     )
@@ -557,6 +598,9 @@ class AnalystLoop:
         declared = [
             self.tools.claims[u.claim_id] for u in answer.claims if u.claim_id in self.tools.claims
         ]
+        record_ids = {claim.claim_id for claim in self._paired_record_claims()}
+        if record_ids and not record_ids <= {use.claim_id for use in answer.claims}:
+            return False, "Every requested record needs both canonical wins and losses claims."
         if self.tools.statistical_extreme_requested():
             metrics = {"game_score"}
             if "margin" in self.tools.question.lower():

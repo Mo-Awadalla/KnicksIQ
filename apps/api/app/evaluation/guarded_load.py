@@ -39,6 +39,7 @@ from app.evaluation.guarded_release import (
     DESIGNATED_KEY_SHA256,
     FROZEN,
     GOLD,
+    KNOWN_COST_AUTHORIZATION_SHA256,
     SOURCES,
     VERSION,
     Admission,
@@ -46,6 +47,7 @@ from app.evaluation.guarded_release import (
     durable_json,
     goal_context,
     require,
+    validate_admitted_goal,
     validate_counted_receipt_joins,
 )
 from app.evaluation.release_runner import SCORING_VERSION, digest, file_hash, load_contract
@@ -613,6 +615,12 @@ async def run(args) -> None:
         "Load does not use the SAME original admitted aggregate goal",
     )
     budget = VerificationBudget(goal / "goal.sqlite", binding=binding_sha)
+    if binding.get("successor", {}).get("authorization_sha256") == KNOWN_COST_AUTHORIZATION_SHA256:
+        admitted = validate_admitted_goal(goal, budget, binding)
+        require(
+            Decimal(admitted["historical_floor_nusd"]) / 1_000_000_000 >= ledger.floor,
+            "Load admission monthly floor lowered",
+        )
     require(
         budget.snapshot()["inherited_calls"] == binding.get("successor", {}).get("calls", []),
         "Successor inherited request inventory differs before load",
@@ -666,6 +674,10 @@ async def run(args) -> None:
         request_ids=identity["request_ids"],
         run_dir=run_dir,
     )
+    if binding.get("successor", {}).get("authorization_sha256") == KNOWN_COST_AUTHORIZATION_SHA256:
+        session.revalidate = lambda: validate_admitted_goal(
+            goal, budget, goal_context(root, goal, args)[1]
+        )
     status, process = "failed", None
     original_adapter, original_legacy = analyst_loop.get_llm_adapter, analysis.get_llm_adapter
     wrapper = None

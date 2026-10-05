@@ -463,3 +463,62 @@ portable two-game fixture. For the full original cohort, also set
 `apps/api/app/tests/test_canonical_discovery_http.py::test_original_cohort_records_real_local_discovery`.
 Neither fixture execution nor local pre-admission capture approves targets,
 freezes gold, transmits provider requests or completes the full release gates.
+
+## October 5 implementation and verification
+
+The publication checkout now contains the requested calculation and evidence-loop
+fixes: complete leaders, splits, monthly records, requested comparisons, quarter
+scoring, player profiles and scope-exact fallback. Record questions retain both
+wins and losses. Advertised team metrics and typed tool actions share one finite
+vocabulary; team-only metrics cannot enter player calculations.
+
+Complete record evidence uses the existing final-answer writer and mandatory
+whole-answer review without increasing the original model, tool, input, output
+or deadline limits. Both counts must fit and validate together; otherwise the
+complete factual fallback is delivered. Shorter duplicate tool instructions
+preserve space for compact canonical discovery. Behavioral repair checks remain;
+assertions that merely pinned prompt wording were removed.
+
+Counted execution retains every prior request, settled charge, uncertain exposure
+and normal hold. The separately authorized known-cost continuation creates a new
+exclusive descendant rather than resuming a stopped journal. A real Redis
+settlement exposed sub-nanodollar floating-point serialization; floor comparison
+now uses the existing conservative nanodollar conversion, while the raw $2 cutoff,
+one-nanodollar deficit rejection and exact reservation inventory remain enforced.
+
+Repeatable local evidence is retained privately under
+`release-artifacts/release-execution-20261003/`:
+
+- `backend-delivery-final-20261005/junit.xml`: 755 passing integrated backend checks.
+- `known-cost-continuation-final-20261005/`: 118 passing accounting, transport,
+  load-prerequisite and actual socket checks; these are not live-model quality.
+- `paired-record-final-green-20261005/`: six approved-archive HTTP cases covering
+  full records, omitted counts, input limits and player/team metric boundaries.
+- `record-socket-delivery-20261005/`: actual Uvicorn/HTTP proof of 69 wins and
+  32 losses across all 101 approved games, three synthetic model rounds,
+  whole-answer review and exact replay, with zero real provider requests.
+- `disabled-delivery-original120-20261005/`: final unchanged 120-case,
+  services-disabled capture and original-scorer evidence. This cannot establish
+  dense retrieval recall or primary-model quality.
+- `frontend-integration/` and `delegated-browser/`: 40 passing Playwright cases,
+  26 retained screenshots and 16 axe audits. The final audited UI source hashes
+  remain unchanged, with no serious/critical accessibility findings.
+- `qa-restart-recovery-20261004/` and
+  `qa-redis-loss-recovery-20261004-accepted/`: actual owned-runtime restart and
+  Redis-loss recovery. The retained chain covers 24 HTTP exchanges and 62 checks;
+  neither is a coordinated deployment rollback rehearsal.
+
+The original primary/shadow/load release gates are **not passed**. Fresh
+no-completion admission observed the exact pinned `morph/fp8` endpoint at status
+`-2`, not the required healthy status `0`. The verifier denied execution before
+creating a goal journal or sending any completion, then was stopped. No provider
+substitution, request-cap reduction, cohort reduction or budget reset was made.
+See `pinned-provider-unavailable-20261005.json` for the observed public metadata.
+
+`release-record.json` in that private evidence directory binds the final tested
+source, all 17 original checks, retained evidence and explicit blockers.
+Read-only hosted deployment/alias observations are not a rollback snapshot.
+Production readiness, coordinated rollback, deployment and alias promotion
+remain unapproved. Draft PR #6 publishes only the authorized new release work;
+the original checkout, sealed September package and unrelated user edits remain
+untouched.

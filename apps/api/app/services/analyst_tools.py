@@ -20,7 +20,15 @@ from app.services.archive_retrieval import (
 )
 from app.services.archive_units import accepts_unit, build_archive_units
 from app.services.canonical_narrative import NarrativeSelection, build_narrative, select_narrative
-from app.services.evidence_contracts import Candidate, Evidence, ToolCall, ToolResult, VerifiedClaim
+from app.services.evidence_contracts import (
+    PLAYER_METRICS,
+    TEAM_METRICS,
+    Candidate,
+    Evidence,
+    ToolCall,
+    ToolResult,
+    VerifiedClaim,
+)
 from app.services.game_reference import resolve_game_reference
 from app.services.query_resolution import (
     ResolvedQuery,
@@ -206,19 +214,8 @@ class AnalystTools:
                 "period_scores",
                 "archive_evidence",
             ],
-            "metrics": [*METRICS, "double_doubles"],
-            "team_metrics": [
-                "wins",
-                "losses",
-                "points",
-                "margin",
-                "turnovers",
-                "field_goal_percentage",
-                "bench_points",
-                "period_points",
-                "leaders",
-                "comparisons",
-            ],
+            "metrics": list(PLAYER_METRICS),
+            "team_metrics": list(TEAM_METRICS),
             "games": len(self.games),
             "box_score_rows": len(self.rows),
             "known_gaps": [
