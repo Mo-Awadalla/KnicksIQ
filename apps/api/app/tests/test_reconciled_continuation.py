@@ -49,9 +49,13 @@ def metadata_response(name) -> dict[str, Any]:
     return {"data": values[name]}
 
 
-@pytest.mark.parametrize("fault", [None, "http", "malformed", "unhealthy", "cancel"])
+@pytest.mark.parametrize("route_kind", ["historical", "atlas"])
+@pytest.mark.parametrize(
+    "fault",
+    [None, "http", "malformed", "unhealthy", "cancel", "provider", "quantization", "pricing"],
+)
 async def test_all_four_metadata_snapshots_are_current_concurrent_and_fail_closed(
-    tmp_path, monkeypatch, fault
+    tmp_path, monkeypatch, fault, route_kind
 ):
     started, finished, cancelled = [], [], []
     barrier = asyncio.Event()
@@ -76,6 +80,16 @@ async def test_all_four_metadata_snapshots_are_current_concurrent_and_fail_close
                 if fault == "cancel":
                     await asyncio.Event().wait()
                 body = metadata_response(name)
+                if name == "endpoints":
+                    endpoint = cast(dict[str, Any], body["data"])["endpoints"][0]
+                    if route_kind == "atlas":
+                        endpoint.update(tag=guard.ATLAS_ROUTE, provider_name=guard.ATLAS_PROVIDER)
+                    if fault == "provider":
+                        endpoint["provider_name"] = "foreign"
+                    if fault == "quantization":
+                        endpoint["quantization"] = "foreign"
+                    if fault == "pricing":
+                        endpoint["pricing"]["foreign_charge"] = "1"
                 if fault == "malformed" and name == "key":
                     body["data"] = []
                 if fault == "unhealthy" and name == "endpoints":
@@ -93,6 +107,14 @@ async def test_all_four_metadata_snapshots_are_current_concurrent_and_fail_close
 
     monkeypatch.setattr(guard.httpx, "AsyncClient", Client)
     admission = object.__new__(guard.Admission)
+    admission.route, admission.provider = (
+        (guard.ROUTE, guard.PROVIDER)
+        if route_kind == "historical"
+        else (guard.ATLAS_ROUTE, guard.ATLAS_PROVIDER)
+    )
+    admission.route_authorization_sha256 = (
+        None if route_kind == "historical" else guard.ATLAS_AUTHORIZATION_SHA256
+    )
     admission.api_key = "synthetic-noncredential"
     admission.artifact_dir = tmp_path
     admission.metadata_count = 0
@@ -295,3 +317,114 @@ async def test_reconciliation_drift_denies_before_admission_and_preserves_eviden
     assert not (f.args.goal_dir / "goal.sqlite").exists()
     assert (f.cancelled_goal / "goal.sqlite").read_bytes() == f.cancelled_bytes
     assert await f.redis.hgetall(f.key + ":reservations") == f.held_before
+
+
+@pytest.fixture
+async def atlas_fixture(reconciled_fixture, monkeypatch):
+    f = reconciled_fixture
+    spec = {
+        "schema_version": 1,
+        "reconciliation_authorization": "/evidence/"
+        + f.reconciliation.relative_to(f.root).as_posix(),
+        "reconciliation_authorization_sha256": guard.RECONCILIATION_AUTHORIZATION_SHA256,
+        "predecessor_goal": "/evidence/" + f.cancelled_goal.relative_to(f.root).as_posix(),
+        "predecessor_journal_sha256": file_hash(f.cancelled_goal / "goal.sqlite"),
+        "prior_route": guard.ROUTE,
+        "prior_provider": guard.PROVIDER,
+        "route": guard.ATLAS_ROUTE,
+        "provider": guard.ATLAS_PROVIDER,
+        "model": MODEL,
+        "quantization": "fp8",
+        "frozen_contract_sha256": guard.FROZEN[guard.GOLD],
+        "task_aggregate_hard_cap_usd": "6",
+        "monthly_cutoff_usd": "2",
+        "request_caps": f.spec["request_caps"],
+        "all28prior_requests_and_three_holds_preserved": True,
+        "one_exclusive_successor_only": True,
+        "stop_on_any_new_financial_uncertainty": True,
+        "fresh_metadata_and_actual_byte_bounds_every_payload": True,
+        "original_deadlines_and_quality_workload_gates_unchanged": True,
+        "public_upload_merge_or_production_authorized": False,
+        "budget_charged_ticket28_nusd": 818_196,
+        "provider_cost_ticket28_known": False,
+    }
+    f.atlas = f.root / "atlas-approval.private.json"
+    f.atlas.write_text(json.dumps(spec))
+    f.atlas_spec = spec
+    monkeypatch.setattr(guard, "ATLAS_AUTHORIZATION_SHA256", file_hash(f.atlas))
+    f.args.successor_authorization = f.atlas
+    f.args.goal_dir = f.root / "atlas-successor"
+    return f
+
+
+async def test_atlas_rebind_changes_only_current_route_and_preserves_historical_provenance(
+    atlas_fixture,
+):
+    f = atlas_fixture
+    original_grant = f.reconciliation.read_bytes()
+    await guard.run(f.args)
+    binding = json.loads((f.args.goal_dir / "goal-binding.json").read_text())
+    assert binding["route"] == guard.ATLAS_ROUTE
+    assert binding["successor"]["route_rebind"]["provider"] == guard.ATLAS_PROVIDER
+    assert binding["successor"]["predecessor_binding"]["route"] == guard.ROUTE
+    assert {x.get("route", guard.ROUTE) for x in binding["successor"]["receipts"]} == {guard.ROUTE}
+    assert len(binding["successor"]["calls"]) == 28
+    assert binding["successor"]["calls"][-1]["status"] == "failed"
+    assert guard.admission_route(binding) == {
+        "route": guard.ATLAS_ROUTE,
+        "provider": guard.ATLAS_PROVIDER,
+        "route_authorization_sha256": guard.ATLAS_AUTHORIZATION_SHA256,
+    }
+    assert (f.cancelled_goal / "goal.sqlite").read_bytes() == f.cancelled_bytes
+    assert f.reconciliation.read_bytes() == original_grant
+    assert await f.redis.hgetall(f.key + ":reservations") == f.held_before
+    f.args.goal_dir = f.root / "duplicate-atlas"
+    with pytest.raises(ValueError):
+        await guard.run(f.args)
+
+
+@pytest.mark.parametrize(
+    "fault",
+    ["route", "provider", "model", "cap", "floor", "hold", "settlement", "grant", "predecessor"],
+)
+async def test_atlas_rebind_denies_drift_before_goal_or_transmission(
+    atlas_fixture, monkeypatch, fault
+):
+    f = atlas_fixture
+    if fault == "route":
+        f.atlas_spec["route"] = "unapproved/fp8"
+    if fault == "provider":
+        f.atlas_spec["provider"] = "unapproved"
+    if fault == "model":
+        f.atlas_spec["model"] = "unapproved"
+    if fault == "cap":
+        f.atlas_spec["request_caps"]["primary"] += 1
+    if fault == "floor":
+        f.atlas_spec["monthly_cutoff_usd"] = "6"
+    if fault == "hold":
+        f.atlas_spec["all28prior_requests_and_three_holds_preserved"] = False
+    if fault == "settlement":
+        f.atlas_spec["provider_cost_ticket28_known"] = True
+    if fault == "grant":
+        f.atlas_spec["reconciliation_authorization_sha256"] = "f" * 64
+    if fault == "predecessor":
+        f.atlas_spec["predecessor_goal"] = "/evidence/other"
+    f.atlas.write_text(json.dumps(f.atlas_spec))
+    monkeypatch.setattr(guard, "ATLAS_AUTHORIZATION_SHA256", file_hash(f.atlas))
+    with pytest.raises(ValueError):
+        await guard.run(f.args)
+    assert not f.args.goal_dir.exists()
+    assert (f.cancelled_goal / "goal.sqlite").read_bytes() == f.cancelled_bytes
+    assert await f.redis.hgetall(f.key + ":reservations") == f.held_before
+
+
+def test_admission_route_requires_exact_owner_rebind_before_any_private_file_read(tmp_path):
+    with pytest.raises(ValueError):
+        guard.Admission(
+            evidence_root=tmp_path,
+            artifact_dir=tmp_path,
+            api_key="synthetic",
+            ledger=guard.MonthlyLedger(month="2026-10", historical_floor="0.4"),
+            route=guard.ATLAS_ROUTE,
+            provider=guard.ATLAS_PROVIDER,
+        )

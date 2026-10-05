@@ -37,6 +37,7 @@ import uvicorn
 from app.core.config import get_settings
 from app.evaluation.guarded_release import (
     APPROVAL,
+    ATLAS_AUTHORIZATION_SHA256,
     DESIGNATED_KEY_SHA256,
     FROZEN,
     GOLD,
@@ -46,6 +47,7 @@ from app.evaluation.guarded_release import (
     VERSION,
     Admission,
     GuardedSession,
+    admission_route,
     durable_json,
     goal_context,
     require,
@@ -627,6 +629,7 @@ async def run(args) -> None:
     if binding.get("successor", {}).get("authorization_sha256") in {
         KNOWN_COST_AUTHORIZATION_SHA256,
         RECONCILIATION_AUTHORIZATION_SHA256,
+        ATLAS_AUTHORIZATION_SHA256,
     }:
         admitted = validate_admitted_goal(goal, budget, binding)
         require(
@@ -671,7 +674,13 @@ async def run(args) -> None:
     ledger.run_id = stored["redis_run_id"]
     ledger.floor = Decimal(stored["historical_floor_nusd"]) / 1_000_000_000
     run_dir = goal / "load"
-    admission = LoadAdmission(evidence_root=root, artifact_dir=run_dir, api_key=key, ledger=ledger)
+    admission = LoadAdmission(
+        evidence_root=root,
+        artifact_dir=run_dir,
+        api_key=key,
+        ledger=ledger,
+        **admission_route(binding),
+    )
     admission.resource_binding = stored["resources"]
     admission.alias_binding = stored["resources"]["qdrant_aliases"]
     admission.load_binding = stored
@@ -689,6 +698,7 @@ async def run(args) -> None:
     if binding.get("successor", {}).get("authorization_sha256") in {
         KNOWN_COST_AUTHORIZATION_SHA256,
         RECONCILIATION_AUTHORIZATION_SHA256,
+        ATLAS_AUTHORIZATION_SHA256,
     }:
         session.revalidate = lambda: validate_admitted_goal(
             goal, budget, goal_context(root, goal, args)[1]
