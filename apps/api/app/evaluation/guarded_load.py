@@ -29,6 +29,7 @@ import time
 from contextlib import asynccontextmanager
 from decimal import Decimal
 from pathlib import Path
+from typing import Literal
 
 import httpx
 import uvicorn
@@ -82,7 +83,11 @@ def load_cases(*, distinct_questions: bool = True) -> list[dict]:
         and isinstance(node.test, ast.Attribute)
         and node.test.attr == "distinct_questions"
     )
-    original = ast.literal_eval(branch.body[0].value.generators[0].iter)
+    questions_assignment = branch.body[0]
+    assert isinstance(questions_assignment, ast.Assign)
+    questions_comprehension = questions_assignment.value
+    assert isinstance(questions_comprehension, ast.ListComp)
+    original = ast.literal_eval(questions_comprehension.generators[0].iter)
     require(
         len(original) == 10 and len(set(original)) == 10 and warmup["season"] == "2025-26",
         "Original analyst workload is not warmup plus ten distinct requests",
@@ -119,6 +124,8 @@ def load_identity() -> dict:
 
 
 class LoadAdmission(Admission):
+    load_binding: dict
+
     def verify_inputs(self) -> None:
         super().verify_inputs()
         for field, path in {
@@ -293,7 +300,7 @@ class LoadHTTP:
 
 
 @asynccontextmanager
-async def private_server(app, *, lifespan="on", port=0):
+async def private_server(app, *, lifespan: Literal["auto", "on", "off"] = "on", port=0):
     """One real loopback-only Uvicorn server; no public/proxy client identity spoof."""
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -467,7 +474,7 @@ def original_quality_pass(
         for mode, (observed, summary) in snapshots.items():
             stage_receipts = [row for row in receipts if row["stage"] == mode]
             require(
-                stage_receipts
+                bool(stage_receipts)
                 and observed.get("paid_requests") == len(stage_receipts)
                 and accounting["stages"][mode]["requests"]
                 - accounting["stages"][mode].get("inherited_requests", 0)
@@ -607,6 +614,7 @@ async def run(args) -> None:
         isinstance(key, str) and hashlib.sha256(key.encode()).hexdigest() == DESIGNATED_KEY_SHA256,
         "Missing owner-designated provider key",
     )
+    assert isinstance(key, str)
     ledger, binding, anchor_path = goal_context(root, goal, args)
     binding_sha = digest(binding)
     anchor = json.loads(anchor_path.read_text())
@@ -808,6 +816,7 @@ async def run(args) -> None:
                 and row["request_id"] in identity["request_ids"],
                 "Missing exact load/provider/journal join",
             )
+            assert row is not None
             joined_ids.add(row["request_id"])
         selected_ids = {
             value
@@ -913,6 +922,7 @@ def main() -> None:
             if args.key_env_file is not None:
                 key = dotenv_values(args.key_env_file).get("OPENROUTER_API_KEY")
                 require(isinstance(key, str) and bool(key), "Designated dotenv lacks provider key")
+                assert isinstance(key, str)
                 os.environ["OPENROUTER_API_KEY"] = key
             if args.staging_env_file is not None:
                 secret = dotenv_values(args.staging_env_file).get("KNICKSIQ_STAGING_IP_HASH_SECRET")
@@ -920,6 +930,7 @@ def main() -> None:
                     isinstance(secret, str) and bool(secret),
                     "Staging dotenv lacks established client identity",
                 )
+                assert isinstance(secret, str)
                 os.environ["IP_HASH_SECRET"] = secret
             get_settings.cache_clear()
         asyncio.run(run(args))

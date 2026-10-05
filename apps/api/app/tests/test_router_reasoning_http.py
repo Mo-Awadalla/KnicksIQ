@@ -18,6 +18,7 @@ import json
 import os
 import urllib.error
 from datetime import UTC, datetime
+from email.message import Message
 from pathlib import Path
 
 import pytest
@@ -131,7 +132,7 @@ async def test_ordinary_router_reasoning_http(
                         request.full_url,
                         400,
                         "Unsupported effort",
-                        {},
+                        Message(),
                         io.BytesIO(json.dumps(error).encode()),
                     )
             expected = (
@@ -152,7 +153,7 @@ async def test_ordinary_router_reasoning_http(
                 request.full_url,
                 400,
                 "Synthetic provider error",
-                {},
+                Message(),
                 io.BytesIO(json.dumps(error).encode()),
             )
         messages = body["messages"]

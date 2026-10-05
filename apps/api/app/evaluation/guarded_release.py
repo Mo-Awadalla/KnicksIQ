@@ -25,6 +25,7 @@ import math
 import os
 import re
 import sqlite3
+from collections.abc import Callable
 from contextlib import contextmanager
 from contextvars import ContextVar
 from datetime import UTC, datetime
@@ -34,6 +35,7 @@ from typing import Any
 from urllib.parse import urlsplit
 
 import httpx
+from pydantic import ValidationError
 from sqlalchemy import select, text
 
 from app.core.config import get_settings
@@ -586,6 +588,7 @@ class Admission:
                         "Candidate payload filter descriptor changed",
                     )
                 require(self.records is not None, "Missing full candidate point admission")
+                assert self.records is not None
                 expected = self.records[base][0]
                 points = qdrant.retrieve(
                     collection_name=target,
@@ -603,9 +606,18 @@ class Admission:
                     isinstance(vector, list)
                     and len(vector) == 384
                     and all(
-                        type(value) in {int, float} and math.isfinite(value) for value in vector
+                        (type(value) is int or type(value) is float) and math.isfinite(value)
+                        for value in vector
+                    ),
+                    "Candidate probe point embedding changed",
+                )
+                assert isinstance(vector, list)
+                require(
+                    abs(
+                        sum(value * value for value in vector if isinstance(value, (int, float)))
+                        - 1
                     )
-                    and abs(sum(value * value for value in vector) - 1) < 0.001,
+                    < 0.001,
                     "Candidate probe point embedding changed",
                 )
         if full:
@@ -832,7 +844,7 @@ class Admission:
     async def verify_request(self, payload: dict, owned: dict[str, str]) -> dict:
         self.verify_inputs()
         mode = (_turn.get() or {}).get("mode")
-        self.verify_settings(mode)
+        self.verify_settings("primary" if mode == "primary" else "shadow")
         await self.verify_resources(full=False)
         ledger = await self.ledger.read(owned)
         metadata = await self.provider_metadata()
@@ -866,6 +878,7 @@ class Admission:
             ),
             "Actual payload is not bounded text-only analyst input",
         )
+        assert isinstance(messages, list)
         require("reasoning" not in payload, "Unbounded reasoning override")
         # Unified enabled=false is the documented disable switch. Unlike an
         # unsupported effort='none', it does not invent an accepted effort level.
@@ -1081,6 +1094,7 @@ class GuardedTransport(httpx.AsyncBaseTransport):
                 and bool(choices[0]["message"]["content"]),
                 "Missing provider completion content",
             )
+            assert isinstance(choices, list)
             reasoning_details = body["usage"].get("completion_tokens_details")
             if isinstance(reasoning_details, dict) and "reasoning_tokens" in reasoning_details:
                 require(
@@ -1292,7 +1306,7 @@ class GuardedSession:
         )
         self.execution.failed = self.failed
         self.execution.subject_namespace = self.subject_namespace
-        self.revalidate = None
+        self.revalidate: Callable[[], dict] | None = None
         adapter_factory = self.execution.adapter
 
         def diagnosed_adapter(stage, reasoning_effort):
@@ -1316,9 +1330,10 @@ class GuardedSession:
         ticket = turn.get("last_ticket") if turn is not None else None
         if ticket is None:
             return
+        assert turn is not None
         receipt = next((row for row in self.receipts() if row["journal_ticket"] == ticket), {})
         errors = []
-        if callable(getattr(exc, "errors", None)):
+        if isinstance(exc, ValidationError):
             errors = [
                 {"loc": list(item["loc"]), "type": item["type"]}
                 for item in exc.errors(
@@ -1359,7 +1374,10 @@ class GuardedSession:
             all(type(value) is int and value >= 0 for value in known),
             "Known provider exposure lost its reservation join",
         )
-        amount = sum(known)
+        amount = 0
+        for value in known:
+            assert isinstance(value, int)
+            amount += value
         reservation["uncertain"] = True
         reservation["known_cost_nusd"] = amount
         identity = reservation["identity"]
@@ -1464,7 +1482,13 @@ class GuardedSession:
         original_begin_descriptor = analyst_sessions.SessionTurn.__dict__["begin"]
         original_begin = analyst_sessions.SessionTurn.begin
 
-        async def bound_begin(cls, token, turn_id, revision, request):
+        async def bound_begin(
+            cls: type[analyst_sessions.SessionTurn],
+            token: str | None,
+            turn_id: str,
+            revision: int,
+            request: dict[str, Any],
+        ) -> analyst_sessions.SessionTurn:
             turn = _turn.get()
             if session.subject_namespace and turn is not None:
                 require(turn_id == turn["request_id"], "Unbound successor session identity")
@@ -1574,14 +1598,14 @@ class GuardedSession:
             analyst_loop.BudgetReservation = BoundReservation
             report_llm.OpenAICompatibleLLMAdapter._generate_sync = denied_sync
             report_llm.OpenAICompatibleLLMAdapter.generate = denied_generate
-            analyst_sessions.SessionTurn.begin = classmethod(bound_begin)
+            setattr(analyst_sessions.SessionTurn, "begin", classmethod(bound_begin))
             yield
         finally:
             main.create_app = original_factory
             analyst_loop.BudgetReservation = original_reservation
             report_llm.OpenAICompatibleLLMAdapter._generate_sync = original_sync
             report_llm.OpenAICompatibleLLMAdapter.generate = original_generate
-            analyst_sessions.SessionTurn.begin = original_begin_descriptor
+            setattr(analyst_sessions.SessionTurn, "begin", original_begin_descriptor)
 
 
 def successor_lineage(
@@ -1594,6 +1618,7 @@ def successor_lineage(
     )
     if authorization is None:
         return None
+    assert predecessor_goal is not None
     authorization_sha = file_hash(authorization.resolve())
     if authorization_sha == KNOWN_COST_AUTHORIZATION_SHA256:
         return known_cost_lineage(root, goal, authorization, predecessor_goal)
@@ -1672,7 +1697,7 @@ def successor_lineage(
             for row in db.execute("SELECT id, stage, amount, status, error FROM calls ORDER BY id")
         ]
         require(
-            calls
+            bool(calls)
             and all(
                 row["status"] in {"settled", "failed"}
                 and type(row["amount_nusd"]) is int
@@ -1813,7 +1838,7 @@ def validate_protocol_stop(
     joined = {row["journal_ticket"]: row for row in receipts}
     normals = {row["identity"]: row for row in normal}
     require(
-        fresh and len(joined) == len(receipts) == len(fresh) and len(normals) == len(normal),
+        bool(fresh) and len(joined) == len(receipts) == len(fresh) and len(normals) == len(normal),
         "Missing or duplicate fresh financial provenance",
     )
     tickets = [ticket for row in normal for ticket in row["tickets"]]
@@ -2120,7 +2145,10 @@ def known_cost_lineage(root: Path, goal: Path, authorization: Path, predecessor_
         ancestor_calls, ancestor_receipts, ancestor_normal, journals = [], [], [], []
         initial_seen = path == initial
         if path == original:
-            require(not own_lineage and not inherited and fresh, "Substituted original chain root")
+            require(
+                not own_lineage and not inherited and bool(fresh),
+                "Substituted original chain root",
+            )
             joined = {row["journal_ticket"]: row for row in receipts}
             normals = {row["identity"]: row for row in normal}
             require(
@@ -2434,6 +2462,7 @@ async def run(args) -> None:
         goal.mkdir(mode=0o700, parents=True, exist_ok=False)
         admission = Admission(evidence_root=root, artifact_dir=goal, api_key=key, ledger=ledger)
         await admission.verify_environment(identity)
+        assert admission.resource_binding is not None
         binding["resources"] = admission.resource_binding
         binding["redis_run_id"] = ledger.run_id
         # Redis authority, not the retained historical floor, establishes current
@@ -2623,6 +2652,7 @@ def main() -> None:
             if args.key_env_file is not None:
                 key = dotenv_values(args.key_env_file).get("OPENROUTER_API_KEY")
                 require(isinstance(key, str) and bool(key), "Designated dotenv lacks provider key")
+                assert isinstance(key, str)
                 os.environ["OPENROUTER_API_KEY"] = key
             if args.staging_env_file is not None:
                 secret = dotenv_values(args.staging_env_file).get("KNICKSIQ_STAGING_IP_HASH_SECRET")
@@ -2630,6 +2660,7 @@ def main() -> None:
                     isinstance(secret, str) and bool(secret),
                     "Staging dotenv lacks established client identity",
                 )
+                assert isinstance(secret, str)
                 os.environ["IP_HASH_SECRET"] = secret
             get_settings.cache_clear()
         asyncio.run(run(args))
