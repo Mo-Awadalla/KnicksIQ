@@ -172,6 +172,42 @@ def independent_inputs(directory):
     return paths, hashes
 
 
+async def test_snapshot_fast_path_preserves_noncanonical_proof_and_mutation_rejection(
+    db_session, tmp_path
+):
+    from app.models.dataset_release import DatasetRelease
+    from app.services.comparison_sources import verified_comparison_source
+
+    paths, hashes = independent_inputs(tmp_path)
+    loaded = await load_release_bundle(
+        db_session, paths["bundle"], expected_sha256=hashes["bundle"], activate=True
+    )
+    source = await import_comparison_source(db_session, **paths, expected_hashes=hashes)
+    release = (
+        await db_session.execute(
+            select(DatasetRelease).where(DatasetRelease.version == loaded.version)
+        )
+    ).scalar_one()
+    games = list(
+        (await db_session.execute(select(Game).where(Game.release_id == release.id))).scalars()
+    )
+    original = await verified_comparison_source(db_session, release, games)
+    assert original is not None
+    # Whitespace changes remain semantically equivalent, as the original verifier
+    # allows; the canonical-byte fast path must retain that compatibility.
+    source.facts_json = json.dumps(json.loads(source.facts_json), indent=2)
+    source.bindings_json = json.dumps(json.loads(source.bindings_json), indent=2)
+    await db_session.flush()
+    equivalent = await verified_comparison_source(db_session, release, games)
+    assert equivalent is not None and equivalent[1:] == original[1:]
+    changed = json.loads(source.facts_json)
+    changed["foreign-proof-fact"] = {"points": 999}
+    source.facts_json = json.dumps(changed)
+    await db_session.flush()
+    with pytest.raises(ValueError, match="Stored comparison facts or bindings changed"):
+        await verified_comparison_source(db_session, release, games)
+
+
 async def test_import_index_and_actual_clarification_source_transitions(
     client,
     local_redis,  # noqa: F811

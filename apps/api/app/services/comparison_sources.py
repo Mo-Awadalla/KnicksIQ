@@ -192,27 +192,18 @@ async def _sql_snapshot(
     snapshots = {r[1]: {"games": [[_scalar(v) for v in r[2:]]]} for r in rows}
     for collection, model in MODELS.items():
         fields = spec["fields"][collection]
-        selected = [getattr(model, f) for f in fields if f != "nba_player_id"]
+        # Select in proof-field order: avoid rebuilding a per-row field dictionary
+        # for the complete event population while retaining the exact projection.
+        selected = [
+            Player.nba_player_id if f == "nba_player_id" else getattr(model, f) for f in fields
+        ]
         stmt = select(model.game_id, *selected).where(model.game_id.in_(games))
         if "nba_player_id" in fields:
-            stmt = (
-                select(model.game_id, *selected, Player.nba_player_id)
-                .outerjoin(Player, model.player_id == Player.id)
-                .where(model.game_id.in_(games))
-            )
+            stmt = stmt.outerjoin(Player, model.player_id == Player.id)
         for snapshot in snapshots.values():
             snapshot[collection] = []
         for row in (await db.execute(stmt)).all():
-            values = dict(
-                zip(
-                    [f for f in fields if f != "nba_player_id"],
-                    row[1 : 1 + len(selected)],
-                    strict=True,
-                )
-            )
-            if "nba_player_id" in fields:
-                values["nba_player_id"] = row[-1]
-            snapshots[games[row[0]]][collection].append([_scalar(values[f]) for f in fields])
+            snapshots[games[row[0]]][collection].append([_scalar(value) for value in row[1:]])
     for snapshot in snapshots.values():
         for collection in MODELS:
             snapshot[collection].sort(key=canonical_json)
@@ -501,7 +492,14 @@ async def verified_comparison_source(
         json.loads(source.bindings_json),
     )
     _require(
-        _digest(facts) == source.facts_sha256 and _digest(bindings) == source.bindings_sha256,
+        (
+            hashlib.sha256(source.facts_json.encode()).hexdigest() == source.facts_sha256
+            or _digest(facts) == source.facts_sha256
+        )
+        and (
+            hashlib.sha256(source.bindings_json.encode()).hexdigest() == source.bindings_sha256
+            or _digest(bindings) == source.bindings_sha256
+        ),
         "Stored comparison facts or bindings changed",
     )
     expected = {g.nba_game_id: bindings["by_game"][g.nba_game_id] for g in games}

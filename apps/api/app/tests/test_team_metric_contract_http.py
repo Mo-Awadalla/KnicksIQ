@@ -109,6 +109,53 @@ async def test_advertised_record_metric_preserves_both_requested_counts(
         assert not sent or sent == {"wins", "losses"}
 
 
+@pytest.mark.parametrize("metric", [None, "wins"])
+async def test_team_record_comparison_uses_team_tool_without_player_metric_relaxation(
+    client,
+    local_redis,  # noqa: F811
+    monkeypatch,
+    tmp_path,
+    record_property,
+    metric,
+):
+    settings = configure(monkeypatch)
+    raw = json.loads(gzip.decompress(BUNDLE.read_bytes()))["data"]
+    expected = {}
+    for month, label in (("01", "January"), ("02", "February")):
+        games = [g for g in raw["games"] if g["game_date"][5:7] == month]
+        wins = sum(
+            (g["home_score"] > g["away_score"]) == (g["home_team_id"] == "NYK") for g in games
+        )
+        expected[label] = {"games": len(games), "wins": wins, "losses": len(games) - wins}
+    async with AsyncSessionLocal() as db:
+        await load_release_bundle(db, BUNDLE, expected_sha256=SHA, activate=True)
+    question = "Compare their January record with their February record."
+    adapter = RecordAdapter(
+        {"name": "get_team_stats", "question": question, "metric": metric},
+        settings,
+        "complete",
+    )
+    monkeypatch.setattr(analyst_loop, "get_llm_adapter", lambda: adapter)
+    receipt = await exchange(
+        client, local_redis, adapter, f"team-record-comparison-{metric}", question
+    )
+    save_receipt(tmp_path, record_property, f"team-record-comparison-{metric}", receipt)
+    assert_committed_replay(receipt)
+    claims = [
+        c["metadata"]["claim"]
+        for c in receipt["response"]["citations"]
+        if c["type"] == "verified_claim"
+    ]
+    assert {c["window"]["comparison_group"]: c["value"] for c in claims} == expected
+    assert all(c["subject_id"] == "team:NYK" for c in claims)
+    assert all(
+        "get_team_stats (team records/comparisons)" in p["system"]
+        and "compare_windows (players; baseline_question required)" in p["system"]
+        for p in receipt["model_inputs"]
+        if p["user"]["schema"]["title"] == "Action"
+    )
+
+
 @pytest.mark.parametrize("tool", ["get_player_stats", "compare_windows"])
 async def test_team_only_metric_is_rejected_before_player_calculation(
     client,

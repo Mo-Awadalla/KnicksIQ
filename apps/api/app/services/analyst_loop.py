@@ -401,9 +401,9 @@ class AnalystLoop:
                 "You are KnicksIQ. Return JSON matching schema, using backend evidence only. "
                 "For interesting stats or another player, call discover_facts FIRST with the "
                 "user's question unchanged. Empty claims means call a tool before stating stats. "
-                "Tools: get_player_stats (players), get_team_stats (team totals), "
-                "compare_windows (populations), search_archive (narrative), get_evidence "
-                "(references). Answer once evidence is sufficient. "
+                "Tools: get_player_stats (players), get_team_stats (team records/comparisons), "
+                "compare_windows (players; baseline_question required), search_archive, "
+                "get_evidence. Answer once evidence is sufficient. "
                 "call_tools requires tools and null answer. Answer actions require an answer "
                 "object containing text, claims, evidence_ids and fact_ids, never null. "
                 "Include EVERY used claim in answer.claims by copying its claim_uses entry. "
@@ -603,6 +603,29 @@ class AnalystLoop:
         record_ids = {claim.claim_id for claim in self._paired_record_claims()}
         if record_ids and not record_ids <= {use.claim_id for use in answer.claims}:
             return False, "Every requested record needs both canonical wins and losses claims."
+        scope = self.tools.scope
+        if scope is not None and not scope.player_ids:
+            groups = self.tools.requested_team_groups()
+            if groups:
+                complete = self.fallback_claims()
+                required = {claim.claim_id for claim in complete}
+                if not required or not required <= {claim.claim_id for claim in declared}:
+                    return False, "Every requested team comparison population must be answered."
+            elif re.search(r"\b(?:who led|leaders?|which player)\b", self.tools.question, re.I):
+                games = self.tools.selected_games(scope)
+                if scope.relative_game_count:
+                    games = (
+                        games[: scope.relative_game_count]
+                        if scope.relative_game_order == "first"
+                        else games[-scope.relative_game_count :]
+                    )
+                if not any(
+                    claim.subject_id == "team:NYK"
+                    and claim.metric_id == f"{scope.metric}:leaders"
+                    and set(claim.game_ids or []) == {game.id for game in games}
+                    for claim in declared
+                ):
+                    return False, "A team leader requires the complete requested game population."
         if self.tools.statistical_extreme_requested():
             assert self.tools.narrative is not None
             metrics = {"game_score"}
