@@ -33,7 +33,7 @@ SHA = (
 CLOSEST = {"0022500372", "0022501016", "0042500122", "0042500123", "0042500402", "0042500404"}
 
 
-async def request(client, redis, monkeypatch, directory, name, question):
+async def request(client, redis, monkeypatch, directory, name, question, *, context=None):
     attempts = 0
 
     def denied():
@@ -46,6 +46,7 @@ async def request(client, redis, monkeypatch, directory, name, question):
     await redis.set(key, "0.125")
     payload = {
         "question": question,
+        "context": context or [],
         "turn_id": f"canonical-narrative-{name}",
         "expected_revision": 0,
     }
@@ -138,28 +139,16 @@ async def test_approved_archive_narratives_and_measure_clarifications(
             assert "cost the knicks" not in body["answer"].lower()
         assert any(t["call"]["name"] == "get_game_narrative" for t in capture["tools"])
     clarifications = [
-        ("quarter", "Describe the Knicks' worst third quarter.", ["fewest", "margin", "scope"]),
-        (
-            "deficit",
-            "How did the Knicks erase their largest deficit?",
-            ["scope", "observed", "erased", "tied", "lead", "win"],
-        ),
-        (
-            "opponent-run",
-            "What was the most damaging opponent run this season?",
-            ["season", "boundaries", "damage"],
-        ),
-        ("knics-run", "What was the Knics biggest run?", ["unanswered", "net", "window", "scope"]),
-        (
-            "ny-collapse",
-            "What was NY's worst collpase?",
-            ["lead", "margin", "interval", "scope", "loss"],
-        ),
+        ("quarter", "Describe the Knicks' worst third quarter."),
+        ("deficit", "How did the Knicks erase their largest deficit?"),
+        ("opponent-run", "What was the most damaging opponent run this season?"),
+        ("knics-run", "What was the Knics biggest run?"),
+        ("ny-collapse", "What was NY's worst collpase?"),
     ]
-    for name, question, terms in clarifications:
-        body, _ = await request(client, local_redis, monkeypatch, directory, name, question)
+    for name, question in clarifications:
+        body, capture = await request(client, local_redis, monkeypatch, directory, name, question)
         assert body["route"] == "clarification" and body["citations"] == []
-        assert all(term in body["answer"].lower() for term in terms)
+        assert not capture["turn"]["delivered_state"].get("claims")
 
 
 async def test_unanswered_run_boundaries_and_score_corrections(

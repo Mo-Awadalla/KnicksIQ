@@ -1936,12 +1936,20 @@ async def _query_evidence_analyst(
         if not refusal:
             clarification = measure_clarification(req.question)
             if not clarification and tools.scope and tools.scope.requires_clarification:
-                clarification = (
-                    "Which game?"
-                    if tools.scope.clarification_reason == "missing_conversation_game"
-                    else "Which subject or game did you mean? "
-                    + "; ".join(tools.scope.clarification_options)
-                )
+                if tools.scope.clarification_reason in {
+                    "missing_conversation_game",
+                    "ambiguous_game",
+                }:
+                    clarification = (
+                        await narrative_clarification(
+                            db, req.question, season=req.season, prior_questions=[]
+                        )
+                        or "Which archived game date should I use?"
+                    )
+                else:
+                    clarification = "Which subject or game did you mean? " + "; ".join(
+                        tools.scope.clarification_options
+                    )
             elif not clarification and not tools.claims and not tools.narrative:
                 # Committed, release-revalidated claims already scope an explanation.
                 clarification = await narrative_clarification(

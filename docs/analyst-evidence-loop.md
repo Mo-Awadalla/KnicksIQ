@@ -2,7 +2,7 @@
 
 The opt-in `ANALYST_EVIDENCE_LOOP_ENABLED=true` route replaces the discovery early
 return and legacy planner/generator chain with one bounded orchestrator. It uses
-the existing configured model, six controlled tools, immutable backend claims,
+the existing configured model, controlled tools, immutable backend claims,
 a separate whole-answer reviewer, and one optional revision/re-review. The default
 local default remains **false**. The production Blueprint enables the loop and
 `llm_primary` following the owner’s explicit production activation request.
@@ -46,6 +46,62 @@ never truncated. Investigation allows two rounds, three tools per round and six
 model calls total, including malformed output. Normal lookup uses choose/write/review;
 prior-evidence explanation uses write/review. Repairs require capacity and time for
 both calls. Replies remain buffered. No prompt logging is introduced.
+
+Model-input claim records omit inapplicable nullable fields; the immutable server
+registry and public claim JSON remain unchanged. Typed values, requested scope,
+population and provenance remain intact. Selected scalar game sets must fit
+completely before a writer call; otherwise the backend keeps the complete
+factual fallback rather than paying for a known-incomplete proposal.
+
+## Deterministic requested statistics
+
+The evidence-loop route calculates requested leaders, home/away and win/loss
+comparisons, monthly records, first/last team-game records, team quarter scoring,
+player recent-versus-season averages, and single-game player profiles from the
+active release. Comparison groups reuse `team_scope.comparison_groups`.
+Bench scoring divides nonstarter points by team games; shooting percentages
+divide total makes by total attempts. Player averages use observed appearances,
+not team games. Leader ties and tied selected games remain complete.
+
+Fallback eligibility requires the exact requested subgroup, period, player
+appearance window, or selected-game population and metric. Every requested
+comparison operand, quarter, or profile statistic must be available; an arbitrary
+subset is not sufficient. A player's selected-game profile includes points,
+rebounds, assists, and the final score. Backend fallback renders all verified
+claims without the former three-claim truncation; model proposals retain their
+30-claim limit.
+
+Comparison reuse also requires the exact requested value keys, not merely the
+generic `team_comparison` metric and matching groups. A record request preserves
+both wins and losses; points-allowed comparisons average opponent scores, not
+Knicks scoring. A recent-versus-season comparison clears only the baseline's
+explicit game/date/relative window and retains its other requested filters.
+Both operands use the corresponding positive-minute player appearances.
+
+Quarter calculations currently support team points per game only. Quarter totals,
+other quarter box-score statistics, and player quarter statistics remain
+unsupported rather than being answered with a different metric. Statistical game
+extrema return final scores and requested margins using the existing canonical
+selector; narrative requests retain their complete descriptive stories.
+For example, explaining the best defensive game returns its final score and names
+the existing minimum-opponent-points selection measure; it does not introduce
+unrequested quarter statistics or claim a causal explanation.
+Primary scalar extrema validation requires every selected or tied game's final
+score and each requested margin; it does not require a narrative-only claim.
+The independent whole-answer reviewer remains mandatory.
+
+Delivered scalar statistics identify opponent, phase, date window and any
+home/away or result filter. Threshold game counts also name the scoring team,
+comparison operator and cutoff; `eligibility.score_predicate` preserves that
+definition alongside the full contributing game population.
+Yearless calendar dates resolve only within the release-supported calendar;
+ambiguous or invalid dates ask for clarification. An uncommitted conversational
+reference requires both a game/date and the referenced event, stretch, or claim,
+plus comparison inputs when needed. Scoped ambiguous game questions offer the
+actual archived dates without asserting a matching-game count. Ambiguous scoring
+sequences ask for both the game and the run measure/time-window definition.
+A request for two games does not silently expand to all matching games.
+
 
 ## Session API
 
@@ -130,11 +186,110 @@ completion, naturalness and latency classifications must be supplied separately.
 Missing measurements fail the gate helper. Existing release approvals remain
 required; this implementation does not automatically promote or deploy.
 
+The private original120 runner is `app.evaluation.guarded_release`: `admit` verifies
+current key credit, model/provider parameters and prices, exact archive/index
+identities, and the normal monthly ledger without sending a completion. `collect`
+runs either the full primary cohort or its distinct fixed-ID 10% shadow cohort.
+Both use the same exclusive goal journal, original request ceilings and aggregate
+$2 authority, including retained historical charges. Uncertain transmission,
+missing cost, unexpected provider, exceeded bounds or invalid analyst protocol
+stop later calls; admission and synthetic HTTP safety checks are not
+live-provider quality certification.
+
+The counted adapter validates `Action`, `ProposedAnswer` and `AnswerReview`
+inside its failure boundary, before returning content to the analyst loop.
+Known provider cost is settled before schema validation; malformed content does
+not erase that cost or make a known transmission financially uncertain. A
+protocol failure stops the shared journal. When every ticket in a new normal
+reservation has a trusted settled receipt, its known cost and unused slots
+settle normally; genuinely uncertain exposure remains held. The runner cannot
+silently fall back and continue paying for later cohort cases.
+
+A stopped original journal and its exclusive anchor remain immutable. Only the
+exact, separately recorded owner grant permits `--successor-authorization` with
+`--predecessor-goal`; both flags are required by collection and load. The successor
+has its own exclusive authorization-specific anchor and retains all predecessor
+requests, known costs, uncertainty and normal holds. The 26 previous primary
+requests still count against the original 720 ceiling. The verified monthly
+authority cannot decrease, the $2 cutoff does not change, and inherited holds
+cannot be reused, released or replaced by fresh reservations.
+
+The private controller namespaces internal first-turn session identity for this
+successor; external frozen turn/request IDs and shadow membership stay unchanged.
+Ordinary session behavior is restored when the controller exits. Exact provider
+response bytes are durably retained with mode `0600` before status, JSON or schema
+parsing. Ticket-joined private protocol diagnostics retain the raw SHA, typed
+validation locations/types and finish reason. These bytes are diagnostic evidence,
+not a license to retry a stopped successor or bypass a quality gate.
+
+The resource network is internal and cannot reach OpenRouter. For paid verification,
+attach only the disposable verifier to both exact admitted resource and outbound
+networks, using the inspected PostgreSQL address. The guard checks both network
+IDs, the PostgreSQL system ID and connection address, and every Redis/Qdrant target.
+Existing service containers and their network membership remain unchanged.
+The PostgreSQL-shared namespace remains valid for isolated, no-egress checks.
+Docker inherits PostgreSQL's hostname in that mode, so hostname is not verifier
+identity. Create/start the controller-owned verifier first, then pass its full
+daemon ID with `docker exec -e KNICKSIQ_VERIFIER_CONTAINER_ID=<64-hex-id>`.
+Missing identity, a substituted PostgreSQL identity or a wrong resource network
+is denied. Use `QDRANT_URL` for the actual Qdrant endpoint setting.
+
+After both original quality cohorts pass, `app.evaluation.guarded_load` runs the
+unchanged `tools/release/stress.py` workload: warmup, 61-second cooldown, ten
+archive readers and ten distinct analyst requests over 30 seconds. Its counted
+load stage uses the same admitted journal and normal monthly reservations.
+The fixed load ceiling covers eleven turns at six calls each; it does not change
+the original primary/shadow ceilings, quotas or latency thresholds.
+Responses stay buffered until counted accounting and factual validation finish;
+an execution failure cannot expose a successful response before stopping the stage.
+
+Admission requires `--primary-score`, `--shadow-score` and `--shadow-record`,
+in addition to the disabled score and observations. Scores must be produced by
+the existing original-workload scorer and bound to the same goal's full
+primary/shadow observations. The existing staged shadow record must bind the
+actual captured turns, fixed membership, source/bundle/configuration and original
+shadow validator. Transport-complete fallback stages and synthetic safety
+receipts do not satisfy these quality prerequisites.
+
 The production model is `deepseek/deepseek-v4.1-flash`, selected explicitly by the
 owner on 2026-09-22. Production uses JSON-object output with local schema checks,
 `AI_REASONING_EFFORT=none`, latency-prioritized OpenRouter routing, and required
-parameter support. This keeps provider reasoning from consuming the bounded JSON
-output allowance. The independent whole-answer review remains mandatory.
+parameter support. On the ordinary OpenRouter adapter, `none` sends
+`"reasoning": {"enabled": false}`, not `"effort": "none"`. Other configured
+efforts are forwarded unchanged; an unspecified effort omits `reasoning` and
+preserves the model/provider default. Non-OpenRouter adapters remain unchanged
+and do not receive these OpenRouter-only fields. Disabling reasoning on a model
+that supports disabling protects the bounded visible-output allowance;
+`exclude: true` would only hide reasoning, not prevent its token use or billing.
+The independent whole-answer review remains mandatory.
+See the official [reasoning controls and metadata semantics](https://openrouter.ai/docs/guides/best-practices/reasoning-tokens).
+
+The gateway's global effort enum is not a per-model compatibility guarantee.
+Unauthenticated [model metadata](https://openrouter.ai/api/v1/models), observed
+on 2026-10-04, reports this DeepSeek model with `mandatory: false`,
+`default_enabled: true`, `default_effort: "high"`, and supported efforts
+`["max", "high", "low"]` (not `"none"`). Unspecified reasoning therefore does
+not mean disabled. Mandatory-reasoning models cannot satisfy this disable
+configuration. Endpoint [supported parameters](https://openrouter.ai/api/v1/models/deepseek/deepseek-v4.1-flash/endpoints)
+must also cover the requested response format. The ordinary router retains
+latency sorting and fallback routing: neither metadata nor a synthetic HTTP
+smoke certifies a particular live provider's output, cost, or latency. The
+private release guard's separate pinned Morph admission and counted journal
+are not certification of this ordinary routing path.
+
+The no-paid ordinary-router regression is
+`apps/api/app/tests/test_router_reasoning_http.py`. It exercises the production
+HTTP route, isolated SQLite and dedicated local Redis, the ordinary adapter's
+outgoing provider request, structured responses and independent review,
+committed replay, disabled providers and controlled provider failures.
+The only replaced boundary is provider transport; responses are explicitly
+synthetic. Set `KNICKSIQ_ROUTER_ARTIFACT_DIR` to a **fresh** private directory
+per run to retain each request/response, exact outgoing payload, synthetic
+model/provider/usage evidence, replay and monthly-ledger observations.
+Use `ENVIRONMENT=production`, `KNICKSIQ_POSTGRES_TEST=0`, empty live credentials
+and `REDIS_URL`, and run that HTTP test file with JUnit output. These regressions
+do not replace any original release quality, budget, workload or load gate.
+
 The production application cutoff is now $2, matching the owner’s available
 credit; the original $8 default was not increased.
 

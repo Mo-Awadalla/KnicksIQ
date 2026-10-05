@@ -140,7 +140,8 @@ def initial(probe: Probe, endpoint: str, run_id: str) -> dict:
         {"question": "How did JB play in that game?", "turn_id": run_id + "-missing"},
     )
     committed(missing, 1)
-    require(missing.get("answer") == "Which game?", "Unbound game reference was not clarified")
+    require(missing.get("route") == "clarification", "Unbound game reference was not clarified")
+    require(not missing.get("citations"), "Clarification included fact citations")
     followup = probe.request(
         "bound game reference",
         endpoint,

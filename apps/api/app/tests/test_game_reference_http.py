@@ -191,7 +191,7 @@ async def exercise(
     assert attempts == 0 and capture["turn"]["model_calls"] == 0
     assert budget == "0.125"
     if not identified:
-        assert body["route"] == "clarification" and body["answer"].startswith("Which game?")
+        assert body["route"] == "clarification"
         assert body["citations"] == []
     else:
         assert context_conflict is not None and context_conflict.status_code == 409
@@ -244,5 +244,5 @@ async def test_stale_committed_game_without_recent_anchor_still_asks(
     record_property("game_reference_artifact", str(path))
     assert first.status_code == second.status_code == 200
     assert initial["citations"]
-    assert second.json()["answer"].startswith("Which game?")
+    assert second.json()["route"] == "clarification"
     assert second.json()["citations"] == [] and capture["turn"]["model_calls"] == 0

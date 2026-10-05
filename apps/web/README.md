@@ -19,6 +19,9 @@ Answers are expected to be easy to skim:
 The public UI should avoid backend/internal language such as RAG, vector search,
 Qdrant, embeddings, chunks, seeded data, and cached.
 
+On narrow game-detail screens, Tab to the “Play-by-play events” region and use
+the Left/Right arrow keys to scroll the event table without a pointer.
+
 ## Development
 
 ```bash

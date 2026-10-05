@@ -1,3 +1,4 @@
+import AxeBuilder from '@axe-core/playwright'
 import { expect, test } from './network-fixture'
 
 const api = (path: string) => (process.env.PLAYWRIGHT_API_URL || (process.env.PLAYWRIGHT_BASE_URL
@@ -340,6 +341,39 @@ test('away wins show the Knicks margin in the ledger and game evidence', async (
   await page.locator('.game-row').click()
   await expect(page.locator('.scoreboard-foot')).toContainText('+4 Knicks margin')
   await expect(page.getByRole('cell', { name: '+4', exact: true })).toBeVisible()
+})
+
+test('mobile play-by-play can be reached and scrolled with the keyboard', async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 900 })
+  await page.route(api('/games/101'), (route) => route.fulfill({ json: games[100] }))
+  await page.route(api('/games/101/runs'), (route) => route.fulfill({ json: [] }))
+  await page.route(api('/games/101/play-by-play'), (route) => route.fulfill({ json: [
+    { id: 1, sequence: 1, period: 4, clock: '00:07', event_type: 'free_throw',
+      description: 'Made free throw', away_score: 90, home_score: 100, score_margin: 10 },
+  ] }))
+  await page.goto('/games/101')
+  await expect(page.getByRole('table', { name: 'Play-by-play events' })).toBeVisible()
+
+  await page.getByRole('link', { name: 'Back to games' }).focus()
+  await page.keyboard.press('Tab')
+  const events = page.getByRole('region', { name: 'Play-by-play events', exact: true })
+  await expect(events).toBeFocused()
+  await expect(events.getByRole('table', { name: 'Play-by-play events' })).toBeVisible()
+  const initialScroll = await events.evaluate((element) => element.scrollLeft)
+  await page.keyboard.press('ArrowRight')
+  await expect.poll(() => events.evaluate((element) => element.scrollLeft)).toBeGreaterThan(initialScroll)
+  const focus = await events.evaluate((element) => {
+    const style = getComputedStyle(element)
+    return { style: style.outlineStyle, width: parseFloat(style.outlineWidth), offset: parseFloat(style.outlineOffset) }
+  })
+  expect(focus.style).not.toBe('none')
+  expect(focus.width).toBeGreaterThan(0)
+  expect(focus.offset).toBeLessThan(0)
+  const accessibility = await new AxeBuilder({ page })
+    .withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze()
+  expect(accessibility.violations.filter((violation) =>
+    ['serious', 'critical'].includes(violation.impact ?? '')
+  )).toEqual([])
 })
 
 for (const width of [390, 1440]) {

@@ -166,7 +166,6 @@ async def test_complete_atl_unit_is_actually_ranked_and_independently_mapped(
         if index == 0:
             assert not any(d["metadata"].get("unit_type") == "multigame_aggregate" for d in docs)
         else:
-            assert result.json()["answer"] == "Which game?"
             assert result.json()["route"] == "clarification"
             assert not result.json()["citations"]
             identity = next(d for d in docs if d["metadata"].get("unit_type") == "player_identity")

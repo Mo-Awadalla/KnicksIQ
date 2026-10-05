@@ -6,6 +6,7 @@ cannot certify those facts itself. Its journal supplements normal Redis budget
 reservation, and all analyst calls must share that same goal journal.
 """
 
+import json
 from collections.abc import Awaitable, Callable
 from decimal import ROUND_CEILING, Decimal
 from typing import Any
@@ -13,9 +14,11 @@ from typing import Any
 import httpx
 
 from app.evaluation.verification_budget import VerificationBudget
+from app.services.evidence_contracts import Action, AnswerReview, ProposedAnswer
 from app.services.report_llm import LLMAdapter
 
 MODEL = "deepseek/deepseek-v4.1-flash"
+_PROTOCOL_MODELS = {model.__name__: model for model in (Action, ProposedAnswer, AnswerReview)}
 
 
 class CountedVerificationAdapter(LLMAdapter):
@@ -42,7 +45,21 @@ class CountedVerificationAdapter(LLMAdapter):
 
     async def generate(self, *, system: str, user: str) -> str:
         try:
-            return await self._generate(system=system, user=user)
+            try:
+                prompt = json.loads(user)
+            except json.JSONDecodeError:
+                prompt = None
+            protocol = None
+            if isinstance(prompt, dict) and isinstance(prompt.get("schema"), dict):
+                protocol = _PROTOCOL_MODELS.get(prompt["schema"].get("title"))
+                if protocol is None:
+                    raise ValueError("Unknown counted analyst protocol")
+            content = await self._generate(system=system, user=user)
+            if protocol is not None:
+                # Parsing outside this boundary would let later paid cases run
+                # after malformed output had already failed the analyst loop.
+                protocol.model_validate_json(content)
+            return content
         except BaseException as exc:
             if self.on_failure is not None:
                 self.on_failure(type(exc).__name__)
