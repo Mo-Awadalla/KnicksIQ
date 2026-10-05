@@ -824,3 +824,74 @@ def test_release_gates_require_actual_metrics_and_human_labels():
     assert not gates["heldout_reviewer"]
     assert not gates["unsupported_claims"]
     assert not gates["latency"]
+
+
+@pytest.mark.parametrize(
+    "cost", [None, "0.001", True, False, float("nan"), float("inf"), -float("inf"), -1]
+)
+async def test_malformed_budget_cost_retains_reservation(local_redis, monkeypatch, cost):
+    monkeypatch.setattr(get_settings(), "openrouter_monthly_cutoff_usd", 0.08)
+    key = f"ai-budget:{datetime.now(UTC):%Y-%m}"
+    await local_redis.set(key, 0)
+    reservation = await BudgetReservation.reserve(0.02)
+    assert reservation is not None
+    await reservation.settle(cost)
+    assert float(await local_redis.get(key)) == pytest.approx(0.02)
+    assert float(
+        await local_redis.hget(key + ":reservations", reservation.identity)
+    ) == pytest.approx(0.02)
+
+
+@pytest.mark.parametrize(
+    "amount", [None, "0.01", True, False, float("nan"), float("inf"), -float("inf"), -1, 0]
+)
+async def test_invalid_reservation_bounds_fail_before_redis(monkeypatch, amount):
+    from app.services import analyst_budget
+
+    async def forbidden():
+        pytest.fail("Invalid reservation must fail before Redis access")
+
+    monkeypatch.setattr(analyst_budget, "_redis", forbidden)
+    with pytest.raises(ValueError, match="finite and positive"):
+        await BudgetReservation.reserve(amount)
+
+
+@pytest.mark.parametrize("cutoff", [True, "2", float("nan"), float("inf"), -1, 0])
+async def test_invalid_monthly_cutoff_fails_before_redis(monkeypatch, cutoff):
+    from app.services import analyst_budget
+
+    async def forbidden():
+        pytest.fail("Invalid cutoff must fail before Redis access")
+
+    monkeypatch.setattr(analyst_budget, "_redis", forbidden)
+    monkeypatch.setattr(get_settings(), "openrouter_monthly_cutoff_usd", cutoff)
+    with pytest.raises(ValueError, match="Monthly cutoff"):
+        await BudgetReservation.reserve(0.01)
+
+
+@pytest.mark.parametrize(
+    "cost", ["0.001", True, float("nan"), float("inf"), 10**1000, -(10**1000), -1, None]
+)
+async def test_malformed_provider_cost_remains_unknown_in_loop(
+    db_session, local_redis, monkeypatch, cost
+):
+    from app.services.evidence_contracts import Action
+
+    key = f"ai-budget:{datetime.now(UTC):%Y-%m}"
+    await local_redis.set(key, 0)
+    tools, _ = await make_tools(db_session)
+    adapter = ScriptedAdapter()
+    adapter.last_metadata["usage"]["cost"] = cost
+    monkeypatch.setattr(analyst_loop, "get_llm_adapter", lambda: adapter)
+    loop = AnalystLoop(tools, [])
+    await loop.model(Action)
+    assert loop.costs == [None]
+    await loop.settle()
+    assert float(await local_redis.get(key)) == pytest.approx(
+        get_settings().analyst_call_reservation_usd
+    )
+
+
+@pytest.mark.parametrize("value", [10**1000, -(10**1000)])
+def test_out_of_range_integer_cost_is_rejected(value):
+    assert not analyst_budget.valid_reported_cost(value)
