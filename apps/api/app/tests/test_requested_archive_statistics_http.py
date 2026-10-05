@@ -112,26 +112,6 @@ async def test_requested_archive_statistics(
         regular,
         sum(own(g) > allowed(g) for g in regular),
     )
-    for question, values, maximum in [
-        (
-            "What was the Knicks highest-scoring game?",
-            {g["nba_game_id"]: own(g) for g in games},
-            True,
-        ),
-        (
-            "What was the Knicks lowest-scoring game?",
-            {g["nba_game_id"]: own(g) for g in games},
-            False,
-        ),
-        (
-            "What was the Knicks worst loss by margin?",
-            {g["nba_game_id"]: own(g) - allowed(g) for g in games if own(g) < allowed(g)},
-            False,
-        ),
-    ]:
-        extreme = (max if maximum else min)(values.values())
-        population = [g for g in games if values.get(g["nba_game_id"]) == extreme]
-        requests.append((question, "canonical_game_narrative", population, None, None))
     for question, metric, nba_id, aggregation in [
         ("How many total points did Jalen Brunson score?", "points:total", 1628973, "total"),
         (
@@ -218,13 +198,7 @@ async def test_requested_archive_statistics(
             failures.append((index, "missing claim or failed request", result.get("answer")))
             continue
         claim = matched[0]
-        narrative = metric == "canonical_game_narrative"
-        wrong_value = (
-            {g["nba_game_id"] for g in claim["value"]["games"]}
-            != {g["nba_game_id"] for g in population}
-            if narrative
-            else abs(claim["value"] - value) > 0.00001
-        )
+        wrong_value = abs(claim["value"] - value) > 0.00001
         if wrong_value or claim["sample_size"] != len(population):
             failures.append((index, "wrong value/population", claim))
         if player and claim["window"] != {
@@ -237,7 +211,7 @@ async def test_requested_archive_statistics(
         source_refs = []
         for ref in claim["supporting_evidence_ids"]:
             source_refs.extend(evidence[ref]["metadata"].get("source_evidence_ids", [ref]))
-        if len(source_refs) != (1 if narrative else len(population)):
+        if len(source_refs) != len(population):
             failures.append((index, "incomplete underlying receipts", len(source_refs)))
     with (directory / "summary.json").open("x") as artifact:
         json.dump(

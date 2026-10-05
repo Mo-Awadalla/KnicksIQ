@@ -228,7 +228,7 @@ async def test_discovery_does_not_supply_a_missing_game(
     search = assert_search(receipt)
     assert search["returned_evidence_ids"]
     assert search_identity in search["query"]
-    assert receipt["response"]["answer"] == "Which game?"
+    assert receipt["response"]["route"] == "clarification"
     assert receipt["response"]["citations"] == []
     assert attempts == {"provider": 0, "dense": 0, "reservations": 0}
     assert receipt["budget_after"] == "0.125"
@@ -257,7 +257,8 @@ async def test_failed_discovery_retains_required_clarification(
     assert search["purpose"] == "canonical_discovery"
     assert search["status"] == "dependency_failure"
     assert search["returned_evidence_ids"] == search["candidate_evidence_ids"] == []
-    assert receipt["response"]["answer"] == "Which game?"
+    assert receipt["response"]["route"] == "clarification"
+    assert receipt["response"]["citations"] == []
     assert receipt["response"]["degraded"]
     assert attempts == {"provider": 0, "dense": 0, "reservations": 0}
 
@@ -295,6 +296,7 @@ async def test_cancelled_discovery_releases_turn_for_exact_retry(
     )
     save(tmp_path, "cancelled-retry", receipt)
     assert_search(receipt)
-    assert receipt["response"]["answer"] == "Which game?"
+    assert receipt["response"]["route"] == "clarification"
+    assert receipt["response"]["citations"] == []
     assert receipt["response"]["state_committed"]
     assert attempts == {"provider": 0, "dense": 0, "reservations": 0}

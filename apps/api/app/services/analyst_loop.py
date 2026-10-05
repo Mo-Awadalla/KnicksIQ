@@ -251,7 +251,8 @@ class AnalystLoop:
                 ref for cid in list(group_ids) for ref in self.tools.claims[cid].baseline_claim_ids
             )
             group = [self.tools.claims[ref] for ref in sorted(group_ids) if ref not in sent_claims]
-            data = [c.model_dump(mode="json") for c in group]
+            # Null context fields are inapplicable; authoritative server records stay whole.
+            data = [c.model_dump(mode="json", exclude_none=True) for c in group]
             size = token_upper_bound(encoded(data))
             uses = [
                 {"claim_id": c.claim_id, "displayed_value": c.value, "decimal_places": None}
@@ -290,11 +291,15 @@ class AnalystLoop:
                 for result in self.results
                 for c in result.claims
                 if c.metric_id == "canonical_game_narrative"
+                or (
+                    self.tools.statistical_extreme_requested()
+                    and c.metric_id in {"game_score", "margin"}
+                )
             }
             if not required <= sent_claims.keys():
-                # A partial narrative cannot pass completeness validation. Preserve the
-                # full backend answer instead of spending calls on an empty factual input.
-                raise ValueError("Complete narrative claims exceed model input budget")
+                # A partial selection cannot pass completeness validation. Preserve
+                # every backend claim without paying for a known-incomplete prompt.
+                raise ValueError("Complete selected-game claims exceed model input budget")
         # Prioritize evidence supporting the retained claims.
         refs = {ref for c in sent_claims.values() for ref in c.supporting_evidence_ids}
         if not review:
@@ -549,14 +554,26 @@ class AnalystLoop:
     async def validate(
         self, answer: ProposedAnswer, *, timeout_seconds: float | None = None
     ) -> tuple[bool, str]:
-        if self.tools.narrative:
+        declared = [
+            self.tools.claims[u.claim_id] for u in answer.claims if u.claim_id in self.tools.claims
+        ]
+        if self.tools.statistical_extreme_requested():
+            metrics = {"game_score"}
+            if "margin" in self.tools.question.lower():
+                metrics.add("margin")
+            required = {
+                (metric, game.id) for metric in metrics for game in self.tools.narrative.games
+            }
+            supplied = {
+                (claim.metric_id, claim.game_ids[0])
+                for claim in declared
+                if claim.subject_id == "team:NYK" and len(claim.game_ids or []) == 1
+            }
+            if supplied != required or len(declared) != len(required):
+                return False, "Every selected or tied game needs every requested scalar metric."
+        elif self.tools.narrative:
             from app.services.canonical_narrative import complete_narrative_text
 
-            declared = [
-                self.tools.claims[u.claim_id]
-                for u in answer.claims
-                if u.claim_id in self.tools.claims
-            ]
             if not complete_narrative_text(answer.text, declared):
                 return False, "Every selected game and tied run must appear in the narrative."
         if not validate_structure(
@@ -615,7 +632,7 @@ class AnalystLoop:
         if (
             scope is None
             or scope.requires_clarification
-            or scope.periods
+            or (scope.periods and not self.tools.supports_period_average(scope))
             or self.tools.season != self.tools.release.season
             or any(
                 season != self.tools.release.season
@@ -634,6 +651,48 @@ class AnalystLoop:
             )
         expected_games = {g.id for g in games}
         discovery = re_search_discovery(self.tools.question)
+        team_groups = {
+            label: {game.id for game in population}
+            for label, population in self.tools.requested_team_groups()
+        }
+        profile = self.tools.player_profile_requested()
+        season_comparison = self.tools.season_window_comparison_requested()
+        statistical_extreme = self.tools.statistical_extreme_requested()
+        player_populations = {}
+        if scope.player_ids:
+            game_map = {game.id: game for game in self.tools.games}
+            baseline_games = (
+                {
+                    game.id
+                    for game in self.tools.selected_games(
+                        self.tools.season_comparison_baseline_scope(scope)
+                    )
+                }
+                if season_comparison
+                else set()
+            )
+            for pid in scope.player_ids:
+                appearances = {
+                    stat.game_id
+                    for stat, _ in self.tools.rows
+                    if stat.player_id == pid and stat.minutes > 0
+                }
+                current = sorted(
+                    appearances & expected_games,
+                    key=lambda identity: (
+                        game_map[identity].game_date,
+                        game_map[identity].nba_game_id,
+                    ),
+                )
+                if scope.relative_game_count:
+                    current = (
+                        current[: scope.relative_game_count]
+                        if scope.relative_game_order == "first"
+                        else current[-scope.relative_game_count :]
+                    )
+                player_populations[f"player:{pid}"] = [set(current)]
+                if season_comparison:
+                    player_populations[f"player:{pid}"].append(appearances & baseline_games)
         claims = []
         results = list(self.results)
         if is_record_request(self.tools.question) and not scope.player_ids:
@@ -655,35 +714,53 @@ class AnalystLoop:
                     relevant = (
                         bool(result.candidates) and set(claim.game_ids or []) <= expected_games
                     )
+                elif team_groups:
+                    label = (claim.window or {}).get("comparison_group")
+                    relevant = (
+                        claim.subject_id == "team:NYK"
+                        and claim.metric_id == "team_comparison"
+                        and label in team_groups
+                        and set(claim.game_ids or []) == team_groups[label]
+                        and isinstance(claim.value, dict)
+                        and set(claim.value) == set(self.tools.team_comparison_metrics(scope))
+                    )
+                elif scope.periods:
+                    relevant = (
+                        claim.subject_id == "team:NYK"
+                        and claim.metric_id == "period_points:average"
+                        and claim.filters.get("periods") in [[p] for p in scope.periods]
+                        and set(claim.game_ids or []) == expected_games
+                    )
+                elif statistical_extreme:
+                    relevant = (
+                        claim.subject_id == "team:NYK"
+                        and len(claim.game_ids or []) == 1
+                        and set(claim.game_ids or []) <= expected_games
+                        and claim.metric_id in {"game_score", "margin"}
+                    )
+                elif profile:
+                    relevant = (
+                        len(claim.game_ids or []) == 1
+                        and set(claim.game_ids or []) <= expected_games
+                        and (
+                            (
+                                claim.subject_id in {f"player:{pid}" for pid in scope.player_ids}
+                                and claim.metric_id
+                                in {"points:total", "rebounds:total", "assists:total"}
+                            )
+                            or (claim.subject_id == "team:NYK" and claim.metric_id == "game_score")
+                        )
+                    )
                 else:
                     subject = (
                         claim.subject_id in {f"player:{pid}" for pid in scope.player_ids}
                         if scope.player_ids
                         else claim.subject_id == "team:NYK"
                     )
-                    population = expected_games
+                    populations = [expected_games]
                     if scope.player_ids:
-                        appearance_games = sorted(
-                            {
-                                stat.game_id
-                                for stat, _ in self.tools.rows
-                                if f"player:{stat.player_id}" == claim.subject_id
-                                and stat.minutes > 0
-                                and stat.game_id in expected_games
-                            },
-                            key=lambda identity: (
-                                next(g.game_date for g in games if g.id == identity),
-                                identity,
-                            ),
-                        )
-                        if scope.relative_game_count:
-                            appearance_games = (
-                                appearance_games[: scope.relative_game_count]
-                                if scope.relative_game_order == "first"
-                                else appearance_games[-scope.relative_game_count :]
-                            )
-                        population = set(appearance_games)
-                    relevant = subject and set(claim.game_ids or []) == population
+                        populations = player_populations.get(claim.subject_id, [])
+                    relevant = subject and set(claim.game_ids or []) in populations
                     if scope.player_ids:
                         expected_metric = (
                             "three_point_percentage"
@@ -699,6 +776,44 @@ class AnalystLoop:
                         relevant = relevant and claim.metric_id.split(":")[0] == expected_metric
                 if relevant:
                     claims.append(claim)
+        if team_groups:
+            if {c.window["comparison_group"] for c in claims if c.window} != set(team_groups):
+                return []
+            return list({c.claim_id: c for c in claims}.values())
+        if scope.periods:
+            if {c.filters["periods"][0] for c in claims} != set(scope.periods):
+                return []
+        if profile:
+            required = {
+                (f"player:{pid}", metric, game.id)
+                for pid in scope.player_ids
+                for metric in ("points:total", "rebounds:total", "assists:total")
+                for game in games
+            } | {("team:NYK", "game_score", game.id) for game in games}
+            supplied = {(c.subject_id, c.metric_id, (c.game_ids or [None])[0]) for c in claims}
+            if supplied != required:
+                return []
+        if statistical_extreme:
+            metrics = {"game_score"}
+            if "margin" in self.tools.question.lower():
+                metrics.add("margin")
+            required = {(metric, g.id) for metric in metrics for g in games}
+            supplied = {(c.metric_id, (c.game_ids or [None])[0]) for c in claims}
+            if supplied != required:
+                return []
+        if season_comparison:
+            for pid in scope.player_ids:
+                required = {
+                    frozenset(population) for population in player_populations[f"player:{pid}"]
+                }
+                supplied = {
+                    frozenset(c.game_ids or [])
+                    for c in claims
+                    if c.subject_id == f"player:{pid}"
+                    and c.metric_id == f"{scope.metric or 'points'}:average"
+                }
+                if supplied != required:
+                    return []
         if is_game_score_request(self.tools.question) and not scope.player_ids:
             claims = [c for c in claims if c.metric_id == "game_score"]
         if is_record_request(self.tools.question) and not scope.player_ids:
@@ -731,10 +846,8 @@ class AnalystLoop:
         return self.render_fallback(reason)
 
     def render_fallback(self, reason: str) -> dict[str, Any]:
-        from app.services.evidence_contracts import ClaimUse
 
         claims = self.fallback_claims()
-        claims = claims[:3]
         text = " ".join(c.statement for c in claims)
         if not text:
             text = next(
@@ -751,16 +864,27 @@ class AnalystLoop:
                 text += " I don't have live injury or current-status updates."
         answer = ProposedAnswer(
             text=text if len(text) <= 6000 else "Complete canonical game narrative follows.",
-            claims=[ClaimUse(claim_id=c.claim_id, displayed_value=c.value) for c in claims],
         )
-        response = self.render(answer, llm=False, warning=reason)
+        response = self.render(answer, llm=False, warning=reason, backend_claims=claims)
         # Backend statements are already verified. Preserve all stories when
         # the model's bounded text format cannot hold the complete selection.
         response["answer"] = text
         return response
 
-    def render(self, answer: ProposedAnswer, *, llm: bool, warning: str = "") -> dict[str, Any]:
-        claims = [self.tools.claims[u.claim_id] for u in answer.claims]
+    def render(
+        self,
+        answer: ProposedAnswer,
+        *,
+        llm: bool,
+        warning: str = "",
+        backend_claims: list[VerifiedClaim] | None = None,
+    ) -> dict[str, Any]:
+        # Model answers remain bounded; backend-verified ties must all be delivered.
+        claims = (
+            [self.tools.claims[u.claim_id] for u in answer.claims]
+            if backend_claims is None
+            else backend_claims
+        )
         citations = []
         for claim in claims:
             for ref in claim.supporting_evidence_ids[:3]:

@@ -17,6 +17,7 @@ from app.services.release_bundle import load_release_bundle
 from app.tests.test_analyst_contracts import local_redis  # noqa: F401
 from app.tests.test_canonical_narrative_http import BUNDLE, SHA
 from app.tests.test_player_intelligence import _seed_release_stats
+from sqlalchemy import select
 
 
 def encoded_size(value):
@@ -147,8 +148,8 @@ async def test_current_discovery_survives_oversized_result_http(
     settings = configure(monkeypatch)
     async with AsyncSessionLocal() as db:
         release, player = await _seed_release_stats(db)
-        # Four appearances produce a compact, real aggregate receipt instead
-        # of two large raw box scores, leaving room to test discovery priority.
+        # Four appearances produce a compact, real aggregate receipt, leaving
+        # room for canonical discovery beside an oversized tool source.
         for day in (4, 5):
             game = Game(
                 release_id=release.id,
@@ -176,6 +177,18 @@ async def test_current_discovery_survives_oversized_result_http(
                 )
             )
         await db.commit()
+        source_rows = (
+            await db.execute(
+                select(Game, PlayerGameStat)
+                .join(PlayerGameStat, PlayerGameStat.game_id == Game.id)
+                .where(
+                    Game.release_id == release.id,
+                    PlayerGameStat.player_id == player.id,
+                )
+            )
+        ).all()
+        game_dates = {game.id: str(game.game_date) for game, _ in source_rows}
+        appearance_game_ids = {game.id for game, stat in source_rows if stat.minutes > 0}
     question = "Brunson's average against Boston?"
     adapter = SyntheticAdapter(
         {"name": "get_player_stats", "question": question, "metric": "points"}
@@ -190,9 +203,17 @@ async def test_current_discovery_survives_oversized_result_http(
             return result
         # Real SQL discovery is left intact. Reproduce a whole oversized source
         # and a duplicate result/discovery identity at the tool boundary.
-        assert self.discovery and len(self.discovery.evidence) >= 2
-        priority = self.discovery.evidence[-1]
-        oversized = priority.model_copy(
+        assert self.discovery and self.discovery.evidence
+        compact = min(
+            (
+                item
+                for item in self.discovery.evidence
+                if item.game_id in game_dates
+                and item.metadata.get("date") == game_dates[item.game_id]
+            ),
+            key=lambda item: encoded_size(item.model_dump(mode="json")),
+        )
+        oversized = compact.model_copy(
             update={"evidence_id": "synthetic:oversized-current-result", "text": "x" * 9000}
         )
         unrelated = Evidence(
@@ -205,7 +226,7 @@ async def test_current_discovery_survives_oversized_result_http(
         self.evidence[unrelated.evidence_id] = unrelated
         seam.update(
             discovery=[e.model_dump(mode="json") for e in self.discovery.evidence],
-            priority_id=priority.evidence_id,
+            compact_id=compact.evidence_id,
             oversized=oversized.model_dump(mode="json"),
             unrelated=unrelated.model_dump(mode="json"),
             claims=[c.model_dump(mode="json") for c in result.claims],
@@ -215,38 +236,69 @@ async def test_current_discovery_survives_oversized_result_http(
                 for ref in claim.supporting_evidence_ids
             },
         )
-        return result.model_copy(update={"evidence": [oversized, priority, priority]})
+        return result.model_copy(update={"evidence": [oversized, compact, compact]})
 
     monkeypatch.setattr(AnalystTools, "execute", result_with_oversized_record)
     receipt = await exchange(client, local_redis, adapter, "source-union", question)
     receipt["controlled_tool_result"] = seam
     save_receipt(tmp_path, record_property, "source-union", receipt)
     assert_committed_replay(receipt)
-    assert receipt["response"]["llm_validated"]
-    assert any(s["purpose"] == "canonical_discovery" for s in receipt["capture"]["searches"])
-    action_inputs = [p for p in adapter.inputs if p["user"]["schema"]["title"] == "Action"]
-    assert len(action_inputs) == 2
-    packed = action_inputs[1]["user"]
-    ids = [e["evidence_id"] for e in packed["evidence"]]
-    expected_order = [seam["priority_id"]] + [
-        e["evidence_id"] for e in seam["discovery"] if e["evidence_id"] != seam["priority_id"]
+    body = receipt["response"]
+    assert body["llm_validated"]
+    assert body["route"] == "llm_analyst"
+    assert not body["refused"]
+    assert body["data_version"] == release.version
+    searches = [
+        search
+        for search in receipt["capture"]["searches"]
+        if search["purpose"] == "canonical_discovery"
+        and search["status"] == "ok"
+        and search["release"] == release.version
     ]
+    assert searches
+    assert seam["compact_id"] in {
+        identity for search in searches for identity in search["candidate_evidence_ids"]
+    }
+    packed = next(
+        request["user"]
+        for request in reversed(adapter.inputs)
+        if request["user"]["schema"]["title"] == "Action" and request["user"]["claims"]
+    )
+    ids = [e["evidence_id"] for e in packed["evidence"]]
     support_ids = set(seam["supporting_evidence"])
     assert support_ids <= set(ids)
-    assert set(ids[: len(support_ids)]) == support_ids
-    discovery_ids = [identity for identity in ids if identity not in support_ids]
-    assert discovery_ids[0] == seam["priority_id"]
     assert len(ids) == len(set(ids))
     assert seam["oversized"]["evidence_id"] not in ids
     assert seam["unrelated"]["evidence_id"] not in ids
-    assert len(discovery_ids) >= 2, (
-        "A nonempty oversized result must not suppress compact canonical discovery"
-    )
-    assert discovery_ids == [identity for identity in expected_order if identity in discovery_ids]
     originals = {e["evidence_id"]: e for e in seam["discovery"]}
     originals.update(seam["supporting_evidence"])
+    assert originals[seam["compact_id"]] in packed["evidence"], (
+        "A nonempty oversized result must not suppress compact canonical discovery"
+    )
     assert all(e == originals[e["evidence_id"]] for e in packed["evidence"])
     assert packed["claims"] == seam["claims"]
+    delivered_claims = {
+        citation["metadata"]["claim"]["claim_id"]: citation["metadata"]["claim"]
+        for citation in body["citations"]
+    }
+    assert delivered_claims == {claim["claim_id"]: claim for claim in packed["claims"]}
+    assert {
+        (claim["subject_id"], claim["metric_id"]): claim["value"]
+        for claim in delivered_claims.values()
+    } == {(f"player:{player.id}", "points:average"): 35.0}
+    for claim in delivered_claims.values():
+        assert claim["release_id"] == release.version
+        assert claim["season"] == release.season
+        assert claim["filters"]["opponent_id"] == "BOS"
+        assert set(claim["game_ids"]) == appearance_game_ids
+        assert claim["sample_size"] == claim["denominator"] == 4
+        assert claim["window"] == {
+            "date_start": "2026-01-01",
+            "date_end": "2026-01-05",
+        }
+    for citation in body["citations"]:
+        assert citation["type"] == "verified_claim"
+        assert citation["metadata"]["evidence_id"] in support_ids
     for request in adapter.inputs:
         assert request["input_bytes"] <= settings.analyst_input_tokens
         payload = request["user"]
