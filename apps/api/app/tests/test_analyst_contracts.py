@@ -129,6 +129,35 @@ async def make_tools(db, question="Give me an interesting stat", state=None):
     return tools, player
 
 
+async def test_single_game_discovery_cannot_answer_complete_window_leader(db_session, monkeypatch):
+    from app.services.evidence_contracts import ClaimUse
+
+    tools, _ = await make_tools(db_session, "Who led the team in scoring over the last 2 games?")
+    result = await tools.execute(
+        ToolCall(
+            name="discover_facts", question=tools.question, metric="points", aggregation="total"
+        )
+    )
+    assert result.claims
+    partial = result.claims[0]
+    loop = AnalystLoop(tools, [])
+    loop.results = [result]
+    loop.sent_claims = {partial.claim_id: partial}
+    answer = ProposedAnswer(
+        text=partial.statement,
+        claims=[ClaimUse(claim_id=partial.claim_id, displayed_value=partial.value)],
+        evidence_ids=partial.supporting_evidence_ids,
+    )
+
+    def forbidden():
+        pytest.fail("Incomplete leader scope must fail before a model review")
+
+    monkeypatch.setattr(analyst_loop, "get_llm_adapter", forbidden)
+    supported, reason = await loop.validate(answer)
+    assert not supported and "complete requested game population" in reason
+    assert loop.calls == 0
+
+
 async def test_populations_and_scope_cannot_be_changed_by_model(db_session):
     tools, player = await make_tools(db_session, "Brunson regular season points")
     result = await tools.execute(ToolCall(name="get_player_stats", question="Towns playoffs"))
