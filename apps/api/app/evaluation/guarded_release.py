@@ -25,6 +25,7 @@ import math
 import os
 import re
 import sqlite3
+import time
 from collections.abc import Callable
 from contextlib import contextmanager
 from contextvars import ContextVar
@@ -86,6 +87,9 @@ SUCCESSOR_AUTHORIZATION_SHA256 = "ad46e2cd9ce9b1bbd4142d6f156da6f81ca9c3e9d3c9ef
 # Read-only owner safety inventory accompanying this one exact authorization.
 SUCCESSOR_MONTHLY_FLOOR_NUSD = 372_507_682
 KNOWN_COST_AUTHORIZATION_SHA256 = "327a6cc2e080c223858cca75b87402416c813eacb0e8528f85592793e74f9e0c"
+RECONCILIATION_AUTHORIZATION_SHA256 = (
+    "9210fcbf2d9311dfea2ffbaa07184084d89cfad74ed2f2c5a555f116b831113a"
+)
 PRIOR_PROBE = (
     "docker-staging-20261002/claim-value-format-20261002/review-format-fix/run-1/probe.json"
 )
@@ -695,17 +699,30 @@ class Admission:
 
     async def provider_metadata(self) -> dict:
         observed = {}
+        started = time.monotonic()
         async with httpx.AsyncClient(follow_redirects=False, timeout=10, trust_env=False) as client:
-            for name, endpoint in (
+            endpoints = (
                 ("key", "key"),
                 ("credits", "credits"),
                 ("model", "models"),
                 ("routes", "models/" + MODEL + "/endpoints"),
-            ):
-                response = await client.get(
-                    "https://openrouter.ai/api/v1/" + endpoint,
-                    headers={"Authorization": "Bearer " + self.api_key},
-                )
+            )
+            # All four current snapshots remain mandatory. Fetch independent
+            # endpoints together so admission does not unnecessarily consume
+            # four network round trips inside the original model deadline.
+            responses = await asyncio.gather(
+                *(
+                    client.get(
+                        "https://openrouter.ai/api/v1/" + endpoint,
+                        headers={"Authorization": "Bearer " + self.api_key},
+                    )
+                    for _, endpoint in endpoints
+                ),
+                return_exceptions=True,
+            )
+            for (name, _), response in zip(endpoints, responses, strict=True):
+                if isinstance(response, BaseException):
+                    raise response
                 response.raise_for_status()
                 body = response.json()
                 require(isinstance(body, dict), "Malformed current provider metadata")
@@ -776,6 +793,7 @@ class Admission:
             credit = min(credit, money(remaining))
         result = {
             "observed_at": datetime.now(UTC).isoformat(),
+            "fetch_elapsed_ms": round((time.monotonic() - started) * 1000),
             "key_sha256": hashlib.sha256(self.api_key.encode()).hexdigest(),
             "key": {
                 field: key.get(field)
@@ -1623,6 +1641,10 @@ def successor_lineage(
     authorization_sha = file_hash(authorization.resolve())
     if authorization_sha == KNOWN_COST_AUTHORIZATION_SHA256:
         return known_cost_lineage(root, goal, authorization, predecessor_goal)
+    if authorization_sha == RECONCILIATION_AUTHORIZATION_SHA256:
+        reconciliation = json.loads(authorization.read_text())
+        prior = evidence_goal(root, reconciliation["known_cost_authorization"])
+        return known_cost_lineage(root, goal, prior, predecessor_goal, reconciliation=authorization)
     require(
         authorization_sha == SUCCESSOR_AUTHORIZATION_SHA256,
         "Successor authorization differs from exact owner safety choice",
@@ -1768,7 +1790,7 @@ def successor_anchor(root: Path, lineage: dict | None) -> Path:
     identity = lineage["authorization_sha256"]
     if identity == KNOWN_COST_AUTHORIZATION_SHA256:
         identity += "-" + lineage["predecessor_journal_sha256"]
-    else:
+    elif identity != RECONCILIATION_AUTHORIZATION_SHA256:
         require(identity == SUCCESSOR_AUTHORIZATION_SHA256, "Foreign successor authorization")
     return anchor.with_name("guarded-counted-successor-" + identity + ".json")
 
@@ -1958,7 +1980,113 @@ def validate_protocol_stop(
     return failures
 
 
-def known_cost_lineage(root: Path, goal: Path, authorization: Path, predecessor_goal: Path) -> dict:
+def validate_reconciled_stop(
+    goal: Path,
+    stored: dict,
+    fresh: list[dict],
+    receipts: list[dict],
+    normal: list[dict],
+    phases: dict,
+    approved: dict,
+) -> list[dict]:
+    """Carry one exact owner-charged bound without inventing provider settlement."""
+    request = approved["reconciled_request"]
+    ticket, bound = request["ticket"], request["budget_charged_nusd"]
+    require(
+        type(ticket) is int
+        and ticket == 28
+        and type(bound) is int
+        and bound == 818_196
+        and request["stage"] == "primary"
+        and request["journal_status"] == "failed"
+        and request["error_type"] == "CancelledError"
+        and request["provider_cost_known"] is False
+        and request["provider_cost_nusd"] is None
+        and request["normal_hold_usd"] == "0.03"
+        and fresh
+        == [
+            {
+                "id": ticket,
+                "stage": "primary",
+                "amount_nusd": bound,
+                "status": "failed",
+                "error": "CancelledError",
+            }
+        ]
+        and phases == {"primary": "failed"}
+        and len(receipts) == len(normal) == 1,
+        "Reconciliation is not the exact cancelled unpriced request",
+    )
+    receipt, reservation = receipts[0], normal[0]
+    require(
+        receipt.get("journal_ticket") == ticket
+        and receipt.get("bound_nusd") == bound
+        and receipt.get("status") == "uncertain"
+        and receipt.get("error_type") == "CancelledError"
+        and receipt.get("journal_binding") == admitted_binding_sha(stored)
+        and receipt.get("stage") == receipt.get("mode") == "primary"
+        and receipt.get("payload_sha256") == request["payload_sha256"]
+        and receipt.get("normal_reservation_id") == request["normal_reservation_id"]
+        and not {
+            "cost_nusd",
+            "reported_cost_nusd",
+            "provider_generation_id",
+            "raw_response_sha256",
+        }.intersection(receipt)
+        and reservation.get("identity") == request["normal_reservation_id"]
+        and reservation.get("request_id") == receipt.get("request_id")
+        and reservation.get("case_id") == receipt.get("case_id")
+        and reservation.get("tickets") == [ticket]
+        and reservation.get("slots") == 3
+        and reservation.get("used") == 1
+        and reservation.get("amount") == "0.03"
+        and reservation.get("settled") is False
+        and reservation.get("uncertain") is True,
+        "Cancelled request provenance, unknown cost or retained hold differs",
+    )
+    files = approved["immutable_failure_evidence_sha256"]
+    expected_names = {
+        f"primary/request-{ticket:06d}.json",
+        f"primary/protocol-failure-{ticket:06d}.json",
+        "primary/execution-summary.json",
+        "primary/observations.json",
+    }
+    require(set(files) == expected_names, "Reconciliation failure inventory differs")
+    for relative, expected in files.items():
+        require(file_hash(goal / relative) == expected, "Immutable cancellation evidence changed")
+    require(
+        not (goal / f"primary/response-{ticket:06d}.body").exists(),
+        "Reconciliation substitutes an available provider response",
+    )
+    wire = json.loads((goal / f"primary/request-{ticket:06d}.json").read_text())
+    failure = json.loads((goal / f"primary/protocol-failure-{ticket:06d}.json").read_text())
+    require(
+        digest(wire["payload"]) == request["payload_sha256"]
+        and wire["join"]["journal_ticket"] == ticket
+        and failure.get("journal_ticket") == ticket
+        and failure.get("error_type") == "CancelledError"
+        and failure.get("raw_response_sha256") is None,
+        "Exact cancelled wire payload or diagnosis differs",
+    )
+    return [
+        {
+            "journal_ticket": ticket,
+            "stage": "primary",
+            "budget_charged_nusd": bound,
+            "provider_cost_known": False,
+            "reconciliation_kind": "owner_charged_bound_not_provider_settlement",
+        }
+    ]
+
+
+def known_cost_lineage(
+    root: Path,
+    goal: Path,
+    authorization: Path,
+    predecessor_goal: Path,
+    *,
+    reconciliation: Path | None = None,
+) -> dict:
     approved = json.loads(authorization.read_text())
     from app.api.analysis import _sample_shadow
 
@@ -1968,6 +2096,30 @@ def known_cost_lineage(root: Path, goal: Path, authorization: Path, predecessor_
         for case in cases
     )
     limits = stage_limits(selected)
+    reconciled = json.loads(reconciliation.read_text()) if reconciliation else None
+    if reconciled is not None:
+        assert reconciliation is not None
+        require(
+            file_hash(reconciliation) == RECONCILIATION_AUTHORIZATION_SHA256
+            and reconciled["schema_version"] == 1
+            and reconciled["known_cost_authorization_sha256"] == KNOWN_COST_AUTHORIZATION_SHA256
+            and reconciled["expected_frozen_contract_sha256"] == FROZEN[GOLD]
+            and reconciled["preserve_all_predecessor_charges_and_reservations"] is True
+            and reconciled["stop_on_any_new_financial_uncertainty"] is True
+            and reconciled["one_exclusive_successor_only"] is True
+            and reconciled["journal_and_hold_mutation_authorized"] is False
+            and reconciled["deploy_or_alias_promotion_authorized"] is False
+            and reconciled["public_upload_authorized"] is False
+            and reconciled["task_aggregate_hard_cap_usd"] == "6"
+            and reconciled["monthly_cutoff_usd_remains"] == "2"
+            and reconciled["request_caps"] == {name: cap for name, (cap, _) in limits.items()}
+            and type(reconciled["minimum_verified_monthly_authority_nusd"]) is int
+            and reconciled["minimum_verified_monthly_authority_nusd"] >= 402_549_812
+            and predecessor_goal.resolve() == evidence_goal(root, reconciled["predecessor_goal"])
+            and file_hash(predecessor_goal / "goal.sqlite")
+            == reconciled["predecessor_journal_sha256"],
+            "Exact one-use uncertainty reconciliation or preserved limits differ",
+        )
     require(
         approved["schema_version"] == 1
         and approved["user_safety_choice"] == "Finish original live tests"
@@ -2215,7 +2367,12 @@ def known_cost_lineage(root: Path, goal: Path, authorization: Path, predecessor_
                     parent["initial_seen"] and own_lineage == lineage_for(parent),
                     "Descendant does not belong to this exact owner-granted chain",
                 )
-            failures = validate_protocol_stop(path, stored, fresh, receipts, normal, phases)
+            if reconciled is not None and path == predecessor:
+                failures = validate_reconciled_stop(
+                    path, stored, fresh, receipts, normal, phases, reconciled
+                )
+            else:
+                failures = validate_protocol_stop(path, stored, fresh, receipts, normal, phases)
             initial_seen = initial_seen or parent["initial_seen"]
         all_calls = ancestor_calls + fresh
         all_receipts = ancestor_receipts + receipts
@@ -2266,7 +2423,29 @@ def known_cost_lineage(root: Path, goal: Path, authorization: Path, predecessor_
     node = read_ancestor(predecessor)
     require(node["initial_seen"], "Predecessor is not a descendant of the granted initial stop")
     require(file_hash(authorization) == KNOWN_COST_AUTHORIZATION_SHA256, "Owner grant changed")
-    return lineage_for(node)
+    result = lineage_for(node)
+    if reconciled is not None:
+        retained = {
+            row["identity"]: row["amount"]
+            for row in node["normal_reservations"]
+            if row["settled"] is False
+        }
+        require(
+            len(node["calls"]) == reconciled["prior_counted_requests"] == 28
+            and retained == reconciled["retained_reservations"]
+            and len(retained) == 3
+            and sorted(retained.values()) == ["0.02", "0.03", "0.03"],
+            "Reconciliation drops prior requests or retained normal holds",
+        )
+        result.update(
+            authorization_sha256=RECONCILIATION_AUTHORIZATION_SHA256,
+            retained_reservations=retained,
+            authoritative_monthly_floor_nusd=reconciled["minimum_verified_monthly_authority_nusd"],
+            owner_budget_reconciliation=reconciled["reconciled_request"],
+            one_exclusive_successor_only=True,
+            stop_on_any_new_financial_uncertainty=True,
+        )
+    return result
 
 
 def validate_admitted_goal(goal: Path, budget: VerificationBudget, binding: dict) -> dict:
@@ -2292,7 +2471,10 @@ def validate_admitted_goal(goal: Path, budget: VerificationBudget, binding: dict
         "Current ancestral counted inventory changed",
     )
     lineage = binding.get("successor", {})
-    if lineage.get("authorization_sha256") == KNOWN_COST_AUTHORIZATION_SHA256:
+    if lineage.get("authorization_sha256") in {
+        KNOWN_COST_AUTHORIZATION_SHA256,
+        RECONCILIATION_AUTHORIZATION_SHA256,
+    }:
         with budget._connect() as db:
             actual_limits = {
                 name: (cap, cost)
@@ -2354,7 +2536,10 @@ def goal_context(root: Path, goal: Path, args) -> tuple[MonthlyLedger, dict, Pat
         ledger.run_id = predecessor["redis_run_id"]
         binding["successor"] = lineage
         anchor = successor_anchor(root, lineage)
-        if lineage["authorization_sha256"] == KNOWN_COST_AUTHORIZATION_SHA256:
+        if lineage["authorization_sha256"] in {
+            KNOWN_COST_AUTHORIZATION_SHA256,
+            RECONCILIATION_AUTHORIZATION_SHA256,
+        }:
             binding["protocol_sources"] = protocol_sources()
             artifact_path = goal / "goal-binding.json"
             if artifact_path.is_file():
@@ -2470,10 +2655,10 @@ async def run(args) -> None:
         # spend. Retain any extra existing charges as part of this goal's history.
         current = await ledger.read()
         binding["historical_floor_nusd"] = nusd(current["amount_usd"])
-        if (
-            binding.get("successor", {}).get("authorization_sha256")
-            == KNOWN_COST_AUTHORIZATION_SHA256
-        ):
+        if binding.get("successor", {}).get("authorization_sha256") in {
+            KNOWN_COST_AUTHORIZATION_SHA256,
+            RECONCILIATION_AUTHORIZATION_SHA256,
+        }:
             require(
                 target_resources(binding["resources"])
                 == target_resources(binding["successor"]["predecessor_binding"]["resources"]),
