@@ -10,7 +10,7 @@ import time
 from typing import Any, TypeVar
 
 from app.core.config import get_settings
-from app.services.analyst_budget import BudgetReservation
+from app.services.analyst_budget import BudgetReservation, valid_reported_cost
 from app.services.analyst_tools import AnalystTools
 from app.services.conversation_memory import bounded_history
 from app.services.evidence_contracts import (
@@ -466,7 +466,9 @@ class AnalystLoop:
                 adapter.generate(system=system, user=encoded(payload)), timeout=call_timeout
             )
             metadata = getattr(adapter, "last_metadata", {})
-            self.costs[-1] = (metadata.get("usage") or {}).get("cost")
+            usage = metadata.get("usage")
+            cost = usage.get("cost") if isinstance(usage, dict) else None
+            self.costs[-1] = cost if valid_reported_cost(cost) else None
             value = schema.model_validate_json(raw)
             if isinstance(value, Action) and value.action == "call_tools" and len(raw) > 2400:
                 raise ValueError("Tool action exceeds output cap")

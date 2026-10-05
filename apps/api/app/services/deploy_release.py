@@ -10,6 +10,7 @@ import argparse
 import asyncio
 import json
 import os
+import re
 import subprocess
 import time
 import urllib.request
@@ -120,8 +121,32 @@ def smoke(api_url: str, web_url: str, expected_version: str) -> None:
 def deploy(record: dict, save, request=render_request, wait=wait_deploy, smoke_check=smoke) -> None:
     services = record["services"]
     rollback = record["rollback"]
+    # Resolve the captured deployment IDs before any mutation. A rollback creates
+    # a new deployment, so its live ID alone cannot prove the old code returned.
+    rollback_commits: dict[str, str] = {}
+    for name in ("api", "web"):
+        deployment_id = rollback[name + "_deployment"]
+        captured = request(f"services/{services[name]['id']}/deploys/{deployment_id}", None)
+        captured_commit = captured.get("commit") if isinstance(captured, dict) else None
+        commit = captured_commit.get("id") if isinstance(captured_commit, dict) else None
+        if (
+            not isinstance(captured, dict)
+            or captured.get("id") != deployment_id
+            or not isinstance(commit, str)
+            or re.fullmatch(r"[0-9a-f]{40}", commit) is None
+        ):
+            raise RuntimeError(
+                f"Rollback {name} identity unavailable: captured deployment id and full commit.id "
+                "are required before promotion"
+            )
+        rollback_commits[name] = commit
     changed: list[str] = []
-    record["rollout"] = {"status": "starting", "restoration_failures": []}
+    record["rollout"] = {
+        "status": "starting",
+        "restoration_failures": [],
+        "rollback_commits": rollback_commits,
+        "restored_deployments": {},
+    }
     try:
         for name in ("api", "web"):
             changed.append(name)  # Record uncertain network outcomes before issuing mutations.
@@ -201,7 +226,16 @@ def deploy(record: dict, save, request=render_request, wait=wait_deploy, smoke_c
                         f"services/{services[component]['id']}/rollback",
                         {"deployId": rollback[component + "_deployment"]},
                     )
-                    wait(services[component]["id"], result["id"])
+                    restored = wait(services[component]["id"], result["id"])
+                    if (
+                        restored.get("id") != result["id"]
+                        or restored.get("commit", {}).get("id") != rollback_commits[component]
+                    ):
+                        raise RuntimeError("Application restoration mismatch")
+                    record["rollout"]["restored_deployments"][component] = {
+                        "id": restored["id"],
+                        "commit": rollback_commits[component],
+                    }
             except Exception as restoration:
                 record["rollout"]["restoration_failures"].append(
                     {

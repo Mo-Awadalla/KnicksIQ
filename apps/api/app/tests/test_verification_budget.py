@@ -102,3 +102,83 @@ def test_inflight_reopen_and_overbound_cost_fail_closed(tmp_path):
         budget.settle(ticket, 11)
     assert budget.snapshot()["stopped"]
     assert budget.snapshot()["reserved_or_spent_nusd"] == 11
+
+
+def test_new_aggregate_hard_cap_cannot_be_lifted_by_historical_direction(tmp_path):
+    from pathlib import Path
+
+    from app.evaluation.verification_budget import VerificationBudget
+
+    budget = ledger(tmp_path, selected=120)
+    direction = (
+        Path(__file__).resolve().parents[4]
+        / "docs/release-evidence/implementation-20261001/confirmed-spending-direction.json"
+    )
+    budget.apply_spending_direction(direction)
+    for stage in ("smoke", "primary", "shadow"):
+        ticket = budget.reserve(stage, 2_000_000_000)
+        budget.settle(ticket, 2_000_000_000)
+    reopened = VerificationBudget(tmp_path / "goal.sqlite", binding="synthetic-bound-preflight")
+    assert reopened.snapshot()["aggregate_hard_cap_nusd"] == 6_000_000_000
+    with pytest.raises(ValueError, match="cap exceeded"):
+        reopened.reserve("load", 1)
+    assert reopened.snapshot()["reserved_or_spent_nusd"] == 6_000_000_000
+
+
+def test_aggregate_hard_cap_includes_inherited_failed_exposure(tmp_path):
+    from pathlib import Path
+
+    from app.evaluation.verification_budget import VerificationBudget
+
+    path = tmp_path / "inherited.sqlite"
+    VerificationBudget.create(
+        path,
+        binding="inherited-cap",
+        shadow_selected=120,
+        inherited_calls=[
+            {
+                "id": 1,
+                "stage": "primary",
+                "amount_nusd": 5_999_999_999,
+                "status": "failed",
+                "error": "unknown-cost",
+            }
+        ],
+    )
+    budget = VerificationBudget(path, binding="inherited-cap")
+    budget.apply_spending_direction(
+        Path(__file__).resolve().parents[4]
+        / "docs/release-evidence/implementation-20261001/confirmed-spending-direction.json"
+    )
+    ticket = budget.reserve("shadow", 1)
+    with pytest.raises(ValueError, match="cap exceeded"):
+        budget.reserve("load", 1)
+    budget.settle(ticket, 0)
+    assert budget.reserve("load", 1) > ticket
+
+
+async def test_aggregate_hard_cap_reserves_concurrent_stages_before_send(tmp_path):
+    from pathlib import Path
+
+    budget = ledger(tmp_path, selected=120)
+    budget.apply_spending_direction(
+        Path(__file__).resolve().parents[4]
+        / "docs/release-evidence/implementation-20261001/confirmed-spending-direction.json"
+    )
+    sent = []
+
+    async def respond():
+        sent.append(True)
+        await asyncio.sleep(0)
+        return {"cost_nusd": 2_000_000_000}
+
+    results = await asyncio.gather(
+        *(
+            budget.call(stage, 2_000_000_000, respond)
+            for stage in ("smoke", "primary", "shadow", "load")
+        ),
+        return_exceptions=True,
+    )
+    assert len(sent) == 3
+    assert sum(isinstance(result, ValueError) for result in results) == 1
+    assert budget.snapshot()["reserved_or_spent_nusd"] == 6_000_000_000
