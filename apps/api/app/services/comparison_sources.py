@@ -21,7 +21,7 @@ from app.models.game import Game
 from app.models.game_event import GameEvent
 from app.models.player import Player
 from app.services.release_bundle import canonical_json, read_bundle
-from sqlalchemy import select
+from sqlalchemy import JSON, Date, DateTime, Float, func, literal, select, union_all
 from sqlalchemy.ext.asyncio import AsyncSession
 
 MODELS = {
@@ -190,20 +190,54 @@ async def _sql_snapshot(
     rows = (await db.execute(stmt.order_by(Game.nba_game_id))).all()
     games = {r[0]: r[1] for r in rows}
     snapshots = {r[1]: {"games": [[_scalar(v) for v in r[2:]]]} for r in rows}
-    for collection, model in MODELS.items():
-        fields = spec["fields"][collection]
-        # Select in proof-field order: avoid rebuilding a per-row field dictionary
-        # for the complete event population while retaining the exact projection.
-        selected = [
-            Player.nba_player_id if f == "nba_player_id" else getattr(model, f) for f in fields
+    selections = {
+        collection: [
+            Player.nba_player_id if f == "nba_player_id" else getattr(model, f)
+            for f in spec["fields"][collection]
         ]
-        stmt = select(model.game_id, *selected).where(model.game_id.in_(games))
-        if "nba_player_id" in fields:
-            stmt = stmt.outerjoin(Player, model.player_id == Player.id)
-        for snapshot in snapshots.values():
-            snapshot[collection] = []
-        for row in (await db.execute(stmt)).all():
-            snapshots[games[row[0]]][collection].append([_scalar(value) for value in row[1:]])
+        for collection, model in MODELS.items()
+    }
+    for snapshot in snapshots.values():
+        snapshot.update({collection: [] for collection in MODELS})
+    if db.get_bind().dialect.name == "postgresql" and all(
+        not isinstance(column.type, (Date, DateTime))
+        for selected in selections.values()
+        for column in selected
+    ):
+        # Read every proof row in one roundtrip. JSON aggregation avoids hundreds
+        # of thousands of per-cell ORM conversions, without caching a snapshot.
+        statements = []
+        for collection, model in MODELS.items():
+            selected = selections[collection]
+            stmt = select(
+                literal(collection),
+                func.json_agg(func.json_build_array(model.game_id, *selected), type_=JSON),
+            ).where(model.game_id.in_(games))
+            if "nba_player_id" in spec["fields"][collection]:
+                stmt = stmt.outerjoin(Player, model.player_id == Player.id)
+            statements.append(stmt)
+        for collection, packed in (await db.execute(union_all(*statements))).all():
+            float_fields = [
+                i
+                for i, column in enumerate(selections[collection])
+                if isinstance(column.type, Float)
+            ]
+            for row in packed or []:
+                values = row[1:]
+                # PostgreSQL emits integral floats as JSON integers. Retain the
+                # original Python float representation and canonical proof bytes.
+                for i in float_fields:
+                    if values[i] is not None:
+                        values[i] = float(values[i])
+                snapshots[games[row[0]]][collection].append(values)
+    else:
+        for collection, model in MODELS.items():
+            selected = selections[collection]
+            stmt = select(model.game_id, *selected).where(model.game_id.in_(games))
+            if "nba_player_id" in spec["fields"][collection]:
+                stmt = stmt.outerjoin(Player, model.player_id == Player.id)
+            for row in (await db.execute(stmt)).all():
+                snapshots[games[row[0]]][collection].append([_scalar(value) for value in row[1:]])
     for snapshot in snapshots.values():
         for collection in MODELS:
             snapshot[collection].sort(key=canonical_json)
