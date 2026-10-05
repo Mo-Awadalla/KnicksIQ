@@ -90,6 +90,9 @@ KNOWN_COST_AUTHORIZATION_SHA256 = "327a6cc2e080c223858cca75b87402416c813eacb0e85
 RECONCILIATION_AUTHORIZATION_SHA256 = (
     "9210fcbf2d9311dfea2ffbaa07184084d89cfad74ed2f2c5a555f116b831113a"
 )
+ATLAS_AUTHORIZATION_SHA256 = "fae446a7af0a2b6fc86486046fc9450f6c7cb33417b646c26149bc0a35c450fc"
+ATLAS_ROUTE = "atlas-cloud/fp8"
+ATLAS_PROVIDER = "AtlasCloud"
 PRIOR_PROBE = (
     "docker-staging-20261002/claim-value-format-20261002/review-format-fix/run-1/probe.json"
 )
@@ -277,8 +280,24 @@ class NormalizedCandidateClient:
 
 class Admission:
     def __init__(
-        self, *, evidence_root: Path, artifact_dir: Path, api_key: str, ledger: MonthlyLedger
+        self,
+        *,
+        evidence_root: Path,
+        artifact_dir: Path,
+        api_key: str,
+        ledger: MonthlyLedger,
+        route: str = ROUTE,
+        provider: str = PROVIDER,
+        route_authorization_sha256: str | None = None,
     ):
+        require(
+            (route, provider, route_authorization_sha256) == (ROUTE, PROVIDER, None)
+            or (route, provider, route_authorization_sha256)
+            == (ATLAS_ROUTE, ATLAS_PROVIDER, ATLAS_AUTHORIZATION_SHA256),
+            "Provider route lacks the exact owner recipient/rebind authorization",
+        )
+        self.route, self.provider = route, provider
+        self.route_authorization_sha256 = route_authorization_sha256
         self.root, self.artifact_dir = evidence_root.resolve(), artifact_dir
         self.api_key, self.ledger = api_key, ledger
         self.contract_sha256 = FROZEN[GOLD]
@@ -751,12 +770,12 @@ class Admission:
             routes.get("id") == MODEL and isinstance(routes.get("endpoints"), list),
             "Missing pinned model routes",
         )
-        matches = [item for item in routes["endpoints"] if item.get("tag") == ROUTE]
+        matches = [item for item in routes["endpoints"] if item.get("tag") == self.route]
         require(len(matches) == 1, "Pinned provider endpoint unavailable")
         route = matches[0]
         require(
             route.get("model_id") == MODEL
-            and route.get("provider_name") == PROVIDER
+            and route.get("provider_name") == self.provider
             and route.get("quantization") == "fp8"
             and route.get("status") == 0,
             "Provider/model/quantization identity changed",
@@ -803,6 +822,7 @@ class Admission:
             "route": route,
             "model": model,
             "completion_requests": 0,
+            "route_authorization_sha256": self.route_authorization_sha256,
         }
         result["parameter_documentation"] = {
             "reasoning": "https://openrouter.ai/docs/guides/best-practices/reasoning-tokens",
@@ -955,8 +975,8 @@ class Admission:
         # This dict is the one the existing adapter transmits. Seal the route after
         # reading fresh bounds, with no fallback/model router or parameter ignore.
         payload["provider"] = {
-            "only": [ROUTE],
-            "order": [ROUTE],
+            "only": [self.route],
+            "order": [self.route],
             "allow_fallbacks": False,
             "require_parameters": True,
             "quantizations": ["fp8"],
@@ -968,8 +988,8 @@ class Admission:
         }
         return {
             "bound_nusd": nusd(bound),
-            "route": ROUTE,
-            "provider": PROVIDER,
+            "route": self.route,
+            "provider": self.provider,
             "metadata_sha256": metadata["metadata_sha256"],
             "input_token_bound": input_tokens,
             "output_token_bound": output_tokens,
@@ -1639,6 +1659,58 @@ def successor_lineage(
         return None
     assert predecessor_goal is not None
     authorization_sha = file_hash(authorization.resolve())
+    if authorization_sha == ATLAS_AUTHORIZATION_SHA256:
+        approved = json.loads(authorization.read_text())
+        require(
+            approved["schema_version"] == 1
+            and approved["reconciliation_authorization_sha256"]
+            == RECONCILIATION_AUTHORIZATION_SHA256
+            and approved["predecessor_journal_sha256"]
+            == file_hash(predecessor_goal / "goal.sqlite")
+            and evidence_goal(root, approved["predecessor_goal"]) == predecessor_goal.resolve()
+            and approved["prior_route"] == ROUTE
+            and approved["prior_provider"] == PROVIDER
+            and approved["route"] == ATLAS_ROUTE
+            and approved["provider"] == ATLAS_PROVIDER
+            and approved["model"] == MODEL
+            and approved["quantization"] == "fp8"
+            and approved["frozen_contract_sha256"] == FROZEN[GOLD]
+            and approved["task_aggregate_hard_cap_usd"] == "6"
+            and approved["monthly_cutoff_usd"] == "2"
+            and approved["all28prior_requests_and_three_holds_preserved"] is True
+            and approved["one_exclusive_successor_only"] is True
+            and approved["stop_on_any_new_financial_uncertainty"] is True
+            and approved["fresh_metadata_and_actual_byte_bounds_every_payload"] is True
+            and approved["original_deadlines_and_quality_workload_gates_unchanged"] is True
+            and approved["public_upload_merge_or_production_authorized"] is False
+            and approved["budget_charged_ticket28_nusd"] == 818_196
+            and approved["provider_cost_ticket28_known"] is False,
+            "Exact Atlas recipient/rebind grant changes owner limits or history",
+        )
+        prior = evidence_goal(root, approved["reconciliation_authorization"])
+        require(
+            file_hash(prior) == RECONCILIATION_AUTHORIZATION_SHA256,
+            "Rebind changes the original reconciliation grant",
+        )
+        inherited = successor_lineage(root, goal, prior, predecessor_goal)
+        assert inherited is not None
+        require(
+            approved["request_caps"] == inherited["request_caps"],
+            "Rebind changes inherited original request caps",
+        )
+        return {
+            **inherited,
+            "authorization_sha256": ATLAS_AUTHORIZATION_SHA256,
+            "route_rebind": {
+                "from_route": ROUTE,
+                "from_provider": PROVIDER,
+                "route": ATLAS_ROUTE,
+                "provider": ATLAS_PROVIDER,
+                "model": MODEL,
+                "authorization_sha256": ATLAS_AUTHORIZATION_SHA256,
+                "reconciliation_authorization_sha256": RECONCILIATION_AUTHORIZATION_SHA256,
+            },
+        }
     if authorization_sha == KNOWN_COST_AUTHORIZATION_SHA256:
         return known_cost_lineage(root, goal, authorization, predecessor_goal)
     if authorization_sha == RECONCILIATION_AUTHORIZATION_SHA256:
@@ -1790,7 +1862,7 @@ def successor_anchor(root: Path, lineage: dict | None) -> Path:
     identity = lineage["authorization_sha256"]
     if identity == KNOWN_COST_AUTHORIZATION_SHA256:
         identity += "-" + lineage["predecessor_journal_sha256"]
-    elif identity != RECONCILIATION_AUTHORIZATION_SHA256:
+    elif identity not in {RECONCILIATION_AUTHORIZATION_SHA256, ATLAS_AUTHORIZATION_SHA256}:
         require(identity == SUCCESSOR_AUTHORIZATION_SHA256, "Foreign successor authorization")
     return anchor.with_name("guarded-counted-successor-" + identity + ".json")
 
@@ -2474,6 +2546,7 @@ def validate_admitted_goal(goal: Path, budget: VerificationBudget, binding: dict
     if lineage.get("authorization_sha256") in {
         KNOWN_COST_AUTHORIZATION_SHA256,
         RECONCILIATION_AUTHORIZATION_SHA256,
+        ATLAS_AUTHORIZATION_SHA256,
     }:
         with budget._connect() as db:
             actual_limits = {
@@ -2536,15 +2609,40 @@ def goal_context(root: Path, goal: Path, args) -> tuple[MonthlyLedger, dict, Pat
         ledger.run_id = predecessor["redis_run_id"]
         binding["successor"] = lineage
         anchor = successor_anchor(root, lineage)
+        if lineage["authorization_sha256"] == ATLAS_AUTHORIZATION_SHA256:
+            binding["route"] = ATLAS_ROUTE
+            binding["route_rebind"] = lineage["route_rebind"]
         if lineage["authorization_sha256"] in {
             KNOWN_COST_AUTHORIZATION_SHA256,
             RECONCILIATION_AUTHORIZATION_SHA256,
+            ATLAS_AUTHORIZATION_SHA256,
         }:
             binding["protocol_sources"] = protocol_sources()
             artifact_path = goal / "goal-binding.json"
             if artifact_path.is_file():
                 binding["admission"] = json.loads(artifact_path.read_text())["admission"]
     return ledger, binding, anchor
+
+
+def admission_route(binding: dict) -> dict:
+    rebind = binding.get("route_rebind")
+    if rebind is None:
+        require(binding["route"] == ROUTE, "Unapproved route binding")
+        return {}
+    require(
+        binding.get("successor", {}).get("authorization_sha256") == ATLAS_AUTHORIZATION_SHA256
+        and rebind.get("authorization_sha256") == ATLAS_AUTHORIZATION_SHA256
+        and rebind.get("reconciliation_authorization_sha256") == RECONCILIATION_AUTHORIZATION_SHA256
+        and rebind.get("route") == binding["route"] == ATLAS_ROUTE
+        and rebind.get("provider") == ATLAS_PROVIDER
+        and rebind.get("model") == binding["model"] == MODEL,
+        "Admitted Atlas route or authorization differs",
+    )
+    return {
+        "route": ATLAS_ROUTE,
+        "provider": ATLAS_PROVIDER,
+        "route_authorization_sha256": ATLAS_AUTHORIZATION_SHA256,
+    }
 
 
 def goal_binding(root: Path, ledger: MonthlyLedger) -> dict:
@@ -2646,7 +2744,13 @@ async def run(args) -> None:
             "no duplicate successor, journal reset, or new attempt bypass",
         )
         goal.mkdir(mode=0o700, parents=True, exist_ok=False)
-        admission = Admission(evidence_root=root, artifact_dir=goal, api_key=key, ledger=ledger)
+        admission = Admission(
+            evidence_root=root,
+            artifact_dir=goal,
+            api_key=key,
+            ledger=ledger,
+            **admission_route(binding),
+        )
         await admission.verify_environment(identity)
         assert admission.resource_binding is not None
         binding["resources"] = admission.resource_binding
@@ -2658,6 +2762,7 @@ async def run(args) -> None:
         if binding.get("successor", {}).get("authorization_sha256") in {
             KNOWN_COST_AUTHORIZATION_SHA256,
             RECONCILIATION_AUTHORIZATION_SHA256,
+            ATLAS_AUTHORIZATION_SHA256,
         }:
             require(
                 target_resources(binding["resources"])
@@ -2746,7 +2851,13 @@ async def run(args) -> None:
         )
         db.execute("INSERT INTO guard_runs VALUES (?, 'started')", (args.mode,))
     run_dir = goal / args.mode
-    admission = Admission(evidence_root=root, artifact_dir=run_dir, api_key=key, ledger=ledger)
+    admission = Admission(
+        evidence_root=root,
+        artifact_dir=run_dir,
+        api_key=key,
+        ledger=ledger,
+        **admission_route(binding),
+    )
     admission.resource_binding = stored["resources"]
     admission.alias_binding = stored["resources"]["qdrant_aliases"]
     session = GuardedSession(
