@@ -1598,14 +1598,15 @@ class GuardedSession:
             analyst_loop.BudgetReservation = BoundReservation
             report_llm.OpenAICompatibleLLMAdapter._generate_sync = denied_sync
             report_llm.OpenAICompatibleLLMAdapter.generate = denied_generate
-            setattr(analyst_sessions.SessionTurn, "begin", classmethod(bound_begin))
+            # Install the raw classmethod descriptor, not its bound method view.
+            type.__setattr__(analyst_sessions.SessionTurn, "begin", classmethod(bound_begin))
             yield
         finally:
             main.create_app = original_factory
             analyst_loop.BudgetReservation = original_reservation
             report_llm.OpenAICompatibleLLMAdapter._generate_sync = original_sync
             report_llm.OpenAICompatibleLLMAdapter.generate = original_generate
-            setattr(analyst_sessions.SessionTurn, "begin", original_begin_descriptor)
+            type.__setattr__(analyst_sessions.SessionTurn, "begin", original_begin_descriptor)
 
 
 def successor_lineage(
