@@ -572,7 +572,12 @@ function PlayByPlayPanel({
           No play-by-play events were returned for this game.
         </p>
       ) : (
-        <div className='table-scroll'>
+        <div
+          className='table-scroll'
+          role='region'
+          aria-label='Play-by-play events'
+          tabIndex={0}
+        >
           <table className='data-table'>
             <caption className='sr-only'>Play-by-play events</caption>
             <thead>

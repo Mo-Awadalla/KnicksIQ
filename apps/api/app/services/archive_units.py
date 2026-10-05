@@ -11,6 +11,7 @@ from app.models.box_score import PlayerGameStat
 from app.models.dataset_release import DatasetRelease
 from app.models.game import Game
 from app.models.player import Player
+from app.services.comparison_sources import verified_comparison_source
 from app.services.query_resolution import _CURATED_PLAYER_ALIASES, _player_aliases
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -110,50 +111,283 @@ def identity_unit(player: Player, version: str) -> dict[str, Any]:
     )
 
 
+_MEASURE_FAMILIES = {
+    "quarter": ("q3_fewest_points", "q3_worst_margin"),
+    "deficit": (
+        "largest_observed_deficit",
+        "largest_deficit_later_tied",
+        "largest_deficit_later_led",
+        "largest_deficit_in_eventual_win",
+    ),
+    "runs": (
+        "knicks_largest_unanswered_run",
+        "opponent_largest_unanswered_run",
+        "knicks_largest_unrestricted_net_gain",
+        "largest_unrestricted_margin_decline",
+    ),
+    "collapse": (
+        "largest_positive_lead_surrendered",
+        "largest_positive_lead_surrendered_in_final_loss",
+        "largest_unrestricted_margin_decline",
+    ),
+}
+_FAMILY_TITLES = {
+    "quarter": "Worst third quarter: fewest Knicks points versus worst scoring margin",
+    "deficit": "Largest deficit: observed versus erased to a tie, lead or eventual win",
+    "runs": (
+        "Biggest Knicks scoring run and most damaging opponent run: unanswered points "
+        "versus unrestricted net margins; a damage criterion still needs clarification"
+    ),
+    "collapse": "Worst collapse: positive lead surrendered versus unrestricted margin decline",
+}
+
+
+def unit_search_text(payload: dict[str, Any]) -> str:
+    """Rank the supported subject; retain the complete proof as returned evidence."""
+    if payload.get("unit_type") == "game_scoring_comparison" or payload.get("aggregate_kind") in {
+        "measure_comparison",
+        "selected_game_stories",
+    }:
+        return payload["text"].split("\n", 1)[0]
+    return str(payload["semantic_summary"])
+
+
+def _measure_sources(rows: list[dict]) -> list[str]:
+    """Only metric witnesses earn refs; population labels are not generic game credit."""
+    sources = set()
+    for row in rows:
+        for measure in row["measures"].values():
+            for boundary in measure["boundaries"]:
+                sources.update(boundary.get("period_sources", []))
+                sources.update(boundary.get("scoring_sources", []))
+                sources.update(
+                    boundary[k] for k in ("source", "start_source", "end_source") if k in boundary
+                )
+    return sorted(sources)
+
+
+def _witnesses(rows: list[dict], facts: dict) -> dict:
+    result = {}
+    for row in rows:
+        supplied = facts[row["nba_game_id"]]["events"]
+        result.update({key: supplied[key] for key in _measure_sources([row]) if key in supplied})
+    return result
+
+
+def _comparison_records(games: list[Game], version: str, proof: tuple) -> list[dict]:
+    source, report, facts = proof
+    game_map = {g.nba_game_id: g for g in games}
+    compared = {g["nba_game_id"]: g for g in report["games"]}
+    provenance = {
+        "comparison_sha256": source.source_sha256,
+        "source_review_sha256": source.source_review_sha256,
+        "trajectories_sha256": source.trajectories_sha256,
+        "bundle_sha256": source.bundle_sha256,
+        "recipe": "nba-action-scoring-trajectory-v1",
+    }
+    records = []
+    for scope, population in report["populations"].items():
+        identities = [value.removeprefix("game:") for value in population["game_sources"]]
+        if not identities or not set(identities) <= set(game_map):
+            continue
+        selected = [game_map[identity] for identity in identities]
+        for family, keys in _MEASURE_FAMILIES.items():
+            rows = [
+                {
+                    "nba_game_id": identity,
+                    "game_id": game_map[identity].id,
+                    "game_date": compared[identity]["game_date"],
+                    "season_type": compared[identity]["season_type"],
+                    "measures": {key: compared[identity]["measures"][key] for key in keys},
+                }
+                for identity in identities
+            ]
+            definitions = {key: report["definitions"][key] for key in keys}
+            extrema = {key: population["extrema"][key] for key in keys}
+            witnesses = _witnesses(rows, facts)
+            body = {
+                "definitions": definitions,
+                "comparison_rows": rows,
+                "extrema": extrema,
+                "witness_events": witnesses,
+            }
+            text = (
+                f"{_FAMILY_TITLES[family]}. NYK Knicks {report['games'][0]['season']}; "
+                f"{scope}, complete population of {len(rows)} games. "
+                "Quantitative alternatives only. No metric, window or season-scope default; "
+                "no causal assertions.\n" + json.dumps(body, sort_keys=True, separators=(",", ":"))
+            )
+            records.append(
+                _record(
+                    {
+                        "unit_type": "multigame_aggregate",
+                        "aggregate_kind": "measure_comparison",
+                        "measure_family": family,
+                        "population_scope": scope,
+                        "data_version": version,
+                        "season": report["games"][0]["season"],
+                        "team_ids": sorted(
+                            {t for g in selected for t in (g.home_team_id, g.away_team_id)}
+                        ),
+                        "game_ids": sorted(g.id for g in selected),
+                        "dates": sorted({g.game_date.isoformat() for g in selected}),
+                        "season_types": sorted({g.season_type for g in selected}),
+                        "canonical_sources": _measure_sources(rows),
+                        **body,
+                        "provenance": provenance,
+                        "metric_defaults": None,
+                        "gold_approved": False,
+                        **({"start_period": 3, "end_period": 3} if family == "quarter" else {}),
+                    },
+                    text,
+                )
+            )
+    for identity, game in game_map.items():
+        row = compared[identity]
+        detail = facts[identity]
+        body = {
+            "home_team_id": game.home_team_id,
+            "away_team_id": game.away_team_id,
+            "home_score": game.home_score,
+            "away_score": game.away_score,
+            "period_rows": detail["periods"],
+            "measures": row["measures"],
+            "definitions": report["definitions"],
+            "witness_events": detail["events"],
+        }
+        text = (
+            f"Knicks NYK game {identity}, {game.game_date.isoformat()}, {game.season_type}. "
+            "Complete game scoring comparisons and descriptive story: final/period scores, "
+            "all maximum unanswered scoring runs, deficits and explicitly unrestricted margins. "
+            "No causal assertions or metric default.\n"
+            + json.dumps(body, sort_keys=True, separators=(",", ":"))
+        )
+        records.append(
+            _record(
+                {
+                    "unit_type": "game_scoring_comparison",
+                    "data_version": version,
+                    "game_id": game.id,
+                    "game_ids": [game.id],
+                    "nba_game_id": identity,
+                    "date": game.game_date.isoformat(),
+                    "season": game.season,
+                    "season_type": game.season_type,
+                    "team_ids": [game.home_team_id, game.away_team_id],
+                    "canonical_sources": sorted(
+                        {
+                            f"game:{identity}",
+                            *(p["canonical_id"] for p in detail["periods"]),
+                            *_measure_sources([row]),
+                        }
+                    ),
+                    **body,
+                    "provenance": provenance,
+                    "metric_defaults": None,
+                    "gold_approved": False,
+                },
+                text,
+            )
+        )
+    # Stable full-margin groups are indexed once; runtime never mints a subgroup.
+    margin_groups: dict[int, list[str]] = defaultdict(list)
+    for row in report["games"]:
+        margin_groups[abs(row["final_nyk_margin"])].append(row["nba_game_id"])
+    for identities in margin_groups.values():
+        if len(identities) < 2 or not set(identities) <= set(game_map):
+            continue
+        story_games = [game_map[identity] for identity in identities]
+        rows = [
+            {
+                "game_id": g.id,
+                "nba_game_id": g.nba_game_id,
+                "game_date": g.game_date.isoformat(),
+                "season_type": g.season_type,
+                "home_team_id": g.home_team_id,
+                "away_team_id": g.away_team_id,
+                "home_score": g.home_score,
+                "away_score": g.away_score,
+                "final_margin": abs(g.home_score - g.away_score),
+                "period_rows": facts[g.nba_game_id]["periods"],
+            }
+            for g in sorted(story_games, key=lambda g: (g.game_date, g.nba_game_id))
+        ]
+        text = (
+            "Closest Knicks NYK game descriptive story within this selected "
+            "tied-final-margin population. "
+            "Every selected game and period is represented; no causal assertion or "
+            "comparison outside this supplied population.\n"
+            + json.dumps(rows, sort_keys=True, separators=(",", ":"))
+        )
+        records.append(
+            _record(
+                {
+                    "unit_type": "multigame_aggregate",
+                    "aggregate_kind": "selected_game_stories",
+                    "data_version": version,
+                    "season": story_games[0].season,
+                    "game_ids": sorted(g.id for g in story_games),
+                    "team_ids": sorted(
+                        {t for g in story_games for t in (g.home_team_id, g.away_team_id)}
+                    ),
+                    "dates": sorted({g.game_date.isoformat() for g in story_games}),
+                    "season_types": sorted({g.season_type for g in story_games}),
+                    "story_rows": rows,
+                    "canonical_sources": sorted(
+                        {f"game:{g.nba_game_id}" for g in story_games}
+                        | {
+                            p["canonical_id"]
+                            for g in story_games
+                            for p in facts[g.nba_game_id]["periods"]
+                        }
+                    ),
+                    "provenance": provenance,
+                    "gold_approved": False,
+                },
+                text,
+            )
+        )
+    return records
+
+
+def unit_is_in_scope(
+    payload: dict[str, Any],
+    selected_game_ids: set[int],
+    player_ids: list[int],
+    periods: list[int],
+) -> bool:
+    kind = payload["unit_type"]
+    if kind == "player_identity":
+        return set(payload["player_ids"]) <= set(player_ids)
+    if kind not in {"multigame_aggregate", "game_scoring_comparison"}:
+        return False
+    if player_ids or not set(payload["game_ids"]) <= selected_game_ids:
+        return False
+    if kind == "multigame_aggregate" and "game_id" in payload:
+        return False
+    return not periods or (payload.get("measure_family") == "quarter" and set(periods) == {3})
+
+
 def accepts_unit(
     metadata: dict[str, Any],
     *,
-    games: list[Game],
-    players: list[Player],
+    unit_records: list[dict[str, Any]],
     selected_game_ids: set[int],
     player_ids: list[int],
     periods: list[int],
     version: str,
 ) -> bool:
-    """Verify the full recipe against SQL and the complete requested population."""
-    if "game_id" in metadata or metadata.get("data_version") != version:
+    """Compare a receipt with the complete SQL/proof-bound corpus for this search."""
+    if metadata.get("data_version") != version:
         return False
-    expected = None
-    if metadata.get("unit_type") == "multigame_aggregate":
-        opponent = metadata.get("opponent_id")
-        if not isinstance(opponent, str) or opponent == "NYK":
-            return False
-        population = [
-            g
-            for g in games
-            if g.status == "final"
-            and g.home_score != g.away_score
-            and opponent in {g.home_team_id, g.away_team_id}
-        ]
-        if (
-            not population
-            or player_ids
-            or periods
-            or not {g.id for g in population} <= selected_game_ids
-        ):
-            return False
-        expected = opponent_unit(population, opponent, version)
-    elif metadata.get("unit_type") == "player_identity":
-        identity = metadata.get("canonical_player", {}).get("nba_player_id")
-        player = next(
-            (p for p in players if p.nba_player_id == identity and p.id in player_ids), None
-        )
-        if player is None:
-            return False
-        expected = identity_unit(player, version)
+    expected = next(
+        (r["payload"] for r in unit_records if r["id"] == metadata.get("source_document_id")), None
+    )
     if expected is None:
         return False
-    return all(metadata.get(key) == value for key, value in expected["payload"].items())
+    if not unit_is_in_scope(expected, selected_game_ids, player_ids, periods):
+        return False
+    return all(metadata.get(key) == value for key, value in expected.items())
 
 
 async def build_archive_units(
@@ -209,4 +443,8 @@ async def build_archive_units(
         ).scalars()
     )
     records.extend(identity_unit(player, version) for player in players)
+    selected = [g for g in population if g.id in included]
+    proof = await verified_comparison_source(db, release, selected)
+    if proof is not None:
+        records.extend(_comparison_records(selected, version, proof))
     return sorted(records, key=lambda record: record["id"])

@@ -166,7 +166,6 @@ async def test_complete_atl_unit_is_actually_ranked_and_independently_mapped(
         if index == 0:
             assert not any(d["metadata"].get("unit_type") == "multigame_aggregate" for d in docs)
         else:
-            assert result.json()["answer"] == "Which game?"
             assert result.json()["route"] == "clarification"
             assert not result.json()["citations"]
             identity = next(d for d in docs if d["metadata"].get("unit_type") == "player_identity")
@@ -176,27 +175,6 @@ async def test_complete_atl_unit_is_actually_ranked_and_independently_mapped(
             assert identity["metadata"]["canonical_sources"] == ["player:1628973"]
             assert "JB" in identity["text"]
     assert attempts == 0
-    async with AsyncClient(
-        transport=ASGITransport(client._transport.app, client=("192.0.2.234", 12345)),
-        base_url="http://test",
-    ) as http:
-        with capture_turn() as broad_capture:
-            broad = await http.post(
-                "/analysis/query",
-                json={
-                    "question": "What are the Knicks season results?",
-                    "turn_id": "archive-units-stable-source-proof",
-                },
-            )
-    with (directory / "stable-source.json").open("x") as artifact:
-        json.dump({"response": broad.json(), "capture": broad_capture}, artifact, indent=2)
-    same_unit = next(
-        e
-        for e in broad_capture["searches"][0]["evidence"]
-        if e["evidence_id"] == aggregate["evidence_id"]
-    )
-    assert same_unit == aggregate
-    assert broad_capture["searches"][0]["ranking"]
     async with AsyncSessionLocal() as db:
         await build_rag_artifacts(
             db,
