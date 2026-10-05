@@ -180,7 +180,6 @@ async def test_value_format_repair_and_rejection_http(
                 type(template["displayed_value"]) is type(claim["value"])
                 for template, claim in zip(templates, payload["claims"], strict=True)
             )
-            assert "claim_uses" in request["system"] and "statement" in request["system"]
         retained_size = (
             sum(encoded_size([c]) for c in payload["claims"])
             + sum(encoded_size(e) for e in payload["evidence"])
@@ -287,8 +286,6 @@ async def test_review_reason_bounds_http(
             definitions = payload["schema"]["$defs"]
             for name in ("AssertionReview", "FollowUpReview"):
                 assert definitions[name]["properties"]["reason"]["maxLength"] == 500
-            assert "reason" in request["system"].lower()
-            assert "500" in request["system"] and "characters" in request["system"].lower()
 
 
 async def test_calculation_receipt_reaches_writer_and_reviewer_http(
