@@ -39,4 +39,6 @@ async def test_gold_query_smoke_set_preserves_routing_and_grounding(client):
                 failures.append(f"{case['question']}: forbidden tool {tool}")
         if body["route"] == "table_rag" and not body["evidence"]:
             failures.append(f"{case['question']}: table route returned no evidence")
+        if body["route"] == "clarification" and body["citations"]:
+            failures.append(f"{case['question']}: clarification returned citations")
     assert failures == []

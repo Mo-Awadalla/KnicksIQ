@@ -22,6 +22,23 @@ _NARRATIVE = re.compile(
     r"lose the lead|took the lead|game turn|broke open|"
     r"final two minutes|final 2 minutes|describe|explain|which .+ game do you mean)\b"
 )
+_SCORING_SEQUENCE = re.compile(
+    r"\b(?:biggest run|scoring run|most damaging|largest deficit|collapse|collpase|"
+    r"drought|decisive|key sequence|turning point|game turn|lose control|broke open|comeback)\b"
+)
+_RUN_DEFINITION = (
+    "Should I measure unanswered points, net scoring margin, or a particular time window? "
+    "Those describe the sequence without assuming it caused the result."
+)
+
+
+def _reference_clarification(question: str) -> str:
+    answer = "Which game/date and which event, stretch, or claim are you referring to?"
+    if re.search(r"\b(?:worst|best)\b", question, re.I):
+        answer += " Which comparison measure and game/time scope should I use?"
+    if re.search(r"\b(?:compare|the other)\b", question, re.I):
+        answer += " Which game/date should I compare it with?"
+    return answer
 
 
 async def narrative_clarification(
@@ -106,29 +123,20 @@ async def narrative_clarification(
     if re.search(r"\b(?:the|a|boston|toronto|atlanta|chicago|charlotte) loss\b", normalized):
         candidates = [game for game in candidates if scores(game)[0] < scores(game)[1]]
     if len(candidates) != 1:
-        if not candidates:
-            return "Which archived game date or opponent should I use? I found no matching game."
-        choices = "; ".join(
-            f"{game.game_date} vs "
-            f"{game.away_team_id if game.home_team_id == 'NYK' else game.home_team_id}"
-            for game in candidates[:8]
-        )
-        shown = f". Showing the first 8: {choices}. " if len(candidates) > 8 else f": {choices}. "
-        return (
-            f"Which game do you mean? I found {len(candidates)} matching games"
-            + shown
-            + "Please choose a date before I describe the sequence."
-        )
-    if re.search(
-        r"\b(?:biggest run|scoring run|most damaging|largest deficit|collapse|collpase|"
-        r"drought|decisive|key sequence|turning point|lose control|broke open|comeback)\b",
-        q,
-    ):
-        return (
-            f"For {candidates[0].game_date}, should I measure unanswered points, "
-            "net scoring margin, or a particular time window? "
-            "Those describe the sequence without assuming it caused the result."
-        )
+        if reference:
+            return _reference_clarification(question)
+        opponents = team_ids_in_text(context) - {"NYK"}
+        opponent = f" {'/'.join(sorted(opponents))}" if opponents else ""
+        if opponents and candidates:
+            dates = ", ".join(dict.fromkeys(str(game.game_date) for game in candidates))
+            selection = f"Which archived{opponent} game date should I use: {dates}?"
+        else:
+            selection = f"Which archived{opponent} game date or opponent should I use?"
+        if _SCORING_SEQUENCE.search(q):
+            selection += " " + _RUN_DEFINITION
+        return selection
+    if _SCORING_SEQUENCE.search(q):
+        return f"For {candidates[0].game_date}, {_RUN_DEFINITION}"
     if reference and re.search(
         r"\b(?:stretch|run|then|during it|next|final possession|after that)\b", q
     ):

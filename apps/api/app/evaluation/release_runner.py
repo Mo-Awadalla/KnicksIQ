@@ -11,7 +11,9 @@ import argparse
 import asyncio
 import hashlib
 import json
+import os
 import statistics
+import tempfile
 import time
 from pathlib import Path
 from typing import Any
@@ -363,6 +365,9 @@ async def collect(
         "shadow_selected_count": sum(shadow_membership),
         "observations": observations,
     }
+    subject_namespace = getattr(execution, "subject_namespace", None)
+    if subject_namespace:
+        result["successor_subject_namespace"] = subject_namespace
     # Exclusive creation preserves earlier attempts. Incremental snapshots retain
     # every completed observation even when a later request fails.
     with output.open("x") as artifact:
@@ -374,7 +379,30 @@ async def collect(
             result["paid_requests"] = (
                 result["accounting"]["stages"][mode]["requests"] - starting_requests
             )
-        output.write_text(json.dumps(result, indent=2) + "\n")
+        temporary = None
+        try:
+            with tempfile.NamedTemporaryFile(
+                mode="w",
+                encoding="utf-8",
+                dir=output.parent,
+                prefix=f".{output.name}.",
+                suffix=".tmp",
+                delete=False,
+            ) as artifact:
+                temporary = Path(artifact.name)
+                json.dump(result, artifact, indent=2)
+                artifact.write("\n")
+                artifact.flush()
+                os.fsync(artifact.fileno())
+            os.replace(temporary, output)
+            directory = os.open(output.parent, os.O_RDONLY)
+            try:
+                os.fsync(directory)
+            finally:
+                os.close(directory)
+        finally:
+            if temporary is not None:
+                temporary.unlink(missing_ok=True)
 
     try:
         analyst_loop.get_llm_adapter = counted if execution is not None else denied
@@ -387,7 +415,11 @@ async def collect(
             # These in-process clients have independent quotas, just as distinct
             # users do. Limits are exercised unchanged; no forwarded IP header
             # or rate-limit reset is used. This is a cohort run, not a load test.
-            synthetic_client = f"192.0.2.{index + 1}"
+            synthetic_client = (
+                f"guarded-successor-{subject_namespace}-{index + 1}"
+                if subject_namespace
+                else f"192.0.2.{index + 1}"
+            )
             async with httpx.AsyncClient(
                 transport=httpx.ASGITransport(app, client=(synthetic_client, 12345)),
                 base_url="https://test",

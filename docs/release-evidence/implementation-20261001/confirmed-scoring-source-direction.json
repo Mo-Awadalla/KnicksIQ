@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "owner_selection": "Validate a derived scoring source",
+  "approved_scope": "Keep the approved archive unchanged. Continue independent per-action reconstruction and provenance review; reject unsupported intermediate scores.",
+  "target_approval": false,
+  "gold_freeze_approved": false,
+  "production_launch_approved": false,
+  "archive_rewrite_approved": false,
+  "basis": "Owner selection after the October 3 measure-source audit and upstream scoreboard corroboration."
+}

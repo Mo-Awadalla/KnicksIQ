@@ -203,6 +203,7 @@ class AnalystLoop:
             payload.update(
                 question=self.tools.question,
                 context=self.context,
+                claim_uses=[],
                 results=[
                     {
                         "status": r.status,
@@ -221,7 +222,13 @@ class AnalystLoop:
             claims = list({c.claim_id: c for r in self.results for c in r.claims}.values())
             if not claims:
                 claims = list(self.tools.claims.values())
-            evidence = list({e.evidence_id: e for r in self.results for e in r.evidence}.values())
+            evidence_by_id = {e.evidence_id: e for r in self.results for e in r.evidence}
+            # Current discovery remains useful when a tool result is too large to send.
+            # Do not revive unrelated evidence hydrated from earlier conversation turns.
+            if self.tools.discovery:
+                for item in self.tools.discovery.evidence:
+                    evidence_by_id.setdefault(item.evidence_id, item)
+            evidence = list(evidence_by_id.values())
             if not evidence:
                 evidence = list(self.tools.evidence.values())
             candidates = list(self.tools.candidates.values())
@@ -230,6 +237,7 @@ class AnalystLoop:
             raise ValueError("Required review/action context exceeds input budget")
         sent_claims, sent_evidence, sent_candidates = {}, {}, {}
         evidence_size = 0
+        record_ids = {claim.claim_id for claim in self._paired_record_claims()}
         for claim in claims:
             # Claim + all baseline claims are an indivisible record group. Evidence details
             # can be omitted, since complete IDs remain resolvable in the server registry.
@@ -240,12 +248,23 @@ class AnalystLoop:
                 for ref in candidate.claim_ids
             }
             group_ids = {claim.claim_id, *claim.baseline_claim_ids, *candidate_refs}
+            if claim.claim_id in record_ids:
+                group_ids.update(record_ids)
             group_ids.update(
                 ref for cid in list(group_ids) for ref in self.tools.claims[cid].baseline_claim_ids
             )
             group = [self.tools.claims[ref] for ref in sorted(group_ids) if ref not in sent_claims]
-            data = [c.model_dump(mode="json") for c in group]
+            # Null context fields are inapplicable; authoritative server records stay whole.
+            data = [c.model_dump(mode="json", exclude_none=True) for c in group]
             size = token_upper_bound(encoded(data))
+            uses = [
+                {"claim_id": c.claim_id, "displayed_value": c.value, "decimal_places": None}
+                for c in group
+            ]
+            if not review:
+                # Keep the exact typed output form with its immutable claim, including
+                # for providers that support JSON objects without enforcing a schema.
+                size += token_upper_bound(encoded(uses))
             related = [
                 c
                 for c in candidates
@@ -257,6 +276,8 @@ class AnalystLoop:
                 "claims": payload["claims"] + data,
                 "candidates": payload["candidates"] + [c.model_dump() for c in related],
             }
+            if not review:
+                candidate_payload["claim_uses"] = payload["claim_uses"] + uses
             if evidence_size + size > self.settings.analyst_evidence_tokens or (
                 token_upper_bound(encoded(candidate_payload)) > limit
             ):
@@ -267,8 +288,34 @@ class AnalystLoop:
             evidence_size += size
             sent_claims.update({c.claim_id: c for c in group})
             sent_candidates.update({c.fact_id: c for c in related})
+        if not review and not record_ids <= sent_claims.keys():
+            raise ValueError("Complete requested record exceeds model input budget")
+        if not review and self.tools.narrative:
+            required = {
+                c.claim_id
+                for result in self.results
+                for c in result.claims
+                if c.metric_id == "canonical_game_narrative"
+                or (
+                    self.tools.statistical_extreme_requested()
+                    and c.metric_id in {"game_score", "margin"}
+                )
+            }
+            if not required <= sent_claims.keys():
+                # A partial selection cannot pass completeness validation. Preserve
+                # every backend claim without paying for a known-incomplete prompt.
+                raise ValueError("Complete selected-game claims exceed model input budget")
         # Prioritize evidence supporting the retained claims.
         refs = {ref for c in sent_claims.values() for ref in c.supporting_evidence_ids}
+        if not review:
+            # Aggregate receipts live in the registry even when tools return only
+            # their raw source rows. Resolve just the retained claims' references.
+            evidence_by_id = {item.evidence_id: item for item in evidence}
+            for ref in sorted(refs):
+                item = self.tools.evidence.get(ref)
+                if item is not None and item.release_id == self.tools.release.version:
+                    evidence_by_id.setdefault(ref, item)
+            evidence = list(evidence_by_id.values())
         evidence.sort(key=lambda e: e.evidence_id not in refs)
         for item in evidence:
             data = item.model_dump(mode="json")
@@ -284,6 +331,18 @@ class AnalystLoop:
             self.sent_claims, self.sent_evidence = sent_claims, sent_evidence
             self.sent_candidates = sent_candidates
         return payload
+
+    def _paired_record_claims(self) -> list[VerifiedClaim]:
+        if (
+            self.tools.scope is None
+            or self.tools.scope.player_ids
+            or not is_record_request(self.tools.question)
+        ):
+            return []
+        claims = [
+            claim for claim in self.fallback_claims() if claim.metric_id in {"wins", "losses"}
+        ]
+        return claims if {claim.metric_id for claim in claims} == {"wins", "losses"} else []
 
     async def model(
         self,
@@ -318,21 +377,40 @@ class AnalystLoop:
                 "its text exactly. Reject unsupported factual premises, irrelevant scope, and "
                 "questions the archive cannot support. A rejected suggestion does not affect "
                 "the answer verdict. Use the supplied interpretation policy. "
+                "Keep each reason to one short sentence, at most 500 characters. Put supporting "
+                "IDs in their dedicated fields instead of repeating them in reason. "
                 "Return JSON matching schema."
+            )
+        elif schema is ProposedAnswer:
+            system = (
+                "Write a grounded final answer. Return ONE ProposedAnswer JSON object matching "
+                "the supplied schema, with text, claims, evidence_ids, fact_ids and "
+                "follow_up_questions. Never wrap it in action or answer. Use backend evidence "
+                "only and copy EVERY used claim_uses entry into claims. Preserve each exact "
+                "displayed_value JSON type and object key; only explicit numeric rounding with "
+                "matching decimal_places may change a value. State every requested record "
+                "count, not only one side of wins/losses. Copy supporting evidence and selected "
+                "fact IDs exactly. Use the supplied interpretation policy. Do not investigate, "
+                "infer causes, rankings or unsupported evaluative labels. Answer briefly unless "
+                "the user asks for detail. Answer supported archive portions of mixed requests "
+                "and briefly state the live-data gap. Include up to two relevant follow-up "
+                "questions the archive can answer, or an empty list."
             )
         else:
             system = (
                 "You are KnicksIQ. Return JSON matching schema, using backend evidence only. "
                 "For interesting stats or another player, call discover_facts FIRST with the "
                 "user's question unchanged. Empty claims means call a tool before stating stats. "
-                "get_player_stats calculates player metrics; get_team_stats gives team totals; "
-                "compare_windows compares populations; search_archive finds narrative examples; "
-                "get_evidence expands returned references. Answer once evidence is sufficient. "
+                "Tools: get_player_stats (players), get_team_stats (team totals), "
+                "compare_windows (populations), search_archive (narrative), get_evidence "
+                "(references). Answer once evidence is sufficient. "
                 "call_tools requires tools and null answer. Answer actions require an answer "
                 "object containing text, claims, evidence_ids and fact_ids, never null. "
-                "Include EVERY used claim in answer.claims: copy claim_id and ENTIRE value into "
-                "displayed_value, including every object key. Use each claim once. Only numeric "
-                "rounding uses decimal_places. Copy selected candidates[].fact_id into fact_ids "
+                "Include EVERY used claim in answer.claims by copying its claim_uses entry. "
+                "displayed_value is the exact JSON value, never the statement sentence. "
+                "Preserve its type and every object key. Use each claim once. Only numeric "
+                "rounding may change the value, with matching decimal_places. "
+                "Copy selected candidates[].fact_id into fact_ids "
                 "and evidence[].evidence_id into evidence_ids exactly; never shorten IDs. "
                 "Answer briefly by default, usually in one or two short sentences. Explain "
                 "more deeply when asked. Include up to two relevant follow_up_questions "
@@ -450,36 +528,45 @@ class AnalystLoop:
 
     async def investigate(self) -> dict[str, Any]:
         while True:
-            action = await self.model(Action)
-            if action.action == "call_tools":
-                if action.answer is not None or not action.tools:
-                    raise ValueError("Malformed tool action")
-                if self.rounds >= self.settings.analyst_max_tool_rounds or (
-                    time.monotonic() - self.started >= self.settings.analyst_investigation_seconds
-                ):
-                    raise TimeoutError("Investigation limit")
-                if self.tool_count + len(action.tools) > 6:
-                    raise ValueError("Tool-call limit")
-                remaining_slots = sum(slots for _, slots in self.reservations) - self.calls
-                if remaining_slots < 2 and not await self.reserve(2 - remaining_slots):
-                    return await self.fallback("Budget unavailable for investigation and review.")
-                self.rounds += 1
-                # One AsyncSession cannot run concurrent database operations.
-                for call in action.tools:
-                    if (
+            if self._paired_record_claims():
+                # The backend already has the complete requested record. Draft it
+                # directly instead of spending input on another tool/action schema.
+                answer = await self.model(ProposedAnswer)
+            else:
+                action = await self.model(Action)
+                if action.action == "call_tools":
+                    if action.answer is not None or not action.tools:
+                        raise ValueError("Malformed tool action")
+                    if self.rounds >= self.settings.analyst_max_tool_rounds or (
                         time.monotonic() - self.started
                         >= self.settings.analyst_investigation_seconds
                     ):
-                        break
-                    self.tool_count += 1
-                    self.results.append(await self.tools.execute(call))
-                continue
-            if action.tools or action.answer is None:
-                raise ValueError("Malformed answer action")
-            self.last_answer = action.answer
-            supported, reason = await self.validate(action.answer)
+                        raise TimeoutError("Investigation limit")
+                    if self.tool_count + len(action.tools) > 6:
+                        raise ValueError("Tool-call limit")
+                    remaining_slots = sum(slots for _, slots in self.reservations) - self.calls
+                    if remaining_slots < 2 and not await self.reserve(2 - remaining_slots):
+                        return await self.fallback(
+                            "Budget unavailable for investigation and review."
+                        )
+                    self.rounds += 1
+                    # One AsyncSession cannot run concurrent database operations.
+                    for call in action.tools:
+                        if (
+                            time.monotonic() - self.started
+                            >= self.settings.analyst_investigation_seconds
+                        ):
+                            break
+                        self.tool_count += 1
+                        self.results.append(await self.tools.execute(call))
+                    continue
+                if action.tools or action.answer is None:
+                    raise ValueError("Malformed answer action")
+                answer = action.answer
+            self.last_answer = answer
+            supported, reason = await self.validate(answer)
             if supported:
-                return self.render(action.answer, llm=True)
+                return self.render(answer, llm=True)
             # Only one repair, with capacity and time for both revision and review.
             # Split remaining time between the calls instead of demanding two full
             # 20-second provider timeouts inside a 30-second application deadline.
@@ -496,7 +583,7 @@ class AnalystLoop:
                 if available >= 2 or await self.reserve(2 - available):
                     repaired = await self.model(
                         ProposedAnswer,
-                        answer=action.answer,
+                        answer=answer,
                         repair=reason,
                         timeout_seconds=repair_timeout,
                     )
@@ -508,14 +595,32 @@ class AnalystLoop:
     async def validate(
         self, answer: ProposedAnswer, *, timeout_seconds: float | None = None
     ) -> tuple[bool, str]:
-        if self.tools.narrative:
+        declared = [
+            self.tools.claims[u.claim_id] for u in answer.claims if u.claim_id in self.tools.claims
+        ]
+        record_ids = {claim.claim_id for claim in self._paired_record_claims()}
+        if record_ids and not record_ids <= {use.claim_id for use in answer.claims}:
+            return False, "Every requested record needs both canonical wins and losses claims."
+        if self.tools.statistical_extreme_requested():
+            assert self.tools.narrative is not None
+            metrics = {"game_score"}
+            if "margin" in self.tools.question.lower():
+                metrics.add("margin")
+            required = {
+                (metric, game.id) for metric in metrics for game in self.tools.narrative.games
+            }
+            supplied = {
+                (claim.metric_id, claim.game_ids[0])
+                for claim in declared
+                if claim.subject_id == "team:NYK"
+                and claim.game_ids is not None
+                and len(claim.game_ids) == 1
+            }
+            if supplied != required or len(declared) != len(required):
+                return False, "Every selected or tied game needs every requested scalar metric."
+        elif self.tools.narrative:
             from app.services.canonical_narrative import complete_narrative_text
 
-            declared = [
-                self.tools.claims[u.claim_id]
-                for u in answer.claims
-                if u.claim_id in self.tools.claims
-            ]
             if not complete_narrative_text(answer.text, declared):
                 return False, "Every selected game and tied run must appear in the narrative."
         if not validate_structure(
@@ -525,7 +630,11 @@ class AnalystLoop:
             self.sent_candidates,
             self.tools.release.version,
         ):
-            return False, "Invalid claim value, release, baseline or reference."
+            return False, (
+                "Invalid claim value, release, baseline or reference. Copy claim_uses entries "
+                "for answer.claims: displayed_value must preserve the JSON value/type, never "
+                "the statement sentence. Use only supplied references."
+            )
         try:
             review = await self.model(
                 AnswerReview, review=True, answer=answer, timeout_seconds=timeout_seconds
@@ -570,7 +679,7 @@ class AnalystLoop:
         if (
             scope is None
             or scope.requires_clarification
-            or scope.periods
+            or (scope.periods and not self.tools.supports_period_average(scope))
             or self.tools.season != self.tools.release.season
             or any(
                 season != self.tools.release.season
@@ -589,6 +698,48 @@ class AnalystLoop:
             )
         expected_games = {g.id for g in games}
         discovery = re_search_discovery(self.tools.question)
+        team_groups = {
+            label: {game.id for game in population}
+            for label, population in self.tools.requested_team_groups()
+        }
+        profile = self.tools.player_profile_requested()
+        season_comparison = self.tools.season_window_comparison_requested()
+        statistical_extreme = self.tools.statistical_extreme_requested()
+        player_populations = {}
+        if scope.player_ids:
+            game_map = {game.id: game for game in self.tools.games}
+            baseline_games = (
+                {
+                    game.id
+                    for game in self.tools.selected_games(
+                        self.tools.season_comparison_baseline_scope(scope)
+                    )
+                }
+                if season_comparison
+                else set()
+            )
+            for pid in scope.player_ids:
+                appearances = {
+                    stat.game_id
+                    for stat, _ in self.tools.rows
+                    if stat.player_id == pid and stat.minutes > 0
+                }
+                current = sorted(
+                    appearances & expected_games,
+                    key=lambda identity: (
+                        game_map[identity].game_date,
+                        game_map[identity].nba_game_id,
+                    ),
+                )
+                if scope.relative_game_count:
+                    current = (
+                        current[: scope.relative_game_count]
+                        if scope.relative_game_order == "first"
+                        else current[-scope.relative_game_count :]
+                    )
+                player_populations[f"player:{pid}"] = [set(current)]
+                if season_comparison:
+                    player_populations[f"player:{pid}"].append(appearances & baseline_games)
         claims = []
         results = list(self.results)
         if is_record_request(self.tools.question) and not scope.player_ids:
@@ -610,35 +761,53 @@ class AnalystLoop:
                     relevant = (
                         bool(result.candidates) and set(claim.game_ids or []) <= expected_games
                     )
+                elif team_groups:
+                    label = (claim.window or {}).get("comparison_group")
+                    relevant = (
+                        claim.subject_id == "team:NYK"
+                        and claim.metric_id == "team_comparison"
+                        and label in team_groups
+                        and set(claim.game_ids or []) == team_groups[label]
+                        and isinstance(claim.value, dict)
+                        and set(claim.value) == set(self.tools.team_comparison_metrics(scope))
+                    )
+                elif scope.periods:
+                    relevant = (
+                        claim.subject_id == "team:NYK"
+                        and claim.metric_id == "period_points:average"
+                        and claim.filters.get("periods") in [[p] for p in scope.periods]
+                        and set(claim.game_ids or []) == expected_games
+                    )
+                elif statistical_extreme:
+                    relevant = (
+                        claim.subject_id == "team:NYK"
+                        and len(claim.game_ids or []) == 1
+                        and set(claim.game_ids or []) <= expected_games
+                        and claim.metric_id in {"game_score", "margin"}
+                    )
+                elif profile:
+                    relevant = (
+                        len(claim.game_ids or []) == 1
+                        and set(claim.game_ids or []) <= expected_games
+                        and (
+                            (
+                                claim.subject_id in {f"player:{pid}" for pid in scope.player_ids}
+                                and claim.metric_id
+                                in {"points:total", "rebounds:total", "assists:total"}
+                            )
+                            or (claim.subject_id == "team:NYK" and claim.metric_id == "game_score")
+                        )
+                    )
                 else:
                     subject = (
                         claim.subject_id in {f"player:{pid}" for pid in scope.player_ids}
                         if scope.player_ids
                         else claim.subject_id == "team:NYK"
                     )
-                    population = expected_games
+                    populations = [expected_games]
                     if scope.player_ids:
-                        appearance_games = sorted(
-                            {
-                                stat.game_id
-                                for stat, _ in self.tools.rows
-                                if f"player:{stat.player_id}" == claim.subject_id
-                                and stat.minutes > 0
-                                and stat.game_id in expected_games
-                            },
-                            key=lambda identity: (
-                                next(g.game_date for g in games if g.id == identity),
-                                identity,
-                            ),
-                        )
-                        if scope.relative_game_count:
-                            appearance_games = (
-                                appearance_games[: scope.relative_game_count]
-                                if scope.relative_game_order == "first"
-                                else appearance_games[-scope.relative_game_count :]
-                            )
-                        population = set(appearance_games)
-                    relevant = subject and set(claim.game_ids or []) == population
+                        populations = player_populations.get(claim.subject_id, [])
+                    relevant = subject and set(claim.game_ids or []) in populations
                     if scope.player_ids:
                         expected_metric = (
                             "three_point_percentage"
@@ -654,6 +823,44 @@ class AnalystLoop:
                         relevant = relevant and claim.metric_id.split(":")[0] == expected_metric
                 if relevant:
                     claims.append(claim)
+        if team_groups:
+            if {c.window["comparison_group"] for c in claims if c.window} != set(team_groups):
+                return []
+            return list({c.claim_id: c for c in claims}.values())
+        if scope.periods:
+            if {c.filters["periods"][0] for c in claims} != set(scope.periods):
+                return []
+        if profile:
+            required = {
+                (f"player:{pid}", metric, game.id)
+                for pid in scope.player_ids
+                for metric in ("points:total", "rebounds:total", "assists:total")
+                for game in games
+            } | {("team:NYK", "game_score", game.id) for game in games}
+            supplied = {(c.subject_id, c.metric_id, (c.game_ids or [None])[0]) for c in claims}
+            if supplied != required:
+                return []
+        if statistical_extreme:
+            metrics = {"game_score"}
+            if "margin" in self.tools.question.lower():
+                metrics.add("margin")
+            required = {(metric, g.id) for metric in metrics for g in games}
+            supplied = {(c.metric_id, (c.game_ids or [None])[0]) for c in claims}
+            if supplied != required:
+                return []
+        if season_comparison:
+            for pid in scope.player_ids:
+                required = {
+                    frozenset(population) for population in player_populations[f"player:{pid}"]
+                }
+                supplied = {
+                    frozenset(c.game_ids or [])
+                    for c in claims
+                    if c.subject_id == f"player:{pid}"
+                    and c.metric_id == f"{scope.metric or 'points'}:average"
+                }
+                if supplied != required:
+                    return []
         if is_game_score_request(self.tools.question) and not scope.player_ids:
             claims = [c for c in claims if c.metric_id == "game_score"]
         if is_record_request(self.tools.question) and not scope.player_ids:
@@ -686,10 +893,8 @@ class AnalystLoop:
         return self.render_fallback(reason)
 
     def render_fallback(self, reason: str) -> dict[str, Any]:
-        from app.services.evidence_contracts import ClaimUse
 
         claims = self.fallback_claims()
-        claims = claims[:3]
         text = " ".join(c.statement for c in claims)
         if not text:
             text = next(
@@ -706,16 +911,27 @@ class AnalystLoop:
                 text += " I don't have live injury or current-status updates."
         answer = ProposedAnswer(
             text=text if len(text) <= 6000 else "Complete canonical game narrative follows.",
-            claims=[ClaimUse(claim_id=c.claim_id, displayed_value=c.value) for c in claims],
         )
-        response = self.render(answer, llm=False, warning=reason)
+        response = self.render(answer, llm=False, warning=reason, backend_claims=claims)
         # Backend statements are already verified. Preserve all stories when
         # the model's bounded text format cannot hold the complete selection.
         response["answer"] = text
         return response
 
-    def render(self, answer: ProposedAnswer, *, llm: bool, warning: str = "") -> dict[str, Any]:
-        claims = [self.tools.claims[u.claim_id] for u in answer.claims]
+    def render(
+        self,
+        answer: ProposedAnswer,
+        *,
+        llm: bool,
+        warning: str = "",
+        backend_claims: list[VerifiedClaim] | None = None,
+    ) -> dict[str, Any]:
+        # Model answers remain bounded; backend-verified ties must all be delivered.
+        claims = (
+            [self.tools.claims[u.claim_id] for u in answer.claims]
+            if backend_claims is None
+            else backend_claims
+        )
         citations = []
         for claim in claims:
             for ref in claim.supporting_evidence_ids[:3]:

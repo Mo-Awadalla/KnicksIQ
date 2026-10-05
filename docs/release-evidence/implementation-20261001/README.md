@@ -6,8 +6,9 @@ on candidate `bf4439bbcd69e328c1d65c52e9a73dcbe4942cbe`. The owner's subsequent
 [context decision](confirmed-context-decision.json) corrects the earlier claim
 that an unspecified game demonstrated an identity-relevance incompatibility.
 Complete tied-game narratives and canonical Boston scoring runs are also implemented.
-Gold remains unfrozen. Bounded retrieval discovery is implemented. Guarded paid orchestration,
-release evaluation, load, recovery, rollback and launch remain open.
+Gold is frozen after [content-bound owner approval](confirmed-gold-direction.json).
+Bounded retrieval discovery is implemented. Dense qualification, guarded paid
+orchestration, release evaluation, load, recovery, rollback and launch remain open.
 
 The implementation worktree is
 `/Users/mohamedawadalla/.codex/worktrees/release-implementation/KnicksIQ`.
@@ -374,13 +375,16 @@ mutation. This file's Redis points to localhost and its database is a different
 resource from the isolated `.env.rc.local` database. These observations do not
 certify hosted dependency readiness or authorize production state mutations.
 
-The [current independent source review](source-relevance-review.md) records all
-50 semantic cases against the latest actual captures. Seven settled target sets
-remain unchanged; 38 new candidate target sets are identified, including the
-independently relevant canonical JB identity source. Five measure-specific target
-sets remain unresolved, so the full expectation contract cannot yet be frozen.
-The exact candidate records, source/observation hashes and reasons are retained
-in `source-relevance-proposal.json`. This review approves no gold or launch.
+The [current independent source review](source-relevance-review.md) now records
+supported source proposals for all 50 semantic cases against actual captures.
+Seven settled target sets remain unchanged; 43 new sets include canonical JB
+identity and fine event/period sources for all five measure clarifications.
+All 184 source units and 67 actual ranked unit receipts are independently
+verified. Exact proposals remain in the private `source-support-20261003/source-units/`
+evidence. The owner approved the exact 120-case expectations and 50-case targets;
+the frozen contract is accepted by the actual release runner. See the
+[gold approval and frozen-file digest](source-relevance-review.md#content-bound-owner-gold-approval).
+Source support and gold approval do not certify retrieval recall or launch.
 
 Publication preparation uses a separate checkout under
 `/private/tmp/KnicksIQ-release-publish-20261001` because the current permission
@@ -404,3 +408,125 @@ a longer TCP control and a REST connectivity control timed out. No state was
 written to it; no Render plan, provider completion or production state changed.
 Its documented three-day expiry is retained. It remains unadmitted, and credentials
 stay in ignored private files in the original implementation checkout.
+
+The October 3 [measure-source audit](source-relevance-review.md#october-3-source-integrity-findings)
+adds a network-denied CLI and 25 passing subprocess E2E cases. All 101 games
+have complete verified period populations, establishing distinct fewest-Q3-point
+and worst-Q3-margin candidates without changing clarification policy. A raw
+scoring-sequence discrepancy in Milwaukee game `0022500125` is corroborated by
+the official NBA page; only 100 games pass that raw sequence check. Exploratory
+point reconstruction matches period and player box totals but does not approve
+repaired intermediate scores. Evidence stays in the main project's ignored
+`release-artifacts/source-support-20261003/`. Gold, complete indexed source
+mappings, dense retrieval, guarded live orchestration and the original release
+workloads remain open.
+
+The owner subsequently selected
+[independent derived-source validation](confirmed-scoring-source-direction.json).
+The resulting [per-action source check](source-relevance-review.md#complete-independent-per-action-derived-source-verification)
+matches every original event to primary NBA action-list order and reconciles all
+101 games, 816 periods and 2,748 player box rows. It retains the raw scoreboards,
+153 incorrect canonical event classifications and the running-caption discrepancy.
+`tools/release/check_derived_scoring.py` exercises the independent offline CLI with
+network denied, including corruption controls. This closes per-action scoring
+provenance only: target definitions, indexed/ranked relevance, owner gold approval
+and full release workloads remain open.
+
+Complete [pinned measure comparisons](source-relevance-review.md#complete-pinned-comparison-evidence)
+now distinguish 12 quantitative alternatives across the full 101-game archive,
+82 regular-season games and 19 postseason games. All tied source boundaries
+remain available. The CLI has 21 passing network-denied E2E cases; it binds the
+trajectory and independent source-review digests and rejects reduced populations.
+These are proposal facts, not metric defaults, ranked mappings, approved targets
+or a gold freeze. The five approved measure clarifications still stand.
+
+The [release-scoped comparison source store](source-relevance-review.md#release-scoped-comparison-source-integration)
+now binds independently supplied bundle, trajectory, source-review and comparison
+digests to the full canonical SQL projection without rewriting the archive.
+The complete exported inventory is 184 source units, including all 101 game
+scoring units and 12 explicit scope/family comparisons. An independent,
+network-denied verifier exercises 22 retained CLI E2E cases. The new HTTP check
+uses actual SQL, ASGI and isolated Redis, including idempotent replay, conflict,
+source-corruption rejection and unchanged accounting.
+
+Run `tools/release/import_comparison_source.py --help` for the explicit local
+SQLite import/export command. Its `--initialize-empty` mode rejects an existing
+store; all four input SHA-256 values are required. The independent unit verifier
+also requires `--comparison-proof` and `--comparison-proof-sha256` together for
+derived units. The trusted proof file binds the four input paths and digests.
+Private repeatable evidence remains in `release-artifacts/source-support-20261003/source-units/`.
+
+The existing source HTTP E2E can use the exact approved proof via
+`KNICKSIQ_DISCOVERY_COMPARISON_INPUTS`; without that opt-in it uses the independent
+portable two-game fixture. For the full original cohort, also set
+`KNICKSIQ_APPROVED_BUNDLE` and a fresh `KNICKSIQ_DISCOVERY_ARTIFACT_DIR`, then run
+`apps/api/app/tests/test_canonical_discovery_http.py::test_original_cohort_records_real_local_discovery`.
+Neither fixture execution nor local pre-admission capture approves targets,
+freezes gold, transmits provider requests or completes the full release gates.
+
+## October 5 implementation and verification
+
+The publication checkout now contains the requested calculation and evidence-loop
+fixes: complete leaders, splits, monthly records, requested comparisons, quarter
+scoring, player profiles and scope-exact fallback. Record questions retain both
+wins and losses. Advertised team metrics and typed tool actions share one finite
+vocabulary; team-only metrics cannot enter player calculations.
+
+Complete record evidence uses the existing final-answer writer and mandatory
+whole-answer review without increasing the original model, tool, input, output
+or deadline limits. Both counts must fit and validate together; otherwise the
+complete factual fallback is delivered. Shorter duplicate tool instructions
+preserve space for compact canonical discovery. Behavioral repair checks remain;
+assertions that merely pinned prompt wording were removed.
+
+Counted execution retains every prior request, settled charge, uncertain exposure
+and normal hold. The separately authorized known-cost continuation creates a new
+exclusive descendant rather than resuming a stopped journal. A real Redis
+settlement exposed sub-nanodollar floating-point serialization; floor comparison
+now uses the existing conservative nanodollar conversion, while the raw $2 cutoff,
+one-nanodollar deficit rejection and exact reservation inventory remain enforced.
+
+Hosted CI also exposed missing static type narrowing in the private guard/load
+controllers. The closure adds the existing optional-field, callable and descriptor
+types without relaxing runtime checks. Gitleaks identified the historical
+`DESIGNATED_KEY_SHA256` integrity digest as a credential; the existing exact
+fingerprint exception list now records only that proven false positive. No
+credential, scanner rule or file-wide exclusion was added.
+
+Repeatable local evidence is retained privately under
+`release-artifacts/release-execution-20261003/`:
+
+- `backend-ci-closure-20261005/junit.xml`: final integrated backend results after
+  the 755-check delivery pass and hosted type-narrowing closure.
+- `known-cost-continuation-final-20261005/`: 118 passing accounting, transport,
+  load-prerequisite and actual socket checks; these are not live-model quality.
+- `paired-record-final-green-20261005/`: six approved-archive HTTP cases covering
+  full records, omitted counts, input limits and player/team metric boundaries.
+- `record-socket-ci-closure-20261005/`: actual Uvicorn/HTTP proof of 69 wins and
+  32 losses across all 101 approved games, three synthetic model rounds,
+  whole-answer review and exact replay, with zero real provider requests.
+- `disabled-delivery-original120-20261005/`: final unchanged 120-case,
+  services-disabled capture and original-scorer evidence. This cannot establish
+  dense retrieval recall or primary-model quality.
+- `frontend-integration/` and `delegated-browser/`: 40 passing Playwright cases,
+  26 retained screenshots and 16 axe audits. The final audited UI source hashes
+  remain unchanged, with no serious/critical accessibility findings.
+- `qa-restart-recovery-20261004/` and
+  `qa-redis-loss-recovery-20261004-accepted/`: actual owned-runtime restart and
+  Redis-loss recovery. The retained chain covers 24 HTTP exchanges and 62 checks;
+  neither is a coordinated deployment rollback rehearsal.
+
+The original primary/shadow/load release gates are **not passed**. Fresh
+no-completion admission observed the exact pinned `morph/fp8` endpoint at status
+`-2`, not the required healthy status `0`. The verifier denied execution before
+creating a goal journal or sending any completion, then was stopped. No provider
+substitution, request-cap reduction, cohort reduction or budget reset was made.
+See `pinned-provider-unavailable-20261005.json` for the observed public metadata.
+
+`release-record.json` in that private evidence directory binds the final tested
+source, all 17 original checks, retained evidence and explicit blockers.
+Read-only hosted deployment/alias observations are not a rollback snapshot.
+Production readiness, coordinated rollback, deployment and alias promotion
+remain unapproved. Draft PR #6 publishes only the authorized new release work;
+the original checkout, sealed September package and unrelated user edits remain
+untouched.

@@ -17,6 +17,8 @@ from collections import defaultdict
 from pathlib import Path
 from typing import Any
 
+from comparison_unit_checks import ComparisonProof
+
 BUNDLE_SHA = "549af2edd0d195eff60bb318bdc58a8c8e217ea0359c0684d492d5292dcb595b"
 
 
@@ -32,7 +34,12 @@ def require(condition: bool, message: str) -> None:
 
 
 def verify(
-    bundle_path: Path, unit_path: Path, policy_path: Path, observations: Path
+    bundle_path: Path,
+    unit_path: Path,
+    policy_path: Path,
+    observations: Path,
+    comparison_proof: Path | None = None,
+    comparison_proof_sha256: str | None = None,
 ) -> tuple[dict, dict]:
     raw = bundle_path.read_bytes()
     require(hashlib.sha256(raw).hexdigest() == BUNDLE_SHA, "Approved bundle identity changed")
@@ -59,6 +66,15 @@ def verify(
             for target in node.targets
         )
     )
+    require(
+        (comparison_proof is None) == (comparison_proof_sha256 is None),
+        "Comparison proof and its independently supplied digest are required together",
+    )
+    proof = (
+        ComparisonProof(comparison_proof, comparison_proof_sha256, data, release, BUNDLE_SHA)
+        if comparison_proof is not None and comparison_proof_sha256 is not None
+        else None
+    )
     units, seen_groups, seen_players, sql_games, sql_players = {}, set(), set(), {}, set()
     for line in unit_path.read_text().splitlines():
         record = json.loads(line)
@@ -66,7 +82,10 @@ def verify(
         identity = record["id"]
         require(identity not in units, "Duplicate source unit")
         require(payload["data_version"] == release, "Foreign unit release")
-        require("game_id" not in payload, "Unit has a representative game ID")
+        require(
+            payload["unit_type"] == "game_scoring_comparison" or "game_id" not in payload,
+            "Aggregate or identity unit has a representative game ID",
+        )
         require(payload["source_document_id"] == identity, "Source document identity changed")
         require(
             identity
@@ -75,6 +94,18 @@ def verify(
             "Unit content digest changed",
         )
         require(payload["recipe"] == "archive-source-units-v1", "Unknown unit recipe")
+        if payload["unit_type"] == "game_scoring_comparison" or payload.get("aggregate_kind") in {
+            "measure_comparison",
+            "selected_game_stories",
+        }:
+            require(
+                proof is not None,
+                "Derived source unit lacks independent pinned comparison evidence",
+            )
+            assert proof is not None
+            proof.check(payload, sql_games)
+            units[identity] = payload
+            continue
         common_fields = {
             "recipe",
             "unit_type",
@@ -264,6 +295,12 @@ def verify(
         seen_groups == set(expected_groups) and seen_players == expected_players,
         "Full archive unit inventory missing",
     )
+    comparison_counts = proof.finish() if proof is not None else {}
+    if proof is not None:
+        require(
+            len(sql_games) == len(games) and set(sql_games.values()) == set(games),
+            "Incomplete or inflated complete SQL game identity mapping",
+        )
     documents, observation_hashes = {}, {}
     for path in sorted(observations.glob("*.json")):
         observation_hashes[path.name] = hashlib.sha256(path.read_bytes()).hexdigest()
@@ -280,8 +317,9 @@ def verify(
                 source = receipt["metadata"].get("source_document_id")
                 require(source in units, "Unknown observed source unit")
                 require(
-                    receipt["release_id"] == release and receipt["game_id"] is None,
-                    "Foreign/representative receipt",
+                    receipt["release_id"] == release
+                    and receipt["game_id"] == units[source].get("game_id"),
+                    "Foreign or representative source receipt",
                 )
                 require(receipt["text"] == units[source]["text"], "Observed source text differs")
                 require(
@@ -298,6 +336,7 @@ def verify(
     manifest = {
         "release_id": release,
         "bundle_sha256": BUNDLE_SHA,
+        **({"comparison_provenance": proof.provenance} if proof is not None else {}),
         "documents": documents,
         "source_unit_integrity_verified": True,
         "semantic_relevance_approved": False,
@@ -311,6 +350,7 @@ def verify(
         "source_units": len(units),
         "opponent_units": len(seen_groups),
         "identity_units": len(seen_players),
+        **comparison_counts,
         "actual_ranked_unit_receipts": len(documents),
         "source_manifest_sha256": hashlib.sha256(
             (json.dumps(manifest, indent=2, sort_keys=True) + "\n").encode()
@@ -327,10 +367,19 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     for name in ("bundle", "units", "alias-policy", "observations", "output"):
         parser.add_argument("--" + name, type=Path, required=True)
+    parser.add_argument("--comparison-proof", type=Path)
+    parser.add_argument("--comparison-proof-sha256")
     args = parser.parse_args()
     args.output.mkdir(parents=True, exist_ok=False)
     try:
-        result, manifest = verify(args.bundle, args.units, args.alias_policy, args.observations)
+        result, manifest = verify(
+            args.bundle,
+            args.units,
+            args.alias_policy,
+            args.observations,
+            args.comparison_proof,
+            args.comparison_proof_sha256,
+        )
         for name, value in (
             ("source-verification.json", result),
             ("unit-runtime-source-manifest.json", manifest),

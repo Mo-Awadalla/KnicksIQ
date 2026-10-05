@@ -186,8 +186,8 @@ def is_live_only_score_request(question: str) -> bool:
     return not (archival_target or dated_target)
 
 
-def _explicit_dates(question: str) -> tuple[list[date], str | None]:
-    """Parse fully specified dates; never infer an omitted year or repair a date."""
+def _explicit_dates(question: str, games: list[Game]) -> tuple[list[date], str | None]:
+    """Parse dates, resolving omitted years only from the active archive calendar."""
     matches: list[tuple[int, tuple[int, int, int]]] = []
     for match in re.finditer(r"\b(20\d{2})-(\d{2})-(\d{2})\b", question):
         year, month, day = match.groups()
@@ -199,7 +199,18 @@ def _explicit_dates(question: str) -> tuple[list[date], str | None]:
     ):
         month, day, year = match.groups()
         if year is None:
-            return [], "missing_date_year"
+            calendar_years = {
+                game.game_date.year for game in games if game.game_date.month == _MONTHS[month]
+            }
+            if not calendar_years:
+                seasons = {game.season for game in games}
+                if len(seasons) == 1:
+                    season = re.fullmatch(r"(20\d{2})-(\d{2})", next(iter(seasons)))
+                    if season and (int(season[1]) + 1) % 100 == int(season[2]):
+                        calendar_years.add(int(season[1]) + (_MONTHS[month] < 7))
+            if len(calendar_years) != 1:
+                return [], "missing_date_year"
+            year = str(next(iter(calendar_years)))
         matches.append((match.start(), (int(year), _MONTHS[month], int(day))))
     try:
         return [date(*parts) for _, parts in sorted(matches)], None
@@ -420,10 +431,16 @@ async def resolve_query(
     q = _normalize(question)
     team_ids = sorted(team_ids_in_text(question) - {"NYK"})
     opponent_id = team_ids[0] if len(team_ids) == 1 else None
-    explicit_dates, date_error = _explicit_dates(question)
+    explicit_dates, date_error = _explicit_dates(question, games)
     date_start = explicit_dates[0] if explicit_dates else None
     date_end = explicit_dates[-1] if explicit_dates else None
     latest_date = games[-1].game_date if games else None
+    named_months = {month for name, month in _MONTHS.items() if re.search(rf"\b{name}\b", q)}
+    comparison = bool(
+        re.search(r"\b(?:compare|comparison|versus|vs|better|stronger)\b", q)
+        or re.search(r"\b(?:home or away|eastern or western)\b", q)
+    )
+    month_comparison = comparison and len(named_months) > 1 and not explicit_dates
     relative_count: int | None = None
     count_match = re.search(r"\b(?:last|final|first)\s+(\d+)\s+(?:regular season\s+)?games?\b", q)
     if count_match:
@@ -435,11 +452,12 @@ async def resolve_query(
         date_start = latest_date.replace(day=1)
         date_end = latest_date
     elif not explicit_dates and not date_error:
-        named_month = next(
-            (month for name, month in _MONTHS.items() if re.search(rf"\b{name}\b", q)), None
-        )
-        if named_month and games:
-            month_dates = [game.game_date for game in games if game.game_date.month == named_month]
+        if named_months and games:
+            # A comparison needs every requested month, not the first named one.
+            selected_months = named_months if month_comparison else {min(named_months)}
+            month_dates = [
+                game.game_date for game in games if game.game_date.month in selected_months
+            ]
             if month_dates:
                 date_start, date_end = min(month_dates), max(month_dates)
     if explicit_dates and "since" in q:
@@ -486,12 +504,24 @@ async def resolve_query(
         if re.search(r"\bloss(?:es)?\b", q)
         else None
     )
+    if comparison and re.search(r"\bhome\b", q) and re.search(r"\b(?:road|away)\b", q):
+        home_away = None
+    if comparison and re.search(r"\bwins?\b", q) and re.search(r"\bloss(?:es)?\b", q):
+        game_result = None
+    if (
+        comparison
+        and len(re.findall(r"\b(?:last|final|first)\s+\d+\s+games?\b", q)) > 1
+        and not player_ids
+    ):
+        relative_count = None
 
     candidates = games
     if opponent_id:
         candidates = [
             game for game in candidates if opponent_id in {game.home_team_id, game.away_team_id}
         ]
+    if month_comparison:
+        candidates = [game for game in candidates if game.game_date.month in named_months]
     if explicit_dates and not re.search(r"\b(between|from|through|until)\b", q):
         candidates = [game for game in candidates if game.game_date in explicit_dates]
     if season_type:
@@ -588,7 +618,45 @@ async def resolve_query(
             f"{game.game_date}: {game.away_team_id} at {game.home_team_id}"
             for game in candidates[:8]
         ]
+    if comparison and re.search(r"\b(?:two|2|both)(?: \w+)? games\b", q) and len(candidates) != 2:
+        clarification_reason = "ambiguous_game_comparison"
+        clarification_options = ["Which two game dates should I compare?"]
 
+    back_to_back = bool(re.search(r"\bback to backs?\b", q))
+    specified_leg = bool(
+        re.search(r"\b(?:first|second|1st|2nd)\s+(?:night|leg|game)\b", q)
+        or re.search(r"\b(?:both games|sweep|sweeps|swept)\b", q)
+    )
+    if back_to_back and not specified_leg:
+        clarification_reason = "undefined_back_to_back_leg"
+        clarification_options = [
+            "Specify the first leg, the second leg, or winning both games of each back-to-back."
+        ]
+    elif comparison and re.search(r"\boffen[cs]e\b", q) and re.search(r"\bdefen[cs]e\b", q):
+        clarification_reason = "undefined_comparison_metric"
+        clarification_options = [
+            "Define the offense-versus-defense strength metric and benchmark, "
+            "such as a league-relative rating."
+        ]
+    elif comparison and re.search(r"\boffen[cs]e\b", q) and team_ids:
+        clarification_reason = "undefined_comparison_scope"
+        clarification_options = [
+            "Specify the offense metric and scope: head-to-head Knicks games "
+            "or each team's full-season offense."
+        ]
+    elif comparison and re.search(r"\b(?:league|nba average|other teams)\b", q):
+        clarification_reason = "undefined_comparison_scope"
+        clarification_options = [
+            "Specify the metric, league benchmark, and comparison scope; "
+            "ordinary Knicks totals are not a league comparison."
+        ]
+    elif comparison and re.search(r"\bclose games?\b", q) and re.search(r"\bblowouts?\b", q):
+        if not re.search(r"\b(?:threshold|margin|within|at least|more than|under)\s+\d+\b", q):
+            clarification_reason = "undefined_comparison_threshold"
+            clarification_options = [
+                "Define the final-margin threshold for close games and for blowouts "
+                "before comparing."
+            ]
     if date_error:
         clarification_reason = date_error
         clarification_options = ["Please provide a valid calendar date including the year."]

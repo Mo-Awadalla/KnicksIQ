@@ -1,0 +1,17 @@
+{
+  "approval_request_sha256": "49018b1844daeb45ead3ee2f673331795fc15e93c0ab53febb5dbb3aff62861e",
+  "approved_at": "2026-10-03T22:20:24.451078+00:00",
+  "case_count": 120,
+  "expectation_review_sha256": "7fe3139dec0853c52aee59113531c51e34ec486153be8b0bdfd6b9cf8832bfa9",
+  "merge_approved": false,
+  "new_supported_target_sets": 43,
+  "owner": "project owner via explicit conversation selection",
+  "production_launch_approved": false,
+  "questions_sha256": "a546b99c36fedb59a475479016b0338fe113c4478d5165c4a5073d144ffdf482",
+  "schema": "knicksiq-content-bound-gold-approval-v1",
+  "scope": "Approve the exact canonical expectations and semantic source targets and their deterministic gold freeze. Not passing retrieval quality, merger or production launch approval.",
+  "selection": "Approve pinned gold contract",
+  "semantic_case_count": 50,
+  "settled_target_sets_preserved": 7,
+  "source_target_proposal_sha256": "c7dcebe6631ecce5226b626763f18e3b1e21660cbc3ff0602e790f99a5cd2b4d"
+}

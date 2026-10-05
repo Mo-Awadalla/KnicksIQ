@@ -4,12 +4,40 @@ from __future__ import annotations
 
 import hashlib
 import json
-from typing import Any, Literal
+from typing import Any, Literal, get_args
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, ValidationInfo, field_validator
+
+PlayerMetric = Literal[
+    "points",
+    "rebounds",
+    "assists",
+    "turnovers",
+    "steals",
+    "blocks",
+    "three_pointers_made",
+    "plus_minus",
+    "minutes",
+    "double_doubles",
+]
+TeamMetric = Literal[
+    "wins",
+    "losses",
+    "points",
+    "margin",
+    "turnovers",
+    "field_goal_percentage",
+    "bench_points",
+    "period_points",
+    "leaders",
+    "comparisons",
+]
+ToolMetric = Literal[PlayerMetric, TeamMetric]
+PLAYER_METRICS = get_args(PlayerMetric)
+TEAM_METRICS = get_args(TeamMetric)
 
 CONTRACT_VERSION = "analyst-evidence-v1"
-PROMPT_VERSION = "analyst-balanced-v2"
+PROMPT_VERSION = "analyst-balanced-v3"
 VALIDATOR_VERSION = "whole-answer-v1"
 INTERPRETATION_POLICY = (
     "Explain observed magnitude, contrast and basketball meaning. Never infer unobserved "
@@ -106,24 +134,23 @@ class ToolCall(Contract):
         "get_evidence",
     ]
     question: str = Field(max_length=1200)
-    metric: (
-        Literal[
-            "points",
-            "rebounds",
-            "assists",
-            "turnovers",
-            "steals",
-            "blocks",
-            "three_pointers_made",
-            "plus_minus",
-            "minutes",
-            "double_doubles",
-        ]
-        | None
-    ) = None
+    metric: ToolMetric | None = None
     aggregation: Literal["average", "total"] = "average"
     baseline_question: str | None = Field(default=None, max_length=1200)
     evidence_ids: list[str] = Field(default_factory=list, max_length=20)
+
+    @field_validator("metric")
+    @classmethod
+    def validate_player_metric(
+        cls, value: ToolMetric | None, info: ValidationInfo
+    ) -> ToolMetric | None:
+        if (
+            info.data.get("name") in {"get_player_stats", "compare_windows"}
+            and value is not None
+            and value not in PLAYER_METRICS
+        ):
+            raise ValueError("Player calculations require a supported player metric")
+        return value
 
 
 class ClaimUse(Contract):

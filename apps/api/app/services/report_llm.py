@@ -91,7 +91,10 @@ class OpenAICompatibleLLMAdapter(LLMAdapter):
             # collect data. Keep fallbacks enabled, while requiring parameter
             # support below whenever a structured response is requested.
             payload_body["provider"] = {"allow_fallbacks": True, "sort": "latency"}
-            if self.reasoning_effort is not None:
+            if self.reasoning_effort == "none":
+                # Optional reasoning models need not accept the "none" effort.
+                payload_body["reasoning"] = {"enabled": False}
+            elif self.reasoning_effort is not None:
                 payload_body["reasoning"] = {"effort": self.reasoning_effort}
         if self.response_schema is not None:
             payload_body["response_format"] = {
