@@ -136,6 +136,8 @@ class CountedRun:
     The CLI has no default implementation: unavailable verification stays blocked.
     """
 
+    subject_namespace: str | None
+
     def __init__(
         self,
         *,

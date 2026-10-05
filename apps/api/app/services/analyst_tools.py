@@ -888,6 +888,7 @@ class AnalystTools:
         question = re.sub(r"[-–—]", " ", self.question.lower())
         return bool(
             self.narrative
+            and self.scope is not None
             and not self.scope.player_ids
             and not re.search(r"\b(?:story|describe|tell|walk|what happened)\b", question)
             and re.search(

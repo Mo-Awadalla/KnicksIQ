@@ -602,6 +602,7 @@ class AnalystLoop:
         if record_ids and not record_ids <= {use.claim_id for use in answer.claims}:
             return False, "Every requested record needs both canonical wins and losses claims."
         if self.tools.statistical_extreme_requested():
+            assert self.tools.narrative is not None
             metrics = {"game_score"}
             if "margin" in self.tools.question.lower():
                 metrics.add("margin")
@@ -611,7 +612,9 @@ class AnalystLoop:
             supplied = {
                 (claim.metric_id, claim.game_ids[0])
                 for claim in declared
-                if claim.subject_id == "team:NYK" and len(claim.game_ids or []) == 1
+                if claim.subject_id == "team:NYK"
+                and claim.game_ids is not None
+                and len(claim.game_ids) == 1
             }
             if supplied != required or len(declared) != len(required):
                 return False, "Every selected or tied game needs every requested scalar metric."

@@ -49,6 +49,7 @@ async def successor_fixture(client, local_redis, monkeypatch, tmp_path):  # noqa
         "openrouter_api_key": "sk-or-disposable-never-live",
     }.items():
         monkeypatch.setattr(settings, name, value)
+    assert settings.openrouter_api_key is not None
     monkeypatch.setattr(
         guard,
         "DESIGNATED_KEY_SHA256",
@@ -485,6 +486,7 @@ async def test_successor_socket_does_not_replay_old_fixed_turn_and_preserves_sha
 
     async def captured_app(scope, receive, send):
         with capture_turn() as capture:
+            assert app is not None
             await app(scope, receive, send)
             if scope["type"] == "http" and scope["path"] == "/analysis/query":
                 captures.append(capture)
@@ -979,6 +981,7 @@ async def test_known_cost_descendant_counts_every_request_and_uses_new_socket_se
 
     async def captured_app(scope, receive, send):
         with capture_turn() as capture:
+            assert app is not None
             await app(scope, receive, send)
             if scope["type"] == "http" and scope["path"] == "/analysis/query":
                 captures.append(capture)

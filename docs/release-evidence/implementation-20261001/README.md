@@ -486,15 +486,23 @@ settlement exposed sub-nanodollar floating-point serialization; floor comparison
 now uses the existing conservative nanodollar conversion, while the raw $2 cutoff,
 one-nanodollar deficit rejection and exact reservation inventory remain enforced.
 
+Hosted CI also exposed missing static type narrowing in the private guard/load
+controllers. The closure adds the existing optional-field, callable and descriptor
+types without relaxing runtime checks. Gitleaks identified the historical
+`DESIGNATED_KEY_SHA256` integrity digest as a credential; the existing exact
+fingerprint exception list now records only that proven false positive. No
+credential, scanner rule or file-wide exclusion was added.
+
 Repeatable local evidence is retained privately under
 `release-artifacts/release-execution-20261003/`:
 
-- `backend-delivery-final-20261005/junit.xml`: 755 passing integrated backend checks.
+- `backend-ci-closure-20261005/junit.xml`: final integrated backend results after
+  the 755-check delivery pass and hosted type-narrowing closure.
 - `known-cost-continuation-final-20261005/`: 118 passing accounting, transport,
   load-prerequisite and actual socket checks; these are not live-model quality.
 - `paired-record-final-green-20261005/`: six approved-archive HTTP cases covering
   full records, omitted counts, input limits and player/team metric boundaries.
-- `record-socket-delivery-20261005/`: actual Uvicorn/HTTP proof of 69 wins and
+- `record-socket-ci-closure-20261005/`: actual Uvicorn/HTTP proof of 69 wins and
   32 losses across all 101 approved games, three synthetic model rounds,
   whole-answer review and exact replay, with zero real provider requests.
 - `disabled-delivery-original120-20261005/`: final unchanged 120-case,

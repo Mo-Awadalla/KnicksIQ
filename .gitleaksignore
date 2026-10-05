@@ -3,3 +3,8 @@
 # precise fingerprints so all other findings continue to fail CI.
 449c2d8fdd08f94025562f05d0b55268e9339a30:.env.example:generic-api-key:42
 449c2d8fdd08f94025562f05d0b55268e9339a30:docs/architecture.md:generic-api-key:260
+
+# Exact historical false positive: SHA256 integrity fingerprint, not the provider
+# credential. It is compared with hashlib.sha256(key.encode()).hexdigest(); the
+# real key is loaded only from the owner's private dotenv. No rule/path allowlist.
+687285fadb47d5f546abbc0bea8fe4f314c096b1:apps/api/app/evaluation/guarded_release.py:generic-api-key:54

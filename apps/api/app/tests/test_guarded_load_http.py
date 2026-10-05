@@ -13,6 +13,7 @@ import subprocess
 import sys
 from contextlib import asynccontextmanager
 from datetime import UTC, datetime
+from typing import ClassVar
 
 import httpx
 import pytest
@@ -103,6 +104,7 @@ async def fixture_load(client, redis, monkeypatch, tmp_path, scenario="success",
     protocol = RequestedTeamProtocol({"name": "get_team_stats", "question": cases[0]["question"]})
 
     class SyntheticAdmission:
+        cases: ClassVar[list[dict]]
         contract_sha256 = "synthetic-load"
 
         async def verify_environment(self, identity):
