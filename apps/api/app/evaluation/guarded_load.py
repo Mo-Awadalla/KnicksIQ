@@ -41,6 +41,7 @@ from app.evaluation.guarded_release import (
     FROZEN,
     GOLD,
     KNOWN_COST_AUTHORIZATION_SHA256,
+    RECONCILIATION_AUTHORIZATION_SHA256,
     SOURCES,
     VERSION,
     Admission,
@@ -623,7 +624,10 @@ async def run(args) -> None:
         "Load does not use the SAME original admitted aggregate goal",
     )
     budget = VerificationBudget(goal / "goal.sqlite", binding=binding_sha)
-    if binding.get("successor", {}).get("authorization_sha256") == KNOWN_COST_AUTHORIZATION_SHA256:
+    if binding.get("successor", {}).get("authorization_sha256") in {
+        KNOWN_COST_AUTHORIZATION_SHA256,
+        RECONCILIATION_AUTHORIZATION_SHA256,
+    }:
         admitted = validate_admitted_goal(goal, budget, binding)
         require(
             Decimal(admitted["historical_floor_nusd"]) / 1_000_000_000 >= ledger.floor,
@@ -682,7 +686,10 @@ async def run(args) -> None:
         request_ids=identity["request_ids"],
         run_dir=run_dir,
     )
-    if binding.get("successor", {}).get("authorization_sha256") == KNOWN_COST_AUTHORIZATION_SHA256:
+    if binding.get("successor", {}).get("authorization_sha256") in {
+        KNOWN_COST_AUTHORIZATION_SHA256,
+        RECONCILIATION_AUTHORIZATION_SHA256,
+    }:
         session.revalidate = lambda: validate_admitted_goal(
             goal, budget, goal_context(root, goal, args)[1]
         )
