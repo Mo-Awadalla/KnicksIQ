@@ -11,6 +11,7 @@ To swap in a real LLM, subclass `LLMAdapter` and inject it.
 from __future__ import annotations
 
 import json
+import math
 import ssl
 import urllib.error
 import urllib.request
@@ -60,6 +61,9 @@ class OpenAICompatibleLLMAdapter(LLMAdapter):
         response_format_json: bool = True,
         max_tokens: int = 500,
         reasoning_effort: str | None = None,
+        provider_route: str | None = None,
+        max_prompt_price: float | None = None,
+        max_completion_price: float | None = None,
     ) -> None:
         self.base_url = base_url.rstrip("/")
         self.api_key = api_key
@@ -68,6 +72,21 @@ class OpenAICompatibleLLMAdapter(LLMAdapter):
         self.response_format_json = response_format_json
         self.max_tokens = max_tokens
         self.reasoning_effort = reasoning_effort
+        self.provider_route = provider_route
+        self.max_prompt_price = max_prompt_price
+        self.max_completion_price = max_completion_price
+        policy = (provider_route, max_prompt_price, max_completion_price)
+        if any(value is not None for value in policy):
+            if not isinstance(provider_route, str) or not provider_route.strip():
+                raise ValueError("A pinned OpenRouter route is required with price caps")
+            if any(
+                not isinstance(price, (int, float))
+                or isinstance(price, bool)
+                or not math.isfinite(price)
+                or price <= 0
+                for price in (max_prompt_price, max_completion_price)
+            ):
+                raise ValueError("Both finite positive OpenRouter price caps are required")
         self.response_schema: dict[str, Any] | None = None
         self.last_metadata: dict[str, Any] = {}
 
@@ -76,7 +95,7 @@ class OpenAICompatibleLLMAdapter(LLMAdapter):
 
         return await asyncio.to_thread(self._generate_sync, system, user)
 
-    def _generate_sync(self, system: str, user: str) -> str:
+    def _request_body(self, system: str, user: str) -> dict[str, Any]:
         payload_body: dict[str, Any] = {
             "model": self.model,
             "messages": [
@@ -87,10 +106,23 @@ class OpenAICompatibleLLMAdapter(LLMAdapter):
             "max_tokens": self.max_tokens,
         }
         if "openrouter.ai" in self.base_url:
-            # The configured OpenRouter account is allowed to use providers that
-            # collect data. Keep fallbacks enabled, while requiring parameter
-            # support below whenever a structured response is requested.
             payload_body["provider"] = {"allow_fallbacks": True, "sort": "latency"}
+            if self.provider_route is not None:
+                # Caps use OpenRouter's USD-per-million-token units. An exact
+                # route excludes fallback providers and per-request surcharges.
+                payload_body["provider"] = {
+                    "only": [self.provider_route],
+                    "order": [self.provider_route],
+                    "allow_fallbacks": False,
+                    "require_parameters": True,
+                    "max_price": {
+                        "prompt": self.max_prompt_price,
+                        "completion": self.max_completion_price,
+                        "request": 0,
+                    },
+                }
+                if self.provider_route.endswith("/fp8"):
+                    payload_body["provider"]["quantizations"] = ["fp8"]
             if self.reasoning_effort == "none":
                 # Optional reasoning models need not accept the "none" effort.
                 payload_body["reasoning"] = {"enabled": False}
@@ -107,7 +139,10 @@ class OpenAICompatibleLLMAdapter(LLMAdapter):
             payload_body["response_format"] = {"type": "json_object"}
             if "openrouter.ai" in self.base_url:
                 payload_body["provider"]["require_parameters"] = True
-        payload = json.dumps(payload_body).encode("utf-8")
+        return payload_body
+
+    def _generate_sync(self, system: str, user: str) -> str:
+        payload = json.dumps(self._request_body(system, user)).encode("utf-8")
         req = urllib.request.Request(
             f"{self.base_url}/chat/completions",
             data=payload,
@@ -166,6 +201,9 @@ def get_llm_adapter(*, response_format_json: bool = True) -> LLMAdapter:
         response_format_json=response_format_json,
         max_tokens=getattr(settings, "rag_generation_max_output_tokens", 500),
         reasoning_effort=settings.ai_reasoning_effort,
+        provider_route=settings.openrouter_provider_route,
+        max_prompt_price=settings.openrouter_max_prompt_price,
+        max_completion_price=settings.openrouter_max_completion_price,
     )
 
 

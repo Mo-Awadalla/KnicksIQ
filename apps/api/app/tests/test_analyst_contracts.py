@@ -129,6 +129,35 @@ async def make_tools(db, question="Give me an interesting stat", state=None):
     return tools, player
 
 
+async def test_single_game_discovery_cannot_answer_complete_window_leader(db_session, monkeypatch):
+    from app.services.evidence_contracts import ClaimUse
+
+    tools, _ = await make_tools(db_session, "Who led the team in scoring over the last 2 games?")
+    result = await tools.execute(
+        ToolCall(
+            name="discover_facts", question=tools.question, metric="points", aggregation="total"
+        )
+    )
+    assert result.claims
+    partial = result.claims[0]
+    loop = AnalystLoop(tools, [])
+    loop.results = [result]
+    loop.sent_claims = {partial.claim_id: partial}
+    answer = ProposedAnswer(
+        text=partial.statement,
+        claims=[ClaimUse(claim_id=partial.claim_id, displayed_value=partial.value)],
+        evidence_ids=partial.supporting_evidence_ids,
+    )
+
+    def forbidden():
+        pytest.fail("Incomplete leader scope must fail before a model review")
+
+    monkeypatch.setattr(analyst_loop, "get_llm_adapter", forbidden)
+    supported, reason = await loop.validate(answer)
+    assert not supported and "complete requested game population" in reason
+    assert loop.calls == 0
+
+
 async def test_populations_and_scope_cannot_be_changed_by_model(db_session):
     tools, player = await make_tools(db_session, "Brunson regular season points")
     result = await tools.execute(ToolCall(name="get_player_stats", question="Towns playoffs"))
@@ -310,15 +339,34 @@ async def test_ten_short_prior_messages_still_reach_writer(db_session, local_red
         {"role": "user" if index % 2 == 0 else "assistant", "content": f"Turn {index}"}
         for index in range(10)
     ]
-    result = await AnalystLoop(tools, context).run()
+    loop = AnalystLoop(tools, context)
+    result = await loop.run()
     assert result["llm_validated"], result
     assert adapter.prompts[0]["context"] == context
+    writer = adapter.prompts[1]
+    assert writer["context"] == context
+    assert writer["claims"] and writer["candidates"]
+    assert writer["capabilities"]["scope"] == {
+        key: value for key, value in tools.manifest()["scope"].items() if value is not None
+    }
+    assert writer["results"][0]["scope"] == {
+        key: value for key, value in loop.results[0].scope.items() if value is not None
+    }
 
 
 async def test_provider_schema_growth_uses_factual_fallback(db_session, local_redis, monkeypatch):
     await local_redis.set(f"ai-budget:{datetime.now(UTC):%Y-%m}", 0)
     monkeypatch.setattr(get_settings(), "analyst_provider_format", "json_schema")
     tools, _ = await make_tools(db_session)
+    original_schema = analyst_loop.scoped_response_schema
+
+    def oversized_schema(schema, payload):
+        result = original_schema(schema, payload)
+        if payload.get("results"):
+            result["description"] = "x" * (get_settings().analyst_input_tokens + 1)
+        return result
+
+    monkeypatch.setattr(analyst_loop, "scoped_response_schema", oversized_schema)
 
     class SchemaAdapter(ScriptedAdapter):
         response_schema: dict | None = None
@@ -824,3 +872,74 @@ def test_release_gates_require_actual_metrics_and_human_labels():
     assert not gates["heldout_reviewer"]
     assert not gates["unsupported_claims"]
     assert not gates["latency"]
+
+
+@pytest.mark.parametrize(
+    "cost", [None, "0.001", True, False, float("nan"), float("inf"), -float("inf"), -1]
+)
+async def test_malformed_budget_cost_retains_reservation(local_redis, monkeypatch, cost):
+    monkeypatch.setattr(get_settings(), "openrouter_monthly_cutoff_usd", 0.08)
+    key = f"ai-budget:{datetime.now(UTC):%Y-%m}"
+    await local_redis.set(key, 0)
+    reservation = await BudgetReservation.reserve(0.02)
+    assert reservation is not None
+    await reservation.settle(cost)
+    assert float(await local_redis.get(key)) == pytest.approx(0.02)
+    assert float(
+        await local_redis.hget(key + ":reservations", reservation.identity)
+    ) == pytest.approx(0.02)
+
+
+@pytest.mark.parametrize(
+    "amount", [None, "0.01", True, False, float("nan"), float("inf"), -float("inf"), -1, 0]
+)
+async def test_invalid_reservation_bounds_fail_before_redis(monkeypatch, amount):
+    from app.services import analyst_budget
+
+    async def forbidden():
+        pytest.fail("Invalid reservation must fail before Redis access")
+
+    monkeypatch.setattr(analyst_budget, "_redis", forbidden)
+    with pytest.raises(ValueError, match="finite and positive"):
+        await BudgetReservation.reserve(amount)
+
+
+@pytest.mark.parametrize("cutoff", [True, "2", float("nan"), float("inf"), -1, 0])
+async def test_invalid_monthly_cutoff_fails_before_redis(monkeypatch, cutoff):
+    from app.services import analyst_budget
+
+    async def forbidden():
+        pytest.fail("Invalid cutoff must fail before Redis access")
+
+    monkeypatch.setattr(analyst_budget, "_redis", forbidden)
+    monkeypatch.setattr(get_settings(), "openrouter_monthly_cutoff_usd", cutoff)
+    with pytest.raises(ValueError, match="Monthly cutoff"):
+        await BudgetReservation.reserve(0.01)
+
+
+@pytest.mark.parametrize(
+    "cost", ["0.001", True, float("nan"), float("inf"), 10**1000, -(10**1000), -1, None]
+)
+async def test_malformed_provider_cost_remains_unknown_in_loop(
+    db_session, local_redis, monkeypatch, cost
+):
+    from app.services.evidence_contracts import Action
+
+    key = f"ai-budget:{datetime.now(UTC):%Y-%m}"
+    await local_redis.set(key, 0)
+    tools, _ = await make_tools(db_session)
+    adapter = ScriptedAdapter()
+    adapter.last_metadata["usage"]["cost"] = cost
+    monkeypatch.setattr(analyst_loop, "get_llm_adapter", lambda: adapter)
+    loop = AnalystLoop(tools, [])
+    await loop.model(Action)
+    assert loop.costs == [None]
+    await loop.settle()
+    assert float(await local_redis.get(key)) == pytest.approx(
+        get_settings().analyst_call_reservation_usd
+    )
+
+
+@pytest.mark.parametrize("value", [10**1000, -(10**1000)])
+def test_out_of_range_integer_cost_is_rejected(value):
+    assert not analyst_budget.valid_reported_cost(value)

@@ -535,7 +535,8 @@ class AnalystTools:
                 scope=scope.model_dump(mode="json"),
             )
         if call.name == "search_archive":
-            return await self.search(call, scope, games)
+            unit_records = await build_archive_units(self.db, games, self.release.version)
+            return await self.search(call, scope, games, unit_records=unit_records)
         if call.name == "get_team_stats":
             return await self.team(scope, games)
         if call.name == "discover_facts":
@@ -1650,11 +1651,18 @@ class AnalystTools:
         query = self.question[: max(0, 1200 - len(expansion) - 4)]
         query += " OR " + expansion if expansion else ""
         try:
-            async with asyncio.timeout(2):
+            # Integrity preparation shares the configured investigation budget;
+            # the short lexical deadline must not truncate full SQL verification.
+            async with asyncio.timeout(get_settings().analyst_investigation_seconds):
+                unit_records = (
+                    await build_archive_units(self.db, games, self.release.version) if games else []
+                )
+            async with asyncio.timeout(4):
                 self.discovery = await self.search(
                     ToolCall(name="search_archive", question=query),
                     scope,
                     games,
+                    unit_records=unit_records,
                     local_only=True,
                     purpose="canonical_discovery",
                 )
@@ -1691,6 +1699,7 @@ class AnalystTools:
         scope: ResolvedQuery,
         games: list[Game],
         *,
+        unit_records: list[dict[str, Any]],
         local_only: bool = False,
         purpose: str = "analyst_search",
     ) -> ToolResult:
@@ -1698,10 +1707,6 @@ class AnalystTools:
         filters["game_ids"] = [g.id for g in games]
         filters["unanchored_game_reference"] = (
             scope.clarification_reason == "missing_conversation_game"
-        )
-        # One verified corpus backs both lexical retrieval and receipt admission.
-        unit_records = (
-            await build_archive_units(self.db, games, self.release.version) if games else []
         )
         lexical = (
             await search_archive_lexical(
