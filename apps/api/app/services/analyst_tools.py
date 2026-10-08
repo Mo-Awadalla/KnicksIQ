@@ -1657,7 +1657,7 @@ class AnalystTools:
                 unit_records = (
                     await build_archive_units(self.db, games, self.release.version) if games else []
                 )
-            async with asyncio.timeout(2):
+            async with asyncio.timeout(4):
                 self.discovery = await self.search(
                     ToolCall(name="search_archive", question=query),
                     scope,
