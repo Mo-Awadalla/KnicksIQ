@@ -69,6 +69,55 @@ def scoped_response_schema(schema: type[BaseModel], payload: dict[str, Any]) -> 
     """Constrain provider output to references and complete values actually supplied."""
     result = compact_schema(schema)
     definitions = result.get("$defs", {})
+    if schema is Action:
+        from app.services.evidence_contracts import PLAYER_METRICS
+
+        # Optional fields retain runtime defaults, but each action must be executable.
+        result["anyOf"] = [
+            {
+                "properties": {
+                    "action": {"enum": ["call_tools"]},
+                    "tools": {"minItems": 1},
+                    "answer": {"type": "null"},
+                },
+                "required": ["tools"],
+            },
+            {
+                "properties": {
+                    "action": {
+                        "enum": [
+                            action
+                            for action in result["properties"]["action"]["enum"]
+                            if action != "call_tools"
+                        ]
+                    },
+                    "tools": {"maxItems": 0},
+                    "answer": {"$ref": "#/$defs/ProposedAnswer"},
+                },
+                "required": ["answer"],
+            },
+        ]
+        player_tools = ["get_player_stats", "compare_windows"]
+        tool_schema = definitions["ToolCall"]
+        tool_schema["anyOf"] = [
+            {
+                "properties": {
+                    "name": {"enum": player_tools},
+                    "metric": {"enum": [*PLAYER_METRICS, None]},
+                }
+            },
+            {
+                "properties": {
+                    "name": {
+                        "enum": [
+                            name
+                            for name in tool_schema["properties"]["name"]["enum"]
+                            if name not in player_tools
+                        ]
+                    }
+                }
+            },
+        ]
     uses = []
     for claim in payload["claims"]:
         uses.append(
@@ -180,6 +229,11 @@ class AnalystLoop:
         capabilities["scope"] = {
             key: value for key, value in capabilities["scope"].items() if value is not None
         }
+        if self.settings.analyst_provider_format == "json_schema":
+            # The external ToolCall schema already enumerates these same metrics.
+            # Do not crowd complete claim groups out with duplicate planning lists.
+            capabilities.pop("metrics", None)
+            capabilities.pop("team_metrics", None)
         payload: dict[str, Any] = {
             "schema": (
                 {"title": schema.__name__}
@@ -195,7 +249,19 @@ class AnalystLoop:
         }
         if review:
             # Fresh context: no writer history, tool planning, or self-declared support verdicts.
-            payload["proposed_answer"] = answer.model_dump(mode="json") if answer else None
+            # Complete claim records supply scope, population and metric authority.
+            # The reviewer needs coverage limits, not the writer's tool-planning manifest.
+            payload["capabilities"] = {
+                key: capabilities[key] for key in ("release_id", "known_gaps")
+            }
+            # Text and suggestions are supplied exactly once below. Keep every
+            # declared value and citation here; do not duplicate whole-answer prose
+            # beside review_spans and its scoped-schema enum.
+            payload["proposed_answer"] = (
+                answer.model_dump(mode="json", exclude={"text", "follow_up_questions"})
+                if answer
+                else None
+            )
             # Preserve punctuation and whitespace at backend-defined review boundaries.
             # A span fails if any assertion within it is unsupported.
             payload["review_spans"] = (

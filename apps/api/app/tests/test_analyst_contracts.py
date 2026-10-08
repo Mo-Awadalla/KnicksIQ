@@ -264,7 +264,7 @@ class ScriptedAdapter:
                 {
                     "assertions": [
                         {
-                            "text": answer["text"],
+                            "text": "".join(payload["review_spans"]),
                             "verdict": "supported",
                             "assertion_type": "factual",
                             "offending_text": None,
@@ -537,7 +537,7 @@ async def test_repair_is_rechecked_and_never_investigates(
                 value["answer"]["text"] += " A new tactic caused this."
             if (
                 payload["schema"]["title"] == "AnswerReview"
-                and "tactic" in payload["proposed_answer"]["text"]
+                and "tactic" in "".join(payload["review_spans"])
             ):
                 value["assertions"][0].update(
                     verdict="unsupported",

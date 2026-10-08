@@ -503,3 +503,135 @@ async def test_strict_format_bounded_complete_population_http(
     assert all(claim["release_id"] == release.version for claim in delivered.values())
     assert adapter.inputs and adapter.inputs[-1]["user"]["schema"]["title"] == "AnswerReview"
     assert all(request["input_bytes"] <= 8000 for request in adapter.inputs)
+
+
+async def test_full_archive_record_reaches_independent_review_http(
+    client,
+    local_redis,  # noqa: F811
+    monkeypatch,
+    tmp_path,
+    record_property,
+):
+    """The captured 201 draft shape must reach review with both whole populations."""
+    settings = configure(monkeypatch)
+    monkeypatch.setattr(settings, "analyst_provider_format", "json_schema")
+    async with AsyncSessionLocal() as db:
+        loaded = await load_release_bundle(db, BUNDLE, expected_sha256=SHA, activate=True)
+        games = (
+            (
+                await db.execute(
+                    select(Game)
+                    .where(Game.release_id == loaded.release_id)
+                    .order_by(Game.game_date, Game.nba_game_id)
+                )
+            )
+            .scalars()
+            .all()
+        )
+    population = {game.id for game in games}
+    wins = sum(
+        (game.home_score > game.away_score) == (game.home_team_id == "NYK")
+        for game in games
+    )
+    losses = len(games) - wins
+    question = "What was the Knicks record this season?"
+    text = (
+        f"In the available 2025-26 archive, the Knicks went {wins}-{losses} across "
+        f"{len(games)} archived games ({games[0].game_date} through "
+        f"{games[-1].game_date}). This covers the archived regular-season and playoff "
+        "games in the release, not necessarily the complete NBA season."
+    )
+    followups = [
+        "What was the Knicks' home record in the 2025-26 archive?",
+        "What was the Knicks' record in the 2025-26 playoffs?",
+    ]
+
+    class RecordAdapter(SyntheticAdapter):
+        response_schema = None
+
+        async def generate(self, *, system, user):
+            payload = json.loads(user)
+            actual_bytes = len((system + user).encode()) + encoded_size(self.response_schema)
+            self.inputs.append(
+                {"system": system, "user": payload, "input_bytes": actual_bytes}
+            )
+            assert actual_bytes <= 8000
+            if payload["schema"]["title"] == "AnswerReview":
+                assert "".join(payload["review_spans"]) == text
+                assert payload["follow_up_questions"] == followups
+                assert {c["metric_id"]: c["value"] for c in payload["claims"]} == {
+                    "wins": wins,
+                    "losses": losses,
+                }
+                assert all(set(c["game_ids"]) == population for c in payload["claims"])
+                return json.dumps(
+                    {
+                        "assertions": [
+                            {
+                                "text": span,
+                                "assertion_type": "factual",
+                                "verdict": "supported",
+                                "offending_text": None,
+                                "supporting_claim_ids": [
+                                    c["claim_id"] for c in payload["claims"]
+                                ],
+                                "supporting_evidence_ids": [],
+                                "reason": "Independent SQL totals and complete archive population.",
+                            }
+                            for span in payload["review_spans"]
+                        ],
+                        "follow_up_reviews": [
+                            {
+                                "text": followup,
+                                "verdict": "insufficient_evidence",
+                                "reason": "These subsets were not independently queried.",
+                            }
+                            for followup in followups
+                        ],
+                    }
+                )
+            if not payload["claims"]:
+                return json.dumps(
+                    {"action": "call_tools", "tools": [self.tool], "answer": None}
+                )
+            by_metric = {c["metric_id"]: c for c in payload["claims"]}
+            return json.dumps(
+                {
+                    "text": text,
+                    "claims": [
+                        {
+                            "claim_id": by_metric[metric]["claim_id"],
+                            "displayed_value": value,
+                            "decimal_places": None,
+                        }
+                        for metric, value in (("wins", wins), ("losses", losses))
+                    ],
+                    "evidence_ids": [payload["evidence"][0]["evidence_id"]],
+                    "fact_ids": [],
+                    "follow_up_questions": followups,
+                }
+            )
+
+    adapter = RecordAdapter(
+        {"name": "get_team_stats", "question": question, "metric": "wins", "aggregation": "total"}
+    )
+    monkeypatch.setattr(analyst_loop, "get_llm_adapter", lambda: adapter)
+    receipt = await exchange(client, local_redis, adapter, "full-archive-record", question)
+    save_receipt(tmp_path, record_property, "full-archive-record", receipt)
+    assert_committed_replay(receipt)
+    assert receipt["response"]["llm_validated"]
+    assert receipt["response"]["answer"] == text
+    assert receipt["response"]["follow_up_questions"] == []
+    assert receipt["capture"]["turn"]["model_calls"] == 3
+    assert adapter.inputs[-1]["user"]["schema"]["title"] == "AnswerReview"
+    delivered = {
+        c["metadata"]["claim"]["metric_id"]: c["metadata"]["claim"]
+        for c in receipt["response"]["citations"]
+        if c["type"] == "verified_claim"
+    }
+    assert {metric: c["value"] for metric, c in delivered.items()} == {
+        "wins": wins,
+        "losses": losses,
+    }
+    assert all(set(c["game_ids"]) == population for c in delivered.values())
+    assert all(c["sample_size"] == len(games) for c in delivered.values())

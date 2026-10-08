@@ -1,0 +1,294 @@
+{
+  "empty_tool_actions": [
+    {
+      "ticket": 199,
+      "case_id": "date_range_last_n-008",
+      "content_sha256": "d8393a33d4583c271d47bd3a8cf174688322819db9c04c8d124367886242fdcd",
+      "content": "{\"action\":\"call_tools\",\"answer\":null}",
+      "scope": {
+        "claims": [],
+        "candidates": [],
+        "evidence": []
+      }
+    },
+    {
+      "ticket": 202,
+      "case_id": "exact_statistics-002",
+      "content_sha256": "d8393a33d4583c271d47bd3a8cf174688322819db9c04c8d124367886242fdcd",
+      "content": "{\"action\":\"call_tools\",\"answer\":null}",
+      "scope": {
+        "claims": [],
+        "candidates": [],
+        "evidence": [
+          {
+            "evidence_id": "2025-26.20260928.1:lexical:units:archive-unit:3714bfea460436e46f20b36840e53b3caa4295164dc777020d12782fe36d9c43"
+          }
+        ]
+      }
+    },
+    {
+      "ticket": 203,
+      "case_id": "exact_statistics-004",
+      "content_sha256": "d8393a33d4583c271d47bd3a8cf174688322819db9c04c8d124367886242fdcd",
+      "content": "{\"action\":\"call_tools\",\"answer\":null}",
+      "scope": {
+        "claims": [],
+        "candidates": [],
+        "evidence": [
+          {
+            "evidence_id": "2025-26.20260928.1:lexical:units:archive-unit:3714bfea460436e46f20b36840e53b3caa4295164dc777020d12782fe36d9c43"
+          }
+        ]
+      }
+    },
+    {
+      "ticket": 210,
+      "case_id": "exact_statistics-013",
+      "content_sha256": "d8393a33d4583c271d47bd3a8cf174688322819db9c04c8d124367886242fdcd",
+      "content": "{\"action\":\"call_tools\",\"answer\":null}",
+      "scope": {
+        "claims": [],
+        "candidates": [],
+        "evidence": [
+          {
+            "evidence_id": "2025-26.20260928.1:lexical:units:archive-unit:3714bfea460436e46f20b36840e53b3caa4295164dc777020d12782fe36d9c43"
+          }
+        ]
+      }
+    },
+    {
+      "ticket": 211,
+      "case_id": "exact_statistics-015",
+      "content_sha256": "d8393a33d4583c271d47bd3a8cf174688322819db9c04c8d124367886242fdcd",
+      "content": "{\"action\":\"call_tools\",\"answer\":null}",
+      "scope": {
+        "claims": [],
+        "candidates": [],
+        "evidence": [
+          {
+            "evidence_id": "2025-26.20260928.1:lexical:box_scores:122"
+          },
+          {
+            "evidence_id": "2025-26.20260928.1:lexical:box_scores:136"
+          },
+          {
+            "evidence_id": "2025-26.20260928.1:lexical:box_scores:161"
+          },
+          {
+            "evidence_id": "2025-26.20260928.1:lexical:box_scores:191"
+          },
+          {
+            "evidence_id": "2025-26.20260928.1:lexical:box_scores:220"
+          }
+        ]
+      }
+    },
+    {
+      "ticket": 217,
+      "case_id": "exact_statistics-017",
+      "content_sha256": "d8393a33d4583c271d47bd3a8cf174688322819db9c04c8d124367886242fdcd",
+      "content": "{\"action\":\"call_tools\",\"answer\":null}",
+      "scope": {
+        "claims": [],
+        "candidates": [],
+        "evidence": [
+          {
+            "evidence_id": "2025-26.20260928.1:lexical:box_scores:119"
+          },
+          {
+            "evidence_id": "2025-26.20260928.1:lexical:box_scores:133"
+          },
+          {
+            "evidence_id": "2025-26.20260928.1:lexical:box_scores:160"
+          },
+          {
+            "evidence_id": "2025-26.20260928.1:lexical:box_scores:188"
+          },
+          {
+            "evidence_id": "2025-26.20260928.1:lexical:box_scores:2"
+          }
+        ]
+      }
+    },
+    {
+      "ticket": 218,
+      "case_id": "exact_statistics-018",
+      "content_sha256": "d8393a33d4583c271d47bd3a8cf174688322819db9c04c8d124367886242fdcd",
+      "content": "{\"action\":\"call_tools\",\"answer\":null}",
+      "scope": {
+        "claims": [],
+        "candidates": [],
+        "evidence": [
+          {
+            "evidence_id": "2025-26.20260928.1:lexical:units:archive-unit:3714bfea460436e46f20b36840e53b3caa4295164dc777020d12782fe36d9c43"
+          }
+        ]
+      }
+    },
+    {
+      "ticket": 223,
+      "case_id": "exact_statistics-021",
+      "content_sha256": "d8393a33d4583c271d47bd3a8cf174688322819db9c04c8d124367886242fdcd",
+      "content": "{\"action\":\"call_tools\",\"answer\":null}",
+      "scope": {
+        "claims": [],
+        "candidates": [],
+        "evidence": [
+          {
+            "evidence_id": "2025-26.20260928.1:lexical:box_scores:121"
+          },
+          {
+            "evidence_id": "2025-26.20260928.1:lexical:box_scores:135"
+          },
+          {
+            "evidence_id": "2025-26.20260928.1:lexical:box_scores:159"
+          },
+          {
+            "evidence_id": "2025-26.20260928.1:lexical:box_scores:190"
+          },
+          {
+            "evidence_id": "2025-26.20260928.1:lexical:box_scores:219"
+          }
+        ]
+      }
+    },
+    {
+      "ticket": 224,
+      "case_id": "exact_statistics-025",
+      "content_sha256": "d8393a33d4583c271d47bd3a8cf174688322819db9c04c8d124367886242fdcd",
+      "content": "{\"action\":\"call_tools\",\"answer\":null}",
+      "scope": {
+        "claims": [],
+        "candidates": [],
+        "evidence": []
+      }
+    }
+  ],
+  "valid_tool_actions": [
+    {
+      "ticket": 200,
+      "case_id": "exact_statistics-001",
+      "content_sha256": "952cc8ddec3d9088c173c0beced85c552edb8159c887eba159ed725cfc80767c",
+      "content": "{\"action\":\"call_tools\",\"tools\":[{\"name\":\"get_team_stats\",\"question\":\"What was the Knicks record this season?\",\"metric\":\"wins\",\"aggregation\":\"total\",\"evidence_ids\":[]}],\"answer\":null}",
+      "scope": {
+        "claims": [],
+        "candidates": [],
+        "evidence": [
+          {
+            "evidence_id": "2025-26.20260928.1:lexical:units:archive-unit:3714bfea460436e46f20b36840e53b3caa4295164dc777020d12782fe36d9c43"
+          }
+        ]
+      }
+    },
+    {
+      "ticket": 204,
+      "case_id": "exact_statistics-007",
+      "content_sha256": "ea98334d70db88355b81fbd1358a04e66269039fe5daf459c39d454c371ef687",
+      "content": "{\"action\":\"call_tools\",\"tools\":[{\"name\":\"get_team_stats\",\"question\":\"How many games did the Knicks lose?\",\"metric\":\"losses\",\"aggregation\":\"total\",\"evidence_ids\":[]}],\"answer\":null}",
+      "scope": {
+        "claims": [],
+        "candidates": [],
+        "evidence": [
+          {
+            "evidence_id": "2025-26.20260928.1:lexical:units:archive-unit:3714bfea460436e46f20b36840e53b3caa4295164dc777020d12782fe36d9c43"
+          }
+        ]
+      }
+    },
+    {
+      "ticket": 207,
+      "case_id": "exact_statistics-012",
+      "content_sha256": "0d86c455754b2a8936fcc1ad058d367467fc172ca7ebb954ca66ff728949b4d7",
+      "content": "{\"action\":\"call_tools\",\"tools\":[{\"name\":\"get_team_stats\",\"question\":\"How many games did the Knicks score at least 120?\",\"metric\":\"points\",\"aggregation\":\"total\",\"evidence_ids\":[]}],\"answer\":null}",
+      "scope": {
+        "claims": [],
+        "candidates": [],
+        "evidence": [
+          {
+            "evidence_id": "2025-26.20260928.1:lexical:units:archive-unit:8a54bf4884e0f681f40f3dc6b8bfe284402494879db941625fdd563a0309896d"
+          }
+        ]
+      }
+    },
+    {
+      "ticket": 212,
+      "case_id": "exact_statistics-016",
+      "content_sha256": "a4db75a24466c4047c45a87eae4d35331e74e0b4bba6de88ebc9475b4327f80d",
+      "content": "{\"action\":\"call_tools\",\"tools\":[{\"name\":\"get_player_stats\",\"question\":\"What was Karl-Anthony Towns' rebounding average?\",\"metric\":\"rebounds\",\"aggregation\":\"average\",\"evidence_ids\":[\"2025-26.20260928.1:lexical:box_scores:119\",\"2025-26.20260928.1:lexical:box_scores:133\",\"2025-26.20260928.1:lexical:box_scores:160\",\"2025-26.20260928.1:lexical:box_scores:188\",\"2025-26.20260928.1:lexical:box_scores:2\"]}],\"answer\":null}",
+      "scope": {
+        "claims": [],
+        "candidates": [],
+        "evidence": [
+          {
+            "evidence_id": "2025-26.20260928.1:lexical:box_scores:119"
+          },
+          {
+            "evidence_id": "2025-26.20260928.1:lexical:box_scores:133"
+          },
+          {
+            "evidence_id": "2025-26.20260928.1:lexical:box_scores:160"
+          },
+          {
+            "evidence_id": "2025-26.20260928.1:lexical:box_scores:188"
+          },
+          {
+            "evidence_id": "2025-26.20260928.1:lexical:box_scores:2"
+          }
+        ]
+      }
+    },
+    {
+      "ticket": 219,
+      "case_id": "exact_statistics-019",
+      "content_sha256": "23473dcc065b1705c295da31a6528405757d0a81191eb4f61c3c10efb68e832c",
+      "content": "{\"action\":\"call_tools\",\"tools\":[{\"name\":\"get_team_stats\",\"question\":\"Who led the Knicks in rebounds?\",\"metric\":\"rebounds\",\"aggregation\":\"total\",\"evidence_ids\":[]}],\"answer\":null}",
+      "scope": {
+        "claims": [],
+        "candidates": [],
+        "evidence": [
+          {
+            "evidence_id": "2025-26.20260928.1:lexical:units:archive-unit:3714bfea460436e46f20b36840e53b3caa4295164dc777020d12782fe36d9c43"
+          }
+        ]
+      }
+    }
+  ],
+  "valid_grounded_answer_actions": [
+    {
+      "ticket": 205,
+      "case_id": "exact_statistics-007",
+      "content_sha256": "94516d8bd6d5078970bb42724ee1ce3c116eaeae69fdc8ef4b735f0bebd6ae85",
+      "content": "{\"action\":\"answer_from_available_evidence\",\"answer\":{\"text\":\"The Knicks lost 32 games across the 101 archived games in the 2025-26 all-phase archive (2025-10-22 through 2026-06-13).\",\"claims\":[{\"claim_id\":\"claim:c0b9630c2cc13ced25576e1d09dc66a79ef42213473cb89f575fd67f68937617\",\"displayed_value\":32,\"decimal_places\":null}],\"evidence_ids\":[\"2025-26.20260928.1:game:1\"],\"fact_ids\":[]} }",
+      "scope": {
+        "claims": [
+          {
+            "claim_id": "claim:c0b9630c2cc13ced25576e1d09dc66a79ef42213473cb89f575fd67f68937617",
+            "value": 32
+          }
+        ],
+        "candidates": [],
+        "evidence": [
+          {
+            "evidence_id": "2025-26.20260928.1:game:1"
+          }
+        ]
+      }
+    },
+    {
+      "ticket": 208,
+      "case_id": "exact_statistics-012",
+      "content_sha256": "62234ee1f4363651741e46e44208c1642f73a53f013a40de82f873d7d9af8145",
+      "content": "{\"action\":\"answer_from_available_evidence\",\"answer\":{\"text\":\"The Knicks scored at least 120 points in 37 of their 101 archived 2025-26 games.\",\"claims\":[{\"claim_id\":\"claim:9908d1f24f753ca8017258d103dfbf1a855e307c2e0fb3f2613fdf9134e2ccee\",\"displayed_value\":37,\"decimal_places\":null}],\"evidence_ids\":[],\"fact_ids\":[],\"follow_up_questions\":[\"How many of those 120-point games did the Knicks win?\",\"What was the Knicks' highest single-game point total in 2025-26?\"]}}",
+      "scope": {
+        "claims": [
+          {
+            "claim_id": "claim:9908d1f24f753ca8017258d103dfbf1a855e307c2e0fb3f2613fdf9134e2ccee",
+            "value": 37
+          }
+        ],
+        "candidates": [],
+        "evidence": []
+      }
+    }
+  ]
+}

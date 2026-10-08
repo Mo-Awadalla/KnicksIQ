@@ -20,3 +20,20 @@ redirects and service-worker bypass, and save per-test destination evidence.
 Cancellation simulations must reach the mock provider before shortening its
 response wait. Expiring source preparation or admission first creates no
 transmitted-call receipt and cannot prove uncertain-cost reconciliation.
+
+Action-schema regressions retain all nine captured empty-tool replies from the
+live prerequisite run. The emitted schema must reject each reply, reject mixed
+tool/answer branches, and admit valid captured tool calls and grounded answers.
+Tool actions require at least one valid call and no answer; answer actions
+require a valid answer and no calls. Runtime branch and metric checks remain
+independent defenses. Validate actual new provider replies against the exact
+schema sent; endpoint metadata alone does not establish schema enforcement.
+
+The separate full-archive record regression preserves both wins and losses over
+all 101 games. Its captured draft parsed and passed structural checks, but the
+complete reviewer input required 8,929 bytes against the unchanged 8,000-byte
+cap. Reviewer packaging must retain every immutable claim and reference while
+omitting writer-planning metadata and duplicate text already present in exact
+review spans. The network-disabled captured replay reaches review at 7,871
+bytes. This proves reachability, not live-model semantic correctness; release
+evaluation still requires newly captured, reviewed answers.
