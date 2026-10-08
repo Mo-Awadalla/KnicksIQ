@@ -426,7 +426,7 @@ async def test_primary_review_requires_every_selected_game(
                 {
                     "assertions": [
                         {
-                            "text": payload["proposed_answer"]["text"],
+                            "text": "".join(payload["review_spans"]),
                             "assertion_type": "factual",
                             "verdict": "supported",
                             "offending_text": None,
