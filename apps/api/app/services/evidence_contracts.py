@@ -16,6 +16,8 @@ PlayerMetric = Literal[
     "steals",
     "blocks",
     "three_pointers_made",
+    "three_point_percentage",
+    "starts",
     "plus_minus",
     "minutes",
     "double_doubles",

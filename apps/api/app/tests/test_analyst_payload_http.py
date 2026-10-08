@@ -11,6 +11,7 @@ from app.core.db import AsyncSessionLocal
 from app.evaluation.trace_capture import capture_turn
 from app.models.box_score import PlayerGameStat
 from app.models.game import Game
+from app.models.player import Player
 from app.services import analyst_loop
 from app.services.analyst_tools import AnalystTools
 from app.services.evidence_contracts import Evidence
@@ -18,6 +19,7 @@ from app.services.release_bundle import load_release_bundle
 from app.tests.test_analyst_contracts import local_redis  # noqa: F401
 from app.tests.test_canonical_narrative_http import BUNDLE, SHA
 from app.tests.test_player_intelligence import _seed_release_stats
+from jsonschema import Draft202012Validator
 from sqlalchemy import select
 
 
@@ -628,3 +630,180 @@ async def test_full_archive_record_reaches_independent_review_http(
     }
     assert all(set(c["game_ids"]) == population for c in delivered.values())
     assert all(c["sample_size"] == len(games) for c in delivered.values())
+
+
+@pytest.mark.parametrize(
+    "scenario", ["archive-points", "observed-double-doubles", "three-point-percentage", "starts"]
+)
+async def test_requested_scalar_survives_strict_planning_http(
+    client,
+    local_redis,  # noqa: F811
+    monkeypatch,
+    tmp_path,
+    record_property,
+    scenario,
+):
+    settings = configure(monkeypatch)
+    monkeypatch.setattr(settings, "analyst_provider_format", "json_schema")
+    async with AsyncSessionLocal() as db:
+        if scenario in {"three-point-percentage", "starts"}:
+            release, _ = await _seed_release_stats(db)
+            release_id = release.id
+        else:
+            loaded = await load_release_bundle(db, BUNDLE, expected_sha256=SHA, activate=True)
+            release_id = loaded.release_id
+        games = (
+            (
+                await db.execute(
+                    select(Game)
+                    .where(Game.release_id == release_id)
+                    .order_by(Game.game_date, Game.nba_game_id)
+                )
+            )
+            .scalars()
+            .all()
+        )
+        if scenario == "archive-points":
+            assert len(games) == 101
+            value = sum(
+                game.home_score if game.home_team_id == "NYK" else game.away_score for game in games
+            )
+            population = {game.id for game in games}
+            question = "How many total points did the Knicks score?"
+            tool, metric, claim_metric = "get_team_stats", "points", "points"
+        else:
+            rows = (
+                (
+                    await db.execute(
+                        select(PlayerGameStat)
+                        .join(Player, Player.id == PlayerGameStat.player_id)
+                        .where(
+                            PlayerGameStat.release_id == release_id,
+                            Player.full_name == "Karl-Anthony Towns",
+                            PlayerGameStat.minutes > 0,
+                        )
+                        .order_by(PlayerGameStat.game_id)
+                    )
+                )
+                .scalars()
+                .all()
+            )
+            if scenario == "observed-double-doubles":
+                # An absent archive row is unknown, not a zero or a reason to hide
+                # the verified total over the remaining observed appearances.
+                await db.delete(rows.pop())
+                await db.commit()
+            population = {row.game_id for row in rows}
+            tool = "get_player_stats"
+            if scenario == "observed-double-doubles":
+                value = sum(
+                    sum(
+                        getattr(row, stat) >= 10
+                        for stat in ("points", "rebounds", "assists", "steals", "blocks")
+                    )
+                    >= 2
+                    for row in rows
+                )
+                question = "How many double-doubles did Karl-Anthony Towns have?"
+                metric, claim_metric = "double_doubles", "double_doubles:total"
+            elif scenario == "three-point-percentage":
+                value = (
+                    sum(row.three_pointers_made for row in rows)
+                    / sum(row.three_pointers_attempted for row in rows)
+                    * 100
+                )
+                question = "What was Karl-Anthony Towns' three-point percentage?"
+                metric = claim_metric = "three_point_percentage"
+            else:
+                for index, row in enumerate(rows):
+                    row.starter = index < 2
+                await db.commit()
+                value = 2
+                question = "How many games did Karl-Anthony Towns start?"
+                metric = claim_metric = "starts"
+    text = f"The available archive shows {value} for the requested statistic."
+
+    class ScalarAdapter:
+        last_metadata = {"usage": {"cost": 0}, "provider": "synthetic-scalar-regression"}
+
+        def __init__(self):
+            self.inputs = []
+            self.response_schema = None
+
+        async def generate(self, *, system, user):
+            payload = json.loads(user)
+            actual_bytes = len((system + user).encode()) + encoded_size(self.response_schema)
+            self.inputs.append({"system": system, "user": payload, "input_bytes": actual_bytes})
+            assert actual_bytes <= settings.analyst_input_tokens
+            if payload["schema"]["title"] == "AnswerReview":
+                response = {
+                    "assertions": [
+                        {
+                            "text": text,
+                            "assertion_type": "factual",
+                            "verdict": "supported",
+                            "offending_text": None,
+                            "supporting_claim_ids": [c["claim_id"] for c in payload["claims"]],
+                            "supporting_evidence_ids": [],
+                            "reason": "Independent SQL value and complete population match.",
+                        }
+                    ],
+                    "follow_up_reviews": [],
+                }
+            elif not payload["claims"]:
+                if payload["results"]:
+                    raise ValueError("The requested backend claim was dropped before drafting")
+                response = {
+                    "action": "call_tools",
+                    "tools": [
+                        {
+                            "name": tool,
+                            "question": question,
+                            "metric": metric,
+                            "aggregation": "total",
+                        }
+                    ],
+                    "answer": None,
+                }
+            else:
+                claim = next(c for c in payload["claims"] if c["metric_id"] == claim_metric)
+                assert claim["value"] == value
+                assert set(claim["game_ids"]) == population
+                assert claim["sample_size"] == len(population)
+                response = {
+                    "text": text,
+                    "claims": [
+                        {
+                            "claim_id": claim["claim_id"],
+                            "displayed_value": value,
+                            "decimal_places": None,
+                        }
+                    ],
+                    "evidence_ids": [],
+                    "fact_ids": [],
+                    "follow_up_questions": [],
+                }
+                if payload["schema"]["title"] == "Action":
+                    response = {
+                        "action": "answer_from_available_evidence",
+                        "tools": [],
+                        "answer": response,
+                    }
+            Draft202012Validator(self.response_schema).validate(response)
+            return json.dumps(response)
+
+    adapter = ScalarAdapter()
+    monkeypatch.setattr(analyst_loop, "get_llm_adapter", lambda: adapter)
+    receipt = await exchange(client, local_redis, adapter, f"requested-scalar-{scenario}", question)
+    save_receipt(tmp_path, record_property, f"requested-scalar-{scenario}", receipt)
+    assert receipt["response"]["llm_validated"], "The complete requested claim must reach review"
+    assert_committed_replay(receipt)
+    assert receipt["response"]["answer"] == text
+    delivered = {
+        citation["metadata"]["claim"]["metric_id"]: citation["metadata"]["claim"]
+        for citation in receipt["response"]["citations"]
+        if citation["type"] == "verified_claim"
+    }
+    assert delivered[claim_metric]["value"] == value
+    assert set(delivered[claim_metric]["game_ids"]) == population
+    assert delivered[claim_metric]["sample_size"] == len(population)

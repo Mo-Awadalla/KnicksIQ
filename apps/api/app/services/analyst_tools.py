@@ -652,10 +652,6 @@ class AnalystTools:
             aggregation = "total"
         else:
             aggregation = call.aggregation
-        if re.search(r"\bthree[ -]point percentage\b", self.question, re.I):
-            metric = "three_point_percentage"
-        elif re.search(r"\b(?:games?|times)\b.*\bstart(?:ed)?\b", self.question, re.I):
-            metric = "starts"
         return self.player(scope, games, metric, aggregation)
 
     def all_star_comparison(

@@ -665,9 +665,9 @@ class AnalystLoop:
 
     async def investigate(self) -> dict[str, Any]:
         while True:
-            if self._paired_record_claims() or self.tools.narrative:
-                # These complete backend populations are already investigated;
-                # draft directly without another tool/action schema.
+            if self._paired_record_claims() or self.tools.narrative or self.fallback_claims():
+                # Scope-matched backend facts need a final answer, not another
+                # planning schema competing with complete claims for the budget.
                 answer = await self.model(ProposedAnswer)
             else:
                 action = await self.model(Action)

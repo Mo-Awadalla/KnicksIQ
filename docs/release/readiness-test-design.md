@@ -57,3 +57,29 @@ growth must not crowd requested statistics out of the unchanged input cap.
 The reduced form passed actual synthetic tool and grounded-answer exchanges;
 the affected HTTP schema/population regressions passed 211 cases. These are
 prerequisites, not proof that the fresh live10 or original120 evaluation passes.
+
+Fresh integrated-candidate evaluation must distinguish protocol validity from
+question coverage. The frozen `2b881a3` prerequisite run produced 39 schema-valid
+responses but only four correct answers across the ten previously failing
+questions. Five complete aggregate claims were silently omitted when the
+action-planning schema crowded them out of the unchanged 8,000-byte input cap.
+The percentage case separately resolved to points, then rejected the available
+three-point tool metric before its derived calculation.
+
+Once existing scope/population checks establish sufficient backend facts, use
+the existing `ProposedAnswer` finalization path rather than spend another round
+on a tool-planning schema. Preserve every admitted immutable claim and complete
+population. Canonical query resolution and typed tool capabilities must agree
+on the already-supported three-point percentage and starts calculations before
+the metric mismatch guard runs. Prompt wording, model route, budget caps and
+runtime validation remain unchanged.
+
+Failure-first HTTP regressions cover the 101-game points total, an observed
+appearance total with a genuinely missing player row, shooting percentage and
+starts. Their four consumer-visible cases failed before application changes;
+the focused schema, payload, state/replay and player-contract suite subsequently
+passed 314 cases. Saved protocol receipts contain actual bounded writer/reviewer
+inputs, exact complete claims and citations, with no real provider calls.
+These fixtures are not fresh live semantic approval: rerun the affected cohort
+on the newly frozen candidate before the original primary120, semantic50 and
+separate shadow120 gates.
