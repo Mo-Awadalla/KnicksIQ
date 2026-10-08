@@ -7,6 +7,7 @@ import json
 import logging
 import re
 import time
+from copy import deepcopy
 from typing import Any, TypeVar
 
 from app.core.config import get_settings
@@ -63,6 +64,30 @@ def compact_schema(schema: type) -> dict[str, Any]:
     result = strip(schema.model_json_schema())
     result["title"] = schema.__name__
     return result
+
+
+def _complete_object_alternatives(schema: dict[str, Any]) -> None:
+    """Emit complete object branches instead of partial property intersections."""
+    common = {key: value for key, value in schema.items() if key not in {"anyOf", "$defs"}}
+    branches = []
+    for constraints in schema["anyOf"]:
+        branch = deepcopy(common)
+        branch.update(
+            {
+                key: deepcopy(value)
+                for key, value in constraints.items()
+                if key not in {"properties", "required"}
+            }
+        )
+        for name, constraint in constraints.get("properties", {}).items():
+            branch["properties"][name].update(deepcopy(constraint))
+        branch["required"] = sorted(
+            set(common.get("required", [])) | set(constraints.get("required", []))
+        )
+        branches.append(branch)
+    schema["anyOf"] = branches
+    for key in ("properties", "required", "additionalProperties"):
+        schema.pop(key, None)
 
 
 def scoped_response_schema(schema: type[BaseModel], payload: dict[str, Any]) -> dict[str, Any]:
@@ -169,6 +194,17 @@ def scoped_response_schema(schema: type[BaseModel], payload: dict[str, Any]) -> 
         restrict_array(
             suggestions, "supporting_evidence_ids", [e["evidence_id"] for e in payload["evidence"]]
         )
+    if schema is Action:
+        _complete_object_alternatives(definitions["ToolCall"])
+        _complete_object_alternatives(result)
+        # Stronger branch constraints subsume these common nullable/item schemas.
+        # Keep the complete alternatives small enough to retain requested claims.
+        tool_branch, answer_branch = result["anyOf"]
+        tool_branch["properties"]["answer"] = {"type": "null"}
+        answer_branch["properties"]["answer"] = {"$ref": "#/$defs/ProposedAnswer"}
+        answer_branch["properties"]["tools"] = {"type": "array", "maxItems": 0}
+        player_metric = definitions["ToolCall"]["anyOf"][0]["properties"]["metric"]
+        player_metric.pop("anyOf")
     return result
 
 

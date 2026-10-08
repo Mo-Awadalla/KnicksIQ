@@ -37,3 +37,23 @@ omitting writer-planning metadata and duplicate text already present in exact
 review spans. The network-disabled captured replay reaches review at 7,871
 bytes. This proves reachability, not live-model semantic correctness; release
 evaluation still requires newly captured, reviewed answers.
+
+Same-route synthetic qualification must bind the actual outbound schema, strict
+flag, required-parameter routing, raw response and finish reason. The failed
+live request supplied the intended unchanged schema, but AtlasCloud returned an
+extra `arguments` envelope and omitted required `question`; the complete JSON
+finished normally and application validation rejected that same shape.
+Isolated required/forbidden fields, nested alternatives, references and array
+bounds passed. The original full schema failed both referenced and inlined.
+Complete typed object alternatives passed on the unchanged approved route.
+Do not infer universal native enforcement from those observed successes.
+
+Distribute shared object constraints into complete action/tool alternatives,
+then remove only constraints implied by their stronger branch restrictions:
+null-only tool-action answer, the same required answer reference, empty-only
+answer-action tools, and the player-metric subset enum. Preserve optional
+defaults, scoped facts/claims/evidence and all runtime checks. Redundant schema
+growth must not crowd requested statistics out of the unchanged input cap.
+The reduced form passed actual synthetic tool and grounded-answer exchanges;
+the affected HTTP schema/population regressions passed 211 cases. These are
+prerequisites, not proof that the fresh live10 or original120 evaluation passes.
