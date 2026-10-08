@@ -116,6 +116,8 @@ accounting, deadlines and original input/output limits still apply.
 Prepared canonical narrative and scalar-game populations also draft directly:
 their backend investigation has already completed, so another tool-action schema
 adds no information. Every selected game and requested metric remains mandatory.
+Model payloads omit unbound (null) optional scope descriptors. Backend scope,
+non-null filters, complete populations and mandatory claims remain unchanged.
 
 Quarter calculations currently support team points per game only. Quarter totals,
 other quarter box-score statistics, and player quarter statistics remain
