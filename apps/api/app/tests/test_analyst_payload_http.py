@@ -428,6 +428,7 @@ async def test_strict_format_bounded_complete_population_http(
             if actual_bytes > settings.analyst_input_tokens:
                 raise ValueError("Actual strict provider input exceeds the unchanged bound")
             if payload["schema"]["title"] == "AnswerReview":
+                assert self.answer is not None, "Answer review requires a generated answer"
                 return json.dumps(
                     {
                         "assertions": [
