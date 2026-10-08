@@ -33,9 +33,9 @@ def capture_id(capture):
 
 
 def captured_action(capture):
-    assert hashlib.sha256(capture["content"].encode("utf-8")).hexdigest() == capture[
-        "content_sha256"
-    ]
+    assert (
+        hashlib.sha256(capture["content"].encode("utf-8")).hexdigest() == capture["content_sha256"]
+    )
     return json.loads(capture["content"])
 
 
