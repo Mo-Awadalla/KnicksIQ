@@ -326,6 +326,30 @@ async def test_bounded_loop_and_revalidated_explanation(db_session, local_redis,
     assert result["llm_validated"]
 
 
+async def test_provider_schema_growth_uses_factual_fallback(db_session, local_redis, monkeypatch):
+    await local_redis.set(f"ai-budget:{datetime.now(UTC):%Y-%m}", 0)
+    monkeypatch.setattr(get_settings(), "analyst_provider_format", "json_schema")
+    tools, _ = await make_tools(db_session)
+    original_schema = analyst_loop.scoped_response_schema
+
+    def oversized_schema(schema, payload):
+        result = original_schema(schema, payload)
+        if payload.get("results"):
+            result["description"] = "x" * (get_settings().analyst_input_tokens + 1)
+        return result
+
+    monkeypatch.setattr(analyst_loop, "scoped_response_schema", oversized_schema)
+
+    class SchemaAdapter(ScriptedAdapter):
+        response_schema: dict | None = None
+
+    adapter = SchemaAdapter()
+    monkeypatch.setattr(analyst_loop, "get_llm_adapter", lambda: adapter)
+    result = await AnalystLoop(tools, []).run()
+    assert not result["llm_validated"]
+    assert len(adapter.prompts) == 1
+
+
 async def test_bad_provider_output_counts_call_and_falls_back(
     db_session, local_redis, monkeypatch, caplog
 ):
