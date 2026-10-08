@@ -535,9 +535,8 @@ async def test_repair_is_rechecked_and_never_investigates(
             value = json.loads(raw)
             if payload["schema"]["title"] == "Action" and value.get("answer"):
                 value["answer"]["text"] += " A new tactic caused this."
-            if (
-                payload["schema"]["title"] == "AnswerReview"
-                and "tactic" in "".join(payload["review_spans"])
+            if payload["schema"]["title"] == "AnswerReview" and "tactic" in "".join(
+                payload["review_spans"]
             ):
                 value["assertions"][0].update(
                     verdict="unsupported",

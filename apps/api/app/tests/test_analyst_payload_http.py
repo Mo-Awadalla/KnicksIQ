@@ -530,8 +530,7 @@ async def test_full_archive_record_reaches_independent_review_http(
         )
     population = {game.id for game in games}
     wins = sum(
-        (game.home_score > game.away_score) == (game.home_team_id == "NYK")
-        for game in games
+        (game.home_score > game.away_score) == (game.home_team_id == "NYK") for game in games
     )
     losses = len(games) - wins
     question = "What was the Knicks record this season?"
@@ -552,9 +551,7 @@ async def test_full_archive_record_reaches_independent_review_http(
         async def generate(self, *, system, user):
             payload = json.loads(user)
             actual_bytes = len((system + user).encode()) + encoded_size(self.response_schema)
-            self.inputs.append(
-                {"system": system, "user": payload, "input_bytes": actual_bytes}
-            )
+            self.inputs.append({"system": system, "user": payload, "input_bytes": actual_bytes})
             assert actual_bytes <= 8000
             if payload["schema"]["title"] == "AnswerReview":
                 assert "".join(payload["review_spans"]) == text
@@ -572,9 +569,7 @@ async def test_full_archive_record_reaches_independent_review_http(
                                 "assertion_type": "factual",
                                 "verdict": "supported",
                                 "offending_text": None,
-                                "supporting_claim_ids": [
-                                    c["claim_id"] for c in payload["claims"]
-                                ],
+                                "supporting_claim_ids": [c["claim_id"] for c in payload["claims"]],
                                 "supporting_evidence_ids": [],
                                 "reason": "Independent SQL totals and complete archive population.",
                             }
@@ -591,9 +586,7 @@ async def test_full_archive_record_reaches_independent_review_http(
                     }
                 )
             if not payload["claims"]:
-                return json.dumps(
-                    {"action": "call_tools", "tools": [self.tool], "answer": None}
-                )
+                return json.dumps({"action": "call_tools", "tools": [self.tool], "answer": None})
             by_metric = {c["metric_id"]: c for c in payload["claims"]}
             return json.dumps(
                 {
