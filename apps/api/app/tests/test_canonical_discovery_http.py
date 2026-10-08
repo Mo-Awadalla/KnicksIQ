@@ -302,7 +302,9 @@ async def test_cancelled_discovery_releases_turn_for_exact_retry(
     assert attempts == {"provider": 0, "dense": 0, "reservations": 0}
 
 
-@pytest.mark.parametrize("scenario", ["slow_source", "invalid_source", "slow_lexical"])
+@pytest.mark.parametrize(
+    "scenario", ["slow_source", "cloud_lexical", "invalid_source", "slow_lexical"]
+)
 async def test_source_preparation_and_lexical_failure_boundaries(
     client,
     local_redis,  # noqa: F811
@@ -324,8 +326,8 @@ async def test_source_preparation_and_lexical_failure_boundaries(
         return await original_units(*args, **kwargs)
 
     async def lexical(*args, **kwargs):
-        if scenario == "slow_lexical":
-            await asyncio.sleep(2.05)
+        if scenario in {"cloud_lexical", "slow_lexical"}:
+            await asyncio.sleep(2.05 if scenario == "cloud_lexical" else 4.05)
         return await original_lexical(*args, **kwargs)
 
     monkeypatch.setattr(analyst_tools, "build_archive_units", source)
@@ -341,7 +343,7 @@ async def test_source_preparation_and_lexical_failure_boundaries(
     assert receipt["http_status"] == receipt["replay_status"] == 200
     assert receipt["replay"] == receipt["response"]
     assert receipt["conflict_status"] == 409
-    if scenario == "slow_source":
+    if scenario in {"slow_source", "cloud_lexical"}:
         assert_search(receipt)
         claims = {
             citation["metadata"]["claim"]["metric_id"]: citation["metadata"]["claim"]["value"]
