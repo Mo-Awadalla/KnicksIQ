@@ -300,3 +300,61 @@ async def test_cancelled_discovery_releases_turn_for_exact_retry(
     assert receipt["response"]["citations"] == []
     assert receipt["response"]["state_committed"]
     assert attempts == {"provider": 0, "dense": 0, "reservations": 0}
+
+
+@pytest.mark.parametrize("scenario", ["slow_source", "invalid_source", "slow_lexical"])
+async def test_source_preparation_and_lexical_failure_boundaries(
+    client,
+    local_redis,  # noqa: F811
+    monkeypatch,
+    tmp_path,
+    scenario,
+):
+    attempts = configure(monkeypatch, "disabled")
+    async with AsyncSessionLocal() as db:
+        await _seed_release_stats(db)
+    original_units = analyst_tools.build_archive_units
+    original_lexical = analyst_tools.search_archive_lexical
+
+    async def source(*args, **kwargs):
+        if scenario == "slow_source":
+            await asyncio.sleep(2.05)
+        if scenario == "invalid_source":
+            raise ValueError("Synthetic source integrity failure")
+        return await original_units(*args, **kwargs)
+
+    async def lexical(*args, **kwargs):
+        if scenario == "slow_lexical":
+            await asyncio.sleep(2.05)
+        return await original_lexical(*args, **kwargs)
+
+    monkeypatch.setattr(analyst_tools, "build_archive_units", source)
+    monkeypatch.setattr(analyst_tools, "search_archive_lexical", lexical)
+    receipt = await exchange(
+        client,
+        {
+            "question": "What was the Knicks record this season?",
+            "turn_id": f"preparation-boundary-{scenario}",
+        },
+    )
+    save(tmp_path, f"preparation-boundary-{scenario}", receipt)
+    assert receipt["http_status"] == receipt["replay_status"] == 200
+    assert receipt["replay"] == receipt["response"]
+    assert receipt["conflict_status"] == 409
+    if scenario == "slow_source":
+        assert_search(receipt)
+        claims = {
+            citation["metadata"]["claim"]["metric_id"]: citation["metadata"]["claim"]["value"]
+            for citation in receipt["response"]["citations"]
+            if citation["type"] == "verified_claim"
+        }
+        assert claims == {"wins": 3, "losses": 0}
+    else:
+        search = receipt["capture"]["searches"][0]
+        assert search["status"] == "dependency_failure"
+        assert search["error_type"] == (
+            "ValueError" if scenario == "invalid_source" else "TimeoutError"
+        )
+        assert receipt["response"]["citations"] == []
+        assert receipt["response"]["degraded"]
+    assert attempts["provider"] == attempts["dense"] == 0
