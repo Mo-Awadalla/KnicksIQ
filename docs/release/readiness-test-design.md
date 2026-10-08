@@ -16,3 +16,7 @@ may become a new expected phrase. Counts and denominators are fixed first.
 Browser checks must abort unmatched off-origin requests before network I/O,
 reject production as a staging target, force fixture builds to /api, catch
 redirects and service-worker bypass, and save per-test destination evidence.
+
+Cancellation simulations must reach the mock provider before shortening its
+response wait. Expiring source preparation or admission first creates no
+transmitted-call receipt and cannot prove uncertain-cost reconciliation.

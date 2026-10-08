@@ -151,18 +151,34 @@ async def reconciled_fixture(known_cost_fixture, monkeypatch):  # noqa: F811
             result = await super().verify_request(payload, owned)
             return {**result, "bound_nusd": 818_196}
 
+    provider_entered = asyncio.Event()
+
     async def cancel(request) -> httpx.Response:
+        provider_entered.set()
         await asyncio.Event().wait()
         raise AssertionError("Synthetic never-returning provider resumed")
 
     original_wait = asyncio.wait_for
 
     async def accelerated_timeout(awaitable, timeout):
-        return await original_wait(awaitable, min(timeout, 0.05))
+        pending = asyncio.ensure_future(awaitable)
+        entered = asyncio.create_task(provider_entered.wait())
+        try:
+            done, _ = await asyncio.wait(
+                (pending, entered), timeout=timeout, return_when=asyncio.FIRST_COMPLETED
+            )
+            if pending in done:
+                return pending.result()
+            return await original_wait(pending, min(timeout, 0.05) if entered in done else 0)
+        finally:
+            entered.cancel()
+            if not pending.done():
+                pending.cancel()
+            await asyncio.gather(entered, pending, return_exceptions=True)
 
     with monkeypatch.context() as transport:
-        # Accelerate the existing wait_for cancellation path only in this
-        # isolated simulation; effective runtime settings stay unchanged.
+        # Keep source preparation and admission deadlines intact. Accelerate
+        # cancellation only after the mock provider has actually been entered.
         transport.setattr(
             analyst_loop,
             "asyncio",
