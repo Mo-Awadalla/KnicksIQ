@@ -25,6 +25,13 @@ and source windows. Candidate metadata records extreme selection, family, subjec
 metric, window, baseline and selection reason. Committed responses alone advance
 novelty state. A single-game candidate does not assert a season ranking.
 
+Canonical discovery verifies its complete SQL-bound source corpus before lexical
+retrieval. Integrity preparation uses the configured investigation budget (20 seconds
+in staging), inside the unchanged 30-second HTTP request deadline. The two-second
+local retrieval deadline then covers lexical search, ranking and receipt admission,
+not source transfer and integrity verification. No source check is cached or skipped;
+invalid proof and slow lexical retrieval still return dependency failure.
+
 The tools return distinct statuses for ambiguity, empty matches, incomplete
 coverage, unsupported scope, dependency failure and success. Search results are
 examples, never season denominators. Qdrant failure does not disable SQL claims.
