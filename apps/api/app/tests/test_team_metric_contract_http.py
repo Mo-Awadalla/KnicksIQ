@@ -149,7 +149,10 @@ async def test_team_record_comparison_uses_team_tool_without_player_metric_relax
     assert {c["window"]["comparison_group"]: c["value"] for c in claims} == expected
     assert all(c["subject_id"] == "team:NYK" for c in claims)
     assert all(
-        "get_team_stats (team records/comparisons)" in p["system"]
+        "get_team_stats (team records/comparisons "
+        "and player scoring/statistic leaders over the COMPLETE requested team-game "
+        "population, including ties)"
+        in p["system"]
         and "compare_windows (players; baseline_question required)" in p["system"]
         for p in receipt["model_inputs"]
         if p["user"]["schema"]["title"] == "Action"

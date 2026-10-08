@@ -339,15 +339,34 @@ async def test_ten_short_prior_messages_still_reach_writer(db_session, local_red
         {"role": "user" if index % 2 == 0 else "assistant", "content": f"Turn {index}"}
         for index in range(10)
     ]
-    result = await AnalystLoop(tools, context).run()
+    loop = AnalystLoop(tools, context)
+    result = await loop.run()
     assert result["llm_validated"], result
     assert adapter.prompts[0]["context"] == context
+    writer = adapter.prompts[1]
+    assert writer["context"] == context
+    assert writer["claims"] and writer["candidates"]
+    assert writer["capabilities"]["scope"] == {
+        key: value for key, value in tools.manifest()["scope"].items() if value is not None
+    }
+    assert writer["results"][0]["scope"] == {
+        key: value for key, value in loop.results[0].scope.items() if value is not None
+    }
 
 
 async def test_provider_schema_growth_uses_factual_fallback(db_session, local_redis, monkeypatch):
     await local_redis.set(f"ai-budget:{datetime.now(UTC):%Y-%m}", 0)
     monkeypatch.setattr(get_settings(), "analyst_provider_format", "json_schema")
     tools, _ = await make_tools(db_session)
+    original_schema = analyst_loop.scoped_response_schema
+
+    def oversized_schema(schema, payload):
+        result = original_schema(schema, payload)
+        if payload.get("results"):
+            result["description"] = "x" * (get_settings().analyst_input_tokens + 1)
+        return result
+
+    monkeypatch.setattr(analyst_loop, "scoped_response_schema", oversized_schema)
 
     class SchemaAdapter(ScriptedAdapter):
         response_schema: dict | None = None

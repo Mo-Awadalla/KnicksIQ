@@ -176,6 +176,10 @@ class AnalystLoop:
         review: bool = False,
         instruction_bytes: int = 1700,
     ) -> dict[str, Any]:
+        capabilities = self.tools.manifest()
+        capabilities["scope"] = {
+            key: value for key, value in capabilities["scope"].items() if value is not None
+        }
         payload: dict[str, Any] = {
             "schema": (
                 {"title": schema.__name__}
@@ -184,7 +188,7 @@ class AnalystLoop:
             ),
             "policy": INTERPRETATION_POLICY,
             "requested_question": self.tools.question,
-            "capabilities": self.tools.manifest(),
+            "capabilities": capabilities,
             "claims": [],
             "evidence": [],
             "candidates": [],
@@ -213,7 +217,9 @@ class AnalystLoop:
                         "status": r.status,
                         "message": r.message,
                         "choices": r.choices,
-                        "scope": r.scope,
+                        "scope": {
+                            key: value for key, value in r.scope.items() if value is not None
+                        },
                     }
                     for r in self.results
                 ],
