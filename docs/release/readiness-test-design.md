@@ -91,3 +91,11 @@ database migrations or fresh live answers.
 These fixtures are not fresh live semantic approval: rerun the affected cohort
 on the newly frozen candidate before the original primary120, semantic50 and
 separate shadow120 gates.
+
+Hosted CI then hit anonymous Docker Hub pull-rate limits before backend tests
+or image builds. CI uses the official public ECR mirrors pinned to the exact
+same PostgreSQL, Python, Node and unprivileged nginx manifest digests; named
+build contexts leave the Dockerfiles and runtime versions unchanged. The API
+and frontend context builds and PostgreSQL version command exercise registry
+access independently of the archive and model. All original tests, migrations
+and vulnerability-scan thresholds remain required on the final commit.

@@ -14,7 +14,8 @@ jobs:
     runs-on: ubuntu-latest
     services:
       postgres:
-        image: postgres:16.9-alpine
+        # PostgreSQL 16.9-alpine, same OCI manifest as the Docker Hub image.
+        image: public.ecr.aws/docker/library/postgres@sha256:7c688148e5e156d0e86df7ba8ae5a05a2386aaec1e2ad8e6d11bdf10504b1fb7
         env:
           POSTGRES_USER: knicksiq
           POSTGRES_PASSWORD: knicksiq
@@ -127,6 +128,8 @@ jobs:
         with:
           context: .
           file: Dockerfile.api
+          build-contexts: |
+            python:3.12.11-slim-bookworm=docker-image://public.ecr.aws/docker/library/python@sha256:519591d6871b7bc437060736b9f7456b8731f1499a57e22e6c285135ae657bf7
           push: false
           load: true
           tags: knicksiq-api:ci
@@ -134,6 +137,9 @@ jobs:
         with:
           context: .
           file: Dockerfile.web
+          build-contexts: |
+            node:24.4.1-alpine3.22=docker-image://public.ecr.aws/docker/library/node@sha256:820e86612c21d0636580206d802a726f2595366e1b867e564cbc652024151e8a
+            nginxinc/nginx-unprivileged:1.29.0-alpine3.22=docker-image://public.ecr.aws/nginx/nginx-unprivileged@sha256:82dcf28da5a8cd97d43e8f8a64de766658b0c5fb9072368c5f0a9048c417a934
           push: false
           load: true
           tags: knicksiq-web:ci
