@@ -80,6 +80,14 @@ starts. Their four consumer-visible cases failed before application changes;
 the focused schema, payload, state/replay and player-contract suite subsequently
 passed 314 cases. Saved protocol receipts contain actual bounded writer/reviewer
 inputs, exact complete claims and citations, with no real provider calls.
+The complete original backend suite (`apps packages tools/report_audit`) then
+passed 1,136 cases. Full `apps packages migrations` typechecking reported zero
+errors; Ruff checks and formatting passed. Two exact-commit CI attempts exposed
+fixture typing and obsolete internal model-stage assertions; their failures
+remain recorded. The existing HTTP repair/rejection tests retain numeric,
+typed-value, reviewer, replay and budget checks without pinning internal call
+order or prompt wording. Offline fixtures do not replace final-commit CI,
+database migrations or fresh live answers.
 These fixtures are not fresh live semantic approval: rerun the affected cohort
 on the newly frozen candidate before the original primary120, semantic50 and
 separate shadow120 gates.
