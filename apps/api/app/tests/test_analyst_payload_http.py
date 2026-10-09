@@ -691,7 +691,8 @@ async def test_requested_scalar_survives_strict_planning_http(
             if scenario == "observed-double-doubles":
                 # An absent archive row is unknown, not a zero or a reason to hide
                 # the verified total over the remaining observed appearances.
-                await db.delete(rows.pop())
+                await db.delete(rows[-1])
+                rows = rows[:-1]
                 await db.commit()
             population = {row.game_id for row in rows}
             tool = "get_player_stats"
@@ -728,10 +729,11 @@ async def test_requested_scalar_survives_strict_planning_http(
 
         def __init__(self):
             self.inputs = []
-            self.response_schema = None
+            self.response_schema: dict[str, object] | None = None
 
         async def generate(self, *, system, user):
             payload = json.loads(user)
+            assert self.response_schema is not None
             actual_bytes = len((system + user).encode()) + encoded_size(self.response_schema)
             self.inputs.append({"system": system, "user": payload, "input_bytes": actual_bytes})
             assert actual_bytes <= settings.analyst_input_tokens
