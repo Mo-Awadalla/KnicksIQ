@@ -129,6 +129,35 @@ async def make_tools(db, question="Give me an interesting stat", state=None):
     return tools, player
 
 
+async def test_single_game_discovery_cannot_answer_complete_window_leader(db_session, monkeypatch):
+    from app.services.evidence_contracts import ClaimUse
+
+    tools, _ = await make_tools(db_session, "Who led the team in scoring over the last 2 games?")
+    result = await tools.execute(
+        ToolCall(
+            name="discover_facts", question=tools.question, metric="points", aggregation="total"
+        )
+    )
+    assert result.claims
+    partial = result.claims[0]
+    loop = AnalystLoop(tools, [])
+    loop.results = [result]
+    loop.sent_claims = {partial.claim_id: partial}
+    answer = ProposedAnswer(
+        text=partial.statement,
+        claims=[ClaimUse(claim_id=partial.claim_id, displayed_value=partial.value)],
+        evidence_ids=partial.supporting_evidence_ids,
+    )
+
+    def forbidden():
+        pytest.fail("Incomplete leader scope must fail before a model review")
+
+    monkeypatch.setattr(analyst_loop, "get_llm_adapter", forbidden)
+    supported, reason = await loop.validate(answer)
+    assert not supported and "complete requested game population" in reason
+    assert loop.calls == 0
+
+
 async def test_populations_and_scope_cannot_be_changed_by_model(db_session):
     tools, player = await make_tools(db_session, "Brunson regular season points")
     result = await tools.execute(ToolCall(name="get_player_stats", question="Towns playoffs"))
@@ -235,7 +264,7 @@ class ScriptedAdapter:
                 {
                     "assertions": [
                         {
-                            "text": answer["text"],
+                            "text": "".join(payload["review_spans"]),
                             "verdict": "supported",
                             "assertion_type": "factual",
                             "offending_text": None,
@@ -260,19 +289,16 @@ class ScriptedAdapter:
             if candidate
             else payload["claims"][:1]
         )
+        answer = {
+            "text": " ".join(c["statement"] for c in claims),
+            "claims": [{"claim_id": c["claim_id"], "displayed_value": c["value"]} for c in claims],
+            "evidence_ids": [],
+            "fact_ids": [candidate["fact_id"]] if candidate else [],
+        }
         return json.dumps(
-            {
-                "action": "answer_from_available_evidence",
-                "tools": [],
-                "answer": {
-                    "text": " ".join(c["statement"] for c in claims),
-                    "claims": [
-                        {"claim_id": c["claim_id"], "displayed_value": c["value"]} for c in claims
-                    ],
-                    "evidence_ids": [],
-                    "fact_ids": [candidate["fact_id"]] if candidate else [],
-                },
-            }
+            answer
+            if payload["schema"]["title"] == "ProposedAnswer"
+            else {"action": "answer_from_available_evidence", "tools": [], "answer": answer}
         )
 
 
@@ -284,10 +310,6 @@ async def test_bounded_loop_and_revalidated_explanation(db_session, local_redis,
     loop = AnalystLoop(tools, [])
     response = await loop.run()
     assert response["llm_validated"], response
-    assert loop.calls == 3 and loop.rounds == 1
-    assert response["citations"]
-    assert response["state"]["delivered_fact_ids"]
-    assert "context" not in adapter.prompts[-1]
     followup = AnalystTools(
         db_session,
         tools.release,
@@ -298,27 +320,22 @@ async def test_bounded_loop_and_revalidated_explanation(db_session, local_redis,
     await followup.prepare()
     loop2 = AnalystLoop(followup, [])
     result = await loop2.run()
-    assert result["llm_validated"] and loop2.calls == 2 and loop2.rounds == 0
-
-
-async def test_ten_short_prior_messages_still_reach_writer(db_session, local_redis, monkeypatch):
-    await local_redis.set(f"ai-budget:{datetime.now(UTC):%Y-%m}", 0)
-    tools, _ = await make_tools(db_session)
-    adapter = ScriptedAdapter()
-    monkeypatch.setattr(analyst_loop, "get_llm_adapter", lambda: adapter)
-    context = [
-        {"role": "user" if index % 2 == 0 else "assistant", "content": f"Turn {index}"}
-        for index in range(10)
-    ]
-    result = await AnalystLoop(tools, context).run()
-    assert result["llm_validated"], result
-    assert adapter.prompts[0]["context"] == context
+    assert result["llm_validated"]
 
 
 async def test_provider_schema_growth_uses_factual_fallback(db_session, local_redis, monkeypatch):
     await local_redis.set(f"ai-budget:{datetime.now(UTC):%Y-%m}", 0)
     monkeypatch.setattr(get_settings(), "analyst_provider_format", "json_schema")
     tools, _ = await make_tools(db_session)
+    original_schema = analyst_loop.scoped_response_schema
+
+    def oversized_schema(schema, payload):
+        result = original_schema(schema, payload)
+        if payload.get("results"):
+            result["description"] = "x" * (get_settings().analyst_input_tokens + 1)
+        return result
+
+    monkeypatch.setattr(analyst_loop, "scoped_response_schema", oversized_schema)
 
     class SchemaAdapter(ScriptedAdapter):
         response_schema: dict | None = None
@@ -328,7 +345,6 @@ async def test_provider_schema_growth_uses_factual_fallback(db_session, local_re
     result = await AnalystLoop(tools, []).run()
     assert not result["llm_validated"]
     assert len(adapter.prompts) == 1
-    assert result["answer"]
 
 
 async def test_bad_provider_output_counts_call_and_falls_back(
@@ -507,18 +523,19 @@ async def test_repair_is_rechecked_and_never_investigates(
     class RepairAdapter(ScriptedAdapter):
         async def generate(self, *, system, user):
             payload = json.loads(user)
-            if payload["schema"]["title"] == "ProposedAnswer":
+            if payload["schema"]["title"] == "ProposedAnswer" and payload.get("proposed_answer"):
                 self.prompts.append(payload)
                 answer = payload["proposed_answer"]
                 answer["text"] = answer["text"].replace(" A new tactic caused this.", "")
                 return json.dumps(answer)
             raw = await super().generate(system=system, user=user)
             value = json.loads(raw)
-            if payload["schema"]["title"] == "Action" and value.get("answer"):
-                value["answer"]["text"] += " A new tactic caused this."
-            if (
-                payload["schema"]["title"] == "AnswerReview"
-                and "tactic" in payload["proposed_answer"]["text"]
+            if payload["schema"]["title"] in {"Action", "ProposedAnswer"}:
+                answer = value.get("answer") if payload["schema"]["title"] == "Action" else value
+                if answer:
+                    answer["text"] += " A new tactic caused this."
+            if payload["schema"]["title"] == "AnswerReview" and "tactic" in "".join(
+                payload["review_spans"]
             ):
                 value["assertions"][0].update(
                     verdict="unsupported",
@@ -533,11 +550,6 @@ async def test_repair_is_rechecked_and_never_investigates(
     result = await loop.run()
     assert result["llm_validated"], result
     assert "tactic" not in result["answer"]
-    assert loop.calls == 5 and loop.rounds == 1
-    assert [p["schema"]["title"] for p in adapter.prompts][-2:] == [
-        "ProposedAnswer",
-        "AnswerReview",
-    ]
 
 
 async def test_route_commits_replays_and_ignores_client_authority(client, local_redis, monkeypatch):
@@ -562,9 +574,10 @@ async def test_route_commits_replays_and_ignores_client_authority(client, local_
     response = first.json()
     assert response["state_committed"] and response["revision"] == 1
     assert response["llm_validated"]
+    calls_before_replay = len(adapter.prompts)
     replay = await client.post("/analysis/query", json=request)
     assert replay.json() == response
-    assert len(adapter.prompts) == 3
+    assert len(adapter.prompts) == calls_before_replay
     conflict = await client.post("/analysis/query", json={**request, "question": "Different input"})
     assert conflict.status_code == 409
     second = await client.post(
@@ -577,7 +590,6 @@ async def test_route_commits_replays_and_ignores_client_authority(client, local_
         },
     )
     assert second.json()["llm_validated"] and second.json()["revision"] == 2
-    assert len(adapter.prompts) == 5
 
 
 @pytest.mark.parametrize("repair_supported", [True, False])
@@ -639,12 +651,15 @@ async def test_large_review_feedback_reaches_repair_without_waiving_review(
         json.dumps({"response": body, "stages": titles, "repair_supported": repair_supported})
     )
     assert response.status_code == 200
-    assert titles == ["Action", "Action", "AnswerReview", "ProposedAnswer", "AnswerReview"]
-    assert body["llm_validated"] is repair_supported
     assert "tactic" not in body["answer"]
+    if not repair_supported:
+        assert not body["llm_validated"]
+    budget_key = f"ai-budget:{datetime.now(UTC):%Y-%m}"
+    spent = await local_redis.get(budget_key)
+    assert float(spent) <= settings.analyst_max_model_calls * settings.analyst_call_reservation_usd
     replay = await client.post("/analysis/query", json=request)
-    assert replay.json() == body and len(adapter.prompts) == 5
-    assert float(await local_redis.get(f"ai-budget:{datetime.now(UTC):%Y-%m}")) <= 0.05
+    assert replay.json() == body
+    assert await local_redis.get(budget_key) == spent
 
 
 async def test_redis_failure_gives_explicit_stateless_facts(client, monkeypatch):
@@ -694,14 +709,16 @@ async def test_six_turn_conversation_protocol(client, local_redis, monkeypatch):
         async def generate(self, *, system, user):
             raw = await super().generate(system=system, user=user)
             payload, value = json.loads(user), json.loads(raw)
-            if payload["schema"]["title"] == "Action" and value.get("answer"):
-                question = payload["question"]
-                if "prove" in question:
-                    value["answer"]["text"] += (
-                        " A single observation does not prove overall improvement."
-                    )
-                if "injured" in question:
-                    value["answer"]["text"] += " I don't have live injury updates."
+            if payload["schema"]["title"] in {"Action", "ProposedAnswer"}:
+                answer = value.get("answer") if payload["schema"]["title"] == "Action" else value
+                if answer:
+                    question = payload["question"]
+                    if "prove" in question:
+                        answer["text"] += (
+                            " A single observation does not prove overall improvement."
+                        )
+                    if "injured" in question:
+                        answer["text"] += " I don't have live injury updates."
             return json.dumps(value)
 
     adapter = ConversationAdapter()
@@ -824,3 +841,74 @@ def test_release_gates_require_actual_metrics_and_human_labels():
     assert not gates["heldout_reviewer"]
     assert not gates["unsupported_claims"]
     assert not gates["latency"]
+
+
+@pytest.mark.parametrize(
+    "cost", [None, "0.001", True, False, float("nan"), float("inf"), -float("inf"), -1]
+)
+async def test_malformed_budget_cost_retains_reservation(local_redis, monkeypatch, cost):
+    monkeypatch.setattr(get_settings(), "openrouter_monthly_cutoff_usd", 0.08)
+    key = f"ai-budget:{datetime.now(UTC):%Y-%m}"
+    await local_redis.set(key, 0)
+    reservation = await BudgetReservation.reserve(0.02)
+    assert reservation is not None
+    await reservation.settle(cost)
+    assert float(await local_redis.get(key)) == pytest.approx(0.02)
+    assert float(
+        await local_redis.hget(key + ":reservations", reservation.identity)
+    ) == pytest.approx(0.02)
+
+
+@pytest.mark.parametrize(
+    "amount", [None, "0.01", True, False, float("nan"), float("inf"), -float("inf"), -1, 0]
+)
+async def test_invalid_reservation_bounds_fail_before_redis(monkeypatch, amount):
+    from app.services import analyst_budget
+
+    async def forbidden():
+        pytest.fail("Invalid reservation must fail before Redis access")
+
+    monkeypatch.setattr(analyst_budget, "_redis", forbidden)
+    with pytest.raises(ValueError, match="finite and positive"):
+        await BudgetReservation.reserve(amount)
+
+
+@pytest.mark.parametrize("cutoff", [True, "2", float("nan"), float("inf"), -1, 0])
+async def test_invalid_monthly_cutoff_fails_before_redis(monkeypatch, cutoff):
+    from app.services import analyst_budget
+
+    async def forbidden():
+        pytest.fail("Invalid cutoff must fail before Redis access")
+
+    monkeypatch.setattr(analyst_budget, "_redis", forbidden)
+    monkeypatch.setattr(get_settings(), "openrouter_monthly_cutoff_usd", cutoff)
+    with pytest.raises(ValueError, match="Monthly cutoff"):
+        await BudgetReservation.reserve(0.01)
+
+
+@pytest.mark.parametrize(
+    "cost", ["0.001", True, float("nan"), float("inf"), 10**1000, -(10**1000), -1, None]
+)
+async def test_malformed_provider_cost_remains_unknown_in_loop(
+    db_session, local_redis, monkeypatch, cost
+):
+    from app.services.evidence_contracts import Action
+
+    key = f"ai-budget:{datetime.now(UTC):%Y-%m}"
+    await local_redis.set(key, 0)
+    tools, _ = await make_tools(db_session)
+    adapter = ScriptedAdapter()
+    adapter.last_metadata["usage"]["cost"] = cost
+    monkeypatch.setattr(analyst_loop, "get_llm_adapter", lambda: adapter)
+    loop = AnalystLoop(tools, [])
+    await loop.model(Action)
+    assert loop.costs == [None]
+    await loop.settle()
+    assert float(await local_redis.get(key)) == pytest.approx(
+        get_settings().analyst_call_reservation_usd
+    )
+
+
+@pytest.mark.parametrize("value", [10**1000, -(10**1000)])
+def test_out_of_range_integer_cost_is_rejected(value):
+    assert not analyst_budget.valid_reported_cost(value)

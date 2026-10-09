@@ -49,14 +49,27 @@ return redis.call('HGET', KEYS[2], ARGV[1])
 """
 
 
+def valid_reported_cost(value: object) -> bool:
+    """Provider costs must be actual finite numbers, never coerced strings/bools."""
+    if not isinstance(value, (int, float)) or type(value) not in {int, float}:
+        return False
+    try:
+        return math.isfinite(value) and value >= 0
+    except OverflowError:
+        return False
+
+
 class BudgetReservation:
     def __init__(self, key: str, identity: str, amount: float):
         self.key, self.identity, self.amount = key, identity, amount
 
     @classmethod
     async def reserve(cls, amount: float) -> BudgetReservation | None:
-        if amount <= 0:
-            raise ValueError("Reservation must be positive")
+        if not valid_reported_cost(amount) or amount <= 0:
+            raise ValueError("Reservation must be finite and positive")
+        cutoff = get_settings().openrouter_monthly_cutoff_usd
+        if not valid_reported_cost(cutoff) or cutoff <= 0:
+            raise ValueError("Monthly cutoff must be finite and positive")
         key = f"ai-budget:{datetime.now(UTC):%Y-%m}"
         identity = uuid.uuid4().hex
         redis = await _redis()
@@ -70,7 +83,7 @@ class BudgetReservation:
                 key + ":reservations",
                 identity,
                 amount,
-                get_settings().openrouter_monthly_cutoff_usd,
+                cutoff,
             )
             return cls(key, identity, amount) if accepted else None
         except Exception:
@@ -109,7 +122,7 @@ class BudgetReservation:
 
     async def settle(self, reported_cost: float | None) -> None:
         # Unknown/timeouts remain charged, even if the HTTP request outlives its task.
-        if reported_cost is None or reported_cost < 0:
+        if reported_cost is None or not valid_reported_cost(reported_cost):
             return
         redis = await _redis()
         if redis is None:

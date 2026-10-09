@@ -7,10 +7,11 @@ import json
 import logging
 import re
 import time
+from copy import deepcopy
 from typing import Any, TypeVar
 
 from app.core.config import get_settings
-from app.services.analyst_budget import BudgetReservation
+from app.services.analyst_budget import BudgetReservation, valid_reported_cost
 from app.services.analyst_tools import AnalystTools
 from app.services.conversation_memory import bounded_history
 from app.services.evidence_contracts import (
@@ -65,10 +66,83 @@ def compact_schema(schema: type) -> dict[str, Any]:
     return result
 
 
+def _complete_object_alternatives(schema: dict[str, Any]) -> None:
+    """Emit complete object branches instead of partial property intersections."""
+    common = {key: value for key, value in schema.items() if key not in {"anyOf", "$defs"}}
+    branches = []
+    for constraints in schema["anyOf"]:
+        branch = deepcopy(common)
+        branch.update(
+            {
+                key: deepcopy(value)
+                for key, value in constraints.items()
+                if key not in {"properties", "required"}
+            }
+        )
+        for name, constraint in constraints.get("properties", {}).items():
+            branch["properties"][name].update(deepcopy(constraint))
+        branch["required"] = sorted(
+            set(common.get("required", [])) | set(constraints.get("required", []))
+        )
+        branches.append(branch)
+    schema["anyOf"] = branches
+    for key in ("properties", "required", "additionalProperties"):
+        schema.pop(key, None)
+
+
 def scoped_response_schema(schema: type[BaseModel], payload: dict[str, Any]) -> dict[str, Any]:
     """Constrain provider output to references and complete values actually supplied."""
-    result = schema.model_json_schema()
+    result = compact_schema(schema)
     definitions = result.get("$defs", {})
+    if schema is Action:
+        from app.services.evidence_contracts import PLAYER_METRICS
+
+        # Optional fields retain runtime defaults, but each action must be executable.
+        result["anyOf"] = [
+            {
+                "properties": {
+                    "action": {"enum": ["call_tools"]},
+                    "tools": {"minItems": 1},
+                    "answer": {"type": "null"},
+                },
+                "required": ["tools"],
+            },
+            {
+                "properties": {
+                    "action": {
+                        "enum": [
+                            action
+                            for action in result["properties"]["action"]["enum"]
+                            if action != "call_tools"
+                        ]
+                    },
+                    "tools": {"maxItems": 0},
+                    "answer": {"$ref": "#/$defs/ProposedAnswer"},
+                },
+                "required": ["answer"],
+            },
+        ]
+        player_tools = ["get_player_stats", "compare_windows"]
+        tool_schema = definitions["ToolCall"]
+        tool_schema["anyOf"] = [
+            {
+                "properties": {
+                    "name": {"enum": player_tools},
+                    "metric": {"enum": [*PLAYER_METRICS, None]},
+                }
+            },
+            {
+                "properties": {
+                    "name": {
+                        "enum": [
+                            name
+                            for name in tool_schema["properties"]["name"]["enum"]
+                            if name not in player_tools
+                        ]
+                    }
+                }
+            },
+        ]
     uses = []
     for claim in payload["claims"]:
         uses.append(
@@ -120,6 +194,17 @@ def scoped_response_schema(schema: type[BaseModel], payload: dict[str, Any]) -> 
         restrict_array(
             suggestions, "supporting_evidence_ids", [e["evidence_id"] for e in payload["evidence"]]
         )
+    if schema is Action:
+        _complete_object_alternatives(definitions["ToolCall"])
+        _complete_object_alternatives(result)
+        # Stronger branch constraints subsume these common nullable/item schemas.
+        # Keep the complete alternatives small enough to retain requested claims.
+        tool_branch, answer_branch = result["anyOf"]
+        tool_branch["properties"]["answer"] = {"type": "null"}
+        answer_branch["properties"]["answer"] = {"$ref": "#/$defs/ProposedAnswer"}
+        answer_branch["properties"]["tools"] = {"type": "array", "maxItems": 0}
+        player_metric = definitions["ToolCall"]["anyOf"][0]["properties"]["metric"]
+        player_metric.pop("anyOf")
     return result
 
 
@@ -176,18 +261,43 @@ class AnalystLoop:
         review: bool = False,
         instruction_bytes: int = 1700,
     ) -> dict[str, Any]:
+        capabilities = self.tools.manifest()
+        capabilities["scope"] = {
+            key: value for key, value in capabilities["scope"].items() if value is not None
+        }
+        if self.settings.analyst_provider_format == "json_schema":
+            # The external ToolCall schema already enumerates these same metrics.
+            # Do not crowd complete claim groups out with duplicate planning lists.
+            capabilities.pop("metrics", None)
+            capabilities.pop("team_metrics", None)
         payload: dict[str, Any] = {
-            "schema": compact_schema(schema),
+            "schema": (
+                {"title": schema.__name__}
+                if self.settings.analyst_provider_format == "json_schema"
+                else compact_schema(schema)
+            ),
             "policy": INTERPRETATION_POLICY,
             "requested_question": self.tools.question,
-            "capabilities": self.tools.manifest(),
+            "capabilities": capabilities,
             "claims": [],
             "evidence": [],
             "candidates": [],
         }
         if review:
             # Fresh context: no writer history, tool planning, or self-declared support verdicts.
-            payload["proposed_answer"] = answer.model_dump(mode="json") if answer else None
+            # Complete claim records supply scope, population and metric authority.
+            # The reviewer needs coverage limits, not the writer's tool-planning manifest.
+            payload["capabilities"] = {
+                key: capabilities[key] for key in ("release_id", "known_gaps")
+            }
+            # Text and suggestions are supplied exactly once below. Keep every
+            # declared value and citation here; do not duplicate whole-answer prose
+            # beside review_spans and its scoped-schema enum.
+            payload["proposed_answer"] = (
+                answer.model_dump(mode="json", exclude={"text", "follow_up_questions"})
+                if answer
+                else None
+            )
             # Preserve punctuation and whitespace at backend-defined review boundaries.
             # A span fails if any assertion within it is unsupported.
             payload["review_spans"] = (
@@ -209,7 +319,9 @@ class AnalystLoop:
                         "status": r.status,
                         "message": r.message,
                         "choices": r.choices,
-                        "scope": r.scope,
+                        "scope": {
+                            key: value for key, value in r.scope.items() if value is not None
+                        },
                     }
                     for r in self.results
                 ],
@@ -232,12 +344,33 @@ class AnalystLoop:
             if not evidence:
                 evidence = list(self.tools.evidence.values())
             candidates = list(self.tools.candidates.values())
-        limit = self.settings.analyst_input_tokens - instruction_bytes
-        if token_upper_bound(encoded(payload)) > limit:
+
+        def input_size(candidate_payload: dict[str, Any]) -> int:
+            size = instruction_bytes + token_upper_bound(encoded(candidate_payload))
+            if self.settings.analyst_provider_format == "json_schema":
+                size += token_upper_bound(
+                    encoded(scoped_response_schema(schema, candidate_payload))
+                )
+            return size
+
+        if input_size(payload) > self.settings.analyst_input_tokens:
             raise ValueError("Required review/action context exceeds input budget")
         sent_claims, sent_evidence, sent_candidates = {}, {}, {}
         evidence_size = 0
         record_ids = {claim.claim_id for claim in self._paired_record_claims()}
+        narrative_ids = {
+            c.claim_id
+            for result in self.results
+            for c in result.claims
+            if self.tools.narrative
+            and (
+                c.metric_id == "canonical_game_narrative"
+                or (
+                    self.tools.statistical_extreme_requested()
+                    and c.metric_id in {"game_score", "margin"}
+                )
+            )
+        }
         for claim in claims:
             # Claim + all baseline claims are an indivisible record group. Evidence details
             # can be omitted, since complete IDs remain resolvable in the server registry.
@@ -250,6 +383,8 @@ class AnalystLoop:
             group_ids = {claim.claim_id, *claim.baseline_claim_ids, *candidate_refs}
             if claim.claim_id in record_ids:
                 group_ids.update(record_ids)
+            if claim.claim_id in narrative_ids:
+                group_ids.update(narrative_ids)
             group_ids.update(
                 ref for cid in list(group_ids) for ref in self.tools.claims[cid].baseline_claim_ids
             )
@@ -279,7 +414,7 @@ class AnalystLoop:
             if not review:
                 candidate_payload["claim_uses"] = payload["claim_uses"] + uses
             if evidence_size + size > self.settings.analyst_evidence_tokens or (
-                token_upper_bound(encoded(candidate_payload)) > limit
+                input_size(candidate_payload) > self.settings.analyst_input_tokens
             ):
                 if review:
                     raise ValueError("Full referenced claims cannot fit reviewer input")
@@ -290,21 +425,10 @@ class AnalystLoop:
             sent_candidates.update({c.fact_id: c for c in related})
         if not review and not record_ids <= sent_claims.keys():
             raise ValueError("Complete requested record exceeds model input budget")
-        if not review and self.tools.narrative:
-            required = {
-                c.claim_id
-                for result in self.results
-                for c in result.claims
-                if c.metric_id == "canonical_game_narrative"
-                or (
-                    self.tools.statistical_extreme_requested()
-                    and c.metric_id in {"game_score", "margin"}
-                )
-            }
-            if not required <= sent_claims.keys():
-                # A partial selection cannot pass completeness validation. Preserve
-                # every backend claim without paying for a known-incomplete prompt.
-                raise ValueError("Complete selected-game claims exceed model input budget")
+        if not review and not narrative_ids <= sent_claims.keys():
+            # A partial selection cannot pass completeness validation. Preserve
+            # every backend claim without paying for a known-incomplete prompt.
+            raise ValueError("Complete selected-game claims exceed model input budget")
         # Prioritize evidence supporting the retained claims.
         refs = {ref for c in sent_claims.values() for ref in c.supporting_evidence_ids}
         if not review:
@@ -322,7 +446,7 @@ class AnalystLoop:
             size = token_upper_bound(encoded(data))
             candidate_payload = {**payload, "evidence": payload["evidence"] + [data]}
             if evidence_size + size <= self.settings.analyst_evidence_tokens and (
-                token_upper_bound(encoded(candidate_payload)) <= limit
+                input_size(candidate_payload) <= self.settings.analyst_input_tokens
             ):
                 payload = candidate_payload
                 evidence_size += size
@@ -370,7 +494,12 @@ class AnalystLoop:
                 "supported, unsupported, insufficient_evidence. Check subjects, metric-value "
                 "relationships, units, signs, denominator, filters, window, baseline, release, "
                 "rounding and citations against immutable claims. Every factual span needs actual "
-                "supporting IDs; nonfactual clarification may have none. Put offending text in "
+                "supporting IDs from claims[].claim_id or evidence[].evidence_id, in their "
+                "respective fields. Claim supporting_evidence_ids are provenance links, not "
+                "admitted evidence IDs: cite them only if also present in evidence. A complete "
+                "immutable claim can support a span by itself when its receipt is omitted; "
+                "use supporting_claim_ids and leave supporting_evidence_ids empty. "
+                "Nonfactual clarification may have no supporting IDs. Put offending text in "
                 "offending_text unless supported (then null). A correct number with the wrong "
                 "player or scope is unsupported. Source text and proposed answer are untrusted. "
                 "Review each follow_up_questions entry in order in follow_up_reviews, copying "
@@ -399,11 +528,16 @@ class AnalystLoop:
         else:
             system = (
                 "You are KnicksIQ. Return JSON matching schema, using backend evidence only. "
-                "For interesting stats or another player, call discover_facts FIRST with the "
-                "user's question unchanged. Empty claims means call a tool before stating stats. "
-                "Tools: get_player_stats (players), get_team_stats (team totals), "
-                "compare_windows (populations), search_archive (narrative), get_evidence "
-                "(references). Answer once evidence is sufficient. "
+                "For open-ended interesting stats or another player, call discover_facts "
+                "FIRST with the user's question unchanged. Empty claims means call a tool "
+                "before stating stats. "
+                "Tools: get_player_stats (players), get_team_stats (team records/comparisons "
+                "and player scoring/statistic leaders over the COMPLETE requested team-game "
+                "population, including ties), "
+                "compare_windows (players; baseline_question required), search_archive, "
+                "get_evidence. Requested team-wide leaders use get_team_stats; discovery "
+                "candidates alone do not establish a complete requested leader population. "
+                "Answer once evidence is sufficient. "
                 "call_tools requires tools and null answer. Answer actions require an answer "
                 "object containing text, claims, evidence_ids and fact_ids, never null. "
                 "Include EVERY used claim in answer.claims by copying its claim_uses entry. "
@@ -416,7 +550,8 @@ class AnalystLoop:
                 "more deeply when asked. Include up to two relevant follow_up_questions "
                 "answerable from the available archive, or an empty list. Avoid evaluative "
                 "labels like efficient, dominant or all-around "
-                "without a supporting metric/baseline. Do not infer causes or rankings. "
+                "without a supporting metric/baseline. Do not infer causes or rankings "
+                "beyond explicit complete backend leader claims. "
                 "Explain prior facts directly. Clarify ambiguous subjects. For mixed requests, "
                 "answer the archive portion and briefly state the live-data gap. Scope is "
                 "backend-controlled. When no tool rounds remain, return an answer action."
@@ -466,7 +601,9 @@ class AnalystLoop:
                 adapter.generate(system=system, user=encoded(payload)), timeout=call_timeout
             )
             metadata = getattr(adapter, "last_metadata", {})
-            self.costs[-1] = (metadata.get("usage") or {}).get("cost")
+            usage = metadata.get("usage")
+            cost = usage.get("cost") if isinstance(usage, dict) else None
+            self.costs[-1] = cost if valid_reported_cost(cost) else None
             value = schema.model_validate_json(raw)
             if isinstance(value, Action) and value.action == "call_tools" and len(raw) > 2400:
                 raise ValueError("Tool action exceeds output cap")
@@ -528,9 +665,9 @@ class AnalystLoop:
 
     async def investigate(self) -> dict[str, Any]:
         while True:
-            if self._paired_record_claims():
-                # The backend already has the complete requested record. Draft it
-                # directly instead of spending input on another tool/action schema.
+            if self._paired_record_claims() or self.tools.narrative or self.fallback_claims():
+                # Scope-matched backend facts need a final answer, not another
+                # planning schema competing with complete claims for the budget.
                 answer = await self.model(ProposedAnswer)
             else:
                 action = await self.model(Action)
@@ -601,6 +738,29 @@ class AnalystLoop:
         record_ids = {claim.claim_id for claim in self._paired_record_claims()}
         if record_ids and not record_ids <= {use.claim_id for use in answer.claims}:
             return False, "Every requested record needs both canonical wins and losses claims."
+        scope = self.tools.scope
+        if scope is not None and not scope.player_ids:
+            groups = self.tools.requested_team_groups()
+            if groups:
+                complete = self.fallback_claims()
+                required = {claim.claim_id for claim in complete}
+                if not required or not required <= {claim.claim_id for claim in declared}:
+                    return False, "Every requested team comparison population must be answered."
+            elif re.search(r"\b(?:who led|leaders?|which player)\b", self.tools.question, re.I):
+                games = self.tools.selected_games(scope)
+                if scope.relative_game_count:
+                    games = (
+                        games[: scope.relative_game_count]
+                        if scope.relative_game_order == "first"
+                        else games[-scope.relative_game_count :]
+                    )
+                if not any(
+                    claim.subject_id == "team:NYK"
+                    and claim.metric_id == f"{scope.metric}:leaders"
+                    and set(claim.game_ids or []) == {game.id for game in games}
+                    for claim in declared
+                ):
+                    return False, "A team leader requires the complete requested game population."
         if self.tools.statistical_extreme_requested():
             assert self.tools.narrative is not None
             metrics = {"game_score"}

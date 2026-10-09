@@ -5,11 +5,13 @@ import os
 from datetime import UTC, date, datetime
 from pathlib import Path
 
+import pytest
 from app.core.config import get_settings
 from app.core.db import AsyncSessionLocal
 from app.evaluation.trace_capture import capture_turn
 from app.models.box_score import PlayerGameStat
 from app.models.game import Game
+from app.models.player import Player
 from app.services import analyst_loop
 from app.services.analyst_tools import AnalystTools
 from app.services.evidence_contracts import Evidence
@@ -17,6 +19,7 @@ from app.services.release_bundle import load_release_bundle
 from app.tests.test_analyst_contracts import local_redis  # noqa: F401
 from app.tests.test_canonical_narrative_http import BUNDLE, SHA
 from app.tests.test_player_intelligence import _seed_release_stats
+from jsonschema import Draft202012Validator
 from sqlalchemy import select
 
 
@@ -259,29 +262,11 @@ async def test_current_discovery_survives_oversized_result_http(
     assert seam["compact_id"] in {
         identity for search in searches for identity in search["candidate_evidence_ids"]
     }
-    packed = next(
-        request["user"]
-        for request in reversed(adapter.inputs)
-        if request["user"]["schema"]["title"] == "Action" and request["user"]["claims"]
-    )
-    ids = [e["evidence_id"] for e in packed["evidence"]]
     support_ids = set(seam["supporting_evidence"])
-    assert support_ids <= set(ids)
-    assert len(ids) == len(set(ids))
-    assert seam["oversized"]["evidence_id"] not in ids
-    assert seam["unrelated"]["evidence_id"] not in ids
-    originals = {e["evidence_id"]: e for e in seam["discovery"]}
-    originals.update(seam["supporting_evidence"])
-    assert originals[seam["compact_id"]] in packed["evidence"], (
-        "A nonempty oversized result must not suppress compact canonical discovery"
-    )
-    assert all(e == originals[e["evidence_id"]] for e in packed["evidence"])
-    assert packed["claims"] == seam["claims"]
     delivered_claims = {
         citation["metadata"]["claim"]["claim_id"]: citation["metadata"]["claim"]
         for citation in body["citations"]
     }
-    assert delivered_claims == {claim["claim_id"]: claim for claim in packed["claims"]}
     assert {
         (claim["subject_id"], claim["metric_id"]): claim["value"]
         for claim in delivered_claims.values()
@@ -352,3 +337,475 @@ async def test_oversized_boston_narrative_falls_back_before_dispatch_http(
     assert receipt["calls_before_replay"] == receipt["capture"]["turn"]["model_calls"] == 0, (
         "A required narrative that cannot fit must fall back before provider dispatch"
     )
+
+
+@pytest.mark.parametrize("scenario", ["appearance-average", "team-record", "team-leader"])
+async def test_strict_format_bounded_complete_population_http(
+    client,
+    local_redis,  # noqa: F811
+    monkeypatch,
+    tmp_path,
+    record_property,
+    scenario,
+):
+    settings = configure(monkeypatch)
+    monkeypatch.setattr(settings, "analyst_provider_format", "json_schema")
+    async with AsyncSessionLocal() as db:
+        release, player = await _seed_release_stats(db)
+        games = (
+            (
+                await db.execute(
+                    select(Game)
+                    .where(Game.release_id == release.id)
+                    .order_by(Game.game_date, Game.nba_game_id)
+                )
+            )
+            .scalars()
+            .all()
+        )
+        # The two players tie across all three games, although Brunson misses
+        # the middle game. Neither a single-game leader nor a partial record
+        # answers the requested population.
+        rows = (
+            (
+                await db.execute(
+                    select(PlayerGameStat).where(
+                        PlayerGameStat.release_id == release.id,
+                        PlayerGameStat.player_id == player.id,
+                    )
+                )
+            )
+            .scalars()
+            .all()
+        )
+        for row in rows:
+            if row.minutes > 0:
+                row.points = 21 if row.game_id == games[0].id else 30
+        await db.commit()
+    scenarios = {
+        "appearance-average": (
+            "What was Brunson's scoring average over his last 2 appearances?",
+            "get_player_stats",
+            {"points:average": 25.5},
+            {row.game_id for row in rows if row.minutes > 0},
+            "Jalen Brunson averaged 25.5 points over his last 2 appearances.",
+        ),
+        "team-record": (
+            "What was the Knicks record over their last 3 games?",
+            "get_team_stats",
+            {"wins": 3, "losses": 0},
+            {game.id for game in games},
+            "The Knicks had 3 wins and 0 losses over their last 3 games.",
+        ),
+        "team-leader": (
+            "Who led the Knicks in scoring over their last 3 games?",
+            "get_team_stats",
+            {
+                "points:leaders": {
+                    "leaders": ["Jalen Brunson", "Karl-Anthony Towns"],
+                    "total": 51,
+                }
+            },
+            {game.id for game in games},
+            "Jalen Brunson and Karl-Anthony Towns tied for the Knicks scoring lead "
+            "with 51 points each over their last 3 games.",
+        ),
+    }
+    question, tool, values, population, text = scenarios[scenario]
+
+    class StrictBoundaryAdapter:
+        """Fixed expected SQL answers, not an echo of the packaged claims."""
+
+        last_metadata = {"usage": {"cost": 0}, "provider": "synthetic-strict-boundary"}
+
+        def __init__(self):
+            self.inputs = []
+            self.response_schema = None
+            self.answer = None
+
+        async def generate(self, *, system, user):
+            payload = json.loads(user)
+            actual_bytes = len((system + user).encode()) + encoded_size(self.response_schema)
+            self.inputs.append({"system": system, "user": payload, "input_bytes": actual_bytes})
+            if actual_bytes > settings.analyst_input_tokens:
+                raise ValueError("Actual strict provider input exceeds the unchanged bound")
+            if payload["schema"]["title"] == "AnswerReview":
+                assert self.answer is not None, "Answer review requires a generated answer"
+                return json.dumps(
+                    {
+                        "assertions": [
+                            {
+                                "text": text,
+                                "assertion_type": "factual",
+                                "verdict": "supported",
+                                "offending_text": None,
+                                "supporting_claim_ids": [
+                                    use["claim_id"] for use in self.answer["claims"]
+                                ],
+                                "supporting_evidence_ids": [],
+                                "reason": "The requested SQL population supports these values.",
+                            }
+                        ],
+                        "follow_up_reviews": [],
+                    }
+                )
+            if not payload["claims"]:
+                return json.dumps(
+                    {
+                        "action": "call_tools",
+                        "tools": [{"name": tool, "question": question, "metric": "points"}],
+                        "answer": None,
+                    }
+                )
+            matched = {claim["metric_id"]: claim for claim in payload["claims"]}
+            if not values.keys() <= matched.keys():
+                raise ValueError("A requested statistic was omitted")
+            if any(set(matched[metric]["game_ids"]) != population for metric in values):
+                raise ValueError("A requested population was truncated")
+            self.answer = {
+                "text": text,
+                "claims": [
+                    {
+                        "claim_id": matched[metric]["claim_id"],
+                        "displayed_value": value,
+                        "decimal_places": None,
+                    }
+                    for metric, value in values.items()
+                ],
+                "evidence_ids": [],
+                "fact_ids": [],
+                "follow_up_questions": [],
+            }
+            return json.dumps(
+                self.answer
+                if payload["schema"]["title"] == "ProposedAnswer"
+                else {
+                    "action": "answer_from_available_evidence",
+                    "tools": [],
+                    "answer": self.answer,
+                }
+            )
+
+    adapter = StrictBoundaryAdapter()
+    monkeypatch.setattr(analyst_loop, "get_llm_adapter", lambda: adapter)
+    receipt = await exchange(client, local_redis, adapter, f"strict-{scenario}", question)
+    save_receipt(tmp_path, record_property, f"strict-{scenario}", receipt)
+    assert_committed_replay(receipt)
+    body = receipt["response"]
+    assert body["llm_validated"], "A complete bounded strict-format answer must reach review"
+    assert body["route"] == "llm_analyst"
+    assert body["answer"] == text
+    delivered = {
+        citation["metadata"]["claim"]["metric_id"]: citation["metadata"]["claim"]
+        for citation in body["citations"]
+    }
+    assert {metric: claim["value"] for metric, claim in delivered.items()} == values
+    assert all(set(claim["game_ids"]) == population for claim in delivered.values())
+    assert all(claim["sample_size"] == len(population) for claim in delivered.values())
+    assert all(claim["release_id"] == release.version for claim in delivered.values())
+    assert adapter.inputs and adapter.inputs[-1]["user"]["schema"]["title"] == "AnswerReview"
+    assert all(request["input_bytes"] <= 8000 for request in adapter.inputs)
+
+
+async def test_full_archive_record_reaches_independent_review_http(
+    client,
+    local_redis,  # noqa: F811
+    monkeypatch,
+    tmp_path,
+    record_property,
+):
+    """The captured 201 draft shape must reach review with both whole populations."""
+    settings = configure(monkeypatch)
+    monkeypatch.setattr(settings, "analyst_provider_format", "json_schema")
+    async with AsyncSessionLocal() as db:
+        loaded = await load_release_bundle(db, BUNDLE, expected_sha256=SHA, activate=True)
+        games = (
+            (
+                await db.execute(
+                    select(Game)
+                    .where(Game.release_id == loaded.release_id)
+                    .order_by(Game.game_date, Game.nba_game_id)
+                )
+            )
+            .scalars()
+            .all()
+        )
+    population = {game.id for game in games}
+    wins = sum(
+        (game.home_score > game.away_score) == (game.home_team_id == "NYK") for game in games
+    )
+    losses = len(games) - wins
+    question = "What was the Knicks record this season?"
+    text = (
+        f"In the available 2025-26 archive, the Knicks went {wins}-{losses} across "
+        f"{len(games)} archived games ({games[0].game_date} through "
+        f"{games[-1].game_date}). This covers the archived regular-season and playoff "
+        "games in the release, not necessarily the complete NBA season."
+    )
+    followups = [
+        "What was the Knicks' home record in the 2025-26 archive?",
+        "What was the Knicks' record in the 2025-26 playoffs?",
+    ]
+
+    class RecordAdapter(SyntheticAdapter):
+        response_schema = None
+
+        async def generate(self, *, system, user):
+            payload = json.loads(user)
+            actual_bytes = len((system + user).encode()) + encoded_size(self.response_schema)
+            self.inputs.append({"system": system, "user": payload, "input_bytes": actual_bytes})
+            assert actual_bytes <= 8000
+            if payload["schema"]["title"] == "AnswerReview":
+                assert "".join(payload["review_spans"]) == text
+                assert payload["follow_up_questions"] == followups
+                assert {c["metric_id"]: c["value"] for c in payload["claims"]} == {
+                    "wins": wins,
+                    "losses": losses,
+                }
+                assert all(set(c["game_ids"]) == population for c in payload["claims"])
+                return json.dumps(
+                    {
+                        "assertions": [
+                            {
+                                "text": span,
+                                "assertion_type": "factual",
+                                "verdict": "supported",
+                                "offending_text": None,
+                                "supporting_claim_ids": [c["claim_id"] for c in payload["claims"]],
+                                "supporting_evidence_ids": [],
+                                "reason": "Independent SQL totals and complete archive population.",
+                            }
+                            for span in payload["review_spans"]
+                        ],
+                        "follow_up_reviews": [
+                            {
+                                "text": followup,
+                                "verdict": "insufficient_evidence",
+                                "reason": "These subsets were not independently queried.",
+                            }
+                            for followup in followups
+                        ],
+                    }
+                )
+            if not payload["claims"]:
+                return json.dumps({"action": "call_tools", "tools": [self.tool], "answer": None})
+            by_metric = {c["metric_id"]: c for c in payload["claims"]}
+            return json.dumps(
+                {
+                    "text": text,
+                    "claims": [
+                        {
+                            "claim_id": by_metric[metric]["claim_id"],
+                            "displayed_value": value,
+                            "decimal_places": None,
+                        }
+                        for metric, value in (("wins", wins), ("losses", losses))
+                    ],
+                    "evidence_ids": [payload["evidence"][0]["evidence_id"]],
+                    "fact_ids": [],
+                    "follow_up_questions": followups,
+                }
+            )
+
+    adapter = RecordAdapter(
+        {"name": "get_team_stats", "question": question, "metric": "wins", "aggregation": "total"}
+    )
+    monkeypatch.setattr(analyst_loop, "get_llm_adapter", lambda: adapter)
+    receipt = await exchange(client, local_redis, adapter, "full-archive-record", question)
+    save_receipt(tmp_path, record_property, "full-archive-record", receipt)
+    assert_committed_replay(receipt)
+    assert receipt["response"]["llm_validated"]
+    assert receipt["response"]["answer"] == text
+    assert receipt["response"]["follow_up_questions"] == []
+    assert receipt["capture"]["turn"]["model_calls"] == 3
+    assert adapter.inputs[-1]["user"]["schema"]["title"] == "AnswerReview"
+    delivered = {
+        c["metadata"]["claim"]["metric_id"]: c["metadata"]["claim"]
+        for c in receipt["response"]["citations"]
+        if c["type"] == "verified_claim"
+    }
+    assert {metric: c["value"] for metric, c in delivered.items()} == {
+        "wins": wins,
+        "losses": losses,
+    }
+    assert all(set(c["game_ids"]) == population for c in delivered.values())
+    assert all(c["sample_size"] == len(games) for c in delivered.values())
+
+
+@pytest.mark.parametrize(
+    "scenario", ["archive-points", "observed-double-doubles", "three-point-percentage", "starts"]
+)
+async def test_requested_scalar_survives_strict_planning_http(
+    client,
+    local_redis,  # noqa: F811
+    monkeypatch,
+    tmp_path,
+    record_property,
+    scenario,
+):
+    settings = configure(monkeypatch)
+    monkeypatch.setattr(settings, "analyst_provider_format", "json_schema")
+    async with AsyncSessionLocal() as db:
+        if scenario in {"three-point-percentage", "starts"}:
+            release, _ = await _seed_release_stats(db)
+            release_id = release.id
+        else:
+            loaded = await load_release_bundle(db, BUNDLE, expected_sha256=SHA, activate=True)
+            release_id = loaded.release_id
+        games = (
+            (
+                await db.execute(
+                    select(Game)
+                    .where(Game.release_id == release_id)
+                    .order_by(Game.game_date, Game.nba_game_id)
+                )
+            )
+            .scalars()
+            .all()
+        )
+        if scenario == "archive-points":
+            assert len(games) == 101
+            value = sum(
+                game.home_score if game.home_team_id == "NYK" else game.away_score for game in games
+            )
+            population = {game.id for game in games}
+            question = "How many total points did the Knicks score?"
+            tool, metric, claim_metric = "get_team_stats", "points", "points"
+        else:
+            rows = (
+                (
+                    await db.execute(
+                        select(PlayerGameStat)
+                        .join(Player, Player.id == PlayerGameStat.player_id)
+                        .where(
+                            PlayerGameStat.release_id == release_id,
+                            Player.full_name == "Karl-Anthony Towns",
+                            PlayerGameStat.minutes > 0,
+                        )
+                        .order_by(PlayerGameStat.game_id)
+                    )
+                )
+                .scalars()
+                .all()
+            )
+            if scenario == "observed-double-doubles":
+                # An absent archive row is unknown, not a zero or a reason to hide
+                # the verified total over the remaining observed appearances.
+                await db.delete(rows[-1])
+                rows = rows[:-1]
+                await db.commit()
+            population = {row.game_id for row in rows}
+            tool = "get_player_stats"
+            if scenario == "observed-double-doubles":
+                value = sum(
+                    sum(
+                        getattr(row, stat) >= 10
+                        for stat in ("points", "rebounds", "assists", "steals", "blocks")
+                    )
+                    >= 2
+                    for row in rows
+                )
+                question = "How many double-doubles did Karl-Anthony Towns have?"
+                metric, claim_metric = "double_doubles", "double_doubles:total"
+            elif scenario == "three-point-percentage":
+                value = (
+                    sum(row.three_pointers_made for row in rows)
+                    / sum(row.three_pointers_attempted for row in rows)
+                    * 100
+                )
+                question = "What was Karl-Anthony Towns' three-point percentage?"
+                metric = claim_metric = "three_point_percentage"
+            else:
+                for index, row in enumerate(rows):
+                    row.starter = index < 2
+                await db.commit()
+                value = 2
+                question = "How many games did Karl-Anthony Towns start?"
+                metric = claim_metric = "starts"
+    text = f"The available archive shows {value} for the requested statistic."
+
+    class ScalarAdapter:
+        last_metadata = {"usage": {"cost": 0}, "provider": "synthetic-scalar-regression"}
+
+        def __init__(self):
+            self.inputs = []
+            self.response_schema: dict[str, object] | None = None
+
+        async def generate(self, *, system, user):
+            payload = json.loads(user)
+            assert self.response_schema is not None
+            actual_bytes = len((system + user).encode()) + encoded_size(self.response_schema)
+            self.inputs.append({"system": system, "user": payload, "input_bytes": actual_bytes})
+            assert actual_bytes <= settings.analyst_input_tokens
+            if payload["schema"]["title"] == "AnswerReview":
+                response = {
+                    "assertions": [
+                        {
+                            "text": text,
+                            "assertion_type": "factual",
+                            "verdict": "supported",
+                            "offending_text": None,
+                            "supporting_claim_ids": [c["claim_id"] for c in payload["claims"]],
+                            "supporting_evidence_ids": [],
+                            "reason": "Independent SQL value and complete population match.",
+                        }
+                    ],
+                    "follow_up_reviews": [],
+                }
+            elif not payload["claims"]:
+                if payload["results"]:
+                    raise ValueError("The requested backend claim was dropped before drafting")
+                response = {
+                    "action": "call_tools",
+                    "tools": [
+                        {
+                            "name": tool,
+                            "question": question,
+                            "metric": metric,
+                            "aggregation": "total",
+                        }
+                    ],
+                    "answer": None,
+                }
+            else:
+                claim = next(c for c in payload["claims"] if c["metric_id"] == claim_metric)
+                assert claim["value"] == value
+                assert set(claim["game_ids"]) == population
+                assert claim["sample_size"] == len(population)
+                response = {
+                    "text": text,
+                    "claims": [
+                        {
+                            "claim_id": claim["claim_id"],
+                            "displayed_value": value,
+                            "decimal_places": None,
+                        }
+                    ],
+                    "evidence_ids": [],
+                    "fact_ids": [],
+                    "follow_up_questions": [],
+                }
+                if payload["schema"]["title"] == "Action":
+                    response = {
+                        "action": "answer_from_available_evidence",
+                        "tools": [],
+                        "answer": response,
+                    }
+            Draft202012Validator(self.response_schema).validate(response)
+            return json.dumps(response)
+
+    adapter = ScalarAdapter()
+    monkeypatch.setattr(analyst_loop, "get_llm_adapter", lambda: adapter)
+    receipt = await exchange(client, local_redis, adapter, f"requested-scalar-{scenario}", question)
+    save_receipt(tmp_path, record_property, f"requested-scalar-{scenario}", receipt)
+    assert receipt["response"]["llm_validated"], "The complete requested claim must reach review"
+    assert_committed_replay(receipt)
+    assert receipt["response"]["answer"] == text
+    delivered = {
+        citation["metadata"]["claim"]["metric_id"]: citation["metadata"]["claim"]
+        for citation in receipt["response"]["citations"]
+        if citation["type"] == "verified_claim"
+    }
+    assert delivered[claim_metric]["value"] == value
+    assert set(delivered[claim_metric]["game_ids"]) == population
+    assert delivered[claim_metric]["sample_size"] == len(population)

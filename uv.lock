@@ -852,6 +852,7 @@ local-rag = [
 ]
 test = [
     { name = "httpx" },
+    { name = "jsonschema" },
     { name = "pytest" },
     { name = "pytest-asyncio" },
 ]
@@ -864,6 +865,7 @@ requires-dist = [
     { name = "certifi", specifier = ">=2024.2.2" },
     { name = "fastapi", specifier = ">=0.110" },
     { name = "httpx", marker = "extra == 'test'", specifier = ">=0.26" },
+    { name = "jsonschema", marker = "extra == 'test'", specifier = ">=4.26" },
     { name = "knicksiq-basketball-core", editable = "packages/basketball-core" },
     { name = "pydantic", specifier = ">=2.6" },
     { name = "pydantic-settings", specifier = ">=2.2" },

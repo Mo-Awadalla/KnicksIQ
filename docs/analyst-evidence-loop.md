@@ -25,6 +25,13 @@ and source windows. Candidate metadata records extreme selection, family, subjec
 metric, window, baseline and selection reason. Committed responses alone advance
 novelty state. A single-game candidate does not assert a season ranking.
 
+Canonical discovery verifies its complete SQL-bound source corpus before lexical
+retrieval. Integrity preparation uses the configured investigation budget (20 seconds
+in staging), inside the unchanged 30-second HTTP request deadline. The four-second
+local retrieval deadline then covers lexical search, ranking and receipt admission,
+not source transfer and integrity verification. No source check is cached or skipped;
+invalid proof and slow lexical retrieval still return dependency failure.
+
 The tools return distinct statuses for ambiguity, empty matches, incomplete
 coverage, unsupported scope, dependency failure and success. Search results are
 examples, never season denominators. Qdrant failure does not disable SQL claims.
@@ -33,19 +40,32 @@ hedging, reviewed reports and connected events do not create blanket permission.
 
 The reviewer receives a fresh context with the complete proposed answer, backend
 claims, selected receipts, capabilities and interpretation policy. Its ordered
-assertion spans must reproduce the entire answer exactly. Malformed, incomplete,
-unknown and unsupported verdicts fail closed. Typed reference/value checks run
-before each review. This safeguard still requires human-labelled calibration;
+assertion spans must reproduce the entire answer exactly. Claim provenance links
+in `supporting_evidence_ids` are not permission to cite an omitted receipt: review
+evidence references must come from the admitted `evidence` array. A complete
+immutable claim can support a span through `supporting_claim_ids` alone when its
+receipt is omitted. Malformed, incomplete, unknown and unsupported verdicts fail
+closed. Typed reference/value checks run before each review; strict reference
+validation is unchanged. This safeguard still requires human-labelled calibration;
 a reviewer verdict is not proof of truth.
 
-Input packing drops complete records and preserves their server-side references.
-UTF-8 byte counts conservatively bound input tokens, including a reserved system
-prompt allowance. This underfills context compared with a model-specific tokenizer
-and should be measured before promotion. Large claims that do not fit are omitted,
-never truncated. Investigation allows two rounds, three tools per round and six
-model calls total, including malformed output. Normal lookup uses choose/write/review;
-prior-evidence explanation uses write/review. Repairs require capacity and time for
-both calls. Replies remain buffered. No prompt logging is introduced.
+Input packing admits or drops whole records and preserves their server-side
+references. At each mandatory-context, claim-group and evidence boundary, UTF-8
+bytes account for the actual system instructions, serialized user payload and,
+in `json_schema` mode, the actual scoped provider schema. The existing 8000-byte
+input cap and evidence allowance are unchanged. Strict mode retains only the
+protocol title in the user's `schema` field; validation constraints appear once,
+in the provider schema. Nonsemantic schema titles, descriptions and defaults are
+compacted without changing allowed values, reference enums, exact review spans,
+or the two-follow-up limit. JSON-object mode still carries its user schema and
+requires local validation. This conservative bound underfills context compared
+with a model-specific tokenizer. Large records are never truncated; requested
+record pairs and selected narrative/scalar game sets are indivisible and fall
+back completely if they cannot fit. Investigation allows two rounds, three tools
+per round and six model calls total, including malformed output. Normal lookup
+uses choose/write/review; prior-evidence explanation uses write/review. Repairs
+require capacity and time for both calls. Replies remain buffered. No prompt
+logging is introduced.
 
 Model-input claim records omit inapplicable nullable fields; the immutable server
 registry and public claim JSON remain unchanged. Typed values, requested scope,
@@ -62,6 +82,12 @@ active release. Comparison groups reuse `team_scope.comparison_groups`.
 Bench scoring divides nonstarter points by team games; shooting percentages
 divide total makes by total attempts. Player averages use observed appearances,
 not team games. Leader ties and tied selected games remain complete.
+The orchestrator advertises `get_team_stats` for team-wide player scoring/statistic
+leaders over the complete requested team-game population, including ties.
+`discover_facts` supplies candidate facts, not an authoritative substitute for a
+requested multi-game leader calculation. The existing backend calculation and
+complete-population validator remain responsible for this distinction.
+
 
 Fallback eligibility requires the exact requested subgroup, period, player
 appearance window, or selected-game population and metric. Every requested
@@ -87,6 +113,11 @@ claim IDs are mandatory, are packed atomically, and retain their complete
 population and provenance. A missing count or an over-budget pair triggers the
 complete factual fallback. The existing repair, whole-answer review, call
 accounting, deadlines and original input/output limits still apply.
+Prepared canonical narrative and scalar-game populations also draft directly:
+their backend investigation has already completed, so another tool-action schema
+adds no information. Every selected game and requested metric remains mandatory.
+Model payloads omit unbound (null) optional scope descriptors. Backend scope,
+non-null filters, complete populations and mandatory claims remain unchanged.
 
 Quarter calculations currently support team points per game only. Quarter totals,
 other quarter box-score statistics, and player quarter statistics remain
@@ -174,6 +205,27 @@ The ledger has no automatic expiry. A new month also requires reconciliation.
 Local test Redis uses a separate, disposable ledger and never alters production.
 
 ## Verification and promotion
+
+Before any paid capability or evaluation run, the no-spend regression path is the
+existing isolated SQL and real local Redis HTTP setup with empty live provider
+credentials. Run `test_analyst_payload_http.py`, `test_analyst_value_format_http.py`
+and `test_loop_review_http.py`. The behavioral
+`test_strict_format_bounded_complete_population_http` cases cover a positive-minute
+appearance average, both requested record counts, and tied team-wide leaders over
+all three requested games. Fixed expected SQL values, complete citation populations,
+whole-answer review and committed replay are checked; their scripted provider
+boundary includes the external scoped schema in every dispatched input byte count.
+These tests are synthetic protocol evidence, not live-model quality evidence.
+
+For the private captured-wire dry diagnostic, rebuild payload selection with the
+new packer and a recording, no-network adapter; count the actual system/user/scoped
+schema bytes at dispatch, confirm every input is at most 8000 UTF-8 bytes, and
+compare retained claims with their immutable registry objects. Check complete
+requested record/narrative groups, admitted evidence/fact/review reference enums,
+exact review spans and the unchanged follow-up bound. Capture any over-budget
+mandatory group as a complete factual fallback, never a partial authoritative
+answer. This offline replay spends nothing and cannot certify new model answers
+or replace fresh prerequisite admission and the original quality evaluations.
 
 Run `uv run --package knicksiq-api python -m app.evaluation.analyst_probe` against the
 configured provider. `ANALYST_PROVIDER_FORMAT=json_schema` enables strict schema

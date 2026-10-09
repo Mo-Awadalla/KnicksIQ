@@ -64,6 +64,7 @@ _METRICS = {
     "plus minus": "plus_minus",
     "three": "three_pointers_made",
     "threes": "three_pointers_made",
+    "three point percentage": "three_point_percentage",
 }
 
 
@@ -347,6 +348,8 @@ def _periods(question: str) -> list[int]:
 
 def _metric(question: str) -> str | None:
     q = _normalize(question)
+    if re.search(r"\b(?:games?|times)\b.*\bstart(?:ed)?\b", q):
+        return "starts"
     return next(
         (
             metric

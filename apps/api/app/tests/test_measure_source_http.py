@@ -172,6 +172,102 @@ def independent_inputs(directory):
     return paths, hashes
 
 
+async def test_snapshot_fast_path_preserves_noncanonical_proof_and_mutation_rejection(
+    db_session, tmp_path
+):
+    from app.models.dataset_release import DatasetRelease
+    from app.services.comparison_sources import verified_comparison_source
+
+    paths, hashes = independent_inputs(tmp_path)
+    loaded = await load_release_bundle(
+        db_session, paths["bundle"], expected_sha256=hashes["bundle"], activate=True
+    )
+    source = await import_comparison_source(db_session, **paths, expected_hashes=hashes)
+    release = (
+        await db_session.execute(
+            select(DatasetRelease).where(DatasetRelease.version == loaded.version)
+        )
+    ).scalar_one()
+    games = list(
+        (await db_session.execute(select(Game).where(Game.release_id == release.id))).scalars()
+    )
+    original = await verified_comparison_source(db_session, release, games)
+    assert original is not None
+    # Whitespace changes remain semantically equivalent, as the original verifier
+    # allows; the canonical-byte fast path must retain that compatibility.
+    source.facts_json = json.dumps(json.loads(source.facts_json), indent=2)
+    source.bindings_json = json.dumps(json.loads(source.bindings_json), indent=2)
+    await db_session.flush()
+    equivalent = await verified_comparison_source(db_session, release, games)
+    assert equivalent is not None and equivalent[1:] == original[1:]
+    changed = json.loads(source.facts_json)
+    changed["foreign-proof-fact"] = {"points": 999}
+    source.facts_json = json.dumps(changed)
+    await db_session.flush()
+    with pytest.raises(ValueError, match="Stored comparison facts or bindings changed"):
+        await verified_comparison_source(db_session, release, games)
+
+
+async def test_packed_snapshot_preserves_float_bytes_and_rejects_missing_rows(
+    db_session, tmp_path, monkeypatch
+):
+    from types import SimpleNamespace
+
+    from app.models.dataset_release import DatasetRelease
+    from app.services.comparison_sources import _sql_snapshot, verified_comparison_source
+    from app.services.release_bundle import read_bundle
+    from sqlalchemy.sql.selectable import CompoundSelect
+
+    paths, hashes = independent_inputs(tmp_path)
+    loaded = await load_release_bundle(
+        db_session, paths["bundle"], expected_sha256=hashes["bundle"], activate=True
+    )
+    source = await import_comparison_source(db_session, **paths, expected_hashes=hashes)
+    release = (
+        await db_session.execute(
+            select(DatasetRelease).where(DatasetRelease.version == loaded.version)
+        )
+    ).scalar_one()
+    games = list(
+        (await db_session.execute(select(Game).where(Game.release_id == release.id))).scalars()
+    )
+    bindings = json.loads(source.bindings_json)
+    expected = bindings["by_game"]
+    data = read_bundle(paths["bundle"], hashes["bundle"])["data"]
+    # Simulate PostgreSQL's transport of the independent fixture rows, including
+    # its integral-float JSON representation. Real PostgreSQL byte equivalence
+    # is also checked read-only against the complete approved live archive.
+    packed = []
+    for collection in ("events", "period_scores", "player_game_stats", "team_game_stats"):
+        rows = []
+        for game in games:
+            for original in data[collection]:
+                if original["nba_game_id"] != game.nba_game_id:
+                    continue
+                values = [
+                    int(value) if isinstance(value, float) and value.is_integer() else value
+                    for value in (original.get(field) for field in bindings["fields"][collection])
+                ]
+                rows.append([game.id, *values])
+        packed.append((collection, rows or None))
+    execute = db_session.execute
+
+    async def transport(stmt, *args, **kwargs):
+        if isinstance(stmt, CompoundSelect):
+            assert len(stmt.selects) == 4
+            return SimpleNamespace(all=lambda: copy.deepcopy(packed))
+        return await execute(stmt, *args, **kwargs)
+
+    monkeypatch.setattr(db_session.get_bind().dialect, "name", "postgresql")
+    monkeypatch.setattr(db_session, "execute", transport)
+    snapshot = await _sql_snapshot(db_session, release.id, bindings)
+    assert canonical_json(snapshot) == canonical_json(expected)
+    assert await verified_comparison_source(db_session, release, games) is not None
+    packed[0][1].pop()
+    with pytest.raises(ValueError, match="Canonical SQL snapshot changed"):
+        await verified_comparison_source(db_session, release, games)
+
+
 async def test_import_index_and_actual_clarification_source_transitions(
     client,
     local_redis,  # noqa: F811

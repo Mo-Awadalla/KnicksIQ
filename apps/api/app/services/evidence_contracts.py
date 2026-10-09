@@ -16,6 +16,8 @@ PlayerMetric = Literal[
     "steals",
     "blocks",
     "three_pointers_made",
+    "three_point_percentage",
+    "starts",
     "plus_minus",
     "minutes",
     "double_doubles",
@@ -37,8 +39,8 @@ PLAYER_METRICS = get_args(PlayerMetric)
 TEAM_METRICS = get_args(TeamMetric)
 
 CONTRACT_VERSION = "analyst-evidence-v1"
-PROMPT_VERSION = "analyst-balanced-v3"
-VALIDATOR_VERSION = "whole-answer-v1"
+PROMPT_VERSION = "analyst-balanced-v4"
+VALIDATOR_VERSION = "whole-answer-v2"
 INTERPRETATION_POLICY = (
     "Explain observed magnitude, contrast and basketball meaning. Never infer unobserved "
     "mechanisms, motivation, tactics or causes, even with hedging. Causal explanations need "
