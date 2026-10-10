@@ -809,3 +809,83 @@ async def test_requested_scalar_survives_strict_planning_http(
     assert delivered[claim_metric]["value"] == value
     assert set(delivered[claim_metric]["game_ids"]) == population
     assert delivered[claim_metric]["sample_size"] == len(population)
+
+
+@pytest.mark.parametrize(
+    ("requested_phase", "suggested_filter"),
+    [
+        (None, "in the 2025-26 regular season"),
+        (None, "before January 1, 2026"),
+        (None, "against Boston"),
+        ("regular", "in the 2025-26 playoffs"),
+    ],
+)
+async def test_player_aggregate_preserves_requested_population_http(
+    client,
+    local_redis,  # noqa: F811
+    monkeypatch,
+    tmp_path,
+    record_property,
+    requested_phase,
+    suggested_filter,
+):
+    """A model's narrower investigation must not redefine the requested average."""
+    configure(monkeypatch)
+    question = "What was Karl-Anthony Towns' rebounding average?"
+    if requested_phase:
+        question = "What was Karl-Anthony Towns' regular-season rebounding average?"
+    suggested_question = f"What was Karl-Anthony Towns' rebounding average {suggested_filter}?"
+    async with AsyncSessionLocal() as db:
+        await load_release_bundle(db, BUNDLE, expected_sha256=SHA, activate=True)
+        rows = list(
+            (
+                await db.execute(
+                    select(PlayerGameStat, Game)
+                    .join(Game, PlayerGameStat.game_id == Game.id)
+                    .join(Player, PlayerGameStat.player_id == Player.id)
+                    .where(
+                        Player.full_name == "Karl-Anthony Towns",
+                        PlayerGameStat.team_id == "NYK",
+                        PlayerGameStat.minutes > 0,
+                    )
+                )
+            ).all()
+        )
+    eligible = [
+        (stat, game)
+        for stat, game in rows
+        if requested_phase is None or game.season_type == requested_phase
+    ]
+    expected_games = {game.id for _, game in eligible}
+    expected_average = sum(stat.rebounds for stat, _ in eligible) / len(eligible)
+
+    adapter = SyntheticAdapter(
+        {
+            "name": "get_player_stats",
+            "question": suggested_question,
+            "metric": "rebounds",
+            "aggregation": "average",
+        }
+    )
+    monkeypatch.setattr(analyst_loop, "get_llm_adapter", lambda: adapter)
+    name = f"population-{requested_phase}-{suggested_filter.split()[0]}"
+    receipt = await exchange(client, local_redis, adapter, name, question)
+    receipt["independent_SQL_expectation"] = {
+        "game_ids": sorted(expected_games),
+        "sample_size": len(eligible),
+        "rebounds_average": expected_average,
+        "requested_phase": requested_phase,
+    }
+    save_receipt(tmp_path, record_property, name, receipt)
+    assert_committed_replay(receipt)
+    assert receipt["response"]["llm_validated"], "The requested full population must be answered"
+    claims = [
+        citation["metadata"]["claim"]
+        for citation in receipt["response"]["citations"]
+        if citation["type"] == "verified_claim"
+    ]
+    assert len(claims) == 1
+    assert claims[0]["metric_id"] == "rebounds:average"
+    assert set(claims[0]["game_ids"]) == expected_games
+    assert claims[0]["sample_size"] == len(eligible)
+    assert claims[0]["value"] == expected_average

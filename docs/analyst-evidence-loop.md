@@ -376,3 +376,34 @@ marked `human_reviewed: false`; they must be reviewed by a person before they ca
 satisfy the calibration gate. The held-out set includes causal claims hidden in
 otherwise correct prose, hedged causation, subject/sign/scope swaps, retrieval
 as a denominator, extreme-selection overclaims and injected source instructions.
+
+### Native comparison and population authority
+
+Extreme-game claims retain the eligible comparison population before selecting
+the extreme and every tied game. Their immutable eligibility records include
+the comparison definition, eligible game IDs, selected tied IDs, sample size and
+compared archive phases. Supporting calculation receipts retain every eligible
+game's source receipt; a selected game's phase is not the comparison universe.
+The same comparative score receipt supports its derived final margin.
+
+Native narrative preparation calls `resolve_query(select_extrema=False)` so
+an earlier biggest-win or best-defensive target selection cannot shrink that
+comparison population. Ordinary archive retrieval and conversation references
+still resolve the selected targets.
+
+Computational `get_player_stats`, `get_team_stats` and `compare_windows` calls
+retain the user's temporal/game population, including unrestricted `None` and
+empty defaults. A model cannot silently substitute regular-season, opponent or
+date restrictions. Retrieval can still narrow examples; explicit comparison
+baseline questions retain their separate canonical resolution.
+
+Failure-first HTTP regressions exercise real archive rows, isolated Redis,
+delivered citations and committed replay. They verify complete comparison and
+tie-source coverage, three unauthorized population restrictions, and an
+explicit-phase control. Their repeatable private artifacts are in
+`extreme-comparison-and-player-scope-regression/`: the consumer-visible before
+run failed four cases and passed the control; the integrated after run passed
+all five, including the existing twenty requested-scope scenarios.
+Provider responses in the population HTTP checks are scripted, not paid model
+answers. These checks do not approve fresh DeepSeek answers or replace the
+original primary120, semantic50, shadow120, load or restoration gates.

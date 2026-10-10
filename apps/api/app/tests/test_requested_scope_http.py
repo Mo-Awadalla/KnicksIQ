@@ -111,7 +111,7 @@ async def test_requested_metric_and_scope_over_http(
     for name, question, value, choose, margin in extrema:
         maximum = choose(value(g) for g in games)
         population = [g for g in games if value(g) == maximum]
-        body, _ = await request(client, local_redis, monkeypatch, directory, name, question)
+        body, capture = await request(client, local_redis, monkeypatch, directory, name, question)
         claims = {
             c["metadata"]["claim"]["claim_id"]: c["metadata"]["claim"] for c in body["citations"]
         }
@@ -137,6 +137,35 @@ async def test_requested_metric_and_scope_over_http(
             )
             if claim["value"] != expected:
                 failures.append((name, "wrong selected game value"))
+            compared = (
+                [g for g in games if score(g)[0] > score(g)[1]]
+                if name == "biggest"
+                else [g for g in games if score(g)[0] < score(g)[1]]
+                if name == "worst"
+                else games
+            )
+            comparison = claim.get("eligibility", {}).get("comparison", {})
+            if (
+                set(comparison.get("game_ids", [])) != {ids[g["nba_game_id"]] for g in compared}
+                or set(comparison.get("selected_game_ids", []))
+                != {ids[g["nba_game_id"]] for g in population}
+                or comparison.get("sample_size") != len(compared)
+            ):
+                failures.append((name, "selected score lacks complete comparison and tie support"))
+            receipts = {
+                e["evidence_id"]: e for e in capture["turn"]["delivered_state"].get("evidence", [])
+            }
+            sources = {
+                source
+                for ref in claim["supporting_evidence_ids"]
+                for source in receipts.get(ref, {})
+                .get("metadata", {})
+                .get("source_evidence_ids", [ref])
+            }
+            if sources != {
+                f"{body['data_version']}:game:{ids[g['nba_game_id']]}" for g in compared
+            }:
+                failures.append((name, "comparison receipt omits an eligible archived game"))
 
     context = [
         {"role": "user", "content": "Tell me about the Knicks Celtics game."},

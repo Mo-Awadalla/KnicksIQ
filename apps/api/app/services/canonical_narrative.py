@@ -24,6 +24,7 @@ class NarrativeSelection:
     kind: Literal["game_stories", "boston_unanswered_runs"]
     games: list[Game]
     definition: str
+    comparison_games: list[Game]
 
 
 def select_narrative(question: str, games: list[Game]) -> NarrativeSelection | None:
@@ -32,6 +33,7 @@ def select_narrative(question: str, games: list[Game]) -> NarrativeSelection | N
     final = [g for g in games if g.status == "final"]
     if not final:
         return None
+    comparison_games = final
     if "BOS" in team_ids_in_text(question) and re.search(
         r"\b(?:key sequence|drought|unanswered|cost)\b", q
     ):
@@ -42,6 +44,7 @@ def select_narrative(question: str, games: list[Game]) -> NarrativeSelection | N
                 losses,
                 "Consecutive Boston scoring events without intervening Knicks points; "
                 "any Knicks point ends a run; quarter breaks and zero-point events do not.",
+                final,
             )
         return None
     if "closest" in q or re.search(r"\b(?:smallest|narrowest) (?:final )?margin\b", q):
@@ -52,6 +55,7 @@ def select_narrative(question: str, games: list[Game]) -> NarrativeSelection | N
         wins = [g for g in final if scores(g)[0] > scores(g)[1]]
         if not wins:
             return None
+        comparison_games = wins
         value = max(scores(g)[0] - scores(g)[1] for g in wins)
         selected = [g for g in wins if scores(g)[0] - scores(g)[1] == value]
         definition = "Largest positive Knicks final scoring margin; all tied games."
@@ -71,12 +75,13 @@ def select_narrative(question: str, games: list[Game]) -> NarrativeSelection | N
         losses = [g for g in final if scores(g)[0] < scores(g)[1]]
         if not losses:
             return None
+        comparison_games = losses
         value = min(scores(g)[0] - scores(g)[1] for g in losses)
         selected = [g for g in losses if scores(g)[0] - scores(g)[1] == value]
         definition = "Most negative Knicks final scoring margin; all tied games."
     else:
         return None
-    return NarrativeSelection("game_stories", selected, definition)
+    return NarrativeSelection("game_stories", selected, definition, comparison_games)
 
 
 def measure_clarification(question: str) -> str | None:
