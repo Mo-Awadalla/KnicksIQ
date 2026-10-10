@@ -110,7 +110,11 @@ class AnalystTools:
         )
         self.rows = [(stat, player) for stat, player in loaded_rows]
         self.scope = await resolve_query(
-            self.db, self.question, intent="analyst", data_version=self.release.version
+            self.db,
+            self.question,
+            intent="analyst",
+            data_version=self.release.version,
+            select_extrema=False,
         )
         self.scope = resolve_game_reference(self.question, self.scope, self.context, self.games)
         if (
@@ -456,20 +460,25 @@ class AnalystTools:
                 results = []
                 for game in self.narrative.games:
                     game_scope = self.scope.model_copy(update={"game_ids": [game.id]})
-                    results.append(self.game_score(game_scope, [game]))
+                    score_result = self.game_score(game_scope, [game])
+                    results.append(score_result)
                     if "margin" in self.question.lower():
                         own, opponent = self.score(game)
+                        comparison = score_result.claims[0].eligibility["comparison"]
                         claim = self.claim(
                             subject="team:NYK",
                             metric="margin",
                             value=own - opponent,
                             unit="points",
                             games=[game],
-                            evidence=[self.receipt(game)],
+                            evidence=score_result.evidence,
                             scope=game_scope,
                             sample=1,
                             denominator=None,
-                            eligibility={"selection": self.narrative.definition},
+                            eligibility={
+                                "selection": self.narrative.definition,
+                                "comparison": comparison,
+                            },
                             statement=(
                                 f"Knicks final scoring margin on {game.game_date}: "
                                 f"{own - opponent} points."
@@ -488,7 +497,7 @@ class AnalystTools:
                     scope=self.scope.model_dump(mode="json"),
                 )
             return await build_narrative(self.db, self.release, self.narrative)
-        # Resolve model suggestions locally, but they may only narrow the user's scope.
+        # Retrieval may narrow examples; calculations retain the requested population defaults.
         scope = await resolve_query(
             self.db, call.question, intent=call.name, data_version=self.release.version
         )
@@ -498,6 +507,7 @@ class AnalystTools:
                 message="Ambiguous entity.",
                 choices=scope.clarification_options,
             )
+        calculation = call.name in ("get_team_stats", "get_player_stats", "compare_windows")
         for key in (
             "player_ids",
             "game_ids",
@@ -512,7 +522,7 @@ class AnalystTools:
             "relative_game_order",
         ):
             authoritative = getattr(self.scope, key)
-            if authoritative:
+            if authoritative or (calculation and key != "player_ids"):
                 scope = scope.model_copy(update={key: authoritative})
         if (
             scope.periods
@@ -953,6 +963,22 @@ class AnalystTools:
             return []
         return comparison_groups(self.question, self.selected_games(self.scope))
 
+    def _score_comparison(self, game: Game) -> tuple[list[Evidence], dict[str, Any]]:
+        assert self.narrative is not None
+        population = self.narrative.comparison_games
+        comparison = {
+            "definition": self.narrative.definition,
+            "game_ids": [compared.id for compared in population],
+            "selected_game_ids": [selected.id for selected in self.narrative.games],
+            "sample_size": len(population),
+            "season_types": sorted({compared.season_type for compared in population}),
+        }
+        # Keep the selected game's source first so equal tied scores retain
+        # distinct calculation receipts while every eligible source is included.
+        evidence = [self.receipt(game)]
+        evidence.extend(self.receipt(compared) for compared in population if compared.id != game.id)
+        return evidence, comparison
+
     def game_score(self, scope: ResolvedQuery, games: list[Game]) -> ToolResult:
         if len(games) != 1:
             return ToolResult(
@@ -970,12 +996,14 @@ class AnalystTools:
         knicks, opponent = self.score(game)
         opponent_id = game.away_team_id if game.home_team_id == "NYK" else game.home_team_id
         statement = f"Final score on {game.game_date}: NYK {knicks}, {opponent_id} {opponent}."
-        if (
-            self.narrative
-            and self.statistical_extreme_requested()
-            and re.search(r"\bexplain\b", self.question, re.I)
-        ):
-            statement = f"Selection measure: {self.narrative.definition} {statement}"
+        eligibility: dict[str, Any] = {"game": "final archived Knicks game"}
+        if self.narrative and self.statistical_extreme_requested():
+            evidence, comparison = self._score_comparison(game)
+            eligibility["comparison"] = comparison
+            statement = (
+                f"Selection measure: {self.narrative.definition} "
+                f"Compared archive phases: {', '.join(comparison['season_types'])}. {statement}"
+            )
         claim = self.claim(
             subject="team:NYK",
             metric="game_score",
@@ -986,14 +1014,14 @@ class AnalystTools:
             scope=scope,
             sample=1,
             denominator=None,
-            eligibility={"game": "final archived Knicks game"},
+            eligibility=eligibility,
             statement=statement,
         )
         return ToolResult(
             status="ok",
             message="Archived final score.",
             claims=[claim],
-            evidence=evidence,
+            evidence=[self.evidence[ref] for ref in claim.supporting_evidence_ids],
             scope=scope.model_dump(mode="json"),
         )
 

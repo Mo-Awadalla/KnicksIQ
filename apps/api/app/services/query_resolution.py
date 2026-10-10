@@ -385,8 +385,13 @@ async def resolve_query(
     intent: str,
     data_version: str | None = None,
     typo_threshold: float = 0.86,
+    select_extrema: bool = True,
 ) -> ResolvedQuery:
-    """Resolve canonical entities and filters without model inference."""
+    """Resolve canonical entities and filters without model inference.
+
+    Narrative computation retains the comparison population with select_extrema=False;
+    archive retrieval and conversation references retain the selected targets.
+    """
     release_id, resolved_version = await _active_release(db, data_version)
     game_stmt = select(Game).where((Game.home_team_id == "NYK") | (Game.away_team_id == "NYK"))
     if release_id is not None:
@@ -560,13 +565,13 @@ async def resolve_query(
         )
     )
     all_tied_games = False
-    if ("biggest win" in q or "best win" in q) and candidates:
+    if select_extrema and ("biggest win" in q or "best win" in q) and candidates:
         wins = [g for g in candidates if g.status == "final" and scores(g)[0] > scores(g)[1]]
         maximum = max((scores(g)[0] - scores(g)[1] for g in wins), default=None)
         candidates = [g for g in wins if scores(g)[0] - scores(g)[1] == maximum]
         all_tied_games = True
         descriptive_reference = True
-    if "best defensive game" in q and candidates:
+    if select_extrema and "best defensive game" in q and candidates:
         finals = [g for g in candidates if g.status == "final"]
         minimum = min((scores(g)[1] for g in finals), default=None)
         candidates = [g for g in finals if scores(g)[1] == minimum]
