@@ -73,6 +73,13 @@ population and provenance remain intact. Selected scalar game sets must fit
 completely before a writer call; otherwise the backend keeps the complete
 factual fallback rather than paying for a known-incomplete proposal.
 
+Reviewer input also omits optional empty citation lists and unset claim rounding
+metadata. Required declared values remain present, including explicit null values.
+Null claim-filter values represent unconstrained scope and are omitted from model
+input; non-null filters, including false, zero and empty collections, remain intact.
+These serialization changes do not mutate native claims, proposed answers, review
+spans, follow-up questions, provider schemas or runtime validation.
+
 ## Deterministic requested statistics
 
 The evidence-loop route calculates requested leaders, home/away and win/loss
@@ -82,6 +89,10 @@ active release. Comparison groups reuse `team_scope.comparison_groups`.
 Bench scoring divides nonstarter points by team games; shooting percentages
 divide total makes by total attempts. Player averages use observed appearances,
 not team games. Leader ties and tied selected games remain complete.
+Player profiles for a defined game extreme use only every tied selected game,
+not the whole comparison population. Player-free score comparisons retain the
+complete eligible population; ordinary player aggregates retain the user's
+requested population.
 The orchestrator advertises `get_team_stats` for team-wide player scoring/statistic
 leaders over the complete requested team-game population, including ties.
 `discover_facts` supplies candidate facts, not an authoritative substitute for a

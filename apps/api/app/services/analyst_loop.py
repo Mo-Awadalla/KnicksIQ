@@ -293,11 +293,17 @@ class AnalystLoop:
             # Text and suggestions are supplied exactly once below. Keep every
             # declared value and citation here; do not duplicate whole-answer prose
             # beside review_spans and its scoped-schema enum.
-            payload["proposed_answer"] = (
-                answer.model_dump(mode="json", exclude={"text", "follow_up_questions"})
-                if answer
-                else None
-            )
+            if answer:
+                declared = answer.model_dump(mode="json", exclude={"text", "follow_up_questions"})
+                for use in declared["claims"]:
+                    if use["decimal_places"] is None:
+                        use.pop("decimal_places")
+                for key in ("evidence_ids", "fact_ids"):
+                    if not declared[key]:
+                        declared.pop(key)
+                payload["proposed_answer"] = declared
+            else:
+                payload["proposed_answer"] = None
             # Preserve punctuation and whitespace at backend-defined review boundaries.
             # A span fails if any assertion within it is unsupported.
             payload["review_spans"] = (
@@ -391,6 +397,10 @@ class AnalystLoop:
             group = [self.tools.claims[ref] for ref in sorted(group_ids) if ref not in sent_claims]
             # Null context fields are inapplicable; authoritative server records stay whole.
             data = [c.model_dump(mode="json", exclude_none=True) for c in group]
+            for entry in data:
+                entry["filters"] = {
+                    key: value for key, value in entry["filters"].items() if value is not None
+                }
             size = token_upper_bound(encoded(data))
             uses = [
                 {"claim_id": c.claim_id, "displayed_value": c.value, "decimal_places": None}
