@@ -55,10 +55,12 @@ class CountedVerificationAdapter(LLMAdapter):
                 if protocol is None:
                     raise ValueError("Unknown counted analyst protocol")
             content = await self._generate(system=system, user=user)
-            if protocol is not None:
+            if protocol is not None and isinstance(prompt, dict):
                 # Parsing outside this boundary would let later paid cases run
                 # after malformed output had already failed the analyst loop.
-                protocol.model_validate_json(content)
+                from app.services.analyst_loop import decode_model_response
+
+                protocol.model_validate(decode_model_response(prompt, json.loads(content)))
             return content
         except BaseException as exc:
             if self.on_failure is not None:

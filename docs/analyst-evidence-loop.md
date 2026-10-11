@@ -32,6 +32,14 @@ local retrieval deadline then covers lexical search, ranking and receipt admissi
 not source transfer and integrity verification. No source check is cached or skipped;
 invalid proof and slow lexical retrieval still return dependency failure.
 
+Canonical snapshot preparation serializes each complete SQL row once and reuses
+those exact bytes for sorting and streaming the snapshot hash. It does not cache
+snapshots or omit rows. Player-name resolution skips impossible substring matches
+before applying the existing word-boundary matcher; positive matches and ambiguity
+rules are unchanged. Lexical retrieval constructs its source-unit table once and
+applies the existing SQL match/rank expressions to that table, retaining the same
+filters, tie ordering, limits and complete source metadata.
+
 The tools return distinct statuses for ambiguity, empty matches, incomplete
 coverage, unsupported scope, dependency failure and success. Search results are
 examples, never season denominators. Qdrant failure does not disable SQL claims.
@@ -56,9 +64,9 @@ in `json_schema` mode, the actual scoped provider schema. The existing 8000-byte
 input cap and evidence allowance are unchanged. Strict mode retains only the
 protocol title in the user's `schema` field; validation constraints appear once,
 in the provider schema. Nonsemantic schema titles, descriptions and defaults are
-compacted without changing allowed values, reference enums, exact review spans,
-or the two-follow-up limit. JSON-object mode still carries its user schema and
-requires local validation. This conservative bound underfills context compared
+compacted without changing native allowed values, reference enums, exact review
+boundaries or the two-follow-up limit. JSON-object mode carries the same scoped
+wire schema in its user payload and requires local validation. This conservative bound underfills context compared
 with a model-specific tokenizer. Large records are never truncated; requested
 record pairs and selected narrative/scalar game sets are indivisible and fall
 back completely if they cannot fit. Investigation allows two rounds, three tools
@@ -67,18 +75,30 @@ uses choose/write/review; prior-evidence explanation uses write/review. Repairs
 require capacity and time for both calls. Replies remain buffered. No prompt
 logging is introduced.
 
-Model-input claim records omit inapplicable nullable fields; the immutable server
-registry and public claim JSON remain unchanged. Typed values, requested scope,
-population and provenance remain intact. Selected scalar game sets must fit
-completely before a writer call; otherwise the backend keeps the complete
-factual fallback rather than paying for a known-incomplete proposal.
+Prompt version `analyst-balanced-v5` uses lossless shared claim/evidence contexts:
+each record inherits common metadata and explicitly overrides differences,
+including null, false, zero and empty collections. Exact common statement parts
+and repeated object-array column names are factored only when they save bytes.
+Table descriptors retain ordered columns, common fields and every typed row value;
+the immutable native registry, provenance IDs and public claim JSON are unchanged.
+Repeated provenance lists factor only a common string prefix; concatenating that
+prefix with every ordered suffix restores every complete source ID.
+Selected record, narrative, profile and baseline claim groups remain complete.
 
-Reviewer input also omits optional empty citation lists and unset claim rounding
-metadata. Required declared values remain present, including explicit null values.
-Null claim-filter values represent unconstrained scope and are omitted from model
-input; non-null filters, including false, zero and empty collections, remain intact.
-These serialization changes do not mutate native claims, proposed answers, review
-spans, follow-up questions, provider schemas or runtime validation.
+Writer claim-use hints reference the supplied claim and rounding precision rather
+than repeat its value. Reviewer proposals reuse those sealed claims and the full
+literal review spans. Model responses use compact table values and explicit
+`span_index` / `follow_up_index` references where declared. Both the analyst and
+counted verification adapters decode the sealed wire response before native parsing.
+The decoder restores
+complete native values and exact text before existing validation; altered values,
+invalid indices and legacy review-text wire responses are rejected. Review order,
+coverage, supporting IDs and independent review instructions remain unchanged.
+
+Whole optional source receipts retain the original admission policy: a complete
+immutable claim may support a span without its receipt, but explicitly cited
+receipts must fit in full. No source text or required fact is truncated, and no
+input, evidence, model-call or deadline allowance is raised.
 
 ## Deterministic requested statistics
 

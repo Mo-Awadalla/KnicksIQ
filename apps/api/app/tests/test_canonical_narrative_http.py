@@ -409,7 +409,9 @@ async def test_primary_review_requires_every_selected_game(
             title = payload["schema"]["title"]
             calls.append(title)
             claim = next(
-                c for c in payload["claims"] if c["metric_id"] == "canonical_game_narrative"
+                c
+                for c in analyst_loop.payload_claims(payload)
+                if c["metric_id"] == "canonical_game_narrative"
             )
             text = claim["statement"] if complete else "The Knicks won on 2026-01-01."
             answer = {
@@ -421,25 +423,32 @@ async def test_primary_review_requires_every_selected_game(
             }
             if title == "Action":
                 return json.dumps(
-                    {"action": "answer_from_available_evidence", "tools": [], "answer": answer}
+                    analyst_loop.encode_model_response(
+                        payload,
+                        {"action": "answer_from_available_evidence", "tools": [], "answer": answer},
+                    )
                 )
             if title == "ProposedAnswer":
-                return json.dumps(answer)
+                return json.dumps(analyst_loop.encode_model_response(payload, answer))
             return json.dumps(
-                {
-                    "assertions": [
-                        {
-                            "text": "".join(payload["review_spans"]),
-                            "assertion_type": "factual",
-                            "verdict": "supported",
-                            "offending_text": None,
-                            "supporting_claim_ids": [claim["claim_id"]],
-                            "supporting_evidence_ids": [],
-                            "reason": "Synthetic protocol test using exact backend statements.",
-                        }
-                    ],
-                    "follow_up_reviews": [],
-                }
+                analyst_loop.encode_model_response(
+                    payload,
+                    {
+                        "assertions": [
+                            {
+                                "text": span,
+                                "assertion_type": "factual",
+                                "verdict": "supported",
+                                "offending_text": None,
+                                "supporting_claim_ids": [claim["claim_id"]],
+                                "supporting_evidence_ids": [],
+                                "reason": "Synthetic protocol test using exact backend statements.",
+                            }
+                            for span in payload["review_spans"]
+                        ],
+                        "follow_up_reviews": [],
+                    },
+                )
             )
 
     monkeypatch.setattr(analyst_loop, "get_llm_adapter", lambda: SyntheticAdapter())
@@ -550,9 +559,7 @@ async def test_player_profile_uses_only_all_tied_selected_extreme_games(
         for claim in [citation["metadata"]["claim"]]
     }
     profiles = [
-        tool["result"]
-        for tool in capture["tools"]
-        if tool["call"]["name"] == "get_player_stats"
+        tool["result"] for tool in capture["tools"] if tool["call"]["name"] == "get_player_stats"
     ]
     assert profiles and all(result["status"] == "ok" for result in profiles)
     assert {
