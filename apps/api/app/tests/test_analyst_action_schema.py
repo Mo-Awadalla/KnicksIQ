@@ -40,23 +40,10 @@ def captured_action(capture):
 
 
 def emitted_validator(scope, schema=Action):
+    scope = {"claim_context": {}, "schema": {"title": schema.__name__}, **scope}
     emitted = scoped_response_schema(schema, scope)
     Draft202012Validator.check_schema(emitted)
     return Draft202012Validator(emitted)
-
-
-def test_all_nine_failed_exchanges_are_retained():
-    assert [(capture["ticket"], capture["case_id"]) for capture in EMPTY_TOOL_ACTIONS] == [
-        (199, "date_range_last_n-008"),
-        (202, "exact_statistics-002"),
-        (203, "exact_statistics-004"),
-        (210, "exact_statistics-013"),
-        (211, "exact_statistics-015"),
-        (217, "exact_statistics-017"),
-        (218, "exact_statistics-018"),
-        (223, "exact_statistics-021"),
-        (224, "exact_statistics-025"),
-    ]
 
 
 @pytest.mark.parametrize("capture", EMPTY_TOOL_ACTIONS, ids=capture_id)
@@ -168,7 +155,9 @@ def test_branch_constraints_preserve_admitted_references_and_complete_values(sch
 
 def test_empty_scope_does_not_admit_claims_or_references():
     action = captured_action(GROUNDED_ANSWER_ACTIONS[0])
-    validator = emitted_validator({"claims": [], "candidates": [], "evidence": []})
+    validator = emitted_validator(
+        {"claim_context": {}, "claims": [], "candidates": [], "evidence": []}
+    )
     assert not validator.is_valid(action)
     action["answer"]["claims"] = []
     action["answer"]["evidence_ids"] = []

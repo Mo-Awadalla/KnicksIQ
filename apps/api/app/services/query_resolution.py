@@ -261,8 +261,12 @@ def _resolve_player_mentions(
     remaining = normalized_question
     # Full names and curated aliases are authoritative and consume their spans
     # before ambiguous surname matching.
+    # Skip names absent even as substrings before compiling their regex; positive
+    # matches still use the original word boundaries and global span removal.
     for player in sorted(players, key=lambda item: -len(_normalize(item.full_name))):
         full_name = _normalize(player.full_name)
+        if full_name not in remaining:
+            continue
         if re.search(rf"\b{re.escape(full_name)}\b", remaining):
             resolved[player.id] = player
             remaining = re.sub(rf"\b{re.escape(full_name)}\b", " ", remaining)
@@ -270,6 +274,8 @@ def _resolve_player_mentions(
         _CURATED_PLAYER_ALIASES.items(),
         key=lambda item: -len(item[0]),
     ):
+        if alias not in remaining:
+            continue
         if re.search(rf"\b{re.escape(alias)}\b", remaining):
             matches = [player for player in players if player.full_name == target]
             resolved.update({player.id: player for player in matches})
@@ -277,6 +283,8 @@ def _resolve_player_mentions(
 
     for alias in sorted(aliases, key=len, reverse=True):
         if alias in _CURATED_PLAYER_ALIASES:
+            continue
+        if alias not in remaining:
             continue
         if re.search(rf"\b{re.escape(alias)}\b", remaining):
             curated_target = _CURATED_PLAYER_ALIASES.get(alias)
@@ -301,7 +309,11 @@ def _resolve_player_mentions(
         if player.team_id == "NYK":
             first_names[_normalize(player.full_name).split()[0]].append(player)
     for first_name, matches in first_names.items():
-        if len(matches) == 1 and re.search(rf"\b{re.escape(first_name)}\b", remaining):
+        if (
+            len(matches) == 1
+            and first_name in remaining
+            and re.search(rf"\b{re.escape(first_name)}\b", remaining)
+        ):
             resolved[matches[0].id] = matches[0]
             remaining = re.sub(rf"\b{re.escape(first_name)}\b", " ", remaining)
 

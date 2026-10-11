@@ -259,46 +259,96 @@ class ScriptedAdapter:
         payload = json.loads(user)
         self.prompts.append(payload)
         if payload["schema"]["title"] == "AnswerReview":
-            answer = payload["proposed_answer"]
+            answer = analyst_loop.payload_proposed_answer(payload)
+            assert answer is not None
             return json.dumps(
-                {
-                    "assertions": [
-                        {
-                            "text": "".join(payload["review_spans"]),
-                            "verdict": "supported",
-                            "assertion_type": "factual",
-                            "offending_text": None,
-                            "supporting_claim_ids": [c["claim_id"] for c in answer["claims"]],
-                            "supporting_evidence_ids": [],
-                            "reason": "Matches backend claims.",
-                        }
-                    ]
-                }
+                analyst_loop.encode_model_response(
+                    payload,
+                    {
+                        "assertions": [
+                            {
+                                "text": span,
+                                "verdict": "supported",
+                                "assertion_type": "factual",
+                                "offending_text": None,
+                                "supporting_claim_ids": [c["claim_id"] for c in answer["claims"]],
+                                "supporting_evidence_ids": [],
+                                "reason": "Matches backend claims.",
+                            }
+                            for span in payload["review_spans"]
+                        ]
+                    },
+                )
             )
-        if not payload["claims"]:
+        available = analyst_loop.payload_claims(payload)
+        profile_metrics = {"points", "rebounds", "assists", "game_score"}
+        scope = payload["capabilities"].get("scope", {})
+        if (
+            payload["schema"]["title"] == "Action"
+            and scope.get("player_ids")
+            and len(scope.get("game_ids", [])) == 1
+            and scope.get("metric") is None
+            and not profile_metrics <= {claim["metric_id"].partition(":")[0] for claim in available}
+        ):
             return json.dumps(
-                {
-                    "action": "call_tools",
-                    "tools": [{"name": "discover_facts", "question": payload["question"]}],
-                    "answer": None,
-                }
+                analyst_loop.encode_model_response(
+                    payload,
+                    {
+                        "action": "call_tools",
+                        "tools": [
+                            {"name": "get_player_stats", "question": payload["requested_question"]}
+                        ],
+                        "answer": None,
+                    },
+                )
             )
-        candidate = next(iter(payload["candidates"]), None)
+        if not analyst_loop.payload_claims(payload):
+            return json.dumps(
+                analyst_loop.encode_model_response(
+                    payload,
+                    {
+                        "action": "call_tools",
+                        "tools": [
+                            {"name": "discover_facts", "question": payload["requested_question"]}
+                        ],
+                        "answer": None,
+                    },
+                )
+            )
+        candidate = next(iter(payload.get("candidates", [])), None)
         claims = (
-            [c for c in payload["claims"] if c["claim_id"] in candidate["claim_ids"]]
+            [
+                c
+                for c in analyst_loop.payload_claims(payload)
+                if c["claim_id"] in candidate["claim_ids"]
+            ]
             if candidate
-            else payload["claims"][:1]
+            else analyst_loop.payload_claims(payload)[:1]
         )
+        if profile_metrics <= {claim["metric_id"].partition(":")[0] for claim in available}:
+            claims = [
+                claim
+                for claim in available
+                if claim["metric_id"].partition(":")[0] in profile_metrics
+            ]
+            candidate = None
         answer = {
             "text": " ".join(c["statement"] for c in claims),
-            "claims": [{"claim_id": c["claim_id"], "displayed_value": c["value"]} for c in claims],
+            "claims": [
+                {"claim_id": c["claim_id"], "displayed_value": c["value"], "decimal_places": None}
+                for c in claims
+            ],
             "evidence_ids": [],
             "fact_ids": [candidate["fact_id"]] if candidate else [],
+            "follow_up_questions": [],
         }
         return json.dumps(
-            answer
-            if payload["schema"]["title"] == "ProposedAnswer"
-            else {"action": "answer_from_available_evidence", "tools": [], "answer": answer}
+            analyst_loop.encode_model_response(
+                payload,
+                answer
+                if payload["schema"]["title"] == "ProposedAnswer"
+                else {"action": "answer_from_available_evidence", "tools": [], "answer": answer},
+            )
         )
 
 
@@ -431,7 +481,7 @@ async def test_whole_records_fit_budget_and_provenance_is_resolvable(db_session)
 
     payload = loop.payload(Action)
     assert token_upper_bound(encoded(payload)) + 1700 <= get_settings().analyst_input_tokens
-    for claim in payload["claims"]:
+    for claim in analyst_loop.payload_claims(payload):
         assert all(ref in tools.evidence for ref in claim["supporting_evidence_ids"])
 
 
@@ -482,7 +532,7 @@ async def test_scoped_schema_rejects_invented_ids_and_partial_claim_values(db_se
     loop = AnalystLoop(tools, [])
     loop.results.append(result)
     payload = loop.payload(Action)
-    claim = payload["claims"][0]
+    claim = analyst_loop.payload_claims(payload)[0]
     candidate = next(c for c in payload["candidates"] if claim["claim_id"] in c["claim_ids"])
     answer = {
         "action": "answer_from_available_evidence",
@@ -525,11 +575,12 @@ async def test_repair_is_rechecked_and_never_investigates(
             payload = json.loads(user)
             if payload["schema"]["title"] == "ProposedAnswer" and payload.get("proposed_answer"):
                 self.prompts.append(payload)
-                answer = payload["proposed_answer"]
+                answer = analyst_loop.payload_proposed_answer(payload)
+                assert answer is not None
                 answer["text"] = answer["text"].replace(" A new tactic caused this.", "")
-                return json.dumps(answer)
+                return json.dumps(analyst_loop.encode_model_response(payload, answer))
             raw = await super().generate(system=system, user=user)
-            value = json.loads(raw)
+            value = analyst_loop.decode_model_response(payload, json.loads(raw))
             if payload["schema"]["title"] in {"Action", "ProposedAnswer"}:
                 answer = value.get("answer") if payload["schema"]["title"] == "Action" else value
                 if answer:
@@ -542,7 +593,7 @@ async def test_repair_is_rechecked_and_never_investigates(
                     offending_text="A new tactic caused this.",
                     reason="No causal source.",
                 )
-            return json.dumps(value)
+            return json.dumps(analyst_loop.encode_model_response(payload, value))
 
     adapter = RepairAdapter()
     monkeypatch.setattr(analyst_loop, "get_llm_adapter", lambda: adapter)
@@ -611,12 +662,13 @@ async def test_large_review_feedback_reaches_repair_without_waiving_review(
             payload = json.loads(user)
             if payload["schema"]["title"] == "ProposedAnswer":
                 self.prompts.append(payload)
-                answer = payload["proposed_answer"]
+                answer = analyst_loop.payload_proposed_answer(payload)
+                assert answer is not None
                 if repair_supported:
                     answer["text"] = answer["text"].replace(" A new tactic caused this.", "")
-                return json.dumps(answer)
+                return json.dumps(analyst_loop.encode_model_response(payload, answer))
             raw = await super().generate(system=system, user=user)
-            value = json.loads(raw)
+            value = analyst_loop.decode_model_response(payload, json.loads(raw))
             if payload["schema"]["title"] == "Action" and value.get("answer"):
                 value["answer"]["text"] = (
                     (value["answer"]["text"] + " ") * 8
@@ -635,7 +687,7 @@ async def test_large_review_feedback_reaches_repair_without_waiving_review(
                             "reason": "No causal source." if unsupported else "Verified. " * 50,
                         }
                     )
-            return json.dumps(value)
+            return json.dumps(analyst_loop.encode_model_response(payload, value))
 
     adapter = VerboseReviewAdapter()
     monkeypatch.setattr(analyst_loop, "get_llm_adapter", lambda: adapter)
@@ -708,18 +760,19 @@ async def test_six_turn_conversation_protocol(client, local_redis, monkeypatch):
     class ConversationAdapter(ScriptedAdapter):
         async def generate(self, *, system, user):
             raw = await super().generate(system=system, user=user)
-            payload, value = json.loads(user), json.loads(raw)
+            payload = json.loads(user)
+            value = analyst_loop.decode_model_response(payload, json.loads(raw))
             if payload["schema"]["title"] in {"Action", "ProposedAnswer"}:
                 answer = value.get("answer") if payload["schema"]["title"] == "Action" else value
                 if answer:
-                    question = payload["question"]
+                    question = payload["requested_question"]
                     if "prove" in question:
                         answer["text"] += (
                             " A single observation does not prove overall improvement."
                         )
                     if "injured" in question:
                         answer["text"] += " I don't have live injury updates."
-            return json.dumps(value)
+            return json.dumps(analyst_loop.encode_model_response(payload, value))
 
     adapter = ConversationAdapter()
     monkeypatch.setattr(analyst_loop, "get_llm_adapter", lambda: adapter)

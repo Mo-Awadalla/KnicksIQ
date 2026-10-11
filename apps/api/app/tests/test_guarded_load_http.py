@@ -95,7 +95,9 @@ async def fixture_load(client, redis, monkeypatch, tmp_path, scenario="success",
                 return json.dumps(
                     {
                         "action": "call_tools",
-                        "tools": [{"name": "get_team_stats", "question": prompt["question"]}],
+                        "tools": [
+                            {"name": "get_team_stats", "question": prompt["requested_question"]}
+                        ],
                         "answer": None,
                     }
                 )

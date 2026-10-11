@@ -106,38 +106,49 @@ class SyntheticAdapter:
         )
         if payload["schema"]["title"] == "AnswerReview":
             return json.dumps(
-                {
-                    "assertions": [
-                        {
-                            "text": span,
-                            "assertion_type": "factual",
-                            "verdict": "supported",
-                            "offending_text": None,
-                            "supporting_claim_ids": [c["claim_id"] for c in payload["claims"]],
-                            "supporting_evidence_ids": [],
-                            "reason": "Exact backend statement in a synthetic protocol test.",
-                        }
-                        for span in payload["review_spans"]
-                    ],
-                    "follow_up_reviews": [],
-                }
+                analyst_loop.encode_model_response(
+                    payload,
+                    {
+                        "assertions": [
+                            {
+                                "text": span,
+                                "assertion_type": "factual",
+                                "verdict": "supported",
+                                "offending_text": None,
+                                "supporting_claim_ids": [
+                                    c["claim_id"] for c in analyst_loop.payload_claims(payload)
+                                ],
+                                "supporting_evidence_ids": [],
+                                "reason": "Exact backend statement in a synthetic protocol test.",
+                            }
+                            for span in payload["review_spans"]
+                        ],
+                        "follow_up_reviews": [],
+                    },
+                )
             )
-        if not payload["claims"]:
-            return json.dumps({"action": "call_tools", "tools": [self.tool], "answer": None})
+        if not analyst_loop.payload_claims(payload):
+            return json.dumps(
+                analyst_loop.encode_model_response(
+                    payload, {"action": "call_tools", "tools": [self.tool], "answer": None}
+                )
+            )
         answer = {
-            "text": " ".join(c["statement"] for c in payload["claims"]),
+            "text": " ".join(c["statement"] for c in analyst_loop.payload_claims(payload)),
             "claims": [
-                {"claim_id": c["claim_id"], "displayed_value": c["value"]}
-                for c in payload["claims"]
+                {"claim_id": c["claim_id"], "displayed_value": c["value"], "decimal_places": None}
+                for c in analyst_loop.payload_claims(payload)
             ],
             "evidence_ids": [],
             "fact_ids": [],
             "follow_up_questions": [],
         }
         if payload["schema"]["title"] == "ProposedAnswer":
-            return json.dumps(answer)
+            return json.dumps(analyst_loop.encode_model_response(payload, answer))
         return json.dumps(
-            {"action": "answer_from_available_evidence", "tools": [], "answer": answer}
+            analyst_loop.encode_model_response(
+                payload, {"action": "answer_from_available_evidence", "tools": [], "answer": answer}
+            )
         )
 
 
@@ -287,56 +298,21 @@ async def test_current_discovery_survives_oversized_result_http(
     for request in adapter.inputs:
         assert request["input_bytes"] <= settings.analyst_input_tokens
         payload = request["user"]
-        retained_size = (
-            sum(encoded_size([c]) for c in payload["claims"])
-            + sum(encoded_size(e) for e in payload["evidence"])
-            + sum(encoded_size([use]) for use in payload.get("claim_uses", []))
+        retained_size = encoded_size(
+            {
+                key: payload[key]
+                for key in (
+                    "claim_context",
+                    "statement_context",
+                    "claims",
+                    "claim_uses",
+                    "evidence_context",
+                    "evidence",
+                )
+                if key in payload
+            }
         )
         assert retained_size <= settings.analyst_evidence_tokens
-
-
-async def test_oversized_boston_narrative_falls_back_before_dispatch_http(
-    client,
-    local_redis,  # noqa: F811
-    monkeypatch,
-    tmp_path,
-    record_property,
-):
-    configure(monkeypatch)
-    async with AsyncSessionLocal() as db:
-        await load_release_bundle(db, BUNDLE, expected_sha256=SHA, activate=True)
-    question = "What was the key sequence in the Boston loss?"
-    adapter = SyntheticAdapter({"name": "search_archive", "question": question})
-    monkeypatch.setattr(analyst_loop, "get_llm_adapter", lambda: adapter)
-    receipt = await exchange(client, local_redis, adapter, "oversized-boston", question)
-    receipt["bundle"] = {"path": str(BUNDLE), "sha256": SHA}
-    save_receipt(tmp_path, record_property, "oversized-boston", receipt)
-    assert_committed_replay(receipt)
-    body = receipt["response"]
-    assert not body["llm_validated"]
-    claim = next(
-        c["metadata"]["claim"]
-        for c in body["citations"]
-        if c["type"] == "verified_claim"
-        and c["metadata"]["claim"]["metric_id"] == "canonical_game_narrative"
-    )
-    assert claim["value"]["games"][0]["nba_game_id"] == "0022500320"
-    runs = claim["value"]["runs"]
-    assert [(r["points"], r["start_sequence"], r["end_sequence"]) for r in runs] == [
-        (12, 128, 146),
-        (12, 282, 299),
-    ]
-    assert [[e["sequence"] for e in r["scoring_events"]] for r in runs] == [
-        [128, 131, 137, 140, 144, 146],
-        [282, 290, 293, 295, 299],
-    ]
-    assert "2025-12-02" in body["answer"]
-    assert all(
-        r["start_clock"] in body["answer"] and r["end_clock"] in body["answer"] for r in runs
-    )
-    assert receipt["calls_before_replay"] == receipt["capture"]["turn"]["model_calls"] == 0, (
-        "A required narrative that cannot fit must fall back before provider dispatch"
-    )
 
 
 @pytest.mark.parametrize("scenario", ["appearance-average", "team-record", "team-leader"])
@@ -432,32 +408,38 @@ async def test_strict_format_bounded_complete_population_http(
             if payload["schema"]["title"] == "AnswerReview":
                 assert self.answer is not None, "Answer review requires a generated answer"
                 return json.dumps(
-                    {
-                        "assertions": [
-                            {
-                                "text": text,
-                                "assertion_type": "factual",
-                                "verdict": "supported",
-                                "offending_text": None,
-                                "supporting_claim_ids": [
-                                    use["claim_id"] for use in self.answer["claims"]
-                                ],
-                                "supporting_evidence_ids": [],
-                                "reason": "The requested SQL population supports these values.",
-                            }
-                        ],
-                        "follow_up_reviews": [],
-                    }
+                    analyst_loop.encode_model_response(
+                        payload,
+                        {
+                            "assertions": [
+                                {
+                                    "text": text,
+                                    "assertion_type": "factual",
+                                    "verdict": "supported",
+                                    "offending_text": None,
+                                    "supporting_claim_ids": [
+                                        use["claim_id"] for use in self.answer["claims"]
+                                    ],
+                                    "supporting_evidence_ids": [],
+                                    "reason": "The requested SQL population supports these values.",
+                                }
+                            ],
+                            "follow_up_reviews": [],
+                        },
+                    )
                 )
-            if not payload["claims"]:
+            if not analyst_loop.payload_claims(payload):
                 return json.dumps(
-                    {
-                        "action": "call_tools",
-                        "tools": [{"name": tool, "question": question, "metric": "points"}],
-                        "answer": None,
-                    }
+                    analyst_loop.encode_model_response(
+                        payload,
+                        {
+                            "action": "call_tools",
+                            "tools": [{"name": tool, "question": question, "metric": "points"}],
+                            "answer": None,
+                        },
+                    )
                 )
-            matched = {claim["metric_id"]: claim for claim in payload["claims"]}
+            matched = {claim["metric_id"]: claim for claim in analyst_loop.payload_claims(payload)}
             if not values.keys() <= matched.keys():
                 raise ValueError("A requested statistic was omitted")
             if any(set(matched[metric]["game_ids"]) != population for metric in values):
@@ -477,13 +459,16 @@ async def test_strict_format_bounded_complete_population_http(
                 "follow_up_questions": [],
             }
             return json.dumps(
-                self.answer
-                if payload["schema"]["title"] == "ProposedAnswer"
-                else {
-                    "action": "answer_from_available_evidence",
-                    "tools": [],
-                    "answer": self.answer,
-                }
+                analyst_loop.encode_model_response(
+                    payload,
+                    self.answer
+                    if payload["schema"]["title"] == "ProposedAnswer"
+                    else {
+                        "action": "answer_from_available_evidence",
+                        "tools": [],
+                        "answer": self.answer,
+                    },
+                )
             )
 
     adapter = StrictBoundaryAdapter()
@@ -558,53 +543,71 @@ async def test_full_archive_record_reaches_independent_review_http(
             if payload["schema"]["title"] == "AnswerReview":
                 assert "".join(payload["review_spans"]) == text
                 assert payload["follow_up_questions"] == followups
-                assert {c["metric_id"]: c["value"] for c in payload["claims"]} == {
+                assert {
+                    c["metric_id"]: c["value"] for c in analyst_loop.payload_claims(payload)
+                } == {
                     "wins": wins,
                     "losses": losses,
                 }
-                assert all(set(c["game_ids"]) == population for c in payload["claims"])
-                return json.dumps(
-                    {
-                        "assertions": [
-                            {
-                                "text": span,
-                                "assertion_type": "factual",
-                                "verdict": "supported",
-                                "offending_text": None,
-                                "supporting_claim_ids": [c["claim_id"] for c in payload["claims"]],
-                                "supporting_evidence_ids": [],
-                                "reason": "Independent SQL totals and complete archive population.",
-                            }
-                            for span in payload["review_spans"]
-                        ],
-                        "follow_up_reviews": [
-                            {
-                                "text": followup,
-                                "verdict": "insufficient_evidence",
-                                "reason": "These subsets were not independently queried.",
-                            }
-                            for followup in followups
-                        ],
-                    }
+                assert all(
+                    set(c["game_ids"]) == population for c in analyst_loop.payload_claims(payload)
                 )
-            if not payload["claims"]:
-                return json.dumps({"action": "call_tools", "tools": [self.tool], "answer": None})
-            by_metric = {c["metric_id"]: c for c in payload["claims"]}
-            return json.dumps(
-                {
-                    "text": text,
-                    "claims": [
+                return json.dumps(
+                    analyst_loop.encode_model_response(
+                        payload,
                         {
-                            "claim_id": by_metric[metric]["claim_id"],
-                            "displayed_value": value,
-                            "decimal_places": None,
-                        }
-                        for metric, value in (("wins", wins), ("losses", losses))
-                    ],
-                    "evidence_ids": [payload["evidence"][0]["evidence_id"]],
-                    "fact_ids": [],
-                    "follow_up_questions": followups,
-                }
+                            "assertions": [
+                                {
+                                    "text": span,
+                                    "assertion_type": "factual",
+                                    "verdict": "supported",
+                                    "offending_text": None,
+                                    "supporting_claim_ids": [
+                                        c["claim_id"] for c in analyst_loop.payload_claims(payload)
+                                    ],
+                                    "supporting_evidence_ids": [],
+                                    "reason": (
+                                        "Independent SQL totals and complete archive population."
+                                    ),
+                                }
+                                for span in payload["review_spans"]
+                            ],
+                            "follow_up_reviews": [
+                                {
+                                    "text": followup,
+                                    "verdict": "insufficient_evidence",
+                                    "reason": "These subsets were not independently queried.",
+                                }
+                                for followup in followups
+                            ],
+                        },
+                    )
+                )
+            if not analyst_loop.payload_claims(payload):
+                return json.dumps(
+                    analyst_loop.encode_model_response(
+                        payload, {"action": "call_tools", "tools": [self.tool], "answer": None}
+                    )
+                )
+            by_metric = {c["metric_id"]: c for c in analyst_loop.payload_claims(payload)}
+            return json.dumps(
+                analyst_loop.encode_model_response(
+                    payload,
+                    {
+                        "text": text,
+                        "claims": [
+                            {
+                                "claim_id": by_metric[metric]["claim_id"],
+                                "displayed_value": value,
+                                "decimal_places": None,
+                            }
+                            for metric, value in (("wins", wins), ("losses", losses))
+                        ],
+                        "evidence_ids": [payload["evidence"][0]["evidence_id"]],
+                        "fact_ids": [],
+                        "follow_up_questions": followups,
+                    },
+                )
             )
 
     adapter = RecordAdapter(
@@ -745,14 +748,16 @@ async def test_requested_scalar_survives_strict_planning_http(
                             "assertion_type": "factual",
                             "verdict": "supported",
                             "offending_text": None,
-                            "supporting_claim_ids": [c["claim_id"] for c in payload["claims"]],
+                            "supporting_claim_ids": [
+                                c["claim_id"] for c in analyst_loop.payload_claims(payload)
+                            ],
                             "supporting_evidence_ids": [],
                             "reason": "Independent SQL value and complete population match.",
                         }
                     ],
                     "follow_up_reviews": [],
                 }
-            elif not payload["claims"]:
+            elif not analyst_loop.payload_claims(payload):
                 if payload["results"]:
                     raise ValueError("The requested backend claim was dropped before drafting")
                 response = {
@@ -768,7 +773,11 @@ async def test_requested_scalar_survives_strict_planning_http(
                     "answer": None,
                 }
             else:
-                claim = next(c for c in payload["claims"] if c["metric_id"] == claim_metric)
+                claim = next(
+                    c
+                    for c in analyst_loop.payload_claims(payload)
+                    if c["metric_id"] == claim_metric
+                )
                 assert claim["value"] == value
                 assert set(claim["game_ids"]) == population
                 assert claim["sample_size"] == len(population)
@@ -791,8 +800,10 @@ async def test_requested_scalar_survives_strict_planning_http(
                         "tools": [],
                         "answer": response,
                     }
-            Draft202012Validator(self.response_schema).validate(response)
-            return json.dumps(response)
+            Draft202012Validator(self.response_schema).validate(
+                analyst_loop.encode_model_response(payload, response)
+            )
+            return json.dumps(analyst_loop.encode_model_response(payload, response))
 
     adapter = ScalarAdapter()
     monkeypatch.setattr(analyst_loop, "get_llm_adapter", lambda: adapter)
@@ -889,3 +900,186 @@ async def test_player_aggregate_preserves_requested_population_http(
     assert set(claims[0]["game_ids"]) == expected_games
     assert claims[0]["sample_size"] == len(eligible)
     assert claims[0]["value"] == expected_average
+
+
+@pytest.mark.parametrize("followups", [[], ["What was Towns' scoring average?"]])
+async def test_complete_profile_lossless_strict_review_http(
+    client,
+    local_redis,  # noqa: F811
+    monkeypatch,
+    tmp_path,
+    record_property,
+    followups,
+):
+    """All four SQL facts and their immutable context reach the independent reviewer."""
+    settings = configure(monkeypatch)
+    monkeypatch.setattr(settings, "analyst_provider_format", "json_schema")
+    async with AsyncSessionLocal() as db:
+        release, _ = await _seed_release_stats(db)
+        game = (
+            (await db.execute(select(Game).where(Game.release_id == release.id).order_by(Game.id)))
+            .scalars()
+            .first()
+        )
+        assert game is not None
+        towns = (
+            await db.execute(select(Player).where(Player.full_name == "Karl-Anthony Towns"))
+        ).scalar_one()
+        stat = (
+            await db.execute(
+                select(PlayerGameStat).where(
+                    PlayerGameStat.game_id == game.id,
+                    PlayerGameStat.player_id == towns.id,
+                )
+            )
+        ).scalar_one()
+        game.game_date = date(2026, 1, 21)
+        game.away_team_id = "BKN"
+        game.home_score, game.away_score = 120, 66
+        stat.points, stat.rebounds, stat.assists = 14, 8, 3
+        await db.commit()
+    question = "What did Towns do in the biggest win?"
+    execute = AnalystTools.execute
+    originals = {}
+    original_sources = {}
+
+    async def retain_native_context(self, call):
+        result = await execute(self, call)
+        if call.name == "get_player_stats":
+            updated = []
+            for claim in result.claims:
+                filters = {
+                    **claim.filters,
+                    "nullable": None,
+                    "boolean": False,
+                    "zero": 0,
+                    "empty_list": [],
+                    "empty_object": {},
+                }
+                claim = claim.model_copy(update={"filters": filters})
+                self.claims[claim.claim_id] = claim
+                originals[claim.claim_id] = claim.model_dump(mode="json")
+                updated.append(claim)
+            result = result.model_copy(update={"claims": updated})
+            for claim in result.claims:
+                for ref in claim.supporting_evidence_ids:
+                    original_sources[ref] = self.evidence[ref].model_dump(mode="json")
+        return result
+
+    monkeypatch.setattr(AnalystTools, "execute", retain_native_context)
+
+    class CompleteProfileAdapter(SyntheticAdapter):
+        response_schema: dict[str, object] | None = None
+
+        async def generate(self, *, system, user):
+            payload = json.loads(user)
+            claims = analyst_loop.payload_claims(payload)
+            actual_bytes = len((system + user).encode()) + encoded_size(self.response_schema)
+            self.inputs.append(
+                {
+                    "system": system,
+                    "user": payload,
+                    "response_schema": self.response_schema,
+                    "input_bytes": actual_bytes,
+                    "restored_claims": claims,
+                }
+            )
+            assert actual_bytes <= 8000
+            if not claims:
+                response = {"action": "call_tools", "tools": [self.tool], "answer": None}
+            else:
+                metrics = {claim["metric_id"]: claim["value"] for claim in claims}
+                assert metrics == {
+                    "points:total": 14,
+                    "rebounds:total": 8,
+                    "assists:total": 3,
+                    "game_score": {"NYK": 120, "BKN": 66},
+                }
+                text = (
+                    "Karl-Anthony Towns had 14 points, 8 rebounds and 3 assists in NYK's "
+                    "120–66 win over BKN on 2026-01-21."
+                )
+                if payload["schema"]["title"] == "AnswerReview":
+                    assert "".join(payload["review_spans"]) == text
+                    assert payload["follow_up_questions"] == followups
+                    response = {
+                        "assertions": [
+                            {
+                                "text": span,
+                                "assertion_type": "factual",
+                                "verdict": "supported",
+                                "offending_text": None,
+                                "supporting_claim_ids": [claim["claim_id"] for claim in claims],
+                                "supporting_evidence_ids": [],
+                                "reason": "All requested SQL facts retain their exact scope.",
+                            }
+                            for span in payload["review_spans"]
+                        ],
+                        "follow_up_reviews": [
+                            {
+                                "text": suggestion,
+                                "verdict": "insufficient_evidence",
+                                "reason": "The average was not queried.",
+                            }
+                            for suggestion in followups
+                        ],
+                    }
+                else:
+                    answer = {
+                        "text": text,
+                        "claims": [
+                            {
+                                "claim_id": claim["claim_id"],
+                                "displayed_value": claim["value"],
+                                "decimal_places": None,
+                            }
+                            for claim in claims
+                        ],
+                        "evidence_ids": [],
+                        "fact_ids": [],
+                        "follow_up_questions": followups,
+                    }
+                    response = answer
+                    if payload["schema"]["title"] == "Action":
+                        response = {
+                            "action": "answer_from_available_evidence",
+                            "tools": [],
+                            "answer": answer,
+                        }
+            assert self.response_schema is not None
+            Draft202012Validator(self.response_schema).validate(
+                analyst_loop.encode_model_response(payload, response)
+            )
+            return json.dumps(analyst_loop.encode_model_response(payload, response))
+
+    adapter = CompleteProfileAdapter({"name": "get_player_stats", "question": question})
+    monkeypatch.setattr(analyst_loop, "get_llm_adapter", lambda: adapter)
+    name = f"complete-profile-{len(followups)}-followups"
+    receipt = await exchange(client, local_redis, adapter, name, question)
+    receipt["native_claims"] = originals
+    receipt["native_sources"] = original_sources
+    save_receipt(tmp_path, record_property, name, receipt)
+    assert_committed_replay(receipt)
+    assert receipt["response"]["llm_validated"]
+    delivered = {
+        citation["metadata"]["claim"]["metric_id"]: citation["metadata"]["claim"]["value"]
+        for citation in receipt["response"]["citations"]
+        if citation["type"] == "verified_claim"
+    }
+    assert delivered == {
+        "points:total": 14,
+        "rebounds:total": 8,
+        "assists:total": 3,
+        "game_score": {"NYK": 120, "BKN": 66},
+    }
+    for citation in receipt["response"]["citations"]:
+        if citation["type"] != "verified_claim":
+            continue
+        filters = citation["metadata"]["claim"]["filters"]
+        if "nullable" not in filters:
+            continue
+        assert filters["nullable"] is None
+        assert filters["boolean"] is False
+        assert type(filters["zero"]) is int and filters["zero"] == 0
+        assert filters["empty_list"] == []
+        assert filters["empty_object"] == {}

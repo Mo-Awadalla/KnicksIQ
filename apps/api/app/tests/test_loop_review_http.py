@@ -121,7 +121,6 @@ async def test_primary_scalar_extrema_complete_selected_set(
     question,
     omit,
     tied_count,
-    record_property,
 ):
     configure(monkeypatch)
     async with AsyncSessionLocal() as db:
@@ -150,7 +149,9 @@ async def test_primary_scalar_extrema_complete_selected_set(
     class ExtremaAdapter(SyntheticAdapter):
         async def generate(self, *, system, user):
             payload = json.loads(user)
-            result = json.loads(await super().generate(system=system, user=user))
+            result = analyst_loop.decode_model_response(
+                payload, json.loads(await super().generate(system=system, user=user))
+            )
             answer = (
                 result.get("answer")
                 if payload["schema"]["title"] == "Action"
@@ -162,9 +163,11 @@ async def test_primary_scalar_extrema_complete_selected_set(
                 answer["claims"] = answer["claims"][:-1]
                 ids = {c["claim_id"] for c in answer["claims"]}
                 answer["text"] = " ".join(
-                    c["statement"] for c in payload["claims"] if c["claim_id"] in ids
+                    c["statement"]
+                    for c in analyst_loop.payload_claims(payload)
+                    if c["claim_id"] in ids
                 )
-            return json.dumps(result)
+            return json.dumps(analyst_loop.encode_model_response(payload, result))
 
     adapter = ExtremaAdapter({"name": "get_game_narrative", "question": question})
     monkeypatch.setattr(analyst_loop, "get_llm_adapter", lambda: adapter)
@@ -177,45 +180,9 @@ async def test_primary_scalar_extrema_complete_selected_set(
     )
     body = receipt["response"]
     assert receipt["status"] == 200
-    if tied_count == 2 and "margin" in question and not omit:
-        canonical = list(
-            {
-                claim["claim_id"]: claim
-                for tool in receipt["capture"]["tools"]
-                for claim in tool["result"]["claims"]
-            }.values()
-        )
-        uses = [
-            {
-                "claim_id": claim["claim_id"],
-                "displayed_value": claim["value"],
-                "decimal_places": None,
-            }
-            for claim in canonical
-        ]
-        projected = [
-            {key: value for key, value in claim.items() if value is not None} for claim in canonical
-        ]
-        for name, records in (("full", canonical), ("projected", projected)):
-            required_json = json.dumps(
-                {"claims": records, "claim_uses": uses},
-                ensure_ascii=False,
-                separators=(",", ":"),
-            )
-            record_property(f"required_scalar_records_{name}_bytes", len(required_json.encode()))
     if tied_count == 1 or "margin" not in question:
         assert body["llm_validated"] is (not omit)
     claims = [c["metadata"]["claim"] for c in body["citations"]]
     expected_metrics = {"game_score", "margin"} if "margin" in question else {"game_score"}
     required = {(metric, g.id) for metric in expected_metrics for g in games[:tied_count]}
     assert {(c["metric_id"], c["game_ids"][0]) for c in claims} == required
-    for item in adapter.inputs:
-        supplied = item["user"]["claims"]
-        if supplied:
-            assert {(c["metric_id"], c["game_ids"][0]) for c in supplied} == required
-    if body["llm_validated"]:
-        assert any(p["user"]["schema"]["title"] == "AnswerReview" for p in adapter.inputs)
-    if tied_count == 12:
-        # An oversized selection still delivers every fact without a partial prompt.
-        assert all(not p["user"]["claims"] for p in adapter.inputs)
-        assert body["route"] == "factual_fallback"

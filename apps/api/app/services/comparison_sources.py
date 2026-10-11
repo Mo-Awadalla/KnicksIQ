@@ -238,10 +238,27 @@ async def _sql_snapshot(
                 stmt = stmt.outerjoin(Player, model.player_id == Player.id)
             for row in (await db.execute(stmt)).all():
                 snapshots[games[row[0]]][collection].append([_scalar(value) for value in row[1:]])
-    for snapshot in snapshots.values():
-        for collection in MODELS:
-            snapshot[collection].sort(key=canonical_json)
-    return {identity: _digest(snapshot) for identity, snapshot in snapshots.items()}
+    # Serialize each source row once: the canonical bytes supply both its sort
+    # key and the digest, without encoding or copying the entire snapshot again.
+    encode_row = json.JSONEncoder(sort_keys=True, separators=(",", ":"), ensure_ascii=True).encode
+    result = {}
+    for identity, snapshot in snapshots.items():
+        digest = hashlib.sha256()
+        digest.update(b"{")
+        for index, collection in enumerate(sorted(snapshot)):
+            if index:
+                digest.update(b",")
+            digest.update(encode_row(collection).encode())
+            digest.update(b":[")
+            encoded_rows = sorted(encode_row(row).encode() for row in snapshot[collection])
+            for row_index, encoded in enumerate(encoded_rows):
+                if row_index:
+                    digest.update(b",")
+                digest.update(encoded)
+            digest.update(b"]")
+        digest.update(b"}")
+        result[identity] = digest.hexdigest()
+    return result
 
 
 def _archive_bindings(data: dict, known_players: set[int]) -> dict:
