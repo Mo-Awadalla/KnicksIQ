@@ -142,15 +142,17 @@ class AnalystTools:
             if self.different:
                 updates["player_ids"] = []
             self.scope = self.scope.model_copy(update=updates)
-        if not self.scope.player_ids and (
+        if (not self.scope.player_ids or self.scope.metric is None) and (
             not self.scope.requires_clarification
             or self.scope.clarification_reason == "ambiguous_game"
         ):
-            self.narrative = select_narrative(self.question, self.selected_games(self.scope))
-            if self.narrative:
+            selection = select_narrative(self.question, self.selected_games(self.scope))
+            if selection:
+                if not self.scope.player_ids:
+                    self.narrative = selection
                 self.scope = self.scope.model_copy(
                     update={
-                        "game_ids": [g.id for g in self.narrative.games],
+                        "game_ids": [g.id for g in selection.games],
                         "requires_clarification": False,
                         "clarification_reason": None,
                         "clarification_options": [],

@@ -2,6 +2,7 @@
 
 import json
 import os
+import re
 from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
 
@@ -9,9 +10,11 @@ import pytest
 from app.core.config import get_settings
 from app.core.db import AsyncSessionLocal
 from app.evaluation.trace_capture import capture_turn
+from app.models.box_score import PlayerGameStat
 from app.models.dataset_release import DatasetRelease
 from app.models.game import Game
 from app.models.game_event import GameEvent
+from app.models.player import Player
 from app.services import analyst_loop
 from app.services.release_bundle import load_release_bundle
 from app.tests.test_analyst_contracts import local_redis  # noqa: F401
@@ -473,3 +476,104 @@ async def test_primary_review_requires_every_selected_game(
     assert "2026-01-01" in body["answer"] and "2026-01-02" in body["answer"]
     assert replay.json() == body and (await local_redis.get(key)).decode() == "0.125"
     assert ("AnswerReview" in calls) is complete
+
+
+@pytest.mark.parametrize("season_type", [None, "regular"])
+async def test_player_profile_uses_only_all_tied_selected_extreme_games(
+    client,
+    local_redis,  # noqa: F811
+    monkeypatch,
+    tmp_path,
+    record_property,
+    season_type,
+):
+    settings = get_settings()
+    monkeypatch.setattr(settings, "analyst_evidence_loop_enabled", True)
+    monkeypatch.setattr(settings, "analysis_answer_mode", "disabled")
+    async with AsyncSessionLocal() as db:
+        release = await load_release_bundle(db, BUNDLE, expected_sha256=SHA, activate=True)
+        games = list(
+            (
+                await db.execute(
+                    select(Game).where(
+                        Game.release_id == release.release_id,
+                        Game.status == "final",
+                        (Game.home_team_id == "NYK") | (Game.away_team_id == "NYK"),
+                    )
+                )
+            ).scalars()
+        )
+        if season_type:
+            games = [game for game in games if game.season_type == season_type]
+        margins = {
+            game.id: (
+                game.home_score - game.away_score
+                if game.home_team_id == "NYK"
+                else game.away_score - game.home_score
+            )
+            for game in games
+        }
+        maximum = max(margin for margin in margins.values() if margin > 0)
+        selected = [game for game in games if margins[game.id] == maximum]
+        rows = list(
+            (
+                await db.execute(
+                    select(PlayerGameStat, Player)
+                    .join(Player)
+                    .where(
+                        PlayerGameStat.release_id == release.release_id,
+                        PlayerGameStat.game_id.in_([game.id for game in selected]),
+                        PlayerGameStat.team_id == "NYK",
+                        Player.full_name == "Karl-Anthony Towns",
+                    )
+                )
+            ).all()
+        )
+    assert {stat.game_id for stat, _ in rows} == {game.id for game in selected}
+    question = "What did Towns do in the biggest win?"
+    if season_type:
+        question = "What did Towns do in the biggest win in the regular season?"
+    directory = Path(os.environ.get("KNICKSIQ_NARRATIVE_ARTIFACT_DIR", str(tmp_path)))
+    record_property("narrative_artifacts", str(directory))
+    body, capture = await request(
+        client,
+        local_redis,
+        monkeypatch,
+        directory,
+        f"player-extreme-{season_type or 'all'}",
+        question,
+    )
+    claims = {
+        (claim["metric_id"], tuple(claim["game_ids"])): claim
+        for citation in body["citations"]
+        if citation["type"] == "verified_claim"
+        for claim in [citation["metadata"]["claim"]]
+    }
+    profiles = [
+        tool["result"]
+        for tool in capture["tools"]
+        if tool["call"]["name"] == "get_player_stats"
+    ]
+    assert profiles and all(result["status"] == "ok" for result in profiles)
+    assert {
+        game_id
+        for result in profiles
+        for claim in result["claims"]
+        for game_id in claim["game_ids"]
+    } == {game.id for game in selected}
+    for game in selected:
+        stat = next(stat for stat, _ in rows if stat.game_id == game.id)
+        assert str(game.game_date) in body["answer"]
+        for metric in ("points", "rebounds", "assists"):
+            expected = getattr(stat, metric)
+            assert claims[(f"{metric}:total", (game.id,))]["value"] == expected
+            assert metric in body["answer"]
+            assert re.search(rf"(?<![\d.]){expected}(?:\.0+)?(?!\d|\.\d)", body["answer"])
+        expected_score = {
+            game.home_team_id: game.home_score,
+            game.away_team_id: game.away_score,
+        }
+        assert claims[("game_score", (game.id,))]["value"] == expected_score
+        for team, value in expected_score.items():
+            assert team in body["answer"]
+            assert re.search(rf"(?<![\d.]){value}(?:\.0+)?(?!\d|\.\d)", body["answer"])
