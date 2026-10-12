@@ -1442,8 +1442,9 @@ class AnalystLoop:
             self.tools.release.version,
         ):
             return False, (
-                "Invalid claim value, release, baseline or reference. Copy claim_uses entries "
-                "for answer.claims: displayed_value must preserve the JSON value/type, never "
+                "Invalid claim value, release, baseline or reference. Expand each claim_uses "
+                "[claim index, precision] hint to a ClaimUse object for answer.claims. "
+                "displayed_value must preserve the indexed claim's JSON value/type, never "
                 "the statement sentence. Use only supplied references."
             )
         try:
