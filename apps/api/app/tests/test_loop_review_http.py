@@ -3,6 +3,7 @@
 import gzip
 import json
 from copy import deepcopy
+from typing import Any
 
 import pytest
 from app.core.config import get_settings
@@ -208,7 +209,7 @@ async def test_primary_scalar_extrema_complete_selected_set(
 class RequiredSlotsAdapter(SyntheticAdapter):
     """Exercise the actual writer wire; malformed selections are never re-encoded."""
 
-    response_schema = None
+    response_schema: dict[str, Any] | None = None
 
     def __init__(self, question, behavior="complete", precision=None):
         super().__init__({"name": "get_team_stats", "question": question})
