@@ -108,8 +108,6 @@ def test_score_margin_computed_correctly():
 
 
 def test_legacy_score_presence_remains_unknown():
-    event = parse_event(
-        1, 1, {"event_type": "jump_ball", "home_score": 0, "away_score": 0}
-    )
+    event = parse_event(1, 1, {"event_type": "jump_ball", "home_score": 0, "away_score": 0})
     assert event.score_observed is None
     assert "score_observed" not in event.model_dump(exclude_none=True)
