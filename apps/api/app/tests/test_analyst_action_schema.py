@@ -36,7 +36,11 @@ def captured_action(capture):
     assert (
         hashlib.sha256(capture["content"].encode("utf-8")).hexdigest() == capture["content_sha256"]
     )
-    return json.loads(capture["content"])
+    action = json.loads(capture["content"])
+    if isinstance(action.get("answer"), dict):
+        # Historical captures omitted native defaults; current strict wire emits them.
+        action["answer"] = ProposedAnswer.model_validate(action["answer"]).model_dump(mode="json")
+    return action
 
 
 def emitted_validator(scope, schema=Action):

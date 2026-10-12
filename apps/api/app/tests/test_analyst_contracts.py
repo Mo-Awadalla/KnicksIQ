@@ -332,6 +332,9 @@ class ScriptedAdapter:
                 if claim["metric_id"].partition(":")[0] in profile_metrics
             ]
             candidate = None
+        if payload.get("required_claim_indexes"):
+            claims = [available[domain[0]] for domain in payload["required_claim_indexes"]]
+            candidate = None
         answer = {
             "text": " ".join(c["statement"] for c in claims),
             "claims": [
@@ -548,6 +551,7 @@ async def test_scoped_schema_rejects_invented_ids_and_partial_claim_values(db_se
             ],
             "evidence_ids": [],
             "fact_ids": [candidate["fact_id"]],
+            "follow_up_questions": [],
         },
     }
     validator = Draft202012Validator(scoped_response_schema(Action, payload))
