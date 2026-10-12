@@ -1140,8 +1140,8 @@ class AnalystLoop:
             system = (
                 "Return ONE ProposedAnswer schema JSON with text, claims, evidence_ids, "
                 "fact_ids, follow_up_questions; no action/answer wrapper. Backend evidence only. "
-                "claim_uses [index, precision] hints are NOT output objects: for EVERY used "
-                "claim emit ClaimUse with indexed claim_id, exact displayed_value and hinted "
+                "For EACH required input claim_uses entry emit exactly one ClaimUse: indexed "
+                "claim_id, exact displayed_value (including score objects), and hinted "
                 "decimal_places. Preserve JSON type/ALL object keys; only matching numeric "
                 "rounding may change values. Copy supporting evidence/selected fact IDs exactly. "
                 "text answers with relevant limitations, never metadata, packing, "
@@ -1162,8 +1162,8 @@ class AnalystLoop:
                 "search_archive; get_evidence. Discovery candidates cannot establish "
                 "complete team-wide leaders. Answer when evidence is sufficient. "
                 "call_tools requires tools and null answer; answer actions require a nonnull "
-                "answer with text, claims, evidence_ids and fact_ids. For EVERY used "
-                "claim_uses [index, precision] hint, emit one ClaimUse: claim_id from the "
+                "answer with text, claims, evidence_ids and fact_ids. For EACH required input "
+                "claim_uses [index, precision] entry emit exactly one ClaimUse: claim_id from the "
                 "indexed ID, displayed_value from its value (JSON type and ALL object keys "
                 "intact, not its statement), decimal_places from precision. Only matching "
                 "numeric rounding may change values. Copy selected fact_id and evidence_id "
@@ -1407,7 +1407,11 @@ class AnalystLoop:
                 and len(claim.game_ids) == 1
             }
             if supplied != required or len(declared) != len(required):
-                return False, "Every selected or tied game needs every requested scalar metric."
+                return (
+                    False,
+                    "Every selected or tied game needs its complete game_score object "
+                    "and every requested metric.",
+                )
         elif self.tools.narrative:
             from app.services.canonical_narrative import complete_narrative_text
 

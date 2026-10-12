@@ -102,6 +102,8 @@ hint tuple. Answer text contains the requested answer and relevant limitations,
 not packet metadata, schemas, IDs or packing instructions; follow-up questions
 belong only in their dedicated array. The output cap remains 1,200 tokens.
 Malformed or length-terminated JSON is never treated as a validated model answer.
+Each required input hint must appear exactly once, including complete object-valued
+game scores; a declared margin alone does not cover a score quoted in prose.
 
 Planning, writer and reviewer instructions remove redundant wording to leave room
 for complete claim bundles within the existing byte budget. They retain every
