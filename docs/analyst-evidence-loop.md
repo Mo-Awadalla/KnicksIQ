@@ -75,7 +75,7 @@ uses choose/write/review; prior-evidence explanation uses write/review. Repairs
 require capacity and time for both calls. Replies remain buffered. No prompt
 logging is introduced.
 
-Prompt version `analyst-balanced-v5` uses lossless shared claim/evidence contexts:
+Prompt version `analyst-balanced-v6` uses lossless shared claim/evidence contexts:
 each record inherits common metadata and explicitly overrides differences,
 including null, false, zero and empty collections. Exact common statement parts
 and repeated object-array column names are factored only when they save bytes.
@@ -94,6 +94,14 @@ The decoder restores
 complete native values and exact text before existing validation; altered values,
 invalid indices and legacy review-text wire responses are rejected. Review order,
 coverage, supporting IDs and independent review instructions remain unchanged.
+
+Writer and planning instructions distinguish compact `[claim index, precision]`
+hints from output `ClaimUse` objects. They explicitly expand the indexed claim ID,
+typed value and declared precision into the schema fields instead of copying the
+hint tuple. Answer text contains the requested answer and relevant limitations,
+not packet metadata, schemas, IDs or packing instructions; follow-up questions
+belong only in their dedicated array. The output cap remains 1,200 tokens.
+Malformed or length-terminated JSON is never treated as a validated model answer.
 
 Whole optional source receipts retain the original admission policy: a complete
 immutable claim may support a span without its receipt, but explicitly cited

@@ -105,3 +105,11 @@ def test_score_margin_computed_correctly():
     }
     ev = parse_event(game_id=1, sequence=5, raw=raw)
     assert ev.score_margin == 5  # NYK is home, so home - away
+
+
+def test_legacy_score_presence_remains_unknown():
+    event = parse_event(
+        1, 1, {"event_type": "jump_ball", "home_score": 0, "away_score": 0}
+    )
+    assert event.score_observed is None
+    assert "score_observed" not in event.model_dump(exclude_none=True)

@@ -56,6 +56,9 @@ class GameEvent(BaseModel):
     home_score: int = 0
     away_score: int = 0
     score_margin: int = 0  # home - away
+    score_observed: bool | None = Field(
+        None, description="Explicit source scoreboard pair; None for legacy unknown presence"
+    )
 
     # Shot metadata (only set for shot / FT events)
     shot_type: ShotType | None = None
