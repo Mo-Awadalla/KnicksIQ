@@ -348,7 +348,7 @@ async def test_play_by_play_retains_source_score_presence_through_normalization_
         for sequence, (home, away) in enumerate(raw_scores, start=1)
     ]
     assert all(event is not None for event in raw_events)
-    events = parse_events(1, raw_events)
+    events = parse_events(1, [event for event in raw_events if event is not None])
     assert [event.score_observed for event in events] == [True, True, False, True, False, True]
     async with AsyncSessionLocal() as session:
         await session.execute(delete(GameEvent).where(GameEvent.game_id == 1))
