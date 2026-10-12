@@ -57,6 +57,14 @@ closed. Typed reference/value checks run before each review; strict reference
 validation is unchanged. This safeguard still requires human-labelled calibration;
 a reviewer verdict is not proof of truth.
 
+The reviewer instruction names the native assertion types explicitly:
+`coverage` for generic archive-completeness caveats, `conversational` for
+nonfactual clarification, `factual` for facts and `interpretation` for inference.
+Supported factual and interpretation spans still require admitted supporting
+claims or evidence; coverage and conversational spans may omit those IDs.
+An unsupported factual span is not relabelled after generation. Captured
+classification replays diagnose failures but do not qualify a live answer.
+
 Input packing admits or drops whole records and preserves their server-side
 references. At each mandatory-context, claim-group and evidence boundary, UTF-8
 bytes account for the actual system instructions, serialized user payload and,
