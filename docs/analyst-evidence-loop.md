@@ -85,25 +85,46 @@ Repeated provenance lists factor only a common string prefix; concatenating that
 prefix with every ordered suffix restores every complete source ID.
 Selected record, narrative, profile and baseline claim groups remain complete.
 
-Writer claim-use hints reference the supplied claim and rounding precision rather
-than repeat its value. Reviewer proposals reuse those sealed claims and the full
-literal review spans. Model responses use compact table values and explicit
-`span_index` / `follow_up_index` references where declared. Both the analyst and
-counted verification adapters decode the sealed wire response before native parsing.
-The decoder restores
-complete native values and exact text before existing validation; altered values,
-invalid indices and legacy review-text wire responses are rejected. Review order,
-coverage, supporting IDs and independent review instructions remain unchanged.
+Writer payloads with fixed backend coverage requirements carry
+`required_claim_indexes`: one domain of supplied claim indexes per existing
+requirement. Output `claims` is a closed object keyed by requirement ordinal
+(`"0"`, `"1"`, …), not by claim index. Each required scalar integer selects a
+row of the sealed `claim_uses` table: `[claim index, precision]`, in supplied
+claim order, exact/null first and numeric precisions 0–3 next. The backend restores
+only the selected native ID, complete typed value and correlated precision.
+A score object is one exact choice; prose or two margin choices cannot fill its slot.
 
-Writer and planning instructions distinguish compact `[claim index, precision]`
-hints from output `ClaimUse` objects. They explicitly expand the indexed claim ID,
-typed value and declared precision into the schema fields instead of copying the
-hint tuple. Answer text contains the requested answer and relevant limitations,
-not packet metadata, schemas, IDs or packing instructions; follow-up questions
-belong only in their dedicated array. The output cap remains 1,200 tokens.
-Malformed or length-terminated JSON is never treated as a validated model answer.
-Each required input hint must appear exactly once, including complete object-valued
-game scores; a declared margin alone does not cover a score quoted in prose.
+The shared requirement computation preserves existing record/profile/team-group
+coverage and every selected/tied statistical-extreme metric/game predicate.
+Alternatives satisfying the same predicate share one slot. Optional supplied
+context is not mandatory: `related_claim_indexes`, when nonempty and allowed,
+seals a separate `related_claims` choice array which may be empty. Its domain
+excludes every required-domain claim ID. Statistical extrema retain their exact
+declared-count policy and have no related tail. Questions without fixed requirements,
+including leader existence and textual narratives, retain the native ClaimUse
+array wire and their existing post-decode acceptance rules.
+
+Missing/extra/wrong slots, noninteger choices (including booleans and integral
+floats), invented choices, duplicate claim selections and duplicate JSON keys
+fail closed before native parsing or independent review. Neither decoding nor
+scripted-fixture encoding fills missing selections or repairs invalid proposals.
+`payload_claim_uses` expands the whole choice table in keyed mode; scripted native
+writers must select one actual use per claim, not copy all precision alternatives.
+Repair `proposed_answer.claim_uses` retains the original declared uses in order,
+including a bad duplicated margin, rather than converting them into mandatory slots.
+Conflicting values on repeated declared IDs additionally use declared-use ordinal
+overrides, so even malformed historical repair proposals restore losslessly.
+
+Reviewer proposals, complete native values, provenance and literal review spans
+remain unchanged. No required-slot metadata is sent to review. Compact table values
+and `span_index` / `follow_up_index` references are decoded before existing native
+validation in both the analyst and counted verification adapters. Review order,
+coverage, supporting IDs and independent instructions are unchanged. All answer
+properties are explicitly required in the scoped writer/provider schema.
+Answer text contains the requested answer and limitations, not packet metadata,
+schemas, IDs or packing instructions; suggestions belong only in their dedicated
+array. The output cap remains 1,200 tokens. Malformed or length-terminated JSON
+is never treated as a validated model answer.
 
 Planning, writer and reviewer instructions remove redundant wording to leave room
 for complete claim bundles within the existing byte budget. They retain every
