@@ -103,6 +103,11 @@ not packet metadata, schemas, IDs or packing instructions; follow-up questions
 belong only in their dedicated array. The output cap remains 1,200 tokens.
 Malformed or length-terminated JSON is never treated as a validated model answer.
 
+Planning instructions are compact enough to leave room for claim bundles within
+the existing byte budget. They retain every tool-selection, leader-completeness,
+value/type/precision, source-ID, interpretation, mixed-scope and follow-up rule;
+prompt wording must not crowd admitted evidence into an empty-claims tool loop.
+
 Whole optional source receipts retain the original admission policy: a complete
 immutable claim may support a span without its receipt, but explicitly cited
 receipts must fit in full. No source text or required fact is truncated, and no
