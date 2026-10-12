@@ -34,6 +34,37 @@ the production router.
 Only reviewed reports from the active release are public. The legacy
 `GET /games/{game_id}/bad-stretches` route remains development-only.
 
+#### Play-by-play score contract
+
+`GET /games/{game_id}/play-by-play` returns the displayed scoreboard state after
+each event, not a literal raw archive score observation. `home_score` and
+`away_score` are home/away oriented; `score_margin` is their difference. The UI
+renders away—home and converts the margin to Knicks orientation.
+Projection starts at 0–0 and processes the whole ordered game before applying a
+`period` filter, so a missing observation at a quarter boundary retains prior
+state. Projection never writes back to canonical source rows.
+
+New NBA ingestion retains `score_observed` internally: `true` means an explicit
+complete scoreboard pair (including an explicit 0–0 correction), `false` means
+no complete valid pair, and `null` means historical source presence was not
+retained. Explicit observations replace the prior pair, even when scores decrease
+or return to zero. Missing observations retain the prior pair. Historical `null`
+rows alone use the original normalized 0–0 sentinel heuristic. The additive
+nullable migration does not backfill historical rows or alter the approved
+archive. Export includes presence only when known, preserving legacy row bytes;
+ingest and release loading retain it. This internal flag is not a new public API
+field.
+
+For the approved `0022500003` opening sequence, the source jump-ball and Mobley
+miss have empty NBA `scoreHome`/`scoreAway` strings. The intervening baskets
+record 0–2 and 3–2. Thus sequence 4 displays 3–2, margin +1, while its immutable
+normalized archive row remains 0–0, margin 0. Source-aware browser expectations
+must distinguish empty observations from explicit `"0"` values and retain both
+raw and projected states. This display projection is not an independent
+reconstruction of scoring contributions: known upstream scoreboard discrepancies
+remain visible, and corrected/ambiguous intervals remain excluded from certified
+run claims.
+
 ### Analyst query
 
 `POST /analysis/query` accepts:

@@ -12,6 +12,7 @@ from app.models.box_score import PeriodScore
 from app.models.dataset_release import DatasetRelease
 from app.models.game import Game
 from app.models.game_event import GameEvent
+from app.services.event_scores import cumulative_score
 from app.services.evidence_contracts import Evidence, ToolResult, VerifiedClaim
 from app.services.team_aliases import team_ids_in_text
 from app.services.team_scope import scores
@@ -137,9 +138,7 @@ def _maximum_runs(game: Game, events: list[GameEvent]) -> list[dict]:
     points, before = 0, previous
     boston = 0 if game.home_team_id == "BOS" else 1
     for event in events:
-        current = (event.home_score, event.away_score)
-        # Normalized non-scoring events may carry a zero sentinel.
-        current = previous if current == (0, 0) else current
+        current = cumulative_score(event, previous)
         change = tuple(a - b for a, b in zip(current, previous, strict=True))
         if min(change) < 0 or all(value > 0 for value in change):
             raise ValueError("Ambiguous or corrected canonical scoreboard")

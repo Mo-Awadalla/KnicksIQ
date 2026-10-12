@@ -6,11 +6,14 @@ from typing import Any
 
 
 def cumulative_score(event: Any, previous: tuple[int, int]) -> tuple[int, int]:
-    """Carry missing 0-0 rows forward while preserving recorded score corrections.
+    """Project source observations without mutating the raw normalized row.
 
-    NBA non-scoring rows can omit the scoreboard, which older imports stored as
-    zeroes. A real game cannot return to 0-0 after scoring. Do not clamp either
-    team's nonzero score: reviews can legitimately reduce a recorded score.
+    Explicit observations include zero-valued corrections. Missing pairs carry
+    the previous state. Only legacy rows with unknown presence use the historical
+    0-0 sentinel rule; their original ingest discarded source missingness.
     """
     current = (event.home_score, event.away_score)
-    return previous if current == (0, 0) else current
+    observed = getattr(event, "score_observed", None)
+    if observed is False or (observed is None and current == (0, 0)):
+        return previous
+    return current
