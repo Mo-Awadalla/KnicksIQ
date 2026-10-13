@@ -1,0 +1,68 @@
+{
+  "schema_version": 1,
+  "status": "proposal_not_admitted",
+  "inference_requests_sent": 0,
+  "model": "deepseek/deepseek-v4.1-flash",
+  "canonical_slug": "deepseek/deepseek-v4.1-flash-20260910",
+  "provider_name": "AtlasCloud",
+  "route": "atlas-cloud/fp8",
+  "quantization": "fp8",
+  "provider": {
+    "only": [
+      "atlas-cloud/fp8"
+    ],
+    "order": [
+      "atlas-cloud/fp8"
+    ],
+    "allow_fallbacks": false,
+    "require_parameters": true,
+    "quantizations": [
+      "fp8"
+    ]
+  },
+  "request_constraints": {
+    "temperature": 0,
+    "reasoning": {
+      "enabled": false
+    },
+    "maximum_output_tokens": 1200,
+    "per_turn_model_calls": 6,
+    "per_turn_tool_rounds": 2,
+    "input_setting_tokens": 8000,
+    "evidence_setting_tokens": 6000,
+    "turn_deadline_seconds": 30,
+    "investigation_seconds": 20
+  },
+  "pricing_observed_usd_per_million": {
+    "prompt": 0.141,
+    "completion": 0.564,
+    "input_cache_read": 0.0141
+  },
+  "pricing_observed_at": "2026-10-05T04:07:00Z",
+  "pricing_source": "https://openrouter.ai/api/v1/models/deepseek/deepseek-v4.1-flash/endpoints",
+  "budget": {
+    "aggregate_hard_cap_usd": 6,
+    "monthly_application_cutoff_usd": 2,
+    "remaining_authority_verified": false,
+    "historical_and_uncertain_costs_required": true,
+    "input_bound": "actual UTF-8 payload/schema/framing conservative bound; do not assume 8000 or chars/4",
+    "fresh_provider_pricing_before_each_request": true
+  },
+  "cohorts": {
+    "primary": 120,
+    "shadow": 120,
+    "semantic_cases": 50,
+    "shadow_sample_rate": 0.1,
+    "shadow_membership": "original deterministic membership; unavailable until frozen contract materialized",
+    "load": "unchanged 61-second cooldown, ten readers for 30 seconds and ten distinct analyst questions"
+  },
+  "missing_bindings": [
+    "final candidate commit and effective settings digest",
+    "approved archive, frozen gold and owner approval hashes verified from actual bytes",
+    "fresh isolated infrastructure identities and physical search indexes",
+    "authorized existing credential runtime and key identity",
+    "current account credit and complete monthly/cumulative accounting",
+    "actual payload bounds and predetermined shadow membership"
+  ],
+  "warning": "Public endpoint metadata does not establish quality, affordability, latency, admission or launch approval. Existing historical guarded infrastructure/provider pins are unchanged. This proposal must not be used to bypass them."
+}

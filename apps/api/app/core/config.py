@@ -6,7 +6,7 @@ from functools import lru_cache
 from typing import Literal
 from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 
-from pydantic import Field
+from pydantic import Field, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -61,6 +61,9 @@ class Settings(BaseSettings):
 
     openrouter_api_key: str | None = None
     openrouter_summary_model: str = "deepseek/deepseek-v4.1-flash"
+    openrouter_provider_route: str | None = Field(default=None, min_length=1)
+    openrouter_max_prompt_price: float | None = Field(default=None, gt=0, allow_inf_nan=False)
+    openrouter_max_completion_price: float | None = Field(default=None, gt=0, allow_inf_nan=False)
     qdrant_url: str | None = None
     qdrant_api_key: str | None = None
     qdrant_host: str = "localhost"
@@ -139,6 +142,19 @@ class Settings(BaseSettings):
     sentry_dsn: str | None = None
     openrouter_monthly_cutoff_usd: float = 8.0
     openrouter_allowed_models: list[str] = Field(default_factory=list)
+
+    @model_validator(mode="after")
+    def validate_openrouter_route_prices(self) -> Settings:
+        policy = (
+            self.openrouter_provider_route,
+            self.openrouter_max_prompt_price,
+            self.openrouter_max_completion_price,
+        )
+        if any(value is not None for value in policy) and not all(
+            value is not None for value in policy
+        ):
+            raise ValueError("A pinned OpenRouter route requires both price caps (USD per million)")
+        return self
 
     @property
     def effective_db_url(self) -> str:
