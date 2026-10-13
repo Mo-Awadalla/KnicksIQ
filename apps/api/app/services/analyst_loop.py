@@ -1292,6 +1292,22 @@ class AnalystLoop:
         ]
         return claims if {claim.metric_id for claim in claims} == {"wins", "losses"} else []
 
+    def _player_average_requested(self) -> bool:
+        scope = self.tools.scope
+        return bool(
+            scope is not None
+            and scope.player_ids
+            and scope.metric is not None
+            and not scope.requires_clarification
+            and not re_search_discovery(self.tools.question)
+            and re.search(
+                r"\b(?:average|avg|per[ -]game|per[ -]appearance)\b",
+                self.tools.question,
+                re.I,
+            )
+            and not re.search(r"\btotal\b", self.tools.question, re.I)
+        )
+
     def _required_claim_groups(self) -> dict[str, list[set[str]]]:
         """Project existing coverage policy; a group allows every matching native ID."""
         requirements = {}
@@ -1299,6 +1315,15 @@ class AnalystLoop:
         if record:
             requirements["record"] = [{claim.claim_id} for claim in record]
         scope = self.tools.scope
+        if self._player_average_requested():
+            assert scope is not None
+            averages = [
+                claim
+                for claim in self.fallback_claims()
+                if claim.metric_id == f"{scope.metric}:average"
+            ]
+            if averages:
+                requirements["player_average"] = [{claim.claim_id} for claim in averages]
         if (
             scope is not None
             and scope.player_ids
@@ -1515,6 +1540,24 @@ class AnalystLoop:
             await self.settle()
 
     async def investigate(self) -> dict[str, Any]:
+        if self._player_average_requested() and not self._required_claim_groups().get(
+            "player_average"
+        ):
+            if (
+                self.rounds >= self.settings.analyst_max_tool_rounds
+                or self.tool_count >= 6
+                or time.monotonic() - self.started >= self.settings.analyst_investigation_seconds
+            ):
+                raise TimeoutError("Investigation limit")
+            # A resolved explicit average needs its native calculation before the
+            # model can distinguish unavailable data from uninvestigated data.
+            self.rounds += 1
+            self.tool_count += 1
+            self.results.append(
+                await self.tools.execute(
+                    ToolCall(name="get_player_stats", question=self.tools.question)
+                )
+            )
         while True:
             if self._paired_record_claims() or self.tools.narrative or self.fallback_claims():
                 # Scope-matched backend facts need a final answer, not another
@@ -1591,6 +1634,8 @@ class AnalystLoop:
         record = requirements.get("record", [])
         if any(not domain & declared_ids for domain in record):
             return False, "Every requested record needs both canonical wins and losses claims."
+        if any(not domain & declared_ids for domain in requirements.get("player_average", [])):
+            return False, "Every available requested player average population must be answered."
         scope = self.tools.scope
         if "profile" in requirements:
             groups = requirements["profile"]
