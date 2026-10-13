@@ -1,14 +1,67 @@
 # Release gate handoff (updated 2026-10-13)
 
-**Verdict: BLOCKED pending fresh live qualification and remaining release evidence.**
-The owner-approved successor452 run on source `6b5f2c1` passed 30 primary cases with independent
-review, including all 14 fresh qualification cases, then stopped on `date_range_last_n-005`.
-The final answer retained the correct 34 wins and 12 losses but denied the established All-Star
-window. Isolated staging still runs source `6b5f2c1` and its native images. The approval is consumed;
-no remaining gate ran. No production change or deployment has been made. The previous readiness
-result had 18 failures; that historical result does not certify this candidate.
+**Verdict: BLOCKED. The latest paid run stopped on reviewer input capacity.**
+Successor518-rate060 on source `aeb995d` passed all 14 fresh qualification cases and 18 primary
+cases, then stopped on `exact_statistics-008`. Its two writers correctly reported the 54-point
+win over Brooklyn, but reviewer preparation failed before transport. No remaining gate ran.
+Isolated staging still has the native `aeb995d` images. The one approved paid run is consumed;
+never resume its failed goal or reuse its grant for changed source/images. Production remains
+outside the authorized scope.
 
-## Latest controlled stop and named-window repair
+## Current stopped run and reviewer capacity repair
+
+The cutoff remains October 13 at 11:30pm Pacific (`2026-10-14T06:30:00Z`), with admission stopping
+60 seconds earlier. The operational rate060 package preserved the unused successor518 approval,
+source, images and caps after a zero-call pricing preflight. Its driver uses the actual advertised
+InferenceNet/fp8 completion rate of $0.60 per million tokens within the approved route ceiling.
+The retired $0.55 package is sealed against execution. This operational correction did not change
+application behavior or create an additional paid run.
+
+Tickets 555 and 556 are schema-valid ProposedAnswer replies with identical correct wording,
+two follow-ups and an explicit complete calculation citation. Neither produced an AnswerReview
+request. The exact reviewer input required 8,162 bytes, exceeding the unchanged 8,000-byte cap.
+The public response correctly fell back to native facts with `llm_validated=false`, and the
+controller exited with failure. No independent case-review receipt exists for failed case008;
+the independent rejection is a stopped-response audit, not a fabricated live review.
+
+The stopped556 journal is frozen at mode0400, SHA
+`35bc7ccfdb2fc772057c7db95b6482939ce0c9e5193a8a8024cbcb99a86bfa6d`.
+All 38 fresh requests settled for 11,358,230 nUSD. Lifetime primary accounting is 556 requests
+and 241,123,665 nUSD, with no pending calls. Atomic Redis evidence records a monthly floor of
+1.296519921 USD, the same four permanent holds and unchanged unknown tickets. The remaining
+primary allowance is 164 requests and 258,876,335 nUSD. No cap reset or increase is authorized.
+The actual public-path census found 61 answer paths, 50 clarification paths and nine refusal
+paths. Each answer requires at least a writer and reviewer, so the 122-request lower bound fits
+with 42 requests left for repairs or other calls. This is not a completion guarantee.
+
+Failure modes and six TCP socket regressions were authored before production edits. Approved
+archive replay reproduced four capacity failures and retained two passing highest/lowest-score
+controls; the portable archive reproduced all six failures. The repair losslessly shares exact
+eligibility fields across claim records, hoists identical support-array JSON Schemas into shared
+local definitions, and uses sealed row references for reviewer support IDs. Repeated receipt
+text references complete native statements; receipt source lists reference the complete ordered
+comparison population with explicit leading entries. These receipt changes apply only to reviewer
+packets; writer repair inputs retain their existing citation language. Concise reviewer instructions
+use the actual span/follow-up index interface. Native values, populations, citations, source lists and validation constraints remain
+intact. The evidence budget counts the new shared eligibility context; input and evidence
+caps remain 8,000 and 6,000 bytes. All six portable and six approved-archive socket cases pass on the final source, including
+tied populations, longer wording, both follow-ups and deliberately false-margin rejection.
+Independent review checks 28 actual raw responses, 532 invalid-schema probes and complete
+provenance without importing application code. Maximum input is 7,989/8,000 bytes; replay
+adds no calls. A separate census preserves all 120 native cases and all 63 scoped reviewer
+schemas, with native support domains restored exactly. These are offline checks, not live
+qualification. Final reviews are `largest-win/final-wire-review.json` and
+`largest-win/capacity-census/portable-packets/stage3/final-source-review.json`.
+
+Local evidence lives under `evidence/release-20261013/record-regression/named-window/largest-win/`,
+including `stopped556-audit.json`, `minimum-primary-request-census.json`, `expanded-red-summary.json`
+and the capacity census. Capacity projections are diagnostics, not live quality evidence.
+Arbitrary allowed long prose and every optional citation are not guaranteed to fit. A repaired
+commit and native images require a fresh source/image-bound grant, new qualification of all 14
+cases and every remaining original gate within the same caps and cutoff. No paid successor is
+currently running.
+
+## Earlier controlled stop and named-window repair
 
 The current cutoff is October 13 at 11:30pm Pacific (`2026-10-14T06:30:00Z`). The bound driver
 stops admitting work 60 seconds earlier. Successor452 used its one source/image-bound approval.
