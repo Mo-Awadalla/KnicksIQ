@@ -1540,22 +1540,34 @@ class AnalystLoop:
             await self.settle()
 
     async def investigate(self) -> dict[str, Any]:
-        if self._player_average_requested() and not self._required_claim_groups().get(
+        scope = self.tools.scope
+        needs_record = (
+            scope is not None
+            and not scope.player_ids
+            and not scope.requires_clarification
+            and is_record_request(self.tools.question)
+            and not self.fallback_claims()
+        )
+        needs_average = self._player_average_requested() and not self._required_claim_groups().get(
             "player_average"
-        ):
+        )
+        if needs_record or needs_average:
             if (
                 self.rounds >= self.settings.analyst_max_tool_rounds
                 or self.tool_count >= 6
                 or time.monotonic() - self.started >= self.settings.analyst_investigation_seconds
             ):
                 raise TimeoutError("Investigation limit")
-            # A resolved explicit average needs its native calculation before the
-            # model can distinguish unavailable data from uninvestigated data.
+            # Calculate resolved records and averages before the model can
+            # mistake uninvestigated facts for unavailable data.
             self.rounds += 1
             self.tool_count += 1
             self.results.append(
                 await self.tools.execute(
-                    ToolCall(name="get_player_stats", question=self.tools.question)
+                    ToolCall(
+                        name="get_team_stats" if needs_record else "get_player_stats",
+                        question=self.tools.question,
+                    )
                 )
             )
         while True:

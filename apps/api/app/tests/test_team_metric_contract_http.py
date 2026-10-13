@@ -28,7 +28,7 @@ class RecordAdapter(SyntheticAdapter):
         value = analyst_loop.decode_model_response(
             payload, json.loads(await super().generate(system=system, user=user))
         )
-        if self.behavior == "capacity" and not analyst_loop.payload_claims(payload):
+        if self.behavior == "capacity" and payload["schema"]["title"] == "ProposedAnswer":
             self.settings.analyst_input_tokens = 4096
         if self.behavior == "omit":
             answer = (
@@ -101,6 +101,10 @@ async def test_advertised_record_metric_preserves_both_requested_counts(
     save_receipt(tmp_path, record_property, name, receipt)
     assert_committed_replay(receipt)
     assert receipt["response"]["llm_validated"] is (behavior == "complete")
+    if behavior == "capacity":
+        assert [item["user"]["schema"]["title"] for item in receipt["model_inputs"]] == [
+            "ProposedAnswer"
+        ]
     claims = {
         citation["metadata"]["claim"]["metric_id"]: citation["metadata"]["claim"]
         for citation in receipt["response"]["citations"]
@@ -173,12 +177,12 @@ async def test_team_only_metric_is_rejected_before_player_calculation(
         for row in raw["player_game_stats"]
         if row["nba_player_id"] == brunson["nba_player_id"] and row["minutes"] > 0
     ]
-    expected_points = sum(row["points"] for row in rows) / len(rows)
+    expected_points = sum(row["points"] for row in rows)
     async with AsyncSessionLocal() as db:
         await load_release_bundle(db, BUNDLE, expected_sha256=SHA, activate=True)
-    question = "How many points did Jalen Brunson average?"
+    question = "How many total points did Jalen Brunson score?"
     adapter = SyntheticAdapter(
-        {"name": tool, "question": question, "metric": "wins", "aggregation": "average"}
+        {"name": tool, "question": question, "metric": "wins", "aggregation": "total"}
     )
     monkeypatch.setattr(analyst_loop, "get_llm_adapter", lambda: adapter)
     receipt = await exchange(client, local_redis, adapter, f"player-reject-{tool}", question)
@@ -188,11 +192,13 @@ async def test_team_only_metric_is_rejected_before_player_calculation(
     # Invalid typed player input must stop before another model round rather than
     # reach getattr(PlayerGameStat, 'wins') or manufacture team counters for a player.
     assert len(receipt["model_inputs"]) == 1
+    assert receipt["model_inputs"][0]["user"]["schema"]["title"] == "Action"
+    assert not analyst_loop.payload_claims(receipt["model_inputs"][0]["user"])
     claims = [
         citation["metadata"]["claim"]
         for citation in receipt["response"]["citations"]
         if citation["type"] == "verified_claim"
     ]
-    assert {claim["metric_id"] for claim in claims} == {"points:average"}
+    assert {claim["metric_id"] for claim in claims} == {"points:total"}
     assert all(claim["value"] == pytest.approx(expected_points) for claim in claims)
     assert all(claim["sample_size"] == len(rows) for claim in claims)
