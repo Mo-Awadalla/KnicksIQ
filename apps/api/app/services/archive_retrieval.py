@@ -494,16 +494,25 @@ async def search_archive_lexical(
         ]
         source_texts = [unit_search_text(record["payload"]) for record in eligible]
         source_query = _source_query(query, source_texts)
-        statements = []
-        for index, text in enumerate(source_texts):
-            match, rank = _lexical_match(db, literal(text), source_query, source_subject=True)
-            statements.append(
-                select(literal(index).label("unit_index"), rank.label("rank")).where(match)
+        if source_texts:
+            # All units use the same matching/ranking expression. Apply it once
+            # to the constant rows instead of rebuilding it for every unit.
+            source_rows = union_all(
+                *(
+                    select(
+                        literal(index).label("unit_index"),
+                        literal(text).label("unit_text"),
+                    )
+                    for index, text in enumerate(source_texts)
+                )
+            ).subquery()
+            match, rank = _lexical_match(
+                db, source_rows.c.unit_text, source_query, source_subject=True
             )
-        if statements:
             statement = (
-                union_all(*statements)
-                .order_by(column("rank").desc(), column("unit_index"))
+                select(source_rows.c.unit_index, rank.label("rank"))
+                .where(match)
+                .order_by(column("rank").desc(), source_rows.c.unit_index)
                 .limit(limit)
             )
             for index, score in (await db.execute(statement)).all():

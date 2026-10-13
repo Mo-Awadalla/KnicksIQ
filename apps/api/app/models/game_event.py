@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from sqlalchemy import Enum, ForeignKey, Index, Integer, String
+from sqlalchemy import Boolean, Enum, ForeignKey, Index, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import Base, TimestampMixin
@@ -48,6 +48,8 @@ class GameEvent(Base, TimestampMixin):
     home_score: Mapped[int] = mapped_column(Integer, default=0)
     away_score: Mapped[int] = mapped_column(Integer, default=0)
     score_margin: Mapped[int] = mapped_column(Integer, default=0)
+    # None identifies legacy rows whose source score presence was not retained.
+    score_observed: Mapped[bool | None] = mapped_column(Boolean, nullable=True)
 
     shot_type: Mapped[str | None] = mapped_column(
         Enum("2pt", "3pt", "ft", "unknown", name="shot_type"),

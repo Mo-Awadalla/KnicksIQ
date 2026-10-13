@@ -32,6 +32,14 @@ local retrieval deadline then covers lexical search, ranking and receipt admissi
 not source transfer and integrity verification. No source check is cached or skipped;
 invalid proof and slow lexical retrieval still return dependency failure.
 
+Canonical snapshot preparation serializes each complete SQL row once and reuses
+those exact bytes for sorting and streaming the snapshot hash. It does not cache
+snapshots or omit rows. Player-name resolution skips impossible substring matches
+before applying the existing word-boundary matcher; positive matches and ambiguity
+rules are unchanged. Lexical retrieval constructs its source-unit table once and
+applies the existing SQL match/rank expressions to that table, retaining the same
+filters, tie ordering, limits and complete source metadata.
+
 The tools return distinct statuses for ambiguity, empty matches, incomplete
 coverage, unsupported scope, dependency failure and success. Search results are
 examples, never season denominators. Qdrant failure does not disable SQL claims.
@@ -49,6 +57,14 @@ closed. Typed reference/value checks run before each review; strict reference
 validation is unchanged. This safeguard still requires human-labelled calibration;
 a reviewer verdict is not proof of truth.
 
+The reviewer instruction names the native assertion types explicitly:
+`coverage` for generic archive-completeness caveats, `conversational` for
+nonfactual clarification, `factual` for facts and `interpretation` for inference.
+Supported factual and interpretation spans still require admitted supporting
+claims or evidence; coverage and conversational spans may omit those IDs.
+An unsupported factual span is not relabelled after generation. Captured
+classification replays diagnose failures but do not qualify a live answer.
+
 Input packing admits or drops whole records and preserves their server-side
 references. At each mandatory-context, claim-group and evidence boundary, UTF-8
 bytes account for the actual system instructions, serialized user payload and,
@@ -56,9 +72,9 @@ in `json_schema` mode, the actual scoped provider schema. The existing 8000-byte
 input cap and evidence allowance are unchanged. Strict mode retains only the
 protocol title in the user's `schema` field; validation constraints appear once,
 in the provider schema. Nonsemantic schema titles, descriptions and defaults are
-compacted without changing allowed values, reference enums, exact review spans,
-or the two-follow-up limit. JSON-object mode still carries its user schema and
-requires local validation. This conservative bound underfills context compared
+compacted without changing native allowed values, reference enums, exact review
+boundaries or the two-follow-up limit. JSON-object mode carries the same scoped
+wire schema in its user payload and requires local validation. This conservative bound underfills context compared
 with a model-specific tokenizer. Large records are never truncated; requested
 record pairs and selected narrative/scalar game sets are indivisible and fall
 back completely if they cannot fit. Investigation allows two rounds, three tools
@@ -67,11 +83,69 @@ uses choose/write/review; prior-evidence explanation uses write/review. Repairs
 require capacity and time for both calls. Replies remain buffered. No prompt
 logging is introduced.
 
-Model-input claim records omit inapplicable nullable fields; the immutable server
-registry and public claim JSON remain unchanged. Typed values, requested scope,
-population and provenance remain intact. Selected scalar game sets must fit
-completely before a writer call; otherwise the backend keeps the complete
-factual fallback rather than paying for a known-incomplete proposal.
+Prompt version `analyst-balanced-v6` uses lossless shared claim/evidence contexts:
+each record inherits common metadata and explicitly overrides differences,
+including null, false, zero and empty collections. Exact common statement parts
+and repeated object-array column names are factored only when they save bytes.
+Table descriptors retain ordered columns, common fields and every typed row value;
+the immutable native registry, provenance IDs and public claim JSON are unchanged.
+Repeated provenance lists factor only a common string prefix; concatenating that
+prefix with every ordered suffix restores every complete source ID.
+Selected record, narrative, profile and baseline claim groups remain complete.
+
+Writer payloads with fixed backend coverage requirements carry
+`required_claim_indexes`: one domain of supplied claim indexes per existing
+requirement. Output `claims` is a closed object keyed by requirement ordinal
+(`"0"`, `"1"`, …), not by claim index. Each required scalar integer selects a
+row of the sealed `claim_uses` table: `[claim index, precision]`, in supplied
+claim order, exact/null first and numeric precisions 0–3 next. The backend restores
+only the selected native ID, complete typed value and correlated precision.
+A score object is one exact choice; prose or two margin choices cannot fill its slot.
+
+The shared requirement computation preserves existing record/profile/team-group
+coverage and every selected/tied statistical-extreme metric/game predicate.
+Alternatives satisfying the same predicate share one slot. Optional supplied
+context is not mandatory: `related_claim_indexes`, when nonempty and allowed,
+seals a separate `related_claims` choice array which may be empty. Its domain
+excludes every required-domain claim ID. Statistical extrema retain their exact
+declared-count policy and have no related tail. Questions without fixed requirements,
+including leader existence and textual narratives, retain the native ClaimUse
+array wire and their existing post-decode acceptance rules.
+
+Missing/extra/wrong slots, noninteger choices (including booleans and integral
+floats), invented choices, duplicate claim selections and duplicate JSON keys
+fail closed before native parsing or independent review. Neither decoding nor
+scripted-fixture encoding fills missing selections or repairs invalid proposals.
+`payload_claim_uses` expands the whole choice table in keyed mode; scripted native
+writers must select one actual use per claim, not copy all precision alternatives.
+Repair `proposed_answer.claim_uses` retains the original declared uses in order,
+including a bad duplicated margin, rather than converting them into mandatory slots.
+Conflicting values on repeated declared IDs additionally use declared-use ordinal
+overrides, so even malformed historical repair proposals restore losslessly.
+
+Reviewer proposals, complete native values, provenance and literal review spans
+remain unchanged. No required-slot metadata is sent to review. Compact table values
+and `span_index` / `follow_up_index` references are decoded before existing native
+validation in both the analyst and counted verification adapters. Review order,
+coverage, supporting IDs and independent instructions are unchanged. All answer
+properties are explicitly required in the scoped writer/provider schema.
+Answer text contains the requested answer and limitations, not packet metadata,
+schemas, IDs or packing instructions; suggestions belong only in their dedicated
+array. The output cap remains 1,200 tokens. Malformed or length-terminated JSON
+is never treated as a validated model answer.
+
+Planning, writer and reviewer instructions remove redundant wording to leave room
+for complete claim bundles within the existing byte budget. They retain every
+tool-selection, leader-completeness, value/type/precision, source-ID, interpretation,
+mixed-scope and follow-up rule. Whole-span review still checks every subject,
+metric/value, unit, sign, denominator, filter, window, baseline, release, rounding
+and citation; suggestions are reviewed independently of the answer. Prompt wording
+must not crowd admitted evidence into an empty-claims tool loop.
+
+Whole optional source receipts retain the original admission policy: a complete
+immutable claim may support a span without its receipt, but explicitly cited
+receipts must fit in full. No source text or required fact is truncated, and no
+input, evidence, model-call or deadline allowance is raised.
 
 ## Deterministic requested statistics
 
@@ -82,6 +156,10 @@ active release. Comparison groups reuse `team_scope.comparison_groups`.
 Bench scoring divides nonstarter points by team games; shooting percentages
 divide total makes by total attempts. Player averages use observed appearances,
 not team games. Leader ties and tied selected games remain complete.
+Player profiles for a defined game extreme use only every tied selected game,
+not the whole comparison population. Player-free score comparisons retain the
+complete eligible population; ordinary player aggregates retain the user's
+requested population.
 The orchestrator advertises `get_team_stats` for team-wide player scoring/statistic
 leaders over the complete requested team-game population, including ties.
 `discover_facts` supplies candidate facts, not an authoritative substitute for a
@@ -116,6 +194,8 @@ accounting, deadlines and original input/output limits still apply.
 Prepared canonical narrative and scalar-game populations also draft directly:
 their backend investigation has already completed, so another tool-action schema
 adds no information. Every selected game and requested metric remains mandatory.
+Model payloads omit unbound (null) optional scope descriptors. Backend scope,
+non-null filters, complete populations and mandatory claims remain unchanged.
 
 Quarter calculations currently support team points per game only. Quarter totals,
 other quarter box-score statistics, and player quarter statistics remain
@@ -374,3 +454,34 @@ marked `human_reviewed: false`; they must be reviewed by a person before they ca
 satisfy the calibration gate. The held-out set includes causal claims hidden in
 otherwise correct prose, hedged causation, subject/sign/scope swaps, retrieval
 as a denominator, extreme-selection overclaims and injected source instructions.
+
+### Native comparison and population authority
+
+Extreme-game claims retain the eligible comparison population before selecting
+the extreme and every tied game. Their immutable eligibility records include
+the comparison definition, eligible game IDs, selected tied IDs, sample size and
+compared archive phases. Supporting calculation receipts retain every eligible
+game's source receipt; a selected game's phase is not the comparison universe.
+The same comparative score receipt supports its derived final margin.
+
+Native narrative preparation calls `resolve_query(select_extrema=False)` so
+an earlier biggest-win or best-defensive target selection cannot shrink that
+comparison population. Ordinary archive retrieval and conversation references
+still resolve the selected targets.
+
+Computational `get_player_stats`, `get_team_stats` and `compare_windows` calls
+retain the user's temporal/game population, including unrestricted `None` and
+empty defaults. A model cannot silently substitute regular-season, opponent or
+date restrictions. Retrieval can still narrow examples; explicit comparison
+baseline questions retain their separate canonical resolution.
+
+Failure-first HTTP regressions exercise real archive rows, isolated Redis,
+delivered citations and committed replay. They verify complete comparison and
+tie-source coverage, three unauthorized population restrictions, and an
+explicit-phase control. Their repeatable private artifacts are in
+`extreme-comparison-and-player-scope-regression/`: the consumer-visible before
+run failed four cases and passed the control; the integrated after run passed
+all five, including the existing twenty requested-scope scenarios.
+Provider responses in the population HTTP checks are scripted, not paid model
+answers. These checks do not approve fresh DeepSeek answers or replace the
+original primary120, semantic50, shadow120, load or restoration gates.

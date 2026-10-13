@@ -16,6 +16,7 @@ from pathlib import Path
 import pytest
 from app.core.config import get_settings
 from app.core.db import AsyncSessionLocal
+from app.evaluation.trace_capture import capture_turn
 from app.models.comparison_source import ComparisonSource
 from app.models.game import Game
 from app.models.game_event import GameEvent
@@ -408,3 +409,79 @@ async def test_import_index_and_actual_clarification_source_transitions(
         )
         + "\n"
     )
+
+
+async def test_http_discovery_revalidates_complete_source_rows_without_snapshot_cache(
+    client,
+    local_redis,  # noqa: F811
+    monkeypatch,
+    tmp_path,
+):
+    from app.models.box_score import PlayerGameStat
+
+    paths, hashes = independent_inputs(tmp_path)
+    attempts = configure(monkeypatch, "disabled")
+    monkeypatch.setattr(get_settings(), "rag_qdrant_enabled", False)
+    async with AsyncSessionLocal() as db:
+        loaded = await load_release_bundle(
+            db, paths["bundle"], expected_sha256=hashes["bundle"], activate=True
+        )
+        await import_comparison_source(db, **paths, expected_hashes=hashes)
+    request = {
+        "question": "Describe the Knicks' worst third quarter.",
+        "season": "2025-26",
+        "expected_revision": 0,
+    }
+    with capture_turn() as before_capture:
+        before = await client.post(
+            "/analysis/query", json={**request, "turn_id": "complete-source-before"}
+        )
+    assert before.status_code == 200 and before.json()["route"] == "clarification"
+    before_search = before_capture["searches"][0]
+    assert before_search["status"] == "ok"
+    assert any(
+        evidence["metadata"].get("measure_family") == "quarter"
+        for evidence in before_search["evidence"]
+    )
+    async with AsyncSessionLocal() as db:
+        stat = (
+            (
+                await db.execute(
+                    select(PlayerGameStat)
+                    .where(PlayerGameStat.release_id == loaded.release_id)
+                    .order_by(PlayerGameStat.id)
+                )
+            )
+            .scalars()
+            .first()
+        )
+        assert stat is not None and stat.minutes is not None
+        identity, original_minutes = stat.id, stat.minutes
+        stat.minutes += 0.5
+        await db.commit()
+    with capture_turn() as changed_capture:
+        changed = await client.post(
+            "/analysis/query", json={**request, "turn_id": "complete-source-changed"}
+        )
+    assert changed.status_code == 200 and changed.json()["degraded"]
+    assert changed_capture["searches"][0]["status"] == "dependency_failure"
+    assert changed_capture["searches"][0]["error_type"] == "ValueError"
+    assert changed_capture["turn"]["model_calls"] == 0
+    async with AsyncSessionLocal() as db:
+        stat = await db.get(PlayerGameStat, identity)
+        assert stat is not None
+        stat.minutes = original_minutes
+        await db.commit()
+    with capture_turn() as restored_capture:
+        restored = await client.post(
+            "/analysis/query", json={**request, "turn_id": "complete-source-restored"}
+        )
+    assert restored.status_code == 200 and restored.json()["route"] == "clarification"
+    restored_search = restored_capture["searches"][0]
+    assert restored_search["status"] == "ok"
+    assert restored_search["evidence"] == before_search["evidence"]
+    assert all(
+        hashlib.sha256(path.read_bytes()).hexdigest() == hashes[name]
+        for name, path in paths.items()
+    )
+    assert attempts == {"provider": 0, "dense": 0, "reservations": 0}

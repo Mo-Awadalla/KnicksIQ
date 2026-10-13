@@ -64,6 +64,7 @@ _METRICS = {
     "plus minus": "plus_minus",
     "three": "three_pointers_made",
     "threes": "three_pointers_made",
+    "three point percentage": "three_point_percentage",
 }
 
 
@@ -260,8 +261,12 @@ def _resolve_player_mentions(
     remaining = normalized_question
     # Full names and curated aliases are authoritative and consume their spans
     # before ambiguous surname matching.
+    # Skip names absent even as substrings before compiling their regex; positive
+    # matches still use the original word boundaries and global span removal.
     for player in sorted(players, key=lambda item: -len(_normalize(item.full_name))):
         full_name = _normalize(player.full_name)
+        if full_name not in remaining:
+            continue
         if re.search(rf"\b{re.escape(full_name)}\b", remaining):
             resolved[player.id] = player
             remaining = re.sub(rf"\b{re.escape(full_name)}\b", " ", remaining)
@@ -269,6 +274,8 @@ def _resolve_player_mentions(
         _CURATED_PLAYER_ALIASES.items(),
         key=lambda item: -len(item[0]),
     ):
+        if alias not in remaining:
+            continue
         if re.search(rf"\b{re.escape(alias)}\b", remaining):
             matches = [player for player in players if player.full_name == target]
             resolved.update({player.id: player for player in matches})
@@ -276,6 +283,8 @@ def _resolve_player_mentions(
 
     for alias in sorted(aliases, key=len, reverse=True):
         if alias in _CURATED_PLAYER_ALIASES:
+            continue
+        if alias not in remaining:
             continue
         if re.search(rf"\b{re.escape(alias)}\b", remaining):
             curated_target = _CURATED_PLAYER_ALIASES.get(alias)
@@ -300,7 +309,11 @@ def _resolve_player_mentions(
         if player.team_id == "NYK":
             first_names[_normalize(player.full_name).split()[0]].append(player)
     for first_name, matches in first_names.items():
-        if len(matches) == 1 and re.search(rf"\b{re.escape(first_name)}\b", remaining):
+        if (
+            len(matches) == 1
+            and first_name in remaining
+            and re.search(rf"\b{re.escape(first_name)}\b", remaining)
+        ):
             resolved[matches[0].id] = matches[0]
             remaining = re.sub(rf"\b{re.escape(first_name)}\b", " ", remaining)
 
@@ -347,6 +360,8 @@ def _periods(question: str) -> list[int]:
 
 def _metric(question: str) -> str | None:
     q = _normalize(question)
+    if re.search(r"\b(?:games?|times)\b.*\bstart(?:ed)?\b", q):
+        return "starts"
     return next(
         (
             metric
@@ -382,8 +397,13 @@ async def resolve_query(
     intent: str,
     data_version: str | None = None,
     typo_threshold: float = 0.86,
+    select_extrema: bool = True,
 ) -> ResolvedQuery:
-    """Resolve canonical entities and filters without model inference."""
+    """Resolve canonical entities and filters without model inference.
+
+    Narrative computation retains the comparison population with select_extrema=False;
+    archive retrieval and conversation references retain the selected targets.
+    """
     release_id, resolved_version = await _active_release(db, data_version)
     game_stmt = select(Game).where((Game.home_team_id == "NYK") | (Game.away_team_id == "NYK"))
     if release_id is not None:
@@ -557,13 +577,13 @@ async def resolve_query(
         )
     )
     all_tied_games = False
-    if ("biggest win" in q or "best win" in q) and candidates:
+    if select_extrema and ("biggest win" in q or "best win" in q) and candidates:
         wins = [g for g in candidates if g.status == "final" and scores(g)[0] > scores(g)[1]]
         maximum = max((scores(g)[0] - scores(g)[1] for g in wins), default=None)
         candidates = [g for g in wins if scores(g)[0] - scores(g)[1] == maximum]
         all_tied_games = True
         descriptive_reference = True
-    if "best defensive game" in q and candidates:
+    if select_extrema and "best defensive game" in q and candidates:
         finals = [g for g in candidates if g.status == "final"]
         minimum = min((scores(g)[1] for g in finals), default=None)
         candidates = [g for g in finals if scores(g)[1] == minimum]
