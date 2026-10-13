@@ -160,6 +160,11 @@ def is_record_request(question: str) -> bool:
     return bool(
         re.search(r"\brecord\b", q)
         or (re.search(r"\bwins?\b", q) and re.search(r"\bloss(?:es)?\b", q))
+        or (
+            re.search(r"^how (?:did|have|has)\b.*\b(?:perform|do|done|fare)\b", q)
+            and _metric(question) is None
+            and not re.search(r"\b(?:scores?|margin|rating|run)\b", q)
+        )
     )
 
 
