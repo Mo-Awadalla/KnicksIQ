@@ -107,7 +107,7 @@ class CountedVerificationAdapter(LLMAdapter):
                 raise ValueError("Provider changed the authorized model")
             usage = body.get("usage")
             raw_cost = usage.get("cost") if isinstance(usage, dict) else None
-            if type(raw_cost) not in {str, int, float}:
+            if type(raw_cost) not in {int, float}:
                 raise ValueError("Missing provider cost")
             cost = Decimal(str(raw_cost))
             if not cost.is_finite() or cost < 0:

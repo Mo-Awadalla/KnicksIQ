@@ -23,6 +23,10 @@ SPENDING_DIRECTION_SHA256 = "23fb2fdecaabe72e38c7944b9566d1ac9358748a85f84fb5c5f
 # Task-local identity, never a search across concurrent pending transmissions.
 current_ticket: ContextVar[int | None] = ContextVar("verification_ticket", default=None)
 
+# Independent task ceiling: historical approval must never disable this bound.
+# All stages and inherited/uncertain exposure share the same atomic ledger.
+AGGREGATE_HARD_CAP_NUSD = 6_000_000_000
+
 
 class VerificationBudget:
     @staticmethod
@@ -159,6 +163,7 @@ class VerificationBudget:
                 or count >= cap[0]
                 or (enforce_dollars and cost + bound_nusd > cap[1])
                 or (enforce_dollars and total + bound_nusd > 1_100_000_000)
+                or total + bound_nusd > AGGREGATE_HARD_CAP_NUSD
             ):
                 raise ValueError("Cumulative verification request or cost cap exceeded")
             latest = db.execute("SELECT coalesce(max(id), 0) FROM calls").fetchone()[0]
@@ -234,6 +239,7 @@ class VerificationBudget:
             aggregate = rows + inherited
             return {
                 "stopped": bool(db.execute("SELECT stopped FROM identity").fetchone()[0]),
+                "aggregate_hard_cap_nusd": AGGREGATE_HARD_CAP_NUSD,
                 "spending_direction_sha256": self._spending_direction(db),
                 "historical_dollar_caps_enforced": self._spending_direction(db) is None,
                 "reserved_or_spent_nusd": sum(row[2] for row in aggregate),
