@@ -563,11 +563,13 @@ def payload_evidence(payload: dict[str, Any]) -> list[dict[str, Any]]:
         if record.pop("metadata_from_text"):
             record["metadata"] = json.loads(record["text"])
         prefix = record.pop("source_evidence_id_prefix", None)
-        if prefix is not None:
+        suffix = record.pop("source_evidence_id_suffix", None)
+        if prefix is not None or suffix is not None:
             record["metadata"] = {
                 **record["metadata"],
                 "source_evidence_ids": [
-                    prefix + suffix for suffix in record["metadata"]["source_evidence_ids"]
+                    (prefix or "") + middle + (suffix or "")
+                    for middle in record["metadata"]["source_evidence_ids"]
                 ],
             }
         restored.append(record)
@@ -575,6 +577,7 @@ def payload_evidence(payload: dict[str, Any]) -> list[dict[str, Any]]:
 
 
 def _pack_evidence(payload: dict[str, Any], records: list[dict[str, Any]]) -> None:
+    suffix_annotation = " source_evidence_id_suffix follows each source_evidence_ids fragment."
     entries = []
     for record in records:
         entry = {**record, "metadata_from_text": False}
@@ -595,6 +598,16 @@ def _pack_evidence(payload: dict[str, Any], records: list[dict[str, Any]]) -> No
                 if prefix and len(encoded(refs)) > len(encoded(suffixes)) + len(prefix) + 40:
                     entry["source_evidence_id_prefix"] = prefix
                     entry["metadata"] = {**record["metadata"], "source_evidence_ids": suffixes}
+                fragments = entry["metadata"]["source_evidence_ids"]
+                suffix = commonprefix([fragment[::-1] for fragment in fragments])[::-1]
+                middles = [fragment[: -len(suffix)] for fragment in fragments] if suffix else []
+                if suffix and len(encoded(fragments)) > (
+                    len(encoded(middles))
+                    + len(encoded({"source_evidence_id_suffix": suffix}))
+                    + len(suffix_annotation)
+                ):
+                    entry["source_evidence_id_suffix"] = suffix
+                    entry["metadata"] = {**entry["metadata"], "source_evidence_ids": middles}
         if isinstance(parsed, dict) and json.dumps(parsed, sort_keys=True) == record["text"]:
             entry["text"] = parsed
         entries.append(entry)
@@ -608,6 +621,7 @@ def _pack_evidence(payload: dict[str, Any], records: list[dict[str, Any]]) -> No
             "metadata_from_text",
             "metadata",
             "source_evidence_id_prefix",
+            "source_evidence_id_suffix",
         ):
             counts: dict[str, int] = {}
             for entry in entries:
@@ -633,6 +647,7 @@ def _pack_evidence(payload: dict[str, Any], records: list[dict[str, Any]]) -> No
     annotations = (
         " metadata_from_text:true=>metadata=JSON(text).",
         " source_evidence_ids=source_evidence_id_prefix+suffixes.",
+        suffix_annotation,
         " Object text=canonical JSON.",
     )
     for annotation in annotations:
@@ -640,6 +655,7 @@ def _pack_evidence(payload: dict[str, Any], records: list[dict[str, Any]]) -> No
     used = (
         any(entry["metadata_from_text"] for entry in entries),
         any("source_evidence_id_prefix" in entry for entry in entries),
+        any("source_evidence_id_suffix" in entry for entry in entries),
         any(isinstance(entry["text"], dict) for entry in entries),
     )
     for annotation, needed in zip(annotations, used, strict=True):
