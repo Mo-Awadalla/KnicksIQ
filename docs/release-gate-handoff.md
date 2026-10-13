@@ -1,13 +1,52 @@
 # Release gate handoff (updated 2026-10-13)
 
 **Verdict: BLOCKED pending fresh live qualification and remaining release evidence.**
-The `exact_statistics-001` application defect is fixed locally. The owner-approved successor398 run
-then stopped on a separate review-capacity defect in `exact_statistics-016`; case 001 was not reached.
-The follow-on packing fix is verified locally. Isolated staging runs the prior 284c7dc images;
-no production change or production deployment has been made. The previous readiness result had 18 failures;
+The owner-approved successor406 run passed cases 009, 010, 011, 016, last-n-008 and 001.
+It then stopped on a premature clarification in `exact_statistics-002` instead of the available
+11,750-point total. A shared native-statistics preparation fix is verified locally.
+Isolated staging runs source 8b9cc21 and its native images. No production change or deployment
+has been made. The previous readiness result had 18 failures;
 that result is historical and does not certify this candidate.
 
-## Fresh run and follow-on review fix
+## Latest controlled stop and resolved-statistics fix
+
+The current cutoff is October 13 at 11:30pm Pacific (`2026-10-14T06:30:00Z`). The bound driver
+stops admitting work 60 seconds earlier. The successor406 approval was used for its one isolated
+8b9cc21 run and cannot authorize a different source or image. Never resume its failed goal.
+
+Six fresh independent reviews passed, including the complete 69-win/32-loss record and the
+Towns average with a transmitted reviewer request. For case 002, the writer had a resolved points
+scope covering all 101 games but no calculated facts. It requested a game/date range without
+calling a tool. The reviewer accepted the empty answer as conversational. Both wire bodies
+matched their schemas; the factual gate correctly rejected the result and stopped the controller.
+
+The frozen stopped422 journal contains 406 inherited calls plus 16 settled calls (407–422),
+totaling 202,296,904 nUSD. The new calls cost 4,127,634 nUSD, with no pending costs. The observed
+monthly Redis floor is 1.257693160 USD; historical unknown tickets and all four holds remain.
+The local `evidence/release-20261013/record-regression/resolved-statistics/stopped422-audit.json`
+pins the unchanged journal, its real controller-end receipt and the read-only ledger observation.
+
+A rerunnable census records the missing facts at the writer and reviewer before the fix.
+One eligibility decision now selects supported native statistics before the initial model call
+and projects their mandatory claims. Existing tool dispatch computes the facts; existing review,
+limits and scope checks remain in force. Ambiguous subjects, unsupported metrics, unspecified
+player aggregation, discovery and comparisons requiring a separate baseline retain planning.
+Grouped totals cannot become averages, and unsupported grouped metrics cannot become record
+claims in fallback. Failure modes and socket regression scope:
+[resolved statistics](release-evidence/implementation-20261001/resolved-statistics-failure-modes.md).
+The affected suite passes all 224 checks. All 23 new socket cases pass against the approved
+archive; the updated invalid-tool and ambiguity fixtures pass three additional approved cases.
+Exact model schemas, response wires, HTTP responses, traces, Redis replay and ledger receipts
+are retained. Independent artifact review validated all 42 wires and a maximum 7,981-byte
+input against the unchanged 8,000-byte cap. These scripted providers do not establish live quality.
+
+Final source, local checks, native images and any unsigned successor422 preparation are recorded
+in the local `evidence/release-20261013/record-regression/resolved-statistics/verification.json`.
+A new source-bound grant is required before activating those images or starting a paid run.
+Repeat all 14 qualification cases with fresh independent review before the remaining cohorts
+and operational gates. Production launch remains outside this run's authorization.
+
+## Earlier controlled stop and review-capacity fix
 
 The owner approved one successor398 run and then moved the cutoff to October 13 at 11:30pm Pacific
 (`2026-10-14T06:30:00Z`). The private driver stops admitting work 60 seconds before that absolute
@@ -57,7 +96,7 @@ The tests use scripted providers; they do not establish live model quality or re
 
 ## Earlier successor398 preparation (preserved)
 
-Use the fresh stopped406 checkpoint above for the next package. This section records the prior preparation.
+Use the stopped422 checkpoint above for the next package. This section records the prior preparation.
 
 Preserve successor385b and all its evidence. Its process was killed while paused after rejecting
 case 001, so it must not resume. The local successor audit records 398 counted calls, 195,801,300 nUSD
