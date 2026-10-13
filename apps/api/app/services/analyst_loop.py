@@ -9,7 +9,7 @@ import re
 import time
 from copy import deepcopy
 from os.path import commonprefix
-from typing import Any, TypeVar
+from typing import Any, Literal, TypeVar
 
 from app.core.config import get_settings
 from app.services.analyst_budget import BudgetReservation, valid_reported_cost
@@ -18,6 +18,7 @@ from app.services.conversation_memory import bounded_history
 from app.services.evidence_contracts import (
     CONTRACT_VERSION,
     INTERPRETATION_POLICY,
+    PLAYER_METRICS,
     PROMPT_VERSION,
     VALIDATOR_VERSION,
     Action,
@@ -1308,20 +1309,101 @@ class AnalystLoop:
         ]
         return claims if {claim.metric_id for claim in claims} == {"wins", "losses"} else []
 
-    def _player_average_requested(self) -> bool:
+    def _native_statistic_tool(self) -> Literal["get_player_stats", "get_team_stats"] | None:
+        """Prepare only calculations whose aggregation/populations are native and explicit."""
         scope = self.tools.scope
-        return bool(
-            scope is not None
-            and scope.player_ids
-            and scope.metric is not None
-            and not scope.requires_clarification
-            and not re_search_discovery(self.tools.question)
-            and re.search(
-                r"\b(?:average|avg|per[ -]game|per[ -]appearance)\b",
-                self.tools.question,
+        question = self.tools.question
+        if (
+            scope is None
+            or scope.requires_clarification
+            or self.tools.narrative
+            or re_search_discovery(question)
+            or self.tools.season != self.tools.release.season
+            or any(
+                s != self.tools.release.season
+                for s in re.findall(r"\b20\d{2}-\d{2}(?!-\d{2})\b", question)
+            )
+        ):
+            return None
+        team_groups = self.tools.requested_team_groups()
+        comparison = bool(
+            re.search(
+                r"\b(?:compare|compared|comparison|versus|vs|better|stronger|change|"
+                r"differences?|differ(?:ed|s)?)\b"
+                r"|\bbefore\b.*\bafter\b",
+                question,
                 re.I,
             )
-            and not re.search(r"\btotal\b", self.tools.question, re.I)
+        )
+        if scope.periods:
+            return (
+                "get_team_stats"
+                if self.tools.supports_period_average(scope)
+                and not team_groups
+                and not (
+                    comparison
+                    and (
+                        scope.date_start
+                        or scope.date_end
+                        or re.search(r"\bbefore\b.*\bafter\b", question, re.I)
+                    )
+                )
+                else None
+            )
+        native_comparison = bool(team_groups) or bool(
+            scope.player_ids
+            and (
+                self.tools.season_window_comparison_requested()
+                or re.search(r"\bbefore\s+and\s+after\s+(?:the\s+)?all[ -]star\b", question, re.I)
+            )
+        )
+        if comparison and not native_comparison:
+            return None
+        if scope.player_ids:
+            explicit_aggregation = re.search(
+                r"\b(?:total|average|avg|per[ -]game|per[ -]appearance)\b", question, re.I
+            )
+            return (
+                "get_player_stats"
+                if self.tools.player_profile_requested()
+                or (
+                    scope.metric in PLAYER_METRICS
+                    and (
+                        explicit_aggregation
+                        or native_comparison
+                        or scope.metric in {"double_doubles", "starts", "three_point_percentage"}
+                    )
+                )
+                else None
+            )
+        if team_groups:
+            if scope.metric not in {None, "points", "turnovers"}:
+                return None
+            if re.search(r"\b(?:total|sum)\b", question, re.I) and not set(
+                self.tools.team_comparison_metrics(scope)
+            ) <= {"games", "wins", "losses"}:
+                return None
+            return "get_team_stats"
+        if re.search(r"\b(?:who led|leaders?|which player)\b", question, re.I):
+            return "get_team_stats" if (scope.metric or "points") in PLAYER_METRICS else None
+        if scope.metric not in {None, "points"}:
+            return None
+        if re.search(r"\b(?:total|sum)\b", question, re.I) and re.search(
+            r"\b(?:allow(?:ed)?|opponents?)\b", question, re.I
+        ):
+            return None
+        return (
+            "get_team_stats"
+            if is_record_request(question)
+            or is_game_score_request(question)
+            or scope.metric == "points"
+            or re.search(
+                r"\bhow many\b.*\b(?:games?|wins?|won|lose|losses|lost)\b"
+                r"|\bmargin\b|\bpoints allowed\b",
+                question,
+                re.I,
+            )
+            else None
         )
 
     def _required_claim_groups(self) -> dict[str, list[set[str]]]:
@@ -1331,15 +1413,6 @@ class AnalystLoop:
         if record:
             requirements["record"] = [{claim.claim_id} for claim in record]
         scope = self.tools.scope
-        if self._player_average_requested():
-            assert scope is not None
-            averages = [
-                claim
-                for claim in self.fallback_claims()
-                if claim.metric_id == f"{scope.metric}:average"
-            ]
-            if averages:
-                requirements["player_average"] = [{claim.claim_id} for claim in averages]
         if (
             scope is not None
             and scope.player_ids
@@ -1367,6 +1440,10 @@ class AnalystLoop:
                 }
                 for metric, game_id in pairs
             ]
+        if not requirements and self._native_statistic_tool() is not None:
+            statistics = self.fallback_claims()
+            if statistics:
+                requirements["statistics"] = [{claim.claim_id} for claim in statistics]
         return requirements
 
     async def model(
@@ -1556,32 +1633,22 @@ class AnalystLoop:
             await self.settle()
 
     async def investigate(self) -> dict[str, Any]:
-        scope = self.tools.scope
-        needs_record = (
-            scope is not None
-            and not scope.player_ids
-            and not scope.requires_clarification
-            and is_record_request(self.tools.question)
-            and not self.fallback_claims()
-        )
-        needs_average = self._player_average_requested() and not self._required_claim_groups().get(
-            "player_average"
-        )
-        if needs_record or needs_average:
+        native_tool = self._native_statistic_tool()
+        if native_tool is not None and not self.fallback_claims():
             if (
                 self.rounds >= self.settings.analyst_max_tool_rounds
                 or self.tool_count >= 6
                 or time.monotonic() - self.started >= self.settings.analyst_investigation_seconds
             ):
                 raise TimeoutError("Investigation limit")
-            # Calculate resolved records and averages before the model can
-            # mistake uninvestigated facts for unavailable data.
+            # Resolve native quantitative facts before the model can mistake
+            # uninvestigated data for an unavailable or ambiguous scope.
             self.rounds += 1
             self.tool_count += 1
             self.results.append(
                 await self.tools.execute(
                     ToolCall(
-                        name="get_team_stats" if needs_record else "get_player_stats",
+                        name=native_tool,
                         question=self.tools.question,
                     )
                 )
@@ -1662,8 +1729,8 @@ class AnalystLoop:
         record = requirements.get("record", [])
         if any(not domain & declared_ids for domain in record):
             return False, "Every requested record needs both canonical wins and losses claims."
-        if any(not domain & declared_ids for domain in requirements.get("player_average", [])):
-            return False, "Every available requested player average population must be answered."
+        if any(not domain & declared_ids for domain in requirements.get("statistics", [])):
+            return False, "Every available requested statistical population must be answered."
         scope = self.tools.scope
         if "profile" in requirements:
             groups = requirements["profile"]
@@ -1844,7 +1911,8 @@ class AnalystLoop:
                 elif team_groups:
                     label = (claim.window or {}).get("comparison_group")
                     relevant = (
-                        claim.subject_id == "team:NYK"
+                        self._native_statistic_tool() == "get_team_stats"
+                        and claim.subject_id == "team:NYK"
                         and claim.metric_id == "team_comparison"
                         and label in team_groups
                         and set(claim.game_ids or []) == team_groups[label]

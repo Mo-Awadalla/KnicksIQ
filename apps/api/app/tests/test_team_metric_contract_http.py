@@ -177,10 +177,12 @@ async def test_team_only_metric_is_rejected_before_player_calculation(
         for row in raw["player_game_stats"]
         if row["nba_player_id"] == brunson["nba_player_id"] and row["minutes"] > 0
     ]
-    expected_points = sum(row["points"] for row in rows)
+    expected_points = sum(row["points"] for row in rows) / len(rows)
     async with AsyncSessionLocal() as db:
         await load_release_bundle(db, BUNDLE, expected_sha256=SHA, activate=True)
-    question = "How many total points did Jalen Brunson score?"
+    # Unspecified aggregation retains planning, so the scripted invalid metric
+    # reaches the typed tool boundary rather than being bypassed by preparation.
+    question = "How many points did Jalen Brunson score?"
     adapter = SyntheticAdapter(
         {"name": tool, "question": question, "metric": "wins", "aggregation": "total"}
     )
@@ -199,6 +201,6 @@ async def test_team_only_metric_is_rejected_before_player_calculation(
         for citation in receipt["response"]["citations"]
         if citation["type"] == "verified_claim"
     ]
-    assert {claim["metric_id"] for claim in claims} == {"points:total"}
+    assert {claim["metric_id"] for claim in claims} == {"points:average"}
     assert all(claim["value"] == pytest.approx(expected_points) for claim in claims)
     assert all(claim["sample_size"] == len(rows) for claim in claims)
