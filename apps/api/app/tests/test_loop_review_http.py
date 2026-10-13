@@ -621,3 +621,90 @@ async def test_required_slot_repair_retains_original_bad_selection_http(
         repair["proposed_answer"]["claim_uses"][0][0]
         == repair["proposed_answer"]["claim_uses"][1][0]
     )
+
+
+@pytest.mark.parametrize(
+    "question,metric,expected_value,expected_appearances",
+    [
+        ("What was Karl-Anthony Towns' rebounding average?", "rebounds", 10.0, 3),
+        ("What was Jalen Brunson's scoring average?", "points", 25.0, 2),
+    ],
+)
+@pytest.mark.parametrize("omit_average", [False, True])
+async def test_available_player_average_cannot_be_declared_unavailable_http(
+    client,
+    local_redis,  # noqa: F811
+    monkeypatch,
+    tmp_path,
+    record_property,
+    question,
+    metric,
+    expected_value,
+    expected_appearances,
+    omit_average,
+):
+    configure(monkeypatch)
+    async with AsyncSessionLocal() as db:
+        await _seed_release_stats(db)
+
+    class PrematureInabilityAdapter(SyntheticAdapter):
+        async def generate(self, *, system, user):
+            payload = json.loads(user)
+            if analyst_loop.payload_claims(payload) and not omit_average:
+                return await super().generate(system=system, user=user)
+            self.inputs.append({"system": system, "user": payload})
+            if payload["schema"]["title"] == "AnswerReview":
+                result = {
+                    "assertions": [
+                        {
+                            "text": span,
+                            "assertion_type": "coverage",
+                            "verdict": "supported",
+                            "offending_text": None,
+                            "supporting_claim_ids": [],
+                            "supporting_evidence_ids": [],
+                            "reason": "Scripted availability statement.",
+                        }
+                        for span in payload["review_spans"]
+                    ],
+                    "follow_up_reviews": [],
+                }
+            else:
+                answer = {
+                    "text": "I cannot give the requested player's average from this evidence.",
+                    "claims": [],
+                    "evidence_ids": [],
+                    "fact_ids": [],
+                    "follow_up_questions": [],
+                }
+                result = (
+                    answer
+                    if payload["schema"]["title"] == "ProposedAnswer"
+                    else {
+                        "action": "answer_from_available_evidence",
+                        "tools": [],
+                        "answer": answer,
+                    }
+                )
+            return json.dumps(analyst_loop.encode_model_response(payload, result))
+
+    adapter = PrematureInabilityAdapter({"name": "get_player_stats", "question": question})
+    monkeypatch.setattr(analyst_loop, "get_llm_adapter", lambda: adapter)
+    name = f"available-{metric}-average-{'omitted' if omit_average else 'answered'}"
+    receipt = await exchange(client, local_redis, adapter, name, question)
+    save_receipt(tmp_path, record_property, name, receipt)
+    assert_committed_replay(receipt)
+    body = receipt["response"]
+    assert body["llm_validated"] is (not omit_average)
+    averages = list(
+        {
+            citation["metadata"]["claim"]["claim_id"]: citation["metadata"]["claim"]
+            for citation in body["citations"]
+            if citation["metadata"]["claim"]["metric_id"] == f"{metric}:average"
+        }.values()
+    )
+    assert len(averages) == 1
+    assert averages[0]["value"] == pytest.approx(expected_value)
+    assert averages[0]["sample_size"] == expected_appearances
+    assert averages[0]["denominator"] == expected_appearances
+    assert len(averages[0]["game_ids"]) == expected_appearances
