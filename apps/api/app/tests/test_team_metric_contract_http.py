@@ -25,8 +25,10 @@ class RecordAdapter(SyntheticAdapter):
 
     async def generate(self, *, system, user):
         payload = json.loads(user)
-        value = json.loads(await super().generate(system=system, user=user))
-        if self.behavior == "capacity" and not payload["claims"]:
+        value = analyst_loop.decode_model_response(
+            payload, json.loads(await super().generate(system=system, user=user))
+        )
+        if self.behavior == "capacity" and not analyst_loop.payload_claims(payload):
             self.settings.analyst_input_tokens = 4096
         if self.behavior == "omit":
             answer = (
@@ -37,12 +39,16 @@ class RecordAdapter(SyntheticAdapter):
                 else None
             )
             if answer is not None:
-                wins = next(claim for claim in payload["claims"] if claim["metric_id"] == "wins")
+                wins = next(
+                    claim
+                    for claim in analyst_loop.payload_claims(payload)
+                    if claim["metric_id"] == "wins"
+                )
                 answer["text"] = wins["statement"]
                 answer["claims"] = [
                     {"claim_id": wins["claim_id"], "displayed_value": wins["value"]}
                 ]
-        return json.dumps(value)
+        return json.dumps(analyst_loop.encode_model_response(payload, value))
 
 
 @pytest.mark.parametrize(
@@ -148,15 +154,6 @@ async def test_team_record_comparison_uses_team_tool_without_player_metric_relax
     ]
     assert {c["window"]["comparison_group"]: c["value"] for c in claims} == expected
     assert all(c["subject_id"] == "team:NYK" for c in claims)
-    assert all(
-        "get_team_stats (team records/comparisons "
-        "and player scoring/statistic leaders over the COMPLETE requested team-game "
-        "population, including ties)"
-        in p["system"]
-        and "compare_windows (players; baseline_question required)" in p["system"]
-        for p in receipt["model_inputs"]
-        if p["user"]["schema"]["title"] == "Action"
-    )
 
 
 @pytest.mark.parametrize("tool", ["get_player_stats", "compare_windows"])

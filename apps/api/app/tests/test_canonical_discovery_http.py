@@ -190,6 +190,7 @@ async def test_original_cohort_records_real_local_discovery(
     ("question", "context", "search_identity"),
     [
         ("How did JB play in that game?", [], "Jalen Brunson"),
+        ("How did KAT play in that game?", [], "Karl-Anthony Towns"),
         (
             "What happened next?",
             [

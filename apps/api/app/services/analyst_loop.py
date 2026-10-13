@@ -7,6 +7,8 @@ import json
 import logging
 import re
 import time
+from copy import deepcopy
+from os.path import commonprefix
 from typing import Any, TypeVar
 
 from app.core.config import get_settings
@@ -48,6 +50,603 @@ def token_upper_bound(text: str) -> int:
     return len(text.encode("utf-8"))
 
 
+def _pack_value_tables(value: Any) -> tuple[Any, dict[str, Any]]:
+    """Factor repeated field names in complete ordered native object arrays."""
+    tables: dict[str, Any] = {}
+
+    def visit(node: Any, path: str) -> Any:
+        if isinstance(node, dict):
+            return {
+                key: visit(item, path + "/" + key.replace("~", "~0").replace("/", "~1"))
+                for key, item in node.items()
+            }
+        if not isinstance(node, list):
+            return node
+        rows = [visit(item, path + "/" + str(index)) for index, item in enumerate(node)]
+        if len(rows) < 2 or not all(isinstance(row, dict) for row in rows):
+            return rows
+        keys = list(rows[0])
+        if not all(set(row) == set(keys) for row in rows):
+            return rows
+        context = {
+            key: rows[0][key]
+            for key in keys
+            if all(
+                json.dumps(row[key], sort_keys=True) == json.dumps(rows[0][key], sort_keys=True)
+                for row in rows[1:]
+            )
+        }
+        columns = [key for key in keys if key not in context]
+        packed = [[row[key] for key in columns] for row in rows]
+        table = [columns, context]
+        if len(encoded(packed)) + len(encoded({path: table})) >= len(encoded(rows)):
+            return rows
+        tables[path] = table
+        return packed
+
+    return visit(value, ""), tables
+
+
+def _restore_value_tables(value: Any, tables: dict[str, Any]) -> Any:
+    def visit(node: Any, path: str) -> Any:
+        if path in tables:
+            table = tables[path]
+            node = [{**table[1], **dict(zip(table[0], row, strict=True))} for row in node]
+        if isinstance(node, dict):
+            return {
+                key: visit(item, path + "/" + key.replace("~", "~0").replace("/", "~1"))
+                for key, item in node.items()
+            }
+        if isinstance(node, list):
+            return [visit(item, path + "/" + str(index)) for index, item in enumerate(node)]
+        return node
+
+    return visit(value, "")
+
+
+def payload_claims(payload: dict[str, Any]) -> list[dict[str, Any]]:
+    """Restore the complete records from the model input's shared claim context."""
+    context = payload["claim_context"]
+    restored = []
+    for entry in payload["claims"]:
+        record = {**context, **entry}
+        if isinstance(record.get("statement"), list):
+            shared = payload["statement_context"]
+            record["statement"] = shared["prefix"] + record["statement"][0] + shared["suffix"]
+        if record.pop("statement_from_review", False):
+            record["statement"] = "".join(payload["review_spans"])
+        if "value_tables" in record:
+            record["value"] = _restore_value_tables(record["value"], record.pop("value_tables"))
+        prefix = record.pop("supporting_evidence_id_prefix", None)
+        if prefix is not None:
+            record["supporting_evidence_ids"] = [
+                prefix + suffix for suffix in record["supporting_evidence_ids"]
+            ]
+        restored.append(record)
+    return restored
+
+
+def payload_claim_uses(payload: dict[str, Any]) -> list[dict[str, Any]]:
+    """Restore declared hint/choice rows, including their sealed numeric rounding."""
+    claims = payload_claims(payload)
+    return [
+        {
+            "claim_id": claims[index]["claim_id"],
+            "displayed_value": (
+                round(claims[index]["value"], precision)
+                if precision is not None
+                else claims[index]["value"]
+            ),
+            "decimal_places": precision,
+        }
+        for index, precision in payload.get("claim_uses", [])
+    ]
+
+
+def _claim_choice_rows(payload: dict[str, Any]) -> list[list[int | None]]:
+    return [
+        [index, precision]
+        for index, claim in enumerate(payload_claims(payload))
+        for precision in ([None, 0, 1, 2, 3] if type(claim["value"]) in (int, float) else [None])
+    ]
+
+
+def _finite_claim_uses(payload: dict[str, Any]) -> list[dict[str, Any]]:
+    return payload_claim_uses({**payload, "claim_uses": _claim_choice_rows(payload)})
+
+
+def _claim_choice_domains(payload: dict[str, Any]) -> tuple[list[list[int]], list[int]]:
+    rows = _claim_choice_rows(payload)
+    required = [
+        [ordinal for ordinal, (claim_index, _) in enumerate(rows) if claim_index in domain]
+        for domain in payload["required_claim_indexes"]
+    ]
+    related = [
+        ordinal
+        for ordinal, (claim_index, _) in enumerate(rows)
+        if claim_index in payload.get("related_claim_indexes", [])
+    ]
+    return required, related
+
+
+def _unique_json_object(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
+    result = {}
+    for key, value in pairs:
+        if key in result:
+            raise ValueError("Model response contains a duplicate JSON key")
+        result[key] = value
+    return result
+
+
+def parse_model_response(raw: str) -> dict[str, Any]:
+    """Reject duplicate keys before they can overwrite any sealed selection."""
+    response = json.loads(raw, object_pairs_hook=_unique_json_object)
+    if not isinstance(response, dict):
+        raise ValueError("Model response must be a JSON object")
+    return response
+
+
+def payload_proposed_answer(payload: dict[str, Any]) -> dict[str, Any] | None:
+    """Restore declared uses without changing their IDs, types, precision or review text."""
+    declared = payload.get("proposed_answer")
+    if declared is None:
+        return None
+    claims = payload_claims(payload)
+    answer = {
+        key: value
+        for key, value in declared.items()
+        if key not in ("claim_uses", "value_overrides", "use_value_overrides")
+    }
+    answer["claims"] = [
+        {
+            "claim_id": claims[index]["claim_id"],
+            "displayed_value": declared.get("use_value_overrides", {}).get(
+                str(use_ordinal),
+                declared.get("value_overrides", {}).get(str(index), claims[index]["value"]),
+            ),
+            "decimal_places": precision,
+        }
+        for use_ordinal, (index, precision) in enumerate(declared["claim_uses"])
+    ]
+    answer.setdefault("evidence_ids", [])
+    answer.setdefault("fact_ids", [])
+    if "review_spans" in payload:
+        answer["text"] = "".join(payload["review_spans"])
+        answer["follow_up_questions"] = payload["follow_up_questions"]
+    return answer
+
+
+def _same_schema_value(left: Any, right: Any) -> bool:
+    """JSON Schema numbers compare mathematically; booleans never equal numbers."""
+    if isinstance(left, bool) or isinstance(right, bool):
+        return type(left) is type(right) and left == right
+    if isinstance(left, (int, float)) and isinstance(right, (int, float)):
+        return left == right
+    if type(left) is not type(right):
+        return False
+    if isinstance(left, dict):
+        return left.keys() == right.keys() and all(
+            _same_schema_value(left[key], right[key]) for key in left
+        )
+    if isinstance(left, list):
+        return len(left) == len(right) and all(
+            _same_schema_value(a, b) for a, b in zip(left, right, strict=True)
+        )
+    return left == right
+
+
+def _review_text_indexes(texts: list[str]) -> dict[str, int]:
+    indexes: dict[str, int] = {}
+    for index, text in enumerate(texts):
+        indexes.setdefault(text, index)
+    return indexes
+
+
+def _model_response_values(
+    payload: dict[str, Any], response: dict[str, Any], *, decode: bool
+) -> dict[str, Any]:
+    if payload.get("schema", {}).get("title") == "AnswerReview":
+        result = deepcopy(response)
+        for field, source, reference in (
+            ("assertions", "review_spans", "span_index"),
+            ("follow_up_reviews", "follow_up_questions", "follow_up_index"),
+        ):
+            texts = payload[source]
+            indexes = _review_text_indexes(texts)
+            for entry in result.get(field, []):
+                if decode:
+                    if "text" in entry:
+                        raise ValueError("Review wire text must use its sealed index")
+                    index = entry.pop(reference)
+                    if type(index) is not int or index not in indexes.values():
+                        raise ValueError("Review response changes a sealed text reference")
+                    entry["text"] = texts[index]
+                else:
+                    if entry["text"] not in indexes:
+                        raise ValueError("Review response changes a sealed text")
+                    entry[reference] = indexes[entry.pop("text")]
+        return result
+    if payload.get("required_claim_indexes"):
+        result = deepcopy(response)
+        answer = result.get("answer") if "action" in result else result
+        if not isinstance(answer, dict):
+            return result
+        choices = _finite_claim_uses(payload)
+        required, related = _claim_choice_domains(payload)
+        if decode:
+            selected = answer.get("claims")
+            keys = {str(ordinal) for ordinal in range(len(required))}
+            if not isinstance(selected, dict) or selected.keys() != keys:
+                raise ValueError(
+                    "Model response must select every required claim slot exactly once"
+                )
+            ordinals = []
+            for ordinal, domain in enumerate(required):
+                choice = selected[str(ordinal)]
+                if type(choice) is not int or choice not in domain:
+                    raise ValueError("Model response changes a required sealed claim choice")
+                ordinals.append(choice)
+            if related:
+                tail = answer.pop("related_claims", None)
+                if not isinstance(tail, list):
+                    raise ValueError("Model response must declare its related claim choices")
+                if any(type(choice) is not int or choice not in related for choice in tail):
+                    raise ValueError("Model response changes a related sealed claim choice")
+                ordinals.extend(tail)
+            elif "related_claims" in answer:
+                raise ValueError("Model response adds forbidden related claim choices")
+            selected_uses = [choices[ordinal] for ordinal in ordinals]
+            if len({use["claim_id"] for use in selected_uses}) != len(selected_uses):
+                raise ValueError("Model response selects a sealed claim more than once")
+            answer["claims"] = selected_uses
+            return result
+        # Scripted invalid native fixtures stay invalid wire. Encoding must not
+        # complete a missing slot, drop a duplicate, or repair a wrong value.
+        uses = answer.get("claims")
+        if not isinstance(uses, list) or "related_claims" in answer:
+            return result
+        selected_ordinals = []
+        for use in uses:
+            if not isinstance(use, dict) or set(use) - {
+                "claim_id",
+                "displayed_value",
+                "decimal_places",
+            }:
+                return result
+            precision = use.get("decimal_places")
+            if precision is not None and type(precision) is not int:
+                return result
+            matches = [
+                ordinal
+                for ordinal, choice in enumerate(choices)
+                if use.get("claim_id") == choice["claim_id"]
+                and precision == choice["decimal_places"]
+                and _same_schema_value(use.get("displayed_value"), choice["displayed_value"])
+            ]
+            if len(matches) != 1:
+                return result
+            selected_ordinals.append(matches[0])
+        if len({use["claim_id"] for use in uses}) != len(uses):
+            return result
+        slots = {}
+        for ordinal, domain in enumerate(required):
+            matches = [choice for choice in selected_ordinals if choice in domain]
+            if len(matches) != 1:
+                return result
+            slots[str(ordinal)] = matches[0]
+        tail = [choice for choice in selected_ordinals if choice not in slots.values()]
+        if len(uses) > 30 or any(choice not in related for choice in tail):
+            return result
+        answer["claims"] = slots
+        if related:
+            answer["related_claims"] = tail
+        return result
+    if not any("value_tables" in claim for claim in payload["claims"]):
+        return response
+    result = deepcopy(response)
+    answer = result.get("answer") if "action" in result else result
+    if not isinstance(answer, dict) or "claims" not in answer:
+        return result
+    native = {claim["claim_id"]: claim for claim in payload_claims(payload)}
+    wire = {claim["claim_id"]: claim for claim in payload["claims"]}
+    for use in answer["claims"]:
+        claim_id = use["claim_id"]
+        if claim_id not in native:
+            raise ValueError("Model response references an unknown sealed claim")
+        record = wire[claim_id]
+        if "value_tables" not in record:
+            continue
+        expected = record["value"] if decode else native[claim_id]["value"]
+        if not _same_schema_value(use["displayed_value"], expected):
+            raise ValueError("Model response changes a complete sealed table value")
+        use["displayed_value"] = (
+            _restore_value_tables(record["value"], record["value_tables"])
+            if decode
+            else record["value"]
+        )
+    return result
+
+
+def encode_model_response(payload: dict[str, Any], response: dict[str, Any]) -> dict[str, Any]:
+    """Encode native scripted answers in the same exact model-wire value language."""
+    return _model_response_values(payload, response, decode=False)
+
+
+def decode_model_response(payload: dict[str, Any], response: dict[str, Any]) -> dict[str, Any]:
+    """Restore only actually selected sealed choices/tables before native validation."""
+    return _model_response_values(payload, response, decode=True)
+
+
+def _wire_payload(payload: dict[str, Any], *, complete: bool = False) -> dict[str, Any]:
+    indexes = {claim["claim_id"]: index for index, claim in enumerate(payload["claims"])}
+    wire = dict(payload)
+    if payload.get("required_claim_indexes"):
+        wire["claim_uses"] = _claim_choice_rows(payload)
+        wire["claim_context_format"] += (
+            " claim_uses=[claim index,precision] choices; claims maps required slot"
+            " ordinal to choice ordinal. related_claims selects optional choices."
+        )
+    elif "claim_uses" in payload:
+        wire["claim_uses"] = [
+            [indexes[use["claim_id"]], use.get("decimal_places")] for use in payload["claim_uses"]
+        ]
+        wire["claim_context_format"] += (
+            " Claim uses=[0-based claim index,precision]; expand to claim_id,"
+            "displayed_value=claim.value,decimal_places."
+        )
+    declared = payload.get("proposed_answer")
+    if declared is None:
+        return wire
+    if not all(use["claim_id"] in indexes for use in declared["claims"]):
+        if complete:
+            raise ValueError("Complete declared claims exceed model input budget")
+        # Budget construction has not yet admitted the complete referenced group.
+        return wire
+    claims = payload_claims(payload)
+    wire["proposed_answer"] = {
+        **{key: value for key, value in declared.items() if key != "claims"},
+        "claim_uses": [
+            [indexes[use["claim_id"]], use.get("decimal_places")] for use in declared["claims"]
+        ],
+    }
+    overrides = {
+        str(indexes[use["claim_id"]]): use["displayed_value"]
+        for use in declared["claims"]
+        if json.dumps(use["displayed_value"], sort_keys=True, ensure_ascii=False)
+        != json.dumps(
+            claims[indexes[use["claim_id"]]]["value"],
+            sort_keys=True,
+            ensure_ascii=False,
+        )
+    }
+    if overrides:
+        wire["proposed_answer"]["value_overrides"] = overrides
+    # A malformed historical proposal may declare one ID multiple times with
+    # different values. Preserve each actual use, not just the last ID override.
+    use_overrides = {
+        str(ordinal): use["displayed_value"]
+        for ordinal, use in enumerate(declared["claims"])
+        if json.dumps(use["displayed_value"], sort_keys=True, ensure_ascii=False)
+        != json.dumps(
+            overrides.get(str(indexes[use["claim_id"]]), claims[indexes[use["claim_id"]]]["value"]),
+            sort_keys=True,
+            ensure_ascii=False,
+        )
+    }
+    if use_overrides:
+        wire["proposed_answer"]["use_value_overrides"] = use_overrides
+        wire["claim_context_format"] += " Proposed use_value_overrides uses declared-use ordinals."
+    return wire
+
+
+def _pack_claims(payload: dict[str, Any], claims: list[dict[str, Any]]) -> None:
+    """Factor repeated presentation fields without changing complete native records."""
+    provenance_annotation = (
+        " supporting_evidence_ids inherit supporting_evidence_id_prefix;"
+        " concatenate prefix+each suffix to recover full provenance IDs."
+    )
+    payload["claim_context_format"] = payload["claim_context_format"].replace(
+        provenance_annotation, ""
+    )
+    records = [dict(claim) for claim in claims]
+    prefixes = []
+    for record in records:
+        refs = record["supporting_evidence_ids"]
+        prefix = commonprefix(refs)
+        suffixes = [ref[len(prefix) :] for ref in refs]
+        if prefix and len(encoded(refs)) > (
+            len(encoded(suffixes)) + len(encoded(prefix)) + 40 + len(provenance_annotation)
+        ):
+            record["supporting_evidence_ids"] = suffixes
+            prefixes.append(prefix)
+        else:
+            prefixes.append(None)
+    if any(prefixes):
+        for record, prefix in zip(records, prefixes, strict=True):
+            record["supporting_evidence_id_prefix"] = prefix
+        payload["claim_context_format"] += provenance_annotation
+    context = {}
+    if records:
+        for key in records[0]:
+            if key in {"claim_id", "metric_id", "value", "statement"}:
+                continue
+            if not all(key in record for record in records):
+                continue
+            counts: dict[str, int] = {}
+            for claim in records:
+                value = encoded(claim[key])
+                counts[value] = counts.get(value, 0) + 1
+            shared = max(counts, key=lambda value: counts[value])
+            if counts[shared] > 1:
+                context[key] = json.loads(shared)
+    payload["claim_context"] = context
+    payload["claims"] = [
+        {
+            key: value
+            for key, value in claim.items()
+            if key not in context or encoded(value) != encoded(context[key])
+        }
+        for claim in records
+    ]
+    # Native statements stay byte-identical; only repeated presentation affixes move.
+    annotation = " Array statement=prefix+only item+suffix."
+    payload["claim_context_format"] = payload["claim_context_format"].replace(annotation, "")
+    payload.pop("statement_context", None)
+    groups: dict[str, list[int]] = {}
+    for index, claim in enumerate(claims):
+        groups.setdefault(encoded(claim["subject_id"]), []).append(index)
+    baseline_size = token_upper_bound(encoded({"claims": payload["claims"]}))
+    best_size = baseline_size
+    best = None
+    for indexes in groups.values():
+        if len(indexes) < 2:
+            continue
+        statements = [claims[index]["statement"] for index in indexes]
+        prefix = commonprefix(statements)
+        suffix = commonprefix([text[len(prefix) :][::-1] for text in statements])[::-1]
+        if not prefix and not suffix:
+            continue
+        entries = [dict(entry) for entry in payload["claims"]]
+        for index in indexes:
+            text = claims[index]["statement"]
+            entries[index]["statement"] = [
+                text[len(prefix) : len(text) - len(suffix) if suffix else len(text)]
+            ]
+        shared = {"prefix": prefix, "suffix": suffix}
+        candidate_size = token_upper_bound(
+            encoded({"claims": entries, "statement_context": shared})
+        ) + token_upper_bound(annotation)
+        if candidate_size < best_size:
+            best_size = candidate_size
+            best = entries, shared
+    if best is not None:
+        payload["claims"], payload["statement_context"] = best
+        payload["claim_context_format"] += annotation
+    table_annotation = (
+        " value_tables[path]=[columns,context]: JSON-pointer array rows map to columns"
+        " and inherit context; output displayed_value copies packed claim.value."
+    )
+    statement_annotation = " statement_from_review:true=>statement=concat(review_spans)."
+    payload["claim_context_format"] = (
+        payload["claim_context_format"]
+        .replace(table_annotation, "")
+        .replace(statement_annotation, "")
+    )
+    has_tables = False
+    has_statement_reference = False
+    for entry, native in zip(payload["claims"], claims, strict=True):
+        packed, tables = _pack_value_tables(native["value"])
+        if tables and (
+            len(encoded(packed)) + len(encoded(tables)) + len(table_annotation) + 17
+            < len(encoded(native["value"]))
+        ):
+            entry["value"] = packed
+            entry["value_tables"] = tables
+            has_tables = True
+        if native["statement"] == "".join(payload.get("review_spans", [])):
+            entry.pop("statement", None)
+            entry["statement_from_review"] = True
+            has_statement_reference = True
+    if has_tables:
+        payload["claim_context_format"] += table_annotation
+    if has_statement_reference:
+        payload["claim_context_format"] += statement_annotation
+
+
+def payload_evidence(payload: dict[str, Any]) -> list[dict[str, Any]]:
+    """Restore native receipts, including metadata identical to their JSON source text."""
+    restored = []
+    for entry in payload["evidence"]:
+        record = {**payload["evidence_context"], **entry}
+        if isinstance(record["text"], dict):
+            record["text"] = json.dumps(record["text"], sort_keys=True)
+        if record.pop("metadata_from_text"):
+            record["metadata"] = json.loads(record["text"])
+        prefix = record.pop("source_evidence_id_prefix", None)
+        if prefix is not None:
+            record["metadata"] = {
+                **record["metadata"],
+                "source_evidence_ids": [
+                    prefix + suffix for suffix in record["metadata"]["source_evidence_ids"]
+                ],
+            }
+        restored.append(record)
+    return restored
+
+
+def _pack_evidence(payload: dict[str, Any], records: list[dict[str, Any]]) -> None:
+    entries = []
+    for record in records:
+        entry = {**record, "metadata_from_text": False}
+        try:
+            parsed = json.loads(record["text"])
+        except (ValueError, TypeError):
+            parsed = None
+        if isinstance(parsed, dict) and json.dumps(parsed, sort_keys=True) == json.dumps(
+            record["metadata"], sort_keys=True
+        ):
+            entry["metadata_from_text"] = True
+            entry.pop("metadata")
+        else:
+            refs = record["metadata"].get("source_evidence_ids")
+            if isinstance(refs, list) and refs and all(isinstance(ref, str) for ref in refs):
+                prefix = commonprefix(refs)
+                suffixes = [ref[len(prefix) :] for ref in refs]
+                if prefix and len(encoded(refs)) > len(encoded(suffixes)) + len(prefix) + 40:
+                    entry["source_evidence_id_prefix"] = prefix
+                    entry["metadata"] = {**record["metadata"], "source_evidence_ids": suffixes}
+        if isinstance(parsed, dict) and json.dumps(parsed, sort_keys=True) == record["text"]:
+            entry["text"] = parsed
+        entries.append(entry)
+    context = {}
+    if entries:
+        for key in (
+            "release_id",
+            "game_id",
+            "source_name",
+            "source_url",
+            "metadata_from_text",
+            "metadata",
+            "source_evidence_id_prefix",
+        ):
+            counts: dict[str, int] = {}
+            for entry in entries:
+                if key in entry:
+                    code = encoded(entry[key])
+                    counts[code] = counts.get(code, 0) + 1
+            if counts:
+                code, count = max(counts.items(), key=lambda item: item[1])
+                if count > 1:
+                    context[key] = json.loads(code)
+    payload["evidence_context"] = context
+    payload["evidence"] = [
+        {
+            **{
+                key: value
+                for key, value in entry.items()
+                if key not in context or encoded(value) != encoded(context[key])
+            },
+            **{key: None for key in context if key not in entry},
+        }
+        for entry in entries
+    ]
+    annotations = (
+        " metadata_from_text:true=>metadata=JSON(text).",
+        " source_evidence_ids=source_evidence_id_prefix+suffixes.",
+        " Object text=canonical JSON.",
+    )
+    for annotation in annotations:
+        payload["claim_context_format"] = payload["claim_context_format"].replace(annotation, "")
+    used = (
+        any(entry["metadata_from_text"] for entry in entries),
+        any("source_evidence_id_prefix" in entry for entry in entries),
+        any(isinstance(entry["text"], dict) for entry in entries),
+    )
+    for annotation, needed in zip(annotations, used, strict=True):
+        if needed:
+            payload["claim_context_format"] += annotation
+
+
 def compact_schema(schema: type) -> dict[str, Any]:
     def strip(value: Any) -> Any:
         if isinstance(value, dict):
@@ -65,30 +664,114 @@ def compact_schema(schema: type) -> dict[str, Any]:
     return result
 
 
+def _complete_object_alternatives(schema: dict[str, Any]) -> None:
+    """Emit complete object branches instead of partial property intersections."""
+    common = {key: value for key, value in schema.items() if key not in {"anyOf", "$defs"}}
+    branches = []
+    for constraints in schema["anyOf"]:
+        branch = deepcopy(common)
+        branch.update(
+            {
+                key: deepcopy(value)
+                for key, value in constraints.items()
+                if key not in {"properties", "required"}
+            }
+        )
+        for name, constraint in constraints.get("properties", {}).items():
+            branch["properties"][name].update(deepcopy(constraint))
+        branch["required"] = sorted(
+            set(common.get("required", [])) | set(constraints.get("required", []))
+        )
+        branches.append(branch)
+    schema["anyOf"] = branches
+    for key in ("properties", "required", "additionalProperties"):
+        schema.pop(key, None)
+
+
 def scoped_response_schema(schema: type[BaseModel], payload: dict[str, Any]) -> dict[str, Any]:
     """Constrain provider output to references and complete values actually supplied."""
     result = compact_schema(schema)
     definitions = result.get("$defs", {})
-    uses = []
-    for claim in payload["claims"]:
-        uses.append(
+    if schema is Action:
+        from app.services.evidence_contracts import PLAYER_METRICS
+
+        # Optional fields retain runtime defaults, but each action must be executable.
+        result["anyOf"] = [
             {
-                "claim_id": claim["claim_id"],
-                "displayed_value": claim["value"],
-                "decimal_places": None,
-            }
-        )
-        if type(claim["value"]) in (int, float):
-            uses.extend(
-                {
-                    "claim_id": claim["claim_id"],
-                    "displayed_value": round(claim["value"], places),
-                    "decimal_places": places,
+                "properties": {
+                    "action": {"enum": ["call_tools"]},
+                    "tools": {"minItems": 1},
+                    "answer": {"type": "null"},
+                },
+                "required": ["tools"],
+            },
+            {
+                "properties": {
+                    "action": {
+                        "enum": [
+                            action
+                            for action in result["properties"]["action"]["enum"]
+                            if action != "call_tools"
+                        ]
+                    },
+                    "tools": {"maxItems": 0},
+                    "answer": {"$ref": "#/$defs/ProposedAnswer"},
+                },
+                "required": ["answer"],
+            },
+        ]
+        player_tools = ["get_player_stats", "compare_windows"]
+        tool_schema = definitions["ToolCall"]
+        tool_schema["anyOf"] = [
+            {
+                "properties": {
+                    "name": {"enum": player_tools},
+                    "metric": {"enum": [*PLAYER_METRICS, None]},
                 }
-                for places in range(4)
-            )
-    if "ClaimUse" in definitions and uses:
-        definitions["ClaimUse"] = {"enum": uses}
+            },
+            {
+                "properties": {
+                    "name": {
+                        "enum": [
+                            name
+                            for name in tool_schema["properties"]["name"]["enum"]
+                            if name not in player_tools
+                        ]
+                    }
+                }
+            },
+        ]
+    keyed = bool(payload.get("required_claim_indexes")) and schema is not AnswerReview
+    uses = _finite_claim_uses(payload)
+    if not keyed:
+        uses = _model_response_values(payload, {"claims": uses}, decode=False)["claims"]
+    if "ClaimUse" in definitions and uses and not keyed:
+        alternatives = []
+        for claim in payload_claims(payload):
+            choices = [use for use in uses if use["claim_id"] == claim["claim_id"]]
+            values = {}
+            for use in choices:
+                key = encoded(use["displayed_value"])
+                values.setdefault(key, []).append(use["decimal_places"])
+            branches = [
+                {
+                    "type": "object",
+                    "additionalProperties": False,
+                    "required": ["claim_id", "displayed_value", "decimal_places"],
+                    "properties": {
+                        "claim_id": {"enum": [claim["claim_id"]]},
+                        "displayed_value": {"enum": [json.loads(value)]},
+                        "decimal_places": {"enum": places},
+                    },
+                }
+                for value, places in values.items()
+            ]
+            # Equal rounded values share their ID and value without permitting
+            # a precision/value pair absent from the original complete-object enum.
+            enum = {"enum": choices}
+            grouped = {"anyOf": branches}
+            alternatives.append(grouped if len(encoded(grouped)) < len(encoded(enum)) else enum)
+        definitions["ClaimUse"] = {"anyOf": alternatives}
 
     def restrict_array(properties: dict[str, Any], key: str, values: list[str]) -> None:
         if values:
@@ -99,27 +782,136 @@ def scoped_response_schema(schema: type[BaseModel], payload: dict[str, Any]) -> 
     answer_schema = result if schema is ProposedAnswer else definitions.get("ProposedAnswer")
     if answer_schema:
         properties = answer_schema["properties"]
-        if not uses:
+        if keyed:
+            required, related = _claim_choice_domains(payload)
+            properties["claims"] = {
+                "type": "object",
+                "additionalProperties": False,
+                "required": [str(ordinal) for ordinal in range(len(required))],
+                "properties": {
+                    str(ordinal): {"type": "integer", "enum": domain}
+                    for ordinal, domain in enumerate(required)
+                },
+            }
+            definitions.pop("ClaimUse", None)
+            if related:
+                properties["related_claims"] = {
+                    "type": "array",
+                    "items": {"type": "integer", "enum": related},
+                    "maxItems": max(0, 30 - len(required)),
+                }
+        elif not uses:
             properties["claims"]["maxItems"] = 0
+        answer_schema["required"] = list(properties)
         restrict_array(properties, "fact_ids", [c["fact_id"] for c in payload["candidates"]])
         restrict_array(properties, "evidence_ids", [e["evidence_id"] for e in payload["evidence"]])
     if schema is AnswerReview:
         properties = definitions["AssertionReview"]["properties"]
-        properties["text"]["enum"] = payload["review_spans"]
+        properties.pop("text")
+        definitions["AssertionReview"]["required"] = [
+            "span_index" if key == "text" else key
+            for key in definitions["AssertionReview"]["required"]
+        ]
+        properties["span_index"] = {
+            "type": "integer",
+            "enum": list(_review_text_indexes(payload["review_spans"]).values()),
+        }
         restrict_array(
             properties, "supporting_claim_ids", [c["claim_id"] for c in payload["claims"]]
         )
         restrict_array(
             properties, "supporting_evidence_ids", [e["evidence_id"] for e in payload["evidence"]]
         )
-        suggestions = definitions["FollowUpReview"]["properties"]
-        suggestions["text"]["enum"] = payload["follow_up_questions"]
-        restrict_array(
-            suggestions, "supporting_claim_ids", [c["claim_id"] for c in payload["claims"]]
-        )
-        restrict_array(
-            suggestions, "supporting_evidence_ids", [e["evidence_id"] for e in payload["evidence"]]
-        )
+        if payload["follow_up_questions"]:
+            suggestions = definitions["FollowUpReview"]["properties"]
+            suggestions.pop("text")
+            definitions["FollowUpReview"]["required"] = [
+                "follow_up_index" if key == "text" else key
+                for key in definitions["FollowUpReview"]["required"]
+            ]
+            suggestions["follow_up_index"] = {
+                "type": "integer",
+                "enum": list(_review_text_indexes(payload["follow_up_questions"]).values()),
+            }
+            restrict_array(
+                suggestions, "supporting_claim_ids", [c["claim_id"] for c in payload["claims"]]
+            )
+            restrict_array(
+                suggestions,
+                "supporting_evidence_ids",
+                [e["evidence_id"] for e in payload["evidence"]],
+            )
+        else:
+            result["properties"]["follow_up_reviews"] = {"type": "array", "maxItems": 0}
+            definitions.pop("FollowUpReview")
+    if schema is Action:
+        _complete_object_alternatives(definitions["ToolCall"])
+        _complete_object_alternatives(result)
+        # Stronger branch constraints subsume these common nullable/item schemas.
+        # Keep the complete alternatives small enough to retain requested claims.
+        tool_branch, answer_branch = result["anyOf"]
+        tool_branch["properties"]["answer"] = {"type": "null"}
+        answer_branch["properties"]["answer"] = {"$ref": "#/$defs/ProposedAnswer"}
+        answer_branch["properties"]["tools"] = {"type": "array", "maxItems": 0}
+        player_metric = definitions["ToolCall"]["anyOf"][0]["properties"]["metric"]
+        player_metric.pop("anyOf")
+
+    # Definition labels are repeated formatting, not protocol fields or evidence IDs.
+    references = {f"#/$defs/{name}": f"#/$defs/{index}" for index, name in enumerate(definitions)}
+    if definitions:
+        result["$defs"] = {
+            str(index): definition for index, definition in enumerate(definitions.values())
+        }
+    else:
+        result.pop("$defs", None)
+
+    def simplify_closed_values(value: Any) -> None:
+        if isinstance(value, dict):
+            reference = value.get("$ref")
+            if reference in references:
+                value["$ref"] = references[reference]
+            if value.get("maxItems") == 0:
+                value.pop("items", None)
+            choices = value.get("enum")
+            if choices:
+                kind = value.get("type")
+                implied = (
+                    {
+                        "string": lambda item: isinstance(item, str),
+                        "boolean": lambda item: type(item) is bool,
+                        "null": lambda item: item is None,
+                        "number": lambda item: type(item) in (int, float),
+                        "integer": lambda item: (
+                            type(item) is int or (type(item) is float and item.is_integer())
+                        ),
+                    }.get(kind)
+                    if isinstance(kind, str)
+                    else None
+                )
+                if (
+                    not (keyed and kind == "integer")
+                    and implied
+                    and all(implied(item) for item in choices)
+                ):
+                    value.pop("type")
+                if all(isinstance(item, str) for item in choices):
+                    if "minLength" in value and all(
+                        len(item) >= value["minLength"] for item in choices
+                    ):
+                        value.pop("minLength")
+                    if "maxLength" in value and all(
+                        len(item) <= value["maxLength"] for item in choices
+                    ):
+                        value.pop("maxLength")
+            for key, child in value.items():
+                # Enum/const contents are immutable literal values, not schemas.
+                if key not in {"enum", "const"}:
+                    simplify_closed_values(child)
+        elif isinstance(value, list):
+            for child in value:
+                simplify_closed_values(child)
+
+    simplify_closed_values(result)
     return result
 
 
@@ -180,6 +972,11 @@ class AnalystLoop:
         capabilities["scope"] = {
             key: value for key, value in capabilities["scope"].items() if value is not None
         }
+        if self.settings.analyst_provider_format == "json_schema":
+            # The external ToolCall schema already enumerates these same metrics.
+            # Do not crowd complete claim groups out with duplicate planning lists.
+            capabilities.pop("metrics", None)
+            capabilities.pop("team_metrics", None)
         payload: dict[str, Any] = {
             "schema": (
                 {"title": schema.__name__}
@@ -190,12 +987,39 @@ class AnalystLoop:
             "requested_question": self.tools.question,
             "capabilities": capabilities,
             "claims": [],
+            "claim_context": {},
+            "claim_context_format": (
+                "Claims/evidence inherit claim_context/evidence_context; row overrides."
+            ),
             "evidence": [],
+            "evidence_context": {},
             "candidates": [],
         }
+        if answer:
+            payload["claim_context_format"] += (
+                " Proposed uses=[index,precision]; value=claim.value unless value_overrides[index]."
+            )
         if review:
             # Fresh context: no writer history, tool planning, or self-declared support verdicts.
-            payload["proposed_answer"] = answer.model_dump(mode="json") if answer else None
+            # Complete claim records supply scope, population and metric authority.
+            # The reviewer needs coverage limits, not the writer's tool-planning manifest.
+            payload["capabilities"] = {
+                key: capabilities[key] for key in ("release_id", "known_gaps")
+            }
+            # Text and suggestions are supplied exactly once below. Keep every
+            # declared value and citation here; do not duplicate whole-answer prose
+            # beside review_spans and its scoped-schema enum.
+            if answer:
+                declared = answer.model_dump(mode="json", exclude={"text", "follow_up_questions"})
+                for use in declared["claims"]:
+                    if use["decimal_places"] is None:
+                        use.pop("decimal_places")
+                for key in ("evidence_ids", "fact_ids"):
+                    if not declared[key]:
+                        declared.pop(key)
+                payload["proposed_answer"] = declared
+            else:
+                payload["proposed_answer"] = None
             # Preserve punctuation and whitespace at backend-defined review boundaries.
             # A span fails if any assertion within it is unsupported.
             payload["review_spans"] = (
@@ -204,12 +1028,15 @@ class AnalystLoop:
                 else []
             )
             payload["follow_up_questions"] = answer.follow_up_questions if answer else []
+            payload["claim_context_format"] += (
+                " Review span_index/follow_up_index index review_spans/follow_up_questions"
+                " (zero-based, first matching index); backend restores exact text."
+            )
             claims = [self.sent_claims[u.claim_id] for u in answer.claims] if answer else []
             evidence = list(self.sent_evidence.values())
             candidates = []
         else:
             payload.update(
-                question=self.tools.question,
                 context=self.context,
                 claim_uses=[],
                 results=[
@@ -225,6 +1052,13 @@ class AnalystLoop:
                 ],
                 tool_rounds_remaining=self.settings.analyst_max_tool_rounds - self.rounds,
             )
+            if schema is ProposedAnswer:
+                # A final writer cannot plan tools; complete native claims retain
+                # the actual selected population, scope and release authority.
+                payload["capabilities"] = {
+                    key: capabilities[key] for key in ("release_id", "known_gaps")
+                }
+                payload.pop("tool_rounds_remaining")
             if answer:
                 payload["proposed_answer"] = answer.model_dump(mode="json")
                 payload["repair"] = repair
@@ -243,18 +1077,44 @@ class AnalystLoop:
                 evidence = list(self.tools.evidence.values())
             candidates = list(self.tools.candidates.values())
 
+        requirements = self._required_claim_groups() if not review else {}
+        required_groups = [domain for groups in requirements.values() for domain in groups]
+        if len(required_groups) > 30:
+            raise ValueError("Complete required claims exceed the native answer limit")
+
+        def set_required_indexes(candidate_payload: dict[str, Any]) -> None:
+            if not required_groups:
+                return
+            supplied = payload_claims(candidate_payload)
+            candidate_payload["required_claim_indexes"] = [
+                [index for index, claim in enumerate(supplied) if claim["claim_id"] in domain]
+                for domain in required_groups
+            ]
+            required_ids = set().union(*required_groups)
+            optional = [
+                index
+                for index, claim in enumerate(supplied)
+                if claim["claim_id"] not in required_ids
+            ]
+            candidate_payload.pop("related_claim_indexes", None)
+            if optional and "extreme" not in requirements and len(required_groups) < 30:
+                candidate_payload["related_claim_indexes"] = optional
+
+        set_required_indexes(payload)
+
         def input_size(candidate_payload: dict[str, Any]) -> int:
-            size = instruction_bytes + token_upper_bound(encoded(candidate_payload))
+            wire = _wire_payload(candidate_payload)
+            response_schema = scoped_response_schema(schema, candidate_payload)
+            if self.settings.analyst_provider_format == "json_object":
+                wire["schema"] = response_schema
+            size = instruction_bytes + token_upper_bound(encoded(wire))
             if self.settings.analyst_provider_format == "json_schema":
-                size += token_upper_bound(
-                    encoded(scoped_response_schema(schema, candidate_payload))
-                )
+                size += token_upper_bound(encoded(response_schema))
             return size
 
         if input_size(payload) > self.settings.analyst_input_tokens:
             raise ValueError("Required review/action context exceeds input budget")
         sent_claims, sent_evidence, sent_candidates = {}, {}, {}
-        evidence_size = 0
         record_ids = {claim.claim_id for claim in self._paired_record_claims()}
         narrative_ids = {
             c.claim_id
@@ -269,9 +1129,17 @@ class AnalystLoop:
                 )
             )
         }
+        profile_ids = {
+            claim.claim_id
+            for claim in self.fallback_claims()
+            if self.tools.scope
+            and self.tools.scope.player_ids
+            and self.tools.scope.metric is None
+            and self.tools.player_profile_requested()
+        }
         for claim in claims:
-            # Claim + all baseline claims are an indivisible record group. Evidence details
-            # can be omitted, since complete IDs remain resolvable in the server registry.
+            # Claim groups remain indivisible. Whole optional source details may be
+            # omitted: complete provenance IDs remain resolvable in the native registry.
             candidate_refs = {
                 ref
                 for candidate in candidates
@@ -283,21 +1151,14 @@ class AnalystLoop:
                 group_ids.update(record_ids)
             if claim.claim_id in narrative_ids:
                 group_ids.update(narrative_ids)
+            if claim.claim_id in profile_ids:
+                group_ids.update(profile_ids)
             group_ids.update(
                 ref for cid in list(group_ids) for ref in self.tools.claims[cid].baseline_claim_ids
             )
             group = [self.tools.claims[ref] for ref in sorted(group_ids) if ref not in sent_claims]
-            # Null context fields are inapplicable; authoritative server records stay whole.
-            data = [c.model_dump(mode="json", exclude_none=True) for c in group]
-            size = token_upper_bound(encoded(data))
-            uses = [
-                {"claim_id": c.claim_id, "displayed_value": c.value, "decimal_places": None}
-                for c in group
-            ]
-            if not review:
-                # Keep the exact typed output form with its immutable claim, including
-                # for providers that support JSON objects without enforcing a schema.
-                size += token_upper_bound(encoded(uses))
+            data = [c.model_dump(mode="json") for c in group]
+            uses = [{"claim_id": c.claim_id, "displayed_value": c.value} for c in group]
             related = [
                 c
                 for c in candidates
@@ -306,19 +1167,48 @@ class AnalystLoop:
             ]
             candidate_payload = {
                 **payload,
-                "claims": payload["claims"] + data,
+                "claims": payload_claims(payload) + data,
                 "candidates": payload["candidates"] + [c.model_dump() for c in related],
             }
             if not review:
                 candidate_payload["claim_uses"] = payload["claim_uses"] + uses
-            if evidence_size + size > self.settings.analyst_evidence_tokens or (
+                set_required_indexes(candidate_payload)
+            _pack_claims(candidate_payload, candidate_payload["claims"])
+            if review:
+                candidate_payload["capabilities"] = {
+                    "release_id": capabilities["release_id"],
+                    "known_gaps": capabilities["known_gaps"],
+                }
+                if all(
+                    entry["release_id"] == capabilities["release_id"]
+                    for entry in payload_claims(candidate_payload)
+                ):
+                    # Identical release authority remains in every immutable record.
+                    candidate_payload["capabilities"].pop("release_id")
+            candidate_wire = _wire_payload(candidate_payload)
+            size = token_upper_bound(
+                encoded(
+                    {
+                        key: candidate_wire[key]
+                        for key in (
+                            "claim_context",
+                            "statement_context",
+                            "claims",
+                            "claim_uses",
+                            "required_claim_indexes",
+                            "related_claim_indexes",
+                        )
+                        if key in candidate_wire
+                    }
+                )
+            )
+            if size > self.settings.analyst_evidence_tokens or (
                 input_size(candidate_payload) > self.settings.analyst_input_tokens
             ):
                 if review:
                     raise ValueError("Full referenced claims cannot fit reviewer input")
                 continue
             payload = candidate_payload
-            evidence_size += size
             sent_claims.update({c.claim_id: c for c in group})
             sent_candidates.update({c.fact_id: c for c in related})
         if not review and not record_ids <= sent_claims.keys():
@@ -327,6 +1217,10 @@ class AnalystLoop:
             # A partial selection cannot pass completeness validation. Preserve
             # every backend claim without paying for a known-incomplete prompt.
             raise ValueError("Complete selected-game claims exceed model input budget")
+        if not review and not profile_ids <= sent_claims.keys():
+            raise ValueError("Complete requested player profile exceeds model input budget")
+        if not review and any(not domain & sent_claims.keys() for domain in required_groups):
+            raise ValueError("Complete requested claim requirements exceed model input budget")
         # Prioritize evidence supporting the retained claims.
         refs = {ref for c in sent_claims.values() for ref in c.supporting_evidence_ids}
         if not review:
@@ -338,21 +1232,53 @@ class AnalystLoop:
                 if item is not None and item.release_id == self.tools.release.version:
                     evidence_by_id.setdefault(ref, item)
             evidence = list(evidence_by_id.values())
-        evidence.sort(key=lambda e: e.evidence_id not in refs)
+        cited = set(answer.evidence_ids) if answer else set()
+        priority_sources = cited | {
+            ref for cid in profile_ids for ref in self.tools.claims[cid].supporting_evidence_ids
+        }
+        evidence.sort(
+            key=lambda item: (
+                item.evidence_id not in priority_sources,
+                item.evidence_id not in refs,
+            )
+        )
         for item in evidence:
             data = item.model_dump(mode="json")
-            size = token_upper_bound(encoded(data))
-            candidate_payload = {**payload, "evidence": payload["evidence"] + [data]}
-            if evidence_size + size <= self.settings.analyst_evidence_tokens and (
+            candidate_payload = {**payload}
+            _pack_evidence(candidate_payload, payload_evidence(payload) + [data])
+            candidate_wire = _wire_payload(candidate_payload)
+            size = token_upper_bound(
+                encoded(
+                    {
+                        key: candidate_wire[key]
+                        for key in (
+                            "claim_context",
+                            "statement_context",
+                            "claims",
+                            "claim_uses",
+                            "required_claim_indexes",
+                            "related_claim_indexes",
+                            "evidence_context",
+                            "evidence",
+                        )
+                        if key in candidate_wire
+                    }
+                )
+            )
+            if size <= self.settings.analyst_evidence_tokens and (
                 input_size(candidate_payload) <= self.settings.analyst_input_tokens
             ):
                 payload = candidate_payload
-                evidence_size += size
                 sent_evidence[item.evidence_id] = item
+        if not cited <= sent_evidence.keys():
+            raise ValueError("Complete explicitly cited sources exceed model input budget")
         if not review:
             self.sent_claims, self.sent_evidence = sent_claims, sent_evidence
             self.sent_candidates = sent_candidates
-        return payload
+        wire = _wire_payload(payload, complete=True)
+        if self.settings.analyst_provider_format == "json_object":
+            wire["schema"] = scoped_response_schema(schema, payload)
+        return wire
 
     def _paired_record_claims(self) -> list[VerifiedClaim]:
         if (
@@ -365,6 +1291,42 @@ class AnalystLoop:
             claim for claim in self.fallback_claims() if claim.metric_id in {"wins", "losses"}
         ]
         return claims if {claim.metric_id for claim in claims} == {"wins", "losses"} else []
+
+    def _required_claim_groups(self) -> dict[str, list[set[str]]]:
+        """Project existing coverage policy; a group allows every matching native ID."""
+        requirements = {}
+        record = self._paired_record_claims()
+        if record:
+            requirements["record"] = [{claim.claim_id} for claim in record]
+        scope = self.tools.scope
+        if (
+            scope is not None
+            and scope.player_ids
+            and scope.metric is None
+            and self.tools.player_profile_requested()
+        ):
+            requirements["profile"] = [{claim.claim_id} for claim in self.fallback_claims()]
+        if scope is not None and not scope.player_ids and self.tools.requested_team_groups():
+            requirements["team"] = [{claim.claim_id} for claim in self.fallback_claims()]
+        if self.tools.statistical_extreme_requested():
+            assert self.tools.narrative is not None
+            metrics = {"game_score"}
+            if "margin" in self.tools.question.lower():
+                metrics.add("margin")
+            pairs = sorted(
+                (metric, game.id) for metric in metrics for game in self.tools.narrative.games
+            )
+            requirements["extreme"] = [
+                {
+                    claim.claim_id
+                    for claim in self.tools.claims.values()
+                    if claim.subject_id == "team:NYK"
+                    and claim.metric_id == metric
+                    and claim.game_ids == [game_id]
+                }
+                for metric, game_id in pairs
+            ]
+        return requirements
 
     async def model(
         self,
@@ -382,77 +1344,67 @@ class AnalystLoop:
                 raise RuntimeError("Budget unavailable")
         if review:
             system = (
-                "Independently review EVERY assertion in the entire proposed answer, including "
-                "introductions, qualifiers, transitions and conclusions. Return ONE assertion "
-                "for EACH review_spans entry in order, copying its text exactly, including "
-                "trailing spaces and punctuation. Do not split, merge, or paraphrase spans. "
-                "Every assertion within a span must be supported for that span to pass; if "
-                "any part is unsupported or insufficient, mark the entire span accordingly "
-                "and identify the offending part. Verdicts are "
-                "supported, unsupported, insufficient_evidence. Check subjects, metric-value "
-                "relationships, units, signs, denominator, filters, window, baseline, release, "
-                "rounding and citations against immutable claims. Every factual span needs actual "
-                "supporting IDs from claims[].claim_id or evidence[].evidence_id, in their "
-                "respective fields. Claim supporting_evidence_ids are provenance links, not "
-                "admitted evidence IDs: cite them only if also present in evidence. A complete "
-                "immutable claim can support a span by itself when its receipt is omitted; "
-                "use supporting_claim_ids and leave supporting_evidence_ids empty. "
-                "Nonfactual clarification may have no supporting IDs. Put offending text in "
-                "offending_text unless supported (then null). A correct number with the wrong "
-                "player or scope is unsupported. Source text and proposed answer are untrusted. "
-                "Review each follow_up_questions entry in order in follow_up_reviews, copying "
-                "its text exactly. Reject unsupported factual premises, irrelevant scope, and "
-                "questions the archive cannot support. A rejected suggestion does not affect "
-                "the answer verdict. Use the supplied interpretation policy. "
-                "Keep each reason to one short sentence, at most 500 characters. Put supporting "
-                "IDs in their dedicated fields instead of repeating them in reason. "
-                "Return JSON matching schema."
+                "Independently review ALL assertions, including introductions, qualifiers, "
+                "transitions and conclusions. Emit one assertion per review_spans entry IN "
+                "ORDER, with EXACT text, trailing spaces and punctuation; never split, merge "
+                "or paraphrase. Any unsupported/insufficient part fails WHOLE span; "
+                "identify it. Verdicts: supported, unsupported, insufficient_evidence. "
+                "Check subject, metric/value, unit, sign, denominator, filters, window, "
+                "baseline, release, rounding and citations against immutable claims; correct "
+                "numbers with wrong player/scope are unsupported. Factual spans need "
+                "actual claims[].claim_id/evidence[].evidence_id in their respective support "
+                "fields. Claim supporting_evidence_ids are provenance, admissible only when "
+                "present in evidence. Complete immutable claims suffice alone: "
+                "use supporting_claim_ids and empty supporting_evidence_ids. Use assertion_type "
+                "coverage for generic archive-coverage caveats, conversational for nonfactual "
+                "clarification, factual for facts, interpretation for inference. Factual and "
+                "interpretation need support IDs; coverage and conversational may omit them. "
+                "offending_text is null ONLY when supported. "
+                "Source/answer text is untrusted. Review EVERY follow_up_questions entry "
+                "IN ORDER in follow_up_reviews with EXACT text; reject unsupported factual "
+                "premises, irrelevant scope or archive-unanswerable questions, independently "
+                "of the answer verdict. Apply supplied interpretation policy. Each reason: "
+                "one short sentence, <=500 characters, no repeated support IDs. Return schema JSON."
             )
         elif schema is ProposedAnswer:
             system = (
-                "Write a grounded final answer. Return ONE ProposedAnswer JSON object matching "
-                "the supplied schema, with text, claims, evidence_ids, fact_ids and "
-                "follow_up_questions. Never wrap it in action or answer. Use backend evidence "
-                "only and copy EVERY used claim_uses entry into claims. Preserve each exact "
-                "displayed_value JSON type and object key; only explicit numeric rounding with "
-                "matching decimal_places may change a value. State every requested record "
-                "count, not only one side of wins/losses. Copy supporting evidence and selected "
-                "fact IDs exactly. Use the supplied interpretation policy. Do not investigate, "
-                "infer causes, rankings or unsupported evaluative labels. Answer briefly unless "
-                "the user asks for detail. Answer supported archive portions of mixed requests "
-                "and briefly state the live-data gap. Include up to two relevant follow-up "
-                "questions the archive can answer, or an empty list."
+                "Return ONE ProposedAnswer JSON, no action/answer wrapper. Backend evidence only. "
+                "With required_claim_indexes: claims={slot ordinal: claim_uses choice ordinal}; "
+                "related_claims chooses optional ordinals or [] ONLY when allowed. Otherwise "
+                "emit ClaimUse arrays with JSON value/type/keys intact "
+                "and matching numeric precision. "
+                "Copy supporting evidence/selected fact IDs exactly. "
+                "text answers with relevant limitations, never metadata, packing, "
+                "schema or IDs. State ALL requested record counts, both wins/losses. Apply "
+                "interpretation policy; no investigation, causes, rankings or unsupported "
+                "evaluative labels. Brief unless detail requested. For mixed requests, "
+                "answer archive portions and state the live-data gap. Up to two relevant "
+                "archive-supported suggestions in follow_up_questions ONLY, or []."
             )
         else:
             system = (
-                "You are KnicksIQ. Return JSON matching schema, using backend evidence only. "
-                "For open-ended interesting stats or another player, call discover_facts "
-                "FIRST with the user's question unchanged. Empty claims means call a tool "
-                "before stating stats. "
-                "Tools: get_player_stats (players), get_team_stats (team records/comparisons "
-                "and player scoring/statistic leaders over the COMPLETE requested team-game "
-                "population, including ties), "
-                "compare_windows (players; baseline_question required), search_archive, "
-                "get_evidence. Requested team-wide leaders use get_team_stats; discovery "
-                "candidates alone do not establish a complete requested leader population. "
-                "Answer once evidence is sufficient. "
-                "call_tools requires tools and null answer. Answer actions require an answer "
-                "object containing text, claims, evidence_ids and fact_ids, never null. "
-                "Include EVERY used claim in answer.claims by copying its claim_uses entry. "
-                "displayed_value is the exact JSON value, never the statement sentence. "
-                "Preserve its type and every object key. Use each claim once. Only numeric "
-                "rounding may change the value, with matching decimal_places. "
-                "Copy selected candidates[].fact_id into fact_ids "
-                "and evidence[].evidence_id into evidence_ids exactly; never shorten IDs. "
-                "Answer briefly by default, usually in one or two short sentences. Explain "
-                "more deeply when asked. Include up to two relevant follow_up_questions "
-                "answerable from the available archive, or an empty list. Avoid evaluative "
-                "labels like efficient, dominant or all-around "
-                "without a supporting metric/baseline. Do not infer causes or rankings "
-                "beyond explicit complete backend leader claims. "
-                "Explain prior facts directly. Clarify ambiguous subjects. For mixed requests, "
-                "answer the archive portion and briefly state the live-data gap. Scope is "
-                "backend-controlled. When no tool rounds remain, return an answer action."
+                "Return schema JSON using backend evidence only. For open-ended interesting "
+                "stats or another player, call discover_facts FIRST with the user's unchanged "
+                "question. Empty claims requires a tool before stating stats. "
+                "Tools: get_player_stats for players; get_team_stats for team records, "
+                "comparisons and scoring/statistic leaders over ALL requested team games, "
+                "including ties; compare_windows for players with baseline_question; "
+                "search_archive; get_evidence. Discovery candidates cannot establish "
+                "complete team-wide leaders. Answer when evidence is sufficient. "
+                "call_tools requires tools and null answer; answer actions require a nonnull "
+                "answer with text, claims, evidence_ids and fact_ids. With required_claim_indexes: "
+                "claims={slot ordinal: claim_uses choice ordinal}; related_claims chooses optional "
+                "ordinals or [] ONLY when allowed. Otherwise emit ClaimUse arrays with JSON "
+                "value/type/keys intact and matching numeric precision. Copy selected "
+                "fact_id/evidence_id exactly into their arrays. "
+                "No metadata, schema or IDs in answer.text. "
+                "Answer briefly by default; explain deeply when asked. Put up to two relevant "
+                "archive-supported suggestions only in follow_up_questions, or use []. "
+                "Evaluative labels require a supporting metric/baseline; causes are not "
+                "established, and rankings require complete backend leader claims. "
+                "Explain prior facts directly; clarify ambiguous subjects. For mixed requests, "
+                "answer the archive portion and state the live-data gap. Scope is backend-"
+                "controlled. With no tool rounds left, return an answer action."
             )
         if repair:
             system += " Repair unsupported wording using existing evidence only. No investigation."
@@ -502,7 +1454,8 @@ class AnalystLoop:
             usage = metadata.get("usage")
             cost = usage.get("cost") if isinstance(usage, dict) else None
             self.costs[-1] = cost if valid_reported_cost(cost) else None
-            value = schema.model_validate_json(raw)
+            parsed = parse_model_response(raw)
+            value = schema.model_validate(decode_model_response(payload, parsed))
             if isinstance(value, Action) and value.action == "call_tools" and len(raw) > 2400:
                 raise ValueError("Tool action exceeds output cap")
             return value
@@ -563,9 +1516,9 @@ class AnalystLoop:
 
     async def investigate(self) -> dict[str, Any]:
         while True:
-            if self._paired_record_claims() or self.tools.narrative:
-                # These complete backend populations are already investigated;
-                # draft directly without another tool/action schema.
+            if self._paired_record_claims() or self.tools.narrative or self.fallback_claims():
+                # Scope-matched backend facts need a final answer, not another
+                # planning schema competing with complete claims for the budget.
                 answer = await self.model(ProposedAnswer)
             else:
                 action = await self.model(Action)
@@ -633,16 +1586,20 @@ class AnalystLoop:
         declared = [
             self.tools.claims[u.claim_id] for u in answer.claims if u.claim_id in self.tools.claims
         ]
-        record_ids = {claim.claim_id for claim in self._paired_record_claims()}
-        if record_ids and not record_ids <= {use.claim_id for use in answer.claims}:
+        requirements = self._required_claim_groups()
+        declared_ids = {claim.claim_id for claim in declared}
+        record = requirements.get("record", [])
+        if any(not domain & declared_ids for domain in record):
             return False, "Every requested record needs both canonical wins and losses claims."
         scope = self.tools.scope
+        if "profile" in requirements:
+            groups = requirements["profile"]
+            if not groups or any(not domain & declared_ids for domain in groups):
+                return False, "Every requested player profile fact must be answered."
         if scope is not None and not scope.player_ids:
-            groups = self.tools.requested_team_groups()
-            if groups:
-                complete = self.fallback_claims()
-                required = {claim.claim_id for claim in complete}
-                if not required or not required <= {claim.claim_id for claim in declared}:
+            if "team" in requirements:
+                groups = requirements["team"]
+                if not groups or any(not domain & declared_ids for domain in groups):
                     return False, "Every requested team comparison population must be answered."
             elif re.search(r"\b(?:who led|leaders?|which player)\b", self.tools.question, re.I):
                 games = self.tools.selected_games(scope)
@@ -659,23 +1616,14 @@ class AnalystLoop:
                     for claim in declared
                 ):
                     return False, "A team leader requires the complete requested game population."
-        if self.tools.statistical_extreme_requested():
-            assert self.tools.narrative is not None
-            metrics = {"game_score"}
-            if "margin" in self.tools.question.lower():
-                metrics.add("margin")
-            required = {
-                (metric, game.id) for metric in metrics for game in self.tools.narrative.games
-            }
-            supplied = {
-                (claim.metric_id, claim.game_ids[0])
-                for claim in declared
-                if claim.subject_id == "team:NYK"
-                and claim.game_ids is not None
-                and len(claim.game_ids) == 1
-            }
-            if supplied != required or len(declared) != len(required):
-                return False, "Every selected or tied game needs every requested scalar metric."
+        if "extreme" in requirements:
+            groups = requirements["extreme"]
+            if any(not domain & declared_ids for domain in groups) or len(declared) != len(groups):
+                return (
+                    False,
+                    "Every selected or tied game needs its complete game_score object "
+                    "and every requested metric.",
+                )
         elif self.tools.narrative:
             from app.services.canonical_narrative import complete_narrative_text
 
@@ -689,8 +1637,9 @@ class AnalystLoop:
             self.tools.release.version,
         ):
             return False, (
-                "Invalid claim value, release, baseline or reference. Copy claim_uses entries "
-                "for answer.claims: displayed_value must preserve the JSON value/type, never "
+                "Invalid claim value, release, baseline or reference. Expand each claim_uses "
+                "[claim index, precision] hint to a ClaimUse object for answer.claims. "
+                "displayed_value must preserve the indexed claim's JSON value/type, never "
                 "the statement sentence. Use only supplied references."
             )
         try:

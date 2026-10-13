@@ -112,6 +112,7 @@ def parse_event(game_id: int, sequence: int, raw: dict[str, Any]) -> GameEvent:
         home_score=home_score,
         away_score=away_score,
         score_margin=home_score - away_score,
+        score_observed=raw.get("score_observed"),
         shot_type=shot_type,
         shot_result=shot_result,
         shot_distance_ft=raw.get("shot_distance_ft"),

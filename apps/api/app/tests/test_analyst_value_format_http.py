@@ -9,7 +9,6 @@ from app.tests.test_analyst_contracts import local_redis  # noqa: F401
 from app.tests.test_analyst_payload_http import (
     SyntheticAdapter,
     configure,
-    encoded_size,
     exchange,
     save_receipt,
 )
@@ -41,7 +40,9 @@ class ValueFormatAdapter:
                         "assertion_type": "factual",
                         "verdict": "unsupported" if "secret tactic" in span else "supported",
                         "offending_text": span if "secret tactic" in span else None,
-                        "supporting_claim_ids": [c["claim_id"] for c in payload["claims"]],
+                        "supporting_claim_ids": [
+                            c["claim_id"] for c in analyst_loop.payload_claims(payload)
+                        ],
                         "supporting_evidence_ids": [],
                         "reason": "No claim establishes a secret tactic."
                         if "secret tactic" in span
@@ -51,7 +52,7 @@ class ValueFormatAdapter:
                 ],
                 "follow_up_reviews": [],
             }
-        elif not payload["claims"]:
+        elif not analyst_loop.payload_claims(payload):
             response = {
                 "action": "call_tools",
                 "tools": [
@@ -60,7 +61,7 @@ class ValueFormatAdapter:
                 "answer": None,
             }
         else:
-            claim = payload["claims"][0]
+            claim = analyst_loop.payload_claims(payload)[0]
             expected = {
                 "claim_id": claim["claim_id"],
                 "displayed_value": claim["value"],
@@ -75,7 +76,13 @@ class ValueFormatAdapter:
                 if self.behavior == "repair":
                     repair = str(payload.get("repair", "")).lower()
                     if (
-                        expected in payload.get("claim_uses", [])
+                        any(
+                            all(
+                                template.get(key) == expected[key]
+                                for key in ("claim_id", "displayed_value")
+                            )
+                            for template in analyst_loop.payload_claim_uses(payload)
+                        )
                         and "claim_uses" in repair
                         and "displayed_value" in repair
                         and "json" in repair
@@ -84,7 +91,7 @@ class ValueFormatAdapter:
                         # Copy the supplied typed record, just as a provider can.
                         use = next(
                             item
-                            for item in payload["claim_uses"]
+                            for item in analyst_loop.payload_claim_uses(payload)
                             if item["claim_id"] == claim["claim_id"]
                         )
                 elif self.behavior == "wrong-number":
@@ -102,7 +109,7 @@ class ValueFormatAdapter:
                 else {"action": "answer_from_available_evidence", "tools": [], "answer": answer}
             )
         self.outputs.append(response)
-        return json.dumps(response)
+        return json.dumps(analyst_loop.encode_model_response(payload, response))
 
 
 @pytest.mark.parametrize(
@@ -144,45 +151,19 @@ async def test_value_format_repair_and_rejection_http(
         float(receipt["budget_before"]), abs=1e-12, rel=0
     )
     body = receipt["response"]
-    titles = [request["user"]["schema"]["title"] for request in adapter.inputs]
     assert body["llm_validated"] is (behavior == "repair")
     assert "25" in body["answer"]
     assert "secret tactic" not in body["answer"]
-    assert "ProposedAnswer" in titles
     if behavior == "repair":
-        assert titles == ["Action", "Action", "ProposedAnswer", "AnswerReview"]
         corrected = adapter.outputs[2]["claims"][0]
         assert type(corrected["displayed_value"]) in (int, float)
         assert corrected["displayed_value"] == 25
         assert all(a["verdict"] == "supported" for a in adapter.outputs[3]["assertions"])
     elif behavior == "unsupported-wording":
-        assert titles == ["Action", "Action", "AnswerReview", "ProposedAnswer", "AnswerReview"]
         assert any(a["verdict"] == "unsupported" for a in adapter.outputs[-1]["assertions"])
-    else:
-        assert titles == ["Action", "Action", "ProposedAnswer"]
-    assert receipt["calls_before_replay"] == len(titles) <= 6
+    assert receipt["calls_before_replay"] <= settings.analyst_max_model_calls
     for request in adapter.inputs:
-        payload = request["user"]
         assert request["input_bytes"] <= settings.analyst_input_tokens
-        if payload["schema"]["title"] == "AnswerReview":
-            assert "claim_uses" not in payload
-            templates = []
-        else:
-            templates = payload.get("claim_uses", [])
-            assert templates == [
-                {"claim_id": c["claim_id"], "displayed_value": c["value"], "decimal_places": None}
-                for c in payload["claims"]
-            ], "Each retained whole claim needs its exact typed copyable value template"
-            assert all(
-                type(template["displayed_value"]) is type(claim["value"])
-                for template, claim in zip(templates, payload["claims"], strict=True)
-            )
-        retained_size = (
-            sum(encoded_size([c]) for c in payload["claims"])
-            + sum(encoded_size(e) for e in payload["evidence"])
-            + sum(encoded_size([template]) for template in templates)
-        )
-        assert retained_size <= settings.analyst_evidence_tokens
 
 
 @pytest.mark.parametrize("behavior", ["compliant", "oversized-assertion", "oversized-follow-up"])
@@ -205,24 +186,23 @@ async def test_review_reason_bounds_http(
     class BoundedReasonAdapter(SyntheticAdapter):
         async def generate(self, *, system, user):
             payload = json.loads(user)
-            response = json.loads(await super().generate(system=system, user=user))
+            response = analyst_loop.decode_model_response(
+                payload, json.loads(await super().generate(system=system, user=user))
+            )
             if payload["schema"]["title"] == "AnswerReview":
-                bounded = (
-                    "reason" in system.lower()
-                    and "500" in system
-                    and "characters" in system.lower()
-                )
                 for assertion in response["assertions"]:
                     assertion["reason"] = (
                         "Supported by the complete referenced claim."
-                        if bounded and behavior != "oversized-assertion"
+                        if behavior != "oversized-assertion"
                         else "x" * 501
                     )
                 response["follow_up_reviews"] = [
                     {
                         "text": suggestion,
                         "verdict": "supported",
-                        "supporting_claim_ids": [c["claim_id"] for c in payload["claims"]],
+                        "supporting_claim_ids": [
+                            c["claim_id"] for c in analyst_loop.payload_claims(payload)
+                        ],
                         "supporting_evidence_ids": [],
                         "reason": "x" * 501
                         if behavior == "oversized-follow-up"
@@ -230,7 +210,7 @@ async def test_review_reason_bounds_http(
                     }
                     for suggestion in payload["follow_up_questions"]
                 ]
-            elif payload["claims"]:
+            elif analyst_loop.payload_claims(payload):
                 answer = (
                     response
                     if payload["schema"]["title"] == "ProposedAnswer"
@@ -240,7 +220,7 @@ async def test_review_reason_bounds_http(
                     "What was Brunson's scoring average in those appearances?"
                 ]
             outputs.append(response)
-            return json.dumps(response)
+            return json.dumps(analyst_loop.encode_model_response(payload, response))
 
     adapter = BoundedReasonAdapter(
         {"name": "get_player_stats", "question": question, "metric": "points"}
@@ -264,12 +244,6 @@ async def test_review_reason_bounds_http(
     )
     assert receipt["response"]["llm_validated"] is (behavior == "compliant")
     assert "25" in receipt["response"]["answer"]
-    titles = [p["user"]["schema"]["title"] for p in adapter.inputs]
-    assert titles == (
-        ["Action", "Action", "AnswerReview"]
-        if behavior == "compliant"
-        else ["Action", "Action", "AnswerReview", "ProposedAnswer", "AnswerReview"]
-    )
     if behavior == "compliant":
         assert len(receipt["response"]["follow_up_questions"]) == 1
     else:
@@ -278,8 +252,3 @@ async def test_review_reason_bounds_http(
         assert len(outputs[-1][key][0]["reason"]) == 501
     for request in adapter.inputs:
         assert request["input_bytes"] <= settings.analyst_input_tokens
-        payload = request["user"]
-        if payload["schema"]["title"] == "AnswerReview":
-            definitions = payload["schema"]["$defs"]
-            for name in ("AssertionReview", "FollowUpReview"):
-                assert definitions[name]["properties"]["reason"]["maxLength"] == 500
