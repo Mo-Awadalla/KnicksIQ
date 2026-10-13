@@ -1,18 +1,62 @@
 # Release gate handoff (updated 2026-10-13)
 
 **Verdict: BLOCKED pending fresh live qualification and remaining release evidence.**
-The owner-approved successor422 run passed all 14 qualification cases with independent review,
-then stopped on `exact_statistics-003`, "What was the Knicks average score per game?"
-The backend could calculate 11,750 / 101, but the model received no statistics and asked for a
-season type. Isolated staging still runs source db0049b and its native images. No production
-change or deployment has been made. The previous readiness result had 18 failures;
-that result is historical and does not certify this candidate.
+The owner-approved successor452 run on source `6b5f2c1` passed 30 primary cases with independent
+review, including all 14 fresh qualification cases, then stopped on `date_range_last_n-005`.
+The final answer retained the correct 34 wins and 12 losses but denied the established All-Star
+window. Isolated staging still runs source `6b5f2c1` and its native images. The approval is consumed;
+no remaining gate ran. No production change or deployment has been made. The previous readiness
+result had 18 failures; that historical result does not certify this candidate.
 
-## Latest controlled stop and wording preparation fix
+## Latest controlled stop and named-window repair
 
 The current cutoff is October 13 at 11:30pm Pacific (`2026-10-14T06:30:00Z`). The bound driver
-stops admitting work 60 seconds earlier. Successor422 used its one source/image-bound approval.
+stops admitting work 60 seconds earlier. Successor452 used its one source/image-bound approval.
 Never resume its failed goal or reuse that approval for a changed source or image.
+
+For case 005, the first writer answer correctly labeled the 46-game population as after the
+All-Star break. The model reviewer rejected that label, and the bounded repair then claimed
+without support that the archive did not establish the named window. The model reviewer approved
+that repair; independent semantic review rejected the delivered answer and stopped the controller
+cleanly. The numeric February 16 start was present in the writer's tool results but absent from
+the reviewer payload. The named February 15 boundary and its source were absent from both.
+Correct totals and valid response schemas did not establish scope fidelity.
+
+The frozen stopped518 journal contains 452 inherited calls plus 66 settled calls (453–518),
+totaling 229,765,435 nUSD, with no pending costs. The new calls cost 19,015,910 nUSD. The observed
+monthly Redis floor is 1.285161691 USD. All caps, historical unknown tickets and four permanent
+holds remain unchanged. The primary lifetime limit remains 720 calls, leaving 202; no reset or
+increase is permitted, and full qualification is not guaranteed to fit that headroom. The local
+`evidence/release-20261013/record-regression/named-window/stopped518-audit.json` pins the original
+journal and real controller-end receipt. Fresh ledger evidence is required for any successor.
+
+The repair keeps supported calendar definitions in the typed resolver and carries requested
+bounds, relative counts and game-versus-appearance meaning in immutable native claim windows.
+Both writer and reviewer receive that authority separately from observed game dates. Month
+requests use full calendar bounds; named and explicit date constraints intersect. Existing grouped
+and linked baseline windows keep their distinct populations. The numeric calculations, complete
+native source populations, schemas and input caps remain unchanged.
+
+The 29 new socket regressions were written and run before production edits. They cover the
+four-call reviewer failure, successful named-window delivery, persistent-denial rejection,
+calendar dates, relative windows, comparison preservation and eight guards. All 29 portable
+cases and the 240 existing affected checks pass. The final-source census checks all 120 frozen
+questions and 89 native claims against the baseline; values and populations are unchanged,
+requested scope survives both projections, and inputs remain below 8,000 bytes. The 23 inherited
+whole optional-record packing omissions are unchanged and documented. These local providers
+and census results do not establish live quality.
+
+Failure modes: [requested windows](release-evidence/implementation-20261001/requested-window-failure-modes.md).
+The local `evidence/release-20261013/record-regression/named-window/verification.json` records
+committed source, final checks, native image proofs and successor518 preparation. The stopped518
+checkpoint remains the authority for inherited costs. A new source/image-bound owner grant is
+required before changed staging images or another paid run. Repeat all 14 qualification cases
+with fresh independent review, then continue only if they pass and remain within the unchanged
+caps and cutoff. Production launch remains outside that authorization.
+
+## Earlier controlled stop and wording preparation fix
+
+Successor422 used its one source/image-bound approval for source `db0049b` and cannot be resumed.
 
 All 14 affected cases passed fresh independent review. Case 003 then produced an empty writer
 action and a reviewer-accepted conversational clarification. The exact schemas passed, but the
@@ -39,10 +83,9 @@ Every resolved scope and supported calculation agrees with the frozen baseline. 
 
 The local `evidence/release-20261013/record-regression/score-average/verification.json` records
 the final source, checks, native image identities and unsigned successor452 preparation.
-Local scripted providers and the census do not establish live quality. A new source/image-bound
-grant is required before activating changed images or starting a paid run. Repeat all 14 cases
-with fresh independent review, then continue only if they pass. Production launch remains outside
-this run's authorization.
+Local scripted providers and the census did not establish live quality. The owner subsequently
+approved successor452 on source `6b5f2c1`; its fresh partial passes and later case-005 stop are
+recorded above. That consumed grant cannot authorize the next candidate.
 
 ## Earlier controlled stop and resolved-statistics fix
 
@@ -130,7 +173,7 @@ The tests use scripted providers; they do not establish live model quality or re
 
 ## Earlier successor398 preparation (preserved)
 
-Use the stopped452 checkpoint above for the next package. This section records the prior preparation.
+Use the stopped518 checkpoint above for the next package. This section records the prior preparation.
 
 Preserve successor385b and all its evidence. Its process was killed while paused after rejecting
 case 001, so it must not resume. The local successor audit records 398 counted calls, 195,801,300 nUSD
@@ -147,8 +190,21 @@ After a current source/image-bound owner grant, activate only the isolated stagi
 zero-call admission, then repeat all 14 qualification cases in their fixed order with fresh
 independent review. Stop through the bound semantic-stop mechanism on the first failure.
 Only passing qualification permits the full primary/shadow/disabled cohorts and remaining gates.
-The disabled `single_game_narrative-011`, saved 5,349 ms analyst p95 versus the 4,000 ms limit, and
-missing ranked retrieval traces remain open. Production launch still needs its own approval.
+The old disabled `single_game_narrative-011` failure was superseded by a fresh independently
+reviewed disabled120/50 pass on source `b5733d28` on October 12. That exact case correctly reported
+Towns' 14 points, 8 rebounds and 3 assists in the January 21 Knicks 120–66 Nets game. The local
+`evidence/release-20261008/gate-b5733d28c030d421060a6f371cff6ad9e7d1b848/semantic/inference-net-fresh/disabled-review-receipt.json`
+and its 11 verified evidence references retain the historical pass. It does not qualify a changed
+source: fresh current-source disabled collection, review and scoring remain required.
+
+Complete current-source primary/shadow cohorts and scores, zero missing ranked retrieval traces,
+the fresh disabled proof, and the original counted socket load remain open. The saved 5,349 ms
+analyst p95 exceeds the unchanged 4,000 ms limit; a later preserved 5,306 ms no-paid result also
+failed. Neither result qualifies the original counted workload. Its one-run 66-request/$0.66 cap,
+frozen workload and prerequisite order remain unchanged. The local
+`evidence/release-20261013/record-regression/score-average/remaining-gates-plan/` records conditional
+commands only; the stopped successor452 goal cannot run them. Production launch still needs
+its own approval.
 
 ## Prior source and live run (preserved context)
 
@@ -172,5 +228,5 @@ The controller was paused at the case-001 review (no paid calls during pause) an
 
 ### Previous local evidence (git-excluded, under `evidence/release-20261008/`)
 - Package: `gate-e443218a…/live/successor385b/` (signed grant, manifest, controller log `controller-execute.log`, `runs/original120-action-schema/` with the five approvals and the `…001-REJECTED.json`).
-- Earlier packages: `successor385/` (stale floor, admission failed), `gate-b5733d28…/live/successor377-inference-net/` (b573 predecessor journal, now chmod 0400, sha `dcf77c45…`).
+- Earlier packages: `successor385/` (stale floor, admission failed), `gate-b5733d28c030d421060a6f371cff6ad9e7d1b848/live/successor377-inference-net/` (b573 predecessor journal, now chmod 0400, sha `dcf77c45…`).
 - At that prior handoff, staging API/web containers were running from the e443218 images.
