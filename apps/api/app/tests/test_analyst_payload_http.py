@@ -620,8 +620,11 @@ async def test_full_archive_record_reaches_independent_review_http(
     assert receipt["response"]["llm_validated"]
     assert receipt["response"]["answer"] == text
     assert receipt["response"]["follow_up_questions"] == []
-    assert receipt["capture"]["turn"]["model_calls"] == 3
-    assert adapter.inputs[-1]["user"]["schema"]["title"] == "AnswerReview"
+    assert receipt["capture"]["turn"]["model_calls"] == 2
+    assert [item["user"]["schema"]["title"] for item in adapter.inputs] == [
+        "ProposedAnswer",
+        "AnswerReview",
+    ]
     delivered = {
         c["metadata"]["claim"]["metric_id"]: c["metadata"]["claim"]
         for c in receipt["response"]["citations"]
