@@ -1,17 +1,52 @@
 # Release gate handoff (updated 2026-10-13)
 
 **Verdict: BLOCKED pending fresh live qualification and remaining release evidence.**
-The owner-approved successor406 run passed cases 009, 010, 011, 016, last-n-008 and 001.
-It then stopped on a premature clarification in `exact_statistics-002` instead of the available
-11,750-point total. A shared native-statistics preparation fix is verified locally.
-Isolated staging runs source 8b9cc21 and its native images. No production change or deployment
-has been made. The previous readiness result had 18 failures;
+The owner-approved successor422 run passed all 14 qualification cases with independent review,
+then stopped on `exact_statistics-003`, "What was the Knicks average score per game?"
+The backend could calculate 11,750 / 101, but the model received no statistics and asked for a
+season type. Isolated staging still runs source db0049b and its native images. No production
+change or deployment has been made. The previous readiness result had 18 failures;
 that result is historical and does not certify this candidate.
 
-## Latest controlled stop and resolved-statistics fix
+## Latest controlled stop and wording preparation fix
 
 The current cutoff is October 13 at 11:30pm Pacific (`2026-10-14T06:30:00Z`). The bound driver
-stops admitting work 60 seconds earlier. The successor406 approval was used for its one isolated
+stops admitting work 60 seconds earlier. Successor422 used its one source/image-bound approval.
+Never resume its failed goal or reuse that approval for a changed source or image.
+
+All 14 affected cases passed fresh independent review. Case 003 then produced an empty writer
+action and a reviewer-accepted conversational clarification. The exact schemas passed, but the
+independent factual gate rejected the missing average and stopped the controller cleanly.
+Its frozen journal has 422 inherited calls plus 30 settled calls (423–452), totaling
+210,749,525 nUSD, with no pending costs. The new calls cost 8,452,621 nUSD. The calculated
+monthly lower bound is 1.266145781 USD; re-read Redis before binding a new package. The original
+unknown tickets and four permanent holds remain. The local
+`evidence/release-20261013/record-regression/score-average/stopped452-audit.json` pins the
+unchanged journal, real controller-end receipt and independent semantic receipts.
+
+Before further application edits, a census inspected all 120 original question wordings through
+the actual resolver and native SQL dispatch. It found ten supported paths without prepared
+statistics: average score, record wording, player comparisons, a season baseline and opponent
+profiles. Failure modes and 16 socket regressions were written before the repair. The red runs
+reproduced all ten gaps; the public scoring-run clarification and other guards already passed.
+The repair selects existing native calculations for those wordings. Explicit metrics, ambiguous
+player quantities, unsupported metrics and comparisons between arbitrary date windows retain
+their scope and planning guards. All 240 affected checks and 39 approved-archive socket cases
+pass. The current-source census prepares statistics for 53 questions and narrative evidence
+for eight; no answerable case remains empty and no non-answerable case gains statistics.
+Every resolved scope and supported calculation agrees with the frozen baseline. Failure modes:
+[average score and related wording](release-evidence/implementation-20261001/average-score-failure-modes.md).
+
+The local `evidence/release-20261013/record-regression/score-average/verification.json` records
+the final source, checks, native image identities and unsigned successor452 preparation.
+Local scripted providers and the census do not establish live quality. A new source/image-bound
+grant is required before activating changed images or starting a paid run. Repeat all 14 cases
+with fresh independent review, then continue only if they pass. Production launch remains outside
+this run's authorization.
+
+## Earlier controlled stop and resolved-statistics fix
+
+The successor406 approval was used for its one isolated
 8b9cc21 run and cannot authorize a different source or image. Never resume its failed goal.
 
 Six fresh independent reviews passed, including the complete 69-win/32-loss record and the
@@ -40,11 +75,10 @@ Exact model schemas, response wires, HTTP responses, traces, Redis replay and le
 are retained. Independent artifact review validated all 42 wires and a maximum 7,981-byte
 input against the unchanged 8,000-byte cap. These scripted providers do not establish live quality.
 
-Final source, local checks, native images and any unsigned successor422 preparation are recorded
+Final source, local checks, native images and successor422 preparation are recorded
 in the local `evidence/release-20261013/record-regression/resolved-statistics/verification.json`.
-A new source-bound grant is required before activating those images or starting a paid run.
-Repeat all 14 qualification cases with fresh independent review before the remaining cohorts
-and operational gates. Production launch remains outside this run's authorization.
+The owner subsequently approved that package, which passed all 14 qualification cases before
+the later case-003 stop recorded above. Its consumed grant cannot authorize the next candidate.
 
 ## Earlier controlled stop and review-capacity fix
 
@@ -96,7 +130,7 @@ The tests use scripted providers; they do not establish live model quality or re
 
 ## Earlier successor398 preparation (preserved)
 
-Use the stopped422 checkpoint above for the next package. This section records the prior preparation.
+Use the stopped452 checkpoint above for the next package. This section records the prior preparation.
 
 Preserve successor385b and all its evidence. Its process was killed while paused after rejecting
 case 001, so it must not resume. The local successor audit records 398 counted calls, 195,801,300 nUSD

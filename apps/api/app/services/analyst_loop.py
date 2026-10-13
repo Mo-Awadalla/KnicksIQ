@@ -1318,6 +1318,7 @@ class AnalystLoop:
             or scope.requires_clarification
             or self.tools.narrative
             or re_search_discovery(question)
+            or re.search(r"\bscoring[ -]run\b", question, re.I)
             or self.tools.season != self.tools.release.season
             or any(
                 s != self.tools.release.season
@@ -1350,16 +1351,43 @@ class AnalystLoop:
                 )
                 else None
             )
-        native_comparison = bool(team_groups) or bool(
+        season_comparison = self.tools.season_window_comparison_requested()
+        player_comparison = bool(
             scope.player_ids
             and (
-                self.tools.season_window_comparison_requested()
+                season_comparison
                 or re.search(r"\bbefore\s+and\s+after\s+(?:the\s+)?all[ -]star\b", question, re.I)
+                or (
+                    comparison
+                    and len(scope.player_ids) > 1
+                    and not (scope.date_start or scope.date_end or scope.relative_game_count)
+                    and not re.search(r"\bbefore\b.*\bafter\b", question, re.I)
+                )
             )
         )
-        if comparison and not native_comparison:
+        opponent_filter = bool(
+            scope.opponent_id
+            and not re.search(
+                r"\b(?:compare|compared|comparison|differences?|differ(?:ed|s)?|change)\b"
+                r"|\bbefore\b.*\bafter\b",
+                question,
+                re.I,
+            )
+        )
+        if comparison and not (team_groups or player_comparison or opponent_filter):
             return None
+        score_average = bool(re.search(r"\baverage scores?\b|\bscores? per game\b", question, re.I))
         if scope.player_ids:
+            opponent_profile = bool(
+                scope.metric is None
+                and opponent_filter
+                and re.search(
+                    r"^\s*(?:tell me about\b|how did\b|did\b.*\bplay well\b)", question, re.I
+                )
+            )
+            metric = scope.metric or (
+                "points" if season_comparison or opponent_profile or score_average else None
+            )
             explicit_aggregation = re.search(
                 r"\b(?:total|average|avg|per[ -]game|per[ -]appearance)\b", question, re.I
             )
@@ -1367,11 +1395,12 @@ class AnalystLoop:
                 "get_player_stats"
                 if self.tools.player_profile_requested()
                 or (
-                    scope.metric in PLAYER_METRICS
+                    metric in PLAYER_METRICS
                     and (
                         explicit_aggregation
-                        or native_comparison
-                        or scope.metric in {"double_doubles", "starts", "three_point_percentage"}
+                        or player_comparison
+                        or opponent_profile
+                        or metric in {"double_doubles", "starts", "three_point_percentage"}
                     )
                 )
                 else None
@@ -1397,6 +1426,7 @@ class AnalystLoop:
             if is_record_request(question)
             or is_game_score_request(question)
             or scope.metric == "points"
+            or score_average
             or re.search(
                 r"\bhow many\b.*\b(?:games?|wins?|won|lose|losses|lost)\b"
                 r"|\bmargin\b|\bpoints allowed\b",

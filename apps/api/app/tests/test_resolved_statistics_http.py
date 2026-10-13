@@ -101,6 +101,27 @@ class PrematureStatisticsClarification(SyntheticAdapter):
             "points:average",
             "complete",
         ),
+        (
+            "frozen003",
+            "What was the Knicks average score per game?",
+            "team",
+            "points:average",
+            "complete",
+        ),
+        (
+            "omit-score-average",
+            "What was the Knicks average score per game?",
+            "team",
+            "points:average",
+            "omit",
+        ),
+        (
+            "score-january",
+            "What was the Knicks average score per game in January?",
+            "team",
+            "points:average",
+            "complete",
+        ),
         ("team-wins", "How many games did the Knicks win?", "team", "wins", "complete"),
         ("team-games", "How many games did the Knicks play?", "team", "games:count", "complete"),
         (
@@ -154,6 +175,8 @@ async def test_resolved_statistics_precede_model_clarification_socket_http(
     )
     raw = json.loads(gzip.decompress(BUNDLE.read_bytes()))["data"]
     games = [g for g in raw["games"] if "NYK" in {g["home_team_id"], g["away_team_id"]}]
+    if name == "score-january":
+        games = [game for game in games if game["game_date"][5:7] == "01"]
     points = sum(g["home_score"] if g["home_team_id"] == "NYK" else g["away_score"] for g in games)
     if subject == "player":
         player = next(p for p in raw["players"] if p["full_name"] == "Jalen Brunson")
@@ -201,6 +224,7 @@ async def test_resolved_statistics_precede_model_clarification_socket_http(
         ("ambiguous", "What were Smith's total points?"),
         ("unavailable", "What were the Knicks total points in 2024-25?"),
         ("unsupported-team", "What were the Knicks total rebounds?"),
+        ("unsupported-credit-score", "What was the Knicks average credit score?"),
         ("unspecified-player-aggregation", "How many points did Jalen Brunson score?"),
         ("arbitrary-comparison", "Compare Jalen Brunson's average points in October with January."),
         (
