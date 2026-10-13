@@ -1,11 +1,41 @@
-# Release gate handoff (updated 2026-10-12/13)
+# Release gate handoff (updated 2026-10-13)
 
 **Verdict: BLOCKED pending fresh live qualification and remaining release evidence.**
-The `exact_statistics-001` application defect is fixed locally and verified without paid calls.
-No production change or deployment has been made. The previous readiness result had 18 failures;
+The `exact_statistics-001` application defect is fixed locally. The owner-approved successor398 run
+then stopped on a separate review-capacity defect in `exact_statistics-016`; case 001 was not reached.
+The follow-on packing fix is verified locally. Isolated staging runs the prior 284c7dc images;
+no production change or production deployment has been made. The previous readiness result had 18 failures;
 that result is historical and does not certify this candidate.
 
-## Latest local fix
+## Fresh run and follow-on review fix
+
+The owner approved one successor398 run and then moved the cutoff to October 13 at 11:30pm Pacific
+(`2026-10-14T06:30:00Z`). The private driver stops admitting work 60 seconds before that absolute
+cutoff and retains the date in the immutable goal binding. Source 284c7dc and its native images
+passed zero-call admission before the exclusive goal was created.
+
+Fresh independently reviewed cases 009, 010 and 011 passed. Case 016 returned the correct Towns
+average (1090 rebounds / 94 observed appearances) through factual fallback with `llm_validated=false`.
+Both writer response bodies matched their sent schemas; no reviewer request was transmitted.
+The driver stopped through its controlled failure path, and the primary phase is failed.
+Case 001 and subsequent qualification cases were not reached. Never resume this goal.
+
+A socket HTTP replay, written before the follow-on fix, reproduced the exact local blocker:
+`Complete explicitly cited sources exceed model input budget`, with more than 29 seconds left.
+The fix factors a shared suffix from source provenance IDs and restores each complete native ID.
+It preserves all appearances, cited receipts, answer spans, suggestions and existing caps/validators.
+The full reviewer input now fits at 7,639 bytes. Supported review passes; unsupported review is
+still rejected. Failure modes: [player-average review capacity](release-evidence/implementation-20261001/player-average-review-failure-modes.md).
+Final committed source, checks, built images and any unsigned successor406 preparation are linked
+by the local `evidence/release-20261013/record-regression/live-run/follow-on-verification.json` checkpoint.
+
+The stopped406 audit retains 398 inherited calls plus eight newly settled calls (399–406), totaling
+198,169,270 nUSD; no new pending calls or unknown costs remain. The monthly Redis floor after
+those calls is 1.253565526 USD and all four historical holds remain unchanged. Preserve both
+successor398 and the earlier abandoned successor385b journal. A new source/image-bound run needs
+its own current owner grant; the consumed 284c7dc grant must not authorize changed images.
+
+## Prior record-availability fix
 
 An explicit, resolved team-record question now runs the existing `get_team_stats` calculation
 before the first model request, unless the exact requested record is already available.
@@ -25,7 +55,9 @@ in the local `evidence/release-20261013/record-regression/verification.json` che
 Failure modes and test scope: [record availability regression](release-evidence/implementation-20261001/record-availability-failure-modes.md).
 The tests use scripted providers; they do not establish live model quality or release eligibility.
 
-## Next run
+## Earlier successor398 preparation (preserved)
+
+Use the fresh stopped406 checkpoint above for the next package. This section records the prior preparation.
 
 Preserve successor385b and all its evidence. Its process was killed while paused after rejecting
 case 001, so it must not resume. The local successor audit records 398 counted calls, 195,801,300 nUSD
@@ -68,4 +100,4 @@ The controller was paused at the case-001 review (no paid calls during pause) an
 ### Previous local evidence (git-excluded, under `evidence/release-20261008/`)
 - Package: `gate-e443218a…/live/successor385b/` (signed grant, manifest, controller log `controller-execute.log`, `runs/original120-action-schema/` with the five approvals and the `…001-REJECTED.json`).
 - Earlier packages: `successor385/` (stale floor, admission failed), `gate-b5733d28…/live/successor377-inference-net/` (b573 predecessor journal, now chmod 0400, sha `dcf77c45…`).
-- Staging API/web containers are still running from the e443218 images.
+- At that prior handoff, staging API/web containers were running from the e443218 images.
