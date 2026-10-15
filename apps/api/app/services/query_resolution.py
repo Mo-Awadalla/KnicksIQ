@@ -185,7 +185,7 @@ def _normalize(value: str) -> str:
 def is_record_request(question: str) -> bool:
     """A record spans both outcomes; explicit subsets still take precedence."""
     q = _normalize(question.replace("–", "-").replace("—", "-"))
-    if re.search(r"\b(?:only|in)\s+(?:wins?|loss(?:es)?)\b", q):
+    if re.search(r"\b(?:only|in)\s+(?:(?:home|road|away)\s+)?(?:wins?|loss(?:es)?)\b", q):
         return False
     return bool(
         re.search(r"\brecord\b", q)
