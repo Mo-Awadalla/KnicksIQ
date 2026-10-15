@@ -32,6 +32,19 @@ from app.tests.test_release_evaluation import fixture_contract
 HELD = {"old-held-a": "0.03", "old-held-b": "0.02"}
 
 
+async def typed_invalid_content(data):
+    from app.tests.test_analyst_contracts import ScriptedAdapter
+
+    content = json.loads(
+        await ScriptedAdapter().generate(
+            system=data["messages"][0]["content"], user=data["messages"][1]["content"]
+        )
+    )
+    title = json.loads(data["messages"][1]["content"])["schema"]["title"]
+    del content["action" if title == "Action" else "text"]
+    return json.dumps(content)
+
+
 @pytest.fixture
 async def successor_fixture(client, local_redis, monkeypatch, tmp_path):  # noqa: F811
     settings = get_settings()
@@ -365,7 +378,14 @@ async def test_successor_actual_collection_stops_first_typed_invalid_and_keeps_p
                 "model": MODEL,
                 "provider": "Morph",
                 "usage": {"cost": 0.000001},
-                "choices": [{"finish_reason": "stop", "message": {"content": "{}"}}],
+                "choices": [
+                    {
+                        "finish_reason": "stop",
+                        "message": {
+                            "content": await typed_invalid_content(json.loads(request.content))
+                        },
+                    }
+                ],
             }
         ).encode()
         bodies.append(raw)
@@ -397,7 +417,7 @@ async def test_successor_actual_collection_stops_first_typed_invalid_and_keeps_p
     assert diagnosis["error_type"] == "ValidationError"
     assert diagnosis["finish_reason"] == "stop"
     assert any(
-        item["loc"] == ["action"] and item["type"] == "missing" for item in diagnosis["errors"]
+        item["loc"] == ["text"] and item["type"] == "missing" for item in diagnosis["errors"]
     )
     assert (f.predecessor / "goal.sqlite").read_bytes() == f.original_bytes
     record_property(
@@ -609,7 +629,6 @@ async def stop_with_known_protocol_cost(f, monkeypatch, *, cost=0.00004213, vali
     async def respond(request):
         nonlocal answered
         data = json.loads(request.content)
-        content = "{}"
         if valid_first and not answered:
             content = await protocol.generate(
                 system=data["messages"][0]["content"], user=data["messages"][1]["content"]
@@ -617,6 +636,8 @@ async def stop_with_known_protocol_cost(f, monkeypatch, *, cost=0.00004213, vali
             answered = (
                 json.loads(data["messages"][1]["content"])["schema"]["title"] == "AnswerReview"
             )
+        else:
+            content = await typed_invalid_content(data)
         raw = json.dumps(
             {
                 "id": f"{f.args.goal_dir.name}-generation-{len(bodies) + 1}",
