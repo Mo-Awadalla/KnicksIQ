@@ -45,6 +45,9 @@ def captured_action(capture):
 
 def emitted_validator(scope, schema=Action):
     scope = {"claim_context": {}, "schema": {"title": schema.__name__}, **scope}
+    scope["claims"] = [
+        {"supporting_evidence_ids": [], **claim} for claim in scope.get("claims", [])
+    ]
     emitted = scoped_response_schema(schema, scope)
     Draft202012Validator.check_schema(emitted)
     return Draft202012Validator(emitted)

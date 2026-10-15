@@ -1,4 +1,4 @@
-"""Typed claim-value repair through public HTTP, real SQL, and real Redis."""
+"""Sealed claim values and wording repair through public HTTP, SQL, and Redis."""
 
 import json
 
@@ -69,33 +69,16 @@ class ValueFormatAdapter:
             }
             use = {**expected, "displayed_value": claim["statement"]}
             text = claim["statement"]
-            if self.behavior == "unsupported-wording":
+            if self.behavior == "unsupported-wording" or (
+                self.behavior == "repair" and not self.outputs
+            ):
                 use = expected
                 text += " A secret tactic caused his scoring."
-            elif title == "ProposedAnswer":
-                if self.behavior == "repair":
-                    repair = str(payload.get("repair", "")).lower()
-                    if (
-                        any(
-                            all(
-                                template.get(key) == expected[key]
-                                for key in ("claim_id", "displayed_value")
-                            )
-                            for template in analyst_loop.payload_claim_uses(payload)
-                        )
-                        and "claim_uses" in repair
-                        and "displayed_value" in repair
-                        and "json" in repair
-                        and "type" in repair
-                    ):
-                        # Copy the supplied typed record, just as a provider can.
-                        use = next(
-                            item
-                            for item in analyst_loop.payload_claim_uses(payload)
-                            if item["claim_id"] == claim["claim_id"]
-                        )
-                elif self.behavior == "wrong-number":
-                    use = {**expected, "displayed_value": claim["value"] + 1}
+            elif self.behavior == "repair":
+                assert payload.get("repair")
+                use = expected
+            elif self.behavior == "wrong-number":
+                use = {**expected, "displayed_value": claim["value"] + 1}
             answer = {
                 "text": text,
                 "claims": [use],
