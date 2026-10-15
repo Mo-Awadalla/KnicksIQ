@@ -339,6 +339,7 @@ def verify_native(receipt, expected):
             assert item == receipt["native_registry"][key]
         if payload["schema"]["title"] == "AnswerReview":
             proposed = analyst_loop.payload_proposed_answer(payload)
+            assert proposed is not None
             assert proposed["evidence_ids"]
             assert set(proposed["evidence_ids"]) <= restored_evidence.keys()
             assert set(native) == {c["claim_id"] for c in restored_claims}

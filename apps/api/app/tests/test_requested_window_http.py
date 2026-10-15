@@ -52,6 +52,7 @@ class WindowAdapter(SyntheticAdapter):
         )
         if payload["schema"]["title"] == "AnswerReview":
             proposal = analyst_loop.payload_proposed_answer(payload)
+            assert proposal is not None
             declared_ids = [use["claim_id"] for use in proposal["claims"]]
             assertions = []
             for span in payload["review_spans"]:
@@ -635,6 +636,7 @@ async def test_existing_grouped_and_baseline_windows_keep_their_own_populations_
         after = expected_values(source, populations["after"], "player", "Mikal Bridges")[
             "points:average"
         ]
+        assert isinstance(before, (int, float)) and isinstance(after, (int, float))
         assert claim["value"] == pytest.approx(
             {"before": before, "after": after, "delta": after - before}
         )
