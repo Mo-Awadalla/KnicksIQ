@@ -129,7 +129,7 @@ jobs:
           context: .
           file: Dockerfile.api
           build-contexts: |
-            python:3.12.11-slim-bookworm=docker-image://public.ecr.aws/docker/library/python@sha256:519591d6871b7bc437060736b9f7456b8731f1499a57e22e6c285135ae657bf7
+            python:3.12.11-slim-bookworm=docker-image://docker.io/library/python@sha256:519591d6871b7bc437060736b9f7456b8731f1499a57e22e6c285135ae657bf7
           push: false
           load: true
           tags: knicksiq-api:ci
@@ -138,8 +138,8 @@ jobs:
           context: .
           file: Dockerfile.web
           build-contexts: |
-            node:24.4.1-alpine3.22=docker-image://public.ecr.aws/docker/library/node@sha256:820e86612c21d0636580206d802a726f2595366e1b867e564cbc652024151e8a
-            nginxinc/nginx-unprivileged:1.29.0-alpine3.22=docker-image://public.ecr.aws/nginx/nginx-unprivileged@sha256:82dcf28da5a8cd97d43e8f8a64de766658b0c5fb9072368c5f0a9048c417a934
+            node:24.4.1-alpine3.22=docker-image://docker.io/library/node@sha256:820e86612c21d0636580206d802a726f2595366e1b867e564cbc652024151e8a
+            nginxinc/nginx-unprivileged:1.29.0-alpine3.22=docker-image://docker.io/nginxinc/nginx-unprivileged@sha256:82dcf28da5a8cd97d43e8f8a64de766658b0c5fb9072368c5f0a9048c417a934
           push: false
           load: true
           tags: knicksiq-web:ci

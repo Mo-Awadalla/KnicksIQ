@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import calendar
+import datetime
 import re
 import unicodedata
 from collections import defaultdict
@@ -96,6 +98,15 @@ _NAME_STOPWORDS = {
 }
 
 
+class CalendarBoundary(BaseModel):
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    name: Literal["all_star_end"] = "all_star_end"
+    date: datetime.date
+    relation: Literal[">", "<="]
+    source_url: Literal["https://www.nba.com/allstar/2026"] = "https://www.nba.com/allstar/2026"
+
+
 class ResolvedQuery(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
@@ -106,6 +117,7 @@ class ResolvedQuery(BaseModel):
     game_ids: list[int] = Field(default_factory=list)
     date_start: date | None = None
     date_end: date | None = None
+    calendar_boundary: CalendarBoundary | None = None
     relative_game_count: int | None = None
     relative_game_order: Literal["first", "last"] = "last"
     periods: list[int] = Field(default_factory=list)
@@ -117,6 +129,24 @@ class ResolvedQuery(BaseModel):
     clarification_reason: str | None = None
     clarification_options: list[str] = Field(default_factory=list)
     data_version: str
+
+    def requested_window(
+        self, *, relative_unit: Literal["games", "appearances"]
+    ) -> dict[str, object]:
+        window: dict[str, object] = {}
+        if self.date_start:
+            window["date_start"] = self.date_start.isoformat()
+        if self.date_end:
+            window["date_end"] = self.date_end.isoformat()
+        if self.relative_game_count:
+            window.update(
+                relative_game_count=self.relative_game_count,
+                relative_game_order=self.relative_game_order,
+                relative_unit=relative_unit,
+            )
+        if self.calendar_boundary:
+            window["calendar_boundary"] = self.calendar_boundary.model_dump(mode="json")
+        return window
 
     def retrieval_filters(self) -> dict[str, object]:
         filters: dict[str, object] = {
@@ -155,11 +185,16 @@ def _normalize(value: str) -> str:
 def is_record_request(question: str) -> bool:
     """A record spans both outcomes; explicit subsets still take precedence."""
     q = _normalize(question.replace("–", "-").replace("—", "-"))
-    if re.search(r"\b(?:only|in)\s+(?:wins?|loss(?:es)?)\b", q):
+    if re.search(r"\b(?:only|in)\s+(?:(?:home|road|away)\s+)?(?:wins?|loss(?:es)?)\b", q):
         return False
     return bool(
         re.search(r"\brecord\b", q)
         or (re.search(r"\bwins?\b", q) and re.search(r"\bloss(?:es)?\b", q))
+        or (
+            re.search(r"^how (?:did|have|has)\b.*\b(?:perform|do|done|fare)\b", q)
+            and _metric(question) is None
+            and not re.search(r"\b(?:scores?|margin|rating|run)\b", q)
+        )
     )
 
 
@@ -479,24 +514,29 @@ async def resolve_query(
                 game.game_date for game in games if game.game_date.month in selected_months
             ]
             if month_dates:
-                date_start, date_end = min(month_dates), max(month_dates)
+                first, last = min(month_dates), max(month_dates)
+                date_start = first.replace(day=1)
+                date_end = last.replace(day=calendar.monthrange(last.year, last.month)[1])
     if explicit_dates and "since" in q:
         date_end = latest_date
-    elif explicit_dates and "before" in q:
+    elif explicit_dates and "before" in q and "all star" not in q:
         date_start = games[0].game_date if games else None
         date_end = explicit_dates[0]
     calendar_error = None
+    calendar_boundary = None
     if "all star" in q:
         boundary = all_star_end(games[0].season) if games else None
         if boundary is None:
             calendar_error = "unsupported_all_star_boundary"
-        elif not explicit_dates and not date_error:
+        elif not date_error:
             before, after = "before" in q, "after" in q
             if before and not after:
                 date_end = min(date_end, boundary) if date_end else boundary
+                calendar_boundary = CalendarBoundary(date=boundary, relation="<=")
             elif after and not before:
                 start = boundary + timedelta(days=1)
                 date_start = max(date_start, start) if date_start else start
+                calendar_boundary = CalendarBoundary(date=boundary, relation=">")
 
     season_type = (
         "playoffs"
@@ -692,6 +732,7 @@ async def resolve_query(
         game_ids=resolved_game_ids,
         date_start=date_start,
         date_end=date_end,
+        calendar_boundary=calendar_boundary,
         relative_game_count=relative_count,
         relative_game_order="first" if count_match and "first" in count_match[0] else "last",
         periods=_periods(question),

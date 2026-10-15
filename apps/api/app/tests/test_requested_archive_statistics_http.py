@@ -201,10 +201,17 @@ async def test_requested_archive_statistics(
         wrong_value = abs(claim["value"] - value) > 0.00001
         if wrong_value or claim["sample_size"] != len(population):
             failures.append((index, "wrong value/population", claim))
-        if player and claim["window"] != {
+        expected_window: dict[str, object] = {
             "date_start": min(g["game_date"] for g in population),
             "date_end": max(g["game_date"] for g in population),
-        }:
+        }
+        if player and "last 5" in question:
+            expected_window["requested"] = {
+                "relative_game_count": 5,
+                "relative_game_order": "last",
+                "relative_unit": "appearances",
+            }
+        if player and claim["window"] != expected_window:
             failures.append((index, "wrong observed appearance window", claim["window"]))
         state = capture["turn"]["committed_evidence_proposal"]
         evidence = {e["evidence_id"]: e for e in state["evidence"]}

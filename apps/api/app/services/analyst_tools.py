@@ -336,6 +336,11 @@ class AnalystTools:
         window: dict[str, Any] | None = None,
         population: str = "available release archive",
     ) -> VerifiedClaim:
+        requested = scope.requested_window(
+            relative_unit="appearances" if scope.player_ids else "games"
+        )
+        if requested and (window is None or set(window) <= {"date_start", "date_end", "periods"}):
+            window = {**(window or {}), "requested": requested}
         if len(evidence) > 3:
             import hashlib
 
@@ -519,6 +524,7 @@ class AnalystTools:
             "game_result",
             "date_start",
             "date_end",
+            "calendar_boundary",
             "periods",
             "relative_game_count",
             "relative_game_order",
@@ -937,6 +943,7 @@ class AnalystTools:
                 "game_ids": [],
                 "date_start": None,
                 "date_end": None,
+                "calendar_boundary": None,
                 "relative_game_count": None,
                 "relative_game_order": "last",
             }
