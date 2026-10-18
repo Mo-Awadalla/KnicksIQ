@@ -6,7 +6,7 @@ from types import SimpleNamespace
 from typing import cast
 
 from app.models.game import Game
-from worker_app.release_export import complete_overtime_period_scores, normalize_box_score
+from worker_app.release_normalization import complete_overtime_period_scores, normalize_box_score
 
 
 def test_normalize_box_score_maps_v3_fields_and_overtime() -> None:

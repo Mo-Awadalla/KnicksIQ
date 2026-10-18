@@ -16,7 +16,8 @@ from app.services.qdrant_client import (
     switch_aliases,
     upsert_points,
 )
-from app.services.rag import reciprocal_rank_fusion, search_possession_chunks
+from app.services.rag import search_possession_chunks
+from app.services.rag_ranking import reciprocal_rank_fusion
 from app.services.reranker import rerank_candidates
 
 

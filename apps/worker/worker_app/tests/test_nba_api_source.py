@@ -18,6 +18,7 @@ import responses
 from requests.exceptions import ConnectionError as RequestsConnectionError
 from requests.exceptions import Timeout
 from worker_app.adapters.nba_api_source import NbaApiDataSource
+from worker_app.adapters.nba_normalization import iso_duration_to_clock, parse_nba_game_date
 from worker_app.core.config import NbaApiSettings
 
 STATS_BASE = "https://stats.nba.com/stats"
@@ -569,17 +570,17 @@ def test_timeout_is_retried(data_source: NbaApiDataSource) -> None:
 
 
 def test_iso_duration_to_clock() -> None:
-    """Direct test of the helper used in `_parse_pbp_v3_action`."""
-    assert NbaApiDataSource._iso_duration_to_clock("PT12M00.00S") == "12:00"
-    assert NbaApiDataSource._iso_duration_to_clock("PT05M30.00S") == "05:30"
-    assert NbaApiDataSource._iso_duration_to_clock("PT00M00.50S") == "00:00"
-    assert NbaApiDataSource._iso_duration_to_clock("PT11M42.00S") == "11:42"
-    assert NbaApiDataSource._iso_duration_to_clock("") == "12:00"
-    assert NbaApiDataSource._iso_duration_to_clock("bogus") == "bogus"
+    """Direct test of the helper used in `parse_pbp_v3_action`."""
+    assert iso_duration_to_clock("PT12M00.00S") == "12:00"
+    assert iso_duration_to_clock("PT05M30.00S") == "05:30"
+    assert iso_duration_to_clock("PT00M00.50S") == "00:00"
+    assert iso_duration_to_clock("PT11M42.00S") == "11:42"
+    assert iso_duration_to_clock("") == "12:00"
+    assert iso_duration_to_clock("bogus") == "bogus"
 
 
 def test_parse_nba_game_date() -> None:
     from datetime import date
 
-    assert NbaApiDataSource._parse_nba_game_date("OCT 22, 2024") == date(2024, 10, 22)
-    assert NbaApiDataSource._parse_nba_game_date("APR 13, 2025") == date(2025, 4, 13)
+    assert parse_nba_game_date("OCT 22, 2024") == date(2024, 10, 22)
+    assert parse_nba_game_date("APR 13, 2025") == date(2025, 4, 13)
