@@ -1,9 +1,10 @@
-.PHONY: help install sync test test-api test-core lint typecheck run seed clean
+.PHONY: help install hooks sync test test-api test-core lint typecheck run seed clean
 
 help:
 	@echo "KnicksIQ Makefile"
 	@echo ""
 	@echo "  make install   - install all workspace deps via uv"
+	@echo "  make hooks     - enable staged-file token limit hook (Git + Python 3.10+)"
 	@echo "  make sync      - uv sync all packages"
 	@echo "  make test      - run all tests"
 	@echo "  make test-api  - run only api tests"
@@ -14,8 +15,11 @@ help:
 	@echo "  make seed      - load seed data into the local DB"
 	@echo "  make clean     - remove caches and build artifacts"
 
-install:
+install: hooks
 	uv sync --all-packages
+
+hooks:
+	git config --local core.hooksPath .githooks
 
 sync:
 	uv sync --all-packages

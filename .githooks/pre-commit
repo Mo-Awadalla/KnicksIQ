@@ -1,0 +1,109 @@
+#!/usr/bin/env python3
+"""Reject oversized authored text blobs in the Git index. Requires Git and Python 3.10+."""
+
+import os
+import subprocess
+import sys
+
+MAX_BYTES = 5000 * 4
+
+
+def git(*args, input=None):
+    return subprocess.run(["git", *args], input=input, stdout=subprocess.PIPE, check=True).stdout
+
+
+def is_binary(oid):
+    # Git's binary heuristic examines the first 8,000 bytes for a NUL.
+    with subprocess.Popen(["git", "cat-file", "blob", oid], stdout=subprocess.PIPE) as blob:
+        prefix = blob.stdout.read(8000)
+        # Closing early may give cat-file SIGPIPE; do not load large assets into memory.
+        blob.stdout.close()
+        blob.wait()
+    return b"\0" in prefix
+
+
+def main():
+    os.chdir(os.fsdecode(git("rev-parse", "--show-toplevel").rstrip(b"\n")))
+    changes = git(
+        "diff",
+        "--cached",
+        "--raw",
+        "--no-abbrev",
+        "--no-renames",
+        "--no-ext-diff",
+        "--no-textconv",
+        "--diff-filter=ACMT",
+        "-z",
+    ).split(b"\0")
+    files = []
+    for index in range(0, len(changes) - 1, 2):
+        _, mode, _, oid, _ = changes[index].split()
+        if mode in (b"100644", b"100755"):
+            files.append((changes[index + 1], oid))
+    if not files:
+        return 0
+
+    attributes = git(
+        "check-attr",
+        "--cached",
+        "-z",
+        "--stdin",
+        "linguist-generated",
+        "linguist-vendored",
+        input=b"".join(path + b"\0" for path, _ in files),
+    ).split(b"\0")
+    excluded = {
+        attributes[index]
+        for index in range(0, len(attributes) - 1, 3)
+        if attributes[index + 2] in (b"set", b"true")
+    }
+    files = [(path, oid) for path, oid in files if path not in excluded]
+    if not files:
+        return 0
+
+    sizes = git(
+        "cat-file",
+        "--batch-check=%(objectsize)",
+        input=b"".join(oid + b"\n" for _, oid in files),
+    ).splitlines()
+    oversized = []
+    for (path, oid), size in zip(files, sizes, strict=True):
+        byte_count = int(size)
+        if byte_count > MAX_BYTES and not is_binary(oid):
+            oversized.append((os.fsdecode(path), byte_count))
+    if not oversized:
+        return 0
+
+    print("Commit blocked: staged files exceed 5,000 tokens (20,000 bytes).", file=sys.stderr)
+    print("Tokens = bytes / 4. Exactly 20,000 bytes is allowed.\n", file=sys.stderr)
+    for path, byte_count in oversized:
+        print(f"  {path!r}: {byte_count:,} bytes = {byte_count / 4:,.2f} tokens", file=sys.stderr)
+    print(
+        """
+Split each listed file before committing:
+  1. Group the code by responsibility. Move cohesive functions, classes, or UI
+     components into separate, meaningfully named sibling modules. Split long
+     documents by topic and link the resulting documents from a short index.
+  2. Update imports, exports, and callers. Keep dependencies one-way to avoid
+     circular imports. Keep every resulting file at or below 20,000 bytes.
+  3. Run the relevant E2E checks, then git add each changed and new file and retry
+     the commit. The hook reads staged contents, so saving edits alone is not enough.
+
+For actual generated or vendored output, mark its exact path or directory in
+.gitattributes with linguist-generated=true or linguist-vendored=true, then stage
+that attribute change too. Do not exempt authored source to avoid splitting it.
+""",
+        file=sys.stderr,
+    )
+    return 1
+
+
+if __name__ == "__main__":
+    try:
+        raise SystemExit(main())
+    except (subprocess.CalledProcessError, OSError, ValueError) as error:
+        print(
+            f"Commit blocked: token-limit hook could not inspect the index: {error}",
+            file=sys.stderr,
+        )
+        raise SystemExit(1) from None
