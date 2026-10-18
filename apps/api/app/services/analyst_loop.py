@@ -10,6 +10,7 @@ from typing import Any
 
 from app.core.config import get_settings
 from app.services.analyst_budget import BudgetReservation
+from app.services.analyst_fallback import fallback_claims, re_search_discovery
 from app.services.analyst_provider import (
     Schema,
     build_payload,
@@ -31,7 +32,6 @@ from app.services.evidence_contracts import (
     validate_review,
     validate_structure,
 )
-from app.services.query_resolution import is_record_request
 from pydantic import ValidationError
 
 logger = logging.getLogger(__name__)
@@ -153,21 +153,33 @@ class AnalystLoop:
             await self.settle()
 
     async def next_action(self) -> Action:
-        try:
-            return await self.model(Action)
-        except ValidationError:
-            # The model intermittently returns an off-schema action and the same request
-            # usually succeeds. Keep two calls free for the answer and its review.
-            if self.calls > self.settings.analyst_max_model_calls - 3 or self.remaining() < 8:
-                raise
-            return await self.model(Action)
+        """Return a well-formed action, retrying the model once when it is not.
+
+        The model intermittently returns an off-schema or self-contradictory action and the
+        same request usually succeeds. Two calls stay free for the answer and its review.
+        """
+        retried = False
+        while True:
+            try:
+                action = await self.model(Action)
+                if action.action == "call_tools":
+                    well_formed = action.answer is None and bool(action.tools)
+                else:
+                    well_formed = action.answer is not None and not action.tools
+                if well_formed:
+                    return action
+                error: Exception = ValueError("Malformed action")
+            except ValidationError as exc:
+                error = exc
+            exhausted = self.calls > self.settings.analyst_max_model_calls - 3
+            if retried or exhausted or self.remaining() < 8:
+                raise error
+            retried = True
 
     async def investigate(self) -> dict[str, Any]:
         while True:
             action = await self.next_action()
             if action.action == "call_tools":
-                if action.answer is not None or not action.tools:
-                    raise ValueError("Malformed tool action")
                 if self.rounds >= self.settings.analyst_max_tool_rounds or (
                     time.monotonic() - self.started >= self.settings.analyst_investigation_seconds
                 ):
@@ -188,12 +200,13 @@ class AnalystLoop:
                     self.tool_count += 1
                     self.results.append(await self.tools.execute(call))
                 continue
-            if action.tools or action.answer is None:
+            answer = action.answer
+            if answer is None:  # next_action guarantees this; narrows the type
                 raise ValueError("Malformed answer action")
-            self.last_answer = action.answer
-            supported, reason = await self.validate(action.answer)
+            self.last_answer = answer
+            supported, reason = await self.validate(answer)
             if supported:
-                return self.render(action.answer, llm=True)
+                return self.render(answer, llm=True)
             # Only one repair, with capacity and time for both revision and review.
             # Split remaining time between the calls instead of demanding two full
             # 20-second provider timeouts inside a 30-second application deadline.
@@ -210,7 +223,7 @@ class AnalystLoop:
                 if available >= 2 or await self.reserve(2 - available):
                     repaired = await self.model(
                         ProposedAnswer,
-                        answer=action.answer,
+                        answer=answer,
                         repair=reason,
                         timeout_seconds=repair_timeout,
                     )
@@ -254,78 +267,7 @@ class AnalystLoop:
         return True, ""
 
     def fallback_claims(self) -> list[VerifiedClaim]:
-        """Only release/scope-matched facts can answer a failed turn.
-
-        Prior claims may be valid historical facts without answering this question.
-        Reuse current tool work only when its complete population and metric match.
-        """
-        scope = self.tools.scope
-        if (
-            scope is None
-            or scope.requires_clarification
-            or scope.periods
-            or self.tools.season != self.tools.release.season
-            or any(
-                season != self.tools.release.season
-                for season in re.findall(r"\b20\d{2}-\d{2}(?!-\d{2})\b", self.tools.question)
-            )
-        ):
-            return []
-        games = self.tools.selected_games(scope)
-        if is_record_request(self.tools.question) and not scope.player_ids:
-            games = [g for g in games if g.status == "final" and g.home_score != g.away_score]
-        if scope.relative_game_count:
-            games = games[-scope.relative_game_count :]
-        expected_games = {g.id for g in games}
-        discovery = re_search_discovery(self.tools.question)
-        claims = []
-        results = list(self.results)
-        if is_record_request(self.tools.question) and not scope.player_ids:
-            # Revalidated prior record totals are reusable only for the exact population.
-            results.append(
-                ToolResult(status="ok", message="", claims=list(self.tools.claims.values()))
-            )
-        for result in results:
-            for claim in result.claims:
-                if claim.release_id != self.tools.release.version:
-                    continue
-                if not claim.supporting_evidence_ids or any(
-                    ref not in self.tools.evidence
-                    or self.tools.evidence[ref].release_id != self.tools.release.version
-                    for ref in claim.supporting_evidence_ids
-                ):
-                    continue
-                if discovery:
-                    relevant = (
-                        bool(result.candidates) and set(claim.game_ids or []) <= expected_games
-                    )
-                else:
-                    subject = (
-                        claim.subject_id in {f"player:{pid}" for pid in scope.player_ids}
-                        if scope.player_ids
-                        else claim.subject_id == "team:NYK"
-                    )
-                    population = expected_games
-                    if scope.player_ids:
-                        population = {
-                            stat.game_id
-                            for stat, _ in self.tools.rows
-                            if f"player:{stat.player_id}" == claim.subject_id
-                            and stat.minutes > 0
-                            and stat.game_id in expected_games
-                        }
-                    relevant = subject and set(claim.game_ids or []) == population
-                    if scope.player_ids:
-                        relevant = relevant and claim.metric_id.split(":")[0] == (
-                            scope.metric or "points"
-                        )
-                if relevant:
-                    claims.append(claim)
-        if is_record_request(self.tools.question) and not scope.player_ids:
-            claims = [c for c in claims if c.metric_id in {"wins", "losses"}]
-            if {c.metric_id for c in claims} != {"wins", "losses"}:
-                return []
-        return list({c.claim_id: c for c in claims}.values())
+        return fallback_claims(self)
 
     async def fallback(self, reason: str) -> dict[str, Any]:
         if not self.fallback_claims() and not self.recovery_ran and self.remaining() > 0.5:
@@ -448,17 +390,6 @@ class AnalystLoop:
         }
 
 
-def re_search_discovery(question: str) -> bool:
-    import re
-
-    return bool(
-        re.search(
-            r"\b(interesting|surprising|notable|fun|another|different player)\b", question, re.I
-        )
-    )
-
-
 def re_search_live(question: str) -> bool:
-    import re
 
     return bool(re.search(r"\b(injur\w*|today|current|live|tonight)\b", question, re.I))
