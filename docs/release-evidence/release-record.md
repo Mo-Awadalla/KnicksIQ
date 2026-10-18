@@ -7,8 +7,6 @@ Deployment gate: **BLOCKED**
 Generated from release-record.json; this view is not approval evidence.
 
 - active_archive_identity: missing passing evidence for tested commit
-- retrieval_targets: missing passing evidence for tested commit
-- retrieval_filters: missing passing evidence for tested commit
 - evaluation: missing passing evidence for tested commit
 - evaluation_services_disabled: missing passing evidence for tested commit
 - production_router_contracts: missing passing evidence for tested commit
