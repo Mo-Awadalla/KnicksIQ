@@ -13,7 +13,6 @@
 **/.pyright
 **/test-results
 **/playwright-report
-apps/web_legacy_before_shadcn_admin
 graphify-out
 rag-artifacts
 release-artifacts
