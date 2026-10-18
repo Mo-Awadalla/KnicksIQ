@@ -1,10 +1,16 @@
 # Production deployment handoff
 
-## Reconciled 2026-09-28
+## Reconciled 2026-09-28 — pinned merge candidate
 
-The historical entries below are superseded by [current verification](reliability-20260928/verification.json) and [report review](report-review-20260928/README.md). PR #1 is already deployed on API/web at `98d2175`. PR #2 is merged at `e003db2`; candidate `62948ba` passed all five CI checks and final local suites. It is not deployed. Existing persistence was verified on the served frontend with mocked API responses; the new candidate also fixes a reproducible delayed-focus race.
+Use [the current gate reconciliation and smallest remaining path](preparation-20260928/README.md) and [local release record](release-record.json). Candidate is **`e003db2d7f179c8d490d90155f260ec0eeb31620`**; main still matches. Reuse successful merge CI **36472142614**, not a new run. Earlier `62948ba` local evidence remains labeled with that commit; the two trees are identical.
 
-The exact 101-report batch is owner-approved. The separately approved full read-only production audit/export completed and matches all baseline rows. A validated approved bundle and fresh local report rollback snapshot are prepared, not activated. Current data remains `2025-26.20260714.1`. Qdrant connectivity has recovered; current rollback aliases are captured. Evaluation-label approval, final environment/retrieval/staging evidence, a separately authorized provider check and launch approval remain gates. No production writes or deployments occurred in this reliability pass. Newly gathered production evidence remains local because GitHub publication was rejected and not approved.
+PR #1 remains deployed at `98d2175`; PR #2 is merged but not deployed. Report content approval and the completed read-only audit/export remain valid with their original hashes. The approved bundle is local and unactivated. Qdrant connectivity is restored; candidate index/retrieval verification is still missing. Production artifacts must remain local.
+
+A new read-only Render check confirms current DeepSeek model, $2 monthly cutoff, disabled automatic deployments, intended frontend API URL, and unchanged rollback deployment IDs. It also confirms `llm_primary`, conflicting with the gate's 10% shadow requirement. No mode change is authorized or made. Evaluation labels/rubric, provider spend, policy resolution and final staging/deployment/activation approvals remain separate. [Prepared evaluation package](preparation-20260928/evaluation-approval.md) and [bounded provider plan](preparation-20260928/provider-verification-plan.md) are ready for review.
+
+## Historical evidence — not current deployment gates
+
+All entries below retain their original dates and limitations. Their statements about old candidates, unapproved report content, unavailable Qdrant and local-only PR #1 have been superseded above. They must not be relabeled as current candidate checks.
 
 ## Conversation feature verification (2026-09-22)
 

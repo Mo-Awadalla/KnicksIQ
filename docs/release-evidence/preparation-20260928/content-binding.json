@@ -1,0 +1,50 @@
+{
+  "checked_at": "2026-09-28T19:59:03.127396+00:00",
+  "candidate": "e003db2d7f179c8d490d90155f260ec0eeb31620",
+  "reason": "Bind unchanged approved content and label sources to pinned merge without repeating prior audit or changing approval scope",
+  "report_approval_checks": {
+    "template": true,
+    "exceptions": true,
+    "report_audit": true
+  },
+  "approved_content_sha256": "c5c3c49a4233a306aed908c2740bc496a50e59315280d4d2e0f2a21f2aef98c0",
+  "approval_scope": "Exact 101-report correction content, existing policy and documented scoreboard exception only; not deployment/activation or evaluation labels",
+  "approved_review_sha256_matches": true,
+  "bundle": {
+    "status": "prepared_not_staged_or_activated",
+    "path": "release-artifacts/2025-26/reliability-approved-20260928.json.gz",
+    "sha256": "549af2edd0d195eff60bb318bdc58a8c8e217ea0359c0684d492d5292dcb595b",
+    "version": "2025-26.20260928.1",
+    "approved_input_content_sha256": "c5c3c49a4233a306aed908c2740bc496a50e59315280d4d2e0f2a21f2aef98c0",
+    "canonical_rows_unchanged": true,
+    "narrative_hashes_unchanged": true,
+    "metadata_changes": [
+      "reviewed flags",
+      "hash-bound approval map",
+      "new release version"
+    ]
+  },
+  "canonical_data_sha256": "b2ad21c69175600c3192ef6133f8c11fd63890609a8204f92508a5fb04d05170",
+  "canonical_rows_equal_label_baseline": true,
+  "hash_scope": "Seven original canonical collections; excludes reports and generated_stat_facts added by existing bundle builder",
+  "generated_stat_fact_count": 70,
+  "generated_facts_reproduced_by_existing_builder": true,
+  "approved_narrative_hashes_match": true,
+  "prior_replacement_audit_summary": {
+    "content_hashes_passed": 101,
+    "cross_period_reports": 0,
+    "passed": 101,
+    "player_lines_passed": 303,
+    "reports": 101,
+    "score_summaries_passed": 101,
+    "unresolved": 0
+  },
+  "label_sha256": "7c3c549e6a540f4ce03a3fa4ba38821ddc6f7641c9d081270cff8607ec9b007e",
+  "questions_sha256": "a546b99c36fedb59a475479016b0338fe113c4478d5165c4a5073d144ffdf482",
+  "case_count": 120,
+  "canonical_source_references_verified": 4160,
+  "all_reference_hashes_match_approved_bundle": true,
+  "reviewed_labels_owner_approved": false,
+  "runtime_mapping_verified": false,
+  "source_provenance": "Inspected tool modules match pinned candidate blobs; prior report audit remains original evidence and is not presented as newly executed."
+}

@@ -1,0 +1,84 @@
+$ playwright test --reporter=html,list
+(node:5759) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+[2m[WebServer] [22m(node:5766) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[2m[WebServer] [22m(Use `node --trace-warnings ...` to show where the warning was created)
+[2m[WebServer] [22m[2m$ tsc -b && vite build[22m
+[2m[WebServer] [22m(node:5826) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[2m[WebServer] [22m(Use `node --trace-warnings ...` to show where the warning was created)
+[2m[WebServer] [22m(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+[2m[WebServer] [22m  - `__dirname` (vite.config.ts:21:25). Use `import.meta.dirname` instead
+[2m[WebServer] [22mSet `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+[2m[WebServer] [22m(node:5826) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+[2m[WebServer] [22m(node:5832) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[2m[WebServer] [22m(Use `node --trace-warnings ...` to show where the warning was created)
+[2m[WebServer] [22m[2m$ vite preview --host 127.0.0.1 --port 4173[22m
+[2m[WebServer] [22m(node:5849) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[2m[WebServer] [22m(Use `node --trace-warnings ...` to show where the warning was created)
+[2m[WebServer] [22m(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+[2m[WebServer] [22m  - `__dirname` (vite.config.ts:21:25). Use `import.meta.dirname` instead
+[2m[WebServer] [22mSet `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+[2m[WebServer] [22m(node:5849) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+
+Running 38 tests using 4 workers
+
+(node:5866) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:5867) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:5865) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:5864) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:5866) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(node:5866) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:5867) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(node:5867) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:5865) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(node:5865) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:5864) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(node:5864) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   1 e2e/parity.spec.ts:38:3 › games: extreme page URLs do not crash pagination (705ms)
+  ✓   3 e2e/archive.spec.ts:24:1 › public archive loads and exposes policy links (1.3s)
+  ✓   2 e2e/report-sources.spec.ts:9:1 › corrected report sources expose exact intervals and use internal game IDs (1.4s)
+  ✓   4 e2e/landing.spec.ts:14:3 › landing reflows and stays accessible at 390px (1.5s)
+  ✓   6 e2e/archive.spec.ts:49:1 › chat stays locked until archive checks finish (413ms)
+  ✓   7 e2e/report-sources.spec.ts:29:1 › legacy source notes and absent optional source types do not break a report (312ms)
+  ✓   9 e2e/archive.spec.ts:71:1 › an archive question makes only the analysis request (320ms)
+  ✓  10 e2e/archive.spec.ts:106:1 › feedback form posts to the configured Formspree endpoint (79ms)
+  ✓   8 e2e/landing.spec.ts:14:3 › landing reflows and stays accessible at 735px (906ms)
+  ✓   5 e2e/parity.spec.ts:47:3 › games: server errors stay on the page and can be retried (2.1s)
+  ✓  12 e2e/parity.spec.ts:60:3 › games: item 101 and URL pagination (362ms)
+  ✓  11 e2e/landing.spec.ts:14:3 › landing reflows and stays accessible at 768px (883ms)
+  ✓  13 e2e/parity.spec.ts:71:3 › games: invalid ID stops loading (253ms)
+  ✓  15 e2e/parity.spec.ts:38:3 › reports: extreme page URLs do not crash pagination (254ms)
+  ✓  14 e2e/landing.spec.ts:14:3 › landing reflows and stays accessible at 1024px (885ms)
+  ✓  17 e2e/landing.spec.ts:14:3 › landing reflows and stays accessible at 1440px (908ms)
+  ✓  18 e2e/landing.spec.ts:32:1 › landing keyboard submission preserves newlines and recovers from a failed answer (488ms)
+  ✓  19 e2e/landing.spec.ts:61:1 › landing readiness error locks questions and offers recovery (332ms)
+  ✓  16 e2e/parity.spec.ts:47:3 › reports: server errors stay on the page and can be retried (2.2s)
+  ✓  20 e2e/parity.spec.ts:60:3 › reports: item 101 and URL pagination (413ms)
+  ✓  21 e2e/parity.spec.ts:71:3 › reports: invalid ID stops loading (306ms)
+  ✓  22 e2e/parity.spec.ts:78:1 › analyst retains full conversation across client navigation with bounded context (1.5s)
+  ✓  23 e2e/parity.spec.ts:117:1 › follow-up submits immediately and New chat clears both surfaces (613ms)
+  ✓  24 e2e/parity.spec.ts:146:1 › interrupted request retries the exact turn after reload (469ms)
+  ✓  25 e2e/parity.spec.ts:173:1 › session expiry keeps the question and retries with fresh context (301ms)
+  ✓  26 e2e/parity.spec.ts:208:1 › late response cannot restore a chat after New chat (268ms)
+  ✓  27 e2e/parity.spec.ts:229:1 › storage failure leaves chat usable and explains refresh recovery (313ms)
+  ✓  28 e2e/parity.spec.ts:245:1 › archive version change keeps history and starts fresh context (648ms)
+  ✓  29 e2e/parity.spec.ts:276:1 › stateless reply remains readable without carrying its session context (371ms)
+  ✓  30 e2e/parity.spec.ts:300:1 › readiness has a slow-start message, deadline and explicit retry (328ms)
+  ✓  31 e2e/parity.spec.ts:317:1 › game evidence failure stays distinct from empty and never requests bad stretches (2.1s)
+  ✓  32 e2e/parity.spec.ts:332:1 › away wins show the Knicks margin in the ledger and game evidence (396ms)
+  ✓  33 e2e/parity.spec.ts:346:3 › archive routes have no serious accessibility findings at 390px (1.8s)
+  ✓  34 e2e/parity.spec.ts:346:3 › archive routes have no serious accessibility findings at 1440px (2.0s)
+  ✓  35 e2e/parity.spec.ts:359:1 › corrupted storage leaves chat usable with a recovery notice (367ms)
+  ✓  36 e2e/parity.spec.ts:375:1 › sources expand into readable facts while retaining fallback warnings (394ms)
+  ✓  37 e2e/parity.spec.ts:398:3 › a delayed answer focus cannot steal the next question on / (418ms)
+  ✓  38 e2e/parity.spec.ts:398:3 › a delayed answer focus cannot steal the next question on /analyst (531ms)
+
+  38 passed (27.4s)

@@ -1,0 +1,68 @@
+{
+  "observed_at": "2026-09-28T21:25:30.667441+00:00",
+  "remote_mutations": false,
+  "database": {
+    "transaction_read_only": true,
+    "migrations": [
+      "0005_player_analytics_views"
+    ],
+    "releases": [
+      {
+        "id": 1,
+        "version": "2025-26.20260714.1",
+        "status": "active",
+        "manifest_sha256": "269b0db08fd07a1dbe53e6a388a313fe6afc04ace3cd3294dc9610c981c4b9fd",
+        "validation_passed": true
+      }
+    ]
+  },
+  "qdrant": {
+    "aliases": {
+      "knicks_box_scores": "knicks_box_scores__2025_26_20260714_1",
+      "knicks_games": "knicks_games__2025_26_20260714_1",
+      "knicks_possessions": "knicks_possessions__2025_26_20260714_1",
+      "knicks_reports": "knicks_reports__2025_26_20260714_1"
+    },
+    "retained_counts": {
+      "knicks_box_scores__2025_26_20260714_1": 2950,
+      "knicks_games__2025_26_20260714_1": 101,
+      "knicks_possessions__2025_26_20260714_1": 15864,
+      "knicks_reports__2025_26_20260714_1": 101
+    },
+    "candidate_collection_exists": {
+      "knicks_games__2025_26_20260928_1": false,
+      "knicks_reports__2025_26_20260928_1": false,
+      "knicks_box_scores__2025_26_20260928_1": false,
+      "knicks_possessions__2025_26_20260928_1": false
+    },
+    "candidate_verified": false
+  },
+  "services": {
+    "api": {
+      "auto_deploy": "no",
+      "live": [
+        {
+          "id": "dep-datb8759fdbs73b2gsq0",
+          "commit": "98d21753910b16440970d9081a2e352a4aacdb8d"
+        }
+      ]
+    },
+    "web": {
+      "auto_deploy": "no",
+      "live": [
+        {
+          "id": "dep-datb8r67bikc73csq7l0",
+          "commit": "98d21753910b16440970d9081a2e352a4aacdb8d"
+        }
+      ]
+    }
+  },
+  "headers": {
+    "api": {
+      "error_type": "HTTPError"
+    },
+    "web": {
+      "error_type": "HTTPError"
+    }
+  }
+}
