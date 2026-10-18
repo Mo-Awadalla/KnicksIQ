@@ -218,17 +218,27 @@ class AnalystLoop:
             self.sent_candidates,
             self.tools.release.version,
         ):
-            return False, "Invalid claim value, release, baseline or reference."
+            return False, (
+                "Invalid claim value, release, baseline or reference. displayed_value must equal "
+                "the claim's `value` field exactly, not the whole claim object."
+            )
         try:
             review = await self.model(
                 AnswerReview, review=True, answer=answer, timeout_seconds=timeout_seconds
             )
         except (ValueError, RuntimeError):
             return False, "Reviewer failed or returned malformed output."
-        if not validate_review(review, answer, self.sent_claims, self.sent_evidence):
+        # A reviewer sees each claim's supporting_evidence_ids, so those backend-issued
+        # receipts are legitimate citations even when the payload omitted their details.
+        reviewable = dict(self.sent_evidence)
+        for claim in self.sent_claims.values():
+            for ref in claim.supporting_evidence_ids:
+                if ref in self.tools.evidence:
+                    reviewable.setdefault(ref, self.tools.evidence[ref])
+        if not validate_review(review, answer, self.sent_claims, reviewable):
             return False, encoded(review.model_dump())
         self.accepted_suggestions = accepted_follow_ups(
-            review, answer, self.sent_claims, self.sent_evidence
+            review, answer, self.sent_claims, reviewable
         )
         return True, ""
 
