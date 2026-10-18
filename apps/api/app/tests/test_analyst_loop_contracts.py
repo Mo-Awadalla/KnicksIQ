@@ -98,7 +98,19 @@ async def test_bad_provider_output_is_retried_once_then_falls_back(
     assert result["citations"] and result["state"]["delivered_fact_ids"]
 
 
-async def test_intermittent_off_schema_action_is_retried(db_session, local_redis, monkeypatch):
+_BAD_ACTIONS = {
+    "off_schema": {
+        "action": "call_tools",
+        "tools": [{"name": "get_team_stats", "question": "q", "aggregation": "x"}],
+        "answer": None,
+    },
+    "answer_action_without_answer": {"action": "answer_from_available_evidence", "answer": None},
+    "tool_action_without_tools": {"action": "call_tools", "tools": [], "answer": None},
+}
+
+
+@pytest.mark.parametrize("bad_action", list(_BAD_ACTIONS))
+async def test_intermittent_bad_action_is_retried(db_session, local_redis, monkeypatch, bad_action):
     await local_redis.set(f"ai-budget:{datetime.now(UTC):%Y-%m}", 0)
     tools, _ = await make_tools(db_session)
 
@@ -108,13 +120,7 @@ async def test_intermittent_off_schema_action_is_retried(db_session, local_redis
         async def generate(self, **kwargs):
             if not self.failed:
                 self.failed = True
-                return json.dumps(
-                    {
-                        "action": "call_tools",
-                        "tools": [{"name": "get_team_stats", "question": "q", "aggregation": "x"}],
-                        "answer": None,
-                    }
-                )
+                return json.dumps(_BAD_ACTIONS[bad_action])
             return await super().generate(**kwargs)
 
     adapter = FlakyAdapter()
