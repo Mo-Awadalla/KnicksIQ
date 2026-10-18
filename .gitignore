@@ -61,5 +61,5 @@ release-artifacts/
 # Graphify generated output
 graphify-out/
 
-# Package-manager store and personal documents
+# Package-manager store
 .pnpm-store/
