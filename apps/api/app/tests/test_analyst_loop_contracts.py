@@ -77,7 +77,7 @@ async def test_provider_schema_growth_uses_factual_fallback(db_session, local_re
     assert result["answer"]
 
 
-async def test_bad_provider_output_counts_call_and_falls_back(
+async def test_bad_provider_output_is_retried_once_then_falls_back(
     db_session, local_redis, monkeypatch, caplog
 ):
     await local_redis.set(f"ai-budget:{datetime.now(UTC):%Y-%m}", 0)
@@ -90,12 +90,39 @@ async def test_bad_provider_output_counts_call_and_falls_back(
     monkeypatch.setattr(analyst_provider, "get_llm_adapter", BadAdapter)
     loop = AnalystLoop(tools, [])
     result = await loop.run()
-    assert not result["llm_validated"] and loop.calls == 1
+    assert not result["llm_validated"] and loop.calls == 2
     failure = next(r for r in caplog.records if r.message.startswith("analyst_execution_failed"))
     assert failure.error_type == "ValidationError"
-    assert failure.model_calls == 1
+    assert failure.model_calls == 2
     assert "invented" not in caplog.text
     assert result["citations"] and result["state"]["delivered_fact_ids"]
+
+
+async def test_intermittent_off_schema_action_is_retried(db_session, local_redis, monkeypatch):
+    await local_redis.set(f"ai-budget:{datetime.now(UTC):%Y-%m}", 0)
+    tools, _ = await make_tools(db_session)
+
+    class FlakyAdapter(ScriptedAdapter):
+        failed = False
+
+        async def generate(self, **kwargs):
+            if not self.failed:
+                self.failed = True
+                return json.dumps(
+                    {
+                        "action": "call_tools",
+                        "tools": [{"name": "get_team_stats", "question": "q", "aggregation": "x"}],
+                        "answer": None,
+                    }
+                )
+            return await super().generate(**kwargs)
+
+    adapter = FlakyAdapter()
+    monkeypatch.setattr(analyst_provider, "get_llm_adapter", lambda: adapter)
+    loop = AnalystLoop(tools, [])
+    result = await loop.run()
+    assert result["llm_validated"], result
+    assert loop.calls == 4
 
 
 async def test_release_change_drops_old_claims_and_scope_transition(db_session):

@@ -1,0 +1,110 @@
+{
+  "questions": 70,
+  "validated": 59,
+  "validated_rate": 0.843,
+  "outcomes": {
+    "validated": 59,
+    "fallback:review_rejected": 6,
+    "failed:orchestrate:ValueError": 4,
+    "failed:review:ValueError": 1
+  },
+  "by_category": {
+    "exact_statistics": {
+      "validated": 9,
+      "fallback:review_rejected": 1
+    },
+    "date_range_last_n": {
+      "validated": 9,
+      "failed:orchestrate:ValueError": 1
+    },
+    "comparisons": {
+      "validated": 9,
+      "failed:review:ValueError": 1
+    },
+    "single_game_narrative": {
+      "validated": 8,
+      "fallback:review_rejected": 2
+    },
+    "turning_points": {
+      "validated": 8,
+      "failed:orchestrate:ValueError": 2
+    },
+    "aliases_typos": {
+      "validated": 7,
+      "fallback:review_rejected": 2,
+      "failed:orchestrate:ValueError": 1
+    },
+    "unsupported": {
+      "validated": 9,
+      "fallback:review_rejected": 1
+    }
+  },
+  "not_validated": [
+    {
+      "id": "exact_statistics-010",
+      "category": "exact_statistics",
+      "question": "What was the Knicks highest-scoring game?",
+      "outcome": "fallback:review_rejected"
+    },
+    {
+      "id": "date_range_last_n-008",
+      "category": "date_range_last_n",
+      "question": "Who led the team in scoring over the last 3 games?",
+      "outcome": "failed:orchestrate:ValueError"
+    },
+    {
+      "id": "comparisons-003",
+      "category": "comparisons",
+      "question": "Did the Knicks play better against Boston or Toronto?",
+      "outcome": "failed:review:ValueError"
+    },
+    {
+      "id": "single_game_narrative-006",
+      "category": "single_game_narrative",
+      "question": "Tell the story of the closest Knicks game.",
+      "outcome": "fallback:review_rejected"
+    },
+    {
+      "id": "single_game_narrative-010",
+      "category": "single_game_narrative",
+      "question": "Why did the Knicks offense stall against Chicago?",
+      "outcome": "fallback:review_rejected"
+    },
+    {
+      "id": "turning_points-002",
+      "category": "turning_points",
+      "question": "Where did the Toronto game turn?",
+      "outcome": "failed:orchestrate:ValueError"
+    },
+    {
+      "id": "turning_points-003",
+      "category": "turning_points",
+      "question": "When did the Knicks collapse against Atlanta?",
+      "outcome": "failed:orchestrate:ValueError"
+    },
+    {
+      "id": "aliases_typos-005",
+      "category": "aliases_typos",
+      "question": "What was the Knics biggest run?",
+      "outcome": "fallback:review_rejected"
+    },
+    {
+      "id": "aliases_typos-006",
+      "category": "aliases_typos",
+      "question": "How did they do v ATL?",
+      "outcome": "failed:orchestrate:ValueError"
+    },
+    {
+      "id": "aliases_typos-010",
+      "category": "aliases_typos",
+      "question": "What was NY's worst collpase?",
+      "outcome": "fallback:review_rejected"
+    },
+    {
+      "id": "unsupported-008",
+      "category": "unsupported",
+      "question": "How will Brunson play next season?",
+      "outcome": "fallback:review_rejected"
+    }
+  ]
+}

@@ -112,7 +112,11 @@ async def run(per_category: int) -> dict:
         "validated_rate": round(validated / len(results), 3),
         "outcomes": dict(by_outcome),
         "by_category": {k: dict(v) for k, v in by_category.items()},
-        "results": results,
+        "not_validated": [
+            {k: item[k] for k in ("id", "category", "question", "outcome")}
+            for item in results
+            if item["outcome"] != "validated"
+        ],
     }
 
 
@@ -123,7 +127,7 @@ def main() -> None:
     args = parser.parse_args()
     report = asyncio.run(run(args.per_category))
     args.out.write_text(json.dumps(report, indent=2) + "\n")
-    print(json.dumps({k: v for k, v in report.items() if k != "results"}, indent=2))
+    print(json.dumps({k: v for k, v in report.items() if k != "not_validated"}, indent=2))
 
 
 if __name__ == "__main__":
