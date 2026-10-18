@@ -1,0 +1,127 @@
+{
+  "data_version": "2025-26.20260928.1",
+  "db_rows": {
+    "knicks_games": 101,
+    "knicks_reports": 101,
+    "knicks_box_scores": 2950
+  },
+  "collections": {
+    "knicks_games": {
+      "physical": "knicks_games__2025_26_20260928_1",
+      "points": 101,
+      "vector_sizes": [
+        384
+      ],
+      "filters": [
+        {
+          "filter": "game_ids",
+          "actual": 1,
+          "expected": 1
+        },
+        {
+          "filter": "dates",
+          "actual": 1,
+          "expected": 1
+        },
+        {
+          "filter": "team_ids",
+          "actual": 101,
+          "expected": 101
+        }
+      ],
+      "wrong_release_count": 0
+    },
+    "knicks_box_scores": {
+      "physical": "knicks_box_scores__2025_26_20260928_1",
+      "points": 2950,
+      "vector_sizes": [
+        384
+      ],
+      "filters": [
+        {
+          "filter": "game_ids",
+          "actual": 27,
+          "expected": 27
+        },
+        {
+          "filter": "dates",
+          "actual": 27,
+          "expected": 27
+        },
+        {
+          "filter": "team_ids",
+          "actual": 132,
+          "expected": 132
+        },
+        {
+          "filter": "player_ids",
+          "actual": 2,
+          "expected": 2
+        }
+      ],
+      "wrong_release_count": 0
+    },
+    "knicks_possessions": {
+      "physical": "knicks_possessions__2025_26_20260928_1",
+      "points": 15864,
+      "vector_sizes": [
+        384
+      ],
+      "filters": [
+        {
+          "filter": "game_ids",
+          "actual": 158,
+          "expected": 158
+        },
+        {
+          "filter": "dates",
+          "actual": 158,
+          "expected": 158
+        },
+        {
+          "filter": "team_ids",
+          "actual": 11675,
+          "expected": 11675
+        },
+        {
+          "filter": "player_ids",
+          "actual": 2982,
+          "expected": 2982
+        },
+        {
+          "filter": "periods",
+          "actual": 4082,
+          "expected": 4082
+        }
+      ],
+      "wrong_release_count": 0
+    },
+    "knicks_reports": {
+      "physical": "knicks_reports__2025_26_20260928_1",
+      "points": 101,
+      "vector_sizes": [
+        384
+      ],
+      "filters": [
+        {
+          "filter": "game_ids",
+          "actual": 1,
+          "expected": 1
+        },
+        {
+          "filter": "dates",
+          "actual": 1,
+          "expected": 1
+        },
+        {
+          "filter": "team_ids",
+          "actual": 101,
+          "expected": 101
+        }
+      ],
+      "wrong_release_count": 0
+    }
+  },
+  "passed": true,
+  "failures": []
+}

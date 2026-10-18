@@ -80,6 +80,20 @@
         "analyst_p95_ms": 777.29,
         "error_rate": 0.0
       }
+    },
+    "retrieval_targets": {
+      "status": "passed",
+      "tested_commit": "e003db2d7f179c8d490d90155f260ec0eeb31620",
+      "path": "docs/release-evidence/local-evidence-20261018/index-verification.json",
+      "sha256": "4cbdc5499ae052fc4563b49c37d71da108177a13d996bb014c703ca4d548f88a",
+      "scope": "Local Qdrant 1.18 collections built from the restored 2025-26.20260928.1 bundle with local MiniLM vectors. Point counts equal restored Postgres rows (101 games, 101 reports, 2,950 box-score facts) and every payload carries the release version and a restored game id; possessions 15,864. Not cloud inference, not remote collections, aliases not promoted."
+    },
+    "retrieval_filters": {
+      "status": "passed",
+      "tested_commit": "e003db2d7f179c8d490d90155f260ec0eeb31620",
+      "path": "docs/release-evidence/local-evidence-20261018/index-verification.json",
+      "sha256": "4cbdc5499ae052fc4563b49c37d71da108177a13d996bb014c703ca4d548f88a",
+      "scope": "One sampled value per filter (game, date, team, player, period where present) per collection: Qdrant exact count equals an independent count over scrolled payloads, none zero. Wrong-release exclusion is checked against a nonexistent version string, not a populated second release."
     }
   },
   "approvals": {
