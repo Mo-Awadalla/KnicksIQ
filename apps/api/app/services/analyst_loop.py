@@ -32,6 +32,7 @@ from app.services.evidence_contracts import (
     validate_structure,
 )
 from app.services.query_resolution import is_record_request
+from pydantic import ValidationError
 
 logger = logging.getLogger(__name__)
 
@@ -151,9 +152,19 @@ class AnalystLoop:
         finally:
             await self.settle()
 
+    async def next_action(self) -> Action:
+        try:
+            return await self.model(Action)
+        except ValidationError:
+            # The model intermittently returns an off-schema action and the same request
+            # usually succeeds. Keep two calls free for the answer and its review.
+            if self.calls > self.settings.analyst_max_model_calls - 3 or self.remaining() < 8:
+                raise
+            return await self.model(Action)
+
     async def investigate(self) -> dict[str, Any]:
         while True:
-            action = await self.model(Action)
+            action = await self.next_action()
             if action.action == "call_tools":
                 if action.answer is not None or not action.tools:
                     raise ValueError("Malformed tool action")
