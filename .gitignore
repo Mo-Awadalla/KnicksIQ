@@ -17,6 +17,9 @@ ENV/
 # uv
 .uv-cache/
 
+# JavaScript dependencies
+node_modules/
+
 # Test
 .pytest_cache/
 .coverage
@@ -57,3 +60,7 @@ release-artifacts/
 
 # Graphify generated output
 graphify-out/
+
+# Package-manager store and personal documents
+.pnpm-store/
+ID_Front_and_Back.png
