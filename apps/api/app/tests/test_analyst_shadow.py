@@ -41,8 +41,8 @@ async def test_evidence_loop_shadow_http(
     monkeypatch.setattr(settings, "analysis_shadow_sample_rate", rate)
     async with AsyncSessionLocal() as db:
         await _seed_release_stats(db)
-    if budget:
-        await local_redis.set(f"ai-budget:{datetime.now(UTC):%Y-%m}", 0)
+    spent = 0 if budget else settings.openrouter_monthly_cutoff_usd
+    await local_redis.set(f"ai-budget:{datetime.now(UTC):%Y-%m}", spent)
     adapter = ScriptedAdapter()
     original_generate = adapter.generate
 
