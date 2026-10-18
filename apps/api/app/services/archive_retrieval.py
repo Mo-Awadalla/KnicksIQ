@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import re
 import time
-from dataclasses import dataclass
 from datetime import date
 from typing import Any
 
@@ -15,6 +14,8 @@ from app.models.game import Game
 from app.models.game_event import GameEvent
 from app.models.player import Player
 from app.models.report import Report
+from app.services.archive_evidence import ArchiveEvidence as ArchiveEvidence
+from app.services.archive_evidence import _canonical_key
 from app.services.embeddings import embed_texts
 from app.services.qdrant_client import get_qdrant_client, search_collection_batch
 from app.services.retrieval_fusion import (
@@ -25,38 +26,6 @@ from sqlalchemy import String, case, cast, func, literal, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 _TOKEN_RE = re.compile(r"[a-z0-9]+")
-
-
-@dataclass(frozen=True)
-class ArchiveEvidence:
-    evidence_id: str
-    collection: str
-    text: str
-    score: float
-    metadata: dict[str, Any]
-
-
-def _canonical_key(collection: str, metadata: dict[str, Any], fallback: str) -> str:
-    game_id = metadata.get("game_id", "archive")
-    if collection == "games":
-        source_id = game_id
-    elif collection == "box_scores":
-        source_id = (
-            metadata.get("source_row_id")
-            or tuple(metadata.get("player_ids") or [])
-            or tuple(metadata.get("team_ids") or [])
-            or fallback
-        )
-    elif collection == "reports":
-        source_id = metadata.get("report_id") or metadata.get("chunk_id") or fallback
-    else:
-        source_id = (
-            metadata.get("sequence_id")
-            or metadata.get("chunk_id")
-            or metadata.get("source_row_id")
-            or fallback
-        )
-    return f"{collection}:{game_id}:{source_id}"
 
 
 def _tokens(text: str) -> set[str]:

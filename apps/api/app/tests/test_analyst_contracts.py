@@ -1,17 +1,13 @@
-"""Adversarial evidence, actual Redis races and bounded orchestration contracts."""
+"""Analyst sessions, budgets, scope and evidence validation contracts."""
 
 from __future__ import annotations
 
 import asyncio
 import json
-import shutil
-import socket
-import subprocess
 from datetime import UTC, datetime
 
 import pytest
 from app.core.config import get_settings
-from app.services import analyst_budget, analyst_loop, analyst_sessions
 from app.services.analyst_budget import BudgetReservation
 from app.services.analyst_loop import AnalystLoop
 from app.services.analyst_sessions import SessionConflict, SessionTurn
@@ -25,56 +21,12 @@ from app.services.evidence_contracts import (
     validate_review,
     validate_structure,
 )
-from app.tests.test_player_intelligence import _seed_release_stats
-from redis.asyncio import Redis
-
-
-@pytest.fixture
-async def local_redis(monkeypatch, tmp_path):
-    binary = shutil.which("redis-server")
-    if not binary:
-        pytest.skip("redis-server is required for atomic concurrency integration tests")
-    with socket.socket() as sock:
-        sock.bind(("127.0.0.1", 0))
-        port = sock.getsockname()[1]
-    process = subprocess.Popen(
-        [
-            binary,
-            "--bind",
-            "127.0.0.1",
-            "--port",
-            str(port),
-            "--save",
-            "",
-            "--appendonly",
-            "no",
-            "--dir",
-            str(tmp_path),
-        ],
-        stdout=subprocess.DEVNULL,
-        stderr=subprocess.DEVNULL,
-    )
-
-    async def connection():
-        return Redis.from_url(f"redis://127.0.0.1:{port}", socket_timeout=1)
-
-    redis = await connection()
-    try:
-        for _ in range(100):
-            try:
-                await redis.ping()
-                break
-            except ConnectionError:
-                await asyncio.sleep(0.01)
-            except Exception:
-                await asyncio.sleep(0.01)
-        for module in (analyst_budget, analyst_sessions):
-            monkeypatch.setattr(module, "_redis", connection)
-        yield redis
-    finally:
-        await redis.aclose()
-        process.terminate()
-        process.wait(timeout=5)
+from app.tests.support.analyst_protocol import (
+    local_redis as local_redis,
+)
+from app.tests.support.analyst_protocol import (
+    make_tools,
+)
 
 
 async def test_session_race_replay_conflict_and_atomic_commit(local_redis):
@@ -119,13 +71,6 @@ async def test_atomic_budget_never_resets_missing_ledger(local_redis, monkeypatc
     assert float(await local_redis.get(key)) == pytest.approx(0.065)
     await local_redis.delete(key)
     assert await BudgetReservation.reserve(0.001) is None
-
-
-async def make_tools(db, question="Give me an interesting stat", state=None):
-    release, player = await _seed_release_stats(db)
-    tools = AnalystTools(db, release, question, release.season, state or {})
-    await tools.prepare()
-    return tools, player
 
 
 async def test_populations_and_scope_cannot_be_changed_by_model(db_session):
@@ -217,161 +162,6 @@ async def test_full_answer_review_fails_closed(db_session, change):
     assert not validate_review(review, answer, tools.claims, tools.evidence)
 
 
-class ScriptedAdapter:
-    """Protocol fixture, deliberately not an evaluation of model quality."""
-
-    def __init__(self):
-        self.max_tokens = 0
-        self.last_metadata = {"usage": {"cost": 0}, "provider": "protocol-fixture"}
-        self.prompts = []
-
-    async def generate(self, *, system, user):
-        payload = json.loads(user)
-        self.prompts.append(payload)
-        if payload["schema"]["title"] == "AnswerReview":
-            answer = payload["proposed_answer"]
-            return json.dumps(
-                {
-                    "assertions": [
-                        {
-                            "text": answer["text"],
-                            "verdict": "supported",
-                            "assertion_type": "factual",
-                            "offending_text": None,
-                            "supporting_claim_ids": [c["claim_id"] for c in answer["claims"]],
-                            "supporting_evidence_ids": [],
-                            "reason": "Matches backend claims.",
-                        }
-                    ]
-                }
-            )
-        if not payload["claims"]:
-            return json.dumps(
-                {
-                    "action": "call_tools",
-                    "tools": [{"name": "discover_facts", "question": payload["question"]}],
-                    "answer": None,
-                }
-            )
-        candidate = next(iter(payload["candidates"]), None)
-        claims = (
-            [c for c in payload["claims"] if c["claim_id"] in candidate["claim_ids"]]
-            if candidate
-            else payload["claims"][:1]
-        )
-        return json.dumps(
-            {
-                "action": "answer_from_available_evidence",
-                "tools": [],
-                "answer": {
-                    "text": " ".join(c["statement"] for c in claims),
-                    "claims": [
-                        {"claim_id": c["claim_id"], "displayed_value": c["value"]} for c in claims
-                    ],
-                    "evidence_ids": [],
-                    "fact_ids": [candidate["fact_id"]] if candidate else [],
-                },
-            }
-        )
-
-
-async def test_bounded_loop_and_revalidated_explanation(db_session, local_redis, monkeypatch):
-    await local_redis.set(f"ai-budget:{datetime.now(UTC):%Y-%m}", 0)
-    tools, _ = await make_tools(db_session)
-    adapter = ScriptedAdapter()
-    monkeypatch.setattr(analyst_loop, "get_llm_adapter", lambda: adapter)
-    loop = AnalystLoop(tools, [])
-    response = await loop.run()
-    assert response["llm_validated"], response
-    assert loop.calls == 3 and loop.rounds == 1
-    assert response["citations"]
-    assert response["state"]["delivered_fact_ids"]
-    assert "context" not in adapter.prompts[-1]
-    followup = AnalystTools(
-        db_session,
-        tools.release,
-        "Why is that interesting?",
-        tools.release.season,
-        response["state"],
-    )
-    await followup.prepare()
-    loop2 = AnalystLoop(followup, [])
-    result = await loop2.run()
-    assert result["llm_validated"] and loop2.calls == 2 and loop2.rounds == 0
-
-
-async def test_ten_short_prior_messages_still_reach_writer(db_session, local_redis, monkeypatch):
-    await local_redis.set(f"ai-budget:{datetime.now(UTC):%Y-%m}", 0)
-    tools, _ = await make_tools(db_session)
-    adapter = ScriptedAdapter()
-    monkeypatch.setattr(analyst_loop, "get_llm_adapter", lambda: adapter)
-    context = [
-        {"role": "user" if index % 2 == 0 else "assistant", "content": f"Turn {index}"}
-        for index in range(10)
-    ]
-    result = await AnalystLoop(tools, context).run()
-    assert result["llm_validated"], result
-    assert adapter.prompts[0]["context"] == context
-
-
-async def test_provider_schema_growth_uses_factual_fallback(db_session, local_redis, monkeypatch):
-    await local_redis.set(f"ai-budget:{datetime.now(UTC):%Y-%m}", 0)
-    monkeypatch.setattr(get_settings(), "analyst_provider_format", "json_schema")
-    tools, _ = await make_tools(db_session)
-
-    class SchemaAdapter(ScriptedAdapter):
-        response_schema: dict | None = None
-
-    adapter = SchemaAdapter()
-    monkeypatch.setattr(analyst_loop, "get_llm_adapter", lambda: adapter)
-    result = await AnalystLoop(tools, []).run()
-    assert not result["llm_validated"]
-    assert len(adapter.prompts) == 1
-    assert result["answer"]
-
-
-async def test_bad_provider_output_counts_call_and_falls_back(
-    db_session, local_redis, monkeypatch, caplog
-):
-    await local_redis.set(f"ai-budget:{datetime.now(UTC):%Y-%m}", 0)
-    tools, _ = await make_tools(db_session)
-
-    class BadAdapter:
-        async def generate(self, **kwargs):
-            return '{"action":"invented"}'
-
-    monkeypatch.setattr(analyst_loop, "get_llm_adapter", BadAdapter)
-    loop = AnalystLoop(tools, [])
-    result = await loop.run()
-    assert not result["llm_validated"] and loop.calls == 1
-    failure = next(r for r in caplog.records if r.message.startswith("analyst_execution_failed"))
-    assert failure.error_type == "ValidationError"
-    assert failure.model_calls == 1
-    assert "invented" not in caplog.text
-    assert result["citations"] and result["state"]["delivered_fact_ids"]
-
-
-async def test_release_change_drops_old_claims_and_scope_transition(db_session):
-    tools, player = await make_tools(db_session, "Brunson points")
-    result = await tools.execute(ToolCall(name="get_player_stats", question=tools.question))
-    state = {
-        "release": "superseded",
-        "claims": [c.model_dump() for c in result.claims],
-        "evidence": [e.model_dump() for e in result.evidence],
-        "scope": {"player_ids": [player.id]},
-        "delivered_fact_ids": ["old"],
-    }
-    current = AnalystTools(
-        db_session, tools.release, "Now only playoff games", tools.release.season, state
-    )
-    await current.prepare()
-    assert not current.claims and not current.evidence
-    assert current.scope is not None
-    assert current.scope.player_ids == [player.id]
-    assert current.scope.season_type == "playoffs"
-    assert not current.state["delivered_fact_ids"]
-
-
 async def test_missing_rows_are_incomplete_not_nonappearances(db_session):
     from app.models.box_score import PlayerGameStat
     from sqlalchemy import delete
@@ -409,7 +199,7 @@ async def test_whole_records_fit_budget_and_provenance_is_resolvable(db_session)
     result = await tools.execute(ToolCall(name="discover_facts", question=tools.question))
     loop = AnalystLoop(tools, [])
     loop.results.append(result)
-    from app.services.analyst_loop import encoded, token_upper_bound
+    from app.services.analyst_provider import encoded, token_upper_bound
     from app.services.evidence_contracts import Action
 
     payload = loop.payload(Action)
@@ -458,7 +248,7 @@ async def test_review_spans_preserve_decimal_punctuation_and_full_coverage(db_se
 async def test_scoped_schema_rejects_invented_ids_and_partial_claim_values(db_session):
     from copy import deepcopy
 
-    from app.services.analyst_loop import scoped_response_schema
+    from app.services.analyst_provider import scoped_response_schema
     from app.services.evidence_contracts import Action
     from jsonschema import Draft202012Validator
 
@@ -495,180 +285,6 @@ async def test_scoped_schema_rejects_invented_ids_and_partial_claim_values(db_se
     assert not validator.is_valid(wrong)
     # The ordinary schema remains reusable and is not mutated by release-scoping.
     assert "enum" not in Action.model_json_schema()["$defs"]["ClaimUse"]
-
-
-@pytest.mark.parametrize("request_timeout", [1.0, 20.0])
-async def test_repair_is_rechecked_and_never_investigates(
-    db_session, local_redis, monkeypatch, request_timeout
-):
-    monkeypatch.setattr(get_settings(), "ai_request_timeout_seconds", request_timeout)
-    await local_redis.set(f"ai-budget:{datetime.now(UTC):%Y-%m}", 0)
-    tools, _ = await make_tools(db_session)
-
-    class RepairAdapter(ScriptedAdapter):
-        async def generate(self, *, system, user):
-            payload = json.loads(user)
-            if payload["schema"]["title"] == "ProposedAnswer":
-                self.prompts.append(payload)
-                answer = payload["proposed_answer"]
-                answer["text"] = answer["text"].replace(" A new tactic caused this.", "")
-                return json.dumps(answer)
-            raw = await super().generate(system=system, user=user)
-            value = json.loads(raw)
-            if payload["schema"]["title"] == "Action" and value.get("answer"):
-                value["answer"]["text"] += " A new tactic caused this."
-            if (
-                payload["schema"]["title"] == "AnswerReview"
-                and "tactic" in payload["proposed_answer"]["text"]
-            ):
-                value["assertions"][0].update(
-                    verdict="unsupported",
-                    offending_text="A new tactic caused this.",
-                    reason="No causal source.",
-                )
-            return json.dumps(value)
-
-    adapter = RepairAdapter()
-    monkeypatch.setattr(analyst_loop, "get_llm_adapter", lambda: adapter)
-    loop = AnalystLoop(tools, [])
-    result = await loop.run()
-    assert result["llm_validated"], result
-    assert "tactic" not in result["answer"]
-    assert loop.calls == 5 and loop.rounds == 1
-    assert [p["schema"]["title"] for p in adapter.prompts][-2:] == [
-        "ProposedAnswer",
-        "AnswerReview",
-    ]
-
-
-async def test_route_commits_replays_and_ignores_client_authority(client, local_redis, monkeypatch):
-    from app.core.db import AsyncSessionLocal
-
-    settings = get_settings()
-    monkeypatch.setattr(settings, "analyst_evidence_loop_enabled", True)
-    monkeypatch.setattr(settings, "analysis_answer_mode", "llm_primary")
-    await local_redis.set(f"ai-budget:{datetime.now(UTC):%Y-%m}", 0)
-    async with AsyncSessionLocal() as db:
-        await _seed_release_stats(db)
-    adapter = ScriptedAdapter()
-    monkeypatch.setattr(analyst_loop, "get_llm_adapter", lambda: adapter)
-    request = {
-        "question": "Give me an interesting stat",
-        "turn_id": "integration-turn-0001",
-        "expected_revision": 0,
-        "conversation_state": {"player_ids": [999]},
-    }
-    first = await client.post("/analysis/query", json=request)
-    assert first.status_code == 200
-    response = first.json()
-    assert response["state_committed"] and response["revision"] == 1
-    assert response["llm_validated"]
-    replay = await client.post("/analysis/query", json=request)
-    assert replay.json() == response
-    assert len(adapter.prompts) == 3
-    conflict = await client.post("/analysis/query", json={**request, "question": "Different input"})
-    assert conflict.status_code == 409
-    second = await client.post(
-        "/analysis/query",
-        json={
-            "question": "Why is that interesting?",
-            "turn_id": "integration-turn-0002",
-            "session_token": response["session_token"],
-            "expected_revision": 1,
-        },
-    )
-    assert second.json()["llm_validated"] and second.json()["revision"] == 2
-    assert len(adapter.prompts) == 5
-
-
-async def test_redis_failure_gives_explicit_stateless_facts(client, monkeypatch):
-    from app.core.db import AsyncSessionLocal
-
-    monkeypatch.setattr(get_settings(), "analyst_evidence_loop_enabled", True)
-
-    async def unavailable():
-        return None
-
-    monkeypatch.setattr(analyst_sessions, "_redis", unavailable)
-    async with AsyncSessionLocal() as db:
-        await _seed_release_stats(db)
-    response = (
-        await client.post(
-            "/analysis/query", json={"question": "Brunson points", "turn_id": "stateless-turn-0001"}
-        )
-    ).json()
-    assert not response["state_committed"] and response["session_token"] is None
-    assert not response["llm_validated"] and response["citations"]
-    assert any("Stateless" in warning for warning in response["warnings"])
-
-
-async def test_six_turn_conversation_protocol(client, local_redis, monkeypatch):
-    """State/evidence protocol only; actual-provider acceptance is a separate blocked gate."""
-    from app.core.db import AsyncSessionLocal
-    from app.models.game import Game
-    from sqlalchemy import select
-
-    monkeypatch.setattr(get_settings(), "analyst_evidence_loop_enabled", True)
-    monkeypatch.setattr(get_settings(), "analysis_answer_mode", "llm_primary")
-    await local_redis.set(f"ai-budget:{datetime.now(UTC):%Y-%m}", 0)
-    async with AsyncSessionLocal() as db:
-        release, _ = await _seed_release_stats(db)
-        game = (
-            await db.execute(
-                select(Game)
-                .where(Game.release_id == release.id)
-                .order_by(Game.game_date.desc())
-                .limit(1)
-            )
-        ).scalar_one()
-        game.season_type = "playoffs"
-        await db.commit()
-
-    class ConversationAdapter(ScriptedAdapter):
-        async def generate(self, *, system, user):
-            raw = await super().generate(system=system, user=user)
-            payload, value = json.loads(user), json.loads(raw)
-            if payload["schema"]["title"] == "Action" and value.get("answer"):
-                question = payload["question"]
-                if "prove" in question:
-                    value["answer"]["text"] += (
-                        " A single observation does not prove overall improvement."
-                    )
-                if "injured" in question:
-                    value["answer"]["text"] += " I don't have live injury updates."
-            return json.dumps(value)
-
-    adapter = ConversationAdapter()
-    monkeypatch.setattr(analyst_loop, "get_llm_adapter", lambda: adapter)
-    questions = [
-        "Give me an interesting stat.",
-        "Why is that interesting?",
-        "Another one, but about a different player.",
-        "Now only playoff games.",
-        "Does that prove he was playing better?",
-        "Is he injured today, and how did he perform in the archived playoffs?",
-    ]
-    response, outputs = {}, []
-    for index, question in enumerate(questions):
-        request = {
-            "question": question,
-            "turn_id": f"six-turn-protocol-{index:03}",
-            "session_token": response.get("session_token"),
-            "expected_revision": response.get("revision", 0),
-        }
-        http = await client.post("/analysis/query", json=request)
-        assert http.status_code == 200, http.text
-        response = http.json()
-        assert response["llm_validated"], response
-        assert response["state_committed"] and response["revision"] == index + 1
-        outputs.append(response)
-    first = outputs[0]["citations"][0]["metadata"]["claim"]
-    different = outputs[2]["citations"][0]["metadata"]["claim"]
-    assert first["subject_id"] != different["subject_id"]
-    assert outputs[3]["citations"][0]["metadata"]["claim"]["season_type"] == "playoffs"
-    assert "does not prove" in outputs[4]["answer"]
-    assert "don't have live injury" in outputs[5]["answer"]
-    assert outputs[5]["citations"]
 
 
 async def test_catalog_preserves_baselines_and_qualifier_population(db_session, monkeypatch):

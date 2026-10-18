@@ -12,13 +12,9 @@ from app.services.possession_chunks import (
 )
 from app.services.query_classifier import classify_query
 from app.services.rag import build_metadata_filters, search_possession_chunks
-from app.services.table_rag import (
-    TABLE_RAG_TIMEOUT_SECONDS,
-    TableRagSandboxError,
-    _dedupe_games,
-    answer_table_question,
-    validate_table_expression,
-)
+from app.services.table_rag import TABLE_RAG_TIMEOUT_SECONDS, answer_table_question
+from app.services.table_rag_games import _dedupe_games
+from app.services.table_rag_sandbox import TableRagSandboxError, validate_table_expression
 from sqlalchemy import text
 
 

@@ -10,8 +10,8 @@ from app.models.game import Game
 from app.services.analyst_loop import AnalystLoop
 from app.services.analyst_tools import AnalystTools
 from app.services.evidence_contracts import ToolCall
-from app.tests.test_analyst_contracts import local_redis  # noqa: F401
-from app.tests.test_player_intelligence import _seed_release_stats
+from app.tests.support.analyst_protocol import local_redis  # noqa: F401
+from app.tests.support.player_archive import _seed_release_stats
 from sqlalchemy import select
 
 
