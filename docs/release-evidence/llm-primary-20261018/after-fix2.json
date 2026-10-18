@@ -1,0 +1,325 @@
+{
+  "questions": 35,
+  "validated": 21,
+  "validated_rate": 0.6,
+  "outcomes": {
+    "validated": 21,
+    "fallback:review_rejected": 9,
+    "failed:review:ValueError": 3,
+    "failed:orchestrate:ValueError": 2
+  },
+  "by_category": {
+    "exact_statistics": {
+      "validated": 4,
+      "fallback:review_rejected": 1
+    },
+    "date_range_last_n": {
+      "validated": 5
+    },
+    "comparisons": {
+      "validated": 3,
+      "failed:review:ValueError": 1,
+      "failed:orchestrate:ValueError": 1
+    },
+    "single_game_narrative": {
+      "failed:review:ValueError": 1,
+      "fallback:review_rejected": 1,
+      "validated": 3
+    },
+    "turning_points": {
+      "validated": 2,
+      "failed:orchestrate:ValueError": 1,
+      "failed:review:ValueError": 1,
+      "fallback:review_rejected": 1
+    },
+    "aliases_typos": {
+      "validated": 4,
+      "fallback:review_rejected": 1
+    },
+    "unsupported": {
+      "fallback:review_rejected": 5
+    }
+  },
+  "results": [
+    {
+      "id": "exact_statistics-001",
+      "category": "exact_statistics",
+      "question": "What was the Knicks record this season?",
+      "http": 200,
+      "outcome": "validated",
+      "answer": "In the available 2025-26 archive, the Knicks went 69-32 across 101 games."
+    },
+    {
+      "id": "exact_statistics-002",
+      "category": "exact_statistics",
+      "question": "How many total points did the Knicks score?",
+      "http": 200,
+      "outcome": "validated",
+      "answer": "I can't give the Knicks' total points from the available evidence. The only team total I have is 69 wins across 101 archived games; no team points total was returned, and the single game score shown ("
+    },
+    {
+      "id": "exact_statistics-003",
+      "category": "exact_statistics",
+      "question": "What was the Knicks average score per game?",
+      "http": 200,
+      "outcome": "fallback:review_rejected",
+      "answer": "Knicks wins: 69 over 101 archived games. Knicks losses: 32 over 101 archived games. Knicks points: 11750 over 101 archived games."
+    },
+    {
+      "id": "exact_statistics-004",
+      "category": "exact_statistics",
+      "question": "What was the Knicks average margin?",
+      "http": 200,
+      "outcome": "validated",
+      "answer": "I can't give the Knicks' average margin from the available evidence. The archive provides a team total of 69 wins across 101 games, but no margin value or per-game scoring totals to compute an average"
+    },
+    {
+      "id": "exact_statistics-005",
+      "category": "exact_statistics",
+      "question": "How many home games did the Knicks win?",
+      "http": 200,
+      "outcome": "validated",
+      "answer": "The Knicks won 37 home games in the available 2025-26 archive."
+    },
+    {
+      "id": "date_range_last_n-001",
+      "category": "date_range_last_n",
+      "question": "What was the Knicks record in their last 5 games?",
+      "http": 200,
+      "outcome": "validated",
+      "answer": "Over their last 5 archived games (2025-26 playoffs), the Knicks went 4-1."
+    },
+    {
+      "id": "date_range_last_n-002",
+      "category": "date_range_last_n",
+      "question": "How many points did the Knicks average in their last 10 games?",
+      "http": 200,
+      "outcome": "validated",
+      "answer": "I can't answer that from the available evidence. The archive returned Knicks team totals for the last 10 games (games 92\u2013101), but the only claims provided are wins (9) and losses (1) \u2014 no points tota"
+    },
+    {
+      "id": "date_range_last_n-003",
+      "category": "date_range_last_n",
+      "question": "What was Brunson's scoring average over his last 5 games?",
+      "http": 200,
+      "outcome": "validated",
+      "answer": "Jalen Brunson averaged 32.6 points per game over his last 5 games (2025-26 playoffs, June 3\u201313, 2026)."
+    },
+    {
+      "id": "date_range_last_n-004",
+      "category": "date_range_last_n",
+      "question": "How did the Knicks perform from January 1 through January 31?",
+      "http": 200,
+      "outcome": "validated",
+      "answer": "In the available archive for January 2\u201330, 2026, the Knicks went 7-8 across 15 games."
+    },
+    {
+      "id": "date_range_last_n-005",
+      "category": "date_range_last_n",
+      "question": "What was their record after the All-Star break?",
+      "http": 200,
+      "outcome": "validated",
+      "answer": "I can't answer that from the available evidence. The archive doesn't include a team win-loss record split by the All-Star break, and the only retrieved item is a single-game box score (Jalen Brunson's"
+    },
+    {
+      "id": "comparisons-001",
+      "category": "comparisons",
+      "question": "Compare the Knicks' offense at home and on the road.",
+      "http": 200,
+      "outcome": "validated",
+      "answer": "I can't complete this comparison: the archive data available to me is scoped to Knicks home games only, so I have no road-game sample to contrast against. The retrieved results are team totals for the"
+    },
+    {
+      "id": "comparisons-002",
+      "category": "comparisons",
+      "question": "Compare Brunson and Towns as scorers this season.",
+      "http": 200,
+      "outcome": "validated",
+      "answer": "I can't fully compare Brunson and Towns as scorers this season: the available evidence only includes one game for Brunson (47 points, 3 rebounds, 8 assists, 0 turnovers on 2025-12-21 vs MIA), and no s"
+    },
+    {
+      "id": "comparisons-003",
+      "category": "comparisons",
+      "question": "Did the Knicks play better against Boston or Toronto?",
+      "http": 200,
+      "outcome": "failed:review:ValueError",
+      "answer": "Knicks wins: 69 over 101 archived games. Knicks losses: 32 over 101 archived games. Knicks points: 11750 over 101 archived games."
+    },
+    {
+      "id": "comparisons-004",
+      "category": "comparisons",
+      "question": "Compare their first 10 games with their last 10 games.",
+      "http": 200,
+      "outcome": "failed:orchestrate:ValueError",
+      "answer": "Knicks wins: 9 over 10 archived games. Knicks losses: 1 over 10 archived games. Knicks points: 1141 over 10 archived games."
+    },
+    {
+      "id": "comparisons-005",
+      "category": "comparisons",
+      "question": "Compare wins and losses by average turnover count.",
+      "http": 200,
+      "outcome": "validated",
+      "answer": "Which Knicks player's turnovers would you like compared between wins and losses?"
+    },
+    {
+      "id": "single_game_narrative-001",
+      "category": "single_game_narrative",
+      "question": "How did the Knicks lose the lead against Boston?",
+      "http": 200,
+      "outcome": "failed:review:ValueError",
+      "answer": "Knicks wins: 3 over 4 archived games. Knicks losses: 1 over 4 archived games. Knicks points: 445 over 4 archived games."
+    },
+    {
+      "id": "single_game_narrative-002",
+      "category": "single_game_narrative",
+      "question": "What decided the Knicks game against Toronto?",
+      "http": 200,
+      "outcome": "fallback:review_rejected",
+      "answer": "Which subject did you mean? 2025-11-30: TOR at NYK; 2025-12-09: NYK at TOR; 2026-01-28: NYK at TOR; 2026-03-03: NYK at TOR; 2026-04-10: TOR at NYK"
+    },
+    {
+      "id": "single_game_narrative-003",
+      "category": "single_game_narrative",
+      "question": "Walk me through the fourth quarter against Atlanta.",
+      "http": 200,
+      "outcome": "validated",
+      "answer": "I can't walk through the fourth quarter against Atlanta: the available calculations support full-game box scores only, so quarter-by-quarter detail isn't available. I can instead summarize full-game s"
+    },
+    {
+      "id": "single_game_narrative-004",
+      "category": "single_game_narrative",
+      "question": "Why did the Knicks win the Chicago game?",
+      "http": 200,
+      "outcome": "validated",
+      "answer": "Which Knicks\u2013Chicago game do you mean: 2025-11-02 (CHI at NYK), 2026-02-22 (NYK at CHI), or 2026-04-03 (CHI at NYK)?"
+    },
+    {
+      "id": "single_game_narrative-005",
+      "category": "single_game_narrative",
+      "question": "What changed after halftime against Charlotte?",
+      "http": 200,
+      "outcome": "validated",
+      "answer": "The archive doesn't have halftime-split data, so I can't show what changed after halftime. The available evidence is a full-game line: Karl-Anthony Towns recorded 35 points, 18 rebounds, 5 assists and"
+    },
+    {
+      "id": "turning_points-001",
+      "category": "turning_points",
+      "question": "What was the Knicks' biggest scoring run against Boston?",
+      "http": 200,
+      "outcome": "validated",
+      "answer": "The available data doesn't include scoring-run (play-by-play run) information, so I can't give the Knicks' biggest scoring run against Boston. The closest available figure is a single-game scoring mar"
+    },
+    {
+      "id": "turning_points-002",
+      "category": "turning_points",
+      "question": "Where did the Toronto game turn?",
+      "http": 200,
+      "outcome": "failed:orchestrate:ValueError",
+      "answer": "Which subject did you mean? 2025-11-30: TOR at NYK; 2025-12-09: NYK at TOR; 2026-01-28: NYK at TOR; 2026-03-03: NYK at TOR; 2026-04-10: TOR at NYK"
+    },
+    {
+      "id": "turning_points-003",
+      "category": "turning_points",
+      "question": "When did the Knicks collapse against Atlanta?",
+      "http": 200,
+      "outcome": "failed:review:ValueError",
+      "answer": "Knicks wins: 6 over 9 archived games. Knicks losses: 3 over 9 archived games. Knicks points: 1042 over 9 archived games."
+    },
+    {
+      "id": "turning_points-004",
+      "category": "turning_points",
+      "question": "What run broke open the Chicago game?",
+      "http": 200,
+      "outcome": "fallback:review_rejected",
+      "answer": "Which subject did you mean? 2025-10-31: NYK at CHI; 2025-11-02: CHI at NYK; 2026-02-22: NYK at CHI; 2026-04-03: CHI at NYK"
+    },
+    {
+      "id": "turning_points-005",
+      "category": "turning_points",
+      "question": "How did the Knicks erase their largest deficit?",
+      "http": 200,
+      "outcome": "validated",
+      "answer": "The archive doesn't contain play-by-play or deficit data, so I can't show how the Knicks erased a specific deficit. The closest available evidence is a game where New York beat Miami 132-125 on 2025-1"
+    },
+    {
+      "id": "aliases_typos-001",
+      "category": "aliases_typos",
+      "question": "How did NYK do vs BOS?",
+      "http": 200,
+      "outcome": "validated",
+      "answer": "In the available 2025-26 regular-season archive, the Knicks went 3-1 against Boston across 4 games. One example: on 2025-10-24, New York beat Boston 105-95 at home."
+    },
+    {
+      "id": "aliases_typos-002",
+      "category": "aliases_typos",
+      "question": "What happened agianst the Celts?",
+      "http": 200,
+      "outcome": "validated",
+      "answer": "Against Boston on 2025-12-02, Mikal Bridges scored 35 points with 6 rebounds, 3 assists and 0 turnovers in 33.6 minutes, hitting 8 threes. The Knicks lost that game 123-117 on the road."
+    },
+    {
+      "id": "aliases_typos-003",
+      "category": "aliases_typos",
+      "question": "How did JB play in that game?",
+      "http": 200,
+      "outcome": "fallback:review_rejected",
+      "answer": "No archived games match this scope; this is not evidence that no such games occurred."
+    },
+    {
+      "id": "aliases_typos-004",
+      "category": "aliases_typos",
+      "question": "Tell me about KAT vs the Raps.",
+      "http": 200,
+      "outcome": "validated",
+      "answer": "In the available archive, Karl-Anthony Towns' game against Toronto on 2026-03-03 stands out: 21 points, 12 rebounds, 6 assists and 3 turnovers in about 29 minutes, with a +7 plus-minus as New York won"
+    },
+    {
+      "id": "aliases_typos-005",
+      "category": "aliases_typos",
+      "question": "What was the Knics biggest run?",
+      "http": 200,
+      "outcome": "validated",
+      "answer": "I can't answer that as asked: \"biggest run\" (a scoring run within a game) isn't a metric in this release, and the archive here covers box scores and game scores, not play-by-play run data. The closest"
+    },
+    {
+      "id": "unsupported-001",
+      "category": "unsupported",
+      "question": "What is the live score tonight?",
+      "http": 200,
+      "outcome": "fallback:review_rejected",
+      "answer": "Knicks wins: 69 over 101 archived games. Knicks losses: 32 over 101 archived games. Knicks points: 11750 over 101 archived games. I don't have live injury or current-status updates."
+    },
+    {
+      "id": "unsupported-002",
+      "category": "unsupported",
+      "question": "Will the Knicks win their next game?",
+      "http": 200,
+      "outcome": "fallback:review_rejected",
+      "answer": "Knicks wins: 69 over 69 archived games. Knicks losses: 0 over 69 archived games. Knicks points: 8329 over 69 archived games."
+    },
+    {
+      "id": "unsupported-003",
+      "category": "unsupported",
+      "question": "Who is injured today?",
+      "http": 200,
+      "outcome": "fallback:review_rejected",
+      "answer": "Knicks wins: 69 over 101 archived games. Knicks losses: 32 over 101 archived games. Knicks points: 11750 over 101 archived games. I don't have live injury or current-status updates."
+    },
+    {
+      "id": "unsupported-004",
+      "category": "unsupported",
+      "question": "What trade should the Knicks make tomorrow?",
+      "http": 200,
+      "outcome": "fallback:review_rejected",
+      "answer": "Knicks wins: 69 over 101 archived games. Knicks losses: 32 over 101 archived games. Knicks points: 11750 over 101 archived games."
+    },
+    {
+      "id": "unsupported-005",
+      "category": "unsupported",
+      "question": "Show possessions from 2099-01-01.",
+      "http": 200,
+      "outcome": "fallback:review_rejected",
+      "answer": "No archived games match this scope; this is not evidence that no such games occurred."
+    }
+  ]
+}

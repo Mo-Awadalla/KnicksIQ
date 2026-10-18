@@ -6,7 +6,7 @@ import hashlib
 import json
 from typing import Any, Literal
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 CONTRACT_VERSION = "analyst-evidence-v1"
 PROMPT_VERSION = "analyst-balanced-v2"
@@ -95,6 +95,9 @@ class ToolResult(Contract):
     scope: dict[str, Any] = Field(default_factory=dict)
 
 
+PLAYER_METRIC_TOOLS = frozenset({"get_player_stats", "compare_windows"})
+
+
 class ToolCall(Contract):
     name: Literal[
         "get_player_stats",
@@ -122,6 +125,15 @@ class ToolCall(Contract):
     aggregation: Literal["average", "total"] = "average"
     baseline_question: str | None = Field(default=None, max_length=1200)
     evidence_ids: list[str] = Field(default_factory=list, max_length=20)
+
+    @model_validator(mode="before")
+    @classmethod
+    def _metric_only_for_player_tools(cls, data: Any) -> Any:
+        # Only player calculations read `metric`; models also send team words such as "wins"
+        # to the other tools, which ignore it. Rejecting those would abort the whole turn.
+        if isinstance(data, dict) and data.get("name") not in PLAYER_METRIC_TOOLS:
+            data = {key: value for key, value in data.items() if key != "metric"}
+        return data
 
 
 class ClaimUse(Contract):
