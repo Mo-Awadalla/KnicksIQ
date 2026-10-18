@@ -1,0 +1,100 @@
+#0 building with "desktop-linux" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile.api
+#1 transferring dockerfile: 1.65kB done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for ghcr.io/astral-sh/uv:0.8.6
+#2 ...
+
+#3 [internal] load metadata for docker.io/library/python:3.12.11-slim-bookworm
+#3 DONE 0.6s
+
+#2 [internal] load metadata for ghcr.io/astral-sh/uv:0.8.6
+#2 DONE 0.8s
+
+#4 [internal] load .dockerignore
+#4 transferring context: 302B done
+#4 DONE 0.0s
+
+#5 [uv 1/1] FROM ghcr.io/astral-sh/uv:0.8.6@sha256:6d9911b9f5703ed5f570d8032f2bfacc524e12f77d88e1e8f39eec742811a983
+#5 resolve ghcr.io/astral-sh/uv:0.8.6@sha256:6d9911b9f5703ed5f570d8032f2bfacc524e12f77d88e1e8f39eec742811a983 0.0s done
+#5 DONE 0.0s
+
+#6 [runtime  1/16] FROM docker.io/library/python:3.12.11-slim-bookworm@sha256:519591d6871b7bc437060736b9f7456b8731f1499a57e22e6c285135ae657bf7
+#6 resolve docker.io/library/python:3.12.11-slim-bookworm@sha256:519591d6871b7bc437060736b9f7456b8731f1499a57e22e6c285135ae657bf7 0.0s done
+#6 DONE 0.0s
+
+#7 [internal] load build context
+#7 transferring context: 1.48MB 0.0s done
+#7 DONE 0.1s
+
+#8 [runtime  7/16] COPY apps/worker/pyproject.toml apps/worker/pyproject.toml
+#8 CACHED
+
+#9 [runtime  3/16] WORKDIR /app
+#9 CACHED
+
+#10 [runtime  2/16] COPY --from=uv /uv /uvx /bin/
+#10 CACHED
+
+#11 [runtime  4/16] RUN apt-get update     && apt-get upgrade -y     && rm -rf /var/lib/apt/lists/*
+#11 CACHED
+
+#12 [runtime  5/16] COPY pyproject.toml uv.lock ./
+#12 CACHED
+
+#13 [runtime  8/16] COPY apps/mcp/pyproject.toml apps/mcp/pyproject.toml
+#13 CACHED
+
+#14 [runtime  6/16] COPY apps/api/pyproject.toml apps/api/pyproject.toml
+#14 CACHED
+
+#15 [runtime  9/16] COPY packages/basketball-core/pyproject.toml packages/basketball-core/pyproject.toml
+#15 CACHED
+
+#16 [runtime 10/16] RUN uv sync --frozen --no-dev --package knicksiq-api --no-install-workspace
+#16 CACHED
+
+#17 [runtime 11/16] COPY apps/api/app apps/api/app
+#17 DONE 0.1s
+
+#18 [runtime 12/16] COPY packages/basketball-core/src packages/basketball-core/src
+#18 DONE 0.0s
+
+#19 [runtime 13/16] COPY alembic.ini alembic.ini
+#19 DONE 0.0s
+
+#20 [runtime 14/16] COPY migrations migrations
+#20 DONE 0.0s
+
+#21 [runtime 15/16] RUN uv sync --frozen --no-dev --package knicksiq-api
+#21 0.492    Building knicksiq-api @ file:///app/apps/api
+#21 0.499    Building knicksiq-basketball-core @ file:///app/packages/basketball-core
+#21 1.561       Built knicksiq-api @ file:///app/apps/api
+#21 1.562       Built knicksiq-basketball-core @ file:///app/packages/basketball-core
+#21 1.571 Prepared 2 packages in 1.08s
+#21 1.596 Installed 2 packages in 24ms
+#21 1.598  + knicksiq-api==0.1.0 (from file:///app/apps/api)
+#21 1.598  + knicksiq-basketball-core==0.1.0 (from file:///app/packages/basketball-core)
+#21 DONE 1.7s
+
+#22 [runtime 16/16] RUN addgroup --system knicksiq && adduser --system --ingroup knicksiq knicksiq     && chown -R knicksiq:knicksiq /app
+#22 0.327 Adding group `knicksiq' (GID 101) ...
+#22 0.341 Done.
+#22 0.360 Adding system user `knicksiq' (UID 100) ...
+#22 0.360 Adding new user `knicksiq' (UID 100) with group `knicksiq' ...
+#22 0.372 Not creating `/nonexistent'.
+#22 DONE 4.2s
+
+#23 exporting to image
+#23 exporting layers
+#23 exporting layers 3.6s done
+#23 exporting manifest sha256:f2b7f2a25fd92209e8bf7578ab0cf0b9f329b3ceeadf21b4302eed95464682fb done
+#23 exporting config sha256:0e57ce3258f1ac61eac71edea570bda408ade7b1094cb84ee935c0cf104f0d05 done
+#23 exporting attestation manifest sha256:f969f5b0f0dd8fcb57a3734e058fd43eeebfc89f53e550eb7b0bf964a407512f done
+#23 exporting manifest list sha256:5b323a2466b2e74017673666c0a0f61eda6a266816337160e27c0ee8c11384e2 done
+#23 naming to docker.io/library/knicksiq-api:reconciliation-91ada68 done
+#23 unpacking to docker.io/library/knicksiq-api:reconciliation-91ada68
+#23 unpacking to docker.io/library/knicksiq-api:reconciliation-91ada68 0.9s done
+#23 DONE 4.6s

@@ -1,0 +1,63 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.13.7, pytest-9.1.1, pluggy-1.6.0
+rootdir: /Users/mohamedawadalla/Projects/KnicksIQ
+configfile: pyproject.toml
+plugins: asyncio-1.4.0, anyio-4.14.2
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 407 items
+
+apps/api/app/tests/test_analysis.py .................................... [  8%]
+..............                                                           [ 12%]
+apps/api/app/tests/test_analyst_contracts.py .........................   [ 18%]
+apps/api/app/tests/test_analyst_shadow.py .......                        [ 20%]
+apps/api/app/tests/test_archive_retrieval.py .....                       [ 21%]
+apps/api/app/tests/test_config.py ..                                     [ 21%]
+apps/api/app/tests/test_conversation_memory.py ..                        [ 22%]
+apps/api/app/tests/test_conversation_state.py ....                       [ 23%]
+apps/api/app/tests/test_deploy_release.py ..                             [ 23%]
+apps/api/app/tests/test_evaluation_dataset.py .                          [ 24%]
+apps/api/app/tests/test_evaluation_harness.py ....                       [ 25%]
+apps/api/app/tests/test_fact_discovery.py ...............                [ 28%]
+apps/api/app/tests/test_games.py ..............                          [ 32%]
+apps/api/app/tests/test_gold_queries.py .                                [ 32%]
+apps/api/app/tests/test_grounded_answer.py .......                       [ 34%]
+apps/api/app/tests/test_health.py ..                                     [ 34%]
+apps/api/app/tests/test_jobs.py ....                                     [ 35%]
+apps/api/app/tests/test_pattern_facts.py ...                             [ 36%]
+apps/api/app/tests/test_player_intelligence.py ......................... [ 42%]
+                                                                         [ 42%]
+apps/api/app/tests/test_players.py .....                                 [ 43%]
+apps/api/app/tests/test_production_contract.py ....                      [ 44%]
+apps/api/app/tests/test_query_resolution.py .........                    [ 46%]
+apps/api/app/tests/test_rag_hybrid.py .............                      [ 50%]
+apps/api/app/tests/test_rag_index.py ..                                  [ 50%]
+apps/api/app/tests/test_rag_quality.py ................                  [ 54%]
+apps/api/app/tests/test_release_bundle.py ......                         [ 56%]
+apps/api/app/tests/test_release_evidence.py ..                           [ 56%]
+apps/api/app/tests/test_release_read_scope.py .                          [ 56%]
+apps/api/app/tests/test_reliability_release.py ......................... [ 62%]
+.............                                                            [ 66%]
+apps/api/app/tests/test_reports.py .......                               [ 67%]
+apps/api/app/tests/test_reports_api.py ...........                       [ 70%]
+apps/api/app/tests/test_retrieval_fusion.py ...                          [ 71%]
+apps/api/app/tests/test_retrieval_planner.py ......                      [ 72%]
+apps/api/app/tests/test_runtime_store.py ....                            [ 73%]
+apps/api/app/tests/test_team_scope.py ..............                     [ 77%]
+apps/api/app/tests/test_verified_runs.py ...                             [ 77%]
+apps/mcp/mcp_app/tests/test_tools.py .........                           [ 80%]
+apps/worker/worker_app/tests/test_cli.py ......                          [ 81%]
+apps/worker/worker_app/tests/test_detect_runs.py ..                      [ 82%]
+apps/worker/worker_app/tests/test_nba_api_source.py ................     [ 85%]
+apps/worker/worker_app/tests/test_release_export.py ....                 [ 86%]
+apps/worker/worker_app/tests/test_worker_jobs.py ....                    [ 87%]
+packages/basketball-core/tests/test_bad_stretch.py ......                [ 89%]
+packages/basketball-core/tests/test_impactful_run.py .......             [ 91%]
+packages/basketball-core/tests/test_parser.py ......                     [ 92%]
+packages/basketball-core/tests/test_player_analytics.py ....             [ 93%]
+packages/basketball-core/tests/test_scoring_run.py .......               [ 95%]
+tools/report_audit/test_audit.py ...........                             [ 98%]
+tools/report_audit/test_production_binding.py ...                        [ 98%]
+tools/report_audit/test_repair.py .....                                  [100%]
+
+- generated xml file: /Users/mohamedawadalla/Projects/KnicksIQ/docs/release-evidence/reconciliation-20260928/backend.xml -
+============================= 407 passed in 33.87s =============================

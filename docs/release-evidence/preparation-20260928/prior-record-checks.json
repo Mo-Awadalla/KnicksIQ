@@ -1,0 +1,20 @@
+{
+  "original_tested_commit": "62948bab49896bd0687686e0170b6d193dbdc52f",
+  "checks": {
+    "backend": {
+      "status": "passed",
+      "tested_commit": "62948bab49896bd0687686e0170b6d193dbdc52f",
+      "path": "docs/release-evidence/reliability-20260928/verification.json",
+      "sha256": "0abf67d79c4ade30f0b54aca69550e5e410cf429853d7e87f5909fef04cbd5a1",
+      "scope": "Local final candidate and all five hosted CI checks; hosted staging not implied"
+    },
+    "frontend": {
+      "status": "passed",
+      "tested_commit": "62948bab49896bd0687686e0170b6d193dbdc52f",
+      "path": "docs/release-evidence/reliability-20260928/verification.json",
+      "sha256": "0abf67d79c4ade30f0b54aca69550e5e410cf429853d7e87f5909fef04cbd5a1",
+      "scope": "Local final candidate and all five hosted CI checks; hosted staging not implied"
+    }
+  },
+  "note": "Preserved original evidence binding; not rerun or relabeled."
+}

@@ -1,0 +1,22 @@
+{
+  "observed_at": "2026-09-28T21:17:31.811427+00:00",
+  "completion_requests": 0,
+  "additional_provider_spend_usd": 0,
+  "authorized_request_limit": 9,
+  "authorized_cost_limit_usd": 0.1,
+  "status": "blocked",
+  "checks": {
+    "model_and_cutoff": true,
+    "preflight_complete": false
+  },
+  "configuration": {
+    "AI_CHAT_MODEL": "deepseek/deepseek-v4.1-flash",
+    "AI_BASE_URL": "https://openrouter.ai/api/v1",
+    "ANALYSIS_ANSWER_MODE": "llm_primary",
+    "ANALYSIS_SHADOW_SAMPLE_RATE": "0.1",
+    "ANALYST_EVIDENCE_LOOP_ENABLED": "true",
+    "OPENROUTER_MONTHLY_CUTOFF_USD": "2",
+    "OPENROUTER_ALLOWED_MODELS": "[\"deepseek/deepseek-v4.1-flash\"]"
+  },
+  "stop_reason": "ConnectionError"
+}

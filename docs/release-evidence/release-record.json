@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "id": "2025-26-verified-parity",
-  "tested_commit": "62948bab49896bd0687686e0170b6d193dbdc52f",
+  "tested_commit": "e003db2d7f179c8d490d90155f260ec0eeb31620",
   "status": "blocked",
   "configuration": {
     "answer_mode": "shadow",
@@ -17,17 +17,56 @@
   "checks": {
     "backend": {
       "status": "passed",
-      "tested_commit": "62948bab49896bd0687686e0170b6d193dbdc52f",
-      "path": "docs/release-evidence/reliability-20260928/verification.json",
-      "sha256": "0abf67d79c4ade30f0b54aca69550e5e410cf429853d7e87f5909fef04cbd5a1",
-      "scope": "Local final candidate and all five hosted CI checks; hosted staging not implied"
+      "tested_commit": "e003db2d7f179c8d490d90155f260ec0eeb31620",
+      "path": "docs/release-evidence/preparation-20260928/merge-ci.json",
+      "sha256": "cf19d455afa417aca11ca1ab69d6371afbbb95addd50b06de7422445315f9ccc",
+      "scope": "Merge CI: 389 passed, 11 skipped; separately 6 PostgreSQL loader tests passed. Prior identical-tree local run: 400 passed, including Redis integration."
     },
     "frontend": {
       "status": "passed",
-      "tested_commit": "62948bab49896bd0687686e0170b6d193dbdc52f",
-      "path": "docs/release-evidence/reliability-20260928/verification.json",
-      "sha256": "0abf67d79c4ade30f0b54aca69550e5e410cf429853d7e87f5909fef04cbd5a1",
-      "scope": "Local final candidate and all five hosted CI checks; hosted staging not implied"
+      "tested_commit": "e003db2d7f179c8d490d90155f260ec0eeb31620",
+      "path": "docs/release-evidence/preparation-20260928/merge-ci.json",
+      "sha256": "cf19d455afa417aca11ca1ab69d6371afbbb95addd50b06de7422445315f9ccc",
+      "scope": "Merge CI build, lint, format, 47 browser unit tests, 38 E2E passed. Prior same-tree production-API URL fixture suite: 25 passed."
+    },
+    "migrations_loader": {
+      "status": "passed",
+      "tested_commit": "e003db2d7f179c8d490d90155f260ec0eeb31620",
+      "path": "docs/release-evidence/preparation-20260928/merge-ci.json",
+      "sha256": "cf19d455afa417aca11ca1ab69d6371afbbb95addd50b06de7422445315f9ccc",
+      "scope": "Exact merge CI upgraded empty and populated legacy PostgreSQL schemas, tested expand-only rollback, loader and idempotency."
+    },
+    "security": {
+      "status": "passed",
+      "tested_commit": "e003db2d7f179c8d490d90155f260ec0eeb31620",
+      "path": "docs/release-evidence/preparation-20260928/merge-ci.json",
+      "sha256": "cf19d455afa417aca11ca1ab69d6371afbbb95addd50b06de7422445315f9ccc",
+      "scope": "Exact merge CI gitleaks, CodeQL, API/web builds and Trivy critical-fixable vulnerability gates passed."
+    },
+    "desktop_mobile_keyboard": {
+      "status": "passed",
+      "tested_commit": "e003db2d7f179c8d490d90155f260ec0eeb31620",
+      "path": "docs/release-evidence/preparation-20260928/merge-ci.json",
+      "sha256": "cf19d455afa417aca11ca1ab69d6371afbbb95addd50b06de7422445315f9ccc",
+      "scope": "Merge E2E includes responsive 390/735/768/1024/1440 landing, keyboard submission/retry and focus regression on both chat surfaces."
+    },
+    "accessibility": {
+      "status": "passed",
+      "tested_commit": "e003db2d7f179c8d490d90155f260ec0eeb31620",
+      "path": "docs/release-evidence/preparation-20260928/merge-ci.json",
+      "sha256": "cf19d455afa417aca11ca1ab69d6371afbbb95addd50b06de7422445315f9ccc",
+      "scope": "Passing merge E2E asserts zero serious/critical axe findings for landing at five widths and games/reports/analyst at 390/1440.",
+      "metrics": {
+        "serious": 0,
+        "critical": 0
+      }
+    },
+    "report_audit": {
+      "status": "passed",
+      "tested_commit": "e003db2d7f179c8d490d90155f260ec0eeb31620",
+      "path": "docs/release-evidence/preparation-20260928/content-binding.json",
+      "sha256": "0a3da098bacdc4061abfd956e300e0736e336ca4e7e46c4d82f49e4868351f76",
+      "scope": "Content hash and source provenance binding to existing approved audit; not a new production audit or serving verification."
     }
   },
   "approvals": {
@@ -132,15 +171,21 @@
     "code_only_source_equivalence": "docs/release-evidence/reliability-20260928/code-only-source-equivalence.json",
     "approved_report_bundle": "docs/release-evidence/report-review-20260928/approved-bundle.json",
     "production_baseline": "docs/release-evidence/report-review-20260928/production-binding.json",
-    "merged_code_commit": "e003db2d7f179c8d490d90155f260ec0eeb31620"
+    "merged_code_commit": "e003db2d7f179c8d490d90155f260ec0eeb31620",
+    "release_preparation": "docs/release-evidence/preparation-20260928/README.md",
+    "gate_reconciliation": "docs/release-evidence/preparation-20260928/gate-matrix.json",
+    "merge_commit_ci": "docs/release-evidence/preparation-20260928/merge-ci.json",
+    "environment_preflight": "docs/release-evidence/preparation-20260928/environment-observation.json",
+    "evaluation_approval_package": "docs/release-evidence/preparation-20260928/evaluation-approval-package.json"
   },
   "remaining_external_checks": [
-    "Owner-approved evaluation labels and final launch/deployment approval are still missing",
-    "Bind full final-candidate retrieval/evaluation/environment/staging evidence to the release gate",
-    "Separate budgeted live-provider authorization/check; no provider calls made",
-    "Publish/stage approved bundle and rebuild candidate indexes only through the gated release process",
-    "After activation/deployment verify live records, reports, summaries, indexed content and refresh/retry",
-    "Production-derived evidence remains local; GitHub publication was rejected and is not approved"
+    "Resolve policy/configuration conflict: observed llm_primary vs required 10% shadow; no settings changed",
+    "Approve evaluation-label proposals and executable scoring rubric; verify runtime ID mapping and original semantic coverage",
+    "Complete candidate-content local retrieval/filter evaluation, disabled-services evaluation, production-profile failure rehearsal, and warm load",
+    "Authorize and execute bounded real-provider plan separately; budget_unavailable/mock response is not success",
+    "Authorize any remote bundle/index staging separately; keep all production-derived artifacts local until then",
+    "Finalize fresh coordinated rollback/environment checks and obtain launch approval bound to final release-record digest",
+    "Deploy exact e003db2 and activate exact approved content only after gates; verify live API, reports/index copies and served frontend"
   ],
   "services": {
     "api": {
@@ -152,5 +197,13 @@
       "url": "https://www.knicksiq.win"
     }
   },
-  "candidate_commit": "62948bab49896bd0687686e0170b6d193dbdc52f"
+  "candidate_commit": "e003db2d7f179c8d490d90155f260ec0eeb31620",
+  "candidate": {
+    "data_version": "2025-26.20260928.1",
+    "bundle_path": "release-artifacts/2025-26/reliability-approved-20260928.json.gz",
+    "bundle_sha256": "549af2edd0d195eff60bb318bdc58a8c8e217ea0359c0684d492d5292dcb595b",
+    "approved_report_content_sha256": "c5c3c49a4233a306aed908c2740bc496a50e59315280d4d2e0f2a21f2aef98c0",
+    "staged": false,
+    "aliases_verified": false
+  }
 }

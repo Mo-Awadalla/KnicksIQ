@@ -18,6 +18,10 @@ are declined rather than invented.
 Workers, ingestion, report generation, MCP, admin routes, Swagger, and runtime data mutations are
 not part of the production deployment. NBA ingestion and release construction are offline tools.
 
+`apps/web` is the only maintained frontend. The retired frontend remains available
+in Git history; historical release evidence is kept unchanged. Install frontend
+dependencies from `apps/web/pnpm-lock.yaml`; `node_modules/` is ignored repository-wide.
+
 ## Current release candidate
 
 The recovered 2025–26 candidate is under `release-artifacts/2025-26`:
@@ -36,6 +40,30 @@ requires agent verification of every report and owner approval of the template, 
 content-bound audit summary. Unresolved report checks block launch.
 
 ## Local development
+
+Enable the repository's pre-commit hook once per clone with `make hooks`.
+`make install` also enables it. The hook requires Git and Python 3.10+ and checks
+only added, modified, renamed, or type-changed regular files in the index, using
+their staged contents. Each authored text file must be at most 5,000 tokens,
+calculated as bytes / 4, or 20,000 bytes. Unstaged and unchanged files are ignored.
+
+Lockfiles, generated output, and vendored dependencies are excluded through the
+staged `.gitattributes` rules. Binary blobs, symlinks, and submodules are skipped.
+For additional machine-generated output, add a narrowly scoped
+`linguist-generated=true` rule and stage it alongside the output. Authored text is
+checked regardless of whether an agent or a human wrote it.
+
+If a commit is blocked, split code into cohesive sibling modules and documents by
+topic, update imports or links, and keep every resulting file within the limit.
+Run the relevant E2E checks, stage the split files with `git add`, and retry.
+To verify the hook with real commits in temporary repositories, run
+`python3 tools/hooks/e2e.py`. Repeatable results and rejection messages are saved
+to `release-artifacts/hooks/e2e.json`.
+
+Audit all existing authored files, including untracked source, with
+`python3 tools/hooks/inventory.py release-artifacts/hooks/inventory.json`.
+This uses worktree contents and attributes, reports each file above the same
+20,000-byte limit, and exits unsuccessfully if any remain.
 
 Start the read stack:
 

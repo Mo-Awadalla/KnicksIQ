@@ -1,0 +1,127 @@
+{
+  "candidate": "e003db2d7f179c8d490d90155f260ec0eeb31620",
+  "ci_run": 36472142614,
+  "gates": [
+    {
+      "gate": "active_archive_identity",
+      "status": "partial",
+      "evidence": "Fresh Sept 28 repeatable-read export binds active 2025-26.20260714.1 and all eight source collections; unchanged canonical rows verified against approved bundle.",
+      "remaining": "Verify new candidate release identity in a local restore, then recheck active identity immediately before promotion.",
+      "source": "report-review-20260928/production-binding.json"
+    },
+    {
+      "gate": "report_audit",
+      "status": "completed",
+      "evidence": "101/101 replacement reports pass, 303 player lines; exact approved narrative hashes and bundle hash rechecked; audit implementation matches pinned candidate. Existing approval retained unchanged.",
+      "remaining": "Post-activation API/detail/summary/index parity remains a separate acceptance step.",
+      "source": "preparation-20260928/content-binding.json"
+    },
+    {
+      "gate": "retrieval_targets",
+      "status": "missing_verification",
+      "evidence": "Cloud connectivity and four old aliases are captured; old local collection counts are historical.",
+      "remaining": "Build/validate new release physical collections locally; verify counts, vectors, payloads, and report title/summary representation. Remote staging/index writes need explicit authorization.",
+      "source": "reliability-20260928/index-connectivity.json"
+    },
+    {
+      "gate": "retrieval_filters",
+      "status": "missing_verification",
+      "evidence": "Prior local old-release filter checks and candidate unit tests exist.",
+      "remaining": "Verify actual candidate index game/player/opponent/date/period/release isolation, including wrong-release exclusion.",
+      "source": "qdrant-local-20260907.json"
+    },
+    {
+      "gate": "evaluation",
+      "status": "missing_verification_and_authorization",
+      "evidence": "120 agent-reviewed label proposals; canonical references verified. Old response review is not merge-candidate evaluation.",
+      "remaining": "Approve proposed labels and scoring/adjudication rubric; map runtime IDs; capture all 120 responses and ranked retrieval traces with candidate content. No shrinking semantic denominator.",
+      "source": "preparation-20260928/evaluation-approval-package.json"
+    },
+    {
+      "gate": "evaluation_services_disabled",
+      "status": "missing_verification_and_authorization",
+      "evidence": "Old V5 review used disabled providers; no final-candidate 120-case metrics.",
+      "remaining": "Use same approved labels and candidate content with Qdrant/Redis/OpenRouter disabled; numeric/entity/abstention 100%, citation/paraphrase >=95%.",
+      "source": "answer-review-20260907.json"
+    },
+    {
+      "gate": "production_router_contracts",
+      "status": "partial",
+      "evidence": "Merge CI router/read-scope tests pass; same-tree local 400-test run includes Redis-backed failures skipped in CI.",
+      "remaining": "Production-profile rehearsal against locally restored candidate content; explicit no-provider and controlled-failure paths. Resolve requested launch mode/evidence-loop sampling contract.",
+      "source": "preparation-20260928/merge-ci.json"
+    },
+    {
+      "gate": "backend",
+      "status": "completed",
+      "evidence": "Merge CI: 389 passed, 11 skipped; separately 6 PostgreSQL loader tests passed. Prior identical-tree local run: 400 passed, including Redis integration.",
+      "remaining": "No repeat of satisfied tests needed. Hosted failure staging is distinct from these tests.",
+      "source": "preparation-20260928/merge-ci.json"
+    },
+    {
+      "gate": "frontend",
+      "status": "completed",
+      "evidence": "Merge CI build, lint, format, 47 browser unit tests, 38 E2E passed. Prior same-tree production-API URL fixture suite: 25 passed.",
+      "remaining": "Exact deployed commit/API URL/served behavior remains post-deploy acceptance.",
+      "source": "preparation-20260928/merge-ci.json"
+    },
+    {
+      "gate": "migrations_loader",
+      "status": "completed",
+      "evidence": "Exact merge CI upgraded empty and populated legacy PostgreSQL schemas, tested expand-only rollback, loader and idempotency.",
+      "remaining": "Read-only check current production schema before deployment; do not rerun migrations without need/authorization.",
+      "source": "preparation-20260928/merge-ci.json"
+    },
+    {
+      "gate": "security",
+      "status": "completed",
+      "evidence": "Exact merge CI gitleaks, CodeQL, API/web builds and Trivy critical-fixable vulnerability gates passed.",
+      "remaining": "Runtime secrets/CORS/headers are covered by environment preflight, not inferred from scans.",
+      "source": "preparation-20260928/merge-ci.json"
+    },
+    {
+      "gate": "desktop_mobile_keyboard",
+      "status": "completed",
+      "evidence": "Merge E2E includes responsive 390/735/768/1024/1440 landing, keyboard submission/retry and focus regression on both chat surfaces.",
+      "remaining": "Post-deployment served smoke only; no need to repeat local suite.",
+      "source": "preparation-20260928/merge-ci.json"
+    },
+    {
+      "gate": "accessibility",
+      "status": "completed",
+      "evidence": "Passing merge E2E asserts zero serious/critical axe findings for landing at five widths and games/reports/analyst at 390/1440.",
+      "remaining": "Scope is tested fixture surfaces; served checks belong to rollout acceptance.",
+      "source": "preparation-20260928/merge-ci.json"
+    },
+    {
+      "gate": "warm_load",
+      "status": "missing_verification",
+      "evidence": "Old local load passed on earlier implementation; no merge-candidate load measurements.",
+      "remaining": "Local restored candidate, concurrency 10; archive p95 <1000ms, analyst p95 <4000ms, error rate <1%. No paid provider stress.",
+      "source": "stress-local-20260907.json"
+    },
+    {
+      "gate": "shadow_dependencies",
+      "status": "configuration_conflict",
+      "evidence": "Observed Render and pinned blueprint use llm_primary/evidence loop enabled; gate requires shadow at 0.1. Local .env uses a different model and must not be used for provider verification.",
+      "remaining": "Owner resolves launch mode/policy conflict explicitly. Verify Redis/rate limit/budget ledger, provider allowlist/config, Qdrant and actual shadow sampling. Current evidence-loop branch does not consult sample rate before model calls.",
+      "source": "preparation-20260928/environment-observation.json"
+    },
+    {
+      "gate": "rollback_snapshot",
+      "status": "partial",
+      "evidence": "API/web rollback deployments reconfirmed unchanged; old active version, four aliases and fresh report export are pinned. Historical full DB backup/restore exists.",
+      "remaining": "Verify retained dataset and collections, local snapshot hash, current alias/data identity before promotion; validate local restore and coordinated rollback rehearsal. A report-only snapshot is not a fresh full database backup.",
+      "source": "preparation-20260928/environment-observation.json"
+    }
+  ],
+  "authorization": {
+    "report_content": "approved exact existing batch; hashes preserved",
+    "read_only_audit_export": "approved and completed",
+    "evaluation_labels": "not approved",
+    "paid_provider_plan": "not approved",
+    "remote_content_staging_index_writes": "not approved; current instruction keeps artifacts local",
+    "launch_deployment_activation": "not approved",
+    "external_evidence_publication": "prohibited for this preparation; not a deployment prerequisite"
+  }
+}

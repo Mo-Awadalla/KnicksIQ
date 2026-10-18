@@ -1,0 +1,7 @@
+{
+  "sha256": "55d6aa90c206f3b3386cb4b8d056fb84ae51f5482a86e8c2ee920c72378c385c",
+  "passed": false,
+  "error": "0022500003: missing content-bound report approval; 0022500018: missing content-bound report approval; 0022500108: missing content-bound report approval; 0022500125: missing content-bound report approval; 0022500023: missing content-bound report approval; 0022500153: missing content-bound report approval; 0022500159: missing content-bound report approval; 0022500175: missing content-bound report approval; 0022500192: missing content-bound report approval; 0022500208: missing content-bound report approval; 0022500215: missing content-bound report approval; 0022500039: missing content-bound report approval; 0022500244: missing content-bound report approval; 0022500262: missing content-bound report approval; 0022500269: missing content-bound report approval; 0022500285: missing content-bound report approval; 0022500061: missing content-bound report approval; 0022500074: missing content-bound report approval; 0022500303: missing content-bound report approval; 0022500320: missing content-bound report approval",
+  "validation_bypassed": false,
+  "replacement_rollback_mechanism": "Retained full database restored and retained release reactivated locally"
+}
