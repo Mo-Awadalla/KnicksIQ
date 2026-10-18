@@ -12,7 +12,6 @@ Generated from release-record.json; this view is not approval evidence.
 - evaluation: missing passing evidence for tested commit
 - evaluation_services_disabled: missing passing evidence for tested commit
 - production_router_contracts: missing passing evidence for tested commit
-- warm_load: missing passing evidence for tested commit
 - shadow_dependencies: missing passing evidence for tested commit
 - rollback_snapshot: missing passing evidence for tested commit
 - evaluation: semantic_recall_at_5 must be >= 0.95
@@ -29,7 +28,6 @@ Generated from release-record.json; this view is not approval evidence.
 - evaluation_services_disabled: paraphrase_success must be >= 0.95
 - evaluation_services_disabled: correct_abstention_rate must be >= 1.0
 - evaluation_services_disabled: all 120 reviewed labels required
-- warm latency/concurrency/error gates not met
 - evaluation_labels: missing owner approval bound to content
 - launch: missing owner approval bound to content
 
