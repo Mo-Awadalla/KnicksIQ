@@ -67,6 +67,19 @@
       "path": "docs/release-evidence/preparation-20260928/content-binding.json",
       "sha256": "0a3da098bacdc4061abfd956e300e0736e336ca4e7e46c4d82f49e4868351f76",
       "scope": "Content hash and source provenance binding to existing approved audit; not a new production audit or serving verification."
+    },
+    "warm_load": {
+      "status": "passed",
+      "tested_commit": "e003db2d7f179c8d490d90155f260ec0eeb31620",
+      "path": "docs/release-evidence/local-evidence-20261018/warm-load.json",
+      "sha256": "d756faab1b749de8efd30f8ae2a69771f8de5725bf51b80fc85532145ddb40e1",
+      "scope": "Local isolated restore of bundle 2025-26.20260928.1 (sha256 549af2ed...595b) on the pinned commit, deterministic mode, Qdrant and providers disabled, no .env. Ten distinct analyst questions plus ten archive readers for 30s. Hosted latency and Qdrant-enabled latency are not implied.",
+      "metrics": {
+        "concurrency": 10,
+        "archive_p95_ms": 76.35,
+        "analyst_p95_ms": 777.29,
+        "error_rate": 0.0
+      }
     }
   },
   "approvals": {
