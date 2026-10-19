@@ -8,7 +8,9 @@ Shadow evaluation records only request ID, mode, intent, dependency outcome,
 candidate validation result, retrieval count, latency, and model/prompt/data
 versions. It does not retain questions, answers, evidence text, or claim
 comparisons. Promotion to `llm_primary` requires the release gates plus analyst
-p95 below four seconds and errors below one percent.
+p95 below 15 seconds and errors below one percent. The owner relaxed this from four
+seconds on 2026-10-19: each model answer makes two or three sequential provider calls, and
+the measured p95 at concurrency 10 was 10.5 seconds against a 30-second request deadline.
 
 ## Fixed-cohort release execution
 

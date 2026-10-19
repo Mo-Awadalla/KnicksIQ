@@ -141,7 +141,7 @@
       "path": "docs/release-evidence/candidate-ade107f-20261019/llm-primary-load.json",
       "sha256": "75dd451d0e77245aa506b3c4b2a12e65f4e72b36cde5583a8939e6855548540a",
       "result": "p50 5348 ms, p95 10500 ms over 20 turns at concurrency 10; 18 of 20 model-validated, error rate 0.0.",
-      "gate": "docs/evaluation.md requires analyst p95 below four seconds before promotion to llm_primary. This measurement exceeds it."
+      "gate": "docs/evaluation.md requires analyst p95 below 15 seconds before promotion to llm_primary (relaxed by the owner from four seconds on 2026-10-19). This local measurement meets it; hosted latency is unmeasured."
     }
   },
   "remaining_external_checks": [
@@ -150,7 +150,6 @@
     "Isolated-staging shadow evaluation and shadow dependency checks",
     "Active archive identity and production router contracts, read immediately before promotion",
     "A rollback snapshot that includes a restore rehearsal or fresh database backup",
-    "Decision on the llm_primary analyst latency gate",
     "Render CLI deployment followed by production smoke, browser and load checks"
   ],
   "services": {
