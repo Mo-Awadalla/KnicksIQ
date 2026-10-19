@@ -16,6 +16,7 @@ from app.services.evidence_contracts import (
     Action,
     AnswerReview,
     ProposedAnswer,
+    VerifiedClaim,
 )
 from app.services.report_llm import get_llm_adapter
 from pydantic import BaseModel
@@ -111,6 +112,29 @@ def scoped_response_schema(schema: type[BaseModel], payload: dict[str, Any]) -> 
     return result
 
 
+_SERVER_SIDE_CLAIM_FIELDS = {
+    "game_ids",
+    "calculation_version",
+    "metric_definition_version",
+    "release_id",
+}
+
+
+def claim_view(claim: VerifiedClaim) -> dict[str, Any]:
+    """The claim as the model sees it.
+
+    Each claim used to carry ~100 game ids plus version strings and null filters. Four sibling
+    claims (wins, losses, points, margin) did not fit the input budget together, so the model
+    answered "no points total was returned" while the backend had it. Everything omitted is
+    server-side provenance that validation reads from the registry, never from the model.
+    """
+    full = claim.model_dump(mode="json", exclude=_SERVER_SIDE_CLAIM_FIELDS)
+    view = {key: value for key, value in full.items() if value not in (None, [], {})}
+    view["value"] = full["value"]
+    view["filters"] = {k: v for k, v in full["filters"].items() if v not in (None, [], {})}
+    return {key: value for key, value in view.items() if key != "filters" or value}
+
+
 def build_payload(
     loop: AnalystLoop,
     schema: type,
@@ -186,7 +210,7 @@ def build_payload(
             ref for cid in list(group_ids) for ref in loop.tools.claims[cid].baseline_claim_ids
         )
         group = [loop.tools.claims[ref] for ref in sorted(group_ids) if ref not in sent_claims]
-        data = [c.model_dump(mode="json") for c in group]
+        data = [claim_view(c) for c in group]
         size = token_upper_bound(encoded(data))
         related = [
             c
@@ -272,7 +296,9 @@ async def request_model[Schema: BaseModel](
             "You are KnicksIQ. Return JSON matching schema, using backend evidence only. "
             "For interesting stats or another player, call discover_facts FIRST with the "
             "user's question unchanged. Empty claims means call a tool before stating stats. "
-            "get_player_stats calculates player metrics; get_team_stats gives team totals; "
+            "get_player_stats calculates player metrics; get_team_stats gives team wins and "
+            "losses plus points and margin, as totals (aggregation total) or per-game averages "
+            "(aggregation average), so choose the aggregation the user asked for; "
             "compare_windows compares populations; search_archive finds narrative examples; "
             "get_evidence expands returned references. Answer once evidence is sufficient. "
             "call_tools requires tools and null answer. Answer actions require an answer "

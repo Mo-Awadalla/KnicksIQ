@@ -67,3 +67,6 @@ docs/release-evidence/report-review-20260928/rollback-reports.json linguist-gene
 
 # Fetched NBA game/event snapshot, including original source hash and fetch time.
 tools/report_audit/report80_fixture.json linguist-generated=true
+
+# Generated live analyst E2E responses
+docs/release-evidence/llm-primary-*/*.responses.jsonl linguist-generated=true

@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Literal
 
 from app.models.game import Game
 from app.services.evidence_contracts import ToolResult
@@ -91,32 +91,42 @@ def player(
     )
 
 
-def team(tools: AnalystTools, scope: ResolvedQuery, games: list[Game]) -> ToolResult:
+def team(
+    tools: AnalystTools,
+    scope: ResolvedQuery,
+    games: list[Game],
+    aggregation: Literal["average", "total"] = "total",
+) -> ToolResult:
     if is_record_request(tools.question):
         games = [g for g in games if g.status == "final" and g.home_score != g.away_score]
     if scope.relative_game_count:
         games = games[-scope.relative_game_count :]
     evidence = [tools.receipt(g) for g in games]
     wins = sum(tools.score(g)[0] > tools.score(g)[1] for g in games)
-    values = {
-        "wins": wins,
-        "losses": len(games) - wins,
-        "points": sum(tools.score(g)[0] for g in games),
-        "margin": sum(tools.score(g)[0] - tools.score(g)[1] for g in games),
-    }
+    points = sum(tools.score(g)[0] for g in games)
+    margin = sum(tools.score(g)[0] - tools.score(g)[1] for g in games)
+    values: dict[str, float | int] = {"wins": wins, "losses": len(games) - wins}
+    if aggregation == "average":
+        values["points_per_game"] = points / len(games)
+        values["margin_per_game"] = margin / len(games)
+    else:
+        values["points"] = points
+        values["margin"] = margin
     claims = [
         tools.claim(
             subject="team:NYK",
             metric=metric,
             value=value,
-            unit=metric,
+            unit=metric.replace("_", " "),
             games=games,
             evidence=evidence,
             scope=scope,
             sample=len(games),
-            denominator=None,
+            denominator=len(games) if metric.endswith("_per_game") else None,
             eligibility={"game": "archived Knicks game"},
-            statement=f"Knicks {metric}: {value} over {len(games)} archived games.",
+            statement=(
+                f"Knicks {metric.replace('_', ' ')}: {value} over {len(games)} archived games."
+            ),
         )
         for metric, value in values.items()
     ]

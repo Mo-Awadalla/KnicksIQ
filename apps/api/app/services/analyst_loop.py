@@ -282,8 +282,12 @@ class AnalystLoop:
             )
             try:
                 async with asyncio.timeout(max(0.001, self.remaining() - 0.5)):
+                    # Team recovery shows totals; the default "average" is for player stats.
+                    aggregation = "total" if name == "get_team_stats" else "average"
                     self.results.append(
-                        await self.tools.execute(ToolCall(name=name, question=question))
+                        await self.tools.execute(
+                            ToolCall(name=name, question=question, aggregation=aggregation)
+                        )
                     )
             except Exception:
                 # Cancellation is a BaseException and intentionally propagates.

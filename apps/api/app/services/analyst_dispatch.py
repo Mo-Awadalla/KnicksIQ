@@ -86,7 +86,7 @@ async def execute_call(tools: AnalystTools, call: ToolCall) -> ToolResult:
     if call.name == "search_archive":
         return await tools.search(call, scope, games)
     if call.name == "get_team_stats":
-        return team(tools, scope, games)
+        return team(tools, scope, games, call.aggregation)
     if call.name == "discover_facts":
         return discover(tools, scope, games)
     if not scope.player_ids:
