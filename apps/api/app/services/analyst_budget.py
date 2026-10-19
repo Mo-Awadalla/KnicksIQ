@@ -1,4 +1,9 @@
-"""Atomic reservations. A missing monthly ledger requires explicit reconciliation."""
+"""Atomic reservations. A missing monthly ledger starts at zero.
+
+A new month, or a restarted free Redis instance, has no ledger. Refusing every call until an
+operator restores one took the analyst down in production, so the owner chose availability: the
+worst case is one extra month of spend up to the cutoff.
+"""
 
 from __future__ import annotations
 
@@ -11,7 +16,7 @@ from app.services.runtime_store import _redis
 
 _RESERVE = """
 local total = redis.call('GET', KEYS[1])
-if not total then return 0 end
+if not total then total = '0' end
 if redis.call('HEXISTS', KEYS[2], ARGV[1]) == 1 then return 0 end
 if tonumber(total) + tonumber(ARGV[2]) > tonumber(ARGV[3]) then return 0 end
 redis.call('INCRBYFLOAT', KEYS[1], ARGV[2])
