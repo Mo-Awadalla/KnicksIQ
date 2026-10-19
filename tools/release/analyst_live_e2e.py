@@ -44,6 +44,87 @@ class FailureCapture(logging.Handler):
             )
 
 
+class Trace:
+    """Per-question record of every model call and the first exception that ended the turn."""
+
+    def __init__(self) -> None:
+        self.calls: list[dict] = []
+        self.error: dict | None = None
+
+    def reset(self) -> None:
+        self.calls, self.error = [], None
+
+
+TRACE = Trace()
+RAW_LIMIT = 1500
+
+
+class RecordingAdapter:
+    """Wraps the provider adapter to keep what the model was sent and what it returned."""
+
+    def __init__(self, inner):
+        object.__setattr__(self, "inner", inner)
+
+    def __getattr__(self, name):
+        return getattr(self.inner, name)
+
+    def __setattr__(self, name, value):
+        setattr(self.inner, name, value)
+
+    async def generate(self, **kwargs):
+        from app.services.analyst_loop import _claim_choice_domains
+
+        if os.environ.get("E2E_SCHEMA_SCOPE") == "writer" and "review_spans" in kwargs["user"]:
+            # Experiment knob: keep provider schema enforcement for the writer, not the reviewer.
+            self.inner.response_schema = None
+        record: dict = {
+            "kind": "review" if "review_spans" in kwargs["user"] else "writer",
+            "system_bytes": len(kwargs["system"].encode()),
+            "user_bytes": len(kwargs["user"].encode()),
+            "schema_enforced": getattr(self.inner, "response_schema", None) is not None,
+        }
+        try:
+            payload = json.loads(kwargs["user"])
+            required = payload.get("required_claim_indexes")
+            if required:
+                slots, related = _claim_choice_domains(payload)
+                record["slots"] = [
+                    {"claims": len(claims), "choices": len(choices)}
+                    for claims, choices in zip(required, slots, strict=True)
+                ]
+                record["related_choices"] = len(related)
+                record["claim_uses"] = len(payload.get("claim_uses") or [])
+        except (ValueError, TypeError, KeyError):
+            record["payload_unreadable"] = True
+        TRACE.calls.append(record)
+        try:
+            raw = await self.inner.generate(**kwargs)
+        except Exception as exc:
+            record["provider_error"] = f"{type(exc).__name__}: {str(exc)[:300]}"
+            raise
+        meta = getattr(self.inner, "last_metadata", {}) or {}
+        record.update(provider=meta.get("provider"), model=meta.get("model"), raw=raw[:RAW_LIMIT])
+        record["raw_bytes"] = len(raw.encode())
+        return raw
+
+
+def install_tracing() -> None:
+    from app.services import analyst_loop
+
+    real_get = analyst_loop.get_llm_adapter
+    analyst_loop.get_llm_adapter = lambda *a, **k: RecordingAdapter(real_get(*a, **k))
+    real_investigate = analyst_loop.AnalystLoop.investigate
+
+    async def investigate(self, *args, **kwargs):
+        try:
+            return await real_investigate(self, *args, **kwargs)
+        except Exception as exc:
+            TRACE.error = {"type": type(exc).__name__, "message": str(exc)[:500]}
+            raise
+
+    analyst_loop.AnalystLoop.investigate = investigate
+
+
 def sample(per_category: int, ids: set[str]) -> list[dict]:
     rows = [json.loads(line) for line in QUESTIONS.read_text().splitlines()]
     if ids:
@@ -105,6 +186,7 @@ def meets_expectation(row: dict, outcome: str) -> bool:
 async def run(per_category: int, ids: set[str], repeat: int) -> dict:
     capture = FailureCapture()
     logging.getLogger().addHandler(capture)
+    install_tracing()
     app = create_app()
     results = []
     async with app.router.lifespan_context(app):
@@ -112,6 +194,7 @@ async def run(per_category: int, ids: set[str], repeat: int) -> dict:
         async with AsyncClient(transport=transport, base_url="http://test", timeout=60) as client:
             for row in sample(per_category, ids) * repeat:
                 capture.records.clear()
+                TRACE.reset()
                 response = await client.post(
                     "/analysis/query",
                     json={
@@ -132,6 +215,8 @@ async def run(per_category: int, ids: set[str], repeat: int) -> dict:
                         "answerable": row["answerable"],
                         "question": row["question"],
                         "outcome": outcome,
+                        "error": TRACE.error,
+                        "model_calls": TRACE.calls,
                         "meets_expectation": meets_expectation(row, outcome),
                         "answer": body.get("answer") or "",
                         "citations": len(body.get("citations") or []),
