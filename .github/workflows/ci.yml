@@ -14,8 +14,10 @@ jobs:
     runs-on: ubuntu-latest
     services:
       postgres:
-        # PostgreSQL 16.9-alpine, same OCI manifest as the Docker Hub image.
-        image: public.ecr.aws/docker/library/postgres@sha256:7c688148e5e156d0e86df7ba8ae5a05a2386aaec1e2ad8e6d11bdf10504b1fb7
+        # PostgreSQL 16.9-alpine, same OCI manifest as the Docker Hub image. Docker Hub and public
+        # ECR both failed CI on anonymous pull limits, so this uses Google's Docker Hub mirror;
+        # the digest pin keeps the content identical.
+        image: mirror.gcr.io/library/postgres@sha256:7c688148e5e156d0e86df7ba8ae5a05a2386aaec1e2ad8e6d11bdf10504b1fb7
         env:
           POSTGRES_USER: knicksiq
           POSTGRES_PASSWORD: knicksiq
