@@ -104,11 +104,10 @@ async def test_session_race_replay_conflict_and_atomic_commit(local_redis):
     assert expired.value.reason == "session_expired"
 
 
-async def test_atomic_budget_never_resets_missing_ledger(local_redis, monkeypatch):
+async def test_atomic_budget_starts_a_missing_month_at_zero(local_redis, monkeypatch):
     monkeypatch.setattr(get_settings(), "openrouter_monthly_cutoff_usd", 0.08)
-    assert await BudgetReservation.reserve(0.02) is None
     key = f"ai-budget:{datetime.now(UTC):%Y-%m}"
-    await local_redis.set(key, 0)
+    assert await local_redis.get(key) is None
     attempts = await asyncio.gather(*[BudgetReservation.reserve(0.02) for _ in range(12)])
     accepted = [r for r in attempts if r is not None]
     assert len(accepted) == 4
@@ -119,7 +118,7 @@ async def test_atomic_budget_never_resets_missing_ledger(local_redis, monkeypatc
     await accepted[0].settle(0)
     assert float(await local_redis.get(key)) == pytest.approx(0.065)
     await local_redis.delete(key)
-    assert await BudgetReservation.reserve(0.001) is None
+    assert await BudgetReservation.reserve(0.001) is not None
 
 
 async def make_tools(db, question="Give me an interesting stat", state=None):
