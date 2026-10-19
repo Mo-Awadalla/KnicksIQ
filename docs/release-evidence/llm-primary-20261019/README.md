@@ -74,6 +74,14 @@ call was made. It is read from the recorded calls, not from the outcome label.
 - **The 20 non-record failures in the first 70-question run**, and whether the reviewer's input
   overflow depends on the question or on the provider.
 
+## Where this lives in the source (`analyst_loop.py` on `14e5f11`)
+
+- `_claim_choice_domains` (line 177) numbers every `claim_uses` row with a flat `enumerate`, so the
+  second slot's domain starts at the first row after the first slot's five precision rows.
+- The sealed-choice error is raised at line 330, and the duplicate-selection error at line 343.
+- The reviewer-input overflows are raised at lines 1447 (selected-game claims) and 1503 (explicitly
+  cited sources), both during payload construction after the writer reply was already decoded.
+
 ## Decision input
 
 Turning on `json_schema` alone is not a win, because it trades 13 selection failures for about 25
