@@ -21,9 +21,10 @@ questions, same release, `deepseek/deepseek-v4.1-flash` pinned to DeepInfra fp8,
 | Reviewer accepted | 24 | 29 | 42 | 41 | 47 | 47 |
 
 The target set before the work was at least 50 reached and 45 accepted. E meets it in both repeats.
-"Reviewer accepted" counts `llm_validated`, which includes validated refusals. I read eleven E
-answers by hand. The record, points, average, home, road and loss answers match the archive
-(69-32, 11,750, 116.34, 37, 32, 32).
+"Reviewer accepted" counts `llm_validated`, which includes validated refusals. I read eight
+validated E answers by hand. Six of them state figures that match the backend's own calculations
+(69-32, 11,750, 116.34, 37 home wins, 32 road wins, 32 losses). The last-5 and January answers
+(4-1 and 7-8) I did not check.
 
 ## Why each change
 
@@ -33,13 +34,13 @@ answers by hand. The record, points, average, home, road and loss answers match 
 2. **Reviewer-input overflow.** In A, overflow turns cited an average of 4.9 game receipts against
    0.5 in validated turns. Those receipts were filler. The writer input listed up to nine unsupporting
    game or lexical receipts because evidence was packed greedily, so the writer cited them and the
-   reviewer's input could not hold them. Overflows fall from 14 to 17 per run to 2 and 4 in E.
+   reviewer's input could not hold them. Overflows fall from 14 to 17 per run to 3 and 4 in E.
 
 ## What remains
 
-Six or seven of 61 model turns still end before the reviewer in E.
+Six of 61 model turns still end before the reviewer in each E run.
 
-- 2 to 4 overflows, all on `comparisons-002` ("Compare Brunson and Towns") and one other.
+- 3 or 4 overflows. `comparisons-002` ("Compare Brunson and Towns") fails in both repeats.
 - One sealed-choice failure on `single_game_narrative-011`. Its four-slot wire has a last slot with
   one choice, and the model answered `{"0": 0, "1": 1, "2": 2, "3": 3}`. It used the slot number as
   the index again.
