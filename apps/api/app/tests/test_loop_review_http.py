@@ -530,6 +530,34 @@ async def test_two_slot_record_accepts_slot_local_indexes_http(
     ]
 
 
+async def test_aggregate_writer_input_carries_only_evidence_that_supports_its_claims_http(
+    client,
+    local_redis,  # noqa: F811
+    monkeypatch,
+):
+    """Unsupporting game receipts filled the input cap and the writer cited them.
+
+    The reviewer must then fit every cited receipt, and 14 to 17 of 61 live model turns ended
+    with 'Complete explicitly cited sources exceed model input budget' after a valid answer.
+    """
+    settings = configure(monkeypatch)
+    monkeypatch.setattr(settings, "analyst_provider_format", "json_object")
+    await seed_required_score()
+    question = "What was the Knicks record over their last 3 games?"
+    adapter = RequiredSlotsAdapter(question)
+    monkeypatch.setattr(analyst_loop, "get_llm_adapter", lambda: adapter)
+    receipt = await exchange(client, local_redis, adapter, "aggregate-evidence-turn", question)
+    assert receipt["response"]["llm_validated"]
+    writer = next(i["user"] for i in adapter.inputs if "required_claim_indexes" in i["user"])
+    supporting = {
+        ref
+        for claim in analyst_loop.payload_claims(writer)
+        for ref in claim["supporting_evidence_ids"]
+    }
+    sent = {item["evidence_id"] for item in analyst_loop.payload_evidence(writer)}
+    assert sent and sent <= supporting
+
+
 async def test_required_slots_leave_related_context_optional_http(
     client,
     local_redis,  # noqa: F811

@@ -1479,6 +1479,16 @@ class AnalystLoop:
             )
         )
         for item in evidence:
+            if (
+                required_groups
+                and not review
+                and item.evidence_id not in refs
+                and item.evidence_id not in priority_sources
+            ):
+                # The backend fixes every claim this answer must state. Evidence that no claim
+                # cites only filled the input cap, and the writer then cited it, so the
+                # reviewer's input could not hold every cited source.
+                continue
             data = item.model_dump(mode="json")
             candidate_payload = {**payload}
             _pack_evidence(candidate_payload, payload_evidence(payload) + [data])
