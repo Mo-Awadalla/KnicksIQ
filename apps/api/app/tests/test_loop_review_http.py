@@ -211,9 +211,10 @@ class RequiredSlotsAdapter(SyntheticAdapter):
 
     response_schema: dict[str, Any] | None = None
 
-    def __init__(self, question, behavior="complete", precision=None):
+    def __init__(self, question, behavior="complete", precision=None, local_choices=None):
         super().__init__({"name": "get_team_stats", "question": question})
         self.behavior, self.precision = behavior, precision
+        self.local_choices = local_choices
         self.outputs = []
         self.decoded = []
         self.review_decisions = []
@@ -269,7 +270,6 @@ class RequiredSlotsAdapter(SyntheticAdapter):
             return json.dumps(analyst_loop.encode_model_response(payload, review))
         if not analyst_loop.payload_claims(payload):
             return await super().generate(system=system, user=user)
-        assert self.response_schema is not None
         claims = analyst_loop.payload_claims(payload)
         self.inputs.append(
             {
@@ -281,18 +281,32 @@ class RequiredSlotsAdapter(SyntheticAdapter):
             }
         )
         groups = payload["required_claim_indexes"]
-        assert set(self.response_schema["required"]) == set(self.response_schema["properties"])
-        slots = self.response_schema["properties"]["claims"]
-        assert slots["additionalProperties"] is False
-        assert set(slots["required"]) == set(slots["properties"])
-        assert all(slot["type"] == "integer" for slot in slots["properties"].values())
-        selections = {}
+        rows = payload["claim_uses"]
+        slot_rows = [
+            [o for o, (index, _) in enumerate(rows) if index in domain] for domain in groups
+        ]
+        if self.response_schema is not None:
+            schema = self.response_schema
+            assert set(schema["required"]) == set(schema["properties"])
+            slots = schema["properties"]["claims"]
+            assert slots["additionalProperties"] is False
+            assert set(slots["required"]) == set(slots["properties"])
+            assert all(slot["type"] == "integer" for slot in slots["properties"].values())
+            # The model addresses a choice by its position inside its own slot, not by its
+            # position in the shared claim_uses table.
+            for ordinal, choices in enumerate(slot_rows):
+                assert slots["properties"][str(ordinal)]["enum"] == list(range(len(choices)))
+        selections, local = {}, {}
         for ordinal, domain in enumerate(groups):
             claim_index = domain[-1]
-            precision = (
-                self.precision if type(claims[claim_index]["value"]) in (int, float) else None
-            )
-            selections[str(ordinal)] = payload["claim_uses"].index([claim_index, precision])
+            if self.local_choices is not None:
+                local[str(ordinal)] = self.local_choices[ordinal]
+            else:
+                precision = (
+                    self.precision if type(claims[claim_index]["value"]) in (int, float) else None
+                )
+                local[str(ordinal)] = slot_rows[ordinal].index(rows.index([claim_index, precision]))
+            selections[str(ordinal)] = slot_rows[ordinal][local[str(ordinal)]]
         native = {
             "text": " ".join(claims[domain[-1]]["statement"] for domain in groups),
             "claims": [
@@ -311,11 +325,12 @@ class RequiredSlotsAdapter(SyntheticAdapter):
             "fact_ids": [],
             "follow_up_questions": [],
         }
-        wire = {**native, "claims": selections}
+        wire = {**native, "claims": dict(local)}
         if payload.get("related_claim_indexes"):
             wire["related_claims"] = []
         if self.behavior == "complete":
-            Draft202012Validator(self.response_schema).validate(wire)
+            if self.response_schema is not None:
+                Draft202012Validator(self.response_schema).validate(wire)
             assert analyst_loop.encode_model_response(payload, native) == wire
             restored = analyst_loop.decode_model_response(payload, wire)
             assert restored == native
@@ -337,8 +352,10 @@ class RequiredSlotsAdapter(SyntheticAdapter):
                 assert analyst_loop.encode_model_response(payload, wire) == wire
             elif self.behavior == "omitted-score":
                 del wire["claims"][score_slot]
-            elif self.behavior == "wrong-slot":
-                wire["claims"][score_slot] = margin_choice
+            elif self.behavior == "negative":
+                wire["claims"][score_slot] = -1
+            elif self.behavior == "past-end":
+                wire["claims"][score_slot] = len(slot_rows[int(score_slot)])
             elif self.behavior == "bool":
                 wire["claims"][score_slot] = True
             elif self.behavior == "float":
@@ -369,7 +386,7 @@ class RequiredSlotsAdapter(SyntheticAdapter):
                 raise AssertionError(self.behavior)
             # JSON Schema treats an integral float as an integer; the native
             # decoder must additionally reject its actual Python/JSON type.
-            if self.behavior != "float":
+            if self.behavior != "float" and self.response_schema is not None:
                 assert not Draft202012Validator(self.response_schema).is_valid(wire)
         self.outputs.append(wire)
         return json.dumps(wire)
@@ -438,7 +455,8 @@ async def test_required_score_margin_choice_reaches_independent_review_http(
     [
         "old-two-margins",
         "omitted-score",
-        "wrong-slot",
+        "negative",
+        "past-end",
         "bool",
         "float",
         "string",
@@ -472,6 +490,44 @@ async def test_required_claim_wire_rejects_without_autofill_http(
     assert not adapter.decoded
     delivered = {c["metadata"]["claim"]["metric_id"] for c in receipt["response"]["citations"]}
     assert delivered == {"game_score", "margin"}, "Complete fallback is not a model pass"
+
+
+@pytest.mark.parametrize("local_choices", [(0, 0), (0, 1), (1, 0), (2, 4)])
+async def test_two_slot_record_accepts_slot_local_indexes_http(
+    client,
+    local_redis,  # noqa: F811
+    monkeypatch,
+    local_choices,
+):
+    """A model that numbers each slot from 0 must be understood, not rejected.
+
+    Live DeepSeek replies such as {"0": 0, "1": 1} failed on every two-slot record question
+    when slot 1 expected the shared-table ordinal 5 to 9.
+    """
+    settings = configure(monkeypatch)
+    monkeypatch.setattr(settings, "analyst_provider_format", "json_object")
+    await seed_required_score()
+    question = "What was the Knicks record over their last 3 games?"
+    adapter = RequiredSlotsAdapter(question, local_choices=local_choices)
+    monkeypatch.setattr(analyst_loop, "get_llm_adapter", lambda: adapter)
+    receipt = await exchange(
+        client,
+        local_redis,
+        adapter,
+        f"two-slot-{local_choices[0]}-{local_choices[1]}-turn",
+        question,
+    )
+    assert_committed_replay(receipt)
+    writer = next(i["user"] for i in adapter.inputs if "required_claim_indexes" in i["user"])
+    assert len(writer["required_claim_indexes"]) == 2
+    assert receipt["response"]["llm_validated"]
+    assert {c["metadata"]["claim"]["metric_id"] for c in receipt["response"]["citations"]} >= {
+        "wins",
+        "losses",
+    }
+    assert [use["decimal_places"] for use in adapter.decoded[0]["claims"]] == [
+        (None, 0, 1, 2, 3)[choice] for choice in local_choices
+    ]
 
 
 async def test_required_slots_leave_related_context_optional_http(
