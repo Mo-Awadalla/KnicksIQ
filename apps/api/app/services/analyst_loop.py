@@ -326,16 +326,18 @@ def _model_response_values(
             ordinals = []
             for ordinal, domain in enumerate(required):
                 choice = selected[str(ordinal)]
-                if type(choice) is not int or choice not in domain:
+                if type(choice) is not int or not 0 <= choice < len(domain):
                     raise ValueError("Model response changes a required sealed claim choice")
-                ordinals.append(choice)
+                ordinals.append(domain[choice])
             if related:
                 tail = answer.pop("related_claims", None)
                 if not isinstance(tail, list):
                     raise ValueError("Model response must declare its related claim choices")
-                if any(type(choice) is not int or choice not in related for choice in tail):
+                if any(
+                    type(choice) is not int or not 0 <= choice < len(related) for choice in tail
+                ):
                     raise ValueError("Model response changes a related sealed claim choice")
-                ordinals.extend(tail)
+                ordinals.extend(related[choice] for choice in tail)
             elif "related_claims" in answer:
                 raise ValueError("Model response adds forbidden related claim choices")
             selected_uses = [choices[ordinal] for ordinal in ordinals]
@@ -380,9 +382,13 @@ def _model_response_values(
         tail = [choice for choice in selected_ordinals if choice not in slots.values()]
         if len(uses) > 30 or any(choice not in related for choice in tail):
             return result
-        answer["claims"] = slots
+        # The model counts each slot's choices from 0, so a choice keeps one meaning in every
+        # slot and no slot depends on how many rows precede it in the shared claim_uses table.
+        answer["claims"] = {
+            slot: required[int(slot)].index(ordinal) for slot, ordinal in slots.items()
+        }
         if related:
-            answer["related_claims"] = tail
+            answer["related_claims"] = [related.index(choice) for choice in tail]
         return result
     if not any("value_tables" in claim for claim in payload["claims"]):
         return response
@@ -426,8 +432,10 @@ def _wire_payload(payload: dict[str, Any], *, complete: bool = False) -> dict[st
     if payload.get("required_claim_indexes"):
         wire["claim_uses"] = _claim_choice_rows(payload)
         wire["claim_context_format"] += (
-            " claim_uses=[claim index,precision] choices; claims maps required slot"
-            " ordinal to choice ordinal. related_claims selects optional choices."
+            " claim_uses=[claim index,precision] choices; a slot's rows are the claim_uses rows"
+            " whose claim index is in its required_claim_indexes entry, and claims maps each"
+            " required slot to an index counted from 0 among its rows. related_claims indexes"
+            " the rows of related_claim_indexes the same way."
         )
     elif "claim_uses" in payload:
         wire["claim_uses"] = [
@@ -992,7 +1000,7 @@ def scoped_response_schema(schema: type[BaseModel], payload: dict[str, Any]) -> 
                 "additionalProperties": False,
                 "required": [str(ordinal) for ordinal in range(len(required))],
                 "properties": {
-                    str(ordinal): {"type": "integer", "enum": domain}
+                    str(ordinal): {"type": "integer", "enum": list(range(len(domain)))}
                     for ordinal, domain in enumerate(required)
                 },
             }
@@ -1000,7 +1008,7 @@ def scoped_response_schema(schema: type[BaseModel], payload: dict[str, Any]) -> 
             if related:
                 properties["related_claims"] = {
                     "type": "array",
-                    "items": {"type": "integer", "enum": related},
+                    "items": {"type": "integer", "enum": list(range(len(related)))},
                     "maxItems": max(0, 30 - len(required)),
                 }
         elif not uses:
@@ -1726,8 +1734,8 @@ class AnalystLoop:
         elif schema is ProposedAnswer:
             system = (
                 "Return ONE ProposedAnswer JSON, no action/answer wrapper. Backend evidence only. "
-                "With required_claim_indexes: claims={slot ordinal: claim_uses choice ordinal}; "
-                "related_claims chooses optional ordinals or [] ONLY when allowed. Otherwise "
+                "With required_claim_indexes: claims={slot: index from 0 among that slot's rows}; "
+                "related_claims chooses optional indexes or [] ONLY when allowed. Otherwise "
                 "emit ClaimUse arrays with JSON value/type/keys intact "
                 "and matching numeric precision. "
                 "Copy supporting evidence/selected fact IDs exactly. "
@@ -1750,9 +1758,9 @@ class AnalystLoop:
                 "complete team-wide leaders. Answer when evidence is sufficient. "
                 "call_tools requires tools and null answer; answer actions require a nonnull "
                 "answer with text, claims, evidence_ids and fact_ids. With required_claim_indexes: "
-                "claims={slot ordinal: claim_uses choice ordinal}; related_claims chooses optional "
-                "ordinals or [] ONLY when allowed. Otherwise emit ClaimUse arrays with JSON "
-                "value/type/keys intact and matching numeric precision. Copy selected "
+                "claims={slot: index from 0 among that slot's rows}; related_claims chooses "
+                "optional indexes or [] ONLY when allowed. Otherwise emit ClaimUse arrays with "
+                "JSON value/type/keys intact and matching numeric precision. Copy selected "
                 "fact_id/evidence_id exactly into their arrays. "
                 "No metadata, schema or IDs in answer.text. "
                 "Answer briefly by default; explain deeply when asked. Put up to two relevant "
