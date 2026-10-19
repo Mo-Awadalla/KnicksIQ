@@ -16,6 +16,7 @@ import collections
 import json
 import logging
 import os
+import re
 import uuid
 from pathlib import Path
 
@@ -56,9 +57,17 @@ def sample(per_category: int) -> list[dict]:
     return picked
 
 
+DECLINE = re.compile(
+    r"\b(i can(?:'|’)?t|i cannot|can(?:'|’)?t (?:give|provide|answer|predict|verify)|"
+    r"cannot (?:give|provide|answer|predict)|not able to|unable to|do(?:es)? not (?:include|"
+    r"cover|contain)|doesn(?:'|’)?t (?:include|cover|contain)|no (?:live|future|current))",
+    re.I,
+)
+
+
 def classify(body: dict, failures: list[dict]) -> str:
     if body.get("llm_validated"):
-        return "validated"
+        return "validated_declined" if DECLINE.search(body.get("answer") or "") else "validated"
     if failures:
         return f"failed:{failures[-1]['stage']}:{failures[-1]['error_type']}"
     warnings = " ".join(body.get("warnings") or [])
@@ -67,6 +76,13 @@ def classify(body: dict, failures: list[dict]) -> str:
     if "could not be verified" in warnings:
         return "fallback:unverified"
     return "fallback:other"
+
+
+def meets_expectation(row: dict, outcome: str) -> bool:
+    """Answerable questions need a substantive validated answer; unsupported ones a decline."""
+    if row["answerable"]:
+        return outcome == "validated"
+    return outcome == "validated_declined"
 
 
 async def run(per_category: int) -> dict:
@@ -89,34 +105,40 @@ async def run(per_category: int) -> dict:
                     },
                 )
                 body = response.json() if response.status_code == 200 else {}
+                outcome = (
+                    classify(body, capture.records)
+                    if body
+                    else f"http_{response.status_code}"
+                )
                 results.append(
                     {
                         "id": row["id"],
                         "category": row["category"],
+                        "answerable": row["answerable"],
                         "question": row["question"],
-                        "http": response.status_code,
-                        "outcome": classify(body, capture.records)
-                        if body
-                        else f"http_{response.status_code}",
-                        "answer": (body.get("answer") or "")[:200],
+                        "outcome": outcome,
+                        "meets_expectation": meets_expectation(row, outcome),
+                        "answer": body.get("answer") or "",
+                        "citations": len(body.get("citations") or []),
+                        "warnings": body.get("warnings") or [],
                     }
                 )
     by_outcome = collections.Counter(item["outcome"] for item in results)
     by_category: dict[str, collections.Counter] = collections.defaultdict(collections.Counter)
     for item in results:
-        by_category[item["category"]][item["outcome"]] += 1
-    validated = by_outcome["validated"]
+        by_category[item["category"]]["meets_expectation"] += item["meets_expectation"]
+        by_category[item["category"]]["questions"] += 1
+    met = sum(item["meets_expectation"] for item in results)
     return {
+        "scope": "llm_validated is reviewer acceptance. meets_expectation also requires a "
+        "substantive answer for answerable questions and a decline for unsupported ones. "
+        "Expectations come from unreviewed draft labels.",
         "questions": len(results),
-        "validated": validated,
-        "validated_rate": round(validated / len(results), 3),
+        "meets_expectation": met,
+        "meets_expectation_rate": round(met / len(results), 3),
         "outcomes": dict(by_outcome),
         "by_category": {k: dict(v) for k, v in by_category.items()},
-        "not_validated": [
-            {k: item[k] for k in ("id", "category", "question", "outcome")}
-            for item in results
-            if item["outcome"] != "validated"
-        ],
+        "results": results,
     }
 
 
@@ -126,8 +148,11 @@ def main() -> None:
     parser.add_argument("--per-category", type=int, default=5)
     args = parser.parse_args()
     report = asyncio.run(run(args.per_category))
+    results = report.pop("results")
     args.out.write_text(json.dumps(report, indent=2) + "\n")
-    print(json.dumps({k: v for k, v in report.items() if k != "not_validated"}, indent=2))
+    responses = args.out.with_suffix(".responses.jsonl")
+    responses.write_text("".join(json.dumps(item) + "\n" for item in results))
+    print(json.dumps(report, indent=2))
 
 
 if __name__ == "__main__":

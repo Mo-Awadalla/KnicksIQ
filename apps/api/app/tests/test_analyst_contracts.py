@@ -177,6 +177,27 @@ async def test_missing_rows_are_incomplete_not_nonappearances(db_session):
     assert "Missing player rows" in " ".join(result.claims[0].coverage_limitations)
 
 
+async def test_team_average_aggregation_yields_per_game_claims(db_session):
+    tools, _ = await make_tools(db_session, "What was the Knicks average margin?")
+    totals = await tools.execute(
+        ToolCall(name="get_team_stats", question=tools.question, aggregation="total")
+    )
+    averages = await tools.execute(
+        ToolCall(name="get_team_stats", question=tools.question, aggregation="average")
+    )
+    by_metric = {c.metric_id: c for c in totals.claims}
+    per_game = {c.metric_id: c for c in averages.claims}
+    games = by_metric["points"].sample_size
+    assert games and games > 0
+    points, margin = by_metric["points"].value, by_metric["margin"].value
+    assert isinstance(points, (int, float)) and isinstance(margin, (int, float))
+    assert per_game["points_per_game"].value == pytest.approx(points / games)
+    assert per_game["margin_per_game"].value == pytest.approx(margin / games)
+    assert per_game["margin_per_game"].denominator == games
+    assert {"wins", "losses"} <= per_game.keys()
+    assert "points" not in per_game and "margin" not in per_game
+
+
 async def test_unknown_entity_and_baseline_scope_fail_closed(db_session):
     tools, _ = await make_tools(db_session, "An interesting stat about Nobody McFake")
     result = await tools.execute(ToolCall(name="discover_facts", question="Brunson"))
@@ -205,7 +226,11 @@ async def test_whole_records_fit_budget_and_provenance_is_resolvable(db_session)
     assert token_upper_bound(encoded(payload)) + 1700 <= get_settings().analyst_input_tokens
     assert payload["candidates"]
     for claim in payload["claims"]:
-        assert claim == tools.claims[claim["claim_id"]].model_dump(mode="json")
+        full = tools.claims[claim["claim_id"]].model_dump(mode="json")
+        assert {"game_ids", "release_id", "calculation_version"}.isdisjoint(claim)
+        assert claim["value"] == full["value"] and claim["statement"] == full["statement"]
+        assert claim["supporting_evidence_ids"] == full["supporting_evidence_ids"]
+        assert all(full[k] == v for k, v in claim.items() if k != "filters")
         assert all(ref in tools.evidence for ref in claim["supporting_evidence_ids"])
 
 
