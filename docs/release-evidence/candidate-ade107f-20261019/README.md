@@ -28,19 +28,19 @@ from public ECR. Attempt 2 re-ran only the failed jobs and passed. PR 12 moves t
   reviewed 20260928 bundle (`549af2ed...`, the one with the owner's report approval). I changed the
   hash to match. The owner should confirm that is the bundle to activate.
 
-## Finding that needs a decision: llm_primary latency
+## llm_primary latency
 
-`docs/evaluation.md` requires analyst p95 below four seconds before promotion to `llm_primary`.
+The owner relaxed the `llm_primary` promotion gate in `docs/evaluation.md` from four seconds to
+15 seconds on 2026-10-19.
 
 | Configuration | Analyst p95 | Notes |
 | --- | --- | --- |
 | Shadow, evidence loop on (gate's configuration) | 1,026 ms | The load tool sends no `turn_id`, so no request reaches the model |
 | `llm_primary`, evidence loop on | 10,500 ms | 20 turns, concurrency 10, p50 5,348 ms, 18 of 20 model-validated, 0 errors |
 
-`warm_load` is marked passed for the first row, as the gate defines it. The second row exceeds the
-documented promotion gate by 2.6 times. `llm_primary_latency` in the record's observations holds the
-number. Each model answer is two or three sequential calls (plan, write, review), so cutting it needs a
-design change, not tuning. The owner must either relax the gate or accept a slower analyst.
+`warm_load` is marked passed for the first row, as the gate defines it. The second row meets the
+relaxed 15-second gate. It is local, on one provider, with 20 turns; hosted latency still needs the
+post-deploy load check.
 
 ## Still open
 
