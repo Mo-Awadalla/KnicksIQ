@@ -2,66 +2,92 @@
 
 `tools/release/analyst_live_e2e.py` sends benchmark questions through the in-process API with the
 real DeepSeek provider against a locally restored `2025-26.20260928.1` release. Qdrant is off.
-Run it with a loaded release, Redis, and the production `AI_*` and `ANALYSIS_*` settings.
+It records every model call, the raw reply, the serving provider, request sizes and the exact
+exception. `tools/release/analyst_failure_report.py` reduces the response files to the tables below.
 
-## Result on `14e5f11` (70 questions, one run, temperature 0)
+## Setup of the controlled run
 
-| Outcome | Count |
-| --- | ---: |
-| Model answer validated | 11 |
-| Model failed the claim-selection protocol, backend facts shown instead | 21 |
-| Backend asked which game or scope | 25 |
-| Backend declined unsupported question (correct) | 8 |
-| Reviewer rejected, backend facts shown instead | 3 |
-| Other | 2 |
+- Code: `14e5f11` plus the ledger fix in this PR. Model `deepseek/deepseek-v4.1-flash`.
+- Questions: all 110 non-follow-up benchmark questions, not only earlier failures. 61 reach the
+  model. The other 49 get a deterministic backend answer, refusal or clarification.
+- Provider pinned to DeepInfra fp8 (`OPENROUTER_PROVIDER_ROUTE`) for every arm except `A_prod`,
+  which uses the production routing. `A_prod` was served by DeepInfra (81 calls), Makora (9),
+  BaseTen (3) and Together (1).
+- Arm A is `json_object`, today's behavior. Arm B is `json_schema` on the same slot and ordinal
+  format. Each arm ran twice, and `A_prod` once. Temperature is 0, yet counts still moved between
+  repeats of the same arm.
 
-`meets_expectation` is 19 of 70. It counts a backend fact shown after a model failure as not met,
-because the user gets "Knicks wins: 69 over 101 archived games" and not a sentence. Decline and
-clarification detection is a phrase match, and the expectations come from unreviewed draft labels.
-Read `main-n70.responses.jsonl`.
+## Staged counts
 
-## Why the model path fails
+| What the turn demonstrably did | A r1 | A r2 | A prod | B r1 | B r2 |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Reached the model | 61 | 61 | 61 | 61 | 61 |
+| Writer reply received | 61 | 61 | 61 | 61 | 61 |
+| Reviewer reached | 29 | 33 | 31 | 53 | 54 |
+| Reviewer accepted | 24 | 29 | 28 | 20 | 27 |
+| Met expectation (all 110) | 33 | 38 | 37 | 29 | 35 |
 
-The data is not the cause. The restored release holds 46,500 play-by-play events, 816 period
-scores, team shooting lines and starter flags. Main already answers quarter, bench, home/road and
-opponent comparisons from them.
+"Reviewer reached" means the writer reply decoded and passed structural validation, then a review
+call was made. It is read from the recorded calls, not from the outcome label.
+`met expectation` still depends on a phrase match and on unreviewed draft labels.
 
-Twenty-one of 70 turns fail at the orchestrate stage with a `ValueError`. The harness records only
-the exception type and stage, not the message. I read the message for one question, "What was the
-Knicks record this season?", and it was `Model response changes a required sealed claim choice`.
-Main sends the model `claims={slot: choice ordinal}` with `claim_uses` as a flat list of ten
-`[claim index, precision]` pairs. Slot 1 must be ordinal 5 to 9. For that question DeepSeek v4.1
-flash and v4 pro both answered `{"0": 0, "1": 0}`. Production uses
-`ANALYST_PROVIDER_FORMAT=json_object`, so the provider never sees the enum that the payload schema
-declares.
+## Where each turn ended before review, by first failure
 
-That is a confirmed example, not a proven cause for all 21. Other `ValueError` messages in main's
-claim-selection code are possible for the rest, and I did not read them.
+| Cause | A r1 | A r2 | A prod | B r1 | B r2 |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Sealed claim choice rejected (two-slot record questions) | 13 | 12 | 13 | 0 | 0 |
+| A sealed claim selected twice | 1 | 1 | 1 | 1 | 1 |
+| Reviewer input too large, after a valid writer answer | 17 | 15 | 15 | 7 | 6 |
 
-The same 21 questions, one run each unless noted:
+## What is established
 
-| Model | Provider format | Past orchestrate | Validated end to end |
-| --- | --- | ---: | ---: |
-| deepseek-v4.1-flash (production) | json_object | 0 / 21 | 0 / 21 |
-| deepseek-v4.1-flash | json_schema | 15 / 21 | 6 / 21 |
-| deepseek-v4-pro-0813 | json_object | 9 / 21 | 9 / 21 |
-| deepseek-v4-pro-0813 | json_schema | 21 / 21 | 16 / 21 |
-| claude-haiku-5.5 | json_object | inconclusive, OpenRouter 404 on every request | |
+1. **The sealed-choice failure has one shape.** All 38 failures across the three `json_object`
+   runs are two-slot record questions, "wins and losses", where slot 1 accepts ordinals 5 to 9.
+   In the one run I decoded in full (A r1), 12 of 13 replies were `{"0": 0, "1": 1}` or
+   `{"0": 1, "1": 0}` and one was `{"0": 0, "1": 0}`. Those are claim indexes where the protocol wants
+   an offset ordinal. The same slot shape passes 0 or 1 of 13 under `json_object`, and 13 of 13
+   under `json_schema`. One-slot questions pass 26 of 26 under `json_object`. The same questions fail
+   identically in every `json_object` run, so this is not noise.
+2. **A second failure class has nothing to do with ordinals.** The reviewer's input does not fit the
+   8,000-byte cap. It always happens after one valid writer answer and before any review call. My
+   first report counted these as claim-selection failures, because the harness inherited the
+   previous stage label. `json_object` embeds the schema in the payload, about 900 bytes more than
+   `json_schema`, which is why the count drops from 14 to 17 to 6 to 7.
+3. **Schema enforcement fixes selection but not end-to-end acceptance.** B reaches the reviewer on
+   53 or 54 turns against 29 to 33 for A. It accepts 20 and 27, against 24, 29 and 28 for A. Reviewer
+   rejections rise from 4 to 6 per run to 27 and 33.
+4. **Each required slot offers one claim.** Slots show 1 or 5 choices, and the five are
+   precision variants of that one claim. The model's real decision is mostly precision.
 
-Flash with json_object was also run twice over the 21 questions. All 42 runs failed to validate:
-41 failed at orchestrate and one was rejected by the reviewer.
+## What is not established
 
-What the table supports:
+- **Why B's reviewer rejects more.** In rejected B reviews the first factual assertion has empty
+  support arrays in 33 of 33 cases. It also has them in 6 of 20 accepted B reviews, so empty arrays
+  neither cause nor explain every rejection. Whether the schema changes the reviewer's behavior is
+  unproven.
+- **Arm C is invalid.** It kept the schema for the writer and dropped it for the reviewer. That removed
+  the only copy of the review format from the request, so the one reviewer reply I read used a different JSON
+  shape (`{"verdicts": [...]}`), and 52 turns were reviewer-rejected in each C run, against 27 to 33 in B. The arm cannot say
+  anything about the schema's effect on review. Its summary files are kept as `C_writer_*`.
+- **Whether slot-local ordinals or choice IDs would fix selection under `json_object`.** The
+  evidence supports trying them, because the failure is confined to offset ordinals. It is untested.
+- **The 20 non-record failures in the first 70-question run**, and whether the reviewer's input
+  overflow depends on the question or on the provider.
 
-- Enforcing the schema moves flash past the orchestrate step on 15 of 21 questions, against 9 for
-  pro without it. End to end, flash with the schema validates fewer (6) than pro without it (9),
-  because 9 flash answers are then rejected by the reviewer. The table does not rank the two
-  changes.
-- Each change helps on its own, and together they validate the most (16 of 21).
-- Five questions still fail with both changes. I did not read their messages.
+## Decision input
 
-A scheme that asks the model for one short label per slot, not an ordinal into a shared list, might
-reduce the confusion. This run does not test that.
+Turning on `json_schema` alone is not a win, because it trades 13 selection failures for about 25
+more reviewer rejections. A change that keeps `json_object` and removes the offset, for example
+slot-local indexes or short per-slot IDs, would remove the confirmed selection failure without
+touching the reviewer. It could add up to 13 reviewer-reached turns per 61. The overflow failures
+need a separate fix.
+
+## Earlier run on `14e5f11` (70 questions, one run)
+
+Of 70 questions, 11 had a validated model answer, 21 ended before review, 25 got a backend
+clarification, 8 a correct refusal, 3 a reviewer rejection and 2 other. The 21 turns that ended
+before review were reported then as claim-selection failures. The controlled run shows they were a
+mix of sealed-choice errors and reviewer-input overflows.
 
 ## Questions the backend answers with a clarification
 
