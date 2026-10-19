@@ -1,24 +1,18 @@
 # Release evidence
 
 Record: `2025-26-verified-parity`
-Tested commit: `ec62fdaba2768b73630c91e13c8d088dff03ed72`
+Tested commit: `ade107fe17b3a8ff0e59632bd45b3826e4499068`
 Deployment gate: **BLOCKED**
 
 Generated from release-record.json; this view is not approval evidence.
 
 - active_archive_identity: missing passing evidence for tested commit
 - report_audit: missing passing evidence for tested commit
-- retrieval_targets: missing passing evidence for tested commit
-- retrieval_filters: missing passing evidence for tested commit
 - evaluation: missing passing evidence for tested commit
 - evaluation_services_disabled: missing passing evidence for tested commit
 - production_router_contracts: missing passing evidence for tested commit
-- migrations_loader: missing passing evidence for tested commit
-- security: missing passing evidence for tested commit
-- desktop_mobile_keyboard: missing passing evidence for tested commit
-- accessibility: missing passing evidence for tested commit
-- warm_load: missing passing evidence for tested commit
 - shadow_dependencies: missing passing evidence for tested commit
+- shadow_evaluation: missing passing evidence for tested commit
 - rollback_snapshot: missing passing evidence for tested commit
 - evaluation: semantic_recall_at_5 must be >= 0.95
 - evaluation: exact_numeric_correctness must be >= 1.0
@@ -28,20 +22,20 @@ Generated from release-record.json; this view is not approval evidence.
 - evaluation: correct_abstention_rate must be >= 1.0
 - evaluation: all 120 reviewed labels required
 - evaluation: missing ranked retrieval traces
+- evaluation: original 50-case semantic cohort required
 - evaluation_services_disabled: exact_numeric_correctness must be >= 1.0
 - evaluation_services_disabled: canonical_entity_correctness must be >= 1.0
 - evaluation_services_disabled: citation_correctness must be >= 0.95
 - evaluation_services_disabled: paraphrase_success must be >= 0.95
 - evaluation_services_disabled: correct_abstention_rate must be >= 1.0
 - evaluation_services_disabled: all 120 reviewed labels required
-- warm latency/concurrency/error gates not met
-- accessibility: zero serious/critical findings required
+- evaluation_services_disabled: original 50-case semantic cohort required
 - template: missing owner approval bound to content
 - exceptions: missing owner approval bound to content
 - report_audit: missing owner approval bound to content
 - evaluation_labels: missing owner approval bound to content
+- shadow_evaluation: missing valid bound staged execution evidence
 - launch: missing owner approval bound to content
-- missing coordinated rollback targets
 
 Agents verify every report against canonical evidence. The owner
 approves the template, exceptions, and final content-hash-bound audit
