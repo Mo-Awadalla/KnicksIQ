@@ -1,0 +1,10 @@
+{
+  "concurrency": 10,
+  "turns": 20,
+  "p50_ms": 5348.209583025891,
+  "p95_ms": 10499.79087500833,
+  "max_ms": 12261.929249973036,
+  "model_validated": 18,
+  "error_rate": 0.0,
+  "errors": []
+}
