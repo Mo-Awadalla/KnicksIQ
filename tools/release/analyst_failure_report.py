@@ -69,7 +69,6 @@ def staged(rows: list[dict]) -> dict[str, int]:
         "writer response received": len(answered),
         "reviewer reached": len(reviewed),
         "reviewer accepted": len(accepted),
-        "met expectation": sum(r["meets_expectation"] for r in rows),
     }
 
 
@@ -91,8 +90,14 @@ def main(paths: list[str]) -> None:
         for row in rows:
             stage = stage_of(row["error"], row["model_calls"])
             if stage != "none":
-                message = (row["error"] or {}).get("message", "") or next(
-                    c["provider_error"] for c in row["model_calls"] if "provider_error" in c
+                error = row["error"] or {}
+                message = (
+                    error.get("message")
+                    or next(
+                        (c["provider_error"] for c in row["model_calls"] if "provider_error" in c),
+                        "",
+                    )
+                    or f"{error.get('type', 'unknown')} with no message"
                 )
                 groups[(stage, message)].append(row)
         for (stage, message), members in sorted(groups.items(), key=lambda kv: -len(kv[1])):
