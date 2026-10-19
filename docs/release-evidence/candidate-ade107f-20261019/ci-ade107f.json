@@ -1,0 +1,271 @@
+{
+ "source": "GitHub Actions REST API, read-only",
+ "run_id": 39306820629,
+ "run_url": "https://github.com/Mo-Awadalla/KnicksIQ/actions/runs/39306820629",
+ "attempt": 2,
+ "head_sha": "ade107fe17b3a8ff0e59632bd45b3826e4499068",
+ "conclusion": "success",
+ "note": "Attempt 1 failed at backend 'Initialize containers' on a public ECR image-pull limit before tests ran; attempt 2 re-ran only the failed jobs.",
+ "jobs": [
+  {
+   "name": "backend",
+   "conclusion": "success",
+   "steps": [
+    {
+     "name": "Set up job",
+     "conclusion": "success"
+    },
+    {
+     "name": "Initialize containers",
+     "conclusion": "success"
+    },
+    {
+     "name": "Run actions/checkout@v4",
+     "conclusion": "success"
+    },
+    {
+     "name": "Run astral-sh/setup-uv@v6",
+     "conclusion": "success"
+    },
+    {
+     "name": "Run actions/setup-python@v5",
+     "conclusion": "success"
+    },
+    {
+     "name": "Install Redis for atomic integration regressions",
+     "conclusion": "success"
+    },
+    {
+     "name": "Run uv sync --all-packages --all-extras --dev",
+     "conclusion": "success"
+    },
+    {
+     "name": "Run uv run ruff check apps packages migrations",
+     "conclusion": "success"
+    },
+    {
+     "name": "Run uv run ruff format --check apps packages migrations",
+     "conclusion": "success"
+    },
+    {
+     "name": "Run uv run pyright apps packages migrations",
+     "conclusion": "success"
+    },
+    {
+     "name": "Unit and integration tests",
+     "conclusion": "success"
+    },
+    {
+     "name": "Preserve backend HTTP and accounting evidence",
+     "conclusion": "success"
+    },
+    {
+     "name": "Empty database migration and expand-only rollback",
+     "conclusion": "success"
+    },
+    {
+     "name": "Postgres release-loader integration and idempotency",
+     "conclusion": "success"
+    },
+    {
+     "name": "Upgrade populated pre-Alembic schema",
+     "conclusion": "success"
+    },
+    {
+     "name": "Post Run actions/setup-python@v5",
+     "conclusion": "success"
+    },
+    {
+     "name": "Post Run astral-sh/setup-uv@v6",
+     "conclusion": "success"
+    },
+    {
+     "name": "Post Run actions/checkout@v4",
+     "conclusion": "success"
+    },
+    {
+     "name": "Stop containers",
+     "conclusion": "success"
+    },
+    {
+     "name": "Complete job",
+     "conclusion": "success"
+    }
+   ]
+  },
+  {
+   "name": "containers",
+   "conclusion": "success",
+   "steps": [
+    {
+     "name": "Set up job",
+     "conclusion": "success"
+    },
+    {
+     "name": "Run actions/checkout@v4",
+     "conclusion": "success"
+    },
+    {
+     "name": "Run docker/setup-buildx-action@v3",
+     "conclusion": "success"
+    },
+    {
+     "name": "Run docker/build-push-action@v6",
+     "conclusion": "success"
+    },
+    {
+     "name": "Run docker/build-push-action@v6",
+     "conclusion": "success"
+    },
+    {
+     "name": "Scan API image for critical vulnerabilities",
+     "conclusion": "success"
+    },
+    {
+     "name": "Scan web image for critical vulnerabilities",
+     "conclusion": "success"
+    },
+    {
+     "name": "Post Scan web image for critical vulnerabilities",
+     "conclusion": "success"
+    },
+    {
+     "name": "Post Scan API image for critical vulnerabilities",
+     "conclusion": "success"
+    },
+    {
+     "name": "Post Run docker/build-push-action@v6",
+     "conclusion": "success"
+    },
+    {
+     "name": "Post Run docker/build-push-action@v6",
+     "conclusion": "success"
+    },
+    {
+     "name": "Post Run docker/setup-buildx-action@v3",
+     "conclusion": "success"
+    },
+    {
+     "name": "Post Run actions/checkout@v4",
+     "conclusion": "success"
+    },
+    {
+     "name": "Complete job",
+     "conclusion": "success"
+    }
+   ]
+  },
+  {
+   "name": "security",
+   "conclusion": "success",
+   "steps": [
+    {
+     "name": "Set up job",
+     "conclusion": "success"
+    },
+    {
+     "name": "Run actions/checkout@v4",
+     "conclusion": "success"
+    },
+    {
+     "name": "Run gitleaks/gitleaks-action@v2",
+     "conclusion": "success"
+    },
+    {
+     "name": "Run github/codeql-action/init@v3",
+     "conclusion": "success"
+    },
+    {
+     "name": "Run github/codeql-action/analyze@v3",
+     "conclusion": "success"
+    },
+    {
+     "name": "Post Run github/codeql-action/analyze@v3",
+     "conclusion": "success"
+    },
+    {
+     "name": "Post Run github/codeql-action/init@v3",
+     "conclusion": "success"
+    },
+    {
+     "name": "Post Run actions/checkout@v4",
+     "conclusion": "success"
+    },
+    {
+     "name": "Complete job",
+     "conclusion": "success"
+    }
+   ]
+  },
+  {
+   "name": "frontend",
+   "conclusion": "success",
+   "steps": [
+    {
+     "name": "Set up job",
+     "conclusion": "success"
+    },
+    {
+     "name": "Run actions/checkout@v4",
+     "conclusion": "success"
+    },
+    {
+     "name": "Run pnpm/action-setup@v6.0.9",
+     "conclusion": "success"
+    },
+    {
+     "name": "Run actions/setup-node@v4",
+     "conclusion": "success"
+    },
+    {
+     "name": "Run pnpm install --frozen-lockfile",
+     "conclusion": "success"
+    },
+    {
+     "name": "Run pnpm exec playwright install --with-deps chromium",
+     "conclusion": "success"
+    },
+    {
+     "name": "Run pnpm lint",
+     "conclusion": "success"
+    },
+    {
+     "name": "Run pnpm format:check",
+     "conclusion": "success"
+    },
+    {
+     "name": "Run pnpm build",
+     "conclusion": "success"
+    },
+    {
+     "name": "Run pnpm test",
+     "conclusion": "success"
+    },
+    {
+     "name": "Run pnpm e2e",
+     "conclusion": "success"
+    },
+    {
+     "name": "Preserve synthetic browser routing evidence",
+     "conclusion": "success"
+    },
+    {
+     "name": "Post Run actions/setup-node@v4",
+     "conclusion": "success"
+    },
+    {
+     "name": "Post Run pnpm/action-setup@v6.0.9",
+     "conclusion": "success"
+    },
+    {
+     "name": "Post Run actions/checkout@v4",
+     "conclusion": "success"
+    },
+    {
+     "name": "Complete job",
+     "conclusion": "success"
+    }
+   ]
+  }
+ ]
+}

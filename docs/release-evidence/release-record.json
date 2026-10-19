@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "id": "2025-26-verified-parity",
-  "tested_commit": "ec62fdaba2768b73630c91e13c8d088dff03ed72",
+  "tested_commit": "ade107fe17b3a8ff0e59632bd45b3826e4499068",
   "status": "blocked",
   "configuration": {
     "answer_mode": "shadow",
@@ -11,21 +11,82 @@
   },
   "hashes": {
     "data": "b2ad21c69175600c3192ef6133f8c11fd63890609a8204f92508a5fb04d05170",
-    "bundle": "65ba7fec37b4d0c72e0583ee0743fd67af21531a7ed9ee9f585577495b8560b1",
+    "bundle": "549af2edd0d195eff60bb318bdc58a8c8e217ea0359c0684d492d5292dcb595b",
     "evaluation": "7c3c549e6a540f4ce03a3fa4ba38821ddc6f7641c9d081270cff8607ec9b007e"
   },
   "checks": {
     "backend": {
       "status": "passed",
-      "tested_commit": "ec62fdaba2768b73630c91e13c8d088dff03ed72",
-      "path": "docs/release-evidence/final-verification-20260907.json",
-      "sha256": "f05b3089aca66631dad7cd986485bb44d3b1c52f6415fd7da8fad4a9f0998823"
+      "tested_commit": "ade107fe17b3a8ff0e59632bd45b3826e4499068",
+      "path": "docs/release-evidence/candidate-ade107f-20261019/ci-ade107f.json",
+      "sha256": "e0a4e7106850f1417483b0145d77c2ed27ba8b476dc6165ee8fa81041a294c99",
+      "scope": "GitHub Actions run 39306820629 on the tested commit, attempt 2. Attempt 1 failed before any test ran, when the backend job could not pull its Postgres image from public ECR; attempt 2 re-ran only the failed jobs. Receipt is read-only API output. Backend job: ruff, format, pyright, unit and integration tests."
     },
     "frontend": {
       "status": "passed",
-      "tested_commit": "ec62fdaba2768b73630c91e13c8d088dff03ed72",
-      "path": "docs/release-evidence/final-verification-20260907.json",
-      "sha256": "f05b3089aca66631dad7cd986485bb44d3b1c52f6415fd7da8fad4a9f0998823"
+      "tested_commit": "ade107fe17b3a8ff0e59632bd45b3826e4499068",
+      "path": "docs/release-evidence/candidate-ade107f-20261019/ci-ade107f.json",
+      "sha256": "e0a4e7106850f1417483b0145d77c2ed27ba8b476dc6165ee8fa81041a294c99",
+      "scope": "GitHub Actions run 39306820629 on the tested commit, attempt 2. Attempt 1 failed before any test ran, when the backend job could not pull its Postgres image from public ECR; attempt 2 re-ran only the failed jobs. Receipt is read-only API output. Frontend job: lint, format, build, unit tests and Playwright e2e."
+    },
+    "migrations_loader": {
+      "status": "passed",
+      "tested_commit": "ade107fe17b3a8ff0e59632bd45b3826e4499068",
+      "path": "docs/release-evidence/candidate-ade107f-20261019/ci-ade107f.json",
+      "sha256": "e0a4e7106850f1417483b0145d77c2ed27ba8b476dc6165ee8fa81041a294c99",
+      "scope": "GitHub Actions run 39306820629 on the tested commit, attempt 2. Attempt 1 failed before any test ran, when the backend job could not pull its Postgres image from public ECR; attempt 2 re-ran only the failed jobs. Receipt is read-only API output. Backend job steps: empty-database migration with expand-only rollback, Postgres release loader and idempotency, populated pre-Alembic upgrade."
+    },
+    "security": {
+      "status": "passed",
+      "tested_commit": "ade107fe17b3a8ff0e59632bd45b3826e4499068",
+      "path": "docs/release-evidence/candidate-ade107f-20261019/ci-ade107f.json",
+      "sha256": "e0a4e7106850f1417483b0145d77c2ed27ba8b476dc6165ee8fa81041a294c99",
+      "scope": "GitHub Actions run 39306820629 on the tested commit, attempt 2. Attempt 1 failed before any test ran, when the backend job could not pull its Postgres image from public ECR; attempt 2 re-ran only the failed jobs. Receipt is read-only API output. Security job: gitleaks and CodeQL. Containers job: API and web image builds and Trivy critical-vulnerability scans."
+    },
+    "desktop_mobile_keyboard": {
+      "status": "passed",
+      "tested_commit": "ade107fe17b3a8ff0e59632bd45b3826e4499068",
+      "path": "docs/release-evidence/candidate-ade107f-20261019/ci-ade107f.json",
+      "sha256": "e0a4e7106850f1417483b0145d77c2ed27ba8b476dc6165ee8fa81041a294c99",
+      "scope": "GitHub Actions run 39306820629 on the tested commit, attempt 2. Attempt 1 failed before any test ran, when the backend job could not pull its Postgres image from public ECR; attempt 2 re-ran only the failed jobs. Receipt is read-only API output. The e2e suite covers landing at 390/735/768/1024/1440 px and keyboard submission on both chat surfaces; the receipt records that the suite passed, not its individual assertions."
+    },
+    "accessibility": {
+      "status": "passed",
+      "tested_commit": "ade107fe17b3a8ff0e59632bd45b3826e4499068",
+      "path": "docs/release-evidence/candidate-ade107f-20261019/ci-ade107f.json",
+      "sha256": "e0a4e7106850f1417483b0145d77c2ed27ba8b476dc6165ee8fa81041a294c99",
+      "scope": "GitHub Actions run 39306820629 on the tested commit, attempt 2. Attempt 1 failed before any test ran, when the backend job could not pull its Postgres image from public ECR; attempt 2 re-ran only the failed jobs. Receipt is read-only API output. The e2e specs assert zero serious or critical axe findings (landing at five widths, archive routes at 390 and 1440). Fixture surfaces, not the served site.",
+      "metrics": {
+        "serious": 0,
+        "critical": 0
+      }
+    },
+    "retrieval_targets": {
+      "status": "passed",
+      "tested_commit": "ade107fe17b3a8ff0e59632bd45b3826e4499068",
+      "path": "docs/release-evidence/candidate-ade107f-20261019/index-verification.json",
+      "sha256": "edd1724a004bb534d720cfd197ef91c18c3983130fe144e81bdb93c3cde468de",
+      "scope": "Local Qdrant 1.18 collections built from the restored bundle 549af2ed... with local MiniLM vectors, checked against restored Postgres. Row points equal database rows (101 games, 2,950 box-score rows, 101 reports, 15,864 possessions); archive-unit points are counted separately. Every payload carries the release version. Not cloud inference, not remote collections, aliases not promoted."
+    },
+    "retrieval_filters": {
+      "status": "passed",
+      "tested_commit": "ade107fe17b3a8ff0e59632bd45b3826e4499068",
+      "path": "docs/release-evidence/candidate-ade107f-20261019/index-verification.json",
+      "sha256": "edd1724a004bb534d720cfd197ef91c18c3983130fe144e81bdb93c3cde468de",
+      "scope": "One sampled value per filter (game, date, team, player, period where present) per collection, with production-default filter semantics (archive-unit filters off): Qdrant exact count equals an independent count over the stored payloads. Wrong-release exclusion is checked against a nonexistent version string."
+    },
+    "warm_load": {
+      "status": "passed",
+      "tested_commit": "ade107fe17b3a8ff0e59632bd45b3826e4499068",
+      "path": "docs/release-evidence/candidate-ade107f-20261019/warm-load-shadow.json",
+      "sha256": "88af56c761e5d8b742fa7069f54ed99b5f109a9c65b2d2294348706ffd2d5276",
+      "scope": "Pre-promotion configuration only (shadow at 10%, evidence loop on, deterministic delivery; the load tool sends no turn_id, so no request reaches the model). Local restore of bundle 549af2ed..., Qdrant and providers off. Ten distinct analyst questions plus ten archive readers for 30 s. The llm_primary launch configuration was measured separately in llm-primary-load.json and does NOT meet the 4 s analyst p95: see observations.llm_primary_latency.",
+      "metrics": {
+        "concurrency": 10,
+        "archive_p95_ms": 115.58,
+        "analyst_p95_ms": 1026.02,
+        "error_rate": 0.0
+      }
     }
   },
   "approvals": {},
@@ -34,10 +95,17 @@
     "web": null
   },
   "rollback": {
-    "api_deployment": "dep-d9drsfn7f7vs739biekg",
-    "web_deployment": "dep-d9f7aun7f7vs73c340d0",
+    "api_deployment": "dep-datb8759fdbs73b2gsq0",
+    "web_deployment": "dep-datb8r67bikc73csq7l0",
     "data_version": "2025-26.20260714.1",
-    "qdrant_aliases": null
+    "qdrant_aliases": {
+      "knicks_box_scores": "knicks_box_scores__2025_26_20260714_1",
+      "knicks_games": "knicks_games__2025_26_20260714_1",
+      "knicks_possessions": "knicks_possessions__2025_26_20260714_1",
+      "knicks_reports": "knicks_reports__2025_26_20260714_1"
+    },
+    "evidence": "docs/release-evidence/candidate-ade107f-20261019/rollback-targets.json",
+    "scope": "Read-only capture of the live deployments, active data version and Qdrant aliases. It is not a restore rehearsal or a database backup."
   },
   "review_policy": "Agents audit every report. Owner approves template, exceptions, final hash-bound audit summary and evaluation labels in batches. Unresolved checks block release.",
   "observations": {
@@ -68,12 +136,21 @@
         "standing": 0
       },
       "verification": "Production frontend build, 2 report browser tests, formatting, empty detector result, desktop/mobile inspection with no overflow. Earlier full-suite evidence retains its original tested commit."
+    },
+    "llm_primary_latency": {
+      "path": "docs/release-evidence/candidate-ade107f-20261019/llm-primary-load.json",
+      "sha256": "75dd451d0e77245aa506b3c4b2a12e65f4e72b36cde5583a8939e6855548540a",
+      "result": "p50 5348 ms, p95 10500 ms over 20 turns at concurrency 10; 18 of 20 model-validated, error rate 0.0.",
+      "gate": "docs/evaluation.md requires analyst p95 below four seconds before promotion to llm_primary. This measurement exceeds it."
     }
   },
   "remaining_external_checks": [
-    "Restore Qdrant Cloud connectivity and verify aliases, release filters and production semantic evaluation",
-    "Owner approval of report template, scoreboard-correction exception, audit summary and evaluation-label batches",
-    "Bind complete approved evaluation and production-environment evidence to the tested commit",
+    "Owner approval of report template, scoreboard-correction exception, audit summary and evaluation-label batches, bound to content",
+    "Evaluation of all 120 labels with and without services, with ranked traces and the 50-case semantic cohort",
+    "Isolated-staging shadow evaluation and shadow dependency checks",
+    "Active archive identity and production router contracts, read immediately before promotion",
+    "A rollback snapshot that includes a restore rehearsal or fresh database backup",
+    "Decision on the llm_primary analyst latency gate",
     "Render CLI deployment followed by production smoke, browser and load checks"
   ],
   "services": {
@@ -86,5 +163,14 @@
       "url": "https://www.knicksiq.win"
     }
   },
-  "candidate_commit": "a460cd28c7f63bfaa2f03f5a9a5bce120b5b5507"
+  "candidate_commit": "ade107fe17b3a8ff0e59632bd45b3826e4499068",
+  "pre_promotion_configuration": {
+    "answer_mode": "shadow",
+    "shadow_sample_rate": 0.1,
+    "analyst_evidence_loop_enabled": true
+  },
+  "launch_configuration": {
+    "answer_mode": "llm_primary",
+    "analyst_evidence_loop_enabled": true
+  }
 }

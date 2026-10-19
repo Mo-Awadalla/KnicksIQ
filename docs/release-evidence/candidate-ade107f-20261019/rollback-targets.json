@@ -1,0 +1,23 @@
+{
+  "observed_by": "read-only Render API, public archive status, Qdrant alias list",
+  "api": {
+    "service": "srv-d9cgko8js32c73bbvu10",
+    "deployment": "dep-datb8759fdbs73b2gsq0",
+    "commit": "98d21753910b16440970d9081a2e352a4aacdb8d",
+    "finished_at": "2026-09-28T18:39:28.119338Z"
+  },
+  "web": {
+    "service": "srv-d9cgko8js32c73bbvu1g",
+    "deployment": "dep-datb8r67bikc73csq7l0",
+    "commit": "98d21753910b16440970d9081a2e352a4aacdb8d",
+    "finished_at": "2026-09-28T18:40:13.085838Z"
+  },
+  "data_version": "2025-26.20260714.1",
+  "activated_at": "2026-07-16T17:49:44.875782Z",
+  "qdrant_aliases": {
+    "knicks_box_scores": "knicks_box_scores__2025_26_20260714_1",
+    "knicks_games": "knicks_games__2025_26_20260714_1",
+    "knicks_possessions": "knicks_possessions__2025_26_20260714_1",
+    "knicks_reports": "knicks_reports__2025_26_20260714_1"
+  }
+}
