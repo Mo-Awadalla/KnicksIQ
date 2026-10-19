@@ -149,7 +149,7 @@ DECLINE = re.compile(
 )
 
 
-CLARIFY = re.compile(r"\b(which|do you mean|should i use|did you mean)\b", re.I)
+CLARIFY = re.compile(r"\b(which|do you mean|should i use|did you mean)\b[^?]*\?", re.I)
 
 
 def classify(body: dict, failures: list[dict]) -> str:
