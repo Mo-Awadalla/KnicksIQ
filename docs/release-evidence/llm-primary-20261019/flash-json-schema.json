@@ -1,0 +1,11 @@
+{
+ "scope": "llm_validated is reviewer acceptance. meets_expectation also requires a substantive answer for answerable questions and a decline for unsupported ones. Expectations come from unreviewed draft labels.",
+ "questions": 21,
+ "meets_expectation": 6,
+ "meets_expectation_rate": 0.286,
+ "outcomes": {
+  "fallback:review_rejected": 9,
+  "validated": 6,
+  "failed:orchestrate:ValueError": 6
+ }
+}
