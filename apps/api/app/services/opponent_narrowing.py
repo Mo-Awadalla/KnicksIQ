@@ -51,6 +51,7 @@ def lead_change_conditions(question: str) -> tuple[LeadCondition, ...]:
 def requires_lead_change(question: str) -> bool:
     return bool(lead_change_conditions(question))
 
+
 @dataclass(frozen=True)
 class LeadTransition:
     period: int
@@ -74,7 +75,6 @@ class LeadFlags:
     comeback: bool
     erased_deficit: bool
     transitions: tuple[LeadTransition, ...] = ()
-
 
 
 async def narrow_by_condition(
@@ -101,14 +101,10 @@ async def narrow_by_condition(
     lost, won = bool(_LOST.search(outcome_text)), bool(_WON.search(outcome_text))
     if lost != won and not record_request:
         if won:
-            selected = [
-                g for g in selected if g.status == "final" and scores(g)[0] > scores(g)[1]
-            ]
+            selected = [g for g in selected if g.status == "final" and scores(g)[0] > scores(g)[1]]
             requirements.append("a Knicks win")
         else:
-            selected = [
-                g for g in selected if g.status == "final" and scores(g)[0] < scores(g)[1]
-            ]
+            selected = [g for g in selected if g.status == "final" and scores(g)[0] < scores(g)[1]]
             requirements.append("a Knicks loss")
     if (lead_lost or comeback or erased_deficit) and selected:
         flags = await verified_lead_flags(db, selected)
@@ -132,15 +128,15 @@ async def narrow_by_condition(
             selected = []
         requirements.append("the smallest final margin")
     elif _BIGGEST_WIN.search(q):
-        wins = [
-            g for g in selected if g.status == "final" and scores(g)[0] > scores(g)[1]
-        ]
+        wins = [g for g in selected if g.status == "final" and scores(g)[0] > scores(g)[1]]
         value = max((scores(g)[0] - scores(g)[1] for g in wins), default=0)
         selected = [g for g in wins if scores(g)[0] - scores(g)[1] == value]
         requirements.append("the largest Knicks winning margin")
     if not requirements:
         return None
     return Narrowing(selected, " and ".join(dict.fromkeys(requirements)), unverified_games)
+
+
 async def verified_lead_flags(db: AsyncSession, games: list[Game]) -> dict[int, LeadFlags]:
     """Return lead transitions only for complete, internally consistent scoreboards."""
     rows = (
@@ -225,9 +221,14 @@ async def verified_lead_flags(db: AsyncSession, games: list[Game]) -> dict[int, 
                 trailed = True
             else:
                 erased_deficit = erased_deficit or trailed
-        if valid_scoreboard and has_observed_scores and previous == (
-            game.home_score,
-            game.away_score,
+        if (
+            valid_scoreboard
+            and has_observed_scores
+            and previous
+            == (
+                game.home_score,
+                game.away_score,
+            )
         ):
             flags[game.id] = LeadFlags(
                 lost_lead,
@@ -236,5 +237,3 @@ async def verified_lead_flags(db: AsyncSession, games: list[Game]) -> dict[int, 
                 tuple(transitions),
             )
     return flags
-
-
