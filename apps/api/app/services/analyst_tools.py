@@ -1867,7 +1867,7 @@ class AnalystTools:
                 ],
                 "dense_evidence_ids": [f"{self.release.version}:{e.evidence_id}" for e in dense],
                 "candidate_evidence_ids": [e.evidence_id for e in evidence],
-                "returned_evidence_ids": [e.evidence_id for e in evidence[:5]],
+                "returned_evidence_ids": [e.evidence_id for e in evidence],
                 "evidence": [e.model_dump(mode="json") for e in evidence],
                 "ranking": [
                     {
