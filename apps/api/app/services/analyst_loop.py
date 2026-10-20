@@ -2113,7 +2113,9 @@ class AnalystLoop:
             )
         expected_games = {g.id for g in games}
         discovery = re_search_discovery(self.tools.question)
-        threshold_request = is_player_threshold_question(self.tools.question)
+        threshold_request = is_player_threshold_question(self.tools.question) and bool(
+            scope.player_ids
+        )
         threshold = parse_stat_threshold(self.tools.question) if threshold_request else None
         threshold_listing = threshold_request and wants_game_listing(self.tools.question)
         team_groups = {
