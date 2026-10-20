@@ -7,7 +7,8 @@
     "answer_mode": "shadow",
     "shadow_sample_rate": 0.1,
     "hosting": "existing Render services",
-    "automatic_deployments": false
+    "automatic_deployments": false,
+    "scope": "Historical configuration for tested_commit only; not the planned launch configuration."
   },
   "hashes": {
     "data": "b2ad21c69175600c3192ef6133f8c11fd63890609a8204f92508a5fb04d05170",
@@ -80,7 +81,7 @@
       "tested_commit": "ade107fe17b3a8ff0e59632bd45b3826e4499068",
       "path": "docs/release-evidence/candidate-ade107f-20261019/warm-load-shadow.json",
       "sha256": "88af56c761e5d8b742fa7069f54ed99b5f109a9c65b2d2294348706ffd2d5276",
-      "scope": "Pre-promotion configuration only (shadow at 10%, evidence loop on, deterministic delivery; the load tool sends no turn_id, so no request reaches the model). Local restore of bundle 549af2ed..., Qdrant and providers off. Ten distinct analyst questions plus ten archive readers for 30 s. The llm_primary launch configuration was measured separately in llm-primary-load.json and does NOT meet the 4 s analyst p95: see observations.llm_primary_latency.",
+      "scope": "Historical pre-promotion shadow measurement for tested_commit only; it is not the launch target. This local tool sent no turn_id, so no request reached the model. The llm_primary measurement is recorded separately in llm-primary-load.json; its 10.5-second p95 meets the owner's 15-second launch target locally, while hosted latency remains unmeasured.",
       "metrics": {
         "concurrency": 10,
         "archive_p95_ms": 115.58,
@@ -154,7 +155,7 @@
   },
   "remaining_external_checks": [
     "Owner approval of report template, scoreboard-correction exception, audit summary and evaluation-label batches, bound to content",
-    "Evaluation of all 120 labels with and without services, with ranked traces and the 50-case semantic cohort",
+    "Evaluation of all 120 labels with and without services, ranked traces for answer cases, reviewed candidate-game lists for semantic clarifications, and the fixed 50-case semantic cohort",
     "Active archive identity and production router contracts, read immediately before promotion",
     "A rollback snapshot that includes a restore rehearsal or fresh database backup",
     "Render CLI deployment followed by production smoke, browser and load checks"
@@ -172,6 +173,8 @@
   "candidate_commit": "ade107fe17b3a8ff0e59632bd45b3826e4499068",
   "launch_configuration": {
     "answer_mode": "llm_primary",
-    "analyst_evidence_loop_enabled": true
+    "analyst_evidence_loop_enabled": true,
+    "openrouter_monthly_cutoff_usd": 20,
+    "openrouter_monthly_cutoff_authorization": "Explicit deployment authorization required; current Render settings remain unchanged."
   }
 }

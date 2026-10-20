@@ -184,6 +184,37 @@ def test_readiness_has_no_shadow_stage_but_keeps_launch_and_approval_gates(tmp_p
     assert not any("shadow" in f for f in failures)
 
 
+def test_readiness_still_binds_frozen_contract_and_label_approval(tmp_path):
+    record = ready_record(tmp_path)
+    assert gate.validate_readiness(record, tmp_path) == []
+
+    contract_path = tmp_path / record["evaluation_contract"]["path"]
+    contract_path.write_text(contract_path.read_text() + " ")
+    assert any(
+        "evaluation contract" in failure.lower()
+        for failure in gate.validate_readiness(record, tmp_path)
+    )
+
+    approval_root = tmp_path / "mismatched-approval"
+    approval_root.mkdir()
+    record = ready_record(approval_root)
+    record["approvals"]["evaluation_labels"].update(
+        artifact(
+            approval_root,
+            "evaluation_labels-approval",
+            {
+                "owner": "synthetic owner",
+                "approved_at": "2026-01-01",
+                "expectations_sha256": "0" * 64,
+            },
+        )
+    )
+    assert any(
+        "evaluation contract" in failure.lower()
+        for failure in gate.validate_readiness(record, approval_root)
+    )
+
+
 @pytest.mark.parametrize(
     "defect",
     [

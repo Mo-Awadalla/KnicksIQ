@@ -1,20 +1,24 @@
-"""Build the 120-case evaluation expectations contract from the agent-reviewed label package.
+"""Build the 120-case evaluation expectations contract from reviewed labels.
 
-The release runner (`app.evaluation.release_runner`) scores only against a frozen contract that the
-owner has approved by its SHA-256. This builder makes that contract from the existing proposals
-without changing any question, category or disposition. Cases the proposals cannot settle stay
-`unresolved`, and the contract stays a `draft`, until the owner supplies an adjudication for each.
+The release runner scores only against a frozen contract with separate
+hash-bound owner approval. This builder keeps the original questions and
+cohort; unresolved adjudications leave the contract as a draft.
 
     uv run --package knicksiq-api python tools/release/build_eval_contract.py \
         --adjudications ADJUDICATIONS.json --output expectations.json
 
-ADJUDICATIONS.json maps a case id to {"semantic_targets": [...], "decision_basis": "..."}. Only the
-owner writes it. The builder never invents a target. A semantic case ruled a context-free
-clarification (for example "that game" with no earlier game) has no candidate games: its entry has
-"semantic_targets": [] and "context_free_clarification": true, and the case must expect `clarify`.
+ADJUDICATIONS.json maps a case id to `semantic_targets` and `decision_basis`.
+It may also override `disposition` and `facts` or set
+`context_free_clarification`. Facts must use the existing canonical-fact shape.
+A reviewer may prepare adjudications, but the owner separately approves the
+exact frozen contract hash. The builder never invents targets or facts.
 
-Retrieval is scored as Recall@k with k = max(5, number of targets), so a question's full scope is
-never capped to fit the metric.
+A context-free clarification has empty conversation context and no candidate
+games. Its entry has empty `semantic_targets`, sets
+`context_free_clarification: true`, and expects `clarify`.
+
+Retrieval answers use Recall@k with k = max(5, number of targets), so no target
+list is capped to fit the metric.
 """
 
 from __future__ import annotations
@@ -39,9 +43,44 @@ def read_jsonl(path: Path) -> list[dict]:
     return [json.loads(line) for line in path.read_text().splitlines() if line.strip()]
 
 
+def _valid_canonical_facts(facts: object) -> bool:
+    if not isinstance(facts, list):
+        return False
+    for fact in facts:
+        if not isinstance(fact, dict):
+            return False
+        evidence_ids = fact.get("canonical_evidence_ids")
+        if (
+            not isinstance(fact.get("metric"), str)
+            or not fact["metric"].strip()
+            or not isinstance(fact.get("scope"), str)
+            or not fact["scope"].strip()
+            or "value" not in fact
+            or not isinstance(evidence_ids, list)
+            or not evidence_ids
+            or any(not isinstance(item, str) or not item for item in evidence_ids)
+            or len(evidence_ids) != len(set(evidence_ids))
+        ):
+            return False
+    return True
+
+
 def build(adjudications: dict[str, dict]) -> tuple[dict, list[dict]]:
     questions = read_jsonl(QUESTIONS)
     labels = {label["id"]: label for label in read_jsonl(LABELS)}
+    if not isinstance(adjudications, dict):
+        raise ValueError("Adjudications must be an object")
+    question_ids = {question["id"] for question in questions}
+    if set(adjudications) - question_ids:
+        raise ValueError("Adjudications contain unknown case IDs")
+    allowed_adjudication_fields = {
+        "semantic_targets",
+        "decision_basis",
+        "disposition",
+        "facts",
+        "context_free_clarification",
+    }
+    required_adjudication_fields = {"semantic_targets", "decision_basis"}
     cases, unresolved = [], []
     for question in questions:
         label = labels[question["id"]]
@@ -67,20 +106,74 @@ def build(adjudications: dict[str, dict]) -> tuple[dict, list[dict]]:
         }
         if semantic:
             case["semantic_targets"] = proposal["canonical_evidence_ids"]
-        adjudication = adjudications.get(question["id"])
-        if adjudication:
-            case["semantic_targets"] = adjudication["semantic_targets"]
-            case["decision_basis"] = adjudication["decision_basis"]
-            if adjudication.get("context_free_clarification") is True:
-                case["context_free_clarification"] = True
-        context_free = case.get("context_free_clarification", False)
         problems = []
+        if question["id"] in adjudications:
+            adjudication = adjudications[question["id"]]
+            if not isinstance(adjudication, dict):
+                problems.append("adjudication must be an object")
+                adjudication = {}
+            unknown = set(adjudication) - allowed_adjudication_fields
+            missing = required_adjudication_fields - set(adjudication)
+            if unknown:
+                problems.append("adjudication has unsupported fields")
+            if missing:
+                problems.append("adjudication is missing required fields")
+            if "semantic_targets" in adjudication:
+                targets = adjudication["semantic_targets"]
+                if (
+                    not isinstance(targets, list)
+                    or any(not isinstance(item, str) or not item for item in targets)
+                    or len(targets) != len(set(targets))
+                ):
+                    problems.append("adjudicated targets must be unique nonempty strings")
+                else:
+                    case["semantic_targets"] = targets
+            if "decision_basis" in adjudication:
+                basis = adjudication["decision_basis"]
+                if not isinstance(basis, str) or not basis.strip():
+                    problems.append("adjudication decision_basis must be a nonempty string")
+                else:
+                    case["decision_basis"] = basis
+            if "disposition" in adjudication:
+                disposition = adjudication["disposition"]
+                if not isinstance(disposition, str) or disposition not in {
+                    "answer",
+                    "clarify",
+                    "refuse",
+                }:
+                    problems.append("adjudicated disposition is invalid")
+                else:
+                    case["disposition"] = disposition
+            if "facts" in adjudication:
+                facts = adjudication["facts"]
+                if not _valid_canonical_facts(facts):
+                    problems.append("adjudicated facts must use the canonical fact shape")
+                else:
+                    case["facts"] = facts
+            if "context_free_clarification" in adjudication:
+                context_free = adjudication["context_free_clarification"]
+                if type(context_free) is not bool:
+                    problems.append("context_free_clarification must be boolean")
+                elif context_free:
+                    case["context_free_clarification"] = True
+        context_free = case.get("context_free_clarification") is True
+        targets = case.get("semantic_targets", [])
+        if (
+            not isinstance(targets, list)
+            or any(not isinstance(item, str) or not item for item in targets)
+            or len(targets) != len(set(targets))
+        ):
+            problems.append("semantic targets must be unique nonempty strings")
         if context_free and (not semantic or case["disposition"] != "clarify"):
             problems.append("context-free clarification on a case that does not expect clarify")
-        if context_free and case.get("semantic_targets"):
+        if context_free and case.get("context"):
+            problems.append("context-free clarification cannot discard conversation context")
+        if context_free and targets:
             problems.append("context-free clarification must not name retrieval targets")
-        if semantic and not case.get("semantic_targets") and not context_free:
+        if semantic and not targets and not context_free:
             problems.append("semantic member without a retrieval target")
+        if not _valid_canonical_facts(case["facts"]):
+            problems.append("facts must use the canonical fact shape")
         if case["disposition"] == "answer" and not case["facts"]:
             problems.append("answer disposition without canonical facts")
         if problems:
