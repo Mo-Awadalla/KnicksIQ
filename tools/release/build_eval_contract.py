@@ -23,6 +23,8 @@ ROOT = Path(__file__).resolve().parents[2]
 QUESTIONS = ROOT / "apps/api/app/evaluation/questions.jsonl"
 LABELS = ROOT / "docs/release-evidence/evaluation-label-review-20260907/labels.jsonl"
 SCORING_VERSION = "release-review-v1"
+RECALL_GATE = 0.95
+TOP_K = 5
 
 
 def file_hash(path: Path) -> str:
@@ -76,9 +78,33 @@ def build(adjudications: dict[str, dict]) -> tuple[dict, list[dict]]:
                 {"id": case["id"], "question": case["question"], "problems": problems}
             )
         cases.append(case)
+    # Recall@5 for one case can never exceed 5 / len(targets). A best possible mean below the gate
+    # means the targets are source populations, not reviewed relevant documents. Do not freeze.
+    semantic = [c for c in cases if c["semantic_member"]]
+    ceiling = sum(
+        min(1.0, TOP_K / len(c["semantic_targets"])) if c.get("semantic_targets") else 1.0
+        for c in semantic
+    ) / len(semantic)
+    oversized = [
+        {"id": c["id"], "targets": len(c["semantic_targets"])}
+        for c in semantic
+        if len(c.get("semantic_targets") or []) > TOP_K
+    ]
+    if ceiling < RECALL_GATE:
+        for item in oversized:
+            unresolved.append(
+                {
+                    "id": item["id"],
+                    "problems": [
+                        f"{item['targets']} targets cap Recall@{TOP_K} below 1; "
+                        "review which are relevant"
+                    ],
+                }
+            )
     contract = {
         "version": 1,
         "status": "draft" if unresolved else "frozen",
+        "recall_ceiling": round(ceiling, 4),
         "scoring_version": SCORING_VERSION,
         "questions_sha256": file_hash(QUESTIONS),
         "labels_sha256": file_hash(LABELS),
@@ -100,6 +126,7 @@ def main() -> None:
             {
                 "status": contract["status"],
                 "expectations_sha256": file_hash(args.output),
+                "recall_ceiling": contract["recall_ceiling"],
                 "unresolved": unresolved,
             },
             indent=2,

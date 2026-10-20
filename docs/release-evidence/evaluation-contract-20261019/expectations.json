@@ -10391,6 +10391,7 @@
  ],
  "labels_sha256": "7c3c549e6a540f4ce03a3fa4ba38821ddc6f7641c9d081270cff8607ec9b007e",
  "questions_sha256": "a546b99c36fedb59a475479016b0338fe113c4478d5165c4a5073d144ffdf482",
+ "recall_ceiling": 0.9433,
  "scoring_version": "release-review-v1",
  "status": "draft",
  "version": 1
