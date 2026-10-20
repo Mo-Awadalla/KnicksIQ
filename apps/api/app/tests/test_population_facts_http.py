@@ -2,6 +2,7 @@
 
 from datetime import UTC, date, datetime
 
+import pytest
 from app.core.db import AsyncSessionLocal
 from app.models.box_score import PlayerGameStat
 from app.models.dataset_release import DatasetRelease
@@ -405,3 +406,59 @@ async def test_christmas_day_scoring_leader_uses_date_scoped_player_rows_http(
     claim = next(c for c in result["claims"] if c["metric_id"] == "points:leaders")
     assert claim["value"] == {"leaders": ["Jalen Brunson"], "total": 34}
     assert claim["game_ids"] and len(claim["game_ids"]) == 1
+
+
+@pytest.mark.parametrize(
+    ("question", "total", "expected_dates"),
+    [
+        (
+            "Who led the team in scoring over the last 3 games?",
+            93,
+            (date(2026, 1, 28), date(2026, 2, 4), date(2026, 3, 13)),
+        ),
+        (
+            "Who led the team in scoring in the first 2 games?",
+            81,
+            (date(2025, 12, 21), date(2025, 12, 25)),
+        ),
+    ],
+)
+async def test_player_leader_uses_requested_game_window_http(
+    client,
+    local_redis,  # noqa: F811
+    monkeypatch,
+    tmp_path,
+    record_property,
+    question,
+    total,
+    expected_dates,
+):
+    """Neither the full-season total nor a superseded release may replace the window."""
+    await seed_population_release()
+    receipt = await request(
+        client,
+        local_redis,
+        monkeypatch,
+        tmp_path,
+        record_property,
+        f"leader-window-{len(expected_dates)}",
+        question,
+        metric="leaders",
+    )
+    claim = next(c for c in tool_result(receipt)["claims"] if c["metric_id"] == "points:leaders")
+    assert claim["value"] == {"leaders": ["Jalen Brunson"], "total": total}
+    assert claim["sample_size"] == len(expected_dates)
+    async with AsyncSessionLocal() as db:
+        expected_games = set(
+            (
+                await db.execute(
+                    select(Game.id)
+                    .join(DatasetRelease, Game.release_id == DatasetRelease.id)
+                    .where(
+                        DatasetRelease.version == VERSION,
+                        Game.game_date.in_(expected_dates),
+                    )
+                )
+            ).scalars()
+        )
+    assert set(claim["game_ids"]) == expected_games

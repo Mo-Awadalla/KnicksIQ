@@ -56,10 +56,7 @@ def _has_game_anchor(content: str) -> bool:
     )
     opponents = team_ids_in_text(content) - {"NYK"}
     return bool(
-        _DATES.search(content)
-        or re.search(month, q)
-        or re.search(selector, q)
-        or opponents
+        _DATES.search(content) or re.search(month, q) or re.search(selector, q) or opponents
     ) and not re.search(r"\bper\s+game\b", q)
 
 
@@ -136,14 +133,8 @@ def _resolve_delivered_game_group(
             and any(current.opponent_id not in {g.home_team_id, g.away_team_id} for g in selected)
         )
         or (current.season_type and any(g.season_type != current.season_type for g in selected))
-        or (
-            current.home_away == "home"
-            and any(game.home_team_id != "NYK" for game in selected)
-        )
-        or (
-            current.home_away == "away"
-            and any(game.away_team_id != "NYK" for game in selected)
-        )
+        or (current.home_away == "home" and any(game.home_team_id != "NYK" for game in selected))
+        or (current.home_away == "away" and any(game.away_team_id != "NYK" for game in selected))
     ):
         return missing_game(current)
 
@@ -223,12 +214,12 @@ def resolve_game_reference(
             selected = scope_games(content, games)
             if "closest" in q and selected:
                 value = min(abs(scores(game)[0] - scores(game)[1]) for game in selected)
-                selected = [game for game in selected if abs(scores(game)[0] - scores(game)[1]) == value]
+                selected = [
+                    game for game in selected if abs(scores(game)[0] - scores(game)[1]) == value
+                ]
             elif any(term in q for term in ("biggest win", "best win")) and selected:
                 value = max(scores(game)[0] - scores(game)[1] for game in selected)
-                selected = [
-                    game for game in selected if scores(game)[0] - scores(game)[1] == value
-                ]
+                selected = [game for game in selected if scores(game)[0] - scores(game)[1] == value]
             elif "best defensive game" in q and selected:
                 value = min(scores(game)[1] for game in selected)
                 selected = [game for game in selected if scores(game)[1] == value]
@@ -262,6 +253,7 @@ def resolve_game_reference(
             }
         )
     return missing_game(current)
+
 
 def missing_game(scope: ResolvedQuery) -> ResolvedQuery:
     return scope.model_copy(
