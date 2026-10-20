@@ -228,10 +228,22 @@ definition alongside the full contributing game population.
 Yearless calendar dates resolve only within the release-supported calendar;
 ambiguous or invalid dates ask for clarification. An uncommitted conversational
 reference requires both a game/date and the referenced event, stretch, or claim,
-plus comparison inputs when needed. Scoped ambiguous game questions offer the
-actual archived dates without asserting a matching-game count. Ambiguous scoring
-sequences ask for both the game and the run measure/time-window definition.
-A request for two games does not silently expand to all matching games.
+plus comparison inputs when needed.
+
+Scoped ambiguous game questions offer actual archived dates without asserting
+a matching-game count. Explicit win, loss, closest, and biggest-win conditions
+use final scores. A lost lead requires the opponent to lead after a Knicks lead;
+a comeback requires the Knicks to lead after trailing; an erased deficit may
+include a later tie. These lead/tie definitions are draft semantics pending owner review.
+Missing, nonmonotonic, or unreconciled scoreboards trigger an unverified-data
+clarification instead of being counted as matches or no matches.
+For a one-fit lead-change question, the canonical narrative carries the final
+score and the first verified transition pair witnessing each requested condition,
+not every scoreboard transition. Its prepared claim evidence is prioritized over
+unrelated retrieval receipts so review can retain all sources the writer cites.
+Ambiguous scoring sequences ask for both the game and the run
+measure/time-window definition. A request for two games does not silently expand
+to all matching games.
 
 
 ## Session API

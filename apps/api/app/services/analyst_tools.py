@@ -125,7 +125,25 @@ class AnalystTools:
             data_version=self.release.version,
             select_extrema=False,
         )
-        self.scope = resolve_game_reference(self.question, self.scope, self.context, self.games)
+        previous_release = self.state.get("release")
+        previous_intent = self.state.get("intent")
+        raw_previous_scope = self.state.get("scope")
+        previous_scope = raw_previous_scope if isinstance(raw_previous_scope, dict) else None
+        previous_claims: list[VerifiedClaim] = []
+        if previous_release == self.release.version:
+            for raw in self.state.get("claims", []):
+                claim = VerifiedClaim.model_validate(raw)
+                if claim.release_id == self.release.version:
+                    previous_claims.append(claim)
+        self.scope = resolve_game_reference(
+            self.question,
+            self.scope,
+            self.context,
+            self.games,
+            delivered_claims=previous_claims,
+            prior_intent=previous_intent,
+            prior_scope=previous_scope,
+        )
         if (
             self.scope.date_start
             and self.scope.date_end
@@ -133,7 +151,10 @@ class AnalystTools:
             and re.search(r"\b(between|from|through|until)\b", self.question, re.I)
         ):
             self.scope = self.scope.model_copy(update={"game_ids": []})
-        prior = self.state.get("scope", {})
+        leader_query = bool(
+            re.search(r"\b(?:who|which player)\b", self.question, re.I)
+            and re.search(r"\b(?:lead|led|leading|leader|most|highest|top)\b", self.question, re.I)
+        )
         followup = bool(
             re.search(
                 r"\b(he|him|his|that|another|different player)\b|^\s*(why|now|and|what about)",
@@ -141,9 +162,13 @@ class AnalystTools:
                 re.I,
             )
         )
-        if followup:
+        if followup and not leader_query and not self.scope.requires_clarification:
             updates = {}
             for key in ("player_ids", "season_type", "opponent_id", "home_away", "game_result"):
+                if key == "player_ids" and not re.search(
+                    r"\b(?:he|him|his)\b|^\s*(?:and|what about)\b", self.question, re.I
+                ):
+                    continue
                 if key == "game_result" and is_record_request(self.question):
                     continue
                 if not getattr(self.scope, key) and prior.get(key):
@@ -201,17 +226,17 @@ class AnalystTools:
                     "clarification_options": sorted({p.full_name for _, p in self.rows}),
                 }
             )
+        if leader_query or self.scope.requires_clarification:
+            self.state["claims"] = []
+            self.state["evidence"] = []
         self.state["scope"] = self.scope.model_dump(mode="json")
         self.state["scope_origin"] = "user" if not followup else "verified_followup"
         self.state["intent"] = self.question[:1200]
-        # Immutable release references are revalidated for identity and integrity at admission.
-        if self.state.get("release") == self.release.version:
+        if previous_release == self.release.version and not leader_query and not self.scope.requires_clarification:
             permitted_games = {g.id for g in self.selected_games(self.scope)}
-            for raw in self.state.get("claims", []):
-                claim = VerifiedClaim.model_validate(raw)
+            for claim in previous_claims:
                 if (
-                    claim.release_id == self.release.version
-                    and set(claim.game_ids or []) <= permitted_games
+                    set(claim.game_ids or []) <= permitted_games
                     and (
                         not self.scope.player_ids
                         or claim.subject_id in {f"player:{pid}" for pid in self.scope.player_ids}
@@ -225,7 +250,7 @@ class AnalystTools:
                 if item.release_id == self.release.version:
                     self.evidence[item.evidence_id] = item
                     self.issued_evidence_ids.add(item.evidence_id)
-        else:
+        elif previous_release != self.release.version:
             self.state["delivered_fact_ids"] = []
         self.state["release"] = self.release.version
 
