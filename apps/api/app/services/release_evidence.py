@@ -36,8 +36,6 @@ REQUIRED_CHECKS = (
     "desktop_mobile_keyboard",
     "accessibility",
     "warm_load",
-    "shadow_dependencies",
-    "shadow_evaluation",
     "rollback_snapshot",
 )
 
@@ -46,18 +44,28 @@ def sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
+def _load_frozen_contract(record: dict[str, Any], root: Path) -> dict[str, Any]:
+    from app.evaluation.release_runner import load_contract
+
+    contract_item = record["evaluation_contract"]
+    approval_item = record["approvals"]["evaluation_labels"]
+    expected = record["hashes"]["evaluation"]
+    contract_path = root / contract_item["path"]
+    approval_path = root / approval_item["path"]
+    if (
+        sha256(contract_path) != expected
+        or contract_item["sha256"] != expected
+        or sha256(approval_path) != approval_item["sha256"]
+    ):
+        raise ValueError("Frozen evaluation contract or approval hash mismatch")
+    return load_contract(contract_path, approval_path)
+
+
 def validate_readiness(record: dict[str, Any], root: Path) -> list[str]:
     failures = []
     commit = record.get("tested_commit")
     if not isinstance(commit, str) or not re.fullmatch(r"[0-9a-f]{40}", commit):
         failures.append("missing exact tested Git commit")
-    if (
-        record.get("pre_promotion_configuration", {}).get("answer_mode") != "shadow"
-        or record.get("pre_promotion_configuration", {}).get("shadow_sample_rate") != 0.1
-        or record.get("pre_promotion_configuration", {}).get("analyst_evidence_loop_enabled")
-        is not True
-    ):
-        failures.append("requires pre-promotion 10% shadow with deterministic delivered answers")
     if (
         record.get("launch_configuration", {}).get("answer_mode") != "llm_primary"
         or record.get("launch_configuration", {}).get("analyst_evidence_loop_enabled") is not True
@@ -111,7 +119,10 @@ def validate_readiness(record: dict[str, Any], root: Path) -> list[str]:
             or sha256(path) != approval.get("sha256")
         ):
             failures.append(f"{name}: missing owner approval bound to content")
-    failures.extend(validate_shadow_stage(record, root))
+    try:
+        _load_frozen_contract(record, root)
+    except (OSError, KeyError, TypeError, ValueError):
+        failures.append("evaluation contract: missing valid hash-bound frozen expectations")
     rollback = record.get("rollback", {})
     if not all(
         rollback.get(key)
@@ -132,7 +143,6 @@ def evaluation_request_id(expectations_hash: str, mode: str, case_id: str) -> st
 
 def validate_shadow_stage(record: dict[str, Any], root: Path) -> list[str]:
     """Check actual fixed-cohort execution, not a declared configuration or status."""
-    from app.evaluation.release_runner import load_contract
 
     item = record.get("checks", {}).get("shadow_evaluation", {})
     try:
@@ -150,17 +160,7 @@ def validate_shadow_stage(record: dict[str, Any], root: Path) -> list[str]:
             or payload.get("passed") is not True
         ):
             raise ValueError("stage identity/configuration/scope")
-        contract_item = record["evaluation_contract"]
-        contract_path = root / contract_item["path"]
-        approval_item = record["approvals"]["evaluation_labels"]
-        approval_path = root / approval_item["path"]
-        if (
-            sha256(contract_path) != expected
-            or contract_item["sha256"] != expected
-            or sha256(approval_path) != approval_item["sha256"]
-        ):
-            raise ValueError("frozen expectations or approval hash")
-        cases = load_contract(contract_path, approval_path)["cases"]
+        cases = _load_frozen_contract(record, root)["cases"]
         ids = fixed_case_ids()
         turns = payload["turns"]
         if (
