@@ -142,6 +142,14 @@
       "sha256": "75dd451d0e77245aa506b3c4b2a12e65f4e72b36cde5583a8939e6855548540a",
       "result": "p50 5348 ms, p95 10500 ms over 20 turns at concurrency 10; 18 of 20 model-validated, error rate 0.0.",
       "gate": "docs/evaluation.md requires analyst p95 below 15 seconds before promotion to llm_primary (relaxed by the owner from four seconds on 2026-10-19). This local measurement meets it; hosted latency is unmeasured."
+    },
+    "bundle_confirmation": {
+      "owner": "project owner via explicit chat confirmation",
+      "confirmed_at": "2026-10-20",
+      "bundle": "release-artifacts/2025-26/reliability-approved-20260928.json.gz",
+      "sha256": "549af2edd0d195eff60bb318bdc58a8c8e217ea0359c0684d492d5292dcb595b",
+      "data_version": "2025-26.20260928.1",
+      "scope": "Confirms which bundle to activate. Not a deployment, activation or launch approval."
     }
   },
   "remaining_external_checks": [
