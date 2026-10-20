@@ -1077,6 +1077,17 @@ async def query_analysis(
             )
         if resolved_query.requires_clarification:
             choices = "; ".join(resolved_query.clarification_options)
+            if resolved_query.clarification_reason == "unverified_game_condition":
+                answer = (
+                    "Short answer\n"
+                    "I cannot verify the requested lead-change condition for every candidate "
+                    "because some play-by-play score sequences are missing, malformed, or do "
+                    "not reconcile with the final score. Which archived game date should I use?"
+                )
+            else:
+                answer = "Short answer\nI found more than one valid match. Which one did you mean?"
+            if choices:
+                answer += f"\n\nOptions\n{choices}"
             return AnalysisQueryResponse(
                 **response_metadata,
                 route="clarification",
@@ -1084,11 +1095,7 @@ async def query_analysis(
                 resolved_query=resolved_query.model_dump(mode="json"),
                 conversation_state=conversation_state,
                 warnings=[resolved_query.clarification_reason or "ambiguous_reference"],
-                answer=(
-                    "Short answer\n"
-                    "I found more than one valid match. Which one did you mean?"
-                    + (f"\n\nOptions\n{choices}" if choices else "")
-                ),
+                answer=answer,
                 citations=[],
                 tool_calls=[
                     {
@@ -1939,6 +1946,7 @@ async def _query_evidence_analyst(
                 if tools.scope.clarification_reason in {
                     "missing_conversation_game",
                     "ambiguous_game",
+                    "unverified_game_condition",
                 }:
                     clarification = (
                         await narrative_clarification(
