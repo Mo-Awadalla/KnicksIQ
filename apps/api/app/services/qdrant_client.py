@@ -358,32 +358,37 @@ def validate_candidate_identity(
         raise RuntimeError(f"Candidate source IDs are incomplete: {collection}")
 
 
-def is_qdrant_healthy(client: Any | None = None) -> bool:
-    """Cache usable-target checks for 30s; cap caller waiting at 250ms.
+def qdrant_health_status(client: Any | None = None) -> str:
+    """Return "ok", "degraded" or "checking"; cache results for 30s, wait at most 250ms.
 
-    A single shared in-flight probe prevents request-time probe amplification.
-    Optional retrieval failure never prevents deterministic archive answers.
+    A single shared in-flight probe prevents request-time probe amplification. A probe
+    that outlives the wait reports the last completed result, or "checking" before the
+    first one, so a cold cache is never mistaken for a failure.
     """
     global _health_future, _health_checked_at, _health_result
     if not get_settings().rag_qdrant_enabled:
-        return False
+        return "degraded"
     with _health_lock:
         if client is None and time.monotonic() - _health_checked_at < 30:
-            return _health_result
+            return "ok" if _health_result else "degraded"
         if _health_future is None:
             _health_future = _health_pool.submit(inspect_retrieval_targets, client)
         future = _health_future
+        known = _health_checked_at > 0
+        last = _health_result
     try:
         result = bool(future.result(timeout=0.25)["usable"])
     except TimeoutError:
-        return False
+        if not known:
+            return "checking"
+        return "ok" if last else "degraded"
     except Exception:
         result = False
     with _health_lock:
         _health_result = result
         _health_checked_at = time.monotonic()
         _health_future = None
-    return result
+    return "ok" if result else "degraded"
 
 
 def _match_any(values: set[Any] | list[Any]):
