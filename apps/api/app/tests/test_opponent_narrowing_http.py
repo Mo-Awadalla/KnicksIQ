@@ -289,9 +289,7 @@ async def test_deterministic_one_fit_returns_only_verified_lead_narrative(
     assert body["route"] != "clarification", body["answer"]
     assert not any(call["tool"].startswith("llm_") for call in body["tool_calls"])
     claims = [
-        item["metadata"]["claim"]
-        for item in body["citations"]
-        if item["type"] == "verified_claim"
+        item["metadata"]["claim"] for item in body["citations"] if item["type"] == "verified_claim"
     ]
     narratives = [claim for claim in claims if claim["metric_id"] == "canonical_game_narrative"]
     assert len(narratives) == 1, body
