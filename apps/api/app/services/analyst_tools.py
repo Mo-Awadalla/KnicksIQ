@@ -157,7 +157,7 @@ class AnalystTools:
                 re.I,
             )
         )
-        if followup and not leader_query:
+        if followup and not leader_query and not self.scope.requires_clarification:
             updates = {}
             for key in ("player_ids", "season_type", "opponent_id", "home_away", "game_result"):
                 if key == "player_ids" and not re.search(
@@ -221,29 +221,31 @@ class AnalystTools:
                     "clarification_options": sorted({p.full_name for _, p in self.rows}),
                 }
             )
+        if leader_query or self.scope.requires_clarification:
+            self.state["claims"] = []
+            self.state["evidence"] = []
         self.state["scope"] = self.scope.model_dump(mode="json")
         self.state["scope_origin"] = "user" if not followup else "verified_followup"
         self.state["intent"] = self.question[:1200]
-        if previous_release == self.release.version:
-            if not leader_query:
-                permitted_games = {g.id for g in self.selected_games(self.scope)}
-                for claim in previous_claims:
-                    if (
-                        set(claim.game_ids or []) <= permitted_games
-                        and (
-                            not self.scope.player_ids
-                            or claim.subject_id in {f"player:{pid}" for pid in self.scope.player_ids}
-                        )
-                        and not self.different
-                        and not re.search(r"\b(another|one more)\b", self.question, re.I)
-                    ):
-                        self.claims[claim.claim_id] = claim
-                for raw in self.state.get("evidence", []):
-                    item = Evidence.model_validate(raw)
-                    if item.release_id == self.release.version:
-                        self.evidence[item.evidence_id] = item
-                        self.issued_evidence_ids.add(item.evidence_id)
-        else:
+        if previous_release == self.release.version and not leader_query and not self.scope.requires_clarification:
+            permitted_games = {g.id for g in self.selected_games(self.scope)}
+            for claim in previous_claims:
+                if (
+                    set(claim.game_ids or []) <= permitted_games
+                    and (
+                        not self.scope.player_ids
+                        or claim.subject_id in {f"player:{pid}" for pid in self.scope.player_ids}
+                    )
+                    and not self.different
+                    and not re.search(r"\b(another|one more)\b", self.question, re.I)
+                ):
+                    self.claims[claim.claim_id] = claim
+            for raw in self.state.get("evidence", []):
+                item = Evidence.model_validate(raw)
+                if item.release_id == self.release.version:
+                    self.evidence[item.evidence_id] = item
+                    self.issued_evidence_ids.add(item.evidence_id)
+        elif previous_release != self.release.version:
             self.state["delivered_fact_ids"] = []
         self.state["release"] = self.release.version
 

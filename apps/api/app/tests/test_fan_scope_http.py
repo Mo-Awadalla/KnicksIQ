@@ -280,6 +280,52 @@ async def test_that_night_reuses_recent_game_identity_and_recomputes_leader(
     assert leaders[0]["game_ids"] == [ids["denver"]]
     assert "Karl-Anthony Towns" in leaders[0]["statement"] and "12" in leaders[0]["statement"]
 
+
+async def test_release_mismatch_requires_fresh_game_identity(
+    client, local_redis, monkeypatch, tmp_path, record_property
+):
+    disable_provider(monkeypatch)
+    await seed_scope_cases()
+    first_payload = {
+        "question": "How many points did JB score on 2026-01-03?",
+        "turn_id": "scope-release-first",
+        "expected_revision": 0,
+    }
+    first = await client.post("/analysis/query", json=first_payload)
+    initial = first.json()
+    session_key = f"analyst:{{{initial['session_token']}}}"
+    raw_state = await local_redis.hget(session_key, "state")
+    assert raw_state
+    state = json.loads(raw_state)
+    state["release"] = "retired-release"
+    state["scope"]["data_version"] = "retired-release"
+    await local_redis.hset(session_key, "state", json.dumps(state))
+    payload = {
+        "question": "How did JB play in that game?",
+        "context": [message("The Boston game on 2026-01-03.")],
+        "turn_id": "scope-release-followup",
+        "session_token": initial["session_token"],
+        "expected_revision": initial["revision"],
+    }
+    with capture_turn() as capture:
+        response = await client.post("/analysis/query", json=payload)
+    body = response.json()
+    save_receipt(
+        tmp_path,
+        record_property,
+        "release-mismatch",
+        {
+            "first_request": first_payload,
+            "first": initial,
+            "request": payload,
+            "response": body,
+            "capture": capture,
+        },
+    )
+    assert first.status_code == response.status_code == 200
+    assert body["route"] == "clarification" and body["citations"] == []
+    assert capture["turn"]["model_calls"] == 0
+
 async def test_date_with_multiple_game_identities_still_clarifies(
     client, local_redis, monkeypatch, tmp_path, record_property
 ):
