@@ -12,8 +12,8 @@ immutable archive.
 - Qdrant Cloud: external release-versioned vector store supplied through
   `QDRANT_URL` and `QDRANT_API_KEY`.
 
-Production starts in sampled LLM shadow mode with Qdrant Cloud Inference and
-hybrid retrieval enabled. Qdrant, Redis, OpenRouter, and Sentry remain optional
+Launch goes straight to `llm_primary` with no sampled shadow stage. Qdrant Cloud Inference and
+hybrid retrieval are enabled. Qdrant, Redis, OpenRouter, and Sentry remain optional
 for availability: deterministic Postgres-backed answers remain available when
 they fail. The free Key Value instance is intentionally non-persistent because
 every stored rate-limit, cache, and budget entry is reconstructible runtime
@@ -121,6 +121,9 @@ The owner chose Render Free with an external ping. `.github/workflows/api-keepal
 requests `/health/live` every ten minutes, away from the start of the hour. It has no
 repository permissions or secrets, performs no model calls, and fails on an HTTP error,
 an invalid response, or a 90-second timeout. It can also be dispatched manually.
+
+GitHub runs scheduled workflows only from the default branch. This schedule activates
+only after this workflow is merged to that branch.
 
 This is best-effort wakeup traffic, not an availability guarantee. GitHub can delay or
 drop scheduled jobs and disables public-repository schedules after 60 days without
