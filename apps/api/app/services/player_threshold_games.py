@@ -8,6 +8,7 @@ import re
 from typing import TYPE_CHECKING, Any
 
 from app.services.evidence_contracts import Evidence, ToolResult
+from app.services.team_aliases import team_ids_in_text
 from basketball_core.analytics import (
     STAT_REGISTRY,
     StatThreshold,
@@ -58,6 +59,12 @@ _SUPPORTED = {
 _LISTING = re.compile(r"\b(which|list|show|when)\b|\bwhat games\b", re.I)
 _COUNT = re.compile(r"\b(how many|count|number of)\b", re.I)
 _NAME = re.compile(r"\b(?:[A-Z][A-Za-z'-]*)(?:\s+[A-Z][A-Za-z'-]*){0,2}\b")
+_PLAYER_SUBJECT = re.compile(
+    r"\b(?:did|does|do|has|have|had)\s+(?P<subject>.+?)\s+"
+    r"(?:score|scores|scored|scoring|have|has|had|make|makes|made|grab|grabs|grabbed|"
+    r"get|gets|got|record|records|recorded|post|posts|posted|hit|hits)\b",
+    re.I,
+)
 _STOP = {
     "how",
     "many",
@@ -86,11 +93,14 @@ def is_player_threshold_question(question: str) -> bool:
 def has_unresolved_player_subject(question: str) -> bool:
     if not is_player_threshold_question(question):
         return False
-    return any(
+    if any(
         any(word.lower() not in _STOP for word in match.group().split())
         and not re.search(r"\b(knicks|new york|opponents?)\b", match.group(), re.I)
         for match in _NAME.finditer(question)
-    )
+    ):
+        return True
+    subject = _PLAYER_SUBJECT.search(question)
+    return bool(subject and not team_ids_in_text(subject["subject"]))
 
 
 def wants_game_listing(question: str) -> bool:
@@ -122,6 +132,12 @@ def threshold_call(tools: AnalystTools) -> ToolResult:
                 game_map[row[0].game_id].nba_game_id,
             ),
         )
+        if scope.relative_game_count:
+            rows = (
+                rows[: scope.relative_game_count]
+                if scope.relative_game_order == "first"
+                else rows[-scope.relative_game_count :]
+            )
         if not rows:
             continue
         matched = [

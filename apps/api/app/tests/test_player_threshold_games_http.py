@@ -296,3 +296,57 @@ async def test_model_receives_prepared_threshold_claims_and_cites_every_game(
     assert {
         c["window"]["date_start"]: c["value"] for c in claims if c["metric_id"] == "points:total"
     } == {"2026-01-07": 41, "2026-02-01": 47, "2026-05-01": 45}
+
+async def test_threshold_games_use_relative_player_appearance_scope(
+    client,
+    local_redis,  # noqa: F811
+    monkeypatch,
+):
+    settings = get_settings()
+    monkeypatch.setattr(settings, "analyst_evidence_loop_enabled", True)
+    monkeypatch.setattr(settings, "analysis_answer_mode", "disabled")
+    monkeypatch.setattr(settings, "rag_qdrant_enabled", False)
+    await seed_threshold_release()
+    response = await client.post(
+        "/analysis/query",
+        json={
+            "question": (
+                "Which games did Jalen Brunson score more than 40 points in his last 2 games?"
+            ),
+            "turn_id": "threshold-games-relative-appearances",
+        },
+    )
+    assert response.status_code == 200
+    claims = verified_claims(response.json())
+    count = next(c for c in claims if c["metric_id"] == "games:count")
+    assert count["value"] == 2
+    assert count["sample_size"] == 2
+    listed = {
+        c["window"]["date_start"]: c["value"]
+        for c in claims
+        if c["metric_id"] == "points:total" and len(c["game_ids"]) == 1
+    }
+    assert listed == {"2026-02-01": 47, "2026-05-01": 45}
+
+
+async def test_lowercase_unknown_player_threshold_asks_which_player(
+    client,
+    local_redis,  # noqa: F811
+    monkeypatch,
+):
+    settings = get_settings()
+    monkeypatch.setattr(settings, "analyst_evidence_loop_enabled", True)
+    monkeypatch.setattr(settings, "analysis_answer_mode", "disabled")
+    monkeypatch.setattr(settings, "rag_qdrant_enabled", False)
+    await seed_threshold_release()
+    response = await client.post(
+        "/analysis/query",
+        json={
+            "question": "How many games did zorp blat score more than 30 points?",
+            "turn_id": "threshold-games-lowercase-unknown-player",
+        },
+    )
+    body = response.json()
+    assert body["route"] == "clarification"
+    assert not verified_claims(body)
+    assert "Jalen Brunson" in body["answer"] and "Josh Hart" in body["answer"]
