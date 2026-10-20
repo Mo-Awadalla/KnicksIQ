@@ -105,9 +105,7 @@ async def seed_population_release() -> dict[str, int]:
         players = {
             player.full_name: player
             for player in (
-                await db.execute(
-                    select(Player).where(Player.full_name.in_(PLAYER_LINES))
-                )
+                await db.execute(select(Player).where(Player.full_name.in_(PLAYER_LINES)))
             ).scalars()
         }
         assert set(players) == set(PLAYER_LINES)
@@ -211,7 +209,11 @@ async def request(
 
 
 async def test_team_threshold_counts_times_with_strict_and_inclusive_boundaries_http(
-    client, local_redis, monkeypatch, tmp_path, record_property
+    client,
+    local_redis,  # noqa: F811
+    monkeypatch,
+    tmp_path,
+    record_property,
 ):
     await seed_population_release()
     strict = await request(
@@ -254,9 +256,13 @@ async def test_team_threshold_counts_times_with_strict_and_inclusive_boundaries_
 
 
 async def test_scoped_game_rebound_leader_uses_all_knicks_player_rows_http(
-    client, local_redis, monkeypatch, tmp_path, record_property
+    client,
+    local_redis,  # noqa: F811
+    monkeypatch,
+    tmp_path,
+    record_property,
 ):
-    player_ids = await seed_population_release()
+    await seed_population_release()
     receipt = await request(
         client,
         local_redis,
@@ -283,11 +289,14 @@ async def test_scoped_game_rebound_leader_uses_all_knicks_player_rows_http(
         "OG Anunoby": 8,
     }
     assert claim["subject_id"] == "team:NYK"
-    assert set(player_ids) == {"Jalen Brunson", "Josh Hart", "Karl-Anthony Towns", "OG Anunoby"}
 
 
 async def test_single_game_points_high_is_not_a_season_total_http(
-    client, local_redis, monkeypatch, tmp_path, record_property
+    client,
+    local_redis,  # noqa: F811
+    monkeypatch,
+    tmp_path,
+    record_property,
 ):
     await seed_population_release()
     receipt = await request(
@@ -323,7 +332,11 @@ async def test_single_game_points_high_is_not_a_season_total_http(
 
 
 async def test_single_game_rebound_high_preserves_tied_rows_http(
-    client, local_redis, monkeypatch, tmp_path, record_property
+    client,
+    local_redis,  # noqa: F811
+    monkeypatch,
+    tmp_path,
+    record_property,
 ):
     await seed_population_release()
     receipt = await request(
@@ -370,7 +383,11 @@ async def test_single_game_rebound_high_preserves_tied_rows_http(
 
 
 async def test_christmas_day_scoring_leader_uses_date_scoped_player_rows_http(
-    client, local_redis, monkeypatch, tmp_path, record_property
+    client,
+    local_redis,  # noqa: F811
+    monkeypatch,
+    tmp_path,
+    record_property,
 ):
     await seed_population_release()
     receipt = await request(
@@ -388,5 +405,3 @@ async def test_christmas_day_scoring_leader_uses_date_scoped_player_rows_http(
     claim = next(c for c in result["claims"] if c["metric_id"] == "points:leaders")
     assert claim["value"] == {"leaders": ["Jalen Brunson"], "total": 34}
     assert claim["game_ids"] and len(claim["game_ids"]) == 1
-
-

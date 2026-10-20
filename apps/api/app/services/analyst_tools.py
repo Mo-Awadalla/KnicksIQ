@@ -234,7 +234,11 @@ class AnalystTools:
         self.state["scope"] = self.scope.model_dump(mode="json")
         self.state["scope_origin"] = "user" if not followup else "verified_followup"
         self.state["intent"] = self.question[:1200]
-        if previous_release == self.release.version and not leader_query and not self.scope.requires_clarification:
+        if (
+            previous_release == self.release.version
+            and not leader_query
+            and not self.scope.requires_clarification
+        ):
             permitted_games = {g.id for g in self.selected_games(self.scope)}
             for claim in previous_claims:
                 if (
