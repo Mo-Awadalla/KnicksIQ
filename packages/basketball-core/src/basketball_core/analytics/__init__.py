@@ -16,6 +16,7 @@ from basketball_core.analytics.discovery import (
     score_fact_candidate,
 )
 from basketball_core.analytics.registry import STAT_REGISTRY, StatDefinition, resolve_stat
+from basketball_core.analytics.thresholds import StatThreshold, parse_stat_threshold
 from basketball_core.analytics.types import (
     AnalyticsOperation,
     AnalyticsPlan,
@@ -33,12 +34,14 @@ __all__ = [
     "ResolvedPlayer",
     "STAT_REGISTRY",
     "StatDefinition",
+    "StatThreshold",
     "Timeframe",
     "aggregate_rows",
     "build_fact_catalog",
     "count_double_doubles",
     "fact_fingerprint",
     "linear_slope",
+    "parse_stat_threshold",
     "rank_fact_candidates",
     "resolve_stat",
     "robust_outlier_scores",
