@@ -94,7 +94,6 @@ def test_context_free_clarification_rejects_unreturned_candidate_evidence():
     assert result["metrics"]["semantic_recall_at_5"] == pytest.approx(49 / 50)
 
 
-
 def test_context_free_clarification_scores_only_when_asked_without_game_evidence():
     contract, observations, reviews, index = context_free_fixture()
     validate_contract(contract)

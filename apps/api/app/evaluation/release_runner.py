@@ -130,7 +130,6 @@ def _listed_candidate_recall_at_k(targets: list[str], listed: list[str]) -> floa
     return len(relevant & set(top)) / len(relevant)
 
 
-
 def _review_assertions(case: dict, observation: dict, assertions: list, mapping: dict) -> bool:
     """Check review provenance; semantic judgments still belong to the reviewer."""
     answer = observation["response"].get("answer", "")
@@ -210,19 +209,12 @@ def score_reviewed(
         review = reviewed.get(case["id"], {})
         assertions = review.get("assertions", [])
         complete_spans = _review_assertions(case, observation, assertions, mapping)
-        requires_candidate_list = (
-            case["semantic_member"] and case["disposition"] == "clarify"
-        )
+        requires_candidate_list = case["semantic_member"] and case["disposition"] == "clarify"
         listed_candidate_game_ids = review.get("listed_candidate_game_ids")
-        candidate_review_valid = (
-            not requires_candidate_list
-            or (
-                isinstance(listed_candidate_game_ids, list)
-                and all(
-                    isinstance(game_id, str) and game_id for game_id in listed_candidate_game_ids
-                )
-                and len(listed_candidate_game_ids) == len(set(listed_candidate_game_ids))
-            )
+        candidate_review_valid = not requires_candidate_list or (
+            isinstance(listed_candidate_game_ids, list)
+            and all(isinstance(game_id, str) and game_id for game_id in listed_candidate_game_ids)
+            and len(listed_candidate_game_ids) == len(set(listed_candidate_game_ids))
         )
         valid = (
             review.get("observation_sha256") == digest(observation)

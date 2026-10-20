@@ -104,6 +104,7 @@ def test_fully_adjudicated_contract_freezes_with_full_recall_ceiling(synthetic):
     assert case["context_free_clarification"] is True
     assert next(c for c in contract["cases"] if c["id"] == "broad")["semantic_targets"] == NINE
 
+
 ANSWER_FACTS = [
     {
         "metric": "wins",
@@ -166,9 +167,7 @@ def test_invalid_adjudication_shapes_stay_unresolved(synthetic, override):
         "decision_basis": "Owner-reviewed disposition and targets.",
     }
     adjudication.update(override)
-    contract, unresolved = builder.build(
-        {**CONTEXT_FREE, "clarify-to-answer": adjudication}
-    )
+    contract, unresolved = builder.build({**CONTEXT_FREE, "clarify-to-answer": adjudication})
     assert contract["status"] == "draft"
     assert any(item["id"] == "clarify-to-answer" for item in unresolved)
 
