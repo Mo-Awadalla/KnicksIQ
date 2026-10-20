@@ -38,6 +38,11 @@ report, and possession evidence while Postgres analytics compute canonical
 numeric facts. The answer model emits evidence-linked claims, and the server
 rejects unsupported evidence IDs, entities, or numbers before rendering prose.
 
+When an opponent appears in an ambiguous single-game question, the API applies
+stated final-score conditions and play-by-play lead changes before asking which
+game was meant. Losing a lead can include an eventual win; multiple matches are
+listed, one match is selected, and no matches are reported without inventing a game.
+
 `deterministic` bypasses planning and synthesis. `shadow` returns the
 deterministic response and evaluates a sampled LLM candidate in a background
 task. `llm_primary` returns the validated LLM answer. Any vector, model, Redis
