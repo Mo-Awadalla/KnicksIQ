@@ -14,6 +14,12 @@ from app.models.game import Game
 from app.models.game_event import GameEvent
 from app.services.event_scores import cumulative_score
 from app.services.evidence_contracts import Evidence, ToolResult, VerifiedClaim
+from app.services.opponent_narrowing import (
+    LeadCondition,
+    LeadTransition,
+    lead_change_conditions,
+    verified_lead_flags,
+)
 from app.services.team_aliases import team_ids_in_text
 from app.services.team_scope import scores
 from sqlalchemy import select
@@ -22,15 +28,18 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 @dataclass(frozen=True)
 class NarrativeSelection:
-    kind: Literal["game_stories", "boston_unanswered_runs"]
+    kind: Literal["game_stories", "boston_unanswered_runs", "lead_changes"]
     games: list[Game]
     definition: str
     comparison_games: list[Game]
+
+    lead_conditions: tuple[LeadCondition, ...] = ()
 
 
 def select_narrative(question: str, games: list[Game]) -> NarrativeSelection | None:
     """Select defined extremes from the user's already release-filtered population."""
     q = re.sub(r"[-–—]", " ", question.lower())
+    lead_conditions = lead_change_conditions(question)
     final = [g for g in games if g.status == "final"]
     if not final:
         return None
@@ -48,6 +57,19 @@ def select_narrative(question: str, games: list[Game]) -> NarrativeSelection | N
                 final,
             )
         return None
+    if lead_conditions and len(final) == 1 and team_ids_in_text(question) - {"NYK"}:
+        definitions = {
+            "lost_lead": "a lost lead requires the opponent to lead after the Knicks led",
+            "comeback": "a comeback requires the Knicks to lead after the opponent led",
+            "erased_deficit": "an erased deficit includes a later tie or Knicks lead after "
+            "the opponent led",
+        }
+        definition = (
+            "Observed play-by-play; "
+            + "; ".join(definitions[condition] for condition in lead_conditions)
+            + ". Include the first verified transition pair for each requested condition."
+        )
+        return NarrativeSelection("lead_changes", final, definition, final, lead_conditions)
     if "closest" in q or re.search(r"\b(?:smallest|narrowest) (?:final )?margin\b", q):
         value = min(abs(scores(g)[0] - scores(g)[1]) for g in final)
         selected = [g for g in final if abs(scores(g)[0] - scores(g)[1]) == value]
@@ -130,6 +152,31 @@ def _event_row(game: Game, event: GameEvent) -> dict:
     }
 
 
+def _lead_witness_transitions(
+    transitions: tuple[LeadTransition, ...],
+    conditions: tuple[LeadCondition, ...],
+) -> list[LeadTransition]:
+    pairs = {
+        "lost_lead": ("knicks_took_lead", {"opponent_took_lead"}),
+        "comeback": ("opponent_took_lead", {"knicks_took_lead"}),
+        "erased_deficit": ("opponent_took_lead", {"tied", "knicks_took_lead"}),
+    }
+    selected_sequences: set[int] = set()
+    for condition in conditions:
+        start_kind, end_kinds = pairs[condition]
+        for index, start in enumerate(transitions):
+            if start.kind != start_kind:
+                continue
+            end = next(
+                (item for item in transitions[index + 1 :] if item.kind in end_kinds),
+                None,
+            )
+            if end is not None:
+                selected_sequences.update((start.sequence, end.sequence))
+                break
+    return [item for item in transitions if item.sequence in selected_sequences]
+
+
 def _maximum_runs(game: Game, events: list[GameEvent]) -> list[dict]:
     if not events or len({e.sequence for e in events}) != len(events):
         raise ValueError("Missing or duplicate canonical event order")
@@ -185,18 +232,20 @@ async def build_narrative(
     games = selection.games
     if any(g.release_id != release.id or g.season != release.season for g in games):
         return ToolResult(status="unsupported_metric_or_scope", message="Foreign narrative scope.")
-    periods = list(
-        (
-            await db.execute(
-                select(PeriodScore)
-                .where(
-                    PeriodScore.release_id == release.id,
-                    PeriodScore.game_id.in_([g.id for g in games]),
+    periods = []
+    if selection.kind != "lead_changes":
+        periods = list(
+            (
+                await db.execute(
+                    select(PeriodScore)
+                    .where(
+                        PeriodScore.release_id == release.id,
+                        PeriodScore.game_id.in_([g.id for g in games]),
+                    )
+                    .order_by(PeriodScore.game_id, PeriodScore.period, PeriodScore.team_id)
                 )
-                .order_by(PeriodScore.game_id, PeriodScore.period, PeriodScore.team_id)
-            )
-        ).scalars()
-    )
+            ).scalars()
+        )
     stories, sources, statements = [], [], []
     for game in games:
         own, opponent = scores(game)
@@ -242,12 +291,60 @@ async def build_narrative(
             f"NYK {p['NYK']}, {opponent_id} {p[opponent_id]}"
             for p in period_values
         )
-        statements.append(
-            f"{game.game_date}: the Knicks {outcome} against {opponent_id}, {own}–{opponent}. "
-            + (f"Period scores: {period_text}." if observed else "Period scoring is unavailable.")
+        statement = (
+            f"{game.game_date}: the Knicks {outcome} against {opponent_id}, {own}–{opponent}."
         )
-    runs, ordered_events = [], []
-    if selection.kind == "boston_unanswered_runs":
+        if observed:
+            statement += f" Period scores: {period_text}."
+        elif selection.kind != "lead_changes":
+            statement += " Period scoring is unavailable."
+        statements.append(statement)
+    runs, ordered_events, lead_changes = [], [], []
+    if selection.kind == "lead_changes":
+        lead_flags = await verified_lead_flags(db, games)
+        if len(lead_flags) != len(games):
+            return ToolResult(
+                status="incomplete_coverage",
+                message="I cannot verify lead changes from this game's canonical score sequence.",
+            )
+        for game in games:
+            opponent_id = game.away_team_id if game.home_team_id == "NYK" else game.home_team_id
+            transitions = _lead_witness_transitions(
+                lead_flags[game.id].transitions, selection.lead_conditions
+            )
+            if not transitions:
+                return ToolResult(
+                    status="incomplete_coverage",
+                    message="I cannot verify the requested lead change from this game's "
+                    "canonical score sequence.",
+                )
+            for transition in transitions:
+                lead_changes.append(
+                    {
+                        "date": str(game.game_date),
+                        "opponent": opponent_id,
+                        "kind": transition.kind,
+                        "period": transition.period,
+                        "sequence": transition.sequence,
+                        "clock": transition.clock,
+                        "knicks_score": transition.knicks_score,
+                        "opponent_score": transition.opponent_score,
+                    }
+                )
+                event = (
+                    "the Knicks took the lead"
+                    if transition.kind == "knicks_took_lead"
+                    else f"{opponent_id} took the lead"
+                    if transition.kind == "opponent_took_lead"
+                    else "the game was tied"
+                )
+                statements.append(
+                    f"{game.game_date}: {event} at Q{transition.period} {transition.clock}; "
+                    f"score NYK {transition.knicks_score}–{opponent_id} "
+                    f"{transition.opponent_score} (event {transition.sequence})."
+                )
+                sources.append(f"event:{game.nba_game_id}:{transition.sequence}")
+    elif selection.kind == "boston_unanswered_runs":
         game = games[0]
         events = list(
             (
@@ -275,7 +372,12 @@ async def build_narrative(
             f"(events {r['start_sequence']}–{r['end_sequence']})."
             for r in runs
         )
-    value = {"games": stories, "runs": runs, "definition": selection.definition}
+    value = {
+        "games": stories,
+        "runs": runs,
+        "lead_changes": lead_changes,
+        "definition": selection.definition,
+    }
     statement = selection.definition + "\n\n" + "\n\n".join(statements)
     payload = {**value, "ordered_events": ordered_events}
     text = json.dumps(payload, sort_keys=True, separators=(",", ":"))
@@ -294,9 +396,9 @@ async def build_narrative(
     claim = VerifiedClaim.create(
         subject_id="team:NYK",
         metric_id="canonical_game_narrative",
-        metric_definition_version="canonical-game-narrative-v1",
+        metric_definition_version="canonical-game-narrative-v2",
         value=value,
-        unit="descriptive game scores and scoring sequences",
+        unit="descriptive game scores and verified play-by-play changes",
         population="every selected final game in the active archive",
         filters={"selection_definition": selection.definition},
         season=release.season,
@@ -306,7 +408,7 @@ async def build_narrative(
         sample_size=len(games),
         denominator=None,
         baseline_claim_ids=[],
-        calculation_version="canonical-game-narrative-v1",
+        calculation_version="canonical-game-narrative-v2",
         release_id=release.version,
         supporting_evidence_ids=[identity],
         coverage_limitations=["Descriptive observations only; no inferred causes or tactics."],
@@ -315,14 +417,19 @@ async def build_narrative(
     )
     return ToolResult(
         status="ok",
-        message="Describe every selected game and every tied maximum; do not infer causes.",
+        message=(
+            "Describe every selected game and its verified lead-change "
+            "witness; do not infer causes."
+            if selection.kind == "lead_changes"
+            else "Describe every selected game and every tied maximum; do not infer causes."
+        ),
         claims=[claim],
         evidence=[evidence],
     )
 
 
 def complete_narrative_text(text: str, claims: list[VerifiedClaim]) -> bool:
-    """The full value alone cannot excuse omission of a tied game/run from prose."""
+    """Require each selected game, tie, run, and verified lead witness in the prose."""
     narratives = [c for c in claims if c.metric_id == "canonical_game_narrative"]
     if not narratives:
         return False
@@ -335,5 +442,12 @@ def complete_narrative_text(text: str, claims: list[VerifiedClaim]) -> bool:
                 return False
         for run in value["runs"]:
             if run["start_clock"] not in text or run["end_clock"] not in text:
+                return False
+        for transition in value.get("lead_changes", []):
+            if (
+                transition["clock"] not in text
+                or str(transition["knicks_score"]) not in text
+                or str(transition["opponent_score"]) not in text
+            ):
                 return False
     return True

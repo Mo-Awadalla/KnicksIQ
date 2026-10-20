@@ -6,6 +6,7 @@ import re
 
 from app.models.game import Game
 from app.services.canonical_narrative import measure_clarification
+from app.services.opponent_narrowing import narrow_by_condition, requires_lead_change
 from app.services.query_classifier import classify_query
 from app.services.releases import restrict_to_active_release
 from app.services.team_aliases import team_ids_in_text
@@ -21,6 +22,9 @@ _NARRATIVE = re.compile(
     r"close the|influence|shape|affect|which plays|late run|after halftime|"
     r"lose the lead|took the lead|game turn|broke open|"
     r"final two minutes|final 2 minutes|describe|explain|which .+ game do you mean)\b"
+)
+_OUTCOME_CONDITION = re.compile(
+    r"\b(?:win|wins|won|lose|loses|lost|loss|losses|closest|biggest win)\b"
 )
 _SCORING_SEQUENCE = re.compile(
     r"\b(?:biggest run|scoring run|most damaging|largest deficit|collapse|collpase|"
@@ -68,6 +72,8 @@ async def narrative_clarification(
     if not references_only and not (
         reference
         or _NARRATIVE.search(q)
+        or requires_lead_change(question)
+        or (not classify_query(question).is_aggregative and _OUTCOME_CONDITION.search(q))
         or ("the knicks game" in q and not classify_query(question).is_aggregative)
         or re.fullmatch(r"(?:what was the score|who was better|was that a good game)\??", q)
     ):
@@ -106,22 +112,36 @@ async def narrative_clarification(
     candidates = scope_games(context, games)
     if selected_game_ids:
         candidates = [game for game in candidates if game.id in selected_game_ids]
-    if "closest" in normalized and candidates:
-        minimum = min(abs(scores(game)[0] - scores(game)[1]) for game in candidates)
-        candidates = [
-            game for game in candidates if abs(scores(game)[0] - scores(game)[1]) == minimum
-        ]
-    elif (
-        any(term in normalized for term in ("biggest win", "best win", "biggest game"))
-        and candidates
-    ):
-        maximum = max(scores(game)[0] - scores(game)[1] for game in candidates)
-        candidates = [game for game in candidates if scores(game)[0] - scores(game)[1] == maximum]
-    elif "best defensive game" in normalized and candidates:
+    if "best defensive game" in normalized and candidates:
         minimum = min(scores(game)[1] for game in candidates)
         candidates = [game for game in candidates if scores(game)[1] == minimum]
-    if re.search(r"\b(?:the|a|boston|toronto|atlanta|chicago|charlotte) loss\b", normalized):
-        candidates = [game for game in candidates if scores(game)[0] < scores(game)[1]]
+    opponents = team_ids_in_text(context) - {"NYK"}
+    narrowing = await narrow_by_condition(db, normalized, candidates) if candidates else None
+    if narrowing and narrowing.unverified_games:
+        verified_dates = ", ".join(dict.fromkeys(str(game.game_date) for game in narrowing.games))
+        unverified_dates = ", ".join(
+            dict.fromkeys(str(game.game_date) for game in narrowing.unverified_games)
+        )
+        verified = f"Verified matching game dates: {verified_dates}. " if verified_dates else ""
+        return (
+            f"{verified}I cannot verify {unverified_dates} because their play-by-play "
+            "scoreboards are missing, malformed, or do not reconcile with the final score. "
+            "Which archived game date should I use?"
+        )
+    if narrowing and not narrowing.games:
+        against = f" against {'/'.join(sorted(opponents))}" if opponents else ""
+        return (
+            f"No archived Knicks game{against} matches that. None of the {len(candidates)} "
+            f"archived games{against} shows {narrowing.requirement}."
+        )
+    if narrowing:
+        candidates = narrowing.games
+    if (
+        selected_game_ids
+        and len(candidates) > 1
+        and re.search(r"\b(?:closest|biggest win|best win)\b", normalized)
+    ):
+        return None
     if len(candidates) != 1:
         if reference:
             return _reference_clarification(question)
