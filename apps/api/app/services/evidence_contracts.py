@@ -128,6 +128,7 @@ class ToolResult(Contract):
 class ToolCall(Contract):
     name: Literal[
         "get_player_stats",
+        "find_player_games",
         "get_team_stats",
         "get_game_narrative",
         "compare_windows",
@@ -147,7 +148,7 @@ class ToolCall(Contract):
         cls, value: ToolMetric | None, info: ValidationInfo
     ) -> ToolMetric | None:
         if (
-            info.data.get("name") in {"get_player_stats", "compare_windows"}
+            info.data.get("name") in {"get_player_stats", "find_player_games", "compare_windows"}
             and value is not None
             and value not in PLAYER_METRICS
         ):

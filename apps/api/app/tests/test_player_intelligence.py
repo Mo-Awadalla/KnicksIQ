@@ -754,6 +754,23 @@ async def test_shooting_percentage_answer_does_not_claim_per_appearance(db_sessi
     assert "total" not in answer.answer
 
 
+async def test_more_than_threshold_streak_excludes_the_boundary(db_session) -> None:
+    await _seed_release_stats(db_session)
+    plan = _parse_plan("Jalen Brunson streak of games with more than 20 points", [])
+    assert (plan.threshold, plan.threshold_comparison) == (20, "gt")
+    answer = await answer_player_question(
+        db_session,
+        question="What was Jalen Brunson's longest streak of games with more than 20 points?",
+        season="2025-26",
+    )
+    assert answer is not None
+    result = answer.analytics["results"][0]
+    assert result["type"] == "streak"
+    # Appearances scored 20 and 30; 20 is not more than 20.
+    assert result["length"] == 1
+    assert result["title"] == "Games with more than 20 points"
+
+
 def test_percentage_leaderboard_wording_preserves_sample_without_per_game_unit() -> None:
     answer = _answer_text(
         {
