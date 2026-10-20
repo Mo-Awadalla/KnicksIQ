@@ -1,14 +1,15 @@
-"""Fail-closed stage and deployment authorization contracts (tests first).
+"""Fail-closed readiness and deployment authorization contracts (tests first).
 
-Failure matrix: configuration-only shadow; absent/altered/wrong-candidate evidence;
-missing/duplicate turns; chosen sample instead of fixed IDs; unsampled calls;
-selected fallback counted as model success; primary delivery in shadow; altered
-expectations; missing owner labels; readiness requiring premature launch approval;
-missing/mismatched final record digest; legacy single-stage record accepted;
-pure unsupported live questions forced into irrelevant archive/model answers.
-New failure matrix: a forged or changed frozen contract; a clarification scored
-as refusal (or reverse); sampled non-answer cases counted as model success; an
-owner approval whose exact expectations hash differs from the frozen contract.
+Owner decision 2026-10-20: launch goes straight to llm_primary with no shadow
+stage, so readiness neither requires nor accepts shadow evidence in its place.
+Failure matrix: absent/altered/wrong-candidate evidence; missing owner labels;
+readiness requiring premature launch approval; missing/mismatched final record
+digest; a disabled evidence loop; a reduced cohort or boolean metric.
+The guarded successor still validates a staged shadow execution
+(`validate_shadow_stage`): configuration-only shadow; missing/duplicate turns;
+chosen sample instead of fixed IDs; unsampled calls; selected fallback counted
+as model success; primary delivery in shadow; a clarification scored as refusal
+(or reverse); a forged frozen contract or mismatched owner approval hash.
 """
 
 import copy
@@ -44,11 +45,6 @@ def ready_record(root):
     record = {
         "id": "synthetic",
         "tested_commit": commit,
-        "pre_promotion_configuration": {
-            "answer_mode": "shadow",
-            "shadow_sample_rate": 0.1,
-            "analyst_evidence_loop_enabled": True,
-        },
         "launch_configuration": {
             "answer_mode": "llm_primary",
             "analyst_evidence_loop_enabled": True,
@@ -105,7 +101,20 @@ def ready_record(root):
             "approved_at": "2026-01-01",
             **artifact(root, name + "-approval", approval_content),
         }
-    cases = contract["cases"]
+    return record
+
+
+def shadow_record(root):
+    """A readiness record plus the staged shadow execution the guarded successor checks."""
+    record = ready_record(root)
+    commit, bundle = record["tested_commit"], record["hashes"]["bundle"]
+    expectations = record["hashes"]["evaluation"]
+    record["pre_promotion_configuration"] = {
+        "answer_mode": "shadow",
+        "shadow_sample_rate": 0.1,
+        "analyst_evidence_loop_enabled": True,
+    }
+    cases = json.loads((root / record["evaluation_contract"]["path"]).read_text())["cases"]
     ids = [item["id"] for item in cases]
     turns = []
     for item in cases:
@@ -153,13 +162,26 @@ def ready_record(root):
 
 
 def test_readiness_precedes_launch_approval(tmp_path):
-    record, _ = ready_record(tmp_path)
+    record = ready_record(tmp_path)
     assert gate.validate_readiness(record, tmp_path) == []
     assert any("launch" in f for f in gate.validate_record(record, tmp_path))
     path = tmp_path / "record.json"
     path.write_text(json.dumps(record))
     assert gate.validate_deployment_authorization(record, tmp_path, path, None)
     assert gate.validate_deployment_authorization(record, tmp_path, path, "e" * 64)
+
+
+def test_readiness_has_no_shadow_stage_but_keeps_launch_and_approval_gates(tmp_path):
+    record = ready_record(tmp_path)
+    assert not {"shadow_evaluation", "shadow_dependencies"} & set(gate.REQUIRED_CHECKS)
+    assert "pre_promotion_configuration" not in record
+    assert gate.validate_readiness(record, tmp_path) == []
+    del record["approvals"]["template"]
+    record["launch_configuration"]["answer_mode"] = "shadow"
+    failures = gate.validate_readiness(record, tmp_path)
+    assert "template: missing owner approval bound to content" in failures
+    assert "requires llm_primary final serving mode" in failures
+    assert not any("shadow" in f for f in failures)
 
 
 @pytest.mark.parametrize(
@@ -177,10 +199,14 @@ def test_readiness_precedes_launch_approval(tmp_path):
         "unsupported_archive",
         "clarify_as_refusal",
         "refuse_as_clarify",
+        "disabled_loop",
+        "uncommitted",
+        "replayed",
     ],
 )
-def test_invalid_shadow_evidence_blocks_readiness(tmp_path, defect):
-    record, payload = ready_record(tmp_path)
+def test_invalid_shadow_evidence_fails_the_staged_shadow_check(tmp_path, defect):
+    record, payload = shadow_record(tmp_path)
+    assert gate.validate_shadow_stage(record, tmp_path) == []
     selected = next(
         t for t in payload["turns"] if t["sampled"] and t["delivered_mode"] == "factual_fallback"
     )
@@ -213,18 +239,24 @@ def test_invalid_shadow_evidence_blocks_readiness(tmp_path, defect):
         refusal = next(t for t in payload["turns"] if t["refused"])
         refusal["refused"] = False
         refusal["delivered_mode"] = "clarification"
+    if defect == "disabled_loop":
+        record["pre_promotion_configuration"]["analyst_evidence_loop_enabled"] = False
+    if defect in {"uncommitted", "replayed"}:
+        payload["turns"][0]["state_committed" if defect == "uncommitted" else "replayed"] = (
+            defect == "replayed"
+        )
     if defect == "boolean_only":
         payload = {"passed": True}
     record["checks"]["shadow_evaluation"].update(artifact(tmp_path, "shadow_evaluation", payload))
-    assert any("shadow" in f for f in gate.validate_readiness(record, tmp_path))
+    assert gate.validate_shadow_stage(record, tmp_path)
 
 
 def test_shadow_uses_exact_frozen_contract_and_owner_signature(tmp_path):
-    record, _ = ready_record(tmp_path)
-    assert gate.validate_readiness(record, tmp_path) == []
+    record, _ = shadow_record(tmp_path)
+    assert gate.validate_shadow_stage(record, tmp_path) == []
     record["evaluation_contract"]["sha256"] = "0" * 64
-    assert any("shadow" in f for f in gate.validate_readiness(record, tmp_path))
-    record, _ = ready_record(tmp_path)
+    assert gate.validate_shadow_stage(record, tmp_path)
+    record, _ = shadow_record(tmp_path)
     record["approvals"]["evaluation_labels"].update(
         artifact(
             tmp_path,
@@ -236,11 +268,11 @@ def test_shadow_uses_exact_frozen_contract_and_owner_signature(tmp_path):
             },
         )
     )
-    assert any("shadow" in f for f in gate.validate_readiness(record, tmp_path))
+    assert gate.validate_shadow_stage(record, tmp_path)
 
 
 def test_ready_record_still_needs_exact_final_owner_digest(tmp_path):
-    record, _ = ready_record(tmp_path)
+    record = ready_record(tmp_path)
     record["approvals"]["launch"] = {
         "owner": "synthetic owner",
         "approved_at": "2026-01-01",
@@ -256,28 +288,16 @@ def test_ready_record_still_needs_exact_final_owner_digest(tmp_path):
 
 @pytest.mark.parametrize(
     "defect",
-    [
-        "disabled_loop",
-        "launch_disabled_loop",
-        "uncommitted",
-        "replayed",
-        "changed_denominator",
-        "boolean_metric",
-    ],
+    ["launch_disabled_loop", "changed_denominator", "boolean_metric", "wrong_bundle_hash"],
 )
-def test_stage_cannot_claim_a_legacy_stateless_or_reduced_cohort_pass(tmp_path, defect):
-    record, payload = ready_record(tmp_path)
-    if defect == "disabled_loop":
-        record["pre_promotion_configuration"]["analyst_evidence_loop_enabled"] = False
-    elif defect == "launch_disabled_loop":
+def test_readiness_cannot_claim_a_disabled_loop_or_reduced_cohort_pass(tmp_path, defect):
+    record = ready_record(tmp_path)
+    if defect == "launch_disabled_loop":
         record["launch_configuration"]["analyst_evidence_loop_enabled"] = False
-    elif defect in {"uncommitted", "replayed"}:
-        payload["turns"][0]["state_committed" if defect == "uncommitted" else "replayed"] = (
-            defect == "replayed"
-        )
     elif defect == "changed_denominator":
         record["checks"]["evaluation"]["metrics"]["semantic_case_count"] = 49
-    else:
+    elif defect == "boolean_metric":
         record["checks"]["evaluation"]["metrics"]["semantic_recall_at_5"] = True
-    record["checks"]["shadow_evaluation"].update(artifact(tmp_path, "shadow_evaluation", payload))
+    else:
+        record["hashes"]["bundle"] = "not-a-hash"
     assert gate.validate_readiness(record, tmp_path)

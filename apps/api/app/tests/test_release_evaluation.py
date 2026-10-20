@@ -11,7 +11,12 @@ import json
 from pathlib import Path
 
 import pytest
-from app.evaluation.release_runner import load_contract, score_reviewed, validate_contract
+from app.evaluation.release_runner import (
+    SCORING_VERSION,
+    load_contract,
+    score_reviewed,
+    validate_contract,
+)
 from app.services.release_evidence import fixed_case_ids
 
 
@@ -28,7 +33,7 @@ def fixture_contract():
         "version": 1,
         "status": "frozen",
         "questions_sha256": hashlib.sha256(source.read_bytes()).hexdigest(),
-        "scoring_version": "release-review-v1",
+        "scoring_version": SCORING_VERSION,
         "cases": [
             {
                 "id": q["id"],
