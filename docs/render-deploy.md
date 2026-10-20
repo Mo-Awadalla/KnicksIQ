@@ -73,8 +73,8 @@ state.
    `GET /health/ready` to return
    200 with the expected data version. Run the approved archive and analyst served
    acceptance checks; any model calls require an explicitly accounted authorized
-   budget. The isolated 10% shadow and primary-quality gates must pass before
-   promotion. Shadow verification is not the production serving configuration.
+   budget. The primary-quality gates must pass before promotion; launch goes
+   straight to `llm_primary` with no shadow stage (owner decision, 2026-10-20).
 
 When migrating an existing Blueprint, Render does not delete the old managed
 Postgres instance or replace an existing `sync: false` value automatically.
