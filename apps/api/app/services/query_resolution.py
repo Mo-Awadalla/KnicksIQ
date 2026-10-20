@@ -117,7 +117,6 @@ class ResolvedQuery(BaseModel):
         }
 
 
-
 async def _active_release(
     db: AsyncSession,
     data_version: str | None,

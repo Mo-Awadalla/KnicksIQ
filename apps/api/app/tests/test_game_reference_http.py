@@ -2,20 +2,16 @@
 
 import json
 import os
-from datetime import UTC, date, datetime
+from datetime import UTC, datetime
 from pathlib import Path
 
 import pytest
 from app.core.config import get_settings
 from app.core.db import AsyncSessionLocal
 from app.evaluation.trace_capture import capture_turn
-from app.models.box_score import PlayerGameStat
-from app.models.game import Game
-from app.models.player import Player
 from app.services import analyst_loop
 from app.tests.test_analyst_contracts import local_redis  # noqa: F401
 from app.tests.test_player_intelligence import _seed_release_stats
-from sqlalchemy import select
 
 
 def message(content, role="user"):

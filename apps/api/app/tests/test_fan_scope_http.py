@@ -2,7 +2,7 @@
 
 import json
 import os
-from datetime import UTC, date, datetime
+from datetime import date
 from pathlib import Path
 
 import pytest
@@ -129,9 +129,7 @@ def disable_provider(monkeypatch):
 
 def verified_claims(body):
     return [
-        item["metadata"]["claim"]
-        for item in body["citations"]
-        if item["type"] == "verified_claim"
+        item["metadata"]["claim"] for item in body["citations"] if item["type"] == "verified_claim"
     ]
 
 
@@ -145,12 +143,18 @@ def save_receipt(tmp_path, record_property, name, value):
 
 
 async def test_per_game_rate_uses_all_playoff_appearances(
-    client, local_redis, monkeypatch, tmp_path, record_property
+    client,
+    local_redis,  # noqa: F811
+    monkeypatch,
+    tmp_path,
+    record_property,
 ):
     disable_provider(monkeypatch)
     ids = await seed_scope_cases()
     payload = {
-        "question": "How many points per game did Mikal Bridges score against the Spurs in the playoffs?",
+        "question": (
+            "How many points per game did Mikal Bridges score against the Spurs in the playoffs?"
+        ),
         "season": "2025-26",
         "turn_id": "scope-rate-http-20261020",
         "expected_revision": 0,
@@ -159,11 +163,16 @@ async def test_per_game_rate_uses_all_playoff_appearances(
         response = await client.post("/analysis/query", json=payload)
     body = response.json()
     save_receipt(
-        tmp_path, record_property, "per-game-rate", {"request": payload, "response": body, "capture": capture}
+        tmp_path,
+        record_property,
+        "per-game-rate",
+        {"request": payload, "response": body, "capture": capture},
     )
     scope = capture["turn"]["committed_evidence_proposal"]["scope"]
     assert response.status_code == 200 and body["route"] != "clarification"
-    average = next(claim for claim in verified_claims(body) if claim["metric_id"] == "points:average")
+    average = next(
+        claim for claim in verified_claims(body) if claim["metric_id"] == "points:average"
+    )
     assert scope["opponent_id"] == "SAS" and scope["season_type"] == "playoffs"
     assert set(scope["game_ids"]) == set(ids["spurs"])
     assert average["value"] == pytest.approx(10.4)
@@ -171,7 +180,11 @@ async def test_per_game_rate_uses_all_playoff_appearances(
 
 
 async def test_christmas_day_is_scoped_to_active_season_date(
-    client, local_redis, monkeypatch, tmp_path, record_property
+    client,
+    local_redis,  # noqa: F811
+    monkeypatch,
+    tmp_path,
+    record_property,
 ):
     disable_provider(monkeypatch)
     ids = await seed_scope_cases()
@@ -185,7 +198,10 @@ async def test_christmas_day_is_scoped_to_active_season_date(
         response = await client.post("/analysis/query", json=payload)
     body = response.json()
     save_receipt(
-        tmp_path, record_property, "christmas-day", {"request": payload, "response": body, "capture": capture}
+        tmp_path,
+        record_property,
+        "christmas-day",
+        {"request": payload, "response": body, "capture": capture},
     )
     scope = capture["turn"]["committed_evidence_proposal"]["scope"]
     leaders = [claim for claim in verified_claims(body) if claim["metric_id"] == "points:leaders"]
@@ -196,7 +212,11 @@ async def test_christmas_day_is_scoped_to_active_season_date(
 
 
 async def test_all_of_those_games_uses_delivered_matches_without_win_prefilter(
-    client, local_redis, monkeypatch, tmp_path, record_property
+    client,
+    local_redis,  # noqa: F811
+    monkeypatch,
+    tmp_path,
+    record_property,
 ):
     disable_provider(monkeypatch)
     ids = await seed_scope_cases()
@@ -226,7 +246,13 @@ async def test_all_of_those_games_uses_delivered_matches_without_win_prefilter(
         tmp_path,
         record_property,
         "threshold-followup",
-        {"first_request": first_payload, "first": initial, "request": payload, "response": body, "capture": capture},
+        {
+            "first_request": first_payload,
+            "first": initial,
+            "request": payload,
+            "response": body,
+            "capture": capture,
+        },
     )
     scope = capture["turn"]["committed_evidence_proposal"]["scope"]
     values = {claim["metric_id"]: claim["value"] for claim in verified_claims(body)}
@@ -237,7 +263,11 @@ async def test_all_of_those_games_uses_delivered_matches_without_win_prefilter(
 
 
 async def test_that_night_reuses_recent_game_identity_and_recomputes_leader(
-    client, local_redis, monkeypatch, tmp_path, record_property
+    client,
+    local_redis,  # noqa: F811
+    monkeypatch,
+    tmp_path,
+    record_property,
 ):
     disable_provider(monkeypatch)
     ids = await seed_scope_cases()
@@ -282,7 +312,11 @@ async def test_that_night_reuses_recent_game_identity_and_recomputes_leader(
 
 
 async def test_release_mismatch_requires_fresh_game_identity(
-    client, local_redis, monkeypatch, tmp_path, record_property
+    client,
+    local_redis,  # noqa: F811
+    monkeypatch,
+    tmp_path,
+    record_property,
 ):
     disable_provider(monkeypatch)
     await seed_scope_cases()
@@ -326,8 +360,13 @@ async def test_release_mismatch_requires_fresh_game_identity(
     assert body["route"] == "clarification" and body["citations"] == []
     assert capture["turn"]["model_calls"] == 0
 
+
 async def test_date_with_multiple_game_identities_still_clarifies(
-    client, local_redis, monkeypatch, tmp_path, record_property
+    client,
+    local_redis,  # noqa: F811
+    monkeypatch,
+    tmp_path,
+    record_property,
 ):
     disable_provider(monkeypatch)
     async with AsyncSessionLocal() as db:
@@ -360,7 +399,10 @@ async def test_date_with_multiple_game_identities_still_clarifies(
         response = await client.post("/analysis/query", json=payload)
     body = response.json()
     save_receipt(
-        tmp_path, record_property, "duplicate-date", {"request": payload, "response": body, "capture": capture}
+        tmp_path,
+        record_property,
+        "duplicate-date",
+        {"request": payload, "response": body, "capture": capture},
     )
     assert response.status_code == 200 and body["route"] == "clarification"
     assert body["citations"] == [] and capture["turn"]["model_calls"] == 0
