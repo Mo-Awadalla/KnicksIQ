@@ -4,7 +4,8 @@
 (`evaluation-label-review-20260907/labels.jsonl`) into the 120-case contract that
 `app.evaluation.release_runner` scores against. No question, category or disposition is changed.
 
-`expectations.json` is a **draft**, SHA-256 `e73f22f64b609189ba42a02a2aec9db5e3181cf5edd588c4b4f17fa9286d9b32`.
+`expectations.json` is a **draft**, SHA-256 `251dcd6b5b9736a6b316018510ab2247157b2ddcb885da2903dc13c74a1bb0ae`, built with
+`adjudications.json`.
 The builder is deterministic. Rebuilding gives the same hash.
 
 | Disposition | Cases |
@@ -33,6 +34,16 @@ to freeze below the gate.
 
 An earlier version of this README said only the five open cases blocked freezing. That was wrong.
 I checked it with the runner's `validate_contract`, which does not compute the ceiling.
+
+## Owner rulings so far
+
+- **`aliases_typos-003`, "How did JB play in that game?"** (2026-10-20). "That game" means a game named
+  earlier in the 10-message conversation. With none, the analyst asks which game. The cohort gives
+  this case no context, so the expected outcome is that clarification, which matches its disposition.
+  It still blocks freezing. The correct behavior retrieves nothing, but the September contract requires
+  a retrieval target for each of the 50 semantic cases and forbids giving a clarification a passing
+  score instead. Resolving it needs a rule change: for example, a semantic case whose ruled outcome is a
+  context-free clarification scores Recall@5 by whether the analyst asked without retrieving a game.
 
 ## What the owner decides
 
