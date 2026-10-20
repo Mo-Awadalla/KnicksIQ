@@ -214,10 +214,12 @@ async def test_threshold_games_are_counted_and_listed_without_a_provider(
             if c["metric_id"] == f"{stat}:total" and len(c["game_ids"]) == 1
         }
         assert listed == matches
+    tool_evidence = capture["tools"][0]["result"]["evidence"]
     evidence = {
         item["metadata"]["date"]: item["metadata"]
-        for item in capture["turn"]["committed_evidence_proposal"]["evidence"]
+        for item in tool_evidence
         if item["metadata"].get("subject_id") == f"player:{player_ids[player]}"
+        and "date" in item["metadata"]
     }
     assert {day: evidence[day][column] for day in matches} == matches
 

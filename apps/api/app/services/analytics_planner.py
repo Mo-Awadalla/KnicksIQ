@@ -91,6 +91,7 @@ async def maybe_refine_analytics_plan(
                 candidate.operations != deterministic_plan.operations,
                 candidate.aggregation_mode != deterministic_plan.aggregation_mode,
                 candidate.threshold != deterministic_plan.threshold,
+                candidate.threshold_comparison != deterministic_plan.threshold_comparison,
             )
         ):
             return deterministic_plan
