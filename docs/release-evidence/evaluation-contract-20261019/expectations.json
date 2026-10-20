@@ -9850,7 +9850,7 @@
   {
    "category": "aliases_typos",
    "context": [],
-   "decision_basis": "Agent-reviewed proposal from canonical rows, no application answer used. JB resolves to Jalen Brunson, but 'that game' has no provided context.",
+   "decision_basis": "Owner ruling 2026-10-20: 'that game' refers to a game mentioned earlier in the 10-message conversation context. If none was mentioned, the analyst asks which game the user means. This case has no context, so the expected outcome is that clarification and no game is a correct retrieval target.",
    "decision_status": "unresolved",
    "disposition": "clarify",
    "facts": [],
