@@ -1206,8 +1206,11 @@ class AnalystTools:
             statement = (
                 f"Knicks' single-game high was {fact.value:g} {fact.label}, recorded by "
                 + "; ".join(
-                    f"{row['player']} ({row['value']:g} on {row['date']} vs {row['opponent']})"
-                    for row in rows
+                    f"{entry.player.full_name} ({entry.value:g} on "
+                    f"{entry.game.game_date.isoformat()} vs "
+                    f"{entry.game.away_team_id if entry.game.home_team_id == 'NYK' "
+                    f"else entry.game.home_team_id})"
+                    for entry in fact.tied_rows
                 )
                 + "."
             )
