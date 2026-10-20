@@ -75,13 +75,9 @@ def score_threshold_count(question: str, games: Sequence[Game]) -> ScoreThreshol
         for game in games
         if threshold.meets(
             {
-                "points": (
-                    game.home_score if game.home_team_id == "NYK" else game.away_score
-                )
+                "points": (game.home_score if game.home_team_id == "NYK" else game.away_score)
                 if not opponent_score
-                else (
-                    game.away_score if game.home_team_id == "NYK" else game.home_score
-                )
+                else (game.away_score if game.home_team_id == "NYK" else game.home_score)
             }
         )
     )
@@ -132,9 +128,7 @@ def player_leader_fact(
 
     game_map = {game.id: game for game in games}
     scoped_rows = [
-        (stat, player, game_map[stat.game_id])
-        for stat, player in rows
-        if stat.game_id in game_map
+        (stat, player, game_map[stat.game_id]) for stat, player in rows if stat.game_id in game_map
     ]
     scoped_rows.sort(key=lambda item: (item[2].game_date, item[1].full_name, item[2].id))
 
@@ -178,11 +172,7 @@ def player_leader_fact(
         names[player.id] = player.full_name
     maximum = max(totals.values())
     leaders = tuple(
-        sorted(
-            names[player_id]
-            for player_id, value in totals.items()
-            if value == maximum
-        )
+        sorted(names[player_id] for player_id, value in totals.items() if value == maximum)
     )
     return PlayerLeaderFact(
         metric=metric,
