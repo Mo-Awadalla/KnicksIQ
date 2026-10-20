@@ -195,7 +195,7 @@ async def test_budget_denial_and_exhausted_deadline(db_session, monkeypatch):
 
 def test_regular_season_is_not_a_fuzzy_player_name():
     from app.models.player import Player
-    from app.services.query_resolution import _resolve_player_mentions
+    from app.services.query_parsing import _resolve_player_mentions
 
     player = Player(id=314, full_name="Tari Eason", team_id="HOU", nba_player_id=314)
     resolved, _ = _resolve_player_mentions(

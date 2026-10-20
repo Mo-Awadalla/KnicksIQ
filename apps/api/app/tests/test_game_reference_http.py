@@ -200,6 +200,10 @@ async def exercise(
     if not identified:
         assert body["route"] == "clarification"
         assert body["citations"] == []
+        assert all(
+            not search["candidate_evidence_ids"] and not search["returned_evidence_ids"]
+            for search in capture["searches"]
+        ), capture["searches"]
     else:
         assert context_conflict is not None and context_conflict.status_code == 409
         assert body["route"] != "clarification" and body["citations"]
@@ -253,3 +257,7 @@ async def test_stale_committed_game_without_recent_anchor_still_asks(
     assert initial["citations"]
     assert second.json()["route"] == "clarification"
     assert second.json()["citations"] == [] and capture["turn"]["model_calls"] == 0
+    assert all(
+        not search["candidate_evidence_ids"] and not search["returned_evidence_ids"]
+        for search in capture["searches"]
+    ), capture["searches"]

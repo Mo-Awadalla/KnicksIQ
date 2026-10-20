@@ -171,6 +171,11 @@ leaders over the complete requested team-game population, including ties.
 `discover_facts` supplies candidate facts, not an authoritative substitute for a
 requested multi-game leader calculation. The existing backend calculation and
 complete-population validator remain responsible for this distinction.
+Native preparation and admission share `population_facts.is_player_leader_request`,
+including non-points leaders and single-game highs. The complete requested
+statistic is a mandatory claim group; a supported but nonresponsive player total
+cannot replace it. Validation distinguishes `:single_game_high` from `:leaders`
+and retains the exact requested game population.
 
 `find_player_games` handles a named player's per-game threshold question from
 the complete scoped appearance population, including postseason. It uses the
@@ -229,6 +234,11 @@ Yearless calendar dates resolve only within the release-supported calendar;
 ambiguous or invalid dates ask for clarification. An uncommitted conversational
 reference requires both a game/date and the referenced event, stretch, or claim,
 plus comparison inputs when needed.
+An unresolved conversational game reference stops canonical discovery before
+archive-unit construction or retrieval. It clarifies with no candidate or returned
+evidence IDs and no model call, including in primary and sampled-shadow modes.
+Shared parsing helpers live in `query_parsing`; callers import them there rather
+than through resolver compatibility re-exports.
 
 Scoped ambiguous game questions offer actual archived dates without asserting
 a matching-game count. Explicit win, loss, closest, and biggest-win conditions
