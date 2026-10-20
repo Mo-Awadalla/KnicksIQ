@@ -91,7 +91,7 @@ async def test_actual_search_trace_and_committed_replay(
         search = next(s for s in captured["searches"] if s["purpose"] == "analyst_search")
         actual_ids = [e["evidence_id"] for e in search_result["result"]["evidence"]]
         assert actual_ids and search["candidate_evidence_ids"] == actual_ids
-        assert search["returned_evidence_ids"] == actual_ids[:5]
+        assert search["returned_evidence_ids"] == actual_ids
         assert search["lexical_evidence_ids"] and not search["dense_evidence_ids"]
         assert all(e["release_id"] == "analytics-test" for e in search["evidence"])
     calls = len(adapter.prompts)
