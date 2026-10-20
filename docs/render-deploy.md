@@ -114,3 +114,25 @@ Never continue after `restoration_failed` without owner incident handling.
 Render rebuilds from Git, so artifact identity with CI is not asserted. API references:
 [trigger deploy](https://api-docs.render.com/reference/create-deploy) and
 [rollback](https://api-docs.render.com/reference/rollback-deploy).
+
+## Free-plan keepalive and launch settings
+
+The owner chose Render Free with an external ping. `.github/workflows/api-keepalive.yml`
+requests `/health/live` every ten minutes, away from the start of the hour. It has no
+repository permissions or secrets, performs no model calls, and fails on an HTTP error,
+an invalid response, or a 90-second timeout. It can also be dispatched manually.
+
+This is best-effort wakeup traffic, not an availability guarantee. GitHub can delay or
+drop scheduled jobs and disables public-repository schedules after 60 days without
+repository activity. See [GitHub's schedule limitations](https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#schedule).
+Watch workflow failures and retain the separate readiness and served-answer checks.
+
+Only during the explicitly authorized deployment, set
+`OPENROUTER_MONTHLY_CUTOFF_USD=20` on the API service. The blueprint's current value
+remains `2` until that deployment change; do not sync it over the approved live setting.
+Do not change the plan or production environment as part of evidence preparation.
+
+After deployment, measure the hosted analyst. The owner will upgrade the API plan if
+p95 is at least 15 seconds, the error rate is at least 1%, or the first request after
+an idle period fails during a cold start. Local checks and keepalive success do not
+replace this hosted check.
