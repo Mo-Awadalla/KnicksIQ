@@ -1,4 +1,4 @@
-"""DRAFT adjudications for the unresolved semantic cases and the owner-decision-3 disposition review.
+"""DRAFT adjudication and narrow-first proposals from the reviewed release bundle.
 
 Rendered by `compute_launch_set.py`; every target and number is computed from the reviewed bundle.
 """
@@ -14,7 +14,7 @@ from launch_set_data import Bundle, Game, event_ref
 ROOT = Path(__file__).resolve().parents[2]
 CONTRACT = ROOT / "docs/release-evidence/evaluation-contract-20261019"
 DRAFT_HEADER = (
-    "DRAFT pending owner approval. Not used by the builder until copied into adjudications.json."
+    "DRAFT pending owner approval. Builder output remains unapproved and is not a frozen contract."
 )
 
 
@@ -51,6 +51,114 @@ def _run_detail(game: Game, team: str) -> str:
     return f"{points} unanswered points, `{event_ref(game, start)}` to `{event_ref(game, end)}`"
 
 
+def _game_score_fact(game: Game) -> dict:
+    row = game.row
+    return {
+        "canonical_evidence_ids": [game.ref],
+        "metric": "game_score",
+        "scope": "archive",
+        "value": {
+            "away_score": row["away_score"],
+            "away_team_id": row["away_team_id"],
+            "game_date": game.date,
+            "home_score": row["home_score"],
+            "home_team_id": row["home_team_id"],
+            "nba_game_id": game.id,
+        },
+    }
+
+
+def _run_fact(game: Game, team: str) -> dict:
+    runs = [(points, start, end) for name, points, start, end in game.runs if name == team]
+    best = max(points for points, _, _ in runs)
+    spans = [
+        {"start_sequence": start, "end_sequence": end}
+        for points, start, end in runs
+        if points == best
+    ]
+    sequences = [sequence for span in spans for sequence in span.values()]
+    label = "NYK" if team == "NYK" else game.opponent
+    return {
+        "canonical_evidence_ids": list(
+            dict.fromkeys([game.ref, *(event_ref(game, sequence) for sequence in sequences)])
+        ),
+        "metric": f"{label} unanswered scoring run",
+        "scope": "archive",
+        "value": {"points": best, "spans": spans, "team": label},
+    }
+
+
+def _lead_sequence_fact(game: Game, deficit: bool) -> dict:
+    value = game.max_deficit_erased() if deficit else game.max_lead_lost()
+    transitions = []
+    for index, (sequence, margin) in enumerate(game.states):
+        extreme = margin == -value if deficit else margin == value
+        if not extreme:
+            continue
+        later = game.states[index + 1 :]
+        if deficit:
+            recovered = next((following for following in later if following[1] >= 0), None)
+        else:
+            recovered = next((following for following in later if following[1] < 0), None)
+        if recovered is not None:
+            transitions.append(
+                {"start_sequence": sequence, "recovered_sequence": recovered[0]}
+            )
+    sequences = [sequence for transition in transitions for sequence in transition.values()]
+    return {
+        "canonical_evidence_ids": list(
+            dict.fromkeys([game.ref, *(event_ref(game, sequence) for sequence in sequences)])
+        ),
+        "metric": "NYK deficit erased" if deficit else "NYK lead later lost",
+        "scope": "archive",
+        "value": {"points": value, "transitions": transitions},
+    }
+
+
+def _answer_facts(case: str, game: Game) -> list[dict]:
+    facts = [_game_score_fact(game)]
+    if case == "single_game_narrative-020":
+        facts.extend((_run_fact(game, "NYK"), _run_fact(game, "OPP")))
+    elif case == "turning_points-001":
+        facts.append(_run_fact(game, "NYK"))
+    elif case == "turning_points-005":
+        facts.append(_lead_sequence_fact(game, deficit=True))
+    elif case in ("turning_points-006", "turning_points-007"):
+        facts.append(_run_fact(game, "OPP"))
+    elif case == "aliases_typos-005":
+        facts.append(_run_fact(game, "NYK"))
+    elif case == "aliases_typos-010":
+        facts.append(_lead_sequence_fact(game, deficit=False))
+    else:
+        raise ValueError(f"No canonical facts defined for answer proposal {case}")
+    return facts
+
+
+def _fact_summary(fact: dict) -> str:
+    return f"{fact['metric']} = {json.dumps(fact['value'], sort_keys=True)}"
+
+
+def _narrowing_basis(row: dict) -> str:
+    opponent, criterion = NARROWING[row["id"]]
+    if row["id"] == "single_game_narrative-020":
+        return (
+            "Draft: the final-score filter yields the unique Boston loss. Facts list the longest "
+            "unanswered runs by both teams as descriptive sequences, not causal proof."
+        )
+    if row["id"] == "turning_points-006":
+        return (
+            "Draft: the final-score filter yields the unique Boston loss. The drought is represented "
+            "by the longest unanswered Boston scoring run, without claiming it caused the loss."
+        )
+    rule = CRITERIA[criterion]
+    if criterion == "lead_lost":
+        rule += "; a tie alone does not count without a later opponent lead"
+    return (
+        f"Draft rule: {opponent}, {rule}. Include every one of the "
+        f"{len(row['fitting'])} fitting games; disposition follows the one-fit/multi-fit rule."
+    )
+
+
 def adjudications(b: Bundle) -> tuple[dict[str, dict], dict[str, str]]:
     """Case id -> adjudication entry, and case id -> computation text for the Markdown."""
     entries: dict[str, dict] = {}
@@ -68,8 +176,8 @@ def adjudications(b: Bundle) -> tuple[dict[str, dict], dict[str, str]]:
     put(
         "turning_points-005",
         games,
-        "Draft: 'largest deficit erased' is the biggest NYK play-by-play deficit after which the game was "
-        "tied or NYK led; one game fits, so the analyst answers with it (owner decision 3).",
+        "Draft definition: 'largest deficit erased' means the largest NYK play-by-play deficit later "
+        "tied or overtaken; one game fits, and the fact is descriptive rather than causal.",
         text + _unverified(b),
     )
     games, text = _season_superlative(
@@ -78,8 +186,8 @@ def adjudications(b: Bundle) -> tuple[dict[str, dict], dict[str, str]]:
     put(
         "turning_points-007",
         games,
-        "Draft: 'most damaging opponent run' is read as the largest unanswered opponent scoring run of "
-        "the season; the analyst should state that definition and answer with that game.",
+        "Draft definition: 'most damaging opponent run' means the largest unanswered opponent scoring run "
+        "across verified games; one game fits.",
         text + " " + "; ".join(_run_detail(g, "OPP") for g in games) + "." + _unverified(b),
     )
     games, text = _season_superlative(
@@ -88,8 +196,8 @@ def adjudications(b: Bundle) -> tuple[dict[str, dict], dict[str, str]]:
     put(
         "aliases_typos-005",
         games,
-        "Draft: 'Knics' resolves to the Knicks; 'biggest run' is the largest unanswered NYK scoring "
-        "run of the season, stated with that definition.",
+        "Draft definition: 'biggest run' means the largest unanswered NYK scoring run across verified "
+        "games, stated explicitly.",
         text + " " + "; ".join(_run_detail(g, "NYK") for g in games) + "." + _unverified(b),
     )
     games, text = _season_superlative(
@@ -98,8 +206,8 @@ def adjudications(b: Bundle) -> tuple[dict[str, dict], dict[str, str]]:
     put(
         "aliases_typos-010",
         games,
-        "Draft: 'collpase' resolves to collapse, which owner decision 3 measures by play-by-play lead "
-        "changes: the largest NYK lead the opponent later overturned.",
+        "Draft interpretation: 'worst collapse' means the largest NYK lead followed by a later opponent "
+        "lead; a tie alone does not count.",
         text + _unverified(b),
     )
 
@@ -122,8 +230,8 @@ def adjudications(b: Bundle) -> tuple[dict[str, dict], dict[str, str]]:
     put(
         "turning_points-003",
         lost_lead,
-        "Draft: 'collapse' uses play-by-play lead changes (owner decision 3); only Atlanta games where "
-        "the Knicks led and Atlanta later led are candidates.",
+        "Draft interpretation: 'collapse' means an NYK lead followed by a later Atlanta lead; a tie alone "
+        "does not count.",
         f"{len(lost_lead)} of {len(atl)} Atlanta games have an NYK lead later overturned: "
         + "; ".join(f"`{g.ref}` {g.label}, lead {g.max_lead_lost()} lost" for g in lost_lead)
         + ". Not fitting: "
@@ -175,6 +283,16 @@ CRITERIA: dict[str, str] = {
     "max_nyk_run": "game holding the largest unanswered NYK run against this opponent",
 }
 
+ANSWER_FACT_CASES = {
+    "single_game_narrative-020",
+    "turning_points-001",
+    "turning_points-005",
+    "turning_points-006",
+    "turning_points-007",
+    "aliases_typos-005",
+    "aliases_typos-010",
+}
+
 
 def _fits(b: Bundle, opponent: str, criterion: str) -> list[Game]:
     games = b.vs(opponent)
@@ -223,6 +341,29 @@ def narrow_first(b: Bundle, cases: list[dict], drafts: dict[str, dict]) -> list[
 def render(b: Bundle, cases: list[dict]) -> tuple[str, str]:
     entries, computed = adjudications(b)
     by_id = {c["id"]: c for c in cases}
+    rows = narrow_first(b, cases, entries)
+    rows_by_id = {row["id"]: row for row in rows}
+    for cid in NARROWING:
+        row = rows_by_id[cid]
+        entry = entries.setdefault(cid, {})
+        entry.update(
+            {
+                "semantic_targets": _refs(row["fitting"]),
+                "decision_basis": entry.get("decision_basis", _narrowing_basis(row)),
+                "disposition": row["proposed"],
+            }
+        )
+        computed.setdefault(
+            cid,
+            f"{row['rule']} fits {len(row['fitting'])} game(s): {_labels(row['fitting'])}.",
+        )
+    for cid, entry in entries.items():
+        row = rows_by_id.get(cid)
+        entry["disposition"] = row["proposed"] if row else by_id[cid]["disposition"]
+        if cid in ANSWER_FACT_CASES:
+            if not row or len(row["fitting"]) != 1:
+                raise ValueError(f"Expected one fitting game for answer proposal {cid}")
+            entry["facts"] = _answer_facts(cid, row["fitting"][0])
     lines = [
         "# Adjudication drafts, 2026-10-20",
         "",
@@ -232,10 +373,12 @@ def render(b: Bundle, cases: list[dict]) -> tuple[str, str]:
         "`release-artifacts/2025-26/reliability-approved-20260928.json.gz` (SHA-256 `549af2ed...`). "
         "Rerun without `--write` to recompute and assert every target and number. No model calls.",
         "",
-        "Machine file: `adjudications-draft.json`, same schema as `adjudications.json`. Targets follow "
-        "each question's scope and are never capped to 5 (owner decision 2).",
+        "Machine file `adjudications-draft.json` uses builder adjudication fields for targets, "
+        "dispositions and facts. It contains the 12 original adjudication entries plus 8 "
+        "narrow-first cases. It remains DRAFT; `expectations.json` is not modified or approved. "
+        "Targets follow question scope and are never capped to 5.",
         "",
-        "## Unresolved semantic cases",
+        "## Semantic target and disposition proposals",
         "",
     ]
     for cid, entry in entries.items():
@@ -244,22 +387,28 @@ def render(b: Bundle, cases: list[dict]) -> tuple[str, str]:
         lines += [
             f"### `{cid}`: {case['question']}",
             "",
-            f"- Disposition in contract: `{case['disposition']}`",
+            f"- Contract disposition: `{case['disposition']}`",
+            f"- Proposed disposition: `{entry['disposition']}`",
             f"- Proposed targets ({len(entry['semantic_targets'])}): {targets}",
+        ]
+        if entry.get("facts"):
+            summary = "; ".join(_fact_summary(fact) for fact in entry["facts"])
+            lines.append(f"- Proposed facts ({len(entry['facts'])}): {summary}")
+        lines += [
             f"- Computation: {computed[cid]}",
             f"- Decision basis: {entry['decision_basis']}",
         ]
         if entry.get("context_free_clarification"):
             lines.append("- `context_free_clarification: true` (already ruled by the owner)")
         lines.append("")
-    rows = narrow_first(b, cases, entries)
     lines += [
         "## Disposition changes under narrow-first (owner decision 3)",
         "",
-        "Clarify cases among the 120 whose wording narrows the candidate games. One fit: the analyst "
-        "answers directly. Several: it asks, listing only those. Cases whose wording narrows nothing "
-        "(for example 'What decided the Knicks game against Toronto?') keep every opponent game and "
-        "stay `clarify`. These are proposals for owner review; `expectations.json` is unchanged.",
+        "Clarify cases among the 120 whose wording narrows the candidate games. One fit proposes an "
+        "answer; several fits propose a clarification listing only those games. Draft collapse and "
+        "lose-the-lead filters require an NYK lead followed by a later opponent lead; a tie alone "
+        "does not count. Erased deficits may recover to a tie. The run definitions are explicit draft "
+        "interpretations, not owner approvals. These proposals leave `expectations.json` unchanged.",
         "",
         "| Case | Question | Rule | Current targets | Fitting games | Disposition |",
         "| --- | --- | --- | ---: | --- | --- |",
