@@ -57,12 +57,10 @@ Correlate the public `request_id` with scrubbed API logs. Do not request or copy
 
 ## Answer-mode rollout
 
-1. Deploy with `ANALYSIS_ANSWER_MODE=shadow` and
-   `ANALYSIS_SHADOW_SAMPLE_RATE=0.1`.
-2. Verify shadow validation, retrieval, cost, and latency gates without
-   inspecting or retaining prompt/evidence content.
-3. Set `ANALYSIS_ANSWER_MODE=llm_primary` only after owner sign-off.
-4. Roll back instantly by setting the mode to `deterministic`; no data or index
+1. Launch goes straight to `llm_primary` (owner decision, 2026-10-20); there is no
+   shadow stage. Pass the release readiness gate for the candidate first.
+2. Set `ANALYSIS_ANSWER_MODE=llm_primary` only after owner sign-off.
+3. Roll back instantly by setting the mode to `deterministic`; no data or index
    rollback is required.
 
 ## Secret rotation

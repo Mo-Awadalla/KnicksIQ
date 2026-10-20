@@ -89,7 +89,7 @@ def assert_search(receipt):
     assert search["status"] == "ok"
     assert search["dense_evidence_ids"] == [] and not search["dense_failed"]
     assert len(search["candidate_evidence_ids"]) <= 20
-    assert search["returned_evidence_ids"] == search["candidate_evidence_ids"][:5]
+    assert search["returned_evidence_ids"] == search["candidate_evidence_ids"]
     assert all(e["release_id"] == search["release"] for e in search["evidence"])
     for item in search["evidence"]:
         if item["game_id"] is not None:
