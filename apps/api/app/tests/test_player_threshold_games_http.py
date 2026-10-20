@@ -297,6 +297,7 @@ async def test_model_receives_prepared_threshold_claims_and_cites_every_game(
         c["window"]["date_start"]: c["value"] for c in claims if c["metric_id"] == "points:total"
     } == {"2026-01-07": 41, "2026-02-01": 47, "2026-05-01": 45}
 
+
 async def test_threshold_games_use_relative_player_appearance_scope(
     client,
     local_redis,  # noqa: F811
