@@ -1,0 +1,177 @@
+{
+  "actual_history_answers": [
+    {
+      "answer": "Jalen Brunson led the Knicks in scoring on Christmas Day with 34 points, based on 1 archived game from that date.",
+      "http_status": 200,
+      "id": "launch-007",
+      "model_calls": 2,
+      "model_validated": true,
+      "question": "Who led the Knicks in scoring on Christmas Day?",
+      "request_context_messages": 0,
+      "session_token_supplied": false,
+      "warnings": []
+    },
+    {
+      "answer": "Mikal Bridges averaged 10.4 points per game against the Spurs in the 2025-26 playoffs, based on 5 observed appearances from 2026-06-03 to 2026-06-13. This covers only appearances in the available archive.",
+      "http_status": 200,
+      "id": "launch-018",
+      "model_calls": 2,
+      "model_validated": true,
+      "question": "How many points per game did Mikal Bridges score against the Spurs in the playoffs?",
+      "request_context_messages": 0,
+      "session_token_supplied": false,
+      "warnings": []
+    },
+    {
+      "answer": "Yes — the Knicks won all 3 of those archived games: 3 wins, 0 losses. The games were 2025-12-21 vs MIA (NYK 132–125), 2026-02-04 vs DEN (NYK 134–127), and 2026-06-13 at SAS (NYK 94–90, playoffs). Limitations: available archive only; no causal inference.",
+      "http_status": 200,
+      "id": "launch-019",
+      "model_calls": 2,
+      "model_validated": true,
+      "question": "Did the Knicks win all of those games?",
+      "request_context_messages": 2,
+      "session_token_supplied": true,
+      "warnings": []
+    },
+    {
+      "answer": "Karl-Anthony Towns led the Knicks in rebounds that night, with 12 total rebounds.",
+      "http_status": 200,
+      "id": "launch-020",
+      "model_calls": 2,
+      "model_validated": true,
+      "question": "Who led the Knicks in rebounds that night?",
+      "request_context_messages": 2,
+      "session_token_supplied": true,
+      "warnings": []
+    }
+  ],
+  "baseline_context_correction": {
+    "answers": [
+      {
+        "answer": "Jalen Brunson led the Knicks in scoring across the available 2025-26 archive, with 2,466 total points over 101 games. This reflects the archived dataset only and does not establish causation or overall playing quality.",
+        "context_messages": 0,
+        "id": "launch-007"
+      },
+      {
+        "answer": "Which archived game date should I use?",
+        "context_messages": 0,
+        "id": "launch-018"
+      },
+      {
+        "answer": "Yes. In the available 2025-26 Knicks archive, the Knicks went 69-0 across 69 archived games from 2025-10-22 through 2026-06-13. That means they won all 69 of those archived games and lost 0. This reflects the available archive only and does not establish causation or overall playing quality.",
+        "context_messages": 2,
+        "id": "launch-019"
+      },
+      {
+        "answer": "Karl-Anthony Towns led the Knicks with 12 total rebounds in the February 4, 2026 game against Denver.",
+        "context_messages": 2,
+        "id": "launch-020"
+      }
+    ],
+    "note": "The initial20 diagnostic omitted request history. With real web-client-shaped history, launch020 already answered Towns12 on the baseline; do not count its context-free clarification as a product regression. Launch019 still incorrectly answered69 wins over69 instead of the actual3 threshold matches.",
+    "source_commit": "5cc9b04ba550f5fe3a388d168ef4612aaa78b1e9"
+  },
+  "http_regressions": {
+    "artifact": "/tmp/kiq-integration-artifacts/fan-combined-http.xml",
+    "passed": 55,
+    "scope": "Prepared HTTP regressions including synthetic fixtures, not live-provider acceptance",
+    "warnings": "41 pytest record_property/xunit2 compatibility warnings; tests passed, not suppressed"
+  },
+  "observed_at": "2026-10-20T22:44:04.881896+00:00",
+  "population_answers": [
+    {
+      "answer": "The Knicks scored more than 130 points in 20 of 101 archived games in the 2025-26 all-phase archive (2025-10-22 through 2026-06-13).",
+      "expected_count_from_independent_sql": 20,
+      "http_status": 200,
+      "id": "launch-006",
+      "model_calls": 2,
+      "model_validated": true,
+      "question": "How many times did the Knicks score more than 130 points?",
+      "warnings": []
+    },
+    {
+      "answer": "Jalen Brunson led the Knicks in scoring on Christmas Day with 34 points, based on 1 archived game from December 25, 2025.",
+      "expected_count_from_independent_sql": null,
+      "http_status": 200,
+      "id": "launch-007",
+      "model_calls": 2,
+      "model_validated": true,
+      "question": "Who led the Knicks in scoring on Christmas Day?",
+      "warnings": []
+    },
+    {
+      "answer": "Josh Hart had the most rebounds for the Knicks against Miami on December 21, with 10 total rebounds.",
+      "expected_count_from_independent_sql": null,
+      "http_status": 200,
+      "id": "launch-008",
+      "model_calls": 3,
+      "model_validated": true,
+      "question": "Who had the most rebounds for the Knicks against Miami on December 21?",
+      "warnings": []
+    },
+    {
+      "answer": "The most points a Knick scored in a single game this season was 47, by Jalen Brunson on 2025-12-21 against Miami. This reflects the available release archive only.",
+      "expected_count_from_independent_sql": null,
+      "http_status": 200,
+      "id": "launch-010",
+      "model_calls": 2,
+      "model_validated": true,
+      "question": "What was the most points a Knick scored in one game this season?",
+      "warnings": []
+    },
+    {
+      "answer": "The most rebounds by a Knick in a single game in the available 2025-26 archive was 22, achieved twice: Karl-Anthony Towns on 2026-01-28 vs TOR, and Mitchell Robinson on 2026-03-13 vs IND.",
+      "expected_count_from_independent_sql": null,
+      "http_status": 200,
+      "id": "launch-011",
+      "model_calls": 3,
+      "model_validated": true,
+      "question": "What was the most rebounds a Knick had in a single game?",
+      "warnings": []
+    },
+    {
+      "answer": "The Knicks scored at least 130 points in 23 of 101 archived games in the 2025-26 all-phase Knicks archive (2025-10-22 through 2026-06-13).",
+      "expected_count_from_independent_sql": 23,
+      "http_status": 200,
+      "id": "threshold-inclusive-boundary",
+      "model_calls": 2,
+      "model_validated": true,
+      "question": "How many times did the Knicks score at least 130 points?",
+      "warnings": []
+    }
+  ],
+  "raw_artifacts": [
+    {
+      "path": "/tmp/kiq-integration-artifacts/population-live.responses.jsonl",
+      "sha256": "b7de9f5a8ac0188da0ddd64a775d710bc2723fc3fc62292ad2e4249c90b12fba"
+    },
+    {
+      "path": "/tmp/kiq-integration-artifacts/history-correct-integrated.responses.jsonl",
+      "sha256": "3e7687b48de325026634e2abc1aa29ac9d6eeb3455c19a3af91b2a10ef00383d"
+    },
+    {
+      "path": "/tmp/kiq-integration-artifacts/history-correct-baseline.responses.jsonl",
+      "sha256": "6dae47d3841f96c8d8429f28a72364fa3d9f5d81fe8881bda8048f8f7b995b7b"
+    }
+  ],
+  "release": {
+    "manifest_sha256": "549af2edd0d195eff60bb318bdc58a8c8e217ea0359c0684d492d5292dcb595b",
+    "version": "2025-26.20260928.1"
+  },
+  "scope": "Reviewed-bundle real-provider diagnostic of corrected draft launch questions. Not frozen evaluation, owner approval or performance gate.",
+  "source_sha256": {
+    "apps/api/app/services/analyst_loop.py": "68e82eea2f9d2124aa2b1245c7ac062d32b40f10886fa01c040b2f35ac6a7141",
+    "apps/api/app/services/analyst_tools.py": "e8e0aaf78728db1b4d951ca3036872ff555e57deb88453f60b62e8e86e843b63",
+    "apps/api/app/services/game_reference.py": "dbf33353cdb745bdc8975b07f090e2cdd88f630f6ac99453fb5f812be41c4d15",
+    "apps/api/app/services/population_facts.py": "44afd788746f6d9f68c8359a063e152a00796e1b4ed64bb0a6415c9b804a6ae6",
+    "apps/api/app/services/query_parsing.py": "4faa7f8e2520abbb9bd2d6610ec5f9c7a1dd61661e248213335c9b10bad96d47",
+    "apps/api/app/services/query_resolution.py": "86d2870e850af9ac0894ec93860a7606e5d6961f9ac3aa1ef7c8148cce947b0f"
+  },
+  "tested_commit": "c69efca517801c8509c92a76f211df7a8e500b23",
+  "unchanged_authorizations": [
+    "No owner approval",
+    "No production writes or deploy",
+    "No alias changes",
+    "Launch20 and adjudications remain DRAFT"
+  ]
+}
