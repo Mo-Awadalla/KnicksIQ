@@ -2,7 +2,7 @@
 
 Record: `2025-26-verified-parity`
 Tested commit: `ade107fe17b3a8ff0e59632bd45b3826e4499068`
-Deployment gate: **BLOCKED**
+Readiness gate: **BLOCKED**
 
 Generated from release-record.json; this view is not approval evidence.
 
@@ -11,8 +11,6 @@ Generated from release-record.json; this view is not approval evidence.
 - evaluation: missing passing evidence for tested commit
 - evaluation_services_disabled: missing passing evidence for tested commit
 - production_router_contracts: missing passing evidence for tested commit
-- shadow_dependencies: missing passing evidence for tested commit
-- shadow_evaluation: missing passing evidence for tested commit
 - rollback_snapshot: missing passing evidence for tested commit
 - evaluation: semantic_recall_at_5 must be >= 0.95
 - evaluation: exact_numeric_correctness must be >= 1.0
@@ -34,8 +32,7 @@ Generated from release-record.json; this view is not approval evidence.
 - exceptions: missing owner approval bound to content
 - report_audit: missing owner approval bound to content
 - evaluation_labels: missing owner approval bound to content
-- shadow_evaluation: missing valid bound staged execution evidence
-- launch: missing owner approval bound to content
+- evaluation contract: missing valid hash-bound frozen expectations
 
 Agents verify every report against canonical evidence. The owner
 approves the template, exceptions, and final content-hash-bound audit
