@@ -12,7 +12,7 @@ from app.services.evidence_contracts import VerifiedClaim
 from app.services.query_resolution import ResolvedQuery
 from app.services.team_aliases import team_ids_in_text
 from app.services.team_scope import scope_games, scores
-from basketball_core.analytics.registry import parse_stat_threshold
+from basketball_core.analytics import parse_stat_threshold
 
 _REFERENCE = re.compile(
     r"\b(?:that (?:\w+ ){0,2}(?:game|stretch|run|possession|quarter|night)|"
