@@ -151,6 +151,8 @@ class AnalystTools:
             and re.search(r"\b(between|from|through|until)\b", self.question, re.I)
         ):
             self.scope = self.scope.model_copy(update={"game_ids": []})
+        prior = previous_scope or {}
+
         leader_query = bool(
             re.search(r"\b(?:who|which player)\b", self.question, re.I)
             and re.search(r"\b(?:lead|led|leading|leader|most|highest|top)\b", self.question, re.I)
