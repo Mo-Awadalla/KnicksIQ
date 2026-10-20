@@ -23,7 +23,7 @@ from app.services.possession_chunks import (
     build_possession_chunks,
     expand_neighboring_sequences,
 )
-from app.services.qdrant_client import is_qdrant_healthy, search_possessions
+from app.services.qdrant_client import qdrant_health_status, search_possessions
 from app.services.releases import restrict_to_active_release
 from app.services.reranker import rerank_candidates
 from app.services.team_aliases import team_ids_in_text
@@ -505,7 +505,7 @@ async def search_possession_chunks(
     dense_rank: list[tuple[PossessionChunk, float]] = []
     if settings.rag_hybrid_enabled and settings.rag_qdrant_enabled:
         try:
-            if await asyncio.to_thread(is_qdrant_healthy):
+            if await asyncio.to_thread(qdrant_health_status) != "degraded":
                 t0 = time.perf_counter()
                 query_embedding: list[float] | str = (
                     query

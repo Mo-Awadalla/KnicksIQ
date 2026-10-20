@@ -28,10 +28,12 @@ from basketball_core.analytics import (
     FactCandidate,
     OutputType,
     ResolvedPlayer,
+    StatThreshold,
     Timeframe,
     aggregate_rows,
     fact_fingerprint,
     linear_slope,
+    parse_stat_threshold,
     rank_fact_candidates,
     robust_outlier_scores,
     rolling_mean,
@@ -716,24 +718,9 @@ def _parse_plan(text: str, resolved: list[Player]) -> AnalyticsPlan:
     if game_selector:
         filters["game_selector"] = game_selector
 
-    threshold = None
-    threshold_match = re.search(
-        r"(?:at least\s+)?(\d+(?:\.\d+)?)\s*(?:\+|plus)?\s*"
-        r"(points?|rebounds?|assists?|steals?|blocks?)",
-        q,
-    )
-    if threshold_match:
-        threshold = float(threshold_match.group(1))
-        key = threshold_match.group(2).rstrip("s")
-        key = {
-            "point": "points",
-            "rebound": "rebounds",
-            "assist": "assists",
-            "steal": "steals",
-            "block": "blocks",
-        }[key]
-        if key not in stats:
-            stats.insert(0, key)
+    threshold = parse_stat_threshold(text)
+    if threshold and threshold.stat not in stats:
+        stats.insert(0, threshold.stat)
 
     # Select the operation before applying any conditioning filters. Words such as
     # "winning" and "correlated" describe a question; they do not select only wins.
@@ -879,7 +866,8 @@ def _parse_plan(text: str, resolved: list[Player]) -> AnalyticsPlan:
         output_type=output,
         aggregation_mode=aggregation_mode,
         retrieval_required=False,
-        threshold=threshold,
+        threshold=threshold.value if threshold else None,
+        threshold_comparison=threshold.comparison if threshold else "gte",
     )
 
 
@@ -1330,12 +1318,13 @@ def _leaderboard_result(plan: AnalyticsPlan, rows: list[dict[str, Any]]) -> dict
 def _streak_result(plan: AnalyticsPlan, rows: list[dict[str, Any]]) -> dict[str, Any]:
     stat = plan.stats[0]
     threshold = plan.threshold if plan.threshold is not None else STAT_REGISTRY[stat].materiality
+    predicate = StatThreshold(stat, plan.threshold_comparison, threshold)
     appearances = [row for row in rows if row["appeared"]]
     streaks: list[list[dict[str, Any]]] = []
     current: list[dict[str, Any]] = []
     for row in appearances:
         value = aggregate_rows([row], [stat])[stat]
-        if value is not None and value >= threshold:
+        if value is not None and predicate.meets({stat: value}):
             current.append(row)
         elif current:
             streaks.append(current)
@@ -1343,14 +1332,10 @@ def _streak_result(plan: AnalyticsPlan, rows: list[dict[str, Any]]) -> dict[str,
     if current:
         streaks.append(current)
     best = max(streaks, key=lambda group: (len(group), group[-1]["date"]), default=[])
-    result = _common_result(
-        "streak",
-        f"Games with at least {_display(stat, threshold)} {STAT_REGISTRY[stat].label.lower()}",
-        plan,
-        best,
-    )
+    result = _common_result("streak", f"Games with {predicate.description}", plan, best)
     result["stat"] = stat
     result["threshold"] = threshold
+    result["threshold_comparison"] = plan.threshold_comparison
     result["length"] = len(best)
     result["start_date"] = best[0]["date"] if best else None
     result["end_date"] = best[-1]["date"] if best else None
@@ -1440,9 +1425,12 @@ def _outlier_result(plan: AnalyticsPlan, rows: list[dict[str, Any]]) -> dict[str
 def _outcome_result(plan: AnalyticsPlan, rows: list[dict[str, Any]]) -> dict[str, Any]:
     stat = plan.stats[0]
     threshold = plan.threshold if plan.threshold is not None else 20.0
+    predicate = StatThreshold(stat, plan.threshold_comparison, threshold)
     appearances = [row for row in rows if row["appeared"]]
     qualifying = [
-        row for row in appearances if float(aggregate_rows([row], [stat])[stat] or 0) >= threshold
+        row
+        for row in appearances
+        if predicate.meets({stat: aggregate_rows([row], [stat])[stat] or 0})
     ]
     other = [row for row in appearances if row not in qualifying]
     warnings = ["This describes association, not causation or statistical significance."]
@@ -1455,7 +1443,7 @@ def _outcome_result(plan: AnalyticsPlan, rows: list[dict[str, Any]]) -> dict[str
 
     result = _common_result(
         "outcome_association",
-        f"Team record by {STAT_REGISTRY[stat].label.lower()} threshold",
+        f"Team record by {predicate.description}",
         plan,
         appearances,
         warnings=warnings,

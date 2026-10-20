@@ -30,6 +30,10 @@ from app.services.evidence_contracts import (
     VerifiedClaim,
 )
 from app.services.game_reference import resolve_game_reference
+from app.services.player_threshold_games import (
+    has_unresolved_player_subject,
+    threshold_call,
+)
 from app.services.query_resolution import (
     ResolvedQuery,
     all_star_end,
@@ -177,6 +181,18 @@ class AnalystTools:
             self.scope = self.scope.model_copy(
                 update={
                     "requires_clarification": True,
+                    "clarification_options": sorted({p.full_name for _, p in self.rows}),
+                }
+            )
+        if (
+            not self.scope.player_ids
+            and has_unresolved_player_subject(self.question)
+            and not self.scope.requires_clarification
+        ):
+            self.scope = self.scope.model_copy(
+                update={
+                    "requires_clarification": True,
+                    "clarification_reason": "unknown_player",
                     "clarification_options": sorted({p.full_name for _, p in self.rows}),
                 }
             )
@@ -455,6 +471,14 @@ class AnalystTools:
                 status="unsupported_metric_or_scope",
                 message=f"Available season: {self.release.season}.",
             )
+        if call.name == "find_player_games":
+            if not self.scope.player_ids:
+                return ToolResult(
+                    status="ambiguous_entity",
+                    message="Which Knicks player?",
+                    choices=sorted({p.full_name for _, p in self.rows}),
+                )
+            return threshold_call(self)
         if call.name == "get_game_narrative" or (
             self.narrative and call.name in {"get_team_stats", "discover_facts"}
         ):
@@ -1820,7 +1844,7 @@ class AnalystTools:
                 ],
                 "dense_evidence_ids": [f"{self.release.version}:{e.evidence_id}" for e in dense],
                 "candidate_evidence_ids": [e.evidence_id for e in evidence],
-                "returned_evidence_ids": [e.evidence_id for e in evidence[:5]],
+                "returned_evidence_ids": [e.evidence_id for e in evidence],
                 "evidence": [e.model_dump(mode="json") for e in evidence],
                 "ranking": [
                     {
