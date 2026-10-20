@@ -109,6 +109,38 @@ Used the local ASGI app over `httpx.ASGITransport` with the local archive/Redis 
 * Denver: “In the 2026-02-04 regular-season game, the Knicks beat Denver 134–127. The archive's verified lead-change sequence shows the Knicks first took the lead at Q1 11:33 (NYK 3–DEN 0, event 4), and Denver then took the lead at Q1 04:53 (NYK 16–DEN 18, event 46). That is the first verified transition pair in which the Knicks led and then trailed. The available play-by-play evidence is descriptive only and does not establish why or how the lead changed beyond these observed scoring transitions.”
 * Atlanta: “Which archived ATL game date should I use: 2025-12-27, 2026-01-02, 2026-04-06, 2026-04-18, 2026-04-20, 2026-04-23, 2026-04-25, 2026-04-30?”
 
+## Provider-disabled deterministic HTTP verification
+
+An in-process `httpx.ASGITransport` smoke exercised the non-evidence-loop route
+against the same active local release (`2025-26.20260928.1`, manifest SHA-256
+`549af2edd0d195eff60bb318bdc58a8c8e217ea0359c0684d492d5292dcb595b`) and local
+PostgreSQL/Redis on ports 55442/56442. It used
+`ANALYSIS_ANSWER_MODE=deterministic`,
+`ANALYST_EVIDENCE_LOOP_ENABLED=false`,
+`RAG_QUERY_RESOLUTION_V2_ENABLED=false`, disabled the AI provider, Qdrant and
+LLM planner, and supplied no provider keys.
+
+* Denver returned HTTP 200, `route=retrieval_rag`, `llm_validated=false`, and
+  one `canonical_game_narrative` verified-claim citation. Its final score was
+  NYK 134–DEN 127; the claim records NYK 3–0 at Q1 11:33 (event 4), then DEN
+  18–16 at Q1 04:53 (event 46). The direct answer states that the archive does
+  not establish a cause or mechanism, and the response has no `llm_*` tool calls.
+* Atlanta returned a clarification with exactly 2025-12-27, 2026-01-02,
+  2026-04-06, 2026-04-18, 2026-04-20, 2026-04-23, 2026-04-25, and 2026-04-30;
+  2026-04-28 is excluded. Its only tool call is
+  `query_resolution` with `result_count=8`.
+
+The captured response summary is `/tmp/kiq-opp-live-opponent-narrowing-deterministic.json`.
+`test_opponent_narrowing_http.py` also exercises the disabled deterministic
+path for both a final-win lost lead and a unique comeback, with query-resolution
+v2 enabled and disabled. The final focused test command
+`env -u VIRTUAL_ENV DB_URL=postgresql+asyncpg://knicksiq:knicksiq@localhost:55442/knicksiq REDIS_URL=redis://localhost:56442/0 uv run --offline --frozen --package knicksiq-api python -m pytest -q apps/api/app/tests/test_opponent_narrowing_http.py`
+passed all 24 tests.
+
 The repeatable synthetic HTTP fixture is in `apps/api/app/tests/test_opponent_narrowing_http.py`: TOR 2026-02-01 `[(2, 0), (2, 3), (4, 3)]` is a lead lost and regained in a final Knicks win; TOR 2026-02-02 `[(0, 2), (2, 2), (2, 2)]` ties after trailing without a strict lead reversal; TOR 2026-02-03 `[(10, 0), (12, 0), (12, 4)]` is a wire-to-wire win. BOS 2026-01-01 `[(2, 0), (2, 3), (8, 3)]` loses the lead but wins; 2026-01-02 `[(0, 2), (0, 4), (2, 4)]` loses without leading; 2026-01-03 `[(3, 0), (10, 0), (10, 4)]` is wire-to-wire; 2026-01-04 `[(5, 0), (5, 7)]` loses a lead and the game. CHI 2026-03-01 `[(2, 0)]` is a final win and 2026-03-02 `[(0, 3)]` is a loss. The same file mutates a score observation to `score_observed=false` and separately corrupts an observed scoreboard; only the valid TOR lost-lead game is cited in the former, and the malformed game is clarified rather than counted in the latter.
+
+The same disabled-path regression now seeds CLE 2026-03-03
+`[(0, 2), (3, 2)]` as the unique comeback and checks both verified lead
+transitions in the canonical claim.
 
 The pre-fix llm_primary failure artifact is retained at `/tmp/kiq-opp-live-opponent-narrowing-failure.json`. The exact incorrect answer began: “The Knicks won this game 134-127 over Denver on 2026-02-04, so they did not lose the lead.” It was `validated_declined` with three citations, no warnings, four provider calls, and independently verified DEN candidate date 2026-02-04; no PBP lead-reversal claim reached the writer/reviewer. An intermediate compact-claim run supplied the reversal pair to the writer, which answered correctly, but unrelated retrieval receipts crowded the reviewer input. The final report `/tmp/kiq-opp-live-opponent-narrowing.json` preserves the HTTP response, raw writer/reviewer responses, claim binding and call records; `/tmp/kiq-opp-live-opponent-narrowing.trace.json` preserves both prepared provider payloads. The final run sends the complete selected-game claim and its supporting evidence, and the independent reviewer validates the exact answer above.
