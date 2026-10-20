@@ -24,6 +24,11 @@ p95 below 15 seconds and errors below one percent. The owner relaxed this from f
 seconds on 2026-10-19: each model answer makes two or three sequential provider calls, and
 the measured p95 at concurrency 10 was 10.5 seconds against a 30-second request deadline.
 
+The executable readiness gate applies the same strict bound: 15,000 ms is blocked.
+Archive p95 must still be below 1,000 ms at concurrency 10, with errors below 1%.
+These local policy checks do not replace the hosted cold-start and latency checks
+in [the deployment guide](render-deploy.md).
+
 ## Fixed-cohort release execution
 
 Use `app.evaluation.release_runner` with the frozen 120-case contract and its
