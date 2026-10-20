@@ -1480,14 +1480,14 @@ class AnalystLoop:
         )
         for item in evidence:
             if (
-                required_groups
+                (required_groups or narrative_ids)
                 and not review
                 and item.evidence_id not in refs
                 and item.evidence_id not in priority_sources
             ):
-                # The backend fixes every claim this answer must state. Evidence that no claim
-                # cites only filled the input cap, and the writer then cited it, so the
-                # reviewer's input could not hold every cited source.
+                # Required claim groups and complete selected-game claims have fixed backend
+                # evidence. Unrelated sources only fill the input cap and can be cited without
+                # leaving room for the reviewer to validate every referenced source.
                 continue
             data = item.model_dump(mode="json")
             candidate_payload = {**payload}

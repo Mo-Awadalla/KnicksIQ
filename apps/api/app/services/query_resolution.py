@@ -305,16 +305,21 @@ async def resolve_query(
     if date_end:
         candidates = [game for game in candidates if game.game_date <= date_end]
     if game_result:
-        candidates = [
-            game
-            for game in candidates
-            if (
-                (game.home_score if game.home_team_id == "NYK" else game.away_score)
-                > (game.away_score if game.home_team_id == "NYK" else game.home_score)
-            )
-            == (game_result == "W")
-        ]
+        if game_result == "W":
+            candidates = [
+                game
+                for game in candidates
+                if game.status == "final" and scores(game)[0] > scores(game)[1]
+            ]
+        else:
+            candidates = [
+                game
+                for game in candidates
+                if game.status == "final" and scores(game)[0] < scores(game)[1]
+            ]
     lead_narrowing = bool(opponent_id and requires_lead_change(question))
+    verified_lead_games: list[Game] = []
+    unverified_lead_games: list[Game] = []
     if lead_narrowing:
         narrowing = await narrow_by_condition(
             db,
@@ -323,8 +328,9 @@ async def resolve_query(
             record_request=is_record_request(question),
         )
         if narrowing:
-            candidates = narrowing.games
-
+            verified_lead_games = narrowing.games
+            unverified_lead_games = narrowing.unverified_games
+            candidates = [*verified_lead_games, *unverified_lead_games]
     descriptive_reference = bool(
         is_game_score_request(question)
         or (bool(explicit_dates) and not re.search(r"\b(between|from|through|until)\b", q))
@@ -373,7 +379,7 @@ async def resolve_query(
         descriptive_reference = True
 
     resolved_game_ids: list[int] = []
-    if lead_narrowing and len(candidates) == 1:
+    if lead_narrowing and len(candidates) == 1 and not unverified_lead_games:
         resolved_game_ids = [candidates[0].id]
     if relative_count and not player_ids:
         selected = (
@@ -394,12 +400,21 @@ async def resolve_query(
 
     clarification_options = ambiguous_players
     clarification_reason = "ambiguous_player" if ambiguous_players else None
-    if lead_narrowing and len(candidates) != 1:
-        clarification_reason = "ambiguous_game"
+    if lead_narrowing and candidates and (
+        len(candidates) != 1 or unverified_lead_games
+    ):
+        clarification_reason = (
+            "unverified_game_condition" if unverified_lead_games else "ambiguous_game"
+        )
         clarification_options = [
             f"{game.game_date}: {game.away_team_id} at {game.home_team_id}"
-            for game in candidates[:8]
+            for game in verified_lead_games
         ]
+        clarification_options.extend(
+            f"{game.game_date}: {game.away_team_id} at {game.home_team_id} "
+            "(unverified play-by-play score sequence)"
+            for game in unverified_lead_games
+        )
     elif descriptive_reference and len(candidates) > 1 and not resolved_game_ids:
         clarification_reason = "ambiguous_game"
         clarification_options = [
