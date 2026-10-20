@@ -241,6 +241,11 @@ For a one-fit lead-change question, the canonical narrative carries the final
 score and the first verified transition pair witnessing each requested condition,
 not every scoreboard transition. Its prepared claim evidence is prioritized over
 unrelated retrieval receipts so review can retain all sources the writer cites.
+
+When the evidence loop is disabled, the deterministic query route resolves a
+named-opponent lead condition before generic retrieval. One verified fit returns
+the canonical narrative claim and its provenance without asserting an unobserved
+cause; the writer and reviewer are not invoked.
 Ambiguous scoring sequences ask for both the game and the run
 measure/time-window definition. A request for two games does not silently expand
 to all matching games.

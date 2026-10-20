@@ -59,6 +59,11 @@ task. `llm_primary` returns the validated LLM answer. Any vector, model, Redis
 budget, timeout, parsing, or validation failure returns the deterministic answer
 with `degraded=true`.
 
+With the evidence loop disabled, deterministic requests naming one opponent
+resolve lead-change conditions before generic archive retrieval. A single
+verified fit returns its canonical narrative claim and citations without
+inferring a cause beyond the observed score transitions.
+
 Production routing deliberately excludes ingestion, job enqueue, run
 detection, report creation/deletion, Swagger, and OpenAPI. Workers and MCP are
 offline/development packages, not deployed production services.
