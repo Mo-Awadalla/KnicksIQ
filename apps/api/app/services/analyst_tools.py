@@ -39,14 +39,12 @@ from app.services.population_facts import (
     player_leader_fact,
     score_threshold_count,
 )
+from app.services.query_parsing import is_game_score_request, is_record_request
 from app.services.query_resolution import (
     ResolvedQuery,
     all_star_end,
-    is_game_score_request,
-    is_record_request,
     resolve_query,
 )
-from app.services.team_aliases import team_ids_in_text
 from app.services.team_scope import comparison_groups
 from basketball_core.analytics.catalog import _windows, build_fact_catalog
 from basketball_core.analytics.registry import STAT_REGISTRY
@@ -1754,15 +1752,17 @@ class AnalystTools:
         if self.scope is None:
             raise ValueError("Canonical discovery requires prepared request scope")
         scope = self.scope
+        if scope.clarification_reason == "missing_conversation_game":
+            self.discovery = ToolResult(
+                status="ambiguous_entity",
+                message="Which archived game date should I use?",
+                choices=scope.clarification_options,
+                scope=scope.model_dump(mode="json"),
+            )
+            return self.discovery
         games = self.selected_games(scope) if self.season == self.release.season else []
         names = sorted({p.full_name for _, p in self.rows if p.id in scope.player_ids})[:3]
         teams = {scope.opponent_id} if scope.opponent_id else set()
-        if scope.clarification_reason == "missing_conversation_game":
-            teams.update(
-                team_ids_in_text(" ".join(m["content"] for m in self.context[-10:])) - {"NYK"}
-            )
-        # Context team names are search terms only. They cannot establish the
-        # game or make an unverified assistant account authoritative.
         anchors = names + sorted(teams)
         expansion = " OR ".join(json.dumps(value) for value in anchors)
         # Tool questions retain their existing cap. Only ordinary independently
