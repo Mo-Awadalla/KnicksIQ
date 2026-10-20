@@ -14,7 +14,7 @@ as model success; primary delivery in shadow; a clarification scored as refusal
 
 import copy
 import hashlib
-import json
+from pathlib import Path
 
 import pytest
 from app.services import release_evidence as gate
@@ -182,6 +182,13 @@ def test_readiness_has_no_shadow_stage_but_keeps_launch_and_approval_gates(tmp_p
     assert "template: missing owner approval bound to content" in failures
     assert "requires llm_primary final serving mode" in failures
     assert not any("shadow" in f for f in failures)
+
+
+def test_deployment_guide_matches_primary_launch_and_keepalive_activation():
+    guide = Path(__file__).resolve().parents[4] / "docs" / "render-deploy.md"
+    text = guide.read_text()
+    assert "Production starts in sampled LLM shadow mode" not in text
+    assert "only from the default branch" in text
 
 
 def test_readiness_still_binds_frozen_contract_and_label_approval(tmp_path):
