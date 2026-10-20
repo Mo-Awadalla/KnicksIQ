@@ -13,7 +13,10 @@ use `limit` and `offset` where supported.
 
 - `GET /health/live`: process liveness.
 - `GET /health/ready`: Postgres and active-release readiness plus optional
-  dependency status. Returns 503 without a validated active release.
+  dependency status. Returns 503 without a validated active release. Qdrant
+  reports `checking` while its first background probe is still running,
+  `degraded` only after a failed probe; retrieval still attempts Qdrant while
+  `checking`.
 - `GET /`: service metadata.
 - `GET /archive/status`: active season, data version, game/report counts, and
   supported capabilities.

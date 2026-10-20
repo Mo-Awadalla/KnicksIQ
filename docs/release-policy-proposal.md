@@ -1,65 +1,47 @@
 # Release policy: verification and delivery are separate stages
 
-Status: approved by the owner in the release-readiness instruction. The validator
-now distinguishes pre-promotion readiness from deployment authorization. Its
-implementation requires a new candidate and verification. This document neither
-changes production configuration nor supplies final promotion authorization.
+Status: owner decision on 2026-10-20 supersedes the former required shadow
+stage. Launch goes straight to `llm_primary`; this document neither changes
+production configuration nor grants final promotion authorization.
 
-## Pre-promotion verification
+## Readiness
 
-Retain the `shadow_dependencies` gate and require recorded configuration
-`answer_mode=shadow`, `shadow_sample_rate=0.1`, evidence loop enabled. Bind it to
-the candidate SHA, content hash, expectation hash, infrastructure identity and
-verification time. Sampled turns exercise the same budget reservations and
-evidence validation as primary turns, but deliver factual fallback. Unsampled
-turns deliver factual fallback without model calls. Require rate 0, rate 1 and
-both outcomes at 0.1, session replay/conflict, budget denial, validation failure
-and dependency recovery evidence. Record sample membership and model calls.
-Local fixture checks establish behavior only; staged infrastructure checks
-remain separate and cannot pass before candidate resources exist.
+Readiness requires the intended `llm_primary` launch configuration, the enabled
+evidence loop and every existing release check on the exact tested commit. It
+does not require a pre-promotion shadow configuration, `shadow_dependencies`
+or `shadow_evaluation`.
 
-## Intended user-facing release
+Keep the frozen 120-case cohort and all 50 semantic members. Retrieval answers
+use Recall@k with k = max(5, number of complete targets); target lists are never
+capped. Clarification cases score the candidate games explicitly listed in the
+reviewed answer. Preserve numeric/entity, citation, paraphrase, abstention,
+source identity, rollback, content-hash and owner-approval gates.
 
-Record `launch_configuration.answer_mode=llm_primary`, with deterministic
-fallback, current evidence validation, allowlist and $2 monthly cutoff intact.
-Primary turns must not be sampled. Add an explicit validation of this intended
-configuration instead of requiring the final serving mode to remain shadow.
-Require both the preceding shadow gate and primary-mode production-profile
-verification before the release can be eligible for promotion.
+The planned `openrouter_monthly_cutoff_usd` is $20. Apply that value only during
+an explicitly authorized deployment. This branch leaves current Render settings
+unchanged. Readiness remains separate from final launch approval and the
+owner-controlled digest of the completed record.
 
-The validator replaces the former single `configuration` mode check
-with **two required** checks: `pre_promotion_configuration` must be shadow/0.1;
-`launch_configuration` must be llm_primary. Neither can satisfy the other.
-Keep every existing required check, quality threshold, 120-case denominator,
-content-bound approval and final record-hash authorization. The readiness CLI
-uses `--readiness`; it does not require or manufacture final launch approval.
-The deployment command still requires launch approval plus an owner-controlled
-digest matching the exact completed record. Post-promotion acceptance is a later
-stage and cannot be represented as completed by a readiness pass.
-
-The shadow artifact must bind the candidate, bundle, expectations and stage
-configuration, cover all 120 original cases, and record actual deterministic
-sample membership, model calls, validation and delivery. Configuration alone
-does not satisfy the shadow gate. The implementation changes tracked code and
-requires a new candidate SHA and its own CI.
+Optional shadow execution remains available for separately authorized
+evaluation. It is not a readiness or deployment prerequisite and cannot replace
+any required release check.
 
 ## Authorization sequence
 
-1. Resolve and record the exact existing destinations, candidate bundle, release
-   version and physical collections. The readiness instruction conditionally
-   authorizes create-only, isolated preparation within existing capacity. Stop
-   any path whose isolation, identity or capacity cannot be established. No alias
-   promotion, active production release change or serving deployment is included.
-2. After authorized staging creates those resources, verify staged schema,
-   loaded rows, vectors, counts, payloads, filters, release isolation, dependencies,
-   rollback availability and both configured modes. Keep evidence local. Paid
-   evaluation traffic needs its own bounded authorization; no production load
-   or failure injection.
-3. Complete the release record and hash it. Obtain final promotion authorization
-   bound to that exact hash, SHA, content, targets and rollback plan. Only then
-   deploy/promote/activate as expressly authorized and run served acceptance.
+1. Resolve and record the exact destination, candidate bundle, release version,
+   physical collections and rollback targets. Do not promote aliases, activate
+   data or deploy a serving release without explicit authorization.
+2. Complete every required readiness check on the exact candidate commit,
+   including primary and service-disabled evaluation, staged dependencies,
+   rollback availability and the existing quality thresholds. Keep evaluation
+   evidence local.
+3. Complete and hash the release record. Obtain owner approval bound to its
+   exact content and tested commit. Readiness does not create or imply this
+   approval.
+4. Deploy, activate or promote only as expressly authorized. Run the required
+   served acceptance checks and restore the coordinated targets on failure.
 
-Approved report content may retain its existing approvals only when the exact
-artifact hashes and approval scope still match. Old CI and historical runtime
-evidence retain their original commits. Provider compatibility smoke success
-cannot replace either 120-case evaluation or any quality gate.
+Approved report content remains usable only while its exact artifact hashes and
+approval scope match. Historical CI and runtime evidence retain their original
+commits. Provider compatibility smoke success cannot replace the fixed-cohort
+evaluation or any quality gate.

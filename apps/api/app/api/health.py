@@ -13,7 +13,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.config import get_settings
 from app.core.db import get_db
 from app.models.dataset_release import DatasetRelease
-from app.services.qdrant_client import is_qdrant_healthy
+from app.services.qdrant_client import qdrant_health_status
 
 router = APIRouter(tags=["health"])
 
@@ -59,9 +59,7 @@ async def ready(db: Annotated[AsyncSession, Depends(get_db)]):
         "qdrant": (
             "disabled"
             if not settings.rag_qdrant_enabled
-            else "ok"
-            if await asyncio.to_thread(is_qdrant_healthy)
-            else "degraded"
+            else await asyncio.to_thread(qdrant_health_status)
         ),
         "redis": "configured" if settings.redis_url else "disabled",
         "openrouter": (
@@ -84,11 +82,11 @@ async def ready(db: Annotated[AsyncSession, Depends(get_db)]):
 @router.get("/health/rag")
 async def rag_health() -> dict[str, object]:
     settings = get_settings()
-    healthy = await asyncio.to_thread(is_qdrant_healthy)
+    status = await asyncio.to_thread(qdrant_health_status)
     return {
-        "status": "ok" if healthy else "degraded",
+        "status": status,
         "qdrant_enabled": settings.rag_qdrant_enabled,
-        "qdrant_healthy": healthy,
+        "qdrant_healthy": status == "ok",
     }
 
 

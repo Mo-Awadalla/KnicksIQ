@@ -175,6 +175,7 @@ def test_empty_scope_does_not_admit_claims_or_references():
     "tool_name",
     [
         "get_player_stats",
+        "find_player_games",
         "get_team_stats",
         "get_game_narrative",
         "compare_windows",
