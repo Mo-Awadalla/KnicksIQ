@@ -2,16 +2,55 @@
   "aliases_typos-003": {
     "context_free_clarification": true,
     "decision_basis": "Owner ruling 2026-10-20: 'that game' refers to a game mentioned earlier in the 10-message conversation context. If none was mentioned, the analyst asks which game the user means. This case has no context, so the expected outcome is that clarification and no game is a correct retrieval target.",
+    "disposition": "clarify",
     "semantic_targets": []
   },
   "aliases_typos-005": {
-    "decision_basis": "Draft: 'Knics' resolves to the Knicks; 'biggest run' is the largest unanswered NYK scoring run of the season, stated with that definition.",
+    "decision_basis": "Draft definition: 'biggest run' means the largest unanswered NYK scoring run across verified games, stated explicitly.",
+    "disposition": "answer",
+    "facts": [
+      {
+        "canonical_evidence_ids": [
+          "game:0022500343"
+        ],
+        "metric": "game_score",
+        "scope": "archive",
+        "value": {
+          "away_score": 112,
+          "away_team_id": "UTA",
+          "game_date": "2025-12-05",
+          "home_score": 146,
+          "home_team_id": "NYK",
+          "nba_game_id": "0022500343"
+        }
+      },
+      {
+        "canonical_evidence_ids": [
+          "game:0022500343",
+          "event:0022500343:15",
+          "event:0022500343:56"
+        ],
+        "metric": "NYK unanswered scoring run",
+        "scope": "archive",
+        "value": {
+          "points": 23,
+          "spans": [
+            {
+              "end_sequence": 56,
+              "start_sequence": 15
+            }
+          ],
+          "team": "NYK"
+        }
+      }
+    ],
     "semantic_targets": [
       "game:0022500343"
     ]
   },
   "aliases_typos-006": {
     "decision_basis": "Draft: 'v ATL' resolves to Atlanta; the record question covers every Atlanta game, so all are targets (owner decision 2, k = target count).",
+    "disposition": "answer",
     "semantic_targets": [
       "game:0022500435",
       "game:0022500479",
@@ -25,13 +64,65 @@
     ]
   },
   "aliases_typos-010": {
-    "decision_basis": "Draft: 'collpase' resolves to collapse, which owner decision 3 measures by play-by-play lead changes: the largest NYK lead the opponent later overturned.",
+    "decision_basis": "Draft interpretation: 'worst collapse' means the largest NYK lead followed by a later opponent lead; a tie alone does not count.",
+    "disposition": "answer",
+    "facts": [
+      {
+        "canonical_evidence_ids": [
+          "game:0022500467"
+        ],
+        "metric": "game_score",
+        "scope": "archive",
+        "value": {
+          "away_score": 132,
+          "away_team_id": "NYK",
+          "game_date": "2025-12-31",
+          "home_score": 134,
+          "home_team_id": "SAS",
+          "nba_game_id": "0022500467"
+        }
+      },
+      {
+        "canonical_evidence_ids": [
+          "game:0022500467",
+          "event:0022500467:209",
+          "event:0022500467:329",
+          "event:0022500467:220"
+        ],
+        "metric": "NYK lead later lost",
+        "scope": "archive",
+        "value": {
+          "points": 19,
+          "transitions": [
+            {
+              "recovered_sequence": 329,
+              "start_sequence": 209
+            },
+            {
+              "recovered_sequence": 329,
+              "start_sequence": 220
+            }
+          ]
+        }
+      }
+    ],
     "semantic_targets": [
       "game:0022500467"
     ]
   },
+  "single_game_narrative-001": {
+    "decision_basis": "Draft rule: BOS, NYK led and the opponent later led (play-by-play); a tie alone does not count without a later opponent lead. Include every one of the 4 fitting games; disposition follows the one-fit/multi-fit rule.",
+    "disposition": "clarify",
+    "semantic_targets": [
+      "game:0022500018",
+      "game:0022500320",
+      "game:0022500757",
+      "game:0022501168"
+    ]
+  },
   "single_game_narrative-003": {
     "decision_basis": "Draft: nothing in 'the fourth quarter against Atlanta' narrows the 9 Atlanta games, so the analyst asks which one and every Atlanta game is a candidate (owner decisions 2 and 3).",
+    "disposition": "clarify",
     "semantic_targets": [
       "game:0022500435",
       "game:0022500479",
@@ -44,8 +135,18 @@
       "game:0042500126"
     ]
   },
+  "single_game_narrative-004": {
+    "decision_basis": "Draft rule: CHI, NYK won (final score). Include every one of the 3 fitting games; disposition follows the one-fit/multi-fit rule.",
+    "disposition": "clarify",
+    "semantic_targets": [
+      "game:0022500153",
+      "game:0022500825",
+      "game:0022501123"
+    ]
+  },
   "single_game_narrative-006": {
     "decision_basis": "Draft: 6 games share the smallest final margin, so the analyst asks which one and lists exactly those games (owner decision 3).",
+    "disposition": "clarify",
     "semantic_targets": [
       "game:0022500372",
       "game:0022501016",
@@ -57,6 +158,7 @@
   },
   "single_game_narrative-009": {
     "decision_basis": "Draft: nothing in 'how the Knicks closed the Atlanta game' narrows the 9 Atlanta games, so the analyst asks which one and every Atlanta game is a candidate (owner decisions 2 and 3).",
+    "disposition": "clarify",
     "semantic_targets": [
       "game:0022500435",
       "game:0022500479",
@@ -71,6 +173,7 @@
   },
   "single_game_narrative-016": {
     "decision_basis": "Draft: nothing in 'turnovers in the Atlanta game' narrows the 9 Atlanta games, so the analyst asks which one and every Atlanta game is a candidate (owner decisions 2 and 3).",
+    "disposition": "clarify",
     "semantic_targets": [
       "game:0022500435",
       "game:0022500479",
@@ -83,8 +186,130 @@
       "game:0042500126"
     ]
   },
+  "single_game_narrative-017": {
+    "decision_basis": "Draft rule: CHI, NYK held a lead at some point (play-by-play). Include every one of the 4 fitting games; disposition follows the one-fit/multi-fit rule.",
+    "disposition": "clarify",
+    "semantic_targets": [
+      "game:0022500023",
+      "game:0022500153",
+      "game:0022500825",
+      "game:0022501123"
+    ]
+  },
+  "single_game_narrative-020": {
+    "decision_basis": "Draft: the final-score filter yields the unique Boston loss. Facts list the longest unanswered runs by both teams as descriptive sequences, not causal proof.",
+    "disposition": "answer",
+    "facts": [
+      {
+        "canonical_evidence_ids": [
+          "game:0022500320"
+        ],
+        "metric": "game_score",
+        "scope": "archive",
+        "value": {
+          "away_score": 117,
+          "away_team_id": "NYK",
+          "game_date": "2025-12-02",
+          "home_score": 123,
+          "home_team_id": "BOS",
+          "nba_game_id": "0022500320"
+        }
+      },
+      {
+        "canonical_evidence_ids": [
+          "game:0022500320",
+          "event:0022500320:334",
+          "event:0022500320:351"
+        ],
+        "metric": "NYK unanswered scoring run",
+        "scope": "archive",
+        "value": {
+          "points": 12,
+          "spans": [
+            {
+              "end_sequence": 351,
+              "start_sequence": 334
+            }
+          ],
+          "team": "NYK"
+        }
+      },
+      {
+        "canonical_evidence_ids": [
+          "game:0022500320",
+          "event:0022500320:128",
+          "event:0022500320:146",
+          "event:0022500320:282",
+          "event:0022500320:299"
+        ],
+        "metric": "BOS unanswered scoring run",
+        "scope": "archive",
+        "value": {
+          "points": 12,
+          "spans": [
+            {
+              "end_sequence": 146,
+              "start_sequence": 128
+            },
+            {
+              "end_sequence": 299,
+              "start_sequence": 282
+            }
+          ],
+          "team": "BOS"
+        }
+      }
+    ],
+    "semantic_targets": [
+      "game:0022500320"
+    ]
+  },
+  "turning_points-001": {
+    "decision_basis": "Draft rule: BOS, game holding the largest unanswered NYK run against this opponent. Include every one of the 1 fitting games; disposition follows the one-fit/multi-fit rule.",
+    "disposition": "answer",
+    "facts": [
+      {
+        "canonical_evidence_ids": [
+          "game:0022500018"
+        ],
+        "metric": "game_score",
+        "scope": "archive",
+        "value": {
+          "away_score": 95,
+          "away_team_id": "BOS",
+          "game_date": "2025-10-24",
+          "home_score": 105,
+          "home_team_id": "NYK",
+          "nba_game_id": "0022500018"
+        }
+      },
+      {
+        "canonical_evidence_ids": [
+          "game:0022500018",
+          "event:0022500018:148",
+          "event:0022500018:192"
+        ],
+        "metric": "NYK unanswered scoring run",
+        "scope": "archive",
+        "value": {
+          "points": 17,
+          "spans": [
+            {
+              "end_sequence": 192,
+              "start_sequence": 148
+            }
+          ],
+          "team": "NYK"
+        }
+      }
+    ],
+    "semantic_targets": [
+      "game:0022500018"
+    ]
+  },
   "turning_points-003": {
-    "decision_basis": "Draft: 'collapse' uses play-by-play lead changes (owner decision 3); only Atlanta games where the Knicks led and Atlanta later led are candidates.",
+    "decision_basis": "Draft interpretation: 'collapse' means an NYK lead followed by a later Atlanta lead; a tie alone does not count.",
+    "disposition": "clarify",
     "semantic_targets": [
       "game:0022500435",
       "game:0022500479",
@@ -97,19 +322,166 @@
     ]
   },
   "turning_points-005": {
-    "decision_basis": "Draft: 'largest deficit erased' is the biggest NYK play-by-play deficit after which the game was tied or NYK led; one game fits, so the analyst answers with it (owner decision 3).",
+    "decision_basis": "Draft definition: 'largest deficit erased' means the largest NYK play-by-play deficit later tied or overtaken; one game fits, and the fact is descriptive rather than causal.",
+    "disposition": "answer",
+    "facts": [
+      {
+        "canonical_evidence_ids": [
+          "game:0042500404"
+        ],
+        "metric": "game_score",
+        "scope": "archive",
+        "value": {
+          "away_score": 106,
+          "away_team_id": "SAS",
+          "game_date": "2026-06-10",
+          "home_score": 107,
+          "home_team_id": "NYK",
+          "nba_game_id": "0042500404"
+        }
+      },
+      {
+        "canonical_evidence_ids": [
+          "game:0042500404",
+          "event:0042500404:209",
+          "event:0042500404:449",
+          "event:0042500404:263"
+        ],
+        "metric": "NYK deficit erased",
+        "scope": "archive",
+        "value": {
+          "points": 29,
+          "transitions": [
+            {
+              "recovered_sequence": 449,
+              "start_sequence": 209
+            },
+            {
+              "recovered_sequence": 449,
+              "start_sequence": 263
+            }
+          ]
+        }
+      }
+    ],
     "semantic_targets": [
       "game:0042500404"
     ]
   },
+  "turning_points-006": {
+    "decision_basis": "Draft: the final-score filter yields the unique Boston loss. The drought is represented by the longest unanswered Boston scoring run, without claiming it caused the loss.",
+    "disposition": "answer",
+    "facts": [
+      {
+        "canonical_evidence_ids": [
+          "game:0022500320"
+        ],
+        "metric": "game_score",
+        "scope": "archive",
+        "value": {
+          "away_score": 117,
+          "away_team_id": "NYK",
+          "game_date": "2025-12-02",
+          "home_score": 123,
+          "home_team_id": "BOS",
+          "nba_game_id": "0022500320"
+        }
+      },
+      {
+        "canonical_evidence_ids": [
+          "game:0022500320",
+          "event:0022500320:128",
+          "event:0022500320:146",
+          "event:0022500320:282",
+          "event:0022500320:299"
+        ],
+        "metric": "BOS unanswered scoring run",
+        "scope": "archive",
+        "value": {
+          "points": 12,
+          "spans": [
+            {
+              "end_sequence": 146,
+              "start_sequence": 128
+            },
+            {
+              "end_sequence": 299,
+              "start_sequence": 282
+            }
+          ],
+          "team": "BOS"
+        }
+      }
+    ],
+    "semantic_targets": [
+      "game:0022500320"
+    ]
+  },
   "turning_points-007": {
-    "decision_basis": "Draft: 'most damaging opponent run' is read as the largest unanswered opponent scoring run of the season; the analyst should state that definition and answer with that game.",
+    "decision_basis": "Draft definition: 'most damaging opponent run' means the largest unanswered opponent scoring run across verified games; one game fits.",
+    "disposition": "answer",
+    "facts": [
+      {
+        "canonical_evidence_ids": [
+          "game:0022501016"
+        ],
+        "metric": "game_score",
+        "scope": "archive",
+        "value": {
+          "away_score": 93,
+          "away_team_id": "NYK",
+          "game_date": "2026-03-20",
+          "home_score": 92,
+          "home_team_id": "BKN",
+          "nba_game_id": "0022501016"
+        }
+      },
+      {
+        "canonical_evidence_ids": [
+          "game:0022501016",
+          "event:0022501016:366",
+          "event:0022501016:423"
+        ],
+        "metric": "BKN unanswered scoring run",
+        "scope": "archive",
+        "value": {
+          "points": 17,
+          "spans": [
+            {
+              "end_sequence": 423,
+              "start_sequence": 366
+            }
+          ],
+          "team": "BKN"
+        }
+      }
+    ],
     "semantic_targets": [
       "game:0022501016"
     ]
   },
+  "turning_points-008": {
+    "decision_basis": "Draft rule: CHA, NYK led and the opponent later led (play-by-play); a tie alone does not count without a later opponent lead. Include every one of the 2 fitting games; disposition follows the one-fit/multi-fit rule.",
+    "disposition": "clarify",
+    "semantic_targets": [
+      "game:0022501063",
+      "game:0022501190"
+    ]
+  },
+  "turning_points-009": {
+    "decision_basis": "Draft rule: TOR, NYK trailed and later led (play-by-play). Include every one of the 5 fitting games; disposition follows the one-fit/multi-fit rule.",
+    "disposition": "clarify",
+    "semantic_targets": [
+      "game:0022500303",
+      "game:0022501202",
+      "game:0022500675",
+      "game:0022500887",
+      "game:0022501176"
+    ]
+  },
   "turning_points-010": {
     "decision_basis": "Draft: nothing in 'late-game turning points against Atlanta' narrows the 9 Atlanta games, so the analyst asks which one and every Atlanta game is a candidate (owner decisions 2 and 3).",
+    "disposition": "clarify",
     "semantic_targets": [
       "game:0022500435",
       "game:0022500479",

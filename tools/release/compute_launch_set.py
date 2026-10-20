@@ -385,6 +385,39 @@ def main() -> None:
     assert cases[1]["facts"][-1]["value"] == 5
     contract = json.loads((CONTRACT / "expectations.json").read_text())["cases"]
     markdown, adjudications = render(b, contract)
+    draft = json.loads(adjudications)
+    assert len(draft) == 20
+    assert draft["single_game_narrative-004"]["semantic_targets"] == [
+        "game:0022500153",
+        "game:0022500825",
+        "game:0022501123",
+    ]
+    assert draft["single_game_narrative-004"]["disposition"] == "clarify"
+    assert draft["turning_points-003"]["semantic_targets"] == [
+        "game:0022500435",
+        "game:0022500479",
+        "game:0022501143",
+        "game:0042500121",
+        "game:0042500122",
+        "game:0042500123",
+        "game:0042500124",
+        "game:0042500126",
+    ]
+    answer_proposals = (
+        "single_game_narrative-020",
+        "turning_points-001",
+        "turning_points-005",
+        "turning_points-006",
+        "turning_points-007",
+        "aliases_typos-005",
+        "aliases_typos-010",
+    )
+    assert all(
+        draft[cid]["disposition"] == "answer" and draft[cid]["facts"]
+        for cid in answer_proposals
+    )
+    assert draft["aliases_typos-003"]["context_free_clarification"] is True
+    assert draft["aliases_typos-003"]["semantic_targets"] == []
     assert DRAFT_HEADER in markdown
     outputs = {
         LAUNCH / "launch-set.jsonl": "".join(json.dumps(c, sort_keys=True) + "\n" for c in cases),
