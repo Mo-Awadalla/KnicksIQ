@@ -33,6 +33,11 @@ from app.services.evidence_contracts import (
     validate_review,
     validate_structure,
 )
+from app.services.player_threshold_games import (
+    is_player_threshold_question,
+    parse_stat_threshold,
+    wants_game_listing,
+)
 from app.services.query_resolution import is_game_score_request, is_record_request
 from app.services.report_llm import get_llm_adapter
 from pydantic import BaseModel
@@ -927,7 +932,7 @@ def scoped_response_schema(schema: type[BaseModel], payload: dict[str, Any]) -> 
                 "required": ["answer"],
             },
         ]
-        player_tools = ["get_player_stats", "compare_windows"]
+        player_tools = ["get_player_stats", "find_player_games", "compare_windows"]
         tool_schema = definitions["ToolCall"]
         tool_schema["anyOf"] = [
             {
@@ -1539,7 +1544,9 @@ class AnalystLoop:
         ]
         return claims if {claim.metric_id for claim in claims} == {"wins", "losses"} else []
 
-    def _native_statistic_tool(self) -> Literal["get_player_stats", "get_team_stats"] | None:
+    def _native_statistic_tool(
+        self,
+    ) -> Literal["get_player_stats", "get_team_stats", "find_player_games"] | None:
         """Prepare only calculations whose aggregation/populations are native and explicit."""
         scope = self.tools.scope
         question = self.tools.question
@@ -1581,6 +1588,8 @@ class AnalystLoop:
                 )
                 else None
             )
+        if scope.player_ids and is_player_threshold_question(question):
+            return "find_player_games"
         season_comparison = self.tools.season_window_comparison_requested()
         player_comparison = bool(
             scope.player_ids
@@ -1761,11 +1770,13 @@ class AnalystLoop:
                 "Return schema JSON using backend evidence only. For open-ended interesting "
                 "stats or another player, call discover_facts FIRST with the user's unchanged "
                 "question. Empty claims requires a tool before stating stats. "
-                "Tools: get_player_stats for players; get_team_stats for team records, "
-                "comparisons and scoring/statistic leaders over ALL requested team games, "
-                "including ties; compare_windows for players with baseline_question; "
-                "search_archive; get_evidence. Discovery candidates cannot establish "
-                "complete team-wide leaders. Answer when evidence is sufficient. "
+                "Tools: get_player_stats for player aggregates; find_player_games for player games "
+                "above, at least, or below a per-game stat threshold (it returns a complete count "
+                "and matching box-score evidence); get_team_stats for team records, comparisons "
+                "and scoring/statistic leaders over ALL requested team games, including ties; "
+                "compare_windows for players with baseline_question; search_archive; get_evidence. "
+                "Discovery candidates cannot establish complete team-wide leaders. Answer when "
+                "evidence is sufficient. "
                 "call_tools requires tools and null answer; answer actions require a nonnull "
                 "answer with text, claims, evidence_ids and fact_ids. With required_claim_indexes: "
                 "claims={slot: index from 0 among that slot's rows}; related_claims chooses "
@@ -2102,6 +2113,11 @@ class AnalystLoop:
             )
         expected_games = {g.id for g in games}
         discovery = re_search_discovery(self.tools.question)
+        threshold_request = is_player_threshold_question(self.tools.question) and bool(
+            scope.player_ids
+        )
+        threshold = parse_stat_threshold(self.tools.question) if threshold_request else None
+        threshold_listing = threshold_request and wants_game_listing(self.tools.question)
         team_groups = {
             label: {game.id for game in population}
             for label, population in self.tools.requested_team_groups()
@@ -2161,7 +2177,33 @@ class AnalystLoop:
                     for ref in claim.supporting_evidence_ids
                 ):
                     continue
-                if discovery:
+                if threshold_request and threshold is not None:
+                    player_id = int(claim.subject_id.split(":", 1)[1]) if claim.subject_id else -1
+                    population = set(player_populations.get(claim.subject_id or "", [[]])[0])
+                    matched_ids = {
+                        stat.game_id
+                        for stat, _ in self.tools.rows
+                        if stat.player_id == player_id
+                        and stat.game_id in population
+                        and stat.minutes > 0
+                        and threshold.meets(stat)
+                    }
+                    relevant = (
+                        claim.metric_id == "games:count"
+                        and set(claim.game_ids or []) == matched_ids
+                        and claim.sample_size == len(population)
+                        and claim.eligibility.get("stat_predicate")
+                        == {
+                            "metric_id": threshold.stat,
+                            "operator": threshold.symbol,
+                            "cutoff": threshold.value,
+                        }
+                        or threshold_listing
+                        and claim.metric_id == f"{threshold.stat}:total"
+                        and len(claim.game_ids or []) == 1
+                        and set(claim.game_ids or []) <= matched_ids
+                    )
+                elif discovery:
                     relevant = (
                         bool(result.candidates) and set(claim.game_ids or []) <= expected_games
                     )
@@ -2228,6 +2270,25 @@ class AnalystLoop:
                         relevant = relevant and claim.metric_id.split(":")[0] == expected_metric
                 if relevant:
                     claims.append(claim)
+        if threshold_request:
+            counts = [claim for claim in claims if claim.metric_id == "games:count"]
+            if len(counts) != len(scope.player_ids):
+                return []
+            if threshold_listing:
+                matching = {
+                    (claim.subject_id, game_id)
+                    for claim in claims
+                    if claim.metric_id.endswith(":total") and len(claim.game_ids or []) == 1
+                    for game_id in claim.game_ids or []
+                }
+                expected_matches = {
+                    (claim.subject_id, game_id)
+                    for claim in counts
+                    for game_id in claim.eligibility.get("matching_game_ids", [])
+                }
+                if matching != expected_matches:
+                    return []
+            return list({claim.claim_id: claim for claim in claims}.values())
         if team_groups:
             if {c.window["comparison_group"] for c in claims if c.window} != set(team_groups):
                 return []
@@ -2281,6 +2342,10 @@ class AnalystLoop:
             name = (
                 "get_game_narrative"
                 if self.tools.narrative
+                else "find_player_games"
+                if is_player_threshold_question(question)
+                and self.tools.scope
+                and self.tools.scope.player_ids
                 else "discover_facts"
                 if re_search_discovery(question)
                 else "get_player_stats"
