@@ -38,11 +38,31 @@ report, and possession evidence while Postgres analytics compute canonical
 numeric facts. The answer model emits evidence-linked claims, and the server
 rejects unsupported evidence IDs, entities, or numbers before rendering prose.
 
+When an opponent appears in an ambiguous single-game question, the API applies
+explicit win, loss, closest, and biggest-win conditions to final scores and
+lead-change conditions to play-by-play before asking which game was meant. A
+lost lead requires the opponent to take the lead after NYK led. A comeback
+requires NYK to lead after trailing, while an erased deficit can include a
+later tie. A lost lead can still end in a Knicks win. One fit proceeds, several
+list only matches, and zero matches are reported without inventing a game.
+Missing, nonmonotonic, or unreconciled scoreboards trigger an unverified-data
+clarification instead of being counted as a match or a zero-match result.
+For a uniquely selected lead-change game, its narrative claim includes the final
+score and the first verified transition pair for each requested condition, keeping
+the evidence complete without overwhelming the writer/reviewer source budget.
+These strict-lead and tie-inclusive deficit-erasure definitions are implementation
+drafts pending owner review.
+
 `deterministic` bypasses planning and synthesis. `shadow` returns the
 deterministic response and evaluates a sampled LLM candidate in a background
 task. `llm_primary` returns the validated LLM answer. Any vector, model, Redis
 budget, timeout, parsing, or validation failure returns the deterministic answer
 with `degraded=true`.
+
+With the evidence loop disabled, deterministic requests naming one opponent
+resolve lead-change conditions before generic archive retrieval. A single
+verified fit returns its canonical narrative claim and citations without
+inferring a cause beyond the observed score transitions.
 
 Production routing deliberately excludes ingestion, job enqueue, run
 detection, report creation/deletion, Swagger, and OpenAPI. Workers and MCP are
