@@ -55,6 +55,13 @@ async def narrative_clarification(
     selected_game_ids: list[int] | None = None,
 ) -> str | None:
     q = question.lower()
+    scoring_definition_needed = bool(
+        _SCORING_SEQUENCE.search(q)
+        and (
+            not requires_lead_change(question)
+            or re.search(r"\b(?:biggest|largest|most|greatest|best|worst)\b", q)
+        )
+    )
     clarification = measure_clarification(question)
     if clarification and not references_only:
         return clarification
@@ -152,10 +159,10 @@ async def narrative_clarification(
             selection = f"Which archived{opponent} game date should I use: {dates}?"
         else:
             selection = f"Which archived{opponent} game date or opponent should I use?"
-        if _SCORING_SEQUENCE.search(q):
+        if scoring_definition_needed:
             selection += " " + _RUN_DEFINITION
         return selection
-    if _SCORING_SEQUENCE.search(q):
+    if scoring_definition_needed:
         return f"For {candidates[0].game_date}, {_RUN_DEFINITION}"
     if reference and re.search(
         r"\b(?:stretch|run|then|during it|next|final possession|after that)\b", q

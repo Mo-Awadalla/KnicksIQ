@@ -36,6 +36,9 @@ SCHEDULE = {
         ("2026-03-01", True, [(2, 0)]),
         ("2026-03-02", False, [(0, 3)]),
     ],
+    "CLE": [
+        ("2026-03-03", True, [(0, 2), (3, 2)]),
+    ],
 }
 
 
@@ -232,6 +235,75 @@ async def test_one_fit_blown_lead_evidence_survives_a_final_knicks_win(
         item["call"]["name"] == "get_game_narrative" and item["result"]["status"] == "ok"
         for item in capture["tools"]
     )
+
+
+@pytest.mark.parametrize("query_resolution_v2", [False, True])
+@pytest.mark.parametrize(
+    ("question", "chosen", "own_points", "opponent_points", "transitions", "others"),
+    [
+        (
+            "How did the Knicks lose the lead against Toronto?",
+            "2026-02-01",
+            4,
+            3,
+            [("knicks_took_lead", 1, 2, 0), ("opponent_took_lead", 2, 2, 3)],
+            ["2026-02-02", "2026-02-03"],
+        ),
+        (
+            "How did the Knicks come back against Cleveland?",
+            "2026-03-03",
+            3,
+            2,
+            [("opponent_took_lead", 1, 0, 2), ("knicks_took_lead", 2, 3, 2)],
+            [],
+        ),
+    ],
+)
+async def test_deterministic_one_fit_returns_only_verified_lead_narrative(
+    client,
+    local_redis,  # noqa: F811
+    monkeypatch,
+    query_resolution_v2,
+    question,
+    chosen,
+    own_points,
+    opponent_points,
+    transitions,
+    others,
+):
+    configure(monkeypatch, False)
+    settings = get_settings()
+    monkeypatch.setattr(settings, "analysis_answer_mode", "deterministic")
+    monkeypatch.setattr(settings, "ai_provider", "disabled")
+    monkeypatch.setattr(settings, "ai_api_key", None)
+    monkeypatch.setattr(settings, "openrouter_api_key", None)
+    monkeypatch.setattr(settings, "rag_query_resolution_v2_enabled", query_resolution_v2)
+    monkeypatch.setattr(settings, "rag_qdrant_enabled", False)
+    monkeypatch.setattr(settings, "rag_llm_planner_enabled", False)
+    await seed_schedule()
+    body = await ask(
+        client,
+        question,
+        f"deterministic-lead-one-fit-{query_resolution_v2}-{len(question)}",
+    )
+    assert body["route"] != "clarification", body["answer"]
+    assert not any(call["tool"].startswith("llm_") for call in body["tool_calls"])
+    claims = [
+        item["metadata"]["claim"]
+        for item in body["citations"]
+        if item["type"] == "verified_claim"
+    ]
+    narratives = [claim for claim in claims if claim["metric_id"] == "canonical_game_narrative"]
+    assert len(narratives) == 1, body
+    narrative = narratives[0]["value"]
+    assert narrative["games"][0]["date"] == chosen
+    assert narrative["games"][0]["knicks_points"] == own_points
+    assert narrative["games"][0]["opponent_points"] == opponent_points
+    assert [
+        (item["kind"], item["sequence"], item["knicks_score"], item["opponent_score"])
+        for item in narrative["lead_changes"]
+    ] == transitions
+    assert all(day not in body["answer"] for day in others)
 
 
 @pytest.mark.parametrize("evidence_loop", [True, False])
