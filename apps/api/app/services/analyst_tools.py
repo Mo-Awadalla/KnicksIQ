@@ -34,6 +34,11 @@ from app.services.player_threshold_games import (
     has_unresolved_player_subject,
     threshold_call,
 )
+from app.services.population_facts import (
+    is_player_leader_request,
+    player_leader_fact,
+    score_threshold_count,
+)
 from app.services.query_resolution import (
     ResolvedQuery,
     all_star_end,
@@ -1066,7 +1071,7 @@ class AnalystTools:
         groups = self.requested_team_groups()
         if groups:
             return await self.team_comparison(scope, groups)
-        if re.search(r"\b(?:who led|leaders?|which player)\b", self.question, re.I):
+        if is_player_leader_request(self.question):
             return self.team_leaders(scope, games)
         if is_record_request(self.question):
             games = [g for g in games if g.status == "final" and g.home_score != g.away_score]
@@ -1077,78 +1082,58 @@ class AnalystTools:
                 else games[-scope.relative_game_count :]
             )
         evidence = [self.receipt(g) for g in games]
-        wins = sum(self.score(g)[0] > self.score(g)[1] for g in games)
-        values = {
-            "wins": wins,
-            "losses": len(games) - wins,
-            "points": sum(self.score(g)[0] for g in games),
-            "margin": sum(self.score(g)[0] - self.score(g)[1] for g in games),
-        }
         question = self.question.lower()
         denominator = None
         eligibility: dict[str, Any] = {"game": "archived Knicks game"}
         threshold_description = ""
-        threshold = re.search(r"\b(at least|under|over|more than|fewer than)\s+(\d+)\b", question)
-        if threshold and re.search(r"\bhow many games\b", question):
-            cutoff = int(threshold[2])
-            opponent_points = bool(re.search(r"\b(opponents?|allow|hold)\b", question))
-            operator = (
-                ">="
-                if threshold[1] == "at least"
-                else "<"
-                if threshold[1] in {"under", "fewer than"}
-                else ">"
-            )
-            eligibility["score_predicate"] = {
-                "subject_id": "opponent" if opponent_points else "team:NYK",
-                "metric_id": "points",
-                "operator": operator,
-                "cutoff": cutoff,
-            }
+        threshold_count = score_threshold_count(self.question, games)
+        if threshold_count is not None:
+            eligibility["score_predicate"] = threshold_count.predicate
+            eligibility["matching_game_ids"] = list(threshold_count.matching_game_ids)
             threshold_description = (
-                f" with {'opponent' if opponent_points else 'NYK'} points {operator} {cutoff}"
+                f" with {'opponent' if threshold_count.opponent_score else 'NYK'} points "
+                f"{threshold_count.threshold.symbol} {threshold_count.threshold.value:g}"
             )
-            observed = [self.score(g)[1 if opponent_points else 0] for g in games]
-            count = sum(
-                v >= cutoff
-                if threshold[1] == "at least"
-                else v < cutoff
-                if threshold[1] in {"under", "fewer than"}
-                else v > cutoff
-                for v in observed
-            )
-            values = {"games:count": count}
-        elif is_record_request(self.question):
-            values = {"wins": wins, "losses": len(games) - wins}
-        elif re.search(r"\bhow many\b.*\b(?:win|wins|won)\b", question):
-            values = {"wins": wins}
-        elif re.search(r"\bhow many\b.*\b(?:lose|losses|lost)\b", question):
-            values = {"losses": len(games) - wins}
-        elif re.search(r"\bhow many games\b", question):
-            values = {"games:count": len(games)}
-        elif not is_record_request(self.question) and re.search(
-            r"\b(average|per game|points allowed)\b", question
-        ):
-            metric = (
-                "margin"
-                if "margin" in question
-                else "points_allowed"
-                if re.search(r"\b(allow(?:ed)?|opponents?)\b", question)
-                else "points"
-            )
-            total = (
-                sum(self.score(g)[1] for g in games)
-                if metric == "points_allowed"
-                else values[metric]
-            )
-            denominator = len(games)
-            values = {f"{metric}:average": total / denominator}
-        elif scope.metric == "points":
-            values = {"points": values["points"]}
-        elif "margin" in question:
-            values = {"margin": values["margin"]}
+            values = {"games:count": threshold_count.value}
         else:
-            values = {"wins": wins, "losses": len(games) - wins}
+            wins = sum(self.score(g)[0] > self.score(g)[1] for g in games)
+            values = {
+                "wins": wins,
+                "losses": len(games) - wins,
+                "points": sum(self.score(g)[0] for g in games),
+                "margin": sum(self.score(g)[0] - self.score(g)[1] for g in games),
+            }
+            if is_record_request(self.question):
+                values = {"wins": wins, "losses": len(games) - wins}
+            elif re.search(r"\bhow many\b.*\b(?:win|wins|won)\b", question):
+                values = {"wins": wins}
+            elif re.search(r"\bhow many\b.*\b(?:lose|losses|lost)\b", question):
+                values = {"losses": len(games) - wins}
+            elif re.search(r"\bhow many games\b", question):
+                values = {"games:count": len(games)}
+            elif not is_record_request(self.question) and re.search(
+                r"\b(average|per game|points allowed)\b", question
+            ):
+                metric = (
+                    "margin"
+                    if "margin" in question
+                    else "points_allowed"
+                    if re.search(r"\b(allow(?:ed)?|opponents?)\b", question)
+                    else "points"
+                )
+                total = (
+                    sum(self.score(g)[1] for g in games)
+                    if metric == "points_allowed"
+                    else values[metric]
+                )
+                denominator = len(games)
+                values = {f"{metric}:average": total / denominator}
+            elif scope.metric == "points":
+                values = {"points": values["points"]}
+            elif "margin" in question:
+                values = {"margin": values["margin"]}
+            else:
+                values = {"wins": wins, "losses": len(games) - wins}
         claims = [
             self.claim(
                 subject="team:NYK",
@@ -1184,38 +1169,84 @@ class AnalystTools:
                 status="unsupported_metric_or_scope",
                 message="Specify a supported leader statistic.",
             )
-        game_map = {g.id: g for g in games}
-        rows = [(s, p) for s, p in self.rows if s.game_id in game_map]
-        if {s.game_id for s, _ in rows} != set(game_map):
+        fact = player_leader_fact(
+            self.rows,
+            games,
+            metric,
+            self.question,
+            supported_metrics=METRICS,
+        )
+        if fact is None:
             return ToolResult(
                 status="incomplete_coverage",
                 message="Complete scoped player box scores are unavailable.",
             )
-        totals: dict[str, int | float] = {}
-        for stat, player in rows:
-            totals[player.full_name] = totals.get(player.full_name, 0) + getattr(stat, metric)
-        maximum = max(totals.values())
-        leaders = sorted(name for name, value in totals.items() if value == maximum)
-        evidence = [self.receipt(game_map[s.game_id], s, p) for s, p in rows]
+
+        game_map = {game.id: game for game in games}
+        evidence = [
+            self.receipt(game_map[stat.game_id], stat, player)
+            for stat, player in fact.evidence_rows
+        ]
+        if fact.single_game_high:
+            rows = [
+                {
+                    "player": entry.player.full_name,
+                    "date": entry.game.game_date.isoformat(),
+                    "opponent": (
+                        entry.game.away_team_id
+                        if entry.game.home_team_id == "NYK"
+                        else entry.game.home_team_id
+                    ),
+                    "value": entry.value,
+                }
+                for entry in fact.tied_rows
+            ]
+            value = {"maximum": fact.value, "rows": rows}
+            metric_id = f"{metric}:single_game_high"
+            statement = (
+                f"Knicks' single-game high was {fact.value:g} {fact.label}, recorded by "
+                + "; ".join(
+                    f"{row['player']} ({row['value']:g} on {row['date']} vs {row['opponent']})"
+                    for row in rows
+                )
+                + "."
+            )
+            unit = fact.label
+            eligibility = {
+                "player": "NYK box-score appearances with minutes > 0",
+                "reduction": "maximum per-game stat row",
+                "ties": "all tied rows",
+            }
+        else:
+            value = {"leaders": list(fact.leaders), "total": fact.value}
+            metric_id = f"{metric}:leaders"
+            statement = (
+                f"{', '.join(fact.leaders)} led the Knicks with {fact.value:g} total "
+                f"{fact.label} across {len(games)} archived games."
+            )
+            unit = f"total {fact.label}"
+            eligibility = {
+                "player": "NYK box-score rows",
+                "reduction": "season total by player",
+                "ties": "all leaders",
+            }
+
         claim = self.claim(
             subject="team:NYK",
-            metric=f"{metric}:leaders",
-            value={"leaders": leaders, "total": maximum},
-            unit=f"total {metric}",
+            metric=metric_id,
+            value=value,
+            unit=unit,
             games=games,
             evidence=evidence,
             scope=scope,
-            sample=len(games),
+            sample=fact.sample_size,
             denominator=None,
-            eligibility={"player": "NYK box-score rows", "ties": "all leaders"},
-            statement=(
-                f"{', '.join(leaders)} led the Knicks with {maximum} total {metric} "
-                f"across {len(games)} archived games."
-            ),
+            eligibility=eligibility,
+            statement=statement,
         )
         return ToolResult(
             status="ok",
-            message="Complete scoped leader population.",
+            message="Complete scoped player leader population.",
             claims=[claim],
             evidence=evidence,
             scope=scope.model_dump(mode="json"),

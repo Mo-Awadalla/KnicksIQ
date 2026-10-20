@@ -16,6 +16,12 @@ hash the release, definitions, calculation, subject, scope, value and provenance
 The writer can reference IDs and request rounding; it cannot overwrite claims.
 Analytics read the complete applicable release population. Zero-minute player rows
 are excluded from appearance denominators; missing rows are coverage gaps.
+Team score-threshold counts compare each game in the resolved population with the
+shared `StatThreshold` semantics and return `games:count`, not a season score sum.
+Player leader calculations use canonical Knicks box-score rows inside that same
+scope. Explicit single-game highs rank individual appearances, preserve every tie,
+and retain evidence for the complete candidate population; scoped leaders otherwise
+sum each player's rows only within the requested window.
 
 Discovery starts with observed box scores and the existing catalog, recomputed
 from complete release rows under its existing eligibility policies. It introduces
