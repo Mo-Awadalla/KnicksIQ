@@ -25,7 +25,7 @@ from app.evaluation.trace_capture import capture_turn
 from app.evaluation.verification_adapter import MODEL, CountedRun
 from app.services.release_evidence import evaluation_request_id
 
-SCORING_VERSION = "release-review-v1"
+SCORING_VERSION = "release-review-v2"
 QUESTIONS = Path(__file__).with_name("questions.jsonl")
 
 
@@ -53,14 +53,35 @@ def validate_contract(contract: dict) -> None:
         raise ValueError("Missing immutable frozen 120-case contract")
     for case, question in zip(cases, original, strict=True):
         semantic = question["answerable"] and question.get("expected_route") == "retrieval_rag"
+        targets = case.get("semantic_targets", [])
+        context_free_value = case.get("context_free_clarification", False)
+        context_free = context_free_value is True
         if (
             case["question"] != question["question"]
             or case.get("context", []) != question.get("context", [])
             or case.get("semantic_member") is not semantic
             or case.get("disposition") not in {"answer", "clarify", "refuse"}
             or case.get("decision_status") != "settled"
-            or not case.get("decision_basis")
-            or (semantic and not case.get("semantic_targets"))
+            or not isinstance(case.get("decision_basis"), str)
+            or not case["decision_basis"].strip()
+            or not isinstance(targets, list)
+            or any(not isinstance(target, str) or not target for target in targets)
+            or len(targets) != len(set(targets))
+            or ("context_free_clarification" in case and type(context_free_value) is not bool)
+            or (
+                semantic
+                and not targets
+                and not (context_free and case.get("disposition") == "clarify")
+            )
+            or (
+                context_free
+                and (
+                    not semantic
+                    or case.get("disposition") != "clarify"
+                    or targets
+                    or case.get("context")
+                )
+            )
             or (case.get("disposition") == "answer" and not case.get("facts"))
         ):
             raise ValueError(f"Unresolved or changed expectation: {case['id']}")
@@ -92,6 +113,21 @@ def _mapped_sources(mapping: dict, refs: list[str]) -> set[str]:
             raise ValueError("Invalid canonical source mapping")
         sources.update(values)
     return sources
+
+
+def recall_at_k(targets: list[str], returned: list[str], mapping: dict) -> float:
+    """Recall@k with k = max(5, targets), so a question's full scope is never capped by k."""
+    relevant = set(targets)
+    top = returned[: max(5, len(relevant))]
+    return len(relevant & _mapped_sources(mapping, top)) / len(relevant)
+
+
+def _listed_candidate_recall_at_k(targets: list[str], listed: list[str]) -> float:
+    relevant = set(targets)
+    if not set(listed) <= relevant:
+        return 0.0
+    top = listed[: max(5, len(relevant))]
+    return len(relevant & set(top)) / len(relevant)
 
 
 def _review_assertions(case: dict, observation: dict, assertions: list, mapping: dict) -> bool:
@@ -173,6 +209,13 @@ def score_reviewed(
         review = reviewed.get(case["id"], {})
         assertions = review.get("assertions", [])
         complete_spans = _review_assertions(case, observation, assertions, mapping)
+        requires_candidate_list = case["semantic_member"] and case["disposition"] == "clarify"
+        listed_candidate_game_ids = review.get("listed_candidate_game_ids")
+        candidate_review_valid = not requires_candidate_list or (
+            isinstance(listed_candidate_game_ids, list)
+            and all(isinstance(game_id, str) and game_id for game_id in listed_candidate_game_ids)
+            and len(listed_candidate_game_ids) == len(set(listed_candidate_game_ids))
+        )
         valid = (
             review.get("observation_sha256") == digest(observation)
             and bool(review.get("reviewer"))
@@ -189,6 +232,7 @@ def score_reviewed(
                 )
             )
             and complete_spans
+            and candidate_review_valid
         )
         missing += not valid
         outcome_ok = valid and review["actual_disposition"] == case["disposition"]
@@ -207,18 +251,36 @@ def score_reviewed(
             (clarify if case["disposition"] == "clarify" else refuse).append(hit)
         searches = observation.get("capture", {}).get("searches", [])
         if case["semantic_member"]:
-            # Use only actual analyst searches. Missing retrieval stays a zero, never N/A.
             ranked = list(
                 dict.fromkeys(ref for s in searches for ref in s.get("returned_evidence_ids", []))
-            )[:5]
+            )
             candidates = list(
                 dict.fromkeys(ref for s in searches for ref in s.get("candidate_evidence_ids", []))
             )[:20]
-            absent = not ranked or not candidates
-            missing_traces += absent
-            relevant = set(case["semantic_targets"])
-            resolved = _mapped_sources(mapping, ranked)
-            recall.append(len(relevant & resolved) / len(relevant) if not absent else 0)
+            if not case["semantic_targets"]:
+                clarified = valid and outcome_ok and supported
+                recall.append(
+                    float(
+                        clarified
+                        and not listed_candidate_game_ids
+                        and not ranked
+                        and not candidates
+                    )
+                )
+            elif case["disposition"] == "clarify":
+                recall.append(
+                    _listed_candidate_recall_at_k(
+                        case["semantic_targets"], listed_candidate_game_ids
+                    )
+                    if outcome_ok and supported
+                    else 0.0
+                )
+            else:
+                absent = not ranked or not candidates
+                missing_traces += absent
+                recall.append(
+                    recall_at_k(case["semantic_targets"], ranked, mapping) if not absent else 0
+                )
         if not valid or not outcome_ok or not supported:
             failures.append(
                 {
