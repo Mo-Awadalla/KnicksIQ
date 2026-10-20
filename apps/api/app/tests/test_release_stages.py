@@ -14,6 +14,7 @@ as model success; primary delivery in shadow; a clarification scored as refusal
 
 import copy
 import hashlib
+import json
 from pathlib import Path
 
 import pytest
