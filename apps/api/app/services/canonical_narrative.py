@@ -18,7 +18,6 @@ from app.services.opponent_narrowing import (
     LeadCondition,
     LeadTransition,
     lead_change_conditions,
-    requires_lead_change,
     verified_lead_flags,
 )
 from app.services.team_aliases import team_ids_in_text
@@ -35,6 +34,7 @@ class NarrativeSelection:
     comparison_games: list[Game]
 
     lead_conditions: tuple[LeadCondition, ...] = ()
+
 
 def select_narrative(question: str, games: list[Game]) -> NarrativeSelection | None:
     """Select defined extremes from the user's already release-filtered population."""
@@ -57,11 +57,7 @@ def select_narrative(question: str, games: list[Game]) -> NarrativeSelection | N
                 final,
             )
         return None
-    if (
-        lead_conditions
-        and len(final) == 1
-        and team_ids_in_text(question) - {"NYK"}
-    ):
+    if lead_conditions and len(final) == 1 and team_ids_in_text(question) - {"NYK"}:
         definitions = {
             "lost_lead": "a lost lead requires the opponent to lead after the Knicks led",
             "comeback": "a comeback requires the Knicks to lead after the opponent led",
@@ -156,7 +152,6 @@ def _event_row(game: Game, event: GameEvent) -> dict:
     }
 
 
-
 def _lead_witness_transitions(
     transitions: tuple[LeadTransition, ...],
     conditions: tuple[LeadCondition, ...],
@@ -180,6 +175,7 @@ def _lead_witness_transitions(
                 selected_sequences.update((start.sequence, end.sequence))
                 break
     return [item for item in transitions if item.sequence in selected_sequences]
+
 
 def _maximum_runs(game: Game, events: list[GameEvent]) -> list[dict]:
     if not events or len({e.sequence for e in events}) != len(events):
@@ -295,7 +291,9 @@ async def build_narrative(
             f"NYK {p['NYK']}, {opponent_id} {p[opponent_id]}"
             for p in period_values
         )
-        statement = f"{game.game_date}: the Knicks {outcome} against {opponent_id}, {own}–{opponent}."
+        statement = (
+            f"{game.game_date}: the Knicks {outcome} against {opponent_id}, {own}–{opponent}."
+        )
         if observed:
             statement += f" Period scores: {period_text}."
         elif selection.kind != "lead_changes":
@@ -420,7 +418,8 @@ async def build_narrative(
     return ToolResult(
         status="ok",
         message=(
-            "Describe every selected game and its verified lead-change witness; do not infer causes."
+            "Describe every selected game and its verified lead-change "
+            "witness; do not infer causes."
             if selection.kind == "lead_changes"
             else "Describe every selected game and every tied maximum; do not infer causes."
         ),

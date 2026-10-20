@@ -118,9 +118,7 @@ async def narrative_clarification(
     opponents = team_ids_in_text(context) - {"NYK"}
     narrowing = await narrow_by_condition(db, normalized, candidates) if candidates else None
     if narrowing and narrowing.unverified_games:
-        verified_dates = ", ".join(
-            dict.fromkeys(str(game.game_date) for game in narrowing.games)
-        )
+        verified_dates = ", ".join(dict.fromkeys(str(game.game_date) for game in narrowing.games))
         unverified_dates = ", ".join(
             dict.fromkeys(str(game.game_date) for game in narrowing.unverified_games)
         )

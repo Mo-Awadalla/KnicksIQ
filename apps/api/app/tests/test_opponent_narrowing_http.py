@@ -20,9 +20,9 @@ SCHEDULE = {
         # Led, then trailed, then won: a blown lead the Knicks still won.
         ("2026-01-01", True, [(2, 0), (2, 3), (8, 3)]),
         # Lost without ever leading.
-        ("2026-01-02", False, [(0, 2), (2, 4)]),
+        ("2026-01-02", False, [(0, 2), (0, 4), (2, 4)]),
         # Led wire to wire.
-        ("2026-01-03", True, [(3, 0), (10, 4)]),
+        ("2026-01-03", True, [(3, 0), (10, 0), (10, 4)]),
         # Led, then lost.
         ("2026-01-04", True, [(5, 0), (5, 7)]),
     ],
@@ -186,6 +186,7 @@ async def test_exactly_one_fit_proceeds_as_if_named(
     assert receipts, body
     assert all(chosen in e["text"] for e in receipts), receipts
 
+
 async def test_one_fit_blown_lead_evidence_survives_a_final_knicks_win(
     client,
     local_redis,  # noqa: F811
@@ -195,24 +196,26 @@ async def test_one_fit_blown_lead_evidence_survives_a_final_knicks_win(
     monkeypatch.setattr(get_settings(), "rag_query_resolution_v2_enabled", True)
     await seed_schedule()
     with capture_turn() as capture:
-        body = await ask(client, "How did the Knicks lose the lead against Toronto?", "lead-evidence")
+        body = await ask(
+            client, "How did the Knicks lose the lead against Toronto?", "lead-evidence"
+        )
     assert body["route"] != "clarification", body["answer"]
     claims = [
-        item["metadata"]["claim"]
-        for item in body["citations"]
-        if item["type"] == "verified_claim"
+        item["metadata"]["claim"] for item in body["citations"] if item["type"] == "verified_claim"
     ]
     narratives = [claim for claim in claims if claim["metric_id"] == "canonical_game_narrative"]
     assert narratives, body
     narrative = narratives[0]
     assert narrative["value"]["games"][0]["date"] == "2026-02-01"
-    assert [
-        item["kind"] for item in narrative["value"]["lead_changes"]
-    ] == ["knicks_took_lead", "opponent_took_lead"]
-    assert [item["sequence"] for item in narrative["value"]["lead_changes"]] == [1, 2]
-    assert narrative["value"]["games"][0]["knicks_points"] > narrative["value"]["games"][0][
-        "opponent_points"
+    assert [item["kind"] for item in narrative["value"]["lead_changes"]] == [
+        "knicks_took_lead",
+        "opponent_took_lead",
     ]
+    assert [item["sequence"] for item in narrative["value"]["lead_changes"]] == [1, 2]
+    assert (
+        narrative["value"]["games"][0]["knicks_points"]
+        > narrative["value"]["games"][0]["opponent_points"]
+    )
     assert [
         (
             item["period"],
@@ -255,9 +258,8 @@ async def test_zero_fits_say_no_archived_game_matches(
     query_resolution_v2,
 ):
     configure(monkeypatch, evidence_loop)
-    monkeypatch.setattr(
-        get_settings(), "rag_query_resolution_v2_enabled", query_resolution_v2
-    )
+    monkeypatch.setattr(get_settings(), "rag_query_resolution_v2_enabled", query_resolution_v2)
+    await seed_schedule()
     body = await ask(client, question, f"zero-{evidence_loop}-{len(question)}")
     assert body["route"] == "clarification"
     assert body["citations"] == []
@@ -306,9 +308,7 @@ async def test_malformed_scoreboard_does_not_fabricate_unique_lead_change(
     query_resolution_v2,
 ):
     configure(monkeypatch, True)
-    monkeypatch.setattr(
-        get_settings(), "rag_query_resolution_v2_enabled", query_resolution_v2
-    )
+    monkeypatch.setattr(get_settings(), "rag_query_resolution_v2_enabled", query_resolution_v2)
     await seed_schedule()
     async with AsyncSessionLocal() as db:
         game = (

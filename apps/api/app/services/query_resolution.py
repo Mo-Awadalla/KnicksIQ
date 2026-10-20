@@ -400,9 +400,7 @@ async def resolve_query(
 
     clarification_options = ambiguous_players
     clarification_reason = "ambiguous_player" if ambiguous_players else None
-    if lead_narrowing and candidates and (
-        len(candidates) != 1 or unverified_lead_games
-    ):
+    if lead_narrowing and candidates and (len(candidates) != 1 or unverified_lead_games):
         clarification_reason = (
             "unverified_game_condition" if unverified_lead_games else "ambiguous_game"
         )

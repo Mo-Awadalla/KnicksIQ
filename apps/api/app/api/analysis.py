@@ -1080,9 +1080,9 @@ async def query_analysis(
             if resolved_query.clarification_reason == "unverified_game_condition":
                 answer = (
                     "Short answer\n"
-                    "I cannot verify the requested lead-change condition for every candidate because "
-                    "some play-by-play score sequences are missing, malformed, or do not reconcile "
-                    "with the final score. Which archived game date should I use?"
+                    "I cannot verify the requested lead-change condition for every candidate "
+                    "because some play-by-play score sequences are missing, malformed, or do "
+                    "not reconcile with the final score. Which archived game date should I use?"
                 )
             else:
                 answer = "Short answer\nI found more than one valid match. Which one did you mean?"
@@ -1946,6 +1946,7 @@ async def _query_evidence_analyst(
                 if tools.scope.clarification_reason in {
                     "missing_conversation_game",
                     "ambiguous_game",
+                    "unverified_game_condition",
                 }:
                     clarification = (
                         await narrative_clarification(
