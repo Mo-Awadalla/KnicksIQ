@@ -41,6 +41,60 @@ def rebind(observations, reviews, index, **review):
 MAPPING = {"runtime:fixture": "canonical:fixture"}
 
 
+def test_clarification_recall_uses_the_candidates_listed_in_the_answer():
+    contract = fixture_contract()
+    index = next(i for i, case in enumerate(contract["cases"]) if case["semantic_member"])
+    contract["cases"][index]["semantic_targets"] = NINE
+    observations, reviews = observations_and_reviews(contract)
+    answer = "Candidate games: " + ", ".join(f"Game {i}" for i in range(9)) + ". Which game?"
+    observations[index]["response"]["answer"] = answer
+    observations[index]["capture"]["searches"] = []
+    reviews[index]["assertions"][0]["end"] = len(answer)
+    reviews[index]["listed_candidate_game_ids"] = NINE
+    rebind(observations, reviews, index)
+
+    mapping = MAPPING | NINE_MAPPING
+    result = score_reviewed(contract, observations, reviews, mapping, "primary")
+    assert result["metrics"]["semantic_recall_at_5"] == 1
+    assert result["metrics"]["missing_ranked_traces"] == 0
+
+    reviews[index]["listed_candidate_game_ids"] = NINE[:5]
+    answer = "Candidate games: " + ", ".join(f"Game {i}" for i in range(5)) + ". Which game?"
+    observations[index]["response"]["answer"] = answer
+    reviews[index]["assertions"][0]["end"] = len(answer)
+    rebind(observations, reviews, index)
+    result = score_reviewed(contract, observations, reviews, mapping, "primary")
+    assert result["metrics"]["semantic_recall_at_5"] == pytest.approx((49 + 5 / 9) / 50)
+
+    reviews[index]["listed_candidate_game_ids"] = NINE + ["canonical:wrong-game"]
+    answer = "Candidate games: " + ", ".join([*(f"Game {i}" for i in range(9)), "Game X"])
+    answer += ". Which game?"
+    observations[index]["response"]["answer"] = answer
+    reviews[index]["assertions"][0]["end"] = len(answer)
+    rebind(observations, reviews, index)
+    result = score_reviewed(contract, observations, reviews, mapping, "primary")
+    assert result["metrics"]["semantic_recall_at_5"] == pytest.approx(49 / 50)
+
+
+def test_context_free_clarification_rejects_conversation_context():
+    contract = fixture_contract()
+    case = next(c for c in contract["cases"] if c["id"] == "follow_ups-001")
+    case.update(semantic_targets=[], context_free_clarification=True)
+    with pytest.raises(ValueError):
+        validate_contract(contract)
+
+
+def test_context_free_clarification_rejects_unreturned_candidate_evidence():
+    contract, observations, reviews, index = context_free_fixture()
+    observations[index]["capture"]["searches"] = [
+        {"returned_evidence_ids": [], "candidate_evidence_ids": ["runtime:fixture"]}
+    ]
+    rebind(observations, reviews, index)
+    result = score_reviewed(contract, observations, reviews, MAPPING, "primary")
+    assert result["metrics"]["semantic_recall_at_5"] == pytest.approx(49 / 50)
+
+
+
 def test_context_free_clarification_scores_only_when_asked_without_game_evidence():
     contract, observations, reviews, index = context_free_fixture()
     validate_contract(contract)

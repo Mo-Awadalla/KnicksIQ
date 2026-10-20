@@ -4,13 +4,19 @@ The launch evaluation set is a human-reviewed JSONL artifact kept with the priva
 
 Release gates are: 100% canonical numeric/entity correctness; at least 95% overall paraphrase and citation pass rate; at least 95% mean Recall@k for semantic questions; and 100% explicit refusal for unsupported tactical, live, injury, trade, future, or non-archive claims. Tests run once with Qdrant enabled and again with Qdrant, Redis, and OpenRouter disabled. The deterministic answer must remain correct in both runs.
 
-Recall@k follows each question's scope. For a semantic case it is the share of its reviewed
-targets found among the top k evidence references the analyst's searches returned, with
-k = max(5, number of targets). A target list is never capped to fit the metric. A clarification
-case scores the same way: the analyst must surface the candidate games. A context-free
-clarification ("that game" with no earlier game) has no targets. It scores 1 only when the
-reviewed outcome is a clarification and the analyst returned no game evidence. The metric keeps
-its `semantic_recall_at_5` key in scored artifacts and the release gate.
+Recall@k follows each question's scope. For semantic answer cases, it is the share of reviewed
+targets found among the top k evidence references returned by actual analyst searches, with
+k = max(5, number of targets). A target list is never capped.
+
+For semantic clarification cases, reviewers record every candidate game listed in the answer as
+canonical IDs in `listed_candidate_game_ids`. Recall@k is computed over that list. Incomplete
+lists receive partial credit; any listed non-target game scores zero for the case. Clarifications
+do not require a ranked search trace because the analyst may clarify before retrieval.
+
+A context-free clarification ("that game" with no earlier game) must have empty conversation
+context and no targets. It scores 1 only when a valid, supported review finds a clarification,
+lists no candidate game, and the analyst produced no candidate or returned search evidence. The
+metric keeps its `semantic_recall_at_5` key in scored artifacts and the release gate.
 
 The release gate has no shadow stage. Launch goes straight to `llm_primary`
 (owner decision, 2026-10-20). Launch requires the release gates plus analyst
@@ -21,10 +27,11 @@ the measured p95 at concurrency 10 was 10.5 seconds against a 30-second request 
 ## Fixed-cohort release execution
 
 Use `app.evaluation.release_runner` with the frozen 120-case contract and its
-separate hash-bound owner approval. All 50 original semantic cases remain in the
-enabled retrieval denominator; a clarification does not substitute for a ranked
-retrieval trace, except a context-free clarification, which must retrieve nothing.
-The runner captures the analyst execution being scored.
+separate hash-bound owner approval. All 50 original semantic cases remain in
+the fixed cohort. Answer cases require ranked retrieval traces; semantic
+clarifications use the output-bound candidate-game review instead. A
+context-free clarification must have no retrieval candidates or returned
+evidence. The runner captures the analyst execution being scored.
 
 Primary and shadow collection require an explicit `CountedRun`. Its environment
 verifier receives the selected database scheme, host, port and name, without

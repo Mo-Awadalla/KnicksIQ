@@ -10,12 +10,14 @@ Generate the view and run the fail-closed gate from the repository root:
 uv run --package knicksiq-api python -m app.services.release_evidence docs/release-evidence/release-record.json --readiness --render
 ```
 
-The owner removed the shadow stage on 2026-10-20: launch goes straight to `llm_primary`.
-The recorded `launch_configuration` must be `llm_primary`, unsampled, with the evidence loop
-enabled, deterministic fallback and the unchanged $2 monthly cutoff. Readiness requires no
-pre-promotion shadow configuration, `shadow_dependencies` or `shadow_evaluation` evidence.
-Readiness does not supply final launch approval or the owner-controlled record
-digest required by the deployment coordinator.
+The owner removed the required shadow stage on 2026-10-20; launch goes straight to
+`llm_primary`. The recorded `launch_configuration` must require unsampled primary
+answers, the evidence loop and deterministic fallback. Its pending
+`openrouter_monthly_cutoff_usd` target is $20, applied only during an explicitly
+authorized deployment; this branch leaves live Render settings unchanged.
+Readiness requires no shadow configuration, `shadow_dependencies` or
+`shadow_evaluation` evidence. It does not supply final launch approval or the
+owner-controlled record digest required by the deployment coordinator.
 
 Automatic Render deployments stay disabled. Both NOW workstreams block deployment.
 NEXT and LATER are outside this release gate and hosting remains unchanged.

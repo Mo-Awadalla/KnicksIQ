@@ -95,9 +95,16 @@ def observations_and_reviews(contract):
     observations = []
     reviews = []
     for case in contract["cases"]:
+        answer = (
+            "Candidate game fixture. Which game?"
+            if case["semantic_member"]
+            and case["disposition"] == "clarify"
+            and case["semantic_targets"]
+            else "Which game?"
+        )
         observation = {
             "case_id": case["id"],
-            "response": {"answer": "Which game?", "citations": []},
+            "response": {"answer": answer, "citations": []},
             "capture": {
                 "searches": [
                     {
@@ -120,11 +127,14 @@ def observations_and_reviews(contract):
                 "assertions": [
                     {
                         "start": 0,
-                        "end": 11,
+                        "end": len(answer),
                         "classification": "clarification",
                         "canonical_fact_ids": [],
                     }
                 ],
+                "listed_candidate_game_ids": list(case["semantic_targets"])
+                if case["semantic_member"] and case["disposition"] == "clarify"
+                else [],
                 "numeric_correct": True,
                 "entity_correct": True,
                 "citation_correct": True,
@@ -134,7 +144,7 @@ def observations_and_reviews(contract):
     return observations, reviews
 
 
-def test_clarification_is_not_refusal_and_missing_trace_is_not_omitted():
+def test_clarification_is_not_refusal_and_does_not_need_a_ranked_trace():
     contract = fixture_contract()
     observations, reviews = observations_and_reviews(contract)
     result = score_reviewed(
@@ -151,7 +161,7 @@ def test_clarification_is_not_refusal_and_missing_trace_is_not_omitted():
         contract, observations, reviews, {"runtime:fixture": "canonical:fixture"}, "primary"
     )
     assert result["metrics"]["correct_abstention_rate"] < 1
-    assert result["metrics"]["missing_ranked_traces"] == 1
+    assert result["metrics"]["missing_ranked_traces"] == 0
     assert result["metrics"]["missing_labels"] == 1  # Modified response needs a newly bound review.
     assert result["metrics"]["semantic_case_count"] == 50
 

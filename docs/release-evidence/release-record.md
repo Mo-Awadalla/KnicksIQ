@@ -2,7 +2,7 @@
 
 Record: `2025-26-verified-parity`
 Tested commit: `ade107fe17b3a8ff0e59632bd45b3826e4499068`
-Deployment gate: **BLOCKED**
+Readiness gate: **BLOCKED**
 
 Generated from release-record.json; this view is not approval evidence.
 
@@ -32,7 +32,7 @@ Generated from release-record.json; this view is not approval evidence.
 - exceptions: missing owner approval bound to content
 - report_audit: missing owner approval bound to content
 - evaluation_labels: missing owner approval bound to content
-- launch: missing owner approval bound to content
+- evaluation contract: missing valid hash-bound frozen expectations
 
 Agents verify every report against canonical evidence. The owner
 approves the template, exceptions, and final content-hash-bound audit
