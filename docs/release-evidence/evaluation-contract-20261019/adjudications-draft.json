@@ -1,0 +1,125 @@
+{
+  "aliases_typos-003": {
+    "context_free_clarification": true,
+    "decision_basis": "Owner ruling 2026-10-20: 'that game' refers to a game mentioned earlier in the 10-message conversation context. If none was mentioned, the analyst asks which game the user means. This case has no context, so the expected outcome is that clarification and no game is a correct retrieval target.",
+    "semantic_targets": []
+  },
+  "aliases_typos-005": {
+    "decision_basis": "Draft: 'Knics' resolves to the Knicks; 'biggest run' is the largest unanswered NYK scoring run of the season, stated with that definition.",
+    "semantic_targets": [
+      "game:0022500343"
+    ]
+  },
+  "aliases_typos-006": {
+    "decision_basis": "Draft: 'v ATL' resolves to Atlanta; the record question covers every Atlanta game, so all are targets (owner decision 2, k = target count).",
+    "semantic_targets": [
+      "game:0022500435",
+      "game:0022500479",
+      "game:0022501143",
+      "game:0042500121",
+      "game:0042500122",
+      "game:0042500123",
+      "game:0042500124",
+      "game:0042500125",
+      "game:0042500126"
+    ]
+  },
+  "aliases_typos-010": {
+    "decision_basis": "Draft: 'collpase' resolves to collapse, which owner decision 3 measures by play-by-play lead changes: the largest NYK lead the opponent later overturned.",
+    "semantic_targets": [
+      "game:0022500467"
+    ]
+  },
+  "single_game_narrative-003": {
+    "decision_basis": "Draft: nothing in 'the fourth quarter against Atlanta' narrows the 9 Atlanta games, so the analyst asks which one and every Atlanta game is a candidate (owner decisions 2 and 3).",
+    "semantic_targets": [
+      "game:0022500435",
+      "game:0022500479",
+      "game:0022501143",
+      "game:0042500121",
+      "game:0042500122",
+      "game:0042500123",
+      "game:0042500124",
+      "game:0042500125",
+      "game:0042500126"
+    ]
+  },
+  "single_game_narrative-006": {
+    "decision_basis": "Draft: 6 games share the smallest final margin, so the analyst asks which one and lists exactly those games (owner decision 3).",
+    "semantic_targets": [
+      "game:0022500372",
+      "game:0022501016",
+      "game:0042500122",
+      "game:0042500123",
+      "game:0042500402",
+      "game:0042500404"
+    ]
+  },
+  "single_game_narrative-009": {
+    "decision_basis": "Draft: nothing in 'how the Knicks closed the Atlanta game' narrows the 9 Atlanta games, so the analyst asks which one and every Atlanta game is a candidate (owner decisions 2 and 3).",
+    "semantic_targets": [
+      "game:0022500435",
+      "game:0022500479",
+      "game:0022501143",
+      "game:0042500121",
+      "game:0042500122",
+      "game:0042500123",
+      "game:0042500124",
+      "game:0042500125",
+      "game:0042500126"
+    ]
+  },
+  "single_game_narrative-016": {
+    "decision_basis": "Draft: nothing in 'turnovers in the Atlanta game' narrows the 9 Atlanta games, so the analyst asks which one and every Atlanta game is a candidate (owner decisions 2 and 3).",
+    "semantic_targets": [
+      "game:0022500435",
+      "game:0022500479",
+      "game:0022501143",
+      "game:0042500121",
+      "game:0042500122",
+      "game:0042500123",
+      "game:0042500124",
+      "game:0042500125",
+      "game:0042500126"
+    ]
+  },
+  "turning_points-003": {
+    "decision_basis": "Draft: 'collapse' uses play-by-play lead changes (owner decision 3); only Atlanta games where the Knicks led and Atlanta later led are candidates.",
+    "semantic_targets": [
+      "game:0022500435",
+      "game:0022500479",
+      "game:0022501143",
+      "game:0042500121",
+      "game:0042500122",
+      "game:0042500123",
+      "game:0042500124",
+      "game:0042500126"
+    ]
+  },
+  "turning_points-005": {
+    "decision_basis": "Draft: 'largest deficit erased' is the biggest NYK play-by-play deficit after which the game was tied or NYK led; one game fits, so the analyst answers with it (owner decision 3).",
+    "semantic_targets": [
+      "game:0042500404"
+    ]
+  },
+  "turning_points-007": {
+    "decision_basis": "Draft: 'most damaging opponent run' is read as the largest unanswered opponent scoring run of the season; the analyst should state that definition and answer with that game.",
+    "semantic_targets": [
+      "game:0022501016"
+    ]
+  },
+  "turning_points-010": {
+    "decision_basis": "Draft: nothing in 'late-game turning points against Atlanta' narrows the 9 Atlanta games, so the analyst asks which one and every Atlanta game is a candidate (owner decisions 2 and 3).",
+    "semantic_targets": [
+      "game:0022500435",
+      "game:0022500479",
+      "game:0022501143",
+      "game:0042500121",
+      "game:0042500122",
+      "game:0042500123",
+      "game:0042500124",
+      "game:0042500125",
+      "game:0042500126"
+    ]
+  }
+}
