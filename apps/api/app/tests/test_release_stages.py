@@ -199,7 +199,7 @@ def test_readiness_has_no_shadow_stage_but_keeps_launch_and_approval_gates(tmp_p
         "unsupported_archive",
         "clarify_as_refusal",
         "refuse_as_clarify",
-        "disabled_loop",
+        "configuration_mismatch",
         "uncommitted",
         "replayed",
     ],
@@ -239,8 +239,11 @@ def test_invalid_shadow_evidence_fails_the_staged_shadow_check(tmp_path, defect)
         refusal = next(t for t in payload["turns"] if t["refused"])
         refusal["refused"] = False
         refusal["delivered_mode"] = "clarification"
-    if defect == "disabled_loop":
-        record["pre_promotion_configuration"]["analyst_evidence_loop_enabled"] = False
+    if defect == "configuration_mismatch":
+        record["pre_promotion_configuration"] = {
+            **record["pre_promotion_configuration"],
+            "analyst_evidence_loop_enabled": False,
+        }
     if defect in {"uncommitted", "replayed"}:
         payload["turns"][0]["state_committed" if defect == "uncommitted" else "replayed"] = (
             defect == "replayed"

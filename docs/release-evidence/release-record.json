@@ -155,7 +155,6 @@
   "remaining_external_checks": [
     "Owner approval of report template, scoreboard-correction exception, audit summary and evaluation-label batches, bound to content",
     "Evaluation of all 120 labels with and without services, with ranked traces and the 50-case semantic cohort",
-    "Isolated-staging shadow evaluation and shadow dependency checks",
     "Active archive identity and production router contracts, read immediately before promotion",
     "A rollback snapshot that includes a restore rehearsal or fresh database backup",
     "Render CLI deployment followed by production smoke, browser and load checks"
@@ -171,11 +170,6 @@
     }
   },
   "candidate_commit": "ade107fe17b3a8ff0e59632bd45b3826e4499068",
-  "pre_promotion_configuration": {
-    "answer_mode": "shadow",
-    "shadow_sample_rate": 0.1,
-    "analyst_evidence_loop_enabled": true
-  },
   "launch_configuration": {
     "answer_mode": "llm_primary",
     "analyst_evidence_loop_enabled": true

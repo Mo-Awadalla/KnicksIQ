@@ -2,12 +2,18 @@
 
 The launch evaluation set is a human-reviewed JSONL artifact kept with the private release inputs. Each case contains a paraphrased question, capability category, canonical answer facts, allowed entity names, required claim-level citations, and expected refusal status.
 
-Release gates are: 100% canonical numeric/entity correctness; at least 95% overall paraphrase and citation pass rate; at least 95% Recall@5 for semantic questions; and 100% explicit refusal for unsupported tactical, live, injury, trade, future, or non-archive claims. Tests run once with Qdrant enabled and again with Qdrant, Redis, and OpenRouter disabled. The deterministic answer must remain correct in both runs.
+Release gates are: 100% canonical numeric/entity correctness; at least 95% overall paraphrase and citation pass rate; at least 95% mean Recall@k for semantic questions; and 100% explicit refusal for unsupported tactical, live, injury, trade, future, or non-archive claims. Tests run once with Qdrant enabled and again with Qdrant, Redis, and OpenRouter disabled. The deterministic answer must remain correct in both runs.
 
-Shadow evaluation records only request ID, mode, intent, dependency outcome,
-candidate validation result, retrieval count, latency, and model/prompt/data
-versions. It does not retain questions, answers, evidence text, or claim
-comparisons. Promotion to `llm_primary` requires the release gates plus analyst
+Recall@k follows each question's scope. For a semantic case it is the share of its reviewed
+targets found among the top k evidence references the analyst's searches returned, with
+k = max(5, number of targets). A target list is never capped to fit the metric. A clarification
+case scores the same way: the analyst must surface the candidate games. A context-free
+clarification ("that game" with no earlier game) has no targets. It scores 1 only when the
+reviewed outcome is a clarification and the analyst returned no game evidence. The metric keeps
+its `semantic_recall_at_5` key in scored artifacts and the release gate.
+
+The release gate has no shadow stage. Launch goes straight to `llm_primary`
+(owner decision, 2026-10-20). Launch requires the release gates plus analyst
 p95 below 15 seconds and errors below one percent. The owner relaxed this from four
 seconds on 2026-10-19: each model answer makes two or three sequential provider calls, and
 the measured p95 at concurrency 10 was 10.5 seconds against a 30-second request deadline.
@@ -17,7 +23,8 @@ the measured p95 at concurrency 10 was 10.5 seconds against a 30-second request 
 Use `app.evaluation.release_runner` with the frozen 120-case contract and its
 separate hash-bound owner approval. All 50 original semantic cases remain in the
 enabled retrieval denominator; a clarification does not substitute for a ranked
-retrieval trace. The runner captures the analyst execution being scored.
+retrieval trace, except a context-free clarification, which must retrieve nothing.
+The runner captures the analyst execution being scored.
 
 Primary and shadow collection require an explicit `CountedRun`. Its environment
 verifier receives the selected database scheme, host, port and name, without

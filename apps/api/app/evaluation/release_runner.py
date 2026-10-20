@@ -25,7 +25,7 @@ from app.evaluation.trace_capture import capture_turn
 from app.evaluation.verification_adapter import MODEL, CountedRun
 from app.services.release_evidence import evaluation_request_id
 
-SCORING_VERSION = "release-review-v1"
+SCORING_VERSION = "release-review-v2"
 QUESTIONS = Path(__file__).with_name("questions.jsonl")
 
 
@@ -53,6 +53,7 @@ def validate_contract(contract: dict) -> None:
         raise ValueError("Missing immutable frozen 120-case contract")
     for case, question in zip(cases, original, strict=True):
         semantic = question["answerable"] and question.get("expected_route") == "retrieval_rag"
+        context_free = case.get("context_free_clarification") is True
         if (
             case["question"] != question["question"]
             or case.get("context", []) != question.get("context", [])
@@ -60,7 +61,19 @@ def validate_contract(contract: dict) -> None:
             or case.get("disposition") not in {"answer", "clarify", "refuse"}
             or case.get("decision_status") != "settled"
             or not case.get("decision_basis")
-            or (semantic and not case.get("semantic_targets"))
+            or (
+                semantic
+                and not case.get("semantic_targets")
+                and not (context_free and case.get("disposition") == "clarify")
+            )
+            or (
+                context_free
+                and (
+                    not semantic
+                    or case.get("disposition") != "clarify"
+                    or case.get("semantic_targets")
+                )
+            )
             or (case.get("disposition") == "answer" and not case.get("facts"))
         ):
             raise ValueError(f"Unresolved or changed expectation: {case['id']}")
@@ -92,6 +105,13 @@ def _mapped_sources(mapping: dict, refs: list[str]) -> set[str]:
             raise ValueError("Invalid canonical source mapping")
         sources.update(values)
     return sources
+
+
+def recall_at_k(targets: list[str], returned: list[str], mapping: dict) -> float:
+    """Recall@k with k = max(5, targets), so a question's full scope is never capped by k."""
+    relevant = set(targets)
+    top = returned[: max(5, len(relevant))]
+    return len(relevant & _mapped_sources(mapping, top)) / len(relevant)
 
 
 def _review_assertions(case: dict, observation: dict, assertions: list, mapping: dict) -> bool:
@@ -210,15 +230,20 @@ def score_reviewed(
             # Use only actual analyst searches. Missing retrieval stays a zero, never N/A.
             ranked = list(
                 dict.fromkeys(ref for s in searches for ref in s.get("returned_evidence_ids", []))
-            )[:5]
+            )
             candidates = list(
                 dict.fromkeys(ref for s in searches for ref in s.get("candidate_evidence_ids", []))
             )[:20]
-            absent = not ranked or not candidates
-            missing_traces += absent
-            relevant = set(case["semantic_targets"])
-            resolved = _mapped_sources(mapping, ranked)
-            recall.append(len(relevant & resolved) / len(relevant) if not absent else 0)
+            if not case["semantic_targets"]:
+                # A context-free clarification has no candidate games; any retrieved game is wrong.
+                clarified = valid and review["actual_disposition"] == "clarify"
+                recall.append(float(clarified and not ranked))
+            else:
+                absent = not ranked or not candidates
+                missing_traces += absent
+                recall.append(
+                    recall_at_k(case["semantic_targets"], ranked, mapping) if not absent else 0
+                )
         if not valid or not outcome_ok or not supported:
             failures.append(
                 {
