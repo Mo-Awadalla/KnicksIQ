@@ -166,6 +166,12 @@ leaders over the complete requested team-game population, including ties.
 requested multi-game leader calculation. The existing backend calculation and
 complete-population validator remain responsible for this distinction.
 
+`find_player_games` handles a named player's per-game threshold question from
+the complete scoped appearance population, including postseason. It uses the
+canonical stat registry for points, rebounds, assists, steals, blocks and threes
+made; operator and cutoff are preserved in backend claims, and each matching
+game is returned with its player box-score evidence.
+
 
 Fallback eligibility requires the exact requested subgroup, period, player
 appearance window, or selected-game population and metric. Every requested
