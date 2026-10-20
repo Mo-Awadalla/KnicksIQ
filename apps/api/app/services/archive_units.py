@@ -12,7 +12,7 @@ from app.models.dataset_release import DatasetRelease
 from app.models.game import Game
 from app.models.player import Player
 from app.services.comparison_sources import verified_comparison_source
-from app.services.query_resolution import _CURATED_PLAYER_ALIASES, _player_aliases
+from app.services.query_parsing import _CURATED_PLAYER_ALIASES, _player_aliases
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 

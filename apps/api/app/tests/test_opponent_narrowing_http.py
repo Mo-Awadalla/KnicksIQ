@@ -11,6 +11,7 @@ from app.models.game import Game
 from app.models.game_event import GameEvent
 from app.services import analyst_loop
 from app.tests.test_analyst_contracts import local_redis  # noqa: F401
+from sqlalchemy import update
 
 # (date, NYK home?, NYK-perspective (own, opponent) score after each scoring event).
 # The last pair is the final score.
@@ -50,6 +51,9 @@ async def seed_schedule() -> None:
         )
         db.add(release)
         await db.flush()
+        await db.execute(
+            update(DatasetRelease).where(DatasetRelease.id != release.id).values(status="retired")
+        )
         for opponent, games in SCHEDULE.items():
             for day, home, timeline in games:
                 own, other = timeline[-1]
@@ -91,6 +95,8 @@ def configure(monkeypatch, evidence_loop: bool) -> None:
     settings = get_settings()
     monkeypatch.setattr(settings, "analyst_evidence_loop_enabled", evidence_loop)
     monkeypatch.setattr(settings, "analysis_answer_mode", "disabled")
+    monkeypatch.setattr(settings, "test_mode", False)
+    monkeypatch.setattr(settings, "require_active_release", True)
 
     def denied():
         raise AssertionError("Narrowing must not invoke a provider")
@@ -171,19 +177,31 @@ async def test_exactly_one_fit_proceeds_as_if_named(
 
 
 @pytest.mark.parametrize("evidence_loop", [True, False])
+@pytest.mark.parametrize(
+    ("question", "opponent", "dates"),
+    [
+        (
+            "How did the Knicks lose the lead against Chicago?",
+            ("CHI", "Chicago"),
+            ("2026-03-01", "2026-03-02"),
+        ),
+        ("How did the Knicks lose to Toronto?", ("TOR", "Toronto"), ("2026-02-01", "2026-02-02")),
+    ],
+)
 async def test_zero_fits_say_no_archived_game_matches(
     client,
     local_redis,  # noqa: F811
     monkeypatch,
     evidence_loop,
+    question,
+    opponent,
+    dates,
 ):
     configure(monkeypatch, evidence_loop)
     await seed_schedule()
-    body = await ask(
-        client, "How did the Knicks lose the lead against Chicago?", f"zero-{evidence_loop}"
-    )
+    body = await ask(client, question, f"zero-{evidence_loop}-{len(question)}")
     assert body["route"] == "clarification"
     assert body["citations"] == []
     assert "No archived" in body["answer"], body["answer"]
-    assert "CHI" in body["answer"] or "Chicago" in body["answer"], body["answer"]
-    assert not any(day in body["answer"] for day in ("2026-03-01", "2026-03-02")), body["answer"]
+    assert any(name in body["answer"] for name in opponent), body["answer"]
+    assert not any(day in body["answer"] for day in dates), body["answer"]
