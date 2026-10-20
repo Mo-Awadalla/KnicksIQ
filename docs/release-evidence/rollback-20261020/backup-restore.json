@@ -1,0 +1,85 @@
+{
+  "application_compatibility_tested": false,
+  "backup_bytes": 1045049,
+  "backup_sha256": "2c8979efb3d0d4ccbc7e2191b16ffcdf8ded2b25f522a18c565dac8ef34fcb42",
+  "client_image": "postgres@sha256:74935e72241653ca55e0414067e6d8763aceb8a810eb51b452253ec3dcfc4336",
+  "client_version": "pg_dump (PostgreSQL) 18.6 (Debian 18.6-1.pgdg13+2)",
+  "observed_at": "2026-10-20T22:01:00.128245+00:00",
+  "passed": true,
+  "private_backup_permissions": "directory0700/file0600; not committed",
+  "private_backup_relative_home_path": ".local/share/knicksiq/release-backups/2026-10-20/live-archive.dump",
+  "production_mutations": [],
+  "reproduce": "Use a PostgreSQL18 pg_dump in a read-only repeatable-read transaction, import its exported snapshot, restore the custom archive into an empty isolated PostgreSQL18 database, and compare all public table counts, active release identity, Alembic version and extensions.",
+  "restored_manifest": {
+    "active_releases": [
+      {
+        "manifest_sha256": "269b0db08fd07a1dbe53e6a388a313fe6afc04ace3cd3294dc9610c981c4b9fd",
+        "season": "2025-26",
+        "version": "2025-26.20260714.1"
+      }
+    ],
+    "alembic_version": "0005_player_analytics_views",
+    "extensions": [
+      "pg_trgm",
+      "plpgsql"
+    ],
+    "public_table_counts": {
+      "alembic_version": 1,
+      "bad_stretches": 0,
+      "chunks": 0,
+      "dataset_releases": 1,
+      "documents": 0,
+      "game_events": 46500,
+      "games": 101,
+      "generated_stat_facts": 0,
+      "ingest_runs": 0,
+      "jobs": 0,
+      "period_scores": 816,
+      "player_game_stats": 2748,
+      "players": 599,
+      "reports": 101,
+      "scoring_runs": 0,
+      "team_game_stats": 202,
+      "teams": 30
+    }
+  },
+  "restored_server_version_num": "180006",
+  "scope": "Read-only live database logical snapshot and isolated local PostgreSQL restoration. Not a production restore or application compatibility test.",
+  "source_manifest": {
+    "active_releases": [
+      {
+        "manifest_sha256": "269b0db08fd07a1dbe53e6a388a313fe6afc04ace3cd3294dc9610c981c4b9fd",
+        "season": "2025-26",
+        "version": "2025-26.20260714.1"
+      }
+    ],
+    "alembic_version": "0005_player_analytics_views",
+    "extensions": [
+      "pg_trgm",
+      "plpgsql"
+    ],
+    "public_table_counts": {
+      "alembic_version": 1,
+      "bad_stretches": 0,
+      "chunks": 0,
+      "dataset_releases": 1,
+      "documents": 0,
+      "game_events": 46500,
+      "games": 101,
+      "generated_stat_facts": 0,
+      "ingest_runs": 0,
+      "jobs": 0,
+      "period_scores": 816,
+      "player_game_stats": 2748,
+      "players": 599,
+      "reports": 101,
+      "scoring_runs": 0,
+      "team_game_stats": 202,
+      "teams": 30
+    }
+  },
+  "source_provider": "Neon DB_URL read from current Render API environment",
+  "source_server_version_num": "180006",
+  "source_tls": "verify-full using certifi CA bundle",
+  "source_transaction": "repeatable_read, read_only; pg_dump imported the exported MVCC snapshot"
+}

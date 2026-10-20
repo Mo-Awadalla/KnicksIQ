@@ -1,0 +1,47 @@
+{
+  "after": {
+    "errors": 0,
+    "failures": 0,
+    "tests": 5
+  },
+  "before": {
+    "errors": 0,
+    "failures": 2,
+    "tests": 5
+  },
+  "observed_at": "2026-10-20T22:09:25.411803+00:00",
+  "passed": true,
+  "reproduce": "uv run --offline --frozen --package knicksiq-api python -m pytest -q apps/api/app/tests/test_release_latency_cli.py --junitxml=/tmp/kiq-latency.xml",
+  "scope": "Executable readiness CLI policy correction. Synthetic complete records only, not measured performance, launch readiness, or owner approval.",
+  "smoke": [
+    {
+      "analyst_p95_ms": 10500,
+      "exit_code": 0,
+      "output": {
+        "eligible": true,
+        "failures": []
+      },
+      "scope": "Synthetic CLI boundary smoke, not measured performance or owner approval"
+    },
+    {
+      "analyst_p95_ms": 15000,
+      "exit_code": 1,
+      "output": {
+        "eligible": false,
+        "failures": [
+          "warm latency/concurrency/error gates not met"
+        ]
+      },
+      "scope": "Synthetic CLI boundary smoke, not measured performance or owner approval"
+    }
+  ],
+  "source_path": "apps/api/app/services/release_evidence.py",
+  "source_sha256": "cc414834dd2a1fa2f598d48358608d2f0330996dce599f822726e2499eefaf02",
+  "unchanged_gates": [
+    "archive p95 <1000ms",
+    "concurrency10",
+    "error rate <1%",
+    "hash-bound approvals and fixed120/50 evaluation",
+    "hosted latency/cold-start verification"
+  ]
+}
