@@ -6,7 +6,6 @@ import threading
 from types import SimpleNamespace
 
 import pytest
-
 from app.api import health
 from app.services import qdrant_client
 from app.services.rag import search_possession_chunks
