@@ -36,8 +36,6 @@ REQUIRED_CHECKS = (
     "desktop_mobile_keyboard",
     "accessibility",
     "warm_load",
-    "shadow_dependencies",
-    "shadow_evaluation",
     "rollback_snapshot",
 )
 
@@ -51,13 +49,6 @@ def validate_readiness(record: dict[str, Any], root: Path) -> list[str]:
     commit = record.get("tested_commit")
     if not isinstance(commit, str) or not re.fullmatch(r"[0-9a-f]{40}", commit):
         failures.append("missing exact tested Git commit")
-    if (
-        record.get("pre_promotion_configuration", {}).get("answer_mode") != "shadow"
-        or record.get("pre_promotion_configuration", {}).get("shadow_sample_rate") != 0.1
-        or record.get("pre_promotion_configuration", {}).get("analyst_evidence_loop_enabled")
-        is not True
-    ):
-        failures.append("requires pre-promotion 10% shadow with deterministic delivered answers")
     if (
         record.get("launch_configuration", {}).get("answer_mode") != "llm_primary"
         or record.get("launch_configuration", {}).get("analyst_evidence_loop_enabled") is not True
@@ -111,7 +102,6 @@ def validate_readiness(record: dict[str, Any], root: Path) -> list[str]:
             or sha256(path) != approval.get("sha256")
         ):
             failures.append(f"{name}: missing owner approval bound to content")
-    failures.extend(validate_shadow_stage(record, root))
     rollback = record.get("rollback", {})
     if not all(
         rollback.get(key)

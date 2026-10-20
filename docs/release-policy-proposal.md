@@ -5,6 +5,10 @@ now distinguishes pre-promotion readiness from deployment authorization. Its
 implementation requires a new candidate and verification. This document neither
 changes production configuration nor supplies final promotion authorization.
 
+Superseded in part on 2026-10-20: the owner removed the shadow stage. Launch goes
+straight to `llm_primary`; readiness no longer requires the pre-promotion shadow
+configuration, `shadow_dependencies` or `shadow_evaluation`. Every other gate stands.
+
 ## Pre-promotion verification
 
 Retain the `shadow_dependencies` gate and require recorded configuration

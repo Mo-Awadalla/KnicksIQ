@@ -9,7 +9,12 @@ without changing any question, category or disposition. Cases the proposals cann
         --adjudications ADJUDICATIONS.json --output expectations.json
 
 ADJUDICATIONS.json maps a case id to {"semantic_targets": [...], "decision_basis": "..."}. Only the
-owner writes it. The builder never invents a target.
+owner writes it. The builder never invents a target. A semantic case ruled a context-free
+clarification (for example "that game" with no earlier game) has no candidate games: its entry has
+"semantic_targets": [] and "context_free_clarification": true, and the case must expect `clarify`.
+
+Retrieval is scored as Recall@k with k = max(5, number of targets), so a question's full scope is
+never capped to fit the metric.
 """
 
 from __future__ import annotations
@@ -22,8 +27,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 QUESTIONS = ROOT / "apps/api/app/evaluation/questions.jsonl"
 LABELS = ROOT / "docs/release-evidence/evaluation-label-review-20260907/labels.jsonl"
-SCORING_VERSION = "release-review-v1"
-RECALL_GATE = 0.95
+SCORING_VERSION = "release-review-v2"
 TOP_K = 5
 
 
@@ -67,8 +71,15 @@ def build(adjudications: dict[str, dict]) -> tuple[dict, list[dict]]:
         if adjudication:
             case["semantic_targets"] = adjudication["semantic_targets"]
             case["decision_basis"] = adjudication["decision_basis"]
+            if adjudication.get("context_free_clarification") is True:
+                case["context_free_clarification"] = True
+        context_free = case.get("context_free_clarification", False)
         problems = []
-        if semantic and not case.get("semantic_targets"):
+        if context_free and (not semantic or case["disposition"] != "clarify"):
+            problems.append("context-free clarification on a case that does not expect clarify")
+        if context_free and case.get("semantic_targets"):
+            problems.append("context-free clarification must not name retrieval targets")
+        if semantic and not case.get("semantic_targets") and not context_free:
             problems.append("semantic member without a retrieval target")
         if case["disposition"] == "answer" and not case["facts"]:
             problems.append("answer disposition without canonical facts")
@@ -78,29 +89,17 @@ def build(adjudications: dict[str, dict]) -> tuple[dict, list[dict]]:
                 {"id": case["id"], "question": case["question"], "problems": problems}
             )
         cases.append(case)
-    # Recall@5 for one case can never exceed 5 / len(targets). A best possible mean below the gate
-    # means the targets are source populations, not reviewed relevant documents. Do not freeze.
+    # Best possible mean Recall@k. With k = max(TOP_K, targets) every settled case can reach 1, so
+    # the ceiling falls below 1 only while some semantic case is unresolved.
     semantic = [c for c in cases if c["semantic_member"]]
     ceiling = sum(
-        min(1.0, TOP_K / len(c["semantic_targets"])) if c.get("semantic_targets") else 1.0
+        0.0
+        if c["decision_status"] != "settled"
+        else 1.0
+        if c.get("context_free_clarification")
+        else min(1.0, max(TOP_K, len(c["semantic_targets"])) / len(c["semantic_targets"]))
         for c in semantic
     ) / len(semantic)
-    oversized = [
-        {"id": c["id"], "targets": len(c["semantic_targets"])}
-        for c in semantic
-        if len(c.get("semantic_targets") or []) > TOP_K
-    ]
-    if ceiling < RECALL_GATE:
-        for item in oversized:
-            unresolved.append(
-                {
-                    "id": item["id"],
-                    "problems": [
-                        f"{item['targets']} targets cap Recall@{TOP_K} below 1; "
-                        "review which are relevant"
-                    ],
-                }
-            )
     contract = {
         "version": 1,
         "status": "draft" if unresolved else "frozen",

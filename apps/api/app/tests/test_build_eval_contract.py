@@ -45,7 +45,7 @@ def synthetic(tmp_path, monkeypatch):
         ("off-topic", "Write me a poem.", False, "refuse", [], []),
     ]
     questions, labels = tmp_path / "questions.jsonl", tmp_path / "labels.jsonl"
-    questions.write_text("".join(json.dumps(question(*r[:2], r[2])) + "\n" for r in rows))
+    questions.write_text("".join(json.dumps(question(r[0], r[1], r[2])) + "\n" for r in rows))
     labels.write_text("".join(json.dumps(label(r[0], r[1], *r[3:])) + "\n" for r in rows))
     monkeypatch.setattr(builder, "QUESTIONS", questions)
     monkeypatch.setattr(builder, "LABELS", labels)

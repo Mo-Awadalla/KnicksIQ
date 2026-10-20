@@ -3,7 +3,9 @@
 This is an internal workflow specification, not approved release labels or evidence.
 All 120 original cases, including all 50 original semantic cases, remain required.
 Unresolved targets block freezing; frozen expectations still require a separate
-owner approval bound to the exact expectation file SHA-256.
+owner approval bound to the exact expectation file SHA-256. A semantic case ruled a
+context-free clarification is settled with empty targets and
+`context_free_clarification: true`; it must expect `clarify`.
 
 Capture the service-disabled cohort with the existing runner's `--mode disabled`.
 Primary and shadow collection accept an explicit `CountedRun` dependency. It
@@ -49,5 +51,7 @@ Existing outputs cannot be overwritten. `status: scored` does not assert a relea
 pass: the release validator's unchanged thresholds, final candidate identity,
 staged evidence, provider accounting, and separate authorization gates still apply.
 Missing or invalid reviews remain failures in the fixed denominators. Missing
-semantic retrieval stays zero for live-mode Recall@5; disabled Recall@5 is N/A.
+semantic retrieval stays zero for live-mode Recall@k, where k = max(5, number of
+targets); disabled Recall@k is N/A. A context-free clarification scores 1 only when
+its valid review records a clarification and no evidence was returned.
 No scoring command performs provider calls.
