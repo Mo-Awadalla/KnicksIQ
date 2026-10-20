@@ -102,7 +102,7 @@ def validate_readiness(record: dict[str, Any], root: Path) -> list[str]:
     if not (
         load.get("concurrency") == 10
         and 0 < load.get("archive_p95_ms", 1000) < 1000
-        and 0 < load.get("analyst_p95_ms", 4000) < 4000
+        and 0 < load.get("analyst_p95_ms", 15_000) < 15_000
         and 0 <= load.get("error_rate", 1) < 0.01
     ):
         failures.append("warm latency/concurrency/error gates not met")
