@@ -4,7 +4,7 @@
 (`evaluation-label-review-20260907/labels.jsonl`) into the 120-case contract that
 `app.evaluation.release_runner` scores against. No question, category or disposition is changed.
 
-`expectations.json` is a **draft**, SHA-256 `83cd9e7d58d056fba8b4953b0f1c53b790aaab403a4f2ff18dbc6836269536b9`.
+`expectations.json` is a **draft**, SHA-256 `e73f22f64b609189ba42a02a2aec9db5e3181cf5edd588c4b4f17fa9286d9b32`.
 The builder is deterministic. Rebuilding gives the same hash.
 
 | Disposition | Cases |
@@ -17,34 +17,34 @@ The builder is deterministic. Rebuilding gives the same hash.
 
 ## Why it is a draft
 
-Five semantic members have no retrieval target in the proposals. Each is a clarification, because the
-question has no single answer to retrieve:
+Twelve semantic cases block freezing.
 
-| Case | Question |
-| --- | --- |
-| `turning_points-005` | How did the Knicks erase their largest deficit? |
-| `turning_points-007` | What was the most damaging opponent run this season? |
-| `aliases_typos-003` | How did JB play in that game? |
-| `aliases_typos-005` | What was the Knics biggest run? |
-| `aliases_typos-010` | What was NY's worst collpase? |
+**Five have no retrieval target.** Each expects a clarification, so the proposals name nothing to
+retrieve: `turning_points-005`, `turning_points-007`, `aliases_typos-003`, `aliases_typos-005`,
+`aliases_typos-010`.
 
-The runner requires a target for every semantic member, and the release gate requires all 50. The
-builder does not invent targets. I checked the runner's `validate_contract` both ways. The draft is
-refused. A copy where only these five get throwaway targets is accepted, so nothing else blocks
-freezing.
+**Seven have targets the gate cannot reward.** Recall@5 for one case is at most 5 divided by its
+target count. Six cases list 9 games and one lists 6, so they cap at 0.56 and 0.83. The best possible
+mean over all 50 cases is 0.943, below the 0.95 gate, even with perfect retrieval and full marks on
+the five open cases. These lists are source populations (for example every game against one
+opponent). The September evaluation contract says not to treat a source population as relevant
+top-5 targets and that no threshold is reduced. The builder now computes this ceiling and refuses
+to freeze below the gate.
+
+An earlier version of this README said only the five open cases blocked freezing. That was wrong.
+I checked it with the runner's `validate_contract`, which does not compute the ceiling.
 
 ## What the owner decides
 
-1. **The five targets.** Write `adjudications.json`, mapping each case id to
-   `{"semantic_targets": [...canonical ids...], "decision_basis": "..."}`. For the run questions, one
-   option is every game whose report names the run. For "that game", no target exists without
-   context. Changing semantic membership instead would shrink the fixed cohort, which the gate forbids.
-2. **Freeze.** Run the builder with `--adjudications adjudications.json`. Status becomes `frozen`.
-3. **Approve the 120 expectations.** Write an approval file with `owner`, `approved_at` and
-   `expectations_sha256` equal to the frozen file's hash. That is the step the agent-reviewed labels
-   have always waited for.
-4. **Point the record at it.** The release validator requires `hashes.evaluation` to equal the frozen
-   contract's hash. Today it holds the label file's hash.
+1. **Reviewed targets for the twelve.** For each, the five or fewer documents a correct answer would
+   retrieve. A context-free question such as "How did JB play in that game?" has no such set, and
+   every Brunson game would cap it near zero. That case needs an owner ruling, not a list.
+2. **Freeze.** Write `adjudications.json` (case id to `{"semantic_targets": [...],
+   "decision_basis": "..."}`) and run the builder with `--adjudications`. It freezes only when nothing is
+   unresolved and the ceiling reaches 0.95.
+3. **Approve.** An approval file with `owner`, `approved_at` and `expectations_sha256` equal to the
+   frozen hash.
+4. **Point the record at it.** Set `hashes.evaluation` to the frozen hash.
 
 ## What then runs
 
