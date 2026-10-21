@@ -323,7 +323,7 @@ async def collect(
     from app.api import analysis
     from app.core.config import get_settings
     from app.main import create_app
-    from app.services import analyst_loop
+    from app.services import analyst_loop, analytics_planner, llm_planner, retrieval_planner
 
     if output.exists():
         raise FileExistsError("Refusing to overwrite existing evaluation evidence")
@@ -394,10 +394,71 @@ async def collect(
 
     original_adapter = analyst_loop.get_llm_adapter
     original_analysis_adapter = analysis.get_llm_adapter
+    original_llm_planner_adapter = llm_planner.get_llm_adapter
+    original_retrieval_planner_adapter = retrieval_planner.get_llm_adapter
+    original_analytics_planner_adapter = analytics_planner.get_llm_adapter
+    original_llm_planner_settings = llm_planner.get_settings
+    original_retrieval_planner_settings = retrieval_planner.get_settings
+    original_analytics_planner_settings = analytics_planner.get_settings
+    original_retrieval_budget = retrieval_planner.reserve_ai_budget
 
     def counted(**_kwargs):
         assert execution is not None
         return execution.adapter(mode, settings.ai_reasoning_effort)
+
+    # Expose provider availability only to planner gates; all calls still use the
+    # counted adapter, whose credentials come from CountedRun rather than settings.
+    class CountedPlannerSettings:
+        def __getattr__(self, name: str) -> Any:
+            if name == "ai_provider":
+                return "openrouter"
+            if name == "ai_api_key":
+                return "counted-adapter"
+            return getattr(settings, name)
+
+    def planner_settings() -> Any:
+        return CountedPlannerSettings() if execution is not None else settings
+
+    def counted_planner(**_kwargs):
+        assert execution is not None
+        adapter = execution.adapter(mode, settings.ai_reasoning_effort)
+        generate = adapter.generate
+
+        async def generate_with_reservation(*, system: str, user: str) -> str:
+            reservation = await analyst_loop.BudgetReservation.reserve(
+                settings.analyst_call_reservation_usd
+            )
+            if reservation is None:
+                raise RuntimeError("Normal analyst budget unavailable for planner call")
+            turn = None
+            try:
+                from app.evaluation.guarded_release import _turn
+
+                turn = _turn.get()
+                if turn is not None:
+                    if turn.get("preferred_normal_reservation_id") is not None:
+                        raise RuntimeError("Nested planner reservation binding")
+                    turn["preferred_normal_reservation_id"] = reservation.identity
+                return await generate(system=system, user=user)
+            finally:
+                if (
+                    turn is not None
+                    and turn.get("preferred_normal_reservation_id") == reservation.identity
+                ):
+                    del turn["preferred_normal_reservation_id"]
+                await reservation.settle(None)
+
+        adapter.generate = generate_with_reservation
+        return adapter
+
+    async def planner_budget_preflight(*, estimated_cost_usd: float = 0.002) -> bool:
+        # The serving planner's estimate bypasses the normal reservation wrapper;
+        # its actual counted adapter reserves the same normal $0.01 slot instead.
+        if estimated_cost_usd != 0.002:
+            if execution is not None:
+                execution.failed("retrieval_planner_budget_contract_changed")
+            raise RuntimeError("Unexpected retrieval planner budget estimate")
+        return execution is not None
 
     observations: list[dict] = []
     result = {
@@ -414,6 +475,11 @@ async def collect(
                 "analysis_shadow_sample_rate",
                 "analyst_evidence_loop_enabled",
                 "rag_qdrant_enabled",
+                "rag_qdrant_cloud_inference",
+                "rag_hybrid_enabled",
+                "rag_llm_planner_enabled",
+                "rag_reranker_enabled",
+                "rag_conditional_reranker_enabled",
                 "rag_archive_source_units_enabled",
                 "ai_provider",
                 "public_chat_rate_limit_per_minute",
@@ -466,6 +532,14 @@ async def collect(
     try:
         analyst_loop.get_llm_adapter = counted if execution is not None else denied
         analysis.get_llm_adapter = denied
+        llm_planner.get_llm_adapter = counted_planner if execution is not None else denied
+        retrieval_planner.get_llm_adapter = counted_planner if execution is not None else denied
+        analytics_planner.get_llm_adapter = counted_planner if execution is not None else denied
+        retrieval_planner.reserve_ai_budget = planner_budget_preflight
+        if execution is not None:
+            llm_planner.get_settings = planner_settings
+            retrieval_planner.get_settings = planner_settings
+            analytics_planner.get_settings = planner_settings
         app = create_app()
         for index, case in enumerate(contract["cases"]):
             request_id = request_ids[index]
@@ -521,6 +595,13 @@ async def collect(
     finally:
         analyst_loop.get_llm_adapter = original_adapter
         analysis.get_llm_adapter = original_analysis_adapter
+        llm_planner.get_llm_adapter = original_llm_planner_adapter
+        retrieval_planner.get_llm_adapter = original_retrieval_planner_adapter
+        analytics_planner.get_llm_adapter = original_analytics_planner_adapter
+        retrieval_planner.reserve_ai_budget = original_retrieval_budget
+        llm_planner.get_settings = original_llm_planner_settings
+        retrieval_planner.get_settings = original_retrieval_planner_settings
+        analytics_planner.get_settings = original_analytics_planner_settings
         persist()
     return result
 
