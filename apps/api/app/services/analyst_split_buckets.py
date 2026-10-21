@@ -453,8 +453,7 @@ def _claim_bucket(
         f"{wins}-{count - wins} in {count} games; "
         f"{value['points_for_per_game']:.2f} for, "
         f"{value['points_against_per_game']:.2f} against, "
-        f"{value['margin_per_game']:+.2f} margin per game "
-        f"({games[0].game_date} to {games[-1].game_date})."
+        f"{value['margin_per_game']:+.2f} margin per game."
     )
     claim_scope = scope.model_copy(update=bucket.filters)
     if bucket.season_type:

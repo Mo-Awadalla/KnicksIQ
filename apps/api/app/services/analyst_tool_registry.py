@@ -102,13 +102,7 @@ TOOLS: tuple[ToolSpec, ...] = (
     ),
     ToolSpec(
         name="get_team_splits",
-        description=(
-            "computes every team split in one call: home vs road, wins vs losses, by opponent, "
-            "by month, first or last N games, before or after a date or the All-Star break, "
-            "regular season vs playoffs, back-to-backs, close games and overtime. Use it "
-            "instead of get_team_stats for any comparison or split; each bucket returns its "
-            "own record, points for and against per game and margin"
-        ),
+        description="team splits",
         handler="app.services.analyst_tool_splits:run",
         needs_games=False,
     ),
