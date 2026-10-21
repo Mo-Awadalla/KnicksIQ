@@ -1,0 +1,251 @@
+{
+  "scope": "meets_expectation now requires: not declined or clarification, validated delivery, substantive content, no unbacked number or entity, required facts present, no echo, and no unbacked causal hedge. claim_backed additionally requires cited claim values.",
+  "mode": "offline",
+  "dataset": "/Users/mohamedawadalla/.local/share/knicksiq/worktrees/scoring/apps/api/app/evaluation/questions.jsonl",
+  "questions": 70,
+  "old_meets_expectation": 37,
+  "meets_expectation": 21,
+  "claim_backed_meets_expectation": 5,
+  "delta": 16,
+  "by_answerable": {
+    "answerable": {
+      "questions": 60,
+      "old": 32,
+      "new": 16
+    },
+    "unsupported": {
+      "questions": 10,
+      "old": 5,
+      "new": 5
+    }
+  },
+  "survived": [
+    "exact_statistics-001",
+    "exact_statistics-002",
+    "exact_statistics-003",
+    "exact_statistics-004",
+    "exact_statistics-005",
+    "exact_statistics-006",
+    "exact_statistics-007",
+    "date_range_last_n-001",
+    "date_range_last_n-002",
+    "date_range_last_n-003",
+    "date_range_last_n-004",
+    "aliases_typos-001",
+    "aliases_typos-002",
+    "aliases_typos-004",
+    "aliases_typos-006",
+    "aliases_typos-009",
+    "unsupported-001",
+    "unsupported-002",
+    "unsupported-003",
+    "unsupported-004",
+    "unsupported-007"
+  ],
+  "lost": [
+    {
+      "id": "exact_statistics-008",
+      "category": "exact_statistics",
+      "failures": [
+        "unbacked_numbers"
+      ],
+      "reason": "unbacked_number",
+      "answer": "In the available archive, the Knicks' biggest win by margin is a 54-point win (120 points scored, 0 losses in that filtered set)."
+    },
+    {
+      "id": "exact_statistics-010",
+      "category": "exact_statistics",
+      "failures": [
+        "unbacked_entities"
+      ],
+      "reason": "wrong_subject",
+      "answer": "The highest-scoring individual Knicks game in the available 2025-26 archive is Jalen Brunson's 47 points on 2025-12-21 against MIA (regular season). The next-highest is his 45 points on 2026-06-13 against SAS in the playoffs. Note: this reflects the highest single-player scoring game in the archive, not the team's highest total points in a game."
+    },
+    {
+      "id": "date_range_last_n-005",
+      "category": "date_range_last_n",
+      "failures": [
+        "clarification",
+        "not_substantive"
+      ],
+      "reason": "skipped_work_clarification",
+      "answer": "Which team (or player) do you mean? I can look up the post-All-Star-break record once you specify the team."
+    },
+    {
+      "id": "date_range_last_n-006",
+      "category": "date_range_last_n",
+      "failures": [
+        "unbacked_numbers"
+      ],
+      "reason": "unbacked_number",
+      "answer": "The Knicks won 5 road games in December (5 wins, 0 losses across 5 archived away games)."
+    },
+    {
+      "id": "date_range_last_n-008",
+      "category": "date_range_last_n",
+      "failures": [
+        "clarification"
+      ],
+      "reason": "skipped_work_clarification",
+      "answer": "Which Knicks player do you mean? I can look up scoring over the last 3 games for a specific player."
+    },
+    {
+      "id": "date_range_last_n-009",
+      "category": "date_range_last_n",
+      "failures": [
+        "clarification",
+        "not_substantive"
+      ],
+      "reason": "skipped_work_clarification",
+      "answer": "Who do you mean by \"they\" \u2014 a specific player or a specific team? Also, the available data covers the 2025-26 season, so I can check games in the March 1\u201315 window within that season once you name the subject."
+    },
+    {
+      "id": "date_range_last_n-010",
+      "category": "date_range_last_n",
+      "failures": [
+        "clarification",
+        "not_substantive"
+      ],
+      "reason": "skipped_work_clarification",
+      "answer": "Which team (or player) do you mean, and should \"first 10 games\" mean the first 10 regular-season games or the first 10 playoff games?"
+    },
+    {
+      "id": "comparisons-004",
+      "category": "comparisons",
+      "failures": [
+        "clarification",
+        "not_substantive"
+      ],
+      "reason": "skipped_work_clarification",
+      "answer": "Who would you like me to compare \u2014 which player or team? Also, should the first 10 and last 10 games be from the regular season, the playoffs, or both?"
+    },
+    {
+      "id": "comparisons-008",
+      "category": "comparisons",
+      "failures": [
+        "unbacked_numbers"
+      ],
+      "reason": "unbacked_number",
+      "answer": "In the 2025-26 archive, Karl-Anthony Towns averaged more rebounds per appearance than Josh Hart: 11.6 over 94 appearances versus 7.7 over 85 appearances."
+    },
+    {
+      "id": "single_game_narrative-007",
+      "category": "single_game_narrative",
+      "failures": [
+        "clarification"
+      ],
+      "reason": "skipped_work_clarification",
+      "answer": "Which game against Boston do you mean? I have four Knicks\u2013Celtics matchups in scope: 2025-10-24 (BOS at NYK), 2025-12-02 (NYK at BOS), 2026-02-08 (NYK at BOS), and 2026-04-09 (BOS at NYK)."
+    },
+    {
+      "id": "single_game_narrative-009",
+      "category": "single_game_narrative",
+      "failures": [
+        "clarification"
+      ],
+      "reason": "skipped_work_clarification",
+      "answer": "Which Knicks-Hawks game do you mean? I have several 2025-26 meetings between New York and Atlanta, including 2025-12-27 (NYK at ATL), 2026-01-02 (ATL at NYK), 2026-04-06 (NYK at ATL), and playoff dates 2026-04-18, 2026-04-20, 2026-04-23, 2026-04-25 and 2026-04-28."
+    },
+    {
+      "id": "turning_points-002",
+      "category": "turning_points",
+      "failures": [
+        "clarification"
+      ],
+      "reason": "skipped_work_clarification",
+      "answer": "Which Toronto game do you mean? I have five Knicks-Raptors games in scope: 2025-11-30 (TOR at NYK), 2025-12-09 (NYK at TOR), 2026-01-28 (NYK at TOR), 2026-03-03 (NYK at TOR), and 2026-04-10 (TOR at NYK)."
+    },
+    {
+      "id": "turning_points-004",
+      "category": "turning_points",
+      "failures": [
+        "clarification"
+      ],
+      "reason": "skipped_work_clarification",
+      "answer": "Which Chicago game do you mean? I have four Knicks\u2013Bulls matchups in scope: 2025-10-31 (NYK at CHI), 2025-11-02 (CHI at NYK), 2026-02-22 (NYK at CHI), and 2026-04-03 (CHI at NYK)."
+    },
+    {
+      "id": "turning_points-006",
+      "category": "turning_points",
+      "failures": [
+        "clarification"
+      ],
+      "reason": "skipped_work_clarification",
+      "answer": "Which Knicks\u2013Celtics game do you mean? I have four 2025-26 meetings: 2025-10-24 (BOS at NYK), 2025-12-02 (NYK at BOS), 2026-02-08 (NYK at BOS), and 2026-04-09 (BOS at NYK). Also, \"drought\" is ambiguous \u2014 do you mean a scoring drought (a stretch without points), a losing streak, or something else?"
+    },
+    {
+      "id": "turning_points-010",
+      "category": "turning_points",
+      "failures": [
+        "clarification"
+      ],
+      "reason": "skipped_work_clarification",
+      "answer": "Which game against Atlanta do you mean? I can look at any of these: 2025-12-27 (NYK at ATL), 2026-01-02 (ATL at NYK), 2026-04-06 (NYK at ATL), 2026-04-18 (ATL at NYK), 2026-04-20 (ATL at NYK), 2026-04-23 (NYK at ATL), 2026-04-25 (NYK at ATL), or 2026-04-28 (ATL at NYK)."
+    },
+    {
+      "id": "aliases_typos-003",
+      "category": "aliases_typos",
+      "failures": [
+        "clarification"
+      ],
+      "reason": "skipped_work_clarification",
+      "answer": "I can look up Jalen Brunson's (JB) box score, but I need to know which game you mean. The current scope is the 2025-26 play-in, and no specific game is selected. Which game should I check?"
+    }
+  ],
+  "gained": [],
+  "failure_counts": {
+    "declined": 22,
+    "clarification": 14,
+    "unbacked_numbers": 7,
+    "not_validated": 6,
+    "not_substantive": 5,
+    "not_declined": 5,
+    "unbacked_entities": 3,
+    "missing_turning_detail": 2
+  },
+  "by_category": {
+    "aliases_typos": {
+      "questions": 10,
+      "old": 6,
+      "new": 5,
+      "claim_backed": 0
+    },
+    "comparisons": {
+      "questions": 10,
+      "old": 2,
+      "new": 0,
+      "claim_backed": 0
+    },
+    "date_range_last_n": {
+      "questions": 10,
+      "old": 9,
+      "new": 4,
+      "claim_backed": 0
+    },
+    "exact_statistics": {
+      "questions": 10,
+      "old": 9,
+      "new": 7,
+      "claim_backed": 0
+    },
+    "single_game_narrative": {
+      "questions": 10,
+      "old": 2,
+      "new": 0,
+      "claim_backed": 0
+    },
+    "turning_points": {
+      "questions": 10,
+      "old": 4,
+      "new": 0,
+      "claim_backed": 0
+    },
+    "unsupported": {
+      "questions": 10,
+      "old": 5,
+      "new": 5,
+      "claim_backed": 5
+    }
+  },
+  "source": "docs/release-evidence/llm-primary-20261018/final3-n70.responses.jsonl"
+}

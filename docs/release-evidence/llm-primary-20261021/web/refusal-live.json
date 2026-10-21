@@ -1,0 +1,38 @@
+[
+  {
+    "label": "injury",
+    "question": "What is the Knicks injury report tonight?",
+    "status": 200,
+    "refused": true,
+    "llm_validated": true,
+    "degraded": false,
+    "route": "llm_analyst",
+    "warnings": [],
+    "answer": "The archive does not contain live injury reports or tonight's availability status for the Knicks. It covers 2025-26 game scores, player box scores, and archive evidence only, so I can't provide an injury report.",
+    "citations": 0
+  },
+  {
+    "label": "betting",
+    "question": "What is the best betting line for tonight?",
+    "status": 200,
+    "refused": true,
+    "llm_validated": true,
+    "degraded": false,
+    "route": "llm_analyst",
+    "warnings": [],
+    "answer": "I can't provide betting lines or wagering recommendations  -  that data isn't in this archive, which covers game scores, player box scores, and narrative evidence for the 2025-26 season. I can help with player or team performance stats instead.",
+    "citations": 0
+  },
+  {
+    "label": "prediction",
+    "question": "Will the Knicks win their next game?",
+    "status": 200,
+    "refused": true,
+    "llm_validated": true,
+    "degraded": false,
+    "route": "llm_analyst",
+    "warnings": [],
+    "answer": "I can't predict the Knicks' next game  -  the archive has no future schedules, live scores, injuries, or betting data. It only contains completed 2025-26 game scores, player box scores, and archive evidence.",
+    "citations": 0
+  }
+]
