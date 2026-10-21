@@ -1,0 +1,101 @@
+{
+  "schema": "knicksiq-official-collection-summary/v1",
+  "tested_commit": "ab6b18014c7537384de29b3d1060081ccf5ffd33",
+  "contract_sha256": "8da8be9d68a7111919d1e8d0d18d22da8bf8d3a7da34a7fe4688117cc37119f9",
+  "dataset": "2025-26.20260928.1",
+  "configuration": "render.yaml launch configuration: llm_primary, evidence loop, cloud inference, hybrid, LLM planner (counted), reranker off, archive source units off; unpinned OpenRouter routing; deepseek/deepseek-v4.1-flash",
+  "disabled": {
+    "observations_sha256": "5ddd88e6b67affc132d97c4f184982c43cd040a7c8982d5fb1330496476a3117",
+    "http_200": 120,
+    "paid_requests": 0
+  },
+  "primary": {
+    "window_utc": [
+      "2026-10-21T18:44:30Z",
+      "2026-10-21T18:54:08Z"
+    ],
+    "observations_sha256": "35b1d111340b42e1e1f6e5505505b63824f951aa9cea7ee087887f21aa0e2aa1",
+    "http_200": 120,
+    "paid_requests": 120,
+    "settled_calls": 120,
+    "spent_usd": "0.107276774",
+    "routes": {
+      "factual_fallback": 13,
+      "llm_analyst": 48,
+      "clarification": 50,
+      "refusal": 9
+    },
+    "model_validated": 46,
+    "factual_fallbacks": 13,
+    "zero_call_fallbacks": 5,
+    "protocol_failures_recorded": 9,
+    "disposition_agreement": {
+      "answer": "60/65",
+      "clarify": "45/46",
+      "refuse": "9/9"
+    },
+    "disposition_mismatches": [
+      [
+        "aliases_typos-005",
+        "answer",
+        "clarify"
+      ],
+      [
+        "aliases_typos-010",
+        "answer",
+        "clarify"
+      ],
+      [
+        "single_game_narrative-006",
+        "clarify",
+        "answer"
+      ],
+      [
+        "turning_points-001",
+        "answer",
+        "clarify"
+      ],
+      [
+        "turning_points-005",
+        "answer",
+        "clarify"
+      ],
+      [
+        "turning_points-007",
+        "answer",
+        "clarify"
+      ]
+    ],
+    "local_latency_ms": {
+      "p50": 240,
+      "p95": 14795,
+      "max": 21097
+    }
+  },
+  "prior_attempts": [
+    {
+      "commit": "31d2ac4",
+      "stopped": "before transmission; verifier rejected AnalystLoop max_tokens",
+      "spent_usd": "0"
+    },
+    {
+      "commit": "ff4ee29",
+      "stopped": "case 7; schema-invalid review output stopped run",
+      "spent_usd": "0.00497236"
+    }
+  ],
+  "ledger": {
+    "before_reconciliation": "0.042554671",
+    "after_reconciliation": "1.367010808",
+    "after_run": "1.479259942",
+    "cutoff": "2"
+  },
+  "not_established": [
+    "semantic review and scoring (reviews.json, runtime-mapping.json)",
+    "quality gates incl. Recall@k >= 0.95",
+    "hosted latency/error/cold-start acceptance",
+    "production mapping",
+    "release record approval",
+    "deployment authorization"
+  ]
+}
