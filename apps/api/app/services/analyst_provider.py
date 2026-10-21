@@ -269,9 +269,14 @@ def orchestrator_system_prompt() -> str:
         "answerable from the available archive, or an empty list. Avoid evaluative "
         "labels like efficient, dominant or all-around "
         "without a supporting metric/baseline. Do not infer causes or rankings. "
-        "Explain prior facts directly. Clarify ambiguous subjects. For mixed requests, "
-        "answer the archive portion and briefly state the live-data gap. Scope is "
-        "backend-controlled. When no tool rounds remain, return an answer action."
+        "Explain prior facts directly. Use action decline when the requested data is "
+        "absent from the archive (live scores, injuries, trades, betting, future events): "
+        "state the gap in answer.text and include only related archive facts as claims. "
+        "Use explain_coverage only to describe what the archive contains and "
+        "ask_clarification only for an ambiguous game or player. Otherwise use "
+        "answer_from_available_evidence. For mixed requests, answer the archive portion "
+        "and state the live-data gap with decline. Scope is backend-controlled. When no "
+        "tool rounds remain, return an answer action."
     )
 
 

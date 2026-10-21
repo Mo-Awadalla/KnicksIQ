@@ -434,23 +434,14 @@
 
 .archive-result-stack {
   display: grid;
+  min-height: 18rem;
   gap: 1.25rem;
+  align-content: start;
 }
 
-.archive-state {
-  display: flex;
-  min-height: 5rem;
-  align-items: center;
-  gap: 0.75rem;
-  border-top: 1px solid var(--archive-line);
-  border-bottom: 1px solid var(--archive-line);
-  color: var(--archive-muted);
-  font-size: 0.9rem;
-  animation: archive-arrive 200ms var(--archive-ease-out) both;
-}
-
-.archive-state-error {
-  color: #8d3c1f;
+.analyst-thread {
+  min-height: 18rem;
+  align-content: start;
 }
 
 .archive-message-list {
@@ -497,13 +488,6 @@
   color: var(--archive-orange);
 }
 
-.archive-answer-copy {
-  color: var(--archive-ink-soft);
-  font-size: 1.035rem;
-  line-height: 1.72;
-  white-space: pre-wrap;
-}
-
 .archive-degraded {
   margin-bottom: 1rem;
   background: #fff7dc;
@@ -515,9 +499,11 @@
 
 .archive-receipts-heading {
   display: flex;
+  min-height: 2.75rem;
   align-items: center;
   gap: 0.6rem;
   margin: 1.75rem 0 0.8rem;
+  padding-block: 0.25rem;
   font-family: var(--type-display);
   font-size: 1.25rem;
   font-weight: 720;
@@ -552,6 +538,12 @@
   display: inline-flex;
   min-height: 2.75rem;
   align-items: center;
+}
+
+.archive-receipt .archive-game-title,
+.archive-receipt .archive-ink-soft-text,
+.archive-receipt a {
+  overflow-wrap: anywhere;
 }
 
 .archive-analytics-card {
@@ -941,7 +933,6 @@
     scroll-behavior: auto !important;
   }
 
-  .archive-state,
   .archive-question,
   .archive-answer {
     animation: archive-fade 160ms linear both;
