@@ -1,0 +1,17 @@
+{
+  "split": "heldout",
+  "count": 60,
+  "categories": {
+    "aliases_typos": 8,
+    "comparisons": 8,
+    "date_range_last_n": 9,
+    "exact_statistics": 9,
+    "single_game_narrative": 8,
+    "turning_points": 8,
+    "unsupported": 10
+  },
+  "generated_by": "app/evaluation/build_heldout_set.py",
+  "computed_from": "2025-26.20260928.1",
+  "label_source": "database",
+  "tuning_policy": "Held-out set. Do not tune prompts, tools, thresholds or labels against individual items. The only permitted use is the aggregate scorer report and its per-question check output."
+}

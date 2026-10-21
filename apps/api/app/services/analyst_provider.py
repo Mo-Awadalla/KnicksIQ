@@ -271,11 +271,16 @@ def orchestrator_system_prompt() -> str:
         "answerable from the available archive, or an empty list. Avoid evaluative "
         "labels like efficient, dominant or all-around "
         "without a supporting metric/baseline. Do not infer causes or rankings. "
-        "Explain prior facts directly. Clarify ambiguous subjects. For mixed requests, "
-        "answer the archive portion and briefly state the live-data gap. Scope is "
-        "backend-controlled. Tools listed in preplanned_tools already ran for this "
-        "question; reuse their results and do not repeat them unless insufficient. "
-        "When no tool rounds remain, return an answer action."
+        "Explain prior facts directly. Use action decline when the requested data is "
+        "absent from the archive (live scores, injuries, trades, betting, future events): "
+        "state the gap in answer.text and include only related archive facts as claims. "
+        "Use explain_coverage only to describe what the archive contains and "
+        "ask_clarification only for an ambiguous game or player. Otherwise use "
+        "answer_from_available_evidence. For mixed requests, answer the archive portion "
+        "and state the live-data gap with decline. Tools listed in preplanned_tools "
+        "already ran for this question; reuse their results and do not repeat them unless "
+        "insufficient. Scope is backend-controlled. When no tool rounds remain, return an "
+        "answer action."
     )
 
 
@@ -335,11 +340,11 @@ async def request_model[Schema: BaseModel](
     # truncated their JSON at the old 1200 cap; one review needs ~900-1200 visible tokens.
     # Size the caps from that usage and disable reasoning for bounded structured calls.
     if schema is AnswerReview:
-        adapter.max_tokens = 3000
+        adapter.max_tokens = loop.settings.analyst_review_max_tokens
     elif schema is Action and not loop.tools.claims:
         adapter.max_tokens = 600
     else:
-        adapter.max_tokens = 1600
+        adapter.max_tokens = loop.settings.analyst_answer_max_tokens
     if hasattr(adapter, "reasoning_effort") and loop.settings.analyst_reasoning_effort:
         adapter.reasoning_effort = loop.settings.analyst_reasoning_effort  # pyright: ignore[reportAttributeAccessIssue]
     if hasattr(adapter, "response_schema"):

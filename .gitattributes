@@ -70,3 +70,12 @@ tools/report_audit/report80_fixture.json linguist-generated=true
 
 # Generated live analyst E2E responses
 docs/release-evidence/llm-primary-*/*.responses.jsonl linguist-generated=true
+
+# Scorer output for the 2026-10-21 llm_primary evidence run.
+docs/release-evidence/llm-primary-20261021/scoring/*.jsonl linguist-generated=true
+docs/release-evidence/llm-primary-20261021/scoring/*.json linguist-generated=true
+
+# Generated web E2E screenshots and live latency evidence.
+apps/web/e2e/screenshots/** linguist-generated=true
+docs/release-evidence/llm-primary-20261021/latency/*.jsonl linguist-generated=true
+docs/release-evidence/llm-primary-20261021/latency/*.json linguist-generated=true
