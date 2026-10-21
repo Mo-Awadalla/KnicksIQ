@@ -1,0 +1,316 @@
+{
+  "captured_at_utc": "2026-10-21T22:34:34.751334+00:00",
+  "openrouter_key_usage_usd": {
+    "usage": 4.624633476,
+    "usage_daily": 3.206328814,
+    "usage_weekly": 3.398596162,
+    "usage_monthly": 4.620117976
+  },
+  "ledgers": {
+    "db1": {
+      "ledger_usd": 0.594955166,
+      "open_count": 6,
+      "open_usd": 0.012,
+      "open_amounts": [
+        "0.002"
+      ]
+    },
+    "db2": {
+      "ledger_usd": 1.719902592,
+      "open_count": 3,
+      "open_usd": 0.06999999999999999,
+      "open_amounts": [
+        "0.01",
+        "0.03"
+      ]
+    },
+    "db6": {
+      "ledger_usd": 0.066241279,
+      "open_count": 0,
+      "open_usd": 0,
+      "open_amounts": []
+    },
+    "db14": {
+      "ledger_usd": 0.191437236,
+      "open_count": 0,
+      "open_usd": 0,
+      "open_amounts": []
+    }
+  },
+  "model": "deepseek/deepseek-v4.1-flash",
+  "endpoint_prices_per_million_usd": [
+    {
+      "provider": "Baidu",
+      "prompt": 0.0342,
+      "completion": 0.1368,
+      "cache_read": 0.000684,
+      "context": 1048576
+    },
+    {
+      "provider": "Relace",
+      "prompt": 0.07,
+      "completion": 0.5,
+      "cache_read": 0.008,
+      "context": 1048576
+    },
+    {
+      "provider": "Decart",
+      "prompt": 0.09,
+      "completion": 0.18,
+      "cache_read": 0.018,
+      "context": 1048576
+    },
+    {
+      "provider": "Sail Research",
+      "prompt": 0.09,
+      "completion": 0.25,
+      "cache_read": 0.006,
+      "context": 1048576
+    },
+    {
+      "provider": "Sail Research",
+      "prompt": 0.09,
+      "completion": 0.25,
+      "cache_read": 0.006,
+      "context": 1048576
+    },
+    {
+      "provider": "InferenceNet",
+      "prompt": 0.103,
+      "completion": 0.7150000000000001,
+      "cache_read": 0.008,
+      "context": 1040000
+    },
+    {
+      "provider": "InferenceNet",
+      "prompt": 0.103,
+      "completion": 0.7150000000000001,
+      "cache_read": 0.008,
+      "context": 1040000
+    },
+    {
+      "provider": "Reka",
+      "prompt": 0.105,
+      "completion": 0.84,
+      "cache_read": 0.007,
+      "context": 1048576
+    },
+    {
+      "provider": "DeepInfra",
+      "prompt": 0.112,
+      "completion": 0.33599999999999997,
+      "cache_read": 0.00336,
+      "context": 1048576
+    },
+    {
+      "provider": "AtlasCloud",
+      "prompt": 0.135,
+      "completion": 0.54,
+      "cache_read": 0.0135,
+      "context": 1048576
+    },
+    {
+      "provider": "DeepInfra",
+      "prompt": 0.14,
+      "completion": 0.42,
+      "cache_read": 0.004200000000000001,
+      "context": 1048576
+    },
+    {
+      "provider": "StreamLake",
+      "prompt": 0.14700000000000002,
+      "completion": 0.5880000000000001,
+      "cache_read": 0.0029400000000000003,
+      "context": 1024000
+    },
+    {
+      "provider": "CoreWeave",
+      "prompt": 0.15,
+      "completion": 0.65,
+      "cache_read": 0.002,
+      "context": 1048576
+    },
+    {
+      "provider": "Alibaba",
+      "prompt": 0.165,
+      "completion": 0.66,
+      "cache_read": 0.016499999999999997,
+      "context": 1000000
+    },
+    {
+      "provider": "GMICloud",
+      "prompt": 0.18,
+      "completion": 0.72,
+      "cache_read": 0.0036,
+      "context": 1048575
+    },
+    {
+      "provider": "Wafer",
+      "prompt": 0.19,
+      "completion": 0.65,
+      "cache_read": 0.006,
+      "context": 1048576
+    },
+    {
+      "provider": "Novita",
+      "prompt": 0.195,
+      "completion": 0.78,
+      "cache_read": 0.0039000000000000003,
+      "context": 1048576
+    },
+    {
+      "provider": "DeepInfra",
+      "prompt": 0.21,
+      "completion": 0.63,
+      "cache_read": 0.0063,
+      "context": 1048576
+    },
+    {
+      "provider": "Fireworks",
+      "prompt": 0.21,
+      "completion": 0.84,
+      "cache_read": 0.004200000000000001,
+      "context": 1048576
+    },
+    {
+      "provider": "Phala",
+      "prompt": 0.21,
+      "completion": 0.84,
+      "cache_read": 0.004200000000000001,
+      "context": 1048576
+    },
+    {
+      "provider": "Morph",
+      "prompt": 0.216,
+      "completion": 0.6,
+      "cache_read": 0.019000000000000003,
+      "context": 1048576
+    },
+    {
+      "provider": "Ionstream",
+      "prompt": 0.22,
+      "completion": 0.6,
+      "cache_read": 0.02,
+      "context": 1048576
+    },
+    {
+      "provider": "DigitalOcean",
+      "prompt": 0.22499999999999998,
+      "completion": 0.8999999999999999,
+      "cache_read": 0.006,
+      "context": 1048576
+    },
+    {
+      "provider": "Makora",
+      "prompt": 0.26,
+      "completion": 1.17,
+      "cache_read": 0.0058,
+      "context": 1048576
+    },
+    {
+      "provider": "Crusoe",
+      "prompt": 0.29,
+      "completion": 1.2,
+      "cache_read": 0.007,
+      "context": 1048576
+    },
+    {
+      "provider": "Google",
+      "prompt": 0.3,
+      "completion": 1.2,
+      "cache_read": 0.03,
+      "context": 1048576
+    },
+    {
+      "provider": "Nebius",
+      "prompt": 0.3,
+      "completion": 1.2,
+      "cache_read": 0.01,
+      "context": 1048000
+    },
+    {
+      "provider": "PrimeIntellect",
+      "prompt": 0.3,
+      "completion": 1.2,
+      "cache_read": 0.03,
+      "context": 1048576
+    },
+    {
+      "provider": "OpenInference",
+      "prompt": 0.3,
+      "completion": 1.2,
+      "cache_read": 0.000342,
+      "context": 1048576
+    },
+    {
+      "provider": "BaseTen",
+      "prompt": 0.3,
+      "completion": 1.2,
+      "cache_read": 0.007,
+      "context": 1048576
+    },
+    {
+      "provider": "Together",
+      "prompt": 0.3,
+      "completion": 1.2,
+      "cache_read": 0.006,
+      "context": 1048576
+    },
+    {
+      "provider": "SiliconFlow",
+      "prompt": 0.3,
+      "completion": 1.2,
+      "cache_read": 0.006,
+      "context": 1048576
+    },
+    {
+      "provider": "Modal",
+      "prompt": 0.3,
+      "completion": 1.2,
+      "cache_read": 0.03,
+      "context": 1048576
+    },
+    {
+      "provider": "BaseTen",
+      "prompt": 0.3,
+      "completion": 1.2,
+      "cache_read": 0.007,
+      "context": 1048576
+    },
+    {
+      "provider": "Parasail",
+      "prompt": 0.3,
+      "completion": 1.2,
+      "cache_read": 0.006,
+      "context": 1048576
+    },
+    {
+      "provider": "Fireworks",
+      "prompt": 0.3,
+      "completion": 1.2,
+      "cache_read": 0.006,
+      "context": 1048576
+    },
+    {
+      "provider": "Venice",
+      "prompt": 0.3,
+      "completion": 1.2,
+      "cache_read": 0.0075,
+      "context": 1000000
+    },
+    {
+      "provider": "Fireworks",
+      "prompt": 0.44999999999999996,
+      "completion": 1.7999999999999998,
+      "cache_read": 0.009,
+      "context": 1048576
+    },
+    {
+      "provider": "BaseTen",
+      "prompt": 0.6,
+      "completion": 2.4,
+      "cache_read": 0.014,
+      "context": 1048576
+    }
+  ]
+}
