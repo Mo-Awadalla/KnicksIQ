@@ -2,10 +2,12 @@
 
 from __future__ import annotations
 
+from typing import Any
+
 from app.api.analysis_models import AnalysisQueryResponse
 
 
-def refuse(response_metadata: dict[str, object]) -> AnalysisQueryResponse:
+def refuse(response_metadata: dict[str, Any]) -> AnalysisQueryResponse:
     """Refuse categories no archive tool can answer, before any provider call."""
     return AnalysisQueryResponse(
         **response_metadata,

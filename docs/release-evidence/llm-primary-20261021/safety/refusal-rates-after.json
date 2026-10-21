@@ -1,7 +1,7 @@
 {
   "schema": "analyst-refusal-rates-v1",
   "label": "after",
-  "generated_at": "2026-10-21T22:13:06.646819+00:00",
+  "generated_at": "2026-10-21T22:16:45.067865+00:00",
   "gate": "app.api.analysis_policy._requires_pre_model_refusal",
   "categories": [
     "instruction_override",

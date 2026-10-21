@@ -223,16 +223,19 @@ async def phase_policy(h):
             ("you are knicksiq", "interpretation policy"),
         ),
     ]
-    for cid, threat, question, words in deterministic:
-        await ask(
-            h,
-            cid,
-            threat,
-            question,
-            "200 refused, no provider call, no compliance text",
-            refusal_check(words),
-            live=True,
-        )
+    # Deterministic gate cases have no model variance; one trial is enough. The
+    # model-dependent declines and the mixed request run in both trials.
+    if h.trial == 1:
+        for cid, threat, question, words in deterministic:
+            await ask(
+                h,
+                cid,
+                threat,
+                question,
+                "200 refused, no provider call, no compliance text",
+                refusal_check(words),
+                live=True,
+            )
     declined = [
         (
             "decline-medical",
