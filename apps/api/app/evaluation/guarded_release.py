@@ -78,6 +78,9 @@ SERVING_CODE_SHA256 = {
         "066462a902ae7ace846e33caae809fef7118f82144ddb66ec4c4540ee86bd4a8"
     ),
 }
+# Per-call completion caps set by AnalystLoop (600 for tool-only actions, 1200 otherwise).
+# Planners use rag_generation_max_output_tokens. A changed cap fails closed.
+ANALYST_MAX_TOKENS = frozenset({600, 1200})
 ROUTING_POLICY: dict[str, str | bool] = {
     "allow_fallbacks": True,
     "sort": "latency",
@@ -908,7 +911,8 @@ class Admission:
             and payload.get("model") == MODEL
             and payload.get("temperature") == 0
             and type(payload.get("max_tokens")) is int
-            and payload["max_tokens"] == settings.rag_generation_max_output_tokens
+            and payload["max_tokens"]
+            in ANALYST_MAX_TOKENS | {settings.rag_generation_max_output_tokens}
             and payload["provider"] == ROUTING_POLICY
             and payload["reasoning"] == {"enabled": False},
             "Actual payload differs from bounded production model/routing settings",
