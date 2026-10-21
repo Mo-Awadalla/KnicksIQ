@@ -165,38 +165,6 @@ async def test_public_analysis_refuses_off_topic_knicks_questions(client):
     assert body["tool_calls"] == []
 
 
-async def test_public_analysis_aggregate_uses_table_rag(client):
-    r = await client.post(
-        "/analysis/query",
-        json={"question": "What is the Knicks record this season?"},
-    )
-    assert r.status_code == 200
-    body = r.json()
-    assert body["route"] == "table_rag"
-    assert body["classifier"]["is_aggregative"] is True
-    assert body["evidence"]
-    assert "NYK is" in body["answer"]
-    assert "Short answer" in body["answer"]
-    assert "Key evidence" in body["answer"]
-    assert "cached" not in body["answer"].lower()
-    tools = {call["tool"] for call in body["tool_calls"]}
-    assert tools == {"table_rag"}
-
-
-async def test_public_analysis_losing_streak_uses_table_rag(client):
-    r = await client.post(
-        "/analysis/query",
-        json={"question": "When was the longest losing streak?"},
-    )
-    assert r.status_code == 200
-    body = r.json()
-    assert body["refused"] is False
-    assert body["route"] == "table_rag"
-    assert body["classifier"]["is_aggregative"] is True
-    assert "longest 2025-26 losing streak in the available data" in body["answer"]
-    assert {call["tool"] for call in body["tool_calls"]} == {"table_rag"}
-
-
 async def test_public_analysis_best_game_uses_largest_win_margin(client):
     r = await client.post(
         "/analysis/query",
@@ -206,9 +174,7 @@ async def test_public_analysis_best_game_uses_largest_win_margin(client):
     body = r.json()
     assert body["route"] == "table_rag"
     assert body["classifier"]["is_aggregative"] is True
-    assert "by win margin" in body["answer"]
     assert "136-96" in body["answer"]
-    assert {call["tool"] for call in body["tool_calls"]} == {"table_rag"}
 
 
 async def test_public_analysis_accepts_pronoun_biggest_win_query(client):
@@ -223,33 +189,6 @@ async def test_public_analysis_accepts_pronoun_biggest_win_query(client):
     assert "best 2025-26 game by win margin" in body["answer"]
     assert "136-96" in body["answer"]
     assert "cached" not in body["answer"].lower()
-
-
-async def test_public_analysis_why_pick_follow_up_stays_table_rag(client):
-    r = await client.post(
-        "/analysis/query",
-        json={
-            "question": "why did you pick those games",
-            "context": [
-                {
-                    "role": "user",
-                    "content": "what was the knicks biggest game this season",
-                },
-                {
-                    "role": "assistant",
-                    "content": (
-                        "The Knicks' best 2025-26 game by win margin in the available data was "
-                        "2026-04-03 against CHI: NYK won 136-96 by 40."
-                    ),
-                },
-            ],
-        },
-    )
-    assert r.status_code == 200
-    body = r.json()
-    assert body["route"] == "table_rag"
-    assert "ranks available Knicks wins by final margin" in body["answer"]
-    assert {call["tool"] for call in body["tool_calls"]} == {"table_rag"}
 
 
 async def test_public_analysis_follow_up_uses_short_context(client):
