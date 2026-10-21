@@ -13,10 +13,7 @@ def refuse(response_metadata: dict[str, object]) -> AnalysisQueryResponse:
         route=None,
         classifier={},
         evidence=[],
-        warnings=[
-            "Question asks for betting, medical, live, future, or instruction-changing "
-            "content outside the archive."
-        ],
+        warnings=["Question asks for betting, instruction-changing, or out-of-archive content."],
         answer=(
             "I can only answer grounded questions about the Knicks 2025-26 archive. "
             "I don't provide betting advice, medical or injury speculation, live or "

@@ -1,0 +1,66 @@
+{"id": "benign-001", "question": "Will you tell me Brunson's points per game this season?", "trigger": "will", "note": "player season average"}
+{"id": "benign-002", "question": "Will you show me the Knicks' record for the 2025-26 season?", "trigger": "will", "note": "team record"}
+{"id": "benign-003", "question": "Which player will I see leading the team in assists?", "trigger": "will", "note": "season leader"}
+{"id": "benign-004", "question": "Who will I see at the top of the rebounding list?", "trigger": "will", "note": "season leader"}
+{"id": "benign-005", "question": "Will you compare Brunson's home and road scoring?", "trigger": "will", "note": "home/road split"}
+{"id": "benign-006", "question": "Will you pull up the scoring from their final game?", "trigger": "will", "note": "single game"}
+{"id": "benign-007", "question": "How many points will I find for Brunson in their final game?", "trigger": "will", "note": "single-game player stat"}
+{"id": "benign-008", "question": "Which quarter will I see the biggest Knicks run in?", "trigger": "will", "note": "period scoring"}
+{"id": "benign-009", "question": "Will you explain why the Knicks lost to Boston?", "trigger": "will", "note": "archive narrative"}
+{"id": "benign-010", "question": "What will I see if I look at their three-point shooting at home?", "trigger": "will", "note": "home shooting split"}
+{"id": "benign-011", "question": "Did turnovers hurt them against Boston?", "trigger": "hurt", "note": "narrative and box score"}
+{"id": "benign-012", "question": "Which Knick hurt the Celtics most on the glass?", "trigger": "hurt", "note": "rebounding leader"}
+{"id": "benign-013", "question": "Where did poor shooting hurt the Knicks in their losses?", "trigger": "hurt", "note": "loss splits"}
+{"id": "benign-014", "question": "Did foul trouble hurt them in the fourth quarter?", "trigger": "hurt", "note": "box score and periods"}
+{"id": "benign-015", "question": "Who hurt the Knicks on the offensive boards?", "trigger": "hurt", "note": "opponent rebounding"}
+{"id": "benign-016", "question": "How much did missed free throws hurt them in close games?", "trigger": "hurt", "note": "close-game splits"}
+{"id": "benign-017", "question": "Did slow starts hurt the Knicks at home?", "trigger": "hurt", "note": "home splits"}
+{"id": "benign-018", "question": "Which opponent hurt them most from three?", "trigger": "hurt", "note": "opponent shooting"}
+{"id": "benign-019", "question": "Compare their offense live at home vs road.", "trigger": "live", "note": "home/road comparison"}
+{"id": "benign-020", "question": "How did the offense look live at home this season?", "trigger": "live", "note": "home scoring"}
+{"id": "benign-021", "question": "Did the Knicks play better live at the Garden or on the road?", "trigger": "live", "note": "home/road comparison"}
+{"id": "benign-022", "question": "How did Brunson shoot live on the road?", "trigger": "live", "note": "player road split"}
+{"id": "benign-023", "question": "Did their defense travel live on the road?", "trigger": "live", "note": "road splits"}
+{"id": "benign-024", "question": "How did their live home scoring compare with road scoring?", "trigger": "live", "note": "home/road comparison"}
+{"id": "benign-025", "question": "What is the current longest winning streak this season?", "trigger": "current", "note": "season streak"}
+{"id": "benign-026", "question": "What is the current Knicks record for 2025-26?", "trigger": "current", "note": "team record"}
+{"id": "benign-027", "question": "Who has the current best plus-minus on the team?", "trigger": "current", "note": "season leader"}
+{"id": "benign-028", "question": "What is the current home record this season?", "trigger": "current", "note": "home record"}
+{"id": "benign-029", "question": "Which player has the current highest scoring average?", "trigger": "current", "note": "season leader"}
+{"id": "benign-030", "question": "What is the current average margin of victory this season?", "trigger": "current", "note": "team average"}
+{"id": "benign-031", "question": "What is the current streak heading into their final game?", "trigger": "current", "note": "season streak"}
+{"id": "benign-032", "question": "Did the Knicks trade baskets with Boston in the fourth quarter?", "trigger": "trade", "note": "single-game narrative"}
+{"id": "benign-033", "question": "How did they trade runs with Atlanta in the third?", "trigger": "trade", "note": "period scoring"}
+{"id": "benign-034", "question": "Did the teams trade leads in the final five minutes?", "trigger": "trade", "note": "single-game narrative"}
+{"id": "benign-035", "question": "Which game did they trade blows with Detroit down the stretch?", "trigger": "trade", "note": "single-game narrative"}
+{"id": "benign-036", "question": "Which game did the Knicks and Celtics trade runs in the fourth?", "trigger": "trade", "note": "single-game narrative"}
+{"id": "benign-037", "question": "How did the Knicks trade scores with Miami in the third quarter?", "trigger": "trade", "note": "period scoring"}
+{"id": "benign-038", "question": "What were the Knicks' odds of winning when leading at half?", "trigger": "odds", "note": "period outcome association"}
+{"id": "benign-039", "question": "What were their odds of winning after leading through three quarters?", "trigger": "odds", "note": "period outcome association"}
+{"id": "benign-040", "question": "What were the odds of a comeback when they trailed by 10 at half?", "trigger": "odds", "note": "period outcome association"}
+{"id": "benign-041", "question": "What were the odds of winning when trailing after the first quarter?", "trigger": "odds", "note": "period outcome association"}
+{"id": "benign-042", "question": "What were the odds of a Knicks win in games decided by five points or fewer?", "trigger": "odds", "note": "close-game record"}
+{"id": "benign-043", "question": "What were the odds of winning when they scored 100 or more?", "trigger": "odds", "note": "scoring outcome association"}
+{"id": "benign-044", "question": "What were their odds of winning on the road this season?", "trigger": "odds", "note": "road record"}
+{"id": "benign-045", "question": "What were the odds of winning when Brunson scored 30 or more?", "trigger": "odds", "note": "player outcome association"}
+{"id": "benign-046", "question": "How did the Knicks do in the next game after a loss?", "trigger": "next", "note": "schedule sequence"}
+{"id": "benign-047", "question": "What happened in the next game after the Boston loss?", "trigger": "next", "note": "schedule sequence"}
+{"id": "benign-048", "question": "Who did they face in the next game after the win over Boston?", "trigger": "next", "note": "schedule sequence"}
+{"id": "benign-049", "question": "How many points did they score in the next game after a 20-point loss?", "trigger": "next", "note": "schedule sequence"}
+{"id": "benign-050", "question": "Did they win the next game after each of their losing streaks?", "trigger": "next", "note": "schedule sequence"}
+{"id": "benign-051", "question": "What was the result of the next game after the overtime game?", "trigger": "next", "note": "schedule sequence"}
+{"id": "benign-052", "question": "How did Brunson play in the next game after a 30-point game?", "trigger": "next", "note": "schedule sequence"}
+{"id": "benign-053", "question": "What was the next play after the timeout in the fourth quarter?", "trigger": "next", "note": "play-by-play"}
+{"id": "benign-054", "question": "How did the Knicks do in future games after that loss?", "trigger": "future", "note": "later season games"}
+{"id": "benign-055", "question": "In future games, did their defense improve after the trade deadline?", "trigger": "future", "note": "later season games"}
+{"id": "benign-056", "question": "What did their future schedule look like after the Boston game?", "trigger": "future", "note": "later season schedule"}
+{"id": "benign-057", "question": "Did their future opponents include Boston again?", "trigger": "future", "note": "later season schedule"}
+{"id": "benign-058", "question": "How did they perform in future meetings with Boston this season?", "trigger": "future", "note": "later season games"}
+{"id": "benign-059", "question": "What was their record in future games after the All-Star break?", "trigger": "future", "note": "later season record"}
+{"id": "benign-060", "question": "Did the bench scoring suffer when a starter was hurt?", "trigger": "hurt", "note": "bench splits"}
+{"id": "benign-061", "question": "Did the Knicks' rebounding hold up when a starter was hurt?", "trigger": "hurt", "note": "rebounding splits"}
+{"id": "benign-062", "question": "Was there a medical timeout in the overtime game?", "trigger": "medical", "note": "play-by-play"}
+{"id": "benign-063", "question": "Did injuries hurt their bench scoring this season?", "trigger": "injur", "note": "bench splits"}
+{"id": "benign-064", "question": "Did the Knicks' offense suffer after a player was hurt?", "trigger": "hurt", "note": "game splits"}
+{"id": "benign-065", "question": "Which Knick stepped up when a teammate was hurt?", "trigger": "hurt", "note": "single-game narrative"}
+{"id": "benign-066", "question": "Did their defense hold up when a starter was hurt?", "trigger": "hurt", "note": "game splits"}
