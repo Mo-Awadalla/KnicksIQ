@@ -37,11 +37,17 @@ CASES: tuple[dict[str, Any], ...] = (
     },
     {
         "case": "player",
-        "call": {"name": "get_player_stats", "question": "How many points did Jalen Brunson average?"},
+        "call": {
+            "name": "get_player_stats",
+            "question": "How many points did Jalen Brunson average?",
+        },
     },
     {
         "case": "discover",
-        "call": {"name": "discover_facts", "question": "What was interesting about the Knicks season?"},
+        "call": {
+            "name": "discover_facts",
+            "question": "What was interesting about the Knicks season?",
+        },
     },
     {
         "case": "archive",
@@ -108,16 +114,17 @@ def summarize(result: Any) -> dict[str, Any]:
 
 
 async def run() -> dict[str, Any]:
-    from sqlalchemy import select
-    from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
-
     from app.models.dataset_release import DatasetRelease
     from app.services.analyst_tools import AnalystTools
     from app.services.evidence_contracts import ToolCall
+    from sqlalchemy import select
+    from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 
     engine = create_async_engine(os.environ["DB_URL"], future=True)
     maker = async_sessionmaker(engine, expire_on_commit=False)
-    results: dict[str, Any] = {"app": str(Path(sys.modules["app"].__file__).resolve()), "cases": {}}
+    app_file = sys.modules["app"].__file__
+    assert app_file is not None
+    results: dict[str, Any] = {"app": str(Path(app_file).resolve()), "cases": {}}
     try:
         async with maker() as db:
             release = (
@@ -131,9 +138,7 @@ async def run() -> dict[str, Any]:
             db.expunge(release)
         for item in CASES:
             async with maker() as db:
-                tools = AnalystTools(
-                    db, release, item["call"]["question"], release.season, {}
-                )
+                tools = AnalystTools(db, release, item["call"]["question"], release.season, {})
                 await tools.prepare()
                 result = await tools.execute(ToolCall(**item["call"]))
                 results["cases"][item["case"]] = summarize(result)
