@@ -393,7 +393,7 @@ async def collect(
         raise RuntimeError("Paid call forbidden in disabled evaluation")
 
     original_adapter = analyst_loop.get_llm_adapter
-    original_legacy_adapter = analysis.get_llm_adapter
+    original_analysis_adapter = analysis.get_llm_adapter
 
     def counted(**_kwargs):
         assert execution is not None
@@ -427,9 +427,6 @@ async def collect(
         "shadow_selected_count": sum(shadow_membership),
         "observations": observations,
     }
-    subject_namespace = getattr(execution, "subject_namespace", None)
-    if subject_namespace:
-        result["successor_subject_namespace"] = subject_namespace
     # Exclusive creation preserves earlier attempts. Incremental snapshots retain
     # every completed observation even when a later request fails.
     with output.open("x") as artifact:
@@ -477,11 +474,7 @@ async def collect(
             # These in-process clients have independent quotas, just as distinct
             # users do. Limits are exercised unchanged; no forwarded IP header
             # or rate-limit reset is used. This is a cohort run, not a load test.
-            synthetic_client = (
-                f"guarded-successor-{subject_namespace}-{index + 1}"
-                if subject_namespace
-                else f"192.0.2.{index + 1}"
-            )
+            synthetic_client = f"192.0.2.{index + 1}"
             async with httpx.AsyncClient(
                 transport=httpx.ASGITransport(app, client=(synthetic_client, 12345)),
                 base_url="https://test",
@@ -527,7 +520,7 @@ async def collect(
         raise
     finally:
         analyst_loop.get_llm_adapter = original_adapter
-        analysis.get_llm_adapter = original_legacy_adapter
+        analysis.get_llm_adapter = original_analysis_adapter
         persist()
     return result
 

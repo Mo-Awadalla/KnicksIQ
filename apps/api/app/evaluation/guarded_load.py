@@ -37,17 +37,14 @@ import uvicorn
 from app.core.config import get_settings
 from app.evaluation.guarded_release import (
     APPROVAL,
-    ATLAS_AUTHORIZATION_SHA256,
+    BUNDLE_SHA256,
     DESIGNATED_KEY_SHA256,
     FROZEN,
     GOLD,
-    KNOWN_COST_AUTHORIZATION_SHA256,
-    RECONCILIATION_AUTHORIZATION_SHA256,
-    SOURCES,
     VERSION,
     Admission,
     GuardedSession,
-    admission_route,
+    MonthlyLedger,
     durable_json,
     goal_context,
     require,
@@ -129,6 +126,26 @@ def load_identity() -> dict:
 class LoadAdmission(Admission):
     load_binding: dict
 
+    def __init__(
+        self,
+        *,
+        bundle_path: Path,
+        candidate_identity_dir: Path,
+        evidence_root: Path,
+        artifact_dir: Path,
+        api_key: str,
+        ledger: MonthlyLedger,
+    ) -> None:
+        super().__init__(
+            bundle_path=bundle_path,
+            candidate_identity_dir=candidate_identity_dir,
+            evidence_root=evidence_root,
+            artifact_dir=artifact_dir,
+            api_key=api_key,
+            ledger=ledger,
+        )
+        self.load_binding = {}
+
     def verify_inputs(self) -> None:
         super().verify_inputs()
         for field, path in {
@@ -148,8 +165,8 @@ class LoadAdmission(Admission):
         from app.api.analysis import _sample_shadow
 
         require(identity == load_identity(), "Changed original load/sampler identity")
-        # Reuse all original source, settings, Docker, candidate, ledger and fresh
-        # provider checks. Original gold remains frozen, not a replacement gold.
+        # Reuse all original source, settings, isolated-resource, candidate,
+        # ledger and fresh-provider checks. The original contract stays frozen.
         original_ids = [
             evaluation_request_id(self.contract_sha256, "shadow", case["id"]) for case in self.cases
         ]
@@ -551,7 +568,7 @@ def original_quality_pass(
             and record.get("tested_commit")
             and item.get("status") == "passed"
             and item.get("tested_commit") == record["tested_commit"]
-            and record["hashes"]["bundle"] == SOURCES["bundle"][1]
+            and record["hashes"]["bundle"] == BUNDLE_SHA256
             and record["hashes"]["evaluation"] == FROZEN[GOLD]
             and (root / record["evaluation_contract"]["path"]).resolve() == root / GOLD
             and (root / record["approvals"]["evaluation_labels"]["path"]).resolve()
@@ -626,19 +643,14 @@ async def run(args) -> None:
         "Load does not use the SAME original admitted aggregate goal",
     )
     budget = VerificationBudget(goal / "goal.sqlite", binding=binding_sha)
-    if binding.get("successor", {}).get("authorization_sha256") in {
-        KNOWN_COST_AUTHORIZATION_SHA256,
-        RECONCILIATION_AUTHORIZATION_SHA256,
-        ATLAS_AUTHORIZATION_SHA256,
-    }:
-        admitted = validate_admitted_goal(goal, budget, binding)
-        require(
-            Decimal(admitted["historical_floor_nusd"]) / 1_000_000_000 >= ledger.floor,
-            "Load admission monthly floor lowered",
-        )
+    admitted = validate_admitted_goal(goal, budget, binding)
     require(
-        budget.snapshot()["inherited_calls"] == binding.get("successor", {}).get("calls", []),
-        "Successor inherited request inventory differs before load",
+        Decimal(admitted["historical_floor_nusd"]) / 1_000_000_000 >= ledger.floor,
+        "Load admission monthly floor lowered",
+    )
+    require(
+        budget.snapshot()["inherited_calls"] == [],
+        "Unexpected inherited request inventory before load",
     )
     original_cases = load_contract(root / GOLD, root / APPROVAL)["cases"]
     shadow_cap = 6 * sum(
@@ -675,11 +687,12 @@ async def run(args) -> None:
     ledger.floor = Decimal(stored["historical_floor_nusd"]) / 1_000_000_000
     run_dir = goal / "load"
     admission = LoadAdmission(
+        bundle_path=args.bundle_path.resolve(),
+        candidate_identity_dir=args.candidate_identity_dir.resolve(),
         evidence_root=root,
         artifact_dir=run_dir,
         api_key=key,
         ledger=ledger,
-        **admission_route(binding),
     )
     admission.resource_binding = stored["resources"]
     admission.alias_binding = stored["resources"]["qdrant_aliases"]
@@ -695,16 +708,14 @@ async def run(args) -> None:
         request_ids=identity["request_ids"],
         run_dir=run_dir,
     )
-    if binding.get("successor", {}).get("authorization_sha256") in {
-        KNOWN_COST_AUTHORIZATION_SHA256,
-        RECONCILIATION_AUTHORIZATION_SHA256,
-        ATLAS_AUTHORIZATION_SHA256,
-    }:
-        session.revalidate = lambda: validate_admitted_goal(
-            goal, budget, goal_context(root, goal, args)[1]
-        )
+    session.revalidate = lambda: validate_admitted_goal(
+        goal, budget, goal_context(root, goal, args)[1]
+    )
     status, process = "failed", None
-    original_adapter, original_legacy = analyst_loop.get_llm_adapter, analysis.get_llm_adapter
+    original_adapter, original_analysis_adapter = (
+        analyst_loop.get_llm_adapter,
+        analysis.get_llm_adapter,
+    )
     wrapper = None
     initial_tickets = {call["id"] for call in budget.snapshot()["calls"]}
     command = None
@@ -729,7 +740,7 @@ async def run(args) -> None:
             analyst_loop.get_llm_adapter = lambda **_kwargs: session.execution.adapter("load", None)
 
             def denied(**_kwargs):
-                session.failed("uncounted_legacy_load_adapter")
+                session.failed("uncounted_load_adapter")
                 raise RuntimeError("Uncounted load provider path denied")
 
             analysis.get_llm_adapter = denied
@@ -884,7 +895,6 @@ async def run(args) -> None:
                 {
                     "status": "original_counted_load_passed",
                     "paid_requests": len(calls),
-                    "historical_provider_calls": 22,
                     "release_approved": False,
                 }
             )
@@ -896,7 +906,10 @@ async def run(args) -> None:
         if process is not None and process.returncode is None:
             process.terminate()
             await process.wait()
-        analyst_loop.get_llm_adapter, analysis.get_llm_adapter = original_adapter, original_legacy
+            analyst_loop.get_llm_adapter, analysis.get_llm_adapter = (
+                original_adapter,
+                original_analysis_adapter,
+            )
         with budget._connect() as db:
             db.execute("UPDATE guard_runs SET status=? WHERE mode='load'", (status,))
         durable_json(
@@ -905,7 +918,6 @@ async def run(args) -> None:
                 "status": status,
                 "stage": "load",
                 "mode": "shadow",
-                "historical_provider_calls": 22,
                 "accounting": budget.snapshot(),
                 "calls": session.receipts(),
                 "http_observations": wrapper.observations if wrapper else {},
@@ -921,8 +933,8 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--evidence-root", required=True, type=Path)
     parser.add_argument("--goal-dir", required=True, type=Path)
-    parser.add_argument("--successor-authorization", type=Path)
-    parser.add_argument("--predecessor-goal", type=Path)
+    parser.add_argument("--bundle-path", required=True, type=Path)
+    parser.add_argument("--candidate-identity-dir", required=True, type=Path)
     parser.add_argument("--disabled-score", required=True, type=Path)
     parser.add_argument("--disabled-observations", required=True, type=Path)
     parser.add_argument("--primary-score", required=True, type=Path)

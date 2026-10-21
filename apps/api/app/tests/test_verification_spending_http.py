@@ -18,7 +18,9 @@ from app.tests.test_analyst_contracts import ScriptedAdapter, local_redis  # noq
 from app.tests.test_player_intelligence import _seed_release_stats
 
 ROOT = Path(__file__).resolve().parents[4]
-DIRECTION = ROOT / "docs/release-evidence/implementation-20261001/confirmed-spending-direction.json"
+DIRECTION = (
+    ROOT / "docs/release-evidence/evaluation-contract-20261021/owner-spending-direction.json"
+)
 
 
 def retain(tmp_path, name, data, record_property):
