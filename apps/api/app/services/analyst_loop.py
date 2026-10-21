@@ -9,21 +9,15 @@ from typing import Any
 
 from app.core.config import get_settings
 from app.services.analyst_budget import BudgetReservation
-from app.services.analyst_fallback import (
-    decline_text,
-    fallback_claims,
-    re_search_discovery,
-    re_search_live,
-)
+from app.services.analyst_delivery import fallback, fallback_claims, render, render_fallback
+from app.services.analyst_payload import build_payload
 from app.services.analyst_prefetch import prefetch_calls
 from app.services.analyst_provider import (
     Schema,
-    build_payload,
     encoded,
     request_model,
 )
 from app.services.analyst_review_checks import review_issues
-from app.services.analyst_tool_registry import recovery_tool
 from app.services.analyst_tools import AnalystTools
 from app.services.conversation_memory import bounded_history
 from app.services.evidence_contracts import (
@@ -223,6 +217,11 @@ class AnalystLoop:
         """
         if not self.settings.analyst_prefetch_enabled:
             return
+        # Prefetch exists to replace the planning call on a turn that starts without evidence.
+        # When results or committed claims are already present the writer can answer or choose
+        # its own tool; a duplicate lookup would only add overlapping claims to the payload.
+        if self.results or self.tools.claims:
+            return
         calls = prefetch_calls(self.tools)
         if not calls:
             return
@@ -230,6 +229,8 @@ class AnalystLoop:
         for call in calls:
             if time.monotonic() - self.started >= self.settings.analyst_investigation_seconds:
                 break
+            # Prefetched lookups count against the same six-tool limit as model-chosen ones.
+            self.tool_count += 1
             await self.run_tool(call)
 
     async def investigate(self) -> dict[str, Any]:
@@ -354,49 +355,10 @@ class AnalystLoop:
         return fallback_claims(self)
 
     async def fallback(self, reason: str) -> dict[str, Any]:
-        if not self.fallback_claims() and not self.recovery_ran and self.remaining() > 0.5:
-            self.recovery_ran = True
-            question = self.tools.question
-            spec = recovery_tool(
-                "discovery"
-                if re_search_discovery(question)
-                else "player"
-                if self.tools.scope and self.tools.scope.player_ids
-                else "team"
-            )
-            try:
-                async with asyncio.timeout(max(0.001, self.remaining() - 0.5)):
-                    self.results.append(
-                        await self.tools.execute(
-                            ToolCall(
-                                name=spec.name,
-                                question=question,
-                                aggregation=spec.recovery_aggregation,
-                            )
-                        )
-                    )
-            except Exception:
-                # Cancellation is a BaseException and intentionally propagates.
-                pass
-        return self.render_fallback(reason)
+        return await fallback(self, reason)
 
     def render_fallback(self, reason: str) -> dict[str, Any]:
-        from app.services.evidence_contracts import ClaimUse
-
-        claims = self.fallback_claims()
-        claims = claims[:6]
-        text = " ".join(c.statement for c in claims)
-        if not text:
-            text = decline_text(self)
-        answer = ProposedAnswer(
-            text=text,
-            claims=[ClaimUse(claim_id=c.claim_id, displayed_value=c.value) for c in claims],
-        )
-        # The fallback appends this same statement only for live/current questions, so the
-        # flag tracks what the delivered text actually says without parsing its wording.
-        return self.render(
-            answer, llm=False, warning=reason, refused=re_search_live(self.tools.question)
-        )
+        return render_fallback(self, reason)
 
     def render(
         self,
@@ -406,79 +368,4 @@ class AnalystLoop:
         warning: str = "",
         refused: bool = False,
     ) -> dict[str, Any]:
-        claims = [self.tools.claims[u.claim_id] for u in answer.claims]
-        citations = []
-        for claim in claims:
-            for ref in claim.supporting_evidence_ids[:3]:
-                e = self.tools.evidence[ref]
-                citations.append(
-                    {
-                        "claim": claim.statement,
-                        "type": "verified_claim",
-                        "title": claim.statement,
-                        "game_id": e.game_id,
-                        "source_name": e.source_name,
-                        "source_url": e.source_url,
-                        "metadata": {"claim": claim.model_dump(mode="json"), "evidence_id": ref},
-                    }
-                )
-        for ref in answer.evidence_ids:
-            e = self.tools.evidence[ref]
-            citations.append(
-                {
-                    "claim": e.text,
-                    "type": "archive",
-                    "title": "Archive receipt",
-                    "game_id": e.game_id,
-                    "source_name": e.source_name,
-                    "source_url": e.source_url,
-                    "metadata": {"evidence_id": ref},
-                }
-            )
-        # Only the route's atomic commit makes these proposed state changes authoritative.
-        state = self.tools.state.copy()
-        candidates = [self.tools.candidates[ref] for ref in answer.fact_ids]
-        used = {c.claim_id for c in claims}
-        # Deterministic facts also count as delivered when they make it into a committed response.
-        if not llm:
-            candidates = [c for c in self.tools.candidates.values() if set(c.claim_ids) <= used]
-        state["delivered_fact_ids"] = list(
-            dict.fromkeys(state.get("delivered_fact_ids", []) + [c.fact_id for c in candidates])
-        )
-        state["delivered_families"] = list(
-            dict.fromkeys(state.get("delivered_families", []) + [c.fact_family for c in candidates])
-        )
-        state["last_subjects"] = list(dict.fromkeys(c.subject_id for c in claims if c.subject_id))
-        players = [int(s.split(":")[1]) for s in state["last_subjects"] if s.startswith("player:")]
-        if players:
-            state["scope"]["player_ids"] = players
-            state["scope_origin"] = "delivered_subject"
-        references = {ref for c in claims for ref in c.supporting_evidence_ids}
-        references.update(answer.evidence_ids)
-        baseline_ids = {ref for c in claims for ref in c.baseline_claim_ids}
-        stored_claims = list(
-            {
-                c.claim_id: c for c in claims + [self.tools.claims[ref] for ref in baseline_ids]
-            }.values()
-        )
-        references.update(ref for c in stored_claims for ref in c.supporting_evidence_ids)
-        references.update(
-            source
-            for ref in list(references)
-            for source in self.tools.evidence[ref].metadata.get("source_evidence_ids", [])
-        )
-        state["claims"] = [c.model_dump(mode="json") for c in stored_claims]
-        state["evidence"] = [self.tools.evidence[ref].model_dump(mode="json") for ref in references]
-        return {
-            "answer": answer.text,
-            "follow_up_questions": self.accepted_suggestions if llm else [],
-            "citations": citations,
-            "warnings": [warning] if warning else [],
-            "degraded": not llm,
-            "refused": refused,
-            "route": "llm_analyst" if llm else "factual_fallback",
-            "data_version": self.tools.release.version,
-            "state": state,
-            "tool_calls": self.trace,
-            "llm_validated": llm,
-        }
+        return render(self, answer, llm=llm, warning=warning, refused=refused)

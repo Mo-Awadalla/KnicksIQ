@@ -13,7 +13,7 @@ from dataclasses import dataclass
 from decimal import Decimal, InvalidOperation
 from typing import Any
 
-from app.services.analyst_provider import claim_view
+from app.services.analyst_payload import claim_view
 from app.services.evidence_contracts import (
     Evidence,
     ProposedAnswer,
