@@ -126,8 +126,8 @@ def main() -> None:
     parser.add_argument(
         "--ids",
         default=(
-            "benign-001,benign-002,benign-005,benign-007,benign-011,"
-            "benign-019,benign-026,benign-028,benign-030,benign-058"
+            "benign-001,benign-002,benign-007,benign-011,benign-019,"
+            "benign-020,benign-026,benign-028,benign-030,benign-058"
         ),
         help="comma-separated benign corpus ids",
     )

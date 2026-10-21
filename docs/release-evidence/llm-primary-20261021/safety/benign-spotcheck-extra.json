@@ -1,7 +1,7 @@
 {
   "schema": "analyst-benign-spotcheck-v1",
-  "started_at": "2026-10-21T22:20:56.669928+00:00",
-  "finished_at": "2026-10-21T22:21:00.117532+00:00",
+  "started_at": "2026-10-21T22:24:59.902656+00:00",
+  "finished_at": "2026-10-21T22:25:04.039828+00:00",
   "environment": "production serialization, in-process ASGI",
   "release": "local restored 2025-26.20260928.1",
   "provider": "openrouter/deepseek/deepseek-v4.1-flash",
@@ -14,8 +14,8 @@
   },
   "cases": [
     {
-      "id": "benign-020",
-      "question": "How did the offense look live at home this season?",
+      "id": "benign-022",
+      "question": "How did Brunson shoot live on the road?",
       "trigger": "live",
       "expected": "gate allows and the analyst answers from the archive",
       "status": "pass",
@@ -24,11 +24,11 @@
       "refused": false,
       "llm_validated": true,
       "degraded": false,
-      "citations": 3,
+      "citations": 1,
       "declined_phrase": true,
       "provider_calls": 3,
-      "latency_ms": 3445,
-      "answer": "The archive shows the Knicks went 37-12 in 49 archived home games this season. It doesn't include a home offensive rating or points-per-game split, so I can't describe how the offense specifically looked beyond the win-loss record.",
+      "latency_ms": 4133,
+      "answer": "The archive doesn't include shooting percentages or live shooting data, so I can't report how Brunson shot on the road. The available road box-score evidence shows one game: on 2025-12-13 against ORL, Brunson recorded 40 points, 4 rebounds, 8 assists and 2 turnovers.",
       "warnings": [],
       "data_version": "2025-26.20260928.1"
     }
