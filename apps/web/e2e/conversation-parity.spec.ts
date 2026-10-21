@@ -256,7 +256,7 @@ test('corrupted storage leaves chat usable with a recovery notice', async ({ pag
   await expect(page.getByText('Recovered conversation.')).toBeVisible()
 })
 
-test('sources expand into readable facts while retaining fallback warnings', async ({ page }) => {
+test('sources expand into readable facts with public data-limit copy', async ({ page }) => {
   await page.route(api('/analysis/query'), (route) => route.fulfill({ json: {
     answer: 'Knicks wins: 2. Knicks losses: 1.', warnings: ['Archive coverage only.'],
     citations: [{ type: 'verified_claim', title: 'Team record',
@@ -269,7 +269,7 @@ test('sources expand into readable facts while retaining fallback warnings', asy
   await box.fill('What was their record?')
   await box.press('Enter')
   await expect(page.getByText('Knicks wins: 2. Knicks losses: 1.')).toBeVisible()
-  await expect(page.getByText('Archive coverage only.')).toBeVisible()
+  await expect(page.getByText('Some game records related to this answer may be missing from the available archive.')).toBeVisible()
   await expect(page.getByText('Verified statistic', { exact: true })).not.toBeVisible()
   await page.getByText('Sources (1)', { exact: true }).click()
   await expect(page.getByText('Verified statistic', { exact: true })).toBeVisible()
