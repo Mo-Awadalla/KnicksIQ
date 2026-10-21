@@ -9,7 +9,12 @@ from typing import Any
 
 from app.core.config import get_settings
 from app.services.analyst_budget import BudgetReservation
-from app.services.analyst_fallback import decline_text, fallback_claims, re_search_discovery
+from app.services.analyst_fallback import (
+    decline_text,
+    fallback_claims,
+    re_search_discovery,
+    re_search_live,
+)
 from app.services.analyst_provider import (
     Schema,
     build_payload,
