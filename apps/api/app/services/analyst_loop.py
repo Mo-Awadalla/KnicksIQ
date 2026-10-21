@@ -4,13 +4,17 @@ from __future__ import annotations
 
 import asyncio
 import logging
-import re
 import time
 from typing import Any
 
 from app.core.config import get_settings
 from app.services.analyst_budget import BudgetReservation
-from app.services.analyst_fallback import fallback_claims, re_search_discovery
+from app.services.analyst_fallback import (
+    decline_text,
+    fallback_claims,
+    re_search_discovery,
+    re_search_live,
+)
 from app.services.analyst_prefetch import prefetch_calls
 from app.services.analyst_provider import (
     Schema,
@@ -261,9 +265,7 @@ class AnalystLoop:
             supported, reason = await self.validate(answer)
             if supported:
                 return self.render(answer, llm=True, refused=refused)
-            # Only one repair, with capacity and time for both revision and review.
-            # Split remaining time between the calls instead of demanding two full
-            # 20-second provider timeouts inside a 30-second application deadline.
+            # Split the remaining time between revision and review.
             repair_timeout = min(
                 self.settings.ai_request_timeout_seconds, (self.remaining() - 0.5) / 2
             )
@@ -317,8 +319,7 @@ class AnalystLoop:
             self.tools.question,
         )
         if issues:
-            # Mechanical rejection: no model call and no chance for a stochastic verdict to
-            # accept a number that exists in no supplied record or to reject a checked value.
+            # Mechanical rejection before any stochastic reviewer verdict.
             return False, "Deterministic evidence check failed: " + "; ".join(issues[:3])
         review = await self.review(answer, timeout_seconds=timeout_seconds)
         if review is None:
@@ -383,18 +384,10 @@ class AnalystLoop:
         from app.services.evidence_contracts import ClaimUse
 
         claims = self.fallback_claims()
-        claims = claims[:3]
+        claims = claims[:6]
         text = " ".join(c.statement for c in claims)
         if not text:
-            text = next(
-                (
-                    r.message + (" " + "; ".join(r.choices) if r.choices else "")
-                    for r in reversed(self.results)
-                ),
-                "Verified archive facts are unavailable on this turn. Please try again.",
-            )
-        if re_search_live(self.tools.question):
-            text += " I don't have live injury or current-status updates."
+            text = decline_text(self)
         answer = ProposedAnswer(
             text=text,
             claims=[ClaimUse(claim_id=c.claim_id, displayed_value=c.value) for c in claims],
@@ -489,8 +482,3 @@ class AnalystLoop:
             "tool_calls": self.trace,
             "llm_validated": llm,
         }
-
-
-def re_search_live(question: str) -> bool:
-
-    return bool(re.search(r"\b(injur\w*|today|current|live|tonight)\b", question, re.I))

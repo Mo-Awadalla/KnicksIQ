@@ -1,0 +1,97 @@
+{
+  "id": "unsupported-007",
+  "question": "Did the Knicks win yesterday?",
+  "resolved_scope": {
+    "intent": "analyst",
+    "player_ids": [],
+    "team_ids": [],
+    "opponent_id": null,
+    "game_ids": 0,
+    "date_start": null,
+    "date_end": null,
+    "relative_game_count": null,
+    "periods": [],
+    "season_type": "regular",
+    "home_away": null,
+    "game_result": null,
+    "metric": null,
+    "requires_clarification": false,
+    "clarification_reason": null,
+    "clarification_options": [],
+    "data_version": "2025-26.20260928.1"
+  },
+  "tool": {
+    "status": "ok",
+    "message": "Archive team totals.",
+    "claims": [
+      {
+        "metric_id": "wins",
+        "value": 53,
+        "season_type": "regular",
+        "sample_size": 82,
+        "statement": "Knicks regular season wins: 53 over 82 archived games.",
+        "limitations": [
+          "Available archive only; no causal inference."
+        ]
+      },
+      {
+        "metric_id": "losses",
+        "value": 29,
+        "season_type": "regular",
+        "sample_size": 82,
+        "statement": "Knicks regular season losses: 29 over 82 archived games.",
+        "limitations": [
+          "Available archive only; no causal inference."
+        ]
+      },
+      {
+        "metric_id": "points_per_game",
+        "value": 116.45121951219512,
+        "season_type": "regular",
+        "sample_size": 82,
+        "statement": "Knicks regular season points per game: 116.45121951219512 over 82 archived games.",
+        "limitations": [
+          "Available archive only; no causal inference."
+        ]
+      },
+      {
+        "metric_id": "margin_per_game",
+        "value": 6.329268292682927,
+        "season_type": "regular",
+        "sample_size": 82,
+        "statement": "Knicks regular season margin per game: 6.329268292682927 over 82 archived games.",
+        "limitations": [
+          "Available archive only; no causal inference."
+        ]
+      }
+    ],
+    "evidence": 82,
+    "scope": {
+      "intent": "get_team_stats",
+      "player_ids": [],
+      "team_ids": [],
+      "opponent_id": null,
+      "game_ids": 0,
+      "date_start": null,
+      "date_end": null,
+      "relative_game_count": null,
+      "periods": [],
+      "season_type": "regular",
+      "home_away": null,
+      "game_result": null,
+      "metric": null,
+      "requires_clarification": false,
+      "clarification_reason": null,
+      "clarification_options": [],
+      "data_version": "2025-26.20260928.1"
+    }
+  },
+  "fallback": {
+    "answer": "I don't have live or current-date data. The archive's most recent game is 2026-06-13.",
+    "route": "factual_fallback",
+    "warnings": [
+      "Model or budget unavailable."
+    ],
+    "claims": []
+  }
+}
