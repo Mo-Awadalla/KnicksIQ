@@ -1,0 +1,125 @@
+{
+  "audit_output": {
+    "audit_canonical_json_sha256": "43b5c66701d6ac580a460c16a44e705afdd78560078cbc6ee0238d016634efa1",
+    "audit_json_sha256": "0e02fdf61c14d8b4b53821b460305c4ab9c3c4393ea24e1707f703d16c65b715",
+    "baseline_identity": "local_candidate_only_active_archive_unverified",
+    "blockers": [
+      "Active archive identity requires verification",
+      "Owner template, exceptions and audit approval required"
+    ],
+    "canonical_data_sha256_excluding_reports": "984d8566eb3c884710c0c173b351a0b4e4a20811a5d422b56673bf7a8ce66f42",
+    "coverage_complete": true,
+    "directory": "/tmp/kiq-report-audit-20261020/audit",
+    "owner_approval": null,
+    "release_approved": false,
+    "report_only_proposal": "/tmp/kiq-report-audit-20261020/audit/report-repairs.json",
+    "summary": {
+      "content_hashes_passed": 101,
+      "cross_period_reports": 0,
+      "passed": 101,
+      "player_lines_passed": 303,
+      "reports": 101,
+      "score_summaries_passed": 101,
+      "unresolved": 0
+    }
+  },
+  "canonical_score_corrections": [
+    {
+      "after": {
+        "away": 65,
+        "home": 55
+      },
+      "before": {
+        "away": 66,
+        "home": 55
+      },
+      "clock": "01:39",
+      "description": "Turner 26' 3PT Pullup Jump Shot (3 PTS) (Anthony 5 AST)",
+      "event_type": "made_shot",
+      "handling": "scoreboard correction/new baseline; not classified as corruption by default",
+      "nba_game_id": "0022500125",
+      "period": 2,
+      "previous_score_sequence": 197,
+      "sequence": 198
+    }
+  ],
+  "constraints_observed": [
+    "Original approved gzip was read-only; only a private decompressed copy and output artifacts were written under /tmp/kiq-report-audit-20261020.",
+    "No production writes, deployments, Qdrant promotion, budget change, commit, or shared repository edits.",
+    "No report repair selector was imported or used by the verifier."
+  ],
+  "existing_receipt_comparison": {
+    "baseline_version": "2025-26.20260714.1",
+    "canonical_data_sha256": "b2ad21c69175600c3192ef6133f8c11fd63890609a8204f92508a5fb04d05170",
+    "input_file_sha256": "b7dd67ed7838d68cc05ee5c25a217465238eadf5a3489e7834c1045a0df031e9",
+    "path": "/tmp/kiq-candidate-20261020/docs/release-evidence/report-audit-20260907/audit.json",
+    "reuse_decision": "cannot reuse as evidence for the approved September 28 bundle; old receipt is bound to a July 14 baseline and different input/canonical hashes. This fresh audit is required.",
+    "summary": {
+      "content_hashes_passed": 101,
+      "cross_period_reports": 0,
+      "passed": 101,
+      "player_lines_passed": 303,
+      "reports": 101,
+      "score_summaries_passed": 101,
+      "unresolved": 0
+    }
+  },
+  "input": {
+    "approved_bundle_original": "/Users/mohamedawadalla/Projects/KnicksIQ/release-artifacts/2025-26/reliability-approved-20260928.json.gz",
+    "compressed_sha256": "549af2edd0d195eff60bb318bdc58a8c8e217ea0359c0684d492d5292dcb595b",
+    "decompressed_json_sha256": "931c8a2d3e18bd8bac8983bbaf74b6213e65fcd16d50ce2f9f81de9ca74ab6f6",
+    "decompressed_private_copy": "/tmp/kiq-report-audit-20261020/reliability-approved-20260928.json",
+    "events": 46500,
+    "games": 101,
+    "manifest_content_sha256": "8d1edee38e58489545ce2fbcbf96e98e480cd099d933ac0e4de4949164fb2cff",
+    "manifest_content_sha256_recomputed_from_canonical_data": true,
+    "manifest_version": "2025-26.20260928.1",
+    "player_game_stats": 2748,
+    "players": 599,
+    "reports": 101,
+    "season": "2025-26"
+  },
+  "owner_gates": [
+    "Active archive/baseline identity remains unverified; the auditor labels this local_candidate_only_active_archive_unverified.",
+    "Owner review/approval of the exact selected-interval template remains required.",
+    "Owner approval of canonical score-correction exception population remains required; do not treat a nonmonotonic whole-game score series as corruption by default.",
+    "Owner approval of the final hash-bound report-audit summary remains required; report approval hashes/reviewed flags do not approve this new audit receipt.",
+    "Tie definitions and strict live lead-narrowing exception semantics remain unapproved.",
+    "Official 120/fixed 50 targets and the separate 20-question launch set still await owner approval; no official/provider run or release approval was performed."
+  ],
+  "purpose": "Private offline audit evidence for the approved immutable 2025-26.20260928.1 bundle; not release approval.",
+  "repeatable_command": "cd /tmp/kiq-candidate-20261020 && python3 tools/report_audit/audit.py /tmp/kiq-report-audit-20261020/reliability-approved-20260928.json --output /tmp/kiq-report-audit-20261020/audit",
+  "report_hash_linkage": {
+    "algorithm": "SHA-256 of canonical JSON (sorted keys, compact separators, ASCII) for each report excluding reviewed and review_hash",
+    "approval_hash_matches": 101,
+    "candidate_hash_matches": 101,
+    "matches": true,
+    "review_manifest_approval_count": 101,
+    "review_manifest_candidate_count": 101
+  },
+  "schema_version": 1,
+  "selected_interval_reconciliation": {
+    "arithmetic_mismatches": [],
+    "interval_arithmetic_reconciled": 303,
+    "intervals": 303,
+    "intervals_crossing_score_correction": []
+  },
+  "source": {
+    "audit_script": "/tmp/kiq-candidate-20261020/tools/report_audit/audit.py",
+    "audit_script_contract": "offline; accepts INPUT JSON --output DIRECTORY; no generator import; output does not mutate/approve input",
+    "audit_script_sha256": "f129cafcf58082c55374264e7d0ece5981e28bc427d9f330d60bae7574984980",
+    "checkout": "/tmp/kiq-candidate-20261020",
+    "commit": "8106ed2715dac07e1e03dcb8a791d8e860e9eb7c"
+  },
+  "template": {
+    "actual_selected_interval_template": "Selected scoring interval: <TEAM> scored <POINTS_FOR> points and allowed <POINTS_AGAINST> points from Q<START_PERIOD> <START_CLOCK> to Q<END_PERIOD> <END_CLOCK> (events <START_SEQUENCE>-<END_SEQUENCE>, inclusive).",
+    "claims_matching_template": 303,
+    "fields": [
+      "turning_point",
+      "best_stretch",
+      "worst_stretch"
+    ],
+    "reports_marked_reviewed_in_bundle": 101,
+    "total_selected_interval_claims": 303
+  }
+}

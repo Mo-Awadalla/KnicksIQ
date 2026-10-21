@@ -1,0 +1,136 @@
+{
+  "observed_at": "2026-10-21T01:01:03.038732+00:00",
+  "tested_commit": "976eb7c38e553844e3e992f89a3fa6e3a4560d28",
+  "data_version": "2025-26.20260928.1",
+  "index_revision": "rev-20261020b",
+  "scope": "Read-only full source/payload/embedding-recipe/vector identity from locally restored reviewed bundle to cloud candidates. Production aliases unchanged. No query-quality claim.",
+  "identity": {
+    "reused_collections": [
+      "knicks_box_scores__2025_26_20260928_1__rev_20261020b",
+      "knicks_games__2025_26_20260928_1__rev_20261020b",
+      "knicks_possessions__2025_26_20260928_1__rev_20261020b",
+      "knicks_reports__2025_26_20260928_1__rev_20261020b"
+    ],
+    "upserted": 0,
+    "aliases_promoted": false
+  },
+  "collections": {
+    "knicks_possessions": {
+      "physical": "knicks_possessions__2025_26_20260928_1__rev_20261020b",
+      "points": 15864,
+      "filters": [
+        {
+          "filter": "game_ids",
+          "actual": 158,
+          "expected": 158
+        },
+        {
+          "filter": "dates",
+          "actual": 158,
+          "expected": 158
+        },
+        {
+          "filter": "team_ids",
+          "actual": 11675,
+          "expected": 11675
+        },
+        {
+          "filter": "player_ids",
+          "actual": 2982,
+          "expected": 2982
+        }
+      ],
+      "wrong_release_count": 0
+    },
+    "knicks_games": {
+      "physical": "knicks_games__2025_26_20260928_1__rev_20261020b",
+      "points": 130,
+      "filters": [
+        {
+          "filter": "game_ids",
+          "actual": 1,
+          "expected": 1
+        },
+        {
+          "filter": "dates",
+          "actual": 1,
+          "expected": 1
+        },
+        {
+          "filter": "team_ids",
+          "actual": 130,
+          "expected": 130
+        }
+      ],
+      "wrong_release_count": 0
+    },
+    "knicks_box_scores": {
+      "physical": "knicks_box_scores__2025_26_20260928_1__rev_20261020b",
+      "points": 2970,
+      "filters": [
+        {
+          "filter": "game_ids",
+          "actual": 27,
+          "expected": 27
+        },
+        {
+          "filter": "dates",
+          "actual": 27,
+          "expected": 27
+        },
+        {
+          "filter": "team_ids",
+          "actual": 132,
+          "expected": 132
+        },
+        {
+          "filter": "player_ids",
+          "actual": 2,
+          "expected": 2
+        }
+      ],
+      "wrong_release_count": 0
+    },
+    "knicks_reports": {
+      "physical": "knicks_reports__2025_26_20260928_1__rev_20261020b",
+      "points": 101,
+      "filters": [
+        {
+          "filter": "game_ids",
+          "actual": 1,
+          "expected": 1
+        },
+        {
+          "filter": "dates",
+          "actual": 1,
+          "expected": 1
+        },
+        {
+          "filter": "team_ids",
+          "actual": 101,
+          "expected": 101
+        }
+      ],
+      "wrong_release_count": 0
+    }
+  },
+  "live_aliases_before": {
+    "knicks_box_scores": "knicks_box_scores__2025_26_20260714_1",
+    "knicks_games": "knicks_games__2025_26_20260714_1",
+    "knicks_possessions": "knicks_possessions__2025_26_20260714_1",
+    "knicks_reports": "knicks_reports__2025_26_20260714_1"
+  },
+  "live_aliases_after": {
+    "knicks_box_scores": "knicks_box_scores__2025_26_20260714_1",
+    "knicks_games": "knicks_games__2025_26_20260714_1",
+    "knicks_possessions": "knicks_possessions__2025_26_20260714_1",
+    "knicks_reports": "knicks_reports__2025_26_20260714_1"
+  },
+  "source_sha256": {
+    "apps/api/app/services/rag_index.py": "5482577b76fbec7491a6908eac0b30d0463d251caf025914050f58499efcb1b1",
+    "apps/api/app/services/qdrant_client.py": "46f0cf3a5b6ba21e72a01fb09acd1b66041e8a37992b9df2ba0330e434bc53ba",
+    "apps/api/app/services/archive_units.py": "399326fc83491ff03cd461ba2f5de902dd1f975c1f31fff1cf27c2fb39599f10",
+    "apps/api/app/services/possession_chunks.py": "066462a902ae7ace846e33caae809fef7118f82144ddb66ec4c4540ee86bd4a8"
+  },
+  "passed": true
+}

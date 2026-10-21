@@ -1,0 +1,67 @@
+{
+  "tested_commit": "976eb7c38e553844e3e992f89a3fa6e3a4560d28",
+  "data_version": "2025-26.20260928.1",
+  "index_revision": "rev-20261020b",
+  "source_bundle": {
+    "path": "/Users/mohamedawadalla/Projects/KnicksIQ/release-artifacts/2025-26/reliability-approved-20260928.json.gz",
+    "sha256": "549af2edd0d195eff60bb318bdc58a8c8e217ea0359c0684d492d5292dcb595b"
+  },
+  "projection_identity": {
+    "manifest_source": "cached_db_only",
+    "games": 101,
+    "events": 46500,
+    "possession_chunks": 15864,
+    "archive_source_units": 49,
+    "candidate_collections_reused": 4,
+    "qdrant_upserted": 0,
+    "aliases_promoted": false,
+    "vector_dimensions": 384,
+    "distance": "Cosine",
+    "collection_points": {
+      "games": 130,
+      "box_scores": 2970,
+      "reports": 101,
+      "possessions": 15864
+    },
+    "stored_payload_filter_checks": {
+      "games": {"game_ids": [1, 1], "dates": [1, 1], "team_ids": [130, 130], "wrong_release_count": 0},
+      "box_scores": {"game_ids": [27, 27], "dates": [27, 27], "team_ids": [132, 132], "player_ids": [2, 2], "wrong_release_count": 0},
+      "reports": {"game_ids": [1, 1], "dates": [1, 1], "team_ids": [101, 101], "wrong_release_count": 0},
+      "possessions": {"game_ids": [158, 158], "dates": [158, 158], "team_ids": [11675, 11675], "player_ids": [2982, 2982], "wrong_release_count": 0}
+    },
+    "filter_pair_order": "[actual, expected]"
+  },
+  "dense_search": {
+    "all_kinds_returned_stored_hits": true,
+    "filters": {"game_ids": [28], "dates": ["2025-12-21"], "possessions_periods": [4]},
+    "result_counts": {"games": 1, "box_scores": 3, "reports": 1, "possessions": 3},
+    "retrieval_source": "dense",
+    "hit_assertions": "All hits matched data_version 2025-26.20260928.1 and game_id 28/date 2025-12-21; possession hits covered period 4.",
+    "details_artifact": "cloud-search-smoke.json"
+  },
+  "production_aliases": {
+    "before": {
+      "knicks_box_scores": "knicks_box_scores__2025_26_20260714_1",
+      "knicks_games": "knicks_games__2025_26_20260714_1",
+      "knicks_possessions": "knicks_possessions__2025_26_20260714_1",
+      "knicks_reports": "knicks_reports__2025_26_20260714_1"
+    },
+    "after_unchanged": true
+  },
+  "source_code_sha256": {
+    "apps/api/app/services/rag_index.py": "5482577b76fbec7491a6908eac0b30d0463d251caf025914050f58499efcb1b1",
+    "apps/api/app/services/qdrant_client.py": "46f0cf3a5b6ba21e72a01fb09acd1b66041e8a37992b9df2ba0330e434bc53ba",
+    "apps/api/app/services/archive_units.py": "399326fc83491ff03cd461ba2f5de902dd1f975c1f31fff1cf27c2fb39599f10",
+    "apps/api/app/services/possession_chunks.py": "066462a902ae7ace846e33caae809fef7118f82144ddb66ec4c4540ee86bd4a8"
+  },
+  "artifact_sha256": {
+    "cloud-identity.json": "e32623b735b3187517c820c7b2f89018523fce0d32c292e07907fc025d7449c1",
+    "cloud-search-smoke.json": "870762f6180d4c79a8beb4db49e82e0b72c125c270b168ac3b5e7307110fcc73",
+    "identity-payloads/manifest.json": "34e6ba6d8e8dcb57f124b800dac97431dcf3cb084bc9a8556efacc6ee5c8bc76",
+    "identity-payloads/qdrant_payloads.jsonl": "2331f5ef4f89cf37d029db923e9679e5dc74e3e04e1f1ad904adab381ab7de4d",
+    "identity-payloads/possession_chunks.jsonl": "4d125a4f0515ee19cccc534b35c37b91afd79dc72cdb4beb0798a6146271a00b",
+    "identity-payloads/archive_units.jsonl": "ad23f0cf90f21c0b94bba8e36e815d03a05afe60c224fc616b210b618a3051fd",
+    "identity-payloads/games_table.json": "7d5762d9d2a79616913cdb09784fff7f240db8954d196a9297acb935c443a7ab"
+  },
+  "scope_limit": "Evidence covers the locally restored candidate projection and real dense retrieval entrypoint. It does not prove production DB mapping, overall recall/quality, or release approval."
+}
