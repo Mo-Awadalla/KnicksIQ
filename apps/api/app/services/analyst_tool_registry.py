@@ -47,6 +47,8 @@ class ToolSpec:
     recovery_aggregation: Aggregation = "average"
     # The single tool named in the prompt's opening sentence rather than in the semicolon list.
     prompt_lead: bool = False
+    # Archive tables this tool can actually read, aggregated into the model-facing capabilities.
+    data_types: tuple[str, ...] = ()
 
     def resolve_handler(self) -> ToolHandler:
         module_name, _, attribute = self.handler.partition(":")
@@ -61,6 +63,7 @@ TOOLS: tuple[ToolSpec, ...] = (
         needs_player=True,
         reads_metric=True,
         recovery_role="player",
+        data_types=("player_box_scores",),
     ),
     ToolSpec(
         name="get_team_stats",
@@ -72,6 +75,7 @@ TOOLS: tuple[ToolSpec, ...] = (
         handler="app.services.analyst_tool_team:run",
         recovery_role="team",
         recovery_aggregation="total",
+        data_types=("team_game_scores",),
     ),
     ToolSpec(
         name="compare_windows",
@@ -79,6 +83,7 @@ TOOLS: tuple[ToolSpec, ...] = (
         handler="app.services.analyst_tool_compare:run",
         needs_player=True,
         reads_metric=True,
+        data_types=("player_box_scores",),
     ),
     ToolSpec(
         name="discover_facts",
@@ -86,12 +91,14 @@ TOOLS: tuple[ToolSpec, ...] = (
         handler="app.services.analyst_tool_discovery:run",
         recovery_role="discovery",
         prompt_lead=True,
+        data_types=("player_box_scores",),
     ),
     ToolSpec(
         name="search_archive",
         description="finds narrative examples",
         handler="app.services.analyst_tool_archive:run",
         supports_periods=True,
+        data_types=("game_scores", "player_box_scores", "archive_reports", "play_by_play_events"),
     ),
     ToolSpec(
         name="get_evidence",
@@ -124,6 +131,24 @@ TOOLS: tuple[ToolSpec, ...] = (
 )
 
 TOOLS_BY_NAME = {spec.name: spec for spec in TOOLS}
+
+BASE_DATA_TYPES: tuple[str, ...] = ("game_scores", "player_box_scores", "archive_evidence")
+
+
+def capability_data_types() -> tuple[str, ...]:
+    """Archive data the model may rely on, derived from the registered tools only."""
+    types = set(BASE_DATA_TYPES)
+    for spec in TOOLS:
+        types.update(spec.data_types)
+        if spec.supports_periods:
+            types.add("period_scores")
+    return tuple(sorted(types))
+
+
+def period_tool_names() -> tuple[str, ...]:
+    return tuple(spec.name for spec in TOOLS if spec.supports_periods)
+
+
 TOOL_NAMES: tuple[str, ...] = tuple(spec.name for spec in TOOLS)
 
 if len(TOOLS_BY_NAME) != len(TOOLS):

@@ -280,7 +280,6 @@ async def test_supported_tool_passes_the_periods_guard_but_others_still_refuse(d
     refused = await tools.execute(ToolCall(name="get_team_stats", question=tools.question))
     assert allowed.status != "unsupported_metric_or_scope"
     assert refused.status == "unsupported_metric_or_scope"
-    assert "full-game" in refused.message
 
 
 async def test_no_games_returns_no_matching_results(db_session):

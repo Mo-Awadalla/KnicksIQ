@@ -266,9 +266,7 @@ class AnalystLoop:
             supported, reason = await self.validate(answer)
             if supported:
                 return self.render(answer, llm=True, refused=refused)
-            # Only one repair, with capacity and time for both revision and review.
-            # Split remaining time between the calls instead of demanding two full
-            # 20-second provider timeouts inside a 30-second application deadline.
+            # Split the remaining time between revision and review.
             repair_timeout = min(
                 self.settings.ai_request_timeout_seconds, (self.remaining() - 0.5) / 2
             )
@@ -322,8 +320,7 @@ class AnalystLoop:
             self.tools.question,
         )
         if issues:
-            # Mechanical rejection: no model call and no chance for a stochastic verdict to
-            # accept a number that exists in no supplied record or to reject a checked value.
+            # Mechanical rejection before any stochastic reviewer verdict.
             return False, "Deterministic evidence check failed: " + "; ".join(issues[:3])
         review = await self.review(answer, timeout_seconds=timeout_seconds)
         if review is None:

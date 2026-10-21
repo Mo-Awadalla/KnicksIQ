@@ -15,12 +15,14 @@ from app.models.game import Game
 from app.models.player import Player
 from app.services.analyst_calculations import METRICS
 from app.services.analyst_dispatch import execute_call
+from app.services.analyst_tool_registry import capability_data_types
 from app.services.archive_retrieval import (
     fuse_archive_evidence,
     search_archive_lexical,
     search_archive_vectors,
 )
 from app.services.evidence_contracts import Candidate, Evidence, ToolCall, ToolResult, VerifiedClaim
+from app.services.query_policy import names_phase
 from app.services.query_resolution import ResolvedQuery, is_record_request, resolve_query
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -123,9 +125,18 @@ class AnalystTools:
         )
         if followup:
             updates = {}
+            named_phase = names_phase(self.question)
             for key in ("player_ids", "season_type", "opponent_id", "home_away", "game_result"):
                 if key == "game_result" and is_record_request(self.question):
                     continue
+                if key == "season_type":
+                    # Matchup questions span every phase, and a follow-up keeps the phase
+                    # under discussion unless it names one.
+                    if self.scope.opponent_id and not named_phase:
+                        continue
+                    if prior.get("season_type") and not named_phase:
+                        updates[key] = prior["season_type"]
+                        continue
                 if not getattr(self.scope, key) and prior.get(key):
                     updates[key] = prior[key]
             if self.different:
@@ -186,7 +197,13 @@ class AnalystTools:
             "release_id": self.release.version,
             "seasons": [self.release.season],
             "season_types": sorted({g.season_type for g in self.games}),
-            "data_types": ["game_scores", "player_box_scores", "archive_evidence"],
+            "data_types": list(capability_data_types()),
+            "date_range": {
+                "first_game_date": str(self.games[0].game_date),
+                "last_game_date": str(self.games[-1].game_date),
+            }
+            if self.games
+            else {},
             "metrics": list(METRICS),
             "team_metrics": ["wins", "losses", "points", "margin"],
             "games": len(self.games),

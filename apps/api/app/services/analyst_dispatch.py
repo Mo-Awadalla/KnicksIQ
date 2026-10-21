@@ -5,7 +5,7 @@ from __future__ import annotations
 import re
 from typing import TYPE_CHECKING
 
-from app.services.analyst_tool_registry import TOOLS_BY_NAME
+from app.services.analyst_tool_registry import TOOLS_BY_NAME, period_tool_names
 from app.services.evidence_contracts import ToolResult
 from app.services.query_resolution import resolve_query
 
@@ -63,13 +63,11 @@ async def execute_call(tools: AnalystTools, call: ToolCall) -> ToolResult:
         if authoritative:
             scope = scope.model_copy(update={key: authoritative})
     if scope.periods and not spec.supports_periods:
-        return ToolResult(
-            status="unsupported_metric_or_scope",
-            message=(
-                f"{spec.name} supports full-game box scores only; use get_period_scoring "
-                "for quarter, half or overtime questions."
-            ),
-        )
+        capable = [name for name in period_tool_names() if name != call.name]
+        message = "This calculation does not support period-level scope."
+        if capable:
+            message += " Period-capable tools: " + ", ".join(capable) + "."
+        return ToolResult(status="unsupported_metric_or_scope", message=message)
     games = []
     if spec.needs_games:
         games = tools.selected_games(scope)
@@ -86,4 +84,25 @@ async def execute_call(tools: AnalystTools, call: ToolCall) -> ToolResult:
             message="Which Knicks player?",
             choices=sorted({p.full_name for _, p in tools.rows}),
         )
-    return await spec.resolve_handler()(tools, call, scope, games)
+    result = await spec.resolve_handler()(tools, call, scope, games)
+    if (
+        spec.name == "discover_facts"
+        and result.status == "no_matching_results"
+        and (scope.opponent_id or _team_extreme(call.question))
+    ):
+        # Single-game highlights cannot answer a matchup or a team extreme; run the
+        # population tool the discovery result points at instead of leaving the model to.
+        follow = "get_player_stats" if scope.player_ids else "get_team_stats"
+        return await TOOLS_BY_NAME[follow].resolve_handler()(tools, call, scope, games)
+    return result
+
+
+def _team_extreme(question: str) -> bool:
+    return bool(
+        re.search(
+            r"\b(?:biggest|best|largest|worst|heaviest)\s+(?:win|victory|loss|defeat|blowout)\b"
+            r"|\b(?:highest|most)[- ]scoring\b|\bmost points (?:in a game|scored)\b",
+            question,
+            re.I,
+        )
+    )
