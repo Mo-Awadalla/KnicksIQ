@@ -209,6 +209,10 @@ def team(
         )
     if scope.relative_game_count:
         games = games[-scope.relative_game_count :]
+    asks_average = bool(
+        re.search(r"\b(?:average|averaged|averaging|per game|ppg)\b", tools.question, re.I)
+    )
+    asks_total = bool(re.search(r"\btotal\b", tools.question, re.I))
     evidence = [tools.receipt(g) for g in games]
     groups: list[list[Game]] = [games]
     if scope.opponent_id and scope.season_type is None:
@@ -226,13 +230,20 @@ def team(
         opponent = f" against {scope.opponent_id}" if scope.opponent_id else ""
         values: dict[str, float | int] = {"wins": wins, "losses": len(group) - wins}
         if index == 0:
-            if aggregation == "average":
+            if aggregation == "average" or asks_average:
                 values["points_per_game"] = points / len(group)
                 values["margin_per_game"] = margin / len(group)
-            else:
+            if aggregation == "total" or asks_total:
                 values["points"] = points
                 values["margin"] = margin
         prefix = "Knicks" if phase == "all phases" else f"Knicks {phase}"
+        breakdown = ""
+        if index == 0 and scope.opponent_id and len(groups) > 1:
+            parts = []
+            for other in groups[1:]:
+                wins_other = sum(tools.score(g)[0] > tools.score(g)[1] for g in other)
+                parts.append(f"{_phase_label(other)} {wins_other}-{len(other) - wins_other}")
+            breakdown = " (" + ", ".join(parts) + ")"
         group_evidence = evidence if group is games else [tools.receipt(g) for g in group]
         for metric, value in values.items():
             label = metric.replace("_", " ")
@@ -249,7 +260,8 @@ def team(
                     denominator=len(group) if metric.endswith("_per_game") else None,
                     eligibility={"game": "archived Knicks game"},
                     statement=(
-                        f"{prefix} {label}: {value} over {len(group)} archived games{opponent}."
+                        f"{prefix} {label}: {value} over {len(group)} archived games"
+                        f"{opponent}{breakdown}."
                     ),
                 )
             )

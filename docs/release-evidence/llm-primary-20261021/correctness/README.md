@@ -14,12 +14,15 @@ observations are quoted in `repro-before.md`; `failure-modes.md` records first w
 
 ```
 DB_URL=... REDIS_URL=redis://localhost:56500/13 ANALYSIS_ANSWER_MODE=llm_primary \
-ANALYST_EVIDENCE_LOOP_ENABLED=true OPENROUTER_MONTHLY_CUTOFF_USD=2 AI_* from the repo .env \
+ANALYST_EVIDENCE_LOOP_ENABLED=true AI_REASONING_EFFORT=none OPENROUTER_MONTHLY_CUTOFF_USD=2 \
+AI_* from the repo .env \
   uv run --package knicksiq-api python run_ids.py \
   --ids <the audited ids> --trials 2 --out acceptance.json
 ```
 
 `run_ids.py` uses the same in-process app path as `tools/release/analyst_live_e2e.py`.
+`AI_REASONING_EFFORT=none` matches the production value; without it the provider spends the
+output budget on reasoning prose and the reviewer returns truncated JSON.
 `acceptance.json` / `acceptance.responses.jsonl` hold both trials per id.
 
 ## Independent audit

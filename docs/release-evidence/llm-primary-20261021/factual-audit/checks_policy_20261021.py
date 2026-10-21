@@ -40,7 +40,7 @@ def _phase(answer: str) -> str | None:
 
 
 def _record(answer: str):
-    match = re.search(r"(\d{1,3})\s*[-–]\s*(\d{1,3})", answer)
+    match = re.search(r"(?<![\d-])(\d{1,2})\s*[-–]\s*(\d{1,2})(?![\d-])", answer)
     return [int(match.group(1)), int(match.group(2))] if match else None
 
 
@@ -85,42 +85,48 @@ SPECS = {
         ],
     },
     "exact_statistics-002": {
+        "decline_verdict": "DECLINE_MISSED_ANSWER",
         "required_terms": ["regular season"],
         "forbidden_terms": ["11,750", "11750", "101 games"],
         "claims": [
             {"label": "points", "extract": lambda a: _num(_first(
-                r"([\d,]{4,})\s*(?:total\s+)?points", a)), "fn": "core.regular.points"},
+                r"([\d,]{4,})\s*(?:total\s+)?points", a)), "fn": "core.regular.points", "optional": True},
         ],
     },
     "exact_statistics-003": {
+        "decline_verdict": "DECLINE_MISSED_ANSWER",
         "required_terms": ["regular season"],
         "forbidden_terms": ["116.34", "101 games"],
         "claims": [
             {"label": "avg_points", "extract": lambda a: _num(_first(
                 r"(" + NUMBER + r")\s*(?:points? per game|ppg)", a)),
-             "fn": "core.regular.avg_points", "tol": 0.05},
+             "fn": "core.regular.avg_points", "tol": 0.05, "optional": True},
         ],
     },
     "exact_statistics-004": {
+        "decline_verdict": "DECLINE_MISSED_ANSWER",
         "required_terms": ["regular season"],
         "forbidden_terms": ["7.94", "101 games"],
         "claims": [
             {"label": "avg_margin", "extract": lambda a: _num(_first(
                 r"margin[^.\d]{0,30}(" + NUMBER + ")", a)),
-             "fn": "core.regular.avg_margin", "tol": 0.05},
+             "fn": "core.regular.avg_margin", "tol": 0.05, "optional": True},
         ],
     },
     "exact_statistics-005": {
+        "decline_verdict": "DECLINE_MISSED_ANSWER",
         "required_terms": ["30", "regular season"],
         "forbidden_terms": ["37 home"],
         "claims": [],
     },
     "exact_statistics-006": {
+        "decline_verdict": "DECLINE_MISSED_ANSWER",
         "required_terms": ["23", "regular season"],
         "forbidden_terms": ["32 road"],
         "claims": [],
     },
     "exact_statistics-007": {
+        "decline_verdict": "DECLINE_MISSED_ANSWER",
         "required_terms": ["29", "regular season"],
         "forbidden_terms": ["32 losses", "0 losses"],
         "claims": [],

@@ -167,6 +167,8 @@ def build_payload(
         "evidence": [],
         "candidates": [],
     }
+    if loop.preplanned:
+        payload["preplanned_tools"] = list(loop.preplanned)
     if review:
         # Fresh context: no writer history, tool planning, or self-declared support verdicts.
         payload["proposed_answer"] = answer.model_dump(mode="json") if answer else None
@@ -284,9 +286,11 @@ def orchestrator_system_prompt() -> str:
         "trades, betting, future): state the gap and include only related archive facts. "
         "Use explain_coverage only to describe what the archive contains and "
         "ask_clarification only for an ambiguous game or player. Otherwise use "
-        "answer_from_available_evidence. For mixed requests, answer the archive part "
-        "and decline the live gap. Scope is backend-controlled. When no "
-        "tool rounds remain, return an answer action."
+        "answer_from_available_evidence. For mixed requests, answer the archive portion "
+        "and state the live-data gap with decline. Tools listed in preplanned_tools "
+        "already ran for this question; reuse their results and do not repeat them unless "
+        "insufficient. Scope is backend-controlled. When no tool rounds remain, return an "
+        "answer action."
     )
 
 
@@ -348,9 +352,18 @@ async def request_model[Schema: BaseModel](
         instruction_bytes=token_upper_bound(system),
     )
     adapter = get_llm_adapter()
-    # Action schemas include final answers, which need the answer cap. Tool-only followups
-    # are additionally checked below against the 600-token conservative bound.
-    adapter.max_tokens = 600 if schema is Action and not loop.tools.claims else 1200
+    # The provider defaults this model to high-effort reasoning, and reasoning tokens count
+    # against max_tokens. Measured reviewer calls spent 500-1000 tokens reasoning and then
+    # truncated their JSON at the old 1200 cap; one review needs ~900-1200 visible tokens.
+    # Size the caps from that usage and disable reasoning for bounded structured calls.
+    if schema is AnswerReview:
+        adapter.max_tokens = loop.settings.analyst_review_max_tokens
+    elif schema is Action and not loop.tools.claims:
+        adapter.max_tokens = 600
+    else:
+        adapter.max_tokens = loop.settings.analyst_answer_max_tokens
+    if hasattr(adapter, "reasoning_effort") and loop.settings.analyst_reasoning_effort:
+        adapter.reasoning_effort = loop.settings.analyst_reasoning_effort  # pyright: ignore[reportAttributeAccessIssue]
     if hasattr(adapter, "response_schema"):
         adapter.response_schema = (
             scoped_response_schema(schema, payload)
@@ -378,24 +391,41 @@ async def request_model[Schema: BaseModel](
     loop.calls += 1  # Failed and malformed calls count too.
     loop.costs.append(None)
     started = time.monotonic()
+    metadata: dict[str, Any] = {}
+    raw: str | None = None
     try:
         raw = await asyncio.wait_for(
             adapter.generate(system=system, user=encoded(payload)), timeout=call_timeout
         )
-        metadata = getattr(adapter, "last_metadata", {})
+        metadata = getattr(adapter, "last_metadata", {}) or {}
         loop.costs[-1] = (metadata.get("usage") or {}).get("cost")
         value = schema.model_validate_json(raw)
-        if isinstance(value, Action) and value.action == "call_tools" and len(raw) > 2400:
+        if isinstance(value, Action) and value.action == "call_tools" and len(raw) > 3600:
             raise ValueError("Tool action exceeds output cap")
         return value
     finally:
+        usage = metadata.get("usage") or {}
         loop.trace.append(
             {
                 "stage": "review" if review else "revise" if repair else "orchestrate",
                 "tool": "llm_review" if review else "llm_orchestrate",
+                "schema": schema.__name__,
                 "latency_ms": round((time.monotonic() - started) * 1000),
                 "model": loop.settings.ai_chat_model,
-                "provider": getattr(adapter, "last_metadata", {}).get("provider"),
+                "provider": metadata.get("provider"),
+                "prompt_tokens": usage.get("prompt_tokens"),
+                "completion_tokens": usage.get("completion_tokens"),
+                "total_tokens": usage.get("total_tokens"),
+                "reasoning_tokens": (usage.get("completion_tokens_details") or {}).get(
+                    "reasoning_tokens"
+                ),
+                "finish_reason": metadata.get("finish_reason"),
+                "content_kind": metadata.get("content_kind"),
+                "input_bytes": token_upper_bound(system) + token_upper_bound(encoded(payload)),
+                "response_bytes": len(raw) if raw is not None else None,
+                "max_tokens": getattr(adapter, "max_tokens", None),
+                "http_ttfb_ms": metadata.get("http_ttfb_ms"),
+                "http_elapsed_ms": metadata.get("http_elapsed_ms"),
                 "contract_version": CONTRACT_VERSION,
                 "prompt_version": PROMPT_VERSION,
                 "validator_version": VALIDATOR_VERSION,
