@@ -17,6 +17,7 @@ as an absence of the event.
 
 from __future__ import annotations
 
+import re
 from collections import defaultdict
 from typing import TYPE_CHECKING
 
@@ -99,6 +100,26 @@ def _set_claims(
 ) -> tuple[list[VerifiedClaim], list[Evidence]]:
     claims: list[VerifiedClaim] = []
     evidence: list[Evidence] = []
+    priorities: dict[str, int] = {}
+    question = tools.question.lower()
+
+    def add(claim: VerifiedClaim, receipts: list[Evidence], priority: int) -> None:
+        claims.append(claim)
+        priorities[claim.claim_id] = priority
+        evidence.extend(receipts)
+
+    run_question = bool(re.search(r"\b(run|runs|scoring run|surge|spurt)\b", question))
+    opponent_question = bool(
+        re.search(r"\b(opponent|allowed|gave up|damaging|cost the knicks)\b", question)
+    )
+    comeback_question = bool(re.search(r"\b(erase|comeback|deficit|rally)\b", question))
+    collapse_question = bool(
+        re.search(
+            r"\b(collapse|lose control|lost control|blown?|blow|lead changes?|trailed)\b", question
+        )
+    )
+    lead_collapse = bool(re.search(r"\b(collapse|blown?|blow|lead)\b", question))
+
     for team, metric, intro in (
         ("NYK", "biggest_run", "the largest Knicks run in the selected games was"),
         ("OPP", "biggest_run", "the largest opponent run in the selected games was"),
@@ -113,8 +134,13 @@ def _set_claims(
             limitation="A run is consecutive scoring plays; non-scoring events do not break it.",
         )
         if built:
-            claims.append(built[0])
-            evidence.extend(built[1])
+            if team == "NYK":
+                priority = (
+                    5 if run_question and not opponent_question else 15 if run_question else 40
+                )
+            else:
+                priority = 5 if opponent_question else 10 if run_question else 45
+            add(built[0], built[1], priority)
 
     loss_flows = [flow for flow in flows if flow.winner == "OPP"]
     built = _reduced_run_claim(
@@ -127,8 +153,10 @@ def _set_claims(
         limitation="A run is consecutive scoring plays; this selection is limited to losses.",
     )
     if built:
-        claims.append(built[0])
-        evidence.extend(built[1])
+        damaging = (
+            bool(re.search(r"\b(damaging|cost|loss|decisive)\b", question)) and opponent_question
+        )
+        add(built[0], built[1], 3 if damaging else 35)
 
     comebacks = [(flow, flow.comeback) for flow in flows if flow.comeback is not None]
     if comebacks:
@@ -145,7 +173,7 @@ def _set_claims(
             _receipt(tools, flow.game, comeback.low),
             _receipt(tools, flow.game, comeback.first_tie_or_lead),
         ]
-        claims.append(
+        add(
             _claim(
                 tools,
                 scope,
@@ -166,16 +194,17 @@ def _set_claims(
                 evidence=receipts,
                 sample=len(flow.plays),
                 limitation="The comeback window is the low point to the first tie or lead.",
-            )
+            ),
+            receipts,
+            3 if comeback_question else 25,
         )
-        evidence.extend(receipts)
         if comeback.run is not None:
             run = comeback.run
             run_receipts = [
                 _receipt(tools, flow.game, run.start),
                 _receipt(tools, flow.game, run.end),
             ]
-            claims.append(
+            add(
                 _claim(
                     tools,
                     scope,
@@ -191,9 +220,10 @@ def _set_claims(
                     evidence=run_receipts,
                     sample=len(flow.plays),
                     limitation="The run is a consecutive scoring sequence inside the comeback.",
-                )
+                ),
+                run_receipts,
+                4 if comeback_question else 30,
             )
-            evidence.extend(run_receipts)
 
     loss_deficits = sorted(
         ((flow.largest_lead_opp, flow) for flow in loss_flows if flow.largest_lead_opp > 0),
@@ -226,7 +256,7 @@ def _set_claims(
             claim_receipts += go_receipts[: 3 - len(claim_receipts)]
         shown_games = [flow.game for _, flow in shown]
         amount = f"{top} point" if top == 1 else f"{top} points"
-        claims.append(
+        add(
             _claim(
                 tools,
                 scope,
@@ -243,9 +273,10 @@ def _set_claims(
                 evidence=claim_receipts,
                 sample=sum(len(flow.plays) for flow in flows),
                 limitation="A deficit in a loss is an observed margin, not a cause of the loss.",
-            )
+            ),
+            deficit_receipts + go_receipts,
+            3 if collapse_question else 32,
         )
-        evidence.extend(deficit_receipts + go_receipts)
 
     blown = [(flow, flow.lost_lead) for flow in loss_flows if flow.lost_lead is not None]
     if blown:
@@ -261,7 +292,7 @@ def _set_claims(
             _receipt(tools, flow.game, lost.peak),
             _receipt(tools, flow.game, lost.winner_go_ahead),
         ]
-        claims.append(
+        add(
             _claim(
                 tools,
                 scope,
@@ -281,10 +312,12 @@ def _set_claims(
                 evidence=receipts,
                 sample=len(flow.plays),
                 limitation="A lead lost is the peak lead; the winner's go-ahead is separate.",
-            )
+            ),
+            receipts,
+            2 if lead_collapse else 34,
         )
-        evidence.extend(receipts)
 
+    claims.sort(key=lambda claim: priorities.get(claim.claim_id, 50))
     return claims, evidence
 
 
