@@ -1,0 +1,117 @@
+{
+  "run": "prod-none",
+  "config": {
+    "reasoning": "none",
+    "commit": "5f6fe82",
+    "cutoff_usd": 2,
+    "reservation_usd": 0.01
+  },
+  "overall": {
+    "questions": 20,
+    "calls": 69,
+    "mean_usd": 0.001414796,
+    "median_usd": 0.00140085,
+    "p95_usd": 0.001987476,
+    "capacity_at_2": 1413,
+    "mean_baidu_usd": 0.000161287,
+    "capacity_at_2_baidu": 12400
+  },
+  "by_category": {
+    "aliases_typos": {
+      "questions": 1,
+      "calls": 3,
+      "mean_usd": 0.001533996,
+      "median_usd": 0.001533996,
+      "p95_usd": 0.001533996,
+      "capacity_at_2": 1303,
+      "mean_baidu_usd": 0.000174876,
+      "capacity_at_2_baidu": 11436
+    },
+    "comparisons": {
+      "questions": 4,
+      "calls": 14,
+      "mean_usd": 0.001263714,
+      "median_usd": 0.001220958,
+      "p95_usd": 0.001704648,
+      "capacity_at_2": 1582,
+      "mean_baidu_usd": 0.000144063,
+      "capacity_at_2_baidu": 13882
+    },
+    "date_range_last_n": {
+      "questions": 4,
+      "calls": 15,
+      "mean_usd": 0.001791567,
+      "median_usd": 0.00167205,
+      "p95_usd": 0.00224862,
+      "capacity_at_2": 1116,
+      "mean_baidu_usd": 0.000204239,
+      "capacity_at_2_baidu": 9792
+    },
+    "exact_statistics": {
+      "questions": 3,
+      "calls": 10,
+      "mean_usd": 0.001112104,
+      "median_usd": 0.001013484,
+      "p95_usd": 0.00138588,
+      "capacity_at_2": 1798,
+      "mean_baidu_usd": 0.00012678,
+      "capacity_at_2_baidu": 15775
+    },
+    "single_game_narrative": {
+      "questions": 4,
+      "calls": 14,
+      "mean_usd": 0.001345476,
+      "median_usd": 0.001209486,
+      "p95_usd": 0.001941852,
+      "capacity_at_2": 1486,
+      "mean_baidu_usd": 0.000153384,
+      "capacity_at_2_baidu": 13039
+    },
+    "turning_points": {
+      "questions": 3,
+      "calls": 11,
+      "mean_usd": 0.001675664,
+      "median_usd": 0.001798248,
+      "p95_usd": 0.001987476,
+      "capacity_at_2": 1193,
+      "mean_baidu_usd": 0.000191026,
+      "capacity_at_2_baidu": 10469
+    },
+    "unsupported": {
+      "questions": 1,
+      "calls": 2,
+      "mean_usd": 0.000795588,
+      "median_usd": 0.000795588,
+      "p95_usd": 0.000795588,
+      "capacity_at_2": 2513,
+      "mean_baidu_usd": 9.0697e-05,
+      "capacity_at_2_baidu": 22051
+    }
+  },
+  "ops_shaped_10": {
+    "questions": 10,
+    "calls": 32,
+    "mean_usd": 0.001270573,
+    "median_usd": 0.001237032,
+    "p95_usd": 0.001759704,
+    "capacity_at_2": 1574,
+    "mean_baidu_usd": 0.000144845,
+    "capacity_at_2_baidu": 13807
+  },
+  "heldout_shaped_10": {
+    "questions": 10,
+    "calls": 37,
+    "mean_usd": 0.001559018,
+    "median_usd": 0.001553772,
+    "p95_usd": 0.00224862,
+    "capacity_at_2": 1282,
+    "mean_baidu_usd": 0.000177728,
+    "capacity_at_2_baidu": 11253
+  },
+  "baidu_prices_per_million_usd": {
+    "prompt": 0.0342,
+    "completion": 0.1368,
+    "cache_read": 0.000684
+  },
+  "note": "Baidu columns reprice the same token counts at the cheapest listed endpoint; the adapter does not pin a route."
+}

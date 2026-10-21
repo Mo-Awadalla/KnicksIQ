@@ -1,0 +1,67 @@
+{
+  "reserves": [
+    {
+      "amount": 0.03,
+      "accepted": true,
+      "identity": "aa8d273cf8c54fbf9054797237bc4f9f",
+      "at": 1792621951.269548
+    },
+    {
+      "amount": 0.03,
+      "accepted": true,
+      "identity": "d21b495bc2fc4fa4b8633226148907c7",
+      "at": 1792621955.7900858
+    }
+  ],
+  "settles": [
+    {
+      "identity": "aa8d273cf8c54fbf9054797237bc4f9f",
+      "reserved": 0.03,
+      "settled": 0.001340868,
+      "ledger_before": 0.219251244,
+      "ledger_after": 0.190592112,
+      "open_before": 0.03,
+      "open_after": 0,
+      "at": 1792621955.654625
+    },
+    {
+      "identity": "d21b495bc2fc4fa4b8633226148907c7",
+      "reserved": 0.03,
+      "settled": 0.000845124,
+      "ledger_before": 0.220592112,
+      "ledger_after": 0.191437236,
+      "open_before": 0.03,
+      "open_after": 0,
+      "at": 1792621958.222094
+    }
+  ],
+  "groups": [
+    {
+      "reservations": [
+        {
+          "identity": "aa8d273cf8c54fbf9054797237bc4f9f",
+          "slots": 3,
+          "amount": 0.03
+        }
+      ],
+      "costs": [
+        0.000303312,
+        0.000420012,
+        0.000617544
+      ]
+    },
+    {
+      "reservations": [
+        {
+          "identity": "d21b495bc2fc4fa4b8633226148907c7",
+          "slots": 3,
+          "amount": 0.03
+        }
+      ],
+      "costs": [
+        0.000256512,
+        0.000588612
+      ]
+    }
+  ]
+}

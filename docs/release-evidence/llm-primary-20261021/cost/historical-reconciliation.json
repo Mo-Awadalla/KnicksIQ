@@ -1,0 +1,65 @@
+{
+  "db6_ops": {
+    "questions": 40,
+    "provider_calls": 120,
+    "failed_calls": 0,
+    "ledger_usd": 0.03624128,
+    "reported_usd": 0.03624127,
+    "open_usd": 0.0,
+    "per_question_usd": 0.000906032,
+    "capacity_at_2": 2207
+  },
+  "db2_scoring": {
+    "attempts": 84,
+    "delivered_rows": 60,
+    "provider_calls_in_delivered_rows": 294,
+    "failed_calls_in_delivered_rows": 59,
+    "failed_by_stage": {
+      "review": 53,
+      "revise": 5,
+      "orchestrate": 1
+    },
+    "calls_by_stage": {
+      "orchestrate": 153,
+      "review": 91,
+      "revise": 50
+    },
+    "providers_in_delivered_rows": {
+      "Together": 188,
+      "BaseTen": 13,
+      "Reka": 34,
+      "null": 59
+    },
+    "outcomes": {
+      "validated": 5,
+      "fallback:review_rejected": 45,
+      "failed:revise:ValidationError": 2,
+      "failed:revise:RuntimeError": 5,
+      "validated_declined": 2,
+      "failed:orchestrate:RuntimeError": 1
+    },
+    "ledger_at_read_usd": 1.146562208,
+    "per_attempt_usd": 0.01364955,
+    "capacity_at_2": 146,
+    "flat_reservation_component_usd": 0.59,
+    "flat_reservation_share": 0.5146,
+    "reported_usage_ceiling_usd": 0.556562208,
+    "note": "24 rerun attempts are not in the delivered rows; their failed calls add more flat reservation charges. Traces were captured before token/finish metadata existed, so reported cost per call cannot be reconstructed."
+  },
+  "db1_registry": {
+    "questions": 49,
+    "ledger_usd": 0.594955166,
+    "per_question_usd": 0.012141942,
+    "open_reservations": 6,
+    "open_amounts_usd": [
+      0.002
+    ],
+    "open_total_usd": 0.012
+  },
+  "ops_price_fit": {
+    "prompt_usd_per_million": 0.0818,
+    "completion_usd_per_million": 0.62,
+    "mean_abs_residual_usd": 7.8453e-05,
+    "max_abs_residual_usd": 0.000621188
+  }
+}
