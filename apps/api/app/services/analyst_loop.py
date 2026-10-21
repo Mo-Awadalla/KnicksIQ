@@ -17,6 +17,7 @@ from app.services.analyst_provider import (
     encoded,
     request_model,
 )
+from app.services.analyst_tool_registry import recovery_tool
 from app.services.analyst_tools import AnalystTools
 from app.services.conversation_memory import bounded_history
 from app.services.evidence_contracts import (
@@ -273,20 +274,22 @@ class AnalystLoop:
         if not self.fallback_claims() and not self.recovery_ran and self.remaining() > 0.5:
             self.recovery_ran = True
             question = self.tools.question
-            name = (
-                "discover_facts"
+            spec = recovery_tool(
+                "discovery"
                 if re_search_discovery(question)
-                else "get_player_stats"
+                else "player"
                 if self.tools.scope and self.tools.scope.player_ids
-                else "get_team_stats"
+                else "team"
             )
             try:
                 async with asyncio.timeout(max(0.001, self.remaining() - 0.5)):
-                    # Team recovery shows totals; the default "average" is for player stats.
-                    aggregation = "total" if name == "get_team_stats" else "average"
                     self.results.append(
                         await self.tools.execute(
-                            ToolCall(name=name, question=question, aggregation=aggregation)
+                            ToolCall(
+                                name=spec.name,
+                                question=question,
+                                aggregation=spec.recovery_aggregation,
+                            )
                         )
                     )
             except Exception:
