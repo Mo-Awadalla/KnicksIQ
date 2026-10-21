@@ -133,9 +133,7 @@ def build_payload(
             group_ids.update(
                 ref for cid in list(group_ids) for ref in loop.tools.claims[cid].baseline_claim_ids
             )
-            group = [
-                loop.tools.claims[ref] for ref in sorted(group_ids) if ref not in kept_claims
-            ]
+            group = [loop.tools.claims[ref] for ref in sorted(group_ids) if ref not in kept_claims]
             data = [(review_claim_view if review else claim_view)(c) for c in group]
             size = token_upper_bound(encoded(data))
             related = [

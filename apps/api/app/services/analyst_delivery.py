@@ -126,9 +126,7 @@ def render(
     references.update(answer.evidence_ids)
     baseline_ids = {ref for c in claims for ref in c.baseline_claim_ids}
     stored_claims = list(
-        {
-            c.claim_id: c for c in claims + [loop.tools.claims[ref] for ref in baseline_ids]
-        }.values()
+        {c.claim_id: c for c in claims + [loop.tools.claims[ref] for ref in baseline_ids]}.values()
     )
     references.update(ref for c in stored_claims for ref in c.supporting_evidence_ids)
     references.update(
