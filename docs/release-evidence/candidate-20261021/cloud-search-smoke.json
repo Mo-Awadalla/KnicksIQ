@@ -1,0 +1,149 @@
+{
+  "observed_at": "2026-10-21T01:01:06.826332+00:00",
+  "tested_commit": "976eb7c38e553844e3e992f89a3fa6e3a4560d28",
+  "scope": "Real analyst dense retrieval entrypoint against physical cloud candidates with cloud inference. Four collection kinds, fixed reviewed game and period, no live alias switch. Not an overall quality evaluation.",
+  "data_version": "2025-26.20260928.1",
+  "results": [
+    {
+      "collection": "games",
+      "query": "Knicks Miami December 21 game score",
+      "filters": {
+        "game_ids": [
+          28
+        ],
+        "dates": [
+          "2025-12-21"
+        ]
+      },
+      "hits": [
+        {
+          "evidence_id": "vector:games:1c7e2a4b-909c-57e2-ac84-e96f2bdb70eb",
+          "game_id": 28,
+          "text": "MIA 125 at NYK 132 on 2025-12-21"
+        }
+      ],
+      "trace": [
+        {
+          "tool": "qdrant_archive_search",
+          "latency_ms": 41,
+          "result_count": 1,
+          "candidate_count": 1,
+          "collection_count": 1,
+          "retrieval_source": "dense"
+        }
+      ]
+    },
+    {
+      "collection": "box_scores",
+      "query": "Jalen Brunson scoring points December 21 Miami",
+      "filters": {
+        "game_ids": [
+          28
+        ],
+        "dates": [
+          "2025-12-21"
+        ]
+      },
+      "hits": [
+        {
+          "evidence_id": "vector:box_scores:b68f4631-8c4f-5a90-b2fd-72626d00b90b",
+          "game_id": 28,
+          "text": "Player 147: 9 points, 7 rebounds, 2 assists, 0 turnovers"
+        },
+        {
+          "evidence_id": "vector:box_scores:614c6544-ba81-5fa8-bbb0-bafd7987bc12",
+          "game_id": 28,
+          "text": "Player 114: 18 points, 2 rebounds, 3 assists, 4 turnovers"
+        },
+        {
+          "evidence_id": "vector:box_scores:b59ae62c-ebee-5057-ae88-6f585a2efa6d",
+          "game_id": 28,
+          "text": "Player 121: 13 points, 10 rebounds, 5 assists, 0 turnovers"
+        }
+      ],
+      "trace": [
+        {
+          "tool": "qdrant_archive_search",
+          "latency_ms": 88,
+          "result_count": 3,
+          "candidate_count": 6,
+          "collection_count": 1,
+          "retrieval_source": "dense"
+        }
+      ]
+    },
+    {
+      "collection": "reports",
+      "query": "Knicks Miami game report December 21",
+      "filters": {
+        "game_ids": [
+          28
+        ],
+        "dates": [
+          "2025-12-21"
+        ]
+      },
+      "hits": [
+        {
+          "evidence_id": "vector:reports:d985c4bc-1ca1-5472-9ce1-5033e91a425d",
+          "game_id": 28,
+          "text": "NYK 132, MIA 125. NYK defeated MIA 132-125 on 2025-12-21."
+        }
+      ],
+      "trace": [
+        {
+          "tool": "qdrant_archive_search",
+          "latency_ms": 28,
+          "result_count": 1,
+          "candidate_count": 1,
+          "collection_count": 1,
+          "retrieval_source": "dense"
+        }
+      ]
+    },
+    {
+      "collection": "possessions",
+      "query": "Knicks Miami fourth quarter scoring December 21",
+      "filters": {
+        "game_ids": [
+          28
+        ],
+        "dates": [
+          "2025-12-21"
+        ],
+        "periods": [
+          4
+        ]
+      },
+      "hits": [
+        {
+          "evidence_id": "vector:possessions:7e58d859-bf08-535b-91c4-b5ddbfa5fcea",
+          "game_id": 28,
+          "text": "2025-12-21 vs MIA, Q4 00:03-00:03. The possession began at MIA 125-132 NYK and ended at MIA 125-132 NYK. Q4 00:03 - NBA Player 1610612752: KNICKS Turnover: Shot Clock (T#13) Sequence result: turnover."
+        },
+        {
+          "evidence_id": "vector:possessions:8c6c1576-ac69-5e43-b2ce-579ead2eafef",
+          "game_id": 28,
+          "text": "2025-12-21 vs MIA, Q4 06:34-06:13. The event window began at MIA 106-117 NYK and ended at MIA 107-117 NYK. Q4 06:34 MIA Jaime Jaquez Jr.: MISS Jaquez Jr. 25' 3PT Jump Shot Q4 06:34 - NBA Player 1610612752: KNICKS Rebound Q4 06:34 MIA Kasparas Jaku\u010dionis: Jakucionis L.B.FOUL (P2.T3) (P.Ransom) Q4 06:34 MIA Kasparas Jaku\u010dionis: SUB: Powell FOR Jakucionis Q4 06"
+        },
+        {
+          "evidence_id": "vector:possessions:c7eaf86e-fdc9-57be-8e35-b52d8fa4eb1e",
+          "game_id": 28,
+          "text": "2025-12-21 vs MIA, Q4 07:10-06:44. The possession began at MIA 106-114 NYK and ended at MIA 106-117 NYK. Q4 07:10 - NBA Player 1610612752: KNICKS Timeout: Regular (Full 4 Short 0) Q4 07:10 MIA Dru Smith: SUB: Ware FOR Smith Q4 07:10 NYK Karl-Anthony Towns: SUB: Robinson FOR Towns Q4 06:44 NYK Josh Hart: Hart 27' 3PT Pullup Jump Shot (11 PTS) Sequence result:"
+        }
+      ],
+      "trace": [
+        {
+          "tool": "qdrant_archive_search",
+          "latency_ms": 81,
+          "result_count": 3,
+          "candidate_count": 6,
+          "collection_count": 1,
+          "retrieval_source": "dense"
+        }
+      ]
+    }
+  ],
+  "aliases_unchanged": true,
+  "passed": true
+}

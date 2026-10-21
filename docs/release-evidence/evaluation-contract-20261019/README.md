@@ -1,5 +1,12 @@
 # Evaluation expectations contract, 2026-10-19
 
+> **Historical baseline, not the current scoring policy.** The owner subsequently
+> approved complete targets with adaptive Recall@k and context-free clarification
+> scoring in [the release policy](../../release-policy-proposal.md).
+> The current [adjudication proposals](adjudication-drafts.md) remain DRAFT pending
+> owner approval. The baseline counts, Recall@5 objections and frozen-contract
+> instructions below are retained as history, not approval of those proposals.
+
 `tools/release/build_eval_contract.py` turns the agent-reviewed label package
 (`evaluation-label-review-20260907/labels.jsonl`) into the 120-case contract that
 `app.evaluation.release_runner` scores against. No question, category or disposition is changed.
