@@ -433,7 +433,7 @@ async def resolve_query(
 
     descriptive_reference = bool(
         (bool(explicit_dates) and not re.search(r"\b(between|from|through|until)\b", q))
-        or "overtime game" in q
+        or re.search(r"\bovertime game\b", q)
         or re.search(r"\bgame where\b", q)
         or (
             opponent_id
