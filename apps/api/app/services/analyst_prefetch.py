@@ -89,12 +89,15 @@ def prefetch_calls(tools: AnalystTools) -> list[ToolCall]:
             metric = next(
                 (name for name, pattern in _PLAYER_METRICS if pattern.search(question)), None
             )
-        if len(scope.player_ids) == 1 and metric and _AVERAGE.search(question):
+        # A single-player average is a player-stat request even when the question omits a
+        # metric word; get_player_stats defaults to points, like the model's first action.
+        # discover_facts would return game logs and cannot satisfy an average question.
+        if len(scope.player_ids) == 1 and _AVERAGE.search(question):
             return [
                 ToolCall(
                     name="get_player_stats",
                     question=question,
-                    metric=cast("PlayerMetric", metric),
+                    metric=cast("PlayerMetric", metric or "points"),
                     aggregation="average",
                 )
             ]
