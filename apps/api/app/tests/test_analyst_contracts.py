@@ -161,7 +161,7 @@ async def test_full_answer_review_fails_closed(db_session, change):
     assert not validate_review(review, answer, tools.claims, tools.evidence)
 
 
-async def test_missing_rows_are_incomplete_not_nonappearances(db_session):
+async def test_individual_absence_is_not_coverage_but_a_whole_game_is(db_session):
     from app.models.box_score import PlayerGameStat
     from sqlalchemy import delete
 
@@ -172,9 +172,22 @@ async def test_missing_rows_are_incomplete_not_nonappearances(db_session):
     current = AnalystTools(db_session, tools.release, tools.question, tools.season, {})
     await current.prepare()
     result = await current.execute(ToolCall(name="get_player_stats", question=tools.question))
-    assert result.status == "incomplete_coverage"
+    # Other NYK rows exist for that game, so the player did not appear; that is not a gap.
+    assert result.status == "ok"
     assert result.claims[0].sample_size == 2 and result.claims[0].value == 25
-    assert "Missing player rows" in " ".join(result.claims[0].coverage_limitations)
+    assert "did not appear" in " ".join(result.claims[0].coverage_limitations)
+    # Deleting every NYK row for a game leaves genuinely unknown coverage.
+    await db_session.execute(
+        delete(PlayerGameStat).where(
+            PlayerGameStat.game_id == absent.game_id, PlayerGameStat.team_id == "NYK"
+        )
+    )
+    await db_session.flush()
+    current = AnalystTools(db_session, tools.release, tools.question, tools.season, {})
+    await current.prepare()
+    result = await current.execute(ToolCall(name="get_player_stats", question=tools.question))
+    assert result.status == "incomplete_coverage"
+    assert "No player rows at all" in " ".join(result.claims[0].coverage_limitations)
 
 
 async def test_team_average_aggregation_yields_per_game_claims(db_session):
