@@ -26,6 +26,46 @@ _WINDOW_SECONDS = 60
 _requests_by_client: dict[str, deque[float]] = defaultdict(deque)
 _daily_requests_by_client: dict[str, deque[float]] = defaultdict(deque)
 
+# Categories that no archive tool can answer. They are refused before the evidence loop,
+# so a public client cannot spend provider budget on them and the decline is deterministic.
+_BETTING = re.compile(
+    r"\b(?:bet|bets|betting|wager|wagers|wagering|gamble|gambling|parlay|parlays|"
+    r"moneyline|sportsbook|bookmaker|odds|over/under|prop bet|point spread|"
+    r"betting line|against the spread)\b",
+    re.IGNORECASE,
+)
+_META_INSTRUCTION = re.compile(
+    r"(?:ignore|disregard|forget|override|bypass|disable|break)\s+"
+    r"(?:all\s+|any\s+|the\s+|your\s+)*(?:previous\s+|prior\s+|above\s+|safety\s+|system\s+)*"
+    r"(?:instructions?|rules?|prompts?|guidelines?|guardrails?|polic(?:y|ies))"
+    r"|(?:system|developer)\s+(?:prompt|instructions?|message)"
+    r"|jailbreak|developer mode"
+    r"|reveal\s+(?:your|the)\s+(?:system\s+)?(?:prompt|instructions?)"
+    r"|(?:tell|show|give|repeat|print|output)\s+(?:me\s+)?(?:your|the)\s+"
+    r"(?:system\s+)?(?:prompt|instructions?|rules)"
+    r"|you are now\b"
+    r"|pretend\s+(?:to\s+be|you\s+are)"
+    r"|act as\s+(?:an?\s+)?(?:developer|admin|administrator|system|assistant|bot|ai)\b",
+    re.IGNORECASE,
+)
+_LIVE_OR_FUTURE = re.compile(
+    r"\b(?:injur\w*|hurt|medical|diagnos\w*|concussion|surgery|surgical|illness|"
+    r"health status|live|tonight|tomorrow|yesterday|right now|currently|current|"
+    r"standings|next game|upcoming|trade|trades|traded|trading|free agent|future|"
+    r"next season|will|predict\w*|forecast|projections?)\b",
+    re.IGNORECASE,
+)
+_ARCHIVE_INTENT = re.compile(
+    r"\b(?:archived?|20\d{2}-\d{2}-\d{2}|last (?:game|match|night)|previous game|"
+    r"box score|play-by-play)\b"
+    r"|how did .{0,60}(?:perform|play|score)\b",
+    re.IGNORECASE,
+)
+_FUTURE_DATE = re.compile(
+    r"\b(?:202[7-9]|20[3-9]\d)(?:-\d{2}-\d{2})?\b|\b2026-(?:0[7-9]|1[0-2])-\d{2}\b",
+    re.IGNORECASE,
+)
+
 
 def _client_id(request: Request) -> str:
     # Uvicorn resolves trusted proxy headers before constructing Request.client.
@@ -240,6 +280,21 @@ def _requires_explicit_refusal(question: str) -> bool:
                 "next season",
             )
         )
+    )
+
+
+def _requires_pre_model_refusal(question: str) -> bool:
+    """Refuse categories no archive tool can answer before spending provider budget.
+
+    A mixed question with an explicit archive intent still reaches the analyst, which
+    answers the archive portion and states the live-data gap.
+    """
+    if _BETTING.search(question) or _META_INSTRUCTION.search(question):
+        return True
+    if _FUTURE_DATE.search(question):
+        return True
+    return bool(
+        _LIVE_OR_FUTURE.search(question) and not _ARCHIVE_INTENT.search(question)
     )
 
 
