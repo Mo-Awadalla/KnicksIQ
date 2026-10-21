@@ -719,6 +719,12 @@
   min-width: 0;
 }
 
+.analyst-thread-content {
+  display: grid;
+  min-width: 0;
+  gap: 0.9rem;
+}
+
 .analyst-empty {
   display: grid;
   min-height: 22rem;
