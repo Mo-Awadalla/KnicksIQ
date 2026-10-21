@@ -1,6 +1,9 @@
 # Reviewer stability: diagnosis, fix and offline replay
 
-Branch `codex/llmp-reviewer`, based on `codex/llmp-integration` (merged `254fdc9`).
+Branch `codex/llmp-reviewer`, based on `codex/llmp-integration`. The reviewer work was
+developed on `254fdc9` and merged with the advanced integration branch (honest scorer,
+`decline` action, web changes) in `55286f5`. The reviewer prompt, deterministic gate and
+replay are unchanged by that merge; the writer gained the decline/explain actions.
 Worktree `~/.local/share/knicksiq/worktrees/reviewer`.
 
 ## What was measured
@@ -116,6 +119,19 @@ before any reviewer call. `mutations.json` reports
 - `tools/release/analyst_review_record.py` (new): records reviewer payloads,
   responses, verdicts and validation outcomes from the live path.
 - `tools/release/analyst_review_replay.py` (new): base/head replay and mutation set.
+- `tools/release/analyst_review_base.py` (new): frozen base reviewer contract for replay.
+- `apps/api/app/tests/support/analyst_protocol.py` and
+  `apps/api/app/tests/test_analyst_refusal.py`: fixtures return one review item per
+  backend span, matching the reviewer contract.
+
+## Gate
+
+After merging `codex/llmp-integration`:
+
+- `TEST_MODE=true uv run pytest apps packages tools/report_audit`: 417 passed.
+- `uv run ruff check apps packages migrations`: all checks passed.
+- `uv run ruff format --check apps packages migrations`: 230 files formatted.
+- `uv run pyright apps packages migrations`: 0 errors.
 
 ## Commands
 
