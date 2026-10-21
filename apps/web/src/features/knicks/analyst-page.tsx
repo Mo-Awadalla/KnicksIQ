@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { AnswerPanel } from './answer-panel'
 import { MEMORY_NOTE } from './conversation'
-import { AppShell, SurfaceState } from './surface-layout'
+import { AppShell, QuestionProgress, SurfaceState } from './surface-layout'
 import { useAnalyst } from './use-analyst'
 
 const SEASON = '2025-26'
@@ -31,6 +31,8 @@ export function AnalystPage() {
     archiveFailed,
     slow,
     retryReadiness,
+    cancel,
+    elapsedSeconds,
   } = useAnalyst()
   const quick = useMemo(
     () => [
@@ -162,49 +164,55 @@ export function AnalystPage() {
             ))}
           </div>
         </div>
-        <div className='analyst-thread' aria-live='polite'>
+        <div className='analyst-thread'>
           {analyst.error ? (
             <SurfaceState
               kind='error'
-              message={
-                navigator.onLine
-                  ? 'The analyst could not answer that request. Retry shortly if it timed out or reached a rate limit.'
-                  : 'You are offline. Reconnect to search the archive.'
-              }
+              message={analyst.error}
               onRetry={retryQuestion ? retry : undefined}
             />
           ) : null}
           {analyst.isPending ? (
-            <SurfaceState kind='loading' message='Reading the season tape…' />
+            <QuestionProgress
+              elapsedSeconds={elapsedSeconds}
+              onCancel={() => {
+                cancel()
+                requestAnimationFrame(() =>
+                  document.getElementById('analyst-question')?.focus()
+                )
+              }}
+            />
           ) : null}
-          {messages.length === 0 && !analyst.isPending ? (
-            <div className='analyst-empty'>
-              <MessageSquareText aria-hidden='true' />
-              <h2>Start a line of inquiry.</h2>
-              <p>
-                The thread will keep the question, the response, and the
-                limitations together.
-              </p>
-            </div>
-          ) : null}
-          {messages.map((message, index) => (
-            <div key={message.id}>
-              {message.boundary ? (
-                <p role='status' className='archive-boundary'>
-                  {message.boundary}
+          <div className='analyst-thread-content' aria-busy={analyst.isPending}>
+            {messages.length === 0 && !analyst.isPending ? (
+              <div className='analyst-empty'>
+                <MessageSquareText aria-hidden='true' />
+                <h2>Start a line of inquiry.</h2>
+                <p>
+                  The thread will keep the question, the response, and the
+                  limitations together.
                 </p>
-              ) : message.response ? (
-                <AnswerPanel
-                  answer={message.response}
-                  onClarification={submit}
-                  disabled={!archiveReady || analyst.isPending}
-                  showFollowUps={index === messages.length - 1}
-                />
-              ) : (
-                <p className='archive-question'>{message.content}</p>
-              )}
-            </div>
-          ))}
+              </div>
+            ) : null}
+            {messages.map((message, index) => (
+              <div key={message.id}>
+                {message.boundary ? (
+                  <p role='status' className='archive-boundary'>
+                    {message.boundary}
+                  </p>
+                ) : message.response ? (
+                  <AnswerPanel
+                    answer={message.response}
+                    onClarification={submit}
+                    disabled={!archiveReady || analyst.isPending}
+                    showFollowUps={index === messages.length - 1}
+                  />
+                ) : (
+                  <p className='archive-question'>{message.content}</p>
+                )}
+              </div>
+            ))}
+          </div>
         </div>
       </section>
     </AppShell>

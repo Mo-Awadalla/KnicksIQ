@@ -7,8 +7,11 @@ Release gates are: 100% canonical numeric/entity correctness; at least 95% overa
 Shadow evaluation records only request ID, mode, intent, dependency outcome,
 candidate validation result, retrieval count, latency, and model/prompt/data
 versions. It does not retain questions, answers, evidence text, or claim
-comparisons. Promotion to `llm_primary` requires the release gates plus analyst
-p95 below four seconds and errors below one percent.
+comparisons. Shadow is the pre-promotion verification state. The intended launch
+mode and its single authoritative statement are in
+[the release checklist](release-checklist.md#intended-launch-configuration).
+Promotion to `llm_primary` requires the release gates plus analyst p95 below four
+seconds and errors below one percent.
 
 ## Offline harness
 

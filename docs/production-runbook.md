@@ -1,6 +1,6 @@
 # KnicksIQ production runbook
 
-Production serves one immutable 2025–26 archive release. The API never migrates, seeds, ingests, generates reports, or mutates basketball data at startup. Qdrant, Redis, and OpenRouter are required for the LLM-primary path but remain optional for availability; Postgres and one validated active release are the only dependencies required for deterministic answers.
+Production serves one immutable 2025-26 archive release. The API never migrates, seeds, ingests, generates reports, or mutates basketball data at startup. Qdrant, Redis, and OpenRouter are required for the LLM-primary path but remain optional for availability; Postgres and one validated active release are the only dependencies required for deterministic answers.
 
 ## Failed deployment and rollback
 
@@ -21,7 +21,7 @@ Production serves one immutable 2025–26 archive release. The API never migrate
 
 - Qdrant: leave the API up; responses fall back to deterministic Postgres answers with `degraded=true`. Rebuild or resume the cluster, validate counts and Recall@5, then switch aliases.
 - Redis: AI synthesis and shared caching are disabled during the outage. In-process limits protect one instance and deterministic facts remain available. A restarted free Key Value instance loses only reconstructible rate-limit, cache, and AI budget state.
-- OpenRouter or budget exhaustion: deterministic phrasing remains available. Do not raise the $8 application cutoff without owner approval; the provider guardrail is $9.
+- OpenRouter or budget exhaustion: deterministic phrasing remains available. Do not raise the configured application cutoff (currently $2 in `render.yaml`) without owner approval.
 - Sentry: application availability is unaffected. Use Render logs and synthetic checks until restored.
 
 ### Analyst reports “Model or budget unavailable”
@@ -41,8 +41,9 @@ just HTTP 200 or `state_committed`.
 On 2026-09-22 the production ledger was absent while Redis sessions worked.
 Provider monthly usage was $0, lifetime usage was $0.00084725, and the reservation
 hash was empty. The missing ledger was restored at $0.07, covering lifetime usage
-plus a conservative six-call allowance. The $8 cutoff was not changed. Subsequent
-model validation/time-limit failures are separate from this repaired budget block.
+plus a conservative six-call allowance. The cutoff in force at that time was $8;
+the current blueprint sets $2. Subsequent model validation/time-limit failures are
+separate from this repaired budget block.
 
 ## Elevated errors
 
@@ -50,13 +51,80 @@ Correlate the public `request_id` with scrubbed API logs. Do not request or copy
 
 ## Answer-mode rollout
 
-1. Deploy with `ANALYSIS_ANSWER_MODE=shadow` and
+The authoritative launch configuration is
+[the release checklist](release-checklist.md#intended-launch-configuration).
+
+1. Deploy the pre-promotion verification build with `ANALYSIS_ANSWER_MODE=shadow` and
    `ANALYSIS_SHADOW_SAMPLE_RATE=0.1`.
 2. Verify shadow validation, retrieval, cost, and latency gates without
    inspecting or retaining prompt/evidence content.
-3. Set `ANALYSIS_ANSWER_MODE=llm_primary` only after owner sign-off.
-4. Roll back instantly by setting the mode to `deterministic`; no data or index
-   rollback is required.
+3. Set `ANALYSIS_ANSWER_MODE=llm_primary` only after the gates pass and the owner
+   approves the launch configuration.
+4. Roll back instantly with the drill below; no data or index rollback is required.
+
+## Rollback drill: llm_primary to deterministic or shadow
+
+Rehearse on a non-production service first. Production execution requires owner approval and two
+operators: one changes Render, one verifies from outside. This repository run documents the drill;
+it did not execute it against a deployment.
+
+Before changing anything, record the live API deployment ID and commit, `/health/ready`
+`data_version`, the current `ai-budget:YYYY-MM` total, and the Render service ID
+`srv-d9cgko8js32c73bbvu10`.
+
+### Deterministic: model-free kill switch
+
+1. Render Dashboard, `knicksiq-api`, Environment. Set `ANALYSIS_ANSWER_MODE` to `deterministic`
+   and choose **Save and deploy**. This restarts the existing image with the new value and does
+   not rebuild; **Save only** does not take effect.
+2. Wait for the deployment status `live`. Confirm its commit ID is unchanged and
+   `GET https://api.knicksiq.win/health/ready` returns 200 with the same `data_version`.
+3. From a machine outside Render, send three requests with distinct fresh `turn_id` values of at
+   least 16 characters. Reusing a turn ID replays the committed response by design.
+
+   ```sh
+   curl -sS https://api.knicksiq.win/analysis/query \
+     -H 'Content-Type: application/json' \
+     -d '{"question":"What was the Knicks record this season?","season":"2025-26",
+          "turn_id":"rollback-'"$(uuidgen | tr -d -)"'","expected_revision":0}'
+   ```
+
+   Expect HTTP 200, `"llm_validated": false`, `"degraded": true`, non-empty `citations`,
+   `warnings` containing `Model or budget unavailable.`, and wins/losses matching the active
+   release. A 200 alone is not proof; check these fields.
+4. Confirm model spend stopped: the OpenRouter usage counter stays flat and the ledger total is
+   unchanged after the three requests. This check is operator-side, not public.
+5. If any assertion fails, do not continue. Restore `ANALYSIS_ANSWER_MODE=llm_primary` with
+   **Save and deploy**, re-verify, and alert the owner.
+
+### Shadow: delivery stays deterministic, the loop is sampled
+
+1. Set `ANALYSIS_ANSWER_MODE=shadow` and temporarily `ANALYSIS_SHADOW_SAMPLE_RATE=1.0`.
+   Choose **Save and deploy**. Rate 1.0 makes the shadow path observable in a few requests;
+   at 0.1 three requests can all miss the sample (0.9^3 = 0.729).
+2. Wait for `live` and re-check `/health/ready`.
+3. Send three requests with distinct fresh turn IDs. Expect HTTP 200 and
+   `"llm_validated": false` on delivery. At least one response should carry the warning
+   `Shadow verification; deterministic delivery.` when the model answer validated. If all three
+   fail validation, the response carries a different warning; use Sentry event
+   `analyst_shadow_verification` (`sampled=true`) to confirm the sampled path ran.
+4. Restore `ANALYSIS_SHADOW_SAMPLE_RATE=0.1` with **Save and deploy** and send one more request.
+   Do not leave 1.0 in production: every request then spends model budget.
+5. If shadow must be the steady state, keep 0.1. Unsampled requests make no model call.
+
+### Blueprint drift and verification limits
+
+`render.yaml` declares a literal `value: llm_primary` for `ANALYSIS_ANSWER_MODE`. A later
+Blueprint sync from a push that changes that file overwrites the Dashboard value. Dashboard
+**Save and deploy** is the emergency path; make the durable value change in `render.yaml` only
+through the normal reviewed release. Until then a Blueprint sync can revert the rollback.
+
+`llm_validated=false` alone does not distinguish deterministic from shadow. The warning text and
+provider spend do. Production responses omit `route` and `tool_calls`, so verify with
+`llm_validated`, `degraded`, `warnings`, `citations`, and `data_version`. Public rate limits
+(default 10 per minute and 100 per day per client) cap how many probes one address can send.
+Render's environment variable save options are documented at
+https://render.com/docs/configure-environment-variables.
 
 ## Secret rotation
 

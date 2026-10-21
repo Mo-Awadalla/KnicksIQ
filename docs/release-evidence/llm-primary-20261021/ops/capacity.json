@@ -1,0 +1,90 @@
+{
+  "answer_mode": "llm_primary",
+  "base_url_host": "openrouter.ai",
+  "budget_questions_at_production_cutoff": {
+    "mean": 2207,
+    "p50": 2223,
+    "p95": 1491
+  },
+  "by_category": {
+    "aliases_typos": {
+      "mean_charged_usd": 0.00086758,
+      "p50_latency_ms": 4253.4,
+      "provider_calls": 16,
+      "questions": 5,
+      "validated": 5
+    },
+    "comparisons": {
+      "mean_charged_usd": 0.00098292,
+      "p50_latency_ms": 5412.8,
+      "provider_calls": 21,
+      "questions": 6,
+      "validated": 5
+    },
+    "date_range_last_n": {
+      "mean_charged_usd": 0.00105155,
+      "p50_latency_ms": 4990.0,
+      "provider_calls": 17,
+      "questions": 6,
+      "validated": 6
+    },
+    "exact_statistics": {
+      "mean_charged_usd": 0.00076583,
+      "p50_latency_ms": 3815.8,
+      "provider_calls": 18,
+      "questions": 6,
+      "validated": 5
+    },
+    "single_game_narrative": {
+      "mean_charged_usd": 0.00117204,
+      "p50_latency_ms": 6075.4,
+      "provider_calls": 23,
+      "questions": 6,
+      "validated": 4
+    },
+    "turning_points": {
+      "mean_charged_usd": 0.00087894,
+      "p50_latency_ms": 4173.0,
+      "provider_calls": 15,
+      "questions": 6,
+      "validated": 6
+    },
+    "unsupported": {
+      "mean_charged_usd": 0.00055915,
+      "p50_latency_ms": 3140.3,
+      "provider_calls": 10,
+      "questions": 5,
+      "validated": 5
+    }
+  },
+  "calls_per_question_mean": 3.0,
+  "charged_usd_mean": 0.00090603,
+  "charged_usd_p50": 0.00089932,
+  "charged_usd_p95": 0.00134087,
+  "charged_usd_total": 0.03624125,
+  "data_version": "2025-26.20260928.1",
+  "degraded": 4,
+  "generated_at": "2026-10-21T21:34:43.205383+00:00",
+  "http_200": 40,
+  "latency_ms_max": 10058.5,
+  "latency_ms_p50": 4699.6,
+  "latency_ms_p95": 6879.7,
+  "ledger_delta_usd": 0.03624128,
+  "ledger_end_usd": 0.04624128,
+  "ledger_key": "ai-budget:2026-10",
+  "ledger_start_usd": 0.01,
+  "llm_validated": 36,
+  "model": "deepseek/deepseek-v4.1-flash",
+  "non_200": 0,
+  "production_cutoff_usd": 2.0,
+  "provider": "openrouter",
+  "provider_calls": 120,
+  "questions_attempted": 40,
+  "reported_cost_missing_calls": 0,
+  "reported_cost_usd_mean": 0.00090603,
+  "reported_cost_usd_total": 0.03624127,
+  "scope": "In-process ASGI app, real OpenRouter provider, restored active release, Qdrant disabled, sequential single client.",
+  "test_cutoff_usd": 0.3,
+  "tokens_per_question_mean": 5779.9,
+  "tokens_total": 231195
+}

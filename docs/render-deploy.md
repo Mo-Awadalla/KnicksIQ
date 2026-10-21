@@ -12,12 +12,13 @@ immutable archive.
 - Qdrant Cloud: external release-versioned vector store supplied through
   `QDRANT_URL` and `QDRANT_API_KEY`.
 
-Production starts in sampled LLM shadow mode with Qdrant Cloud Inference and
-hybrid retrieval enabled. Qdrant, Redis, OpenRouter, and Sentry remain optional
-for availability: deterministic Postgres-backed answers remain available when
-they fail. The free Key Value instance is intentionally non-persistent because
-every stored rate-limit, cache, and budget entry is reconstructible runtime
-state.
+Pre-promotion verification deploys in sampled LLM shadow mode with Qdrant Cloud Inference and
+hybrid retrieval enabled. Qdrant, Redis, OpenRouter, and Sentry remain optional for availability:
+deterministic Postgres-backed answers remain available when they fail. The intended launch
+configuration is `llm_primary`; [the release checklist](release-checklist.md#intended-launch-configuration)
+is the single authoritative statement of that configuration. The free Key Value instance is
+intentionally non-persistent because every stored rate-limit, cache, and budget entry is
+reconstructible runtime state.
 
 ## Before creating the blueprint
 
@@ -55,13 +56,15 @@ state.
    `knicksiq-build-rag-index --season 2025-26 --data-version <version>
    --reset-qdrant`. Validate counts and Recall@5 before promoting its aliases.
 5. Activate the matching Postgres release and Qdrant aliases.
-6. Manually deploy the immutable API and web artifacts in `shadow` mode.
+6. Manually deploy the immutable API and web artifacts as the pre-promotion verification
+   deployment in `shadow` mode.
 7. Render uses `GET /health/live` for deploy health checks so the first deploy
    can complete before release data is loaded. Before go-live, require
    `GET /health/ready` to return
    200 with the expected data version. Run one archive and one deterministic
 analyst synthetic before go-live. Promote to `llm_primary` only after the
-shadow gates in `docs/evaluation.md` pass.
+shadow gates in `docs/evaluation.md` pass and the owner approves the launch
+configuration in `docs/release-checklist.md`.
 
 When migrating an existing Blueprint, Render does not delete the old managed
 Postgres instance or replace an existing `sync: false` value automatically.
