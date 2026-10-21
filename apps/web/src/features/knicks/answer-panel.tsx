@@ -2,11 +2,7 @@ import type { AnalysisCitation, AnalysisResponse } from '@/types'
 import { FileText, Sparkles } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import {
-  Card,
-  CardContent,
-  CardHeader,
-} from '@/components/ui/card'
+import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { AnalyticsCards } from './analytics-cards'
 import './archive.css'
 import { SourceValues } from './source-values'
@@ -38,7 +34,7 @@ function dataLimitation(answer: AnalysisResponse) {
   return 'This archive contains available Knicks 2025-26 regular-season and postseason records; it may not include every game detail, does not include live updates, and cannot establish what caused a result.'
 }
 
-function publicWarning(warning: string) {
+function publicWarning(warning: string): string | undefined {
   if (warning === 'ambiguous_reference') {
     return 'I could not tell which game or player you meant.'
   }
@@ -48,27 +44,12 @@ function publicWarning(warning: string) {
   if (/possession-level|play-by-play/i.test(warning)) {
     return 'The available play-by-play records do not include enough detail to support this question.'
   }
-  if (/incomplete_coverage|coverage limitation|archive coverage/i.test(warning)) {
+  if (
+    /incomplete_coverage|coverage limitation|archive coverage/i.test(warning)
+  ) {
     return 'Some game records related to this answer may be missing from the available archive.'
   }
   return undefined
-}
-
-function isDeclined(answer: AnalysisResponse) {
-  return (
-    answer.refused ||
-    /\bI (?:don't|do not) have (?:live|current|future)\b/i.test(answer.answer) ||
-    /\bI can only answer grounded questions about available Knicks\b/i.test(
-      answer.answer
-    )
-  )
-}
-
-function declineCopy(answer: AnalysisResponse) {
-  const match = answer.answer.match(
-    /\b(?:I (?:don't|do not) have (?:live|current|future)|I can only answer grounded questions about available Knicks)[^.!?]*[.!?]?/i
-  )
-  return match?.[0].trim() ?? answer.answer
 }
 
 function ReceiptCard({ citation }: { citation: AnalysisCitation }) {
@@ -134,17 +115,13 @@ export function AnswerPanel({
   disabled: boolean
   showFollowUps?: boolean
 }) {
-  const declined = isDeclined(answer)
-  const displayedAnswer =
-    declined && answer.degraded && !answer.refused
-      ? declineCopy(answer)
-      : answer.answer
+  const declined = answer.refused
   const followUps = declined
     ? answer.follow_up_questions?.length
       ? answer.follow_up_questions
       : supportedAlternatives
     : showFollowUps
-      ? answer.follow_up_questions ?? []
+      ? (answer.follow_up_questions ?? [])
       : []
   const warnings = answer.warnings
     .map(publicWarning)
@@ -155,7 +132,10 @@ export function AnswerPanel({
       <Card className='archive-answer'>
         <CardHeader>
           <h3 className='archive-answer-heading' tabIndex={-1}>
-            <Sparkles className='archive-orange-text size-5' aria-hidden='true' />
+            <Sparkles
+              className='archive-orange-text size-5'
+              aria-hidden='true'
+            />
             {declined ? "The archive can't answer that one" : 'Answer'}
           </h3>
         </CardHeader>
@@ -171,7 +151,7 @@ export function AnswerPanel({
               {warning}
             </p>
           ))}
-          <p className='archive-answer-copy'>{displayedAnswer}</p>
+          <p className='archive-answer-copy'>{answer.answer}</p>
           {declined ? (
             <div className='archive-decline'>
               <h4>What this archive covers</h4>
@@ -190,7 +170,9 @@ export function AnswerPanel({
             <div
               className='archive-follow-ups'
               role='group'
-              aria-label={declined ? 'Supported questions' : 'Follow-up questions'}
+              aria-label={
+                declined ? 'Supported questions' : 'Follow-up questions'
+              }
             >
               <p>{declined ? 'Try one of these instead' : 'Keep exploring'}</p>
               <div className='flex flex-wrap gap-2'>

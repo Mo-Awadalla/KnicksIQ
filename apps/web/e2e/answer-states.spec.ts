@@ -74,9 +74,11 @@ for (const { surface, width } of [
     ).toBeVisible()
     await expect(page.getByRole('button', { name: 'Stop waiting' })).toBeVisible()
     await page.waitForTimeout(5_500)
-    await expect(page.getByRole('status')).toContainText(
-      'This is taking a little longer'
-    )
+    await expect(
+      page
+        .getByRole('status')
+        .filter({ hasText: 'This is taking a little longer' })
+    ).toBeVisible()
     const layoutShift = await page.evaluate(() => {
       const target = window as Window & { __layoutShifts?: number[] }
       return target.__layoutShifts?.reduce((sum, value) => sum + value, 0) ?? 0
@@ -87,9 +89,11 @@ for (const { surface, width } of [
       'How did the Knicks perform against Boston?'
     )
     await expect(question).toBeFocused()
-    await expect(page.getByRole('status')).toContainText(
-      'Question stopped. Your question is ready to try again.'
-    )
+    await expect(
+      page
+        .getByRole('status')
+        .filter({ hasText: 'Question stopped. Your question is ready to try again.' })
+    ).toBeVisible()
     await expect(page.getByRole('button', { name: 'Retry question' })).toBeVisible()
     releaseRequest()
   })
@@ -132,14 +136,8 @@ test('declines explain archive coverage and offer supported alternatives', async
       json:
         questions.length === 1
           ? committedAnswer(
-              "The archive has game results to review. I don't have live injury or current-status updates.",
-              {
-                refused: false,
-                llm_validated: false,
-                warnings: [
-                  'Question asks outside the available Knicks season data or live/current coverage.',
-                ],
-              }
+              "I don't have live injury or current-status updates. In the last archived game, the Knicks scored 120 points.",
+              { refused: true }
             )
           : committedAnswer('A supported archive answer.'),
     })
@@ -152,13 +150,11 @@ test('declines explain archive coverage and offer supported alternatives', async
     page.getByRole('heading', { name: "The archive can't answer that one" })
   ).toBeVisible()
   await expect(
-    page.getByText("I don't have live injury or current-status updates.", {
-      exact: true,
-    })
+    page.getByText(
+      "I don't have live injury or current-status updates. In the last archived game, the Knicks scored 120 points.",
+      { exact: true }
+    )
   ).toBeVisible()
-  await expect(
-    page.getByText('The archive has game results to review.')
-  ).toHaveCount(0)
   await expect(page.getByRole('heading', { name: 'What this archive covers' })).toBeVisible()
   await expect(page.getByText(/live scores, injury updates, trades, or future events/)).toBeVisible()
   const alternatives = page.getByRole('group', { name: 'Supported questions' })
@@ -171,6 +167,28 @@ test('declines explain archive coverage and offer supported alternatives', async
     'What is the Knicks injury report tonight?',
     'How did the Knicks perform against Boston?',
   ])
+})
+
+test('decline wording without the API flag stays a normal answer', async ({ page }) => {
+  await page.route(api('/analysis/query'), (route) =>
+    route.fulfill({
+      json: committedAnswer(
+        "I don't have live injury or current-status updates, but the archive has game results.",
+        { refused: false }
+      ),
+    })
+  )
+  await page.goto('/analyst')
+  const question = page.getByRole('textbox', { name: 'Ask a season question' })
+  await question.fill('What is the Knicks injury report tonight?')
+  await question.press('Enter')
+  await expect(page.getByRole('heading', { name: 'Answer' })).toBeVisible()
+  await expect(
+    page.getByRole('heading', { name: "The archive can't answer that one" })
+  ).toHaveCount(0)
+  await expect(
+    page.getByRole('heading', { name: 'What this archive covers' })
+  ).toHaveCount(0)
 })
 
 test('fallback answer shows plain-language limits and readable mobile citations', async ({

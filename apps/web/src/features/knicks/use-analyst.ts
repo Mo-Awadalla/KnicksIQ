@@ -188,10 +188,10 @@ export function useAnalyst() {
   const queryClient = useQueryClient()
   const state = useSyncExternalStore(subscribe, () => chat)
   const [attempt, setAttempt] = useState(0)
-  const [slow, setSlow] = useState(false)
-  const [clock, setClock] = useState(Date.now())
+  const [slowTimerDone, setSlowTimerDone] = useState(false)
+  const [clock, setClock] = useState(0)
   useEffect(() => {
-    const timer = setTimeout(() => setSlow(true), 5000)
+    const timer = setTimeout(() => setSlowTimerDone(true), 5000)
     return () => clearTimeout(timer)
   }, [attempt])
   const readiness = useQuery({
@@ -229,9 +229,7 @@ export function useAnalyst() {
     refetchOnWindowFocus: false,
   })
   const archiveReady = readiness.isSuccess && !readiness.isFetching
-  useEffect(() => {
-    if (readiness.isSuccess || readiness.isError) setSlow(false)
-  }, [readiness.isError, readiness.isSuccess])
+  const slow = slowTimerDone && !readiness.isSuccess && !readiness.isError
   useEffect(() => {
     if (!state.pending || !state.pendingSince) return
     const tick = () => setClock(Date.now())
@@ -240,7 +238,7 @@ export function useAnalyst() {
     return () => clearInterval(timer)
   }, [state.pending, state.pendingSince])
   const retryReadiness = () => {
-    setSlow(false)
+    setSlowTimerDone(false)
     setAttempt((value) => value + 1)
   }
   const setQuestion = (question: string) => change({ question })
