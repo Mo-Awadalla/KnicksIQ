@@ -1,6 +1,7 @@
 import { Link, useLocation } from '@tanstack/react-router'
 import { CircleAlert, Loader2, RefreshCw } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import './answer-states.css'
 import './surfaces.css'
 
 const navItems = [
@@ -34,6 +35,43 @@ export function SurfaceState({
           <RefreshCw aria-hidden='true' /> Try again
         </Button>
       ) : null}
+    </div>
+  )
+}
+
+export function QuestionProgress({
+  elapsedSeconds,
+  onCancel,
+}: {
+  elapsedSeconds: number
+  onCancel: () => void
+}) {
+  const message =
+    elapsedSeconds < 5
+      ? 'Checking the season archive…'
+      : elapsedSeconds < 20
+        ? 'This is taking a little longer. You can keep waiting or stop.'
+        : 'Still working. Complex questions can take up to about 30 seconds.'
+
+  return (
+    <div className='question-progress'>
+      <Loader2
+        className='question-progress-spinner animate-spin'
+        aria-hidden='true'
+      />
+      <div className='question-progress-copy'>
+        <p role='status' aria-live='polite' aria-atomic='true'>
+          {message}
+        </p>
+        <span aria-hidden='true'>
+          {elapsedSeconds > 0
+            ? `${elapsedSeconds} seconds elapsed`
+            : 'Your answer is being prepared.'}
+        </span>
+      </div>
+      <Button type='button' variant='outline' onClick={onCancel}>
+        Stop waiting
+      </Button>
     </div>
   )
 }
@@ -113,7 +151,10 @@ export function AppShell({
       </main>
       <footer className='surface-footer'>
         <div className='surface-container surface-footer-inner'>
-          <span>Unofficial fan archive · data-led, source-conscious.</span>
+          <span className='surface-disclosure'>
+            KnicksIQ is an unofficial fan project and is not affiliated with,
+            endorsed by, or sponsored by the New York Knicks or the NBA.
+          </span>
           <nav aria-label='Footer navigation'>
             <Link to='/'>Archive</Link>
             <a href='/sources.html'>Sources</a>
