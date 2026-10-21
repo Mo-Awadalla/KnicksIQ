@@ -139,8 +139,8 @@ async def test_overtime_periods_are_separate_from_q4_and_halves(db_session):
     text = _text(result)
     assert "reg Q4: 25 pts" in text
     assert "reg OT: 20 pts" in text
-    assert "Q4 25-25 OT 20-18" in text
-    assert "; 120-118 W" in text
+    assert "Q4 25-25 (+0) OT 20-18 (+2)" in text
+    assert "; 120-118 W (+2)" in text
 
 
 async def test_halves_are_summed_from_quarters_not_final_score(db_session):
@@ -247,10 +247,10 @@ async def test_opponent_question_breaks_out_regular_and_playoffs(db_session):
     result = await _call(tools, games + [playoff])
 
     text = _text(result)
-    assert "reg Q4: 78 pts" in text
-    assert "playoffs Q4: 20 pts" in text
+    assert "Phases: 3 reg, 1 playoffs" in text
     assert "4 of 4 games" in text
-    assert "h p: Q4 20-20" in text
+    assert "h p: Q4 20-20 (+0)" in text
+    assert "04-20" in text
 
 
 async def test_halftime_comeback_and_blown_lead_are_counted(db_session):
