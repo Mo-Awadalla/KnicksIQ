@@ -144,7 +144,7 @@ test('late response cannot restore a chat after New chat', async ({ page }) => {
   const box = page.getByRole('textbox', { name: 'Ask a season question' })
   await box.fill('Pending question')
   await box.press('Enter')
-  await expect(page.getByText('Reading the season tape…')).toBeVisible()
+  await expect(page.getByText('Checking the season archive…')).toBeVisible()
   await page.getByRole('button', { name: 'New chat' }).click()
   finish?.()
   await expect(page.getByText('Pending question', { exact: true })).toHaveCount(0)
@@ -215,7 +215,7 @@ test('stateless reply remains readable without carrying its session context', as
   const box = page.getByRole('textbox', { name: 'Ask a season question' })
   await box.fill('First question')
   await box.press('Enter')
-  await expect(page.getByText('Conversation state was unavailable. Start a new conversation from here.')).toBeVisible()
+  await expect(page.getByText('This answer was not saved to your conversation. Start a new conversation to ask a follow-up.')).toBeVisible()
   await box.fill('Second question')
   await box.press('Enter')
   await expect(page.getByText('Answer 2', { exact: true })).toBeVisible()
@@ -256,7 +256,7 @@ test('corrupted storage leaves chat usable with a recovery notice', async ({ pag
   await expect(page.getByText('Recovered conversation.')).toBeVisible()
 })
 
-test('sources expand into readable facts while retaining fallback warnings', async ({ page }) => {
+test('sources expand into readable facts with public data-limit copy', async ({ page }) => {
   await page.route(api('/analysis/query'), (route) => route.fulfill({ json: {
     answer: 'Knicks wins: 2. Knicks losses: 1.', warnings: ['Archive coverage only.'],
     citations: [{ type: 'verified_claim', title: 'Team record',
@@ -269,7 +269,7 @@ test('sources expand into readable facts while retaining fallback warnings', asy
   await box.fill('What was their record?')
   await box.press('Enter')
   await expect(page.getByText('Knicks wins: 2. Knicks losses: 1.')).toBeVisible()
-  await expect(page.getByText('Archive coverage only.')).toBeVisible()
+  await expect(page.getByText('Some game records related to this answer may be missing from the available archive.')).toBeVisible()
   await expect(page.getByText('Verified statistic', { exact: true })).not.toBeVisible()
   await page.getByText('Sources (1)', { exact: true }).click()
   await expect(page.getByText('Verified statistic', { exact: true })).toBeVisible()
