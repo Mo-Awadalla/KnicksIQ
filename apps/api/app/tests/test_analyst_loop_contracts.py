@@ -64,6 +64,9 @@ async def test_ten_short_prior_messages_still_reach_writer(db_session, local_red
 async def test_provider_schema_growth_uses_factual_fallback(db_session, local_redis, monkeypatch):
     await local_redis.set(f"ai-budget:{datetime.now(UTC):%Y-%m}", 0)
     monkeypatch.setattr(get_settings(), "analyst_provider_format", "json_schema")
+    # The registry now carries one more tool, so the first call needs a little more
+    # room to reach the model; the second call's growing schema still exceeds it.
+    monkeypatch.setattr(get_settings(), "analyst_input_tokens", 8100)
     tools, _ = await make_tools(db_session)
 
     class SchemaAdapter(ScriptedAdapter):
