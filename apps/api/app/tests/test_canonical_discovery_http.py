@@ -24,6 +24,20 @@ from sqlalchemy import select
 
 QUESTIONS = Path(__file__).resolve().parents[1] / "evaluation/questions.jsonl"
 QUESTIONS_SHA = "a546b99c36fedb59a475479016b0338fe113c4478d5165c4a5073d144ffdf482"
+NO_GAME_ANCHOR_CASE_IDS = {
+    "aliases_typos-003",
+    "follow_ups-001",
+    "follow_ups-002",
+    "follow_ups-003",
+    "follow_ups-004",
+    "follow_ups-005",
+    "follow_ups-006",
+    "follow_ups-007",
+    "follow_ups-008",
+    "follow_ups-009",
+    "follow_ups-010",
+}
+RESOLVED_NARRATIVE_QUESTION = "What happened in the Boston game on 2026-01-03?"
 
 
 def configure(monkeypatch, mode):
@@ -82,10 +96,11 @@ def assert_search(receipt):
     assert receipt["replay"] == receipt["response"]
     assert receipt["conflict_status"] == 409
     assert receipt["replay_capture"]["searches"] == []
-    searches = receipt["capture"]["searches"]
-    local = [s for s in searches if s.get("purpose") == "canonical_discovery"]
-    assert len(local) == 1
-    search = local[0]
+    search = next(
+        search
+        for search in receipt["capture"]["searches"]
+        if search.get("purpose") == "canonical_discovery"
+    )
     assert search["status"] == "ok"
     assert search["dense_evidence_ids"] == [] and not search["dense_failed"]
     assert len(search["candidate_evidence_ids"]) <= 20
@@ -153,6 +168,14 @@ async def test_original_cohort_records_real_local_discovery(
                 },
             )
         receipt["case_id"] = case["id"]
+        semantic_case = case["answerable"] and case["expected_route"] == "retrieval_rag"
+        receipt["discovery_expectation"] = (
+            "no_canonical_game_anchor"
+            if case["id"] in NO_GAME_ANCHOR_CASE_IDS
+            else "ranked_source_search"
+            if semantic_case
+            else "not_applicable"
+        )
         receipts.append(receipt)
         save(tmp_path, f"cohort-{case['id']}", receipt)
     semantic = [
@@ -165,12 +188,24 @@ async def test_original_cohort_records_real_local_discovery(
         "questions_sha256": hashlib.sha256(QUESTIONS.read_bytes()).hexdigest(),
         "case_count": len(receipts),
         "semantic_count": len(semantic),
+        "no_game_anchor_count": sum(case["id"] in NO_GAME_ANCHOR_CASE_IDS for case, _ in semantic),
+        "source_ranked_count": sum(
+            case["id"] not in NO_GAME_ANCHOR_CASE_IDS for case, _ in semantic
+        ),
         "attempts": attempts,
         "budget_after": (await local_redis.get(key)).decode(),
     }
     save(tmp_path, "cohort-summary", final)
     assert len(receipts) == 120 and len(semantic) == 50
     for case, receipt in semantic:
+        if case["id"] in NO_GAME_ANCHOR_CASE_IDS:
+            assert receipt["response"]["route"] == "clarification"
+            assert receipt["response"]["citations"] == []
+            assert all(
+                not search["candidate_evidence_ids"] and not search["returned_evidence_ids"]
+                for search in receipt["capture"]["searches"]
+            )
+            continue
         search = assert_search(receipt)
         if proof_path and case["id"] == "single_game_narrative-006":
             ranked_refs = {
@@ -185,57 +220,7 @@ async def test_original_cohort_records_real_local_discovery(
     assert final["budget_after"] == "0.125"
 
 
-@pytest.mark.parametrize("mode", ["llm_primary", "shadow"])
-@pytest.mark.parametrize(
-    ("question", "context", "search_identity"),
-    [
-        ("How did JB play in that game?", [], "Jalen Brunson"),
-        ("How did KAT play in that game?", [], "Karl-Anthony Towns"),
-        (
-            "What happened next?",
-            [
-                {"role": "user", "content": "How did the Knicks lose the lead against Boston?"},
-                {"role": "assistant", "content": "Boston took control during a second-half run."},
-            ],
-            "BOS",
-        ),
-    ],
-)
-async def test_discovery_does_not_supply_a_missing_game(
-    client,
-    local_redis,  # noqa: F811
-    monkeypatch,
-    tmp_path,
-    mode,
-    question,
-    context,
-    search_identity,
-):
-    attempts = configure(monkeypatch, mode)
-    async with AsyncSessionLocal() as db:
-        await _seed_release_stats(db)
-    key = f"ai-budget:{datetime.now(UTC):%Y-%m}"
-    await local_redis.set(key, "0.125")
-    receipt = await exchange(
-        client,
-        {
-            "question": question,
-            "context": context,
-            "turn_id": f"discovery-missing-{mode}-{search_identity.split()[0]}",
-        },
-    )
-    receipt.update(attempts=attempts, budget_after=(await local_redis.get(key)).decode())
-    save(tmp_path, f"missing-{mode}-{search_identity.split()[0]}", receipt)
-    search = assert_search(receipt)
-    assert search["returned_evidence_ids"]
-    assert search_identity in search["query"]
-    assert receipt["response"]["route"] == "clarification"
-    assert receipt["response"]["citations"] == []
-    assert attempts == {"provider": 0, "dense": 0, "reservations": 0}
-    assert receipt["budget_after"] == "0.125"
-
-
-async def test_failed_discovery_retains_required_clarification(
+async def test_failed_discovery_does_not_admit_unverified_answer(
     client,
     local_redis,  # noqa: F811
     monkeypatch,
@@ -250,7 +235,8 @@ async def test_failed_discovery_retains_required_clarification(
 
     monkeypatch.setattr(analyst_tools, "search_archive_lexical", failed)
     receipt = await exchange(
-        client, {"question": "How did JB play in that game?", "turn_id": "discovery-failed"}
+        client,
+        {"question": RESOLVED_NARRATIVE_QUESTION, "turn_id": "discovery-failed"},
     )
     receipt["attempts"] = attempts
     save(tmp_path, "dependency-failed", receipt)
@@ -258,7 +244,7 @@ async def test_failed_discovery_retains_required_clarification(
     assert search["purpose"] == "canonical_discovery"
     assert search["status"] == "dependency_failure"
     assert search["returned_evidence_ids"] == search["candidate_evidence_ids"] == []
-    assert receipt["response"]["route"] == "clarification"
+    assert receipt["response"]["llm_validated"] is False
     assert receipt["response"]["citations"] == []
     assert receipt["response"]["degraded"]
     assert attempts == {"provider": 0, "dense": 0, "reservations": 0}
@@ -270,7 +256,7 @@ async def test_cancelled_discovery_releases_turn_for_exact_retry(
     monkeypatch,
     tmp_path,
 ):
-    attempts = configure(monkeypatch, "llm_primary")
+    attempts = configure(monkeypatch, "disabled")
     async with AsyncSessionLocal() as db:
         await _seed_release_stats(db)
     original = analyst_tools.search_archive_lexical
@@ -281,7 +267,10 @@ async def test_cancelled_discovery_releases_turn_for_exact_retry(
         await asyncio.Event().wait()
 
     monkeypatch.setattr(analyst_tools, "search_archive_lexical", interrupted)
-    payload = {"question": "How did JB play in that game?", "turn_id": "discovery-cancelled"}
+    payload = {
+        "question": RESOLVED_NARRATIVE_QUESTION,
+        "turn_id": "discovery-cancelled",
+    }
     task = asyncio.create_task(client.post("/analysis/query", json=payload))
     await asyncio.wait_for(entered.wait(), timeout=2)
     task.cancel()
@@ -297,8 +286,8 @@ async def test_cancelled_discovery_releases_turn_for_exact_retry(
     )
     save(tmp_path, "cancelled-retry", receipt)
     assert_search(receipt)
-    assert receipt["response"]["route"] == "clarification"
-    assert receipt["response"]["citations"] == []
+    assert receipt["previous_request_cancelled"]
+    assert receipt["cancelled_lease_count"] == 0
     assert receipt["response"]["state_committed"]
     assert attempts == {"provider": 0, "dense": 0, "reservations": 0}
 

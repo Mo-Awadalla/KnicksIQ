@@ -11,6 +11,7 @@ from app.core.db import AsyncSessionLocal
 from app.evaluation.trace_capture import capture_turn
 from app.services import analyst_loop
 from app.tests.test_analyst_contracts import local_redis  # noqa: F401
+from app.tests.test_analyst_payload_http import SyntheticAdapter, configure
 from app.tests.test_player_intelligence import _seed_release_stats
 
 
@@ -33,6 +34,13 @@ MISSING = [
     (
         "newer-unavailable",
         [message("The Boston game on 2026-01-01."), message("Now the game on 2026-05-31.")],
+    ),
+    (
+        "topic-changed",
+        [
+            message("The Boston game on 2026-01-03."),
+            message("What was Jalen Brunson's season average?"),
+        ],
     ),
 ]
 IDENTIFIED = [
@@ -193,6 +201,10 @@ async def exercise(
     if not identified:
         assert body["route"] == "clarification"
         assert body["citations"] == []
+        assert all(
+            not search["candidate_evidence_ids"] and not search["returned_evidence_ids"]
+            for search in capture["searches"]
+        ), capture["searches"]
     else:
         assert context_conflict is not None and context_conflict.status_code == 409
         assert body["route"] != "clarification" and body["citations"]
@@ -246,3 +258,63 @@ async def test_stale_committed_game_without_recent_anchor_still_asks(
     assert initial["citations"]
     assert second.json()["route"] == "clarification"
     assert second.json()["citations"] == [] and capture["turn"]["model_calls"] == 0
+    assert all(
+        not search["candidate_evidence_ids"] and not search["returned_evidence_ids"]
+        for search in capture["searches"]
+    ), capture["searches"]
+
+
+async def test_verified_season_receipts_do_not_require_a_single_game(
+    client,
+    local_redis,  # noqa: F811
+    monkeypatch,
+    tmp_path,
+    record_property,
+):
+    configure(monkeypatch)
+    async with AsyncSessionLocal() as db:
+        await _seed_release_stats(db)
+    question = "How many games did the Knicks win this season?"
+    adapter = SyntheticAdapter({"name": "get_team_stats", "question": question})
+    monkeypatch.setattr(analyst_loop, "get_llm_adapter", lambda: adapter)
+    await local_redis.set(f"ai-budget:{datetime.now(UTC):%Y-%m}", "0.125")
+    first = await client.post(
+        "/analysis/query",
+        json={
+            "question": question,
+            "turn_id": "verified-season-receipts-first",
+            "expected_revision": 0,
+        },
+    )
+    initial = first.json()
+    payload = {
+        "question": "Show me the receipts for that.",
+        "context": [message(question), message(initial["answer"], "assistant")],
+        "turn_id": "verified-season-receipts-next",
+        "session_token": initial["session_token"],
+        "expected_revision": initial["revision"],
+    }
+    with capture_turn() as capture:
+        second = await client.post("/analysis/query", json=payload)
+    body = second.json()
+    replay = await client.post("/analysis/query", json=payload)
+    path = tmp_path / "verified-season-receipts.json"
+    with path.open("x") as artifact:
+        json.dump(
+            {"first": initial, "second": body, "replay": replay.json(), "capture": capture},
+            artifact,
+            indent=2,
+        )
+    record_property("game_reference_artifact", str(path))
+    assert first.status_code == second.status_code == 200
+    assert body["state_committed"] and body["revision"] == initial["revision"] + 1
+    assert replay.json() == body
+    assert body["llm_validated"] and body["route"] != "clarification"
+    for response in (initial, body):
+        claims = [
+            citation["metadata"]["claim"]
+            for citation in response["citations"]
+            if citation["type"] == "verified_claim"
+        ]
+        assert {claim["metric_id"]: claim["value"] for claim in claims} == {"wins": 3}
+        assert all(claim["sample_size"] == 3 and len(claim["game_ids"]) == 3 for claim in claims)

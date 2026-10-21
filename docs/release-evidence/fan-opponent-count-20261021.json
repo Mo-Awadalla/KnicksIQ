@@ -1,0 +1,271 @@
+{
+  "all_strict_model_checks_passed": false,
+  "observed_at": "2026-10-21T00:10:25.978551+00:00",
+  "raw_artifact": {
+    "path": "/tmp/kiq-integration-artifacts/review-fixes-live-under100-20261020.json",
+    "sha256": "e04d4737ab4a988b94e6cebfe4f1b48da40d93cc25a02602e6e1b443a9aee004"
+  },
+  "release": {
+    "manifest_sha256": "549af2edd0d195eff60bb318bdc58a8c8e217ea0359c0684d492d5292dcb595b",
+    "version": "2025-26.20260928.1"
+  },
+  "retained_limitation": "The Hart10 scoped-leader control returned the correct complete factual fallback after four model calls rather than a validated model answer. This failure is retained, not rerun to manufacture a pass. The opponent26/101 and tied22 controls did validate.",
+  "runtime": [
+    {
+      "answer": "Which game/date and which event, stretch, or claim are you referring to?",
+      "checks": {
+        "clarifies": true,
+        "committed": true,
+        "http_200": true,
+        "no_citations": true,
+        "no_model_calls": true,
+        "no_retrieved_ids": true
+      },
+      "id": "unanchored-disabled-0",
+      "independent_sql": null,
+      "llm_validated": false,
+      "model_calls": [],
+      "question": "How did JB play in that game?",
+      "warnings": []
+    },
+    {
+      "answer": "Which game/date and which event, stretch, or claim are you referring to?",
+      "checks": {
+        "clarifies": true,
+        "committed": true,
+        "http_200": true,
+        "no_citations": true,
+        "no_model_calls": true,
+        "no_retrieved_ids": true
+      },
+      "id": "unanchored-disabled-1",
+      "independent_sql": null,
+      "llm_validated": false,
+      "model_calls": [],
+      "question": "Who led the Knicks in rebounds that night?",
+      "warnings": []
+    },
+    {
+      "answer": "Which game/date and which event, stretch, or claim are you referring to?",
+      "checks": {
+        "clarifies": true,
+        "committed": true,
+        "http_200": true,
+        "no_citations": true,
+        "no_model_calls": true,
+        "no_retrieved_ids": true
+      },
+      "id": "unanchored-llm_primary-0",
+      "independent_sql": null,
+      "llm_validated": false,
+      "model_calls": [],
+      "question": "How did JB play in that game?",
+      "warnings": []
+    },
+    {
+      "answer": "Which game/date and which event, stretch, or claim are you referring to?",
+      "checks": {
+        "clarifies": true,
+        "committed": true,
+        "http_200": true,
+        "no_citations": true,
+        "no_model_calls": true,
+        "no_retrieved_ids": true
+      },
+      "id": "unanchored-llm_primary-1",
+      "independent_sql": null,
+      "llm_validated": false,
+      "model_calls": [],
+      "question": "Who led the Knicks in rebounds that night?",
+      "warnings": []
+    },
+    {
+      "answer": "The most rebounds by a Knick in a single game this season was 22, achieved twice: Karl-Anthony Towns on 2026-01-28 vs TOR, and Mitchell Robinson on 2026-03-13 vs IND. This is based on the available release archive only.",
+      "checks": {
+        "all_sql_ties_match": true,
+        "committed": true,
+        "http_200": true,
+        "mandatory_native_groups": true,
+        "model_validated": true,
+        "no_warnings": true
+      },
+      "id": "single-game-rebound-high",
+      "independent_sql": null,
+      "llm_validated": true,
+      "model_calls": [
+        {
+          "claim_uses": 1,
+          "kind": "writer",
+          "model": "deepseek/deepseek-v4.1-flash",
+          "provider": "InferenceNet",
+          "raw_bytes": 489,
+          "related_choices": 0,
+          "schema_enforced": false,
+          "slots": [
+            {
+              "choices": 1,
+              "claims": 1
+            }
+          ],
+          "system_bytes": 794,
+          "user_bytes": 3810
+        },
+        {
+          "kind": "review",
+          "model": "deepseek/deepseek-v4.1-flash",
+          "provider": "InferenceNet",
+          "raw_bytes": 1451,
+          "schema_enforced": false,
+          "system_bytes": 1244,
+          "user_bytes": 4602
+        }
+      ],
+      "question": "What was the most rebounds a Knick had in a single game this season?",
+      "warnings": []
+    },
+    {
+      "answer": "Josh Hart led the Knicks with 10 total rebounds across 1 archived games.",
+      "checks": {
+        "committed": true,
+        "correct_date_leader": true,
+        "http_200": true,
+        "mandatory_native_groups": true,
+        "model_validated": false,
+        "no_warnings": false
+      },
+      "id": "date-scoped-rebound-leader",
+      "independent_sql": null,
+      "llm_validated": false,
+      "model_calls": [
+        {
+          "claim_uses": 1,
+          "kind": "writer",
+          "model": "deepseek/deepseek-v4.1-flash",
+          "provider": "InferenceNet",
+          "raw_bytes": 322,
+          "related_choices": 0,
+          "schema_enforced": false,
+          "slots": [
+            {
+              "choices": 1,
+              "claims": 1
+            }
+          ],
+          "system_bytes": 794,
+          "user_bytes": 4091
+        },
+        {
+          "kind": "review",
+          "model": "deepseek/deepseek-v4.1-flash",
+          "provider": "BaseTen",
+          "raw_bytes": 401,
+          "schema_enforced": false,
+          "system_bytes": 1244,
+          "user_bytes": 4104
+        },
+        {
+          "claim_uses": 1,
+          "kind": "writer",
+          "model": "deepseek/deepseek-v4.1-flash",
+          "provider": "InferenceNet",
+          "raw_bytes": 322,
+          "related_choices": 0,
+          "schema_enforced": false,
+          "slots": [
+            {
+              "choices": 1,
+              "claims": 1
+            }
+          ],
+          "system_bytes": 869,
+          "user_bytes": 4540
+        },
+        {
+          "kind": "review",
+          "model": "deepseek/deepseek-v4.1-flash",
+          "provider": "BaseTen",
+          "raw_bytes": 401,
+          "schema_enforced": false,
+          "system_bytes": 1244,
+          "user_bytes": 4104
+        }
+      ],
+      "question": "Who had the most rebounds for the Knicks against Miami on December 21?",
+      "warnings": [
+        "Proposed wording did not pass evidence review."
+      ]
+    },
+    {
+      "answer": "The Knicks held opponents under 100 points in 26 of 101 archived games in the 2025-26 all-phase archive (2025-10-22 through 2026-06-13).",
+      "checks": {
+        "committed": true,
+        "count_matches_sql": true,
+        "http_200": true,
+        "mandatory_native_groups": true,
+        "model_validated": true,
+        "no_warnings": true,
+        "opponent_strict_predicate": true
+      },
+      "id": "opponent-score-under-100",
+      "independent_sql": {
+        "all_final_nyk_games": 101,
+        "opponent_score_under_100": 26
+      },
+      "llm_validated": true,
+      "model_calls": [
+        {
+          "claim_uses": 5,
+          "kind": "writer",
+          "model": "deepseek/deepseek-v4.1-flash",
+          "provider": "InferenceNet",
+          "raw_bytes": 337,
+          "related_choices": 0,
+          "schema_enforced": false,
+          "slots": [
+            {
+              "choices": 5,
+              "claims": 1
+            }
+          ],
+          "system_bytes": 794,
+          "user_bytes": 4877
+        },
+        {
+          "kind": "review",
+          "model": "deepseek/deepseek-v4.1-flash",
+          "provider": "InferenceNet",
+          "raw_bytes": 582,
+          "schema_enforced": false,
+          "system_bytes": 1244,
+          "user_bytes": 4918
+        }
+      ],
+      "question": "How many games did the Knicks hold opponents under 100?",
+      "warnings": []
+    }
+  ],
+  "schema_version": 1,
+  "scope": "Actual reviewed-bundle diagnostic of the implicit opponent-score fix, with retained high/leader/reference controls. Not frozen evaluation, hosted SLO proof, or approval.",
+  "source_had_uncommitted_corrections": true,
+  "source_sha256": {
+    "apps/api/app/services/analyst_loop.py": "4822f87764f985ec1a82f7361ff43d732383efa1fe582b00855a9cf642fae399",
+    "apps/api/app/services/analyst_tools.py": "0a10f062fa599ada72849e30b75f6812036ae2a9b032a93c512b839054421b0b",
+    "apps/api/app/services/game_reference.py": "ac7da4f11ce2354b895d472adecafcbf3d033e21102afa0a68de8590b1b9ff2e",
+    "apps/api/app/services/population_facts.py": "4e55423273dd8ac18784bd98c4ccc1ae626fe6b3a73562ae99e39ecfb0497754",
+    "apps/api/app/services/query_parsing.py": "4faa7f8e2520abbb9bd2d6610ec5f9c7a1dd61661e248213335c9b10bad96d47",
+    "apps/api/app/services/query_resolution.py": "2537c8f3537cb32e1aa20f4e4cba2f118bd7533931fd2c1300b1a23cad59a356"
+  },
+  "synthetic_failing_before": {
+    "actual_count": 101,
+    "expected_count": 9,
+    "question": "How many games did the Knicks hold opponents under 100?",
+    "receipt": "/tmp/kiq-final-backend-20261020/test_requested_archive_statist0/case-04.json",
+    "sample_size": 101,
+    "score_predicate_missing": true
+  },
+  "tested_worktree_head": "13dd8fef8be37ec790bd363d213e6461027ac538",
+  "unchanged_gates": [
+    "Original120/fixed50 and separate launch20 need owner-approved frozen expectations.",
+    "No production writes, alias promotion, cutoff change or deploy."
+  ]
+}

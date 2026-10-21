@@ -45,6 +45,7 @@ async def test_complete_atl_unit_is_actually_ranked_and_independently_mapped(
         for g in source["data"]["games"]
         if "ATL" in {g["home_team_id"], g["away_team_id"]}
     }
+    identity_game_date = expected[min(expected)]["game_date"]
     directory = Path(os.environ.get("KNICKSIQ_UNITS_ARTIFACT_DIR", str(tmp_path)))
     directory.mkdir(parents=True, exist_ok=True)
     async with AsyncSessionLocal() as db:
@@ -144,7 +145,11 @@ async def test_complete_atl_unit_is_actually_ranked_and_independently_mapped(
             "question": "How did the Knicks do against ATL in the regular season?",
             "turn_id": "archive-units-narrow-proof",
         },
-        {"question": "How did JB play in that game?", "turn_id": "archive-units-identity-proof"},
+        {
+            "question": "How did JB play in that game?",
+            "context": [{"role": "user", "content": f"The ATL game on {identity_game_date}."}],
+            "turn_id": "archive-units-identity-proof",
+        },
     ]
     for index, request in enumerate(followups):
         async with AsyncClient(
@@ -166,8 +171,6 @@ async def test_complete_atl_unit_is_actually_ranked_and_independently_mapped(
         if index == 0:
             assert not any(d["metadata"].get("unit_type") == "multigame_aggregate" for d in docs)
         else:
-            assert result.json()["route"] == "clarification"
-            assert not result.json()["citations"]
             identity = next(d for d in docs if d["metadata"].get("unit_type") == "player_identity")
             assert identity["evidence_id"] in scope_capture["searches"][0]["returned_evidence_ids"]
             canonical = next(p for p in source["data"]["players"] if p["nba_player_id"] == 1628973)

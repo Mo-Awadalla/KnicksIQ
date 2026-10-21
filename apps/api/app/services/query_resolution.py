@@ -23,7 +23,6 @@ from app.services.query_parsing import (
     _periods,
     _resolve_player_mentions,
     is_game_score_request,
-    is_live_only_score_request,  # noqa: F401
     is_record_request,
 )
 from app.services.team_aliases import team_ids_in_text
@@ -340,6 +339,7 @@ async def resolve_query(
             opponent_id
             and re.search(r"\b(?:the|that|most recent)?\s*game\b", q)
             and "games" not in q
+            and not re.search(r"\bper\s+game\b", q)
         )
     )
     all_tied_games = False
