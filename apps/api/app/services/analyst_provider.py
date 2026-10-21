@@ -247,6 +247,15 @@ async def request_model[Schema: BaseModel](
         if isinstance(value, Action) and value.action == "call_tools" and len(raw) > 3600:
             raise ValueError("Tool action exceeds output cap")
         return value
+    except Exception:
+        # The provider can bill a response the adapter rejects (empty content, truncated
+        # JSON). Settle at its reported cost; only a call with no response keeps the flat
+        # reservation.
+        metadata = metadata or getattr(adapter, "last_metadata", {}) or {}
+        cost = (metadata.get("usage") or {}).get("cost")
+        if cost is not None:
+            loop.costs[-1] = cost
+        raise
     finally:
         usage = metadata.get("usage") or {}
         loop.trace.append(

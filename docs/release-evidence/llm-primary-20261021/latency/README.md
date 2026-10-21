@@ -134,3 +134,15 @@ cut about 1.1 s from every turn and would clear it, but that is not allowed.
 40 base-gate, 40 after-gate, 3 aborted when the integration branch advanced. The brief was 80;
 the overrun paid for recovering an artifact lost to a summary error and for re-measuring after
 two integration merges. Reviewer probes were 24 provider calls, not questions.
+
+## Failed-call settlement (cost)
+
+A billed provider response that the adapter rejects still has a reported cost. `request_model`
+read `last_metadata` only after a successful generate, so a rejected response left the cost as
+None and `settle` charged the flat reservation. CostExplain measured the effect on
+`AI_REASONING_EFFORT=high`: 11 empty or truncated reviewer calls were billed about $0.018 by the
+provider and charged $0.12 on the ledger; the run's ledger was $0.147864 against $0.046011
+reported (68.9% phantom). Fixed in `387b11a`: the exception path records
+`usage.cost` before re-raising, so a billed failure settles at its reported cost while a call
+with no HTTP response keeps the reservation policy. The trace also records the failed call's
+`finish_reason`, `content_kind` and `reasoning_tokens`.
