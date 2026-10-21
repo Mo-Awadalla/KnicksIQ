@@ -1,8 +1,8 @@
 import { Link, useLocation } from '@tanstack/react-router'
 import { CircleAlert, Loader2, RefreshCw } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import './surfaces.css'
 import './answer-states.css'
+import './surfaces.css'
 
 const navItems = [
   { href: '/', label: 'Archive' },
@@ -55,7 +55,10 @@ export function QuestionProgress({
 
   return (
     <div className='question-progress'>
-      <Loader2 className='question-progress-spinner animate-spin' aria-hidden='true' />
+      <Loader2
+        className='question-progress-spinner animate-spin'
+        aria-hidden='true'
+      />
       <div className='question-progress-copy'>
         <p role='status' aria-live='polite' aria-atomic='true'>
           {message}

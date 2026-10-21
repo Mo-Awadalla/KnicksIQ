@@ -444,8 +444,6 @@
   align-content: start;
 }
 
-
-
 .archive-message-list {
   display: grid;
   gap: 1.5rem;
@@ -489,7 +487,6 @@
 .archive-answer-heading svg {
   color: var(--archive-orange);
 }
-
 
 .archive-degraded {
   margin-bottom: 1rem;

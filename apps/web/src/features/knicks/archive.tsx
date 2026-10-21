@@ -8,8 +8,8 @@ import { Textarea } from '@/components/ui/textarea'
 import { AnswerPanel } from './answer-panel'
 import { ArchiveFooter } from './archive-footer'
 import { MEMORY_NOTE } from './conversation'
-import { QuestionProgress } from './surface-layout'
 import './landing.css'
+import { QuestionProgress } from './surface-layout'
 import { useAnalyst } from './use-analyst'
 
 const KNICKS_SEASON = '2025-26'
@@ -399,7 +399,10 @@ export function SeasonArchivePage() {
                 </Alert>
               ) : null}
               {messages.length > 0 ? (
-                <ol className='archive-message-list' aria-busy={analyst.isPending}>
+                <ol
+                  className='archive-message-list'
+                  aria-busy={analyst.isPending}
+                >
                   {messages.map((message, index) =>
                     message.boundary ? (
                       <li
