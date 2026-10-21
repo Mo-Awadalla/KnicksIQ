@@ -129,13 +129,20 @@ def create_app() -> FastAPI:
 
     @app.exception_handler(HTTPException)
     async def http_error(request: Request, exc: HTTPException):
-        message = str(exc.detail) if isinstance(exc.detail, str) else "Request failed"
+        content: dict[str, object] = {
+            "error": {"code": f"http_{exc.status_code}", "message": "Request failed"},
+            "request_id": getattr(request.state, "request_id", None),
+        }
+        if isinstance(exc.detail, str):
+            content["error"] = {"code": f"http_{exc.status_code}", "message": exc.detail}
+        elif isinstance(exc.detail, dict) and exc.detail.get("reason") is not None:
+            # Public clients need a machine-readable reason; never echo credentials.
+            reason = str(exc.detail["reason"])
+            content["error"] = {"code": f"http_{exc.status_code}", "message": reason}
+            content["detail"] = {"reason": reason}
         return JSONResponse(
             status_code=exc.status_code,
-            content={
-                "error": {"code": f"http_{exc.status_code}", "message": message},
-                "request_id": getattr(request.state, "request_id", None),
-            },
+            content=content,
             headers=exc.headers,
         )
 
