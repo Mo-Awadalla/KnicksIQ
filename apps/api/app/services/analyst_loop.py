@@ -11,6 +11,7 @@ from typing import Any
 from app.core.config import get_settings
 from app.services.analyst_budget import BudgetReservation
 from app.services.analyst_fallback import fallback_claims, re_search_discovery
+from app.services.analyst_prefetch import prefetch_calls
 from app.services.analyst_provider import (
     Schema,
     build_payload,
@@ -59,6 +60,7 @@ class AnalystLoop:
         self.accepted_suggestions: list[str] = []
         self.recovery_ran = False
         self.request_id = ""
+        self.preplanned: list[str] = []
 
     def payload(
         self,
@@ -168,6 +170,13 @@ class AnalystLoop:
                 else:
                     well_formed = action.answer is not None and not action.tools
                 if well_formed:
+                    if self.trace:
+                        self.trace[-1].update(
+                            {
+                                "action": action.action,
+                                "tools_requested": [tool.name for tool in action.tools],
+                            }
+                        )
                     return action
                 error: Exception = ValueError("Malformed action")
             except ValidationError as exc:
@@ -177,7 +186,44 @@ class AnalystLoop:
                 raise error
             retried = True
 
+    async def run_tool(self, call: ToolCall) -> ToolResult:
+        tool_started = time.monotonic()
+        result = await self.tools.execute(call)
+        self.results.append(result)
+        self.trace.append(
+            {
+                "stage": "tool",
+                "tool": call.name,
+                "latency_ms": round((time.monotonic() - tool_started) * 1000),
+                "status": result.status,
+                "claims": len(result.claims),
+                "evidence": len(result.evidence),
+                "candidates": len(result.candidates),
+            }
+        )
+        return result
+
+    async def prefetch(self) -> None:
+        """Run backend-chosen tools before the first model call.
+
+        The orchestrator spends one whole provider round trip choosing a tool that the
+        question and the resolved scope already determine. Prefetch removes that call for
+        clear questions; the model keeps both tool rounds when the prefetched evidence is
+        not enough.
+        """
+        if not self.settings.analyst_prefetch_enabled:
+            return
+        calls = prefetch_calls(self.tools)
+        if not calls:
+            return
+        self.preplanned = [call.name for call in calls]
+        for call in calls:
+            if time.monotonic() - self.started >= self.settings.analyst_investigation_seconds:
+                break
+            await self.run_tool(call)
+
     async def investigate(self) -> dict[str, Any]:
+        await self.prefetch()
         while True:
             action = await self.next_action()
             if action.action == "call_tools":
@@ -199,7 +245,7 @@ class AnalystLoop:
                     ):
                         break
                     self.tool_count += 1
-                    self.results.append(await self.tools.execute(call))
+                    await self.run_tool(call)
                 continue
             answer = action.answer
             if answer is None:  # next_action guarantees this; narrows the type

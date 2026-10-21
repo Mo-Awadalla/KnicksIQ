@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import json
 import ssl
+import time
 import urllib.error
 import urllib.request
 from abc import ABC, abstractmethod
@@ -114,13 +115,20 @@ class OpenAICompatibleLLMAdapter(LLMAdapter):
             },
             method="POST",
         )
+        sent_at = time.monotonic()
+        first_byte_at: float | None = None
         try:
             with urllib.request.urlopen(
                 req,
                 timeout=self.timeout_seconds,
                 context=_ssl_context(),
             ) as response:
-                body = json.loads(response.read().decode("utf-8"))
+                # urlopen returns once response headers arrive, which is the earliest
+                # observable byte without streaming. A non-streaming provider may send
+                # them only after generation, so treat this as an upper-bound TTFB.
+                first_byte_at = time.monotonic()
+                raw = response.read()
+                body = json.loads(raw.decode("utf-8"))
         except urllib.error.HTTPError as exc:
             detail = exc.read().decode("utf-8", errors="replace").strip()
             if not detail:
@@ -139,11 +147,51 @@ class OpenAICompatibleLLMAdapter(LLMAdapter):
         if not isinstance(choices, list) or not choices:
             detail = json.dumps(body, ensure_ascii=False)
             raise RuntimeError(f"AI provider response omitted choices: {detail[:1000]}")
-        message = choices[0].get("message") if isinstance(choices[0], dict) else None
-        content = message.get("content") if isinstance(message, dict) else None
+        choice = choices[0] if isinstance(choices[0], dict) else {}
+        raw_message = choice.get("message")
+        message = raw_message if isinstance(raw_message, dict) else {}
+        content = message.get("content")
+        reasoning = message.get("reasoning") or message.get("reasoning_content")
+        finish_reason = choice.get("finish_reason")
+        usage = body.get("usage") or {}
+        self.last_metadata = {key: body.get(key) for key in ("id", "model", "provider")}
+        self.last_metadata.update(
+            {
+                "usage": usage,
+                "finish_reason": finish_reason,
+                "native_finish_reason": choice.get("native_finish_reason"),
+                "content_kind": (
+                    "string"
+                    if isinstance(content, str) and content
+                    else "empty_string"
+                    if content == ""
+                    else "null"
+                    if content is None
+                    else type(content).__name__
+                ),
+                "reasoning_chars": len(reasoning) if isinstance(reasoning, str) else None,
+                "message_keys": sorted(message),
+                "choice_keys": sorted(choice),
+                "request_bytes": len(payload),
+                "response_bytes": len(raw),
+                "http_ttfb_ms": round((first_byte_at - sent_at) * 1000, 1)
+                if first_byte_at is not None
+                else None,
+                "http_elapsed_ms": round((time.monotonic() - sent_at) * 1000, 1),
+                "max_tokens": self.max_tokens,
+            }
+        )
         if not isinstance(content, str):
-            raise RuntimeError("AI provider response omitted message content")
-        self.last_metadata = {key: body.get(key) for key in ("id", "model", "provider", "usage")}
+            # Keep the cause in the error: an empty completion is usually a token ceiling or
+            # a provider fault, and the two need different fixes.
+            raise RuntimeError(
+                "AI provider response omitted message content "
+                f"(finish_reason={finish_reason}, provider={self.last_metadata.get('provider')}, "
+                f"model={self.last_metadata.get('model')}, max_tokens={self.max_tokens}, "
+                f"usage={json.dumps(usage, separators=(',', ':'))[:500]}, "
+                f"content_kind={self.last_metadata['content_kind']}, "
+                f"message_keys={sorted(message)})"
+            )
         return content
 
 
