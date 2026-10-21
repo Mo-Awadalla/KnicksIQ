@@ -1,0 +1,84 @@
+{
+ "category": "turning_points",
+ "trials": 2,
+ "questions": 10,
+ "responses": 20,
+ "meets_expectation": 8,
+ "meets_all_trials": 4,
+ "outcomes": {
+  "validated_declined": 12,
+  "validated": 8
+ },
+ "by_question": {
+  "turning_points-001": {
+   "meets": 0,
+   "outcomes": [
+    "validated_declined",
+    "validated_declined"
+   ]
+  },
+  "turning_points-002": {
+   "meets": 2,
+   "outcomes": [
+    "validated",
+    "validated"
+   ]
+  },
+  "turning_points-003": {
+   "meets": 0,
+   "outcomes": [
+    "validated_declined",
+    "validated_declined"
+   ]
+  },
+  "turning_points-004": {
+   "meets": 2,
+   "outcomes": [
+    "validated",
+    "validated"
+   ]
+  },
+  "turning_points-005": {
+   "meets": 0,
+   "outcomes": [
+    "validated_declined",
+    "validated_declined"
+   ]
+  },
+  "turning_points-006": {
+   "meets": 2,
+   "outcomes": [
+    "validated",
+    "validated"
+   ]
+  },
+  "turning_points-007": {
+   "meets": 0,
+   "outcomes": [
+    "validated_declined",
+    "validated_declined"
+   ]
+  },
+  "turning_points-008": {
+   "meets": 0,
+   "outcomes": [
+    "validated_declined",
+    "validated_declined"
+   ]
+  },
+  "turning_points-009": {
+   "meets": 0,
+   "outcomes": [
+    "validated_declined",
+    "validated_declined"
+   ]
+  },
+  "turning_points-010": {
+   "meets": 2,
+   "outcomes": [
+    "validated",
+    "validated"
+   ]
+  }
+ }
+}

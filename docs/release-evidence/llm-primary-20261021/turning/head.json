@@ -1,0 +1,87 @@
+{
+ "category": "turning_points",
+ "trials_note": "2 trials for 001, 005 and 007; 1 trial for 002, 003, 004, 006, 008, 009 and 010. The 60-question live budget was exhausted by the base run and these head runs.",
+ "questions": 10,
+ "responses": 13,
+ "meets_expectation": 12,
+ "meets_all_trials": 9,
+ "outcomes": {
+  "failed:orchestrate:ValueError": 1,
+  "validated": 12
+ },
+ "by_question": {
+  "turning_points-001": {
+   "trials": 2,
+   "meets": 1,
+   "outcomes": [
+    "failed:orchestrate:ValueError",
+    "validated"
+   ]
+  },
+  "turning_points-002": {
+   "trials": 1,
+   "meets": 1,
+   "outcomes": [
+    "validated"
+   ]
+  },
+  "turning_points-003": {
+   "trials": 1,
+   "meets": 1,
+   "outcomes": [
+    "validated"
+   ]
+  },
+  "turning_points-004": {
+   "trials": 1,
+   "meets": 1,
+   "outcomes": [
+    "validated"
+   ]
+  },
+  "turning_points-005": {
+   "trials": 2,
+   "meets": 2,
+   "outcomes": [
+    "validated",
+    "validated"
+   ]
+  },
+  "turning_points-006": {
+   "trials": 1,
+   "meets": 1,
+   "outcomes": [
+    "validated"
+   ]
+  },
+  "turning_points-007": {
+   "trials": 2,
+   "meets": 2,
+   "outcomes": [
+    "validated",
+    "validated"
+   ]
+  },
+  "turning_points-008": {
+   "trials": 1,
+   "meets": 1,
+   "outcomes": [
+    "validated"
+   ]
+  },
+  "turning_points-009": {
+   "trials": 1,
+   "meets": 1,
+   "outcomes": [
+    "validated"
+   ]
+  },
+  "turning_points-010": {
+   "trials": 1,
+   "meets": 1,
+   "outcomes": [
+    "validated"
+   ]
+  }
+ }
+}
