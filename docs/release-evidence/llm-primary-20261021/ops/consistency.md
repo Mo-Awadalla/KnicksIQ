@@ -29,6 +29,9 @@ and in `docs/production-runbook.md`.
 
 Blueprint and validator facts:
 
+- `render.yaml` was reviewed and left unchanged. No provable inconsistency was found in it: its
+  values match `test_render_blueprint_enables_the_grounded_ai_configuration`, and the earlier
+  contradiction was in the docs, not the blueprint.
 - `render.yaml` sets `ANALYSIS_ANSWER_MODE=llm_primary`, `ANALYST_EVIDENCE_LOOP_ENABLED=true`,
   `ANALYSIS_SHADOW_SAMPLE_RATE=0.1`, and `OPENROUTER_MONTHLY_CUTOFF_USD=2`.
 - `apps/api/app/services/release_evidence.py` still requires a release record with

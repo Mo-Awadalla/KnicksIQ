@@ -16,7 +16,7 @@ Artifacts: `capacity.json` (aggregates), `capacity.rows.jsonl` (one row per ques
 - `charged_usd` per question is the Redis `ai-budget:2026-10` delta measured immediately before
   and after the request. That delta is what `reserve()` and `settle()` enforce, so it is the
   authoritative cost for the cutoff. The provider's reported `usage.cost` is recorded beside it
-  as a cross-check; both agreed to eight decimal places in total.
+  as a cross-check; the three totals agree within $0.00000003, which is per-row rounding.
 - `tokens` is the provider-reported total across every model call in the turn. `calls` counts
   adapter invocations that reached the provider.
 - Latency is wall clock around the HTTP request, including all model calls and fallback work.
@@ -38,7 +38,8 @@ Artifacts: `capacity.json` (aggregates), `capacity.rows.jsonl` (one row per ques
 | Calls per question (mean) | 3.00 |
 | Tokens total | 231,195 |
 | Tokens per question (mean) | 5,779.9 |
-| Charged cost total | $0.03624128 |
+| Charged cost total (ledger delta) | $0.03624128 |
+| Charged cost total (sum of rounded rows) | $0.03624125 |
 | Charged cost per question (mean) | $0.00090603 |
 | Charged cost per question (p50) | $0.00089932 |
 | Charged cost per question (p95) | $0.00134087 |
