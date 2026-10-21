@@ -176,7 +176,8 @@ DB_URL=postgresql+asyncpg://knicksiq:knicksiq@localhost:55500/knicksiq \
 REDIS_URL=redis://localhost:56500/14 RAG_QDRANT_ENABLED=false \
 ANALYSIS_ANSWER_MODE=llm_primary ANALYST_EVIDENCE_LOOP_ENABLED=true \
 AI_PROVIDER=openrouter AI_BASE_URL=https://openrouter.ai/api/v1 \
-AI_CHAT_MODEL=deepseek/deepseek-v4.1-flash AI_REASONING_EFFORT=none \
+AI_CHAT_MODEL=deepseek/deepseek-v4.1-flash \
+AI_REASONING_EFFORT=none ANALYST_REASONING_EFFORT=none \
 OPENROUTER_MONTHLY_CUTOFF_USD=2 \
 uv run --package knicksiq-api python tools/release/measure_llm_cost.py \
   --questions docs/release-evidence/llm-primary-20261021/cost/questions.mixed.jsonl \
