@@ -57,7 +57,8 @@ class Settings(BaseSettings):
     ai_chat_model: str = "deepseek/deepseek-v4.1-flash"
     ai_embedding_model: str = "text-embedding-3-small"
     ai_request_timeout_seconds: float = 20.0
-    ai_reasoning_effort: Literal["none", "minimal", "low", "medium", "high"] | None = None
+    # Matches production. Unset, the model spends max_tokens on reasoning and returns no JSON.
+    ai_reasoning_effort: Literal["none", "minimal", "low", "medium", "high"] | None = "none"
 
     openrouter_api_key: str | None = None
     openrouter_summary_model: str = "deepseek/deepseek-v4.1-flash"
