@@ -5,9 +5,12 @@ return and legacy planner/generator chain with one bounded orchestrator. It uses
 the existing configured model, six controlled tools, immutable backend claims,
 a separate whole-answer reviewer, and one optional revision/re-review. The default
 local default remains **false**. The production Blueprint enables the loop and
-`llm_primary` following the owner’s explicit production activation request.
-`ANALYSIS_ANSWER_MODE=deterministic` provides immediate model-free rollback with
-the flag enabled. `shadow` exercises the same metered loop and delivers facts.
+`llm_primary` following the owner’s explicit production activation request. The single
+authoritative statement of the intended launch configuration is in
+[the release checklist](release-checklist.md#intended-launch-configuration); pre-promotion
+verification runs in `shadow` at 0.1. `ANALYSIS_ANSWER_MODE=deterministic` provides immediate
+model-free rollback with the flag enabled. `shadow` exercises the same metered loop and delivers
+facts.
 
 ## Contracts and limitations
 
