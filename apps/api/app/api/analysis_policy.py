@@ -293,9 +293,7 @@ def _requires_pre_model_refusal(question: str) -> bool:
         return True
     if _FUTURE_DATE.search(question):
         return True
-    return bool(
-        _LIVE_OR_FUTURE.search(question) and not _ARCHIVE_INTENT.search(question)
-    )
+    return bool(_LIVE_OR_FUTURE.search(question) and not _ARCHIVE_INTENT.search(question))
 
 
 def _is_greeting(question: str) -> bool:
