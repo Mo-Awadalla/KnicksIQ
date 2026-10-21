@@ -2,7 +2,9 @@
 
 Status: proposal requiring explicit owner approval; not an implemented gate change.
 The existing release validator still requires shadow at 0.1. No production
-setting or existing gate is waived by this document.
+setting or existing gate is waived by this document. The single authoritative
+statement of the intended launch configuration is in
+[the release checklist](release-checklist.md#intended-launch-configuration).
 
 ## Pre-promotion verification
 

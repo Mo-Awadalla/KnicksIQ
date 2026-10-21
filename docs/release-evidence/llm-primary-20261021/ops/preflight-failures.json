@@ -1,0 +1,276 @@
+{
+  "results": [
+    {
+      "argv_extra": [],
+      "broken_input": "AI_API_KEY unset",
+      "check": "env.required",
+      "exit_code": 1,
+      "expected_status": "fail",
+      "observed_detail": "missing or blank variables: AI_API_KEY",
+      "observed_status": "fail",
+      "passed": true
+    },
+    {
+      "argv_extra": [],
+      "broken_input": "ANALYSIS_SHADOW_SAMPLE_RATE=1.5",
+      "check": "env.parse",
+      "exit_code": 1,
+      "expected_status": "fail",
+      "observed_detail": "settings rejected: analysis_shadow_sample_rate: Input should be less than or equal to 1",
+      "observed_status": "fail",
+      "passed": true
+    },
+    {
+      "argv_extra": [],
+      "broken_input": "ANALYSIS_ANSWER_MODE=shadow",
+      "check": "env.mode",
+      "exit_code": 1,
+      "expected_status": "fail",
+      "observed_detail": "configured shadow, expected llm_primary",
+      "observed_status": "fail",
+      "passed": true
+    },
+    {
+      "argv_extra": [],
+      "broken_input": "evidence loop false",
+      "check": "env.evidence_loop",
+      "exit_code": 1,
+      "expected_status": "fail",
+      "observed_detail": "evidence loop is disabled",
+      "observed_status": "fail",
+      "passed": true
+    },
+    {
+      "argv_extra": [],
+      "broken_input": "AI_PROVIDER=mock",
+      "check": "env.provider",
+      "exit_code": 1,
+      "expected_status": "fail",
+      "observed_detail": "AI_PROVIDER is not openrouter",
+      "observed_status": "fail",
+      "passed": true
+    },
+    {
+      "argv_extra": [],
+      "broken_input": "allowlist other/model",
+      "check": "env.allowlist",
+      "exit_code": 1,
+      "expected_status": "fail",
+      "observed_detail": "chat model is not allowlisted; summary model is not allowlisted",
+      "observed_status": "fail",
+      "passed": true
+    },
+    {
+      "argv_extra": [],
+      "broken_input": "request timeout 45",
+      "check": "env.timeouts",
+      "exit_code": 1,
+      "expected_status": "fail",
+      "observed_detail": "request timeout exceeds the analyst deadline",
+      "observed_status": "fail",
+      "passed": true
+    },
+    {
+      "argv_extra": [],
+      "broken_input": "cutoff 8",
+      "check": "env.cutoff",
+      "exit_code": 1,
+      "expected_status": "fail",
+      "observed_detail": "configured 8, expected 2",
+      "observed_status": "fail",
+      "passed": true
+    },
+    {
+      "argv_extra": [],
+      "broken_input": "shadow rate 1.5",
+      "check": "env.shadow_rate",
+      "exit_code": 1,
+      "expected_status": "fail",
+      "observed_detail": "settings unavailable",
+      "observed_status": "fail",
+      "passed": true
+    },
+    {
+      "argv_extra": [],
+      "broken_input": "cors evil origin",
+      "check": "env.cors",
+      "exit_code": 1,
+      "expected_status": "fail",
+      "observed_detail": "PUBLIC_WEB_ORIGIN is not in CORS_ORIGINS",
+      "observed_status": "fail",
+      "passed": true
+    },
+    {
+      "argv_extra": [],
+      "broken_input": "trusted hosts wildcard",
+      "check": "env.trusted_hosts",
+      "exit_code": 1,
+      "expected_status": "fail",
+      "observed_detail": "wildcard trusted host; api.knicksiq.win is not trusted",
+      "observed_status": "fail",
+      "passed": true
+    },
+    {
+      "argv_extra": [],
+      "broken_input": "SENTRY_DSN empty",
+      "check": "env.sentry",
+      "exit_code": 1,
+      "expected_status": "fail",
+      "observed_detail": "SENTRY_DSN is absent or not a valid HTTPS DSN",
+      "observed_status": "fail",
+      "passed": true
+    },
+    {
+      "argv_extra": [],
+      "broken_input": "default ip hash secret",
+      "check": "env.ip_hash_secret",
+      "exit_code": 1,
+      "expected_status": "fail",
+      "observed_detail": "development default; shorter than 32 characters",
+      "observed_status": "fail",
+      "passed": true
+    },
+    {
+      "argv_extra": [],
+      "broken_input": "ENVIRONMENT=development",
+      "check": "env.environment",
+      "exit_code": 1,
+      "expected_status": "fail",
+      "observed_detail": "not a production environment",
+      "observed_status": "fail",
+      "passed": true
+    },
+    {
+      "argv_extra": [],
+      "broken_input": "require active release false",
+      "check": "env.require_release",
+      "exit_code": 1,
+      "expected_status": "fail",
+      "observed_detail": "active release is not required",
+      "observed_status": "fail",
+      "passed": true
+    },
+    {
+      "argv_extra": [
+        "--base-url",
+        "http://127.0.0.1:9",
+        "--skip-env"
+      ],
+      "broken_input": "unreachable base URL",
+      "check": "target.live",
+      "exit_code": 1,
+      "expected_status": "fail",
+      "observed_detail": "probe crashed: ConnectError",
+      "observed_status": "fail",
+      "passed": true
+    },
+    {
+      "argv_extra": [],
+      "broken_input": "empty SQLite database",
+      "check": "target.ready",
+      "exit_code": 1,
+      "expected_status": "fail",
+      "observed_detail": "HTTP 503, status 'not_ready', data_version None, required_failures ['postgres', 'active_release', 'database probe failed: OperationalError']",
+      "observed_status": "fail",
+      "passed": true
+    },
+    {
+      "argv_extra": [],
+      "broken_input": "cors evil origin",
+      "check": "target.cors",
+      "exit_code": 1,
+      "expected_status": "fail",
+      "observed_detail": "HTTP 400, allow-origin None, expected 'https://www.knicksiq.win'",
+      "observed_status": "fail",
+      "passed": true
+    },
+    {
+      "argv_extra": [],
+      "broken_input": "trusted hosts wildcard",
+      "check": "target.trusted_host",
+      "exit_code": 1,
+      "expected_status": "fail",
+      "observed_detail": "untrusted host returned HTTP 200",
+      "observed_status": "fail",
+      "passed": true
+    },
+    {
+      "argv_extra": [
+        "--ledger-key",
+        "ai-budget:2099-01"
+      ],
+      "broken_input": "missing month key",
+      "check": "ledger.present",
+      "exit_code": 1,
+      "expected_status": "fail",
+      "observed_detail": "ai-budget:2099-01 is absent",
+      "observed_status": "fail",
+      "passed": true
+    },
+    {
+      "argv_extra": [
+        "--ledger-key",
+        "ai-budget:2099-01"
+      ],
+      "broken_input": "missing month key",
+      "check": "ledger.month",
+      "exit_code": 1,
+      "expected_status": "fail",
+      "observed_detail": "key ai-budget:2099-01, current month ai-budget:2026-10",
+      "observed_status": "fail",
+      "passed": true
+    },
+    {
+      "argv_extra": [
+        "--ledger-key",
+        "ai-budget:selftest-inconsistent"
+      ],
+      "broken_input": "reservation exceeds total",
+      "check": "ledger.consistent",
+      "exit_code": 1,
+      "expected_status": "fail",
+      "observed_detail": "reservations exceed the ledger total",
+      "observed_status": "fail",
+      "passed": true
+    },
+    {
+      "argv_extra": [
+        "--ledger-key",
+        "ai-budget:selftest-capacity"
+      ],
+      "broken_input": "spend above cutoff",
+      "check": "ledger.capacity",
+      "exit_code": 1,
+      "expected_status": "fail",
+      "observed_detail": "spend 3.0 of cutoff 2 USD",
+      "observed_status": "fail",
+      "passed": true
+    },
+    {
+      "argv_extra": [],
+      "broken_input": "no active release",
+      "check": "kill_switch",
+      "exit_code": 1,
+      "expected_status": "fail",
+      "observed_detail": "probe crashed: OperationalError",
+      "observed_status": "fail",
+      "passed": true
+    },
+    {
+      "argv_extra": [],
+      "broken_input": "deterministic mode",
+      "check": "provider_failure",
+      "exit_code": 1,
+      "expected_status": "fail",
+      "observed_detail": "provider failure probe failed its factual or degradation assertions",
+      "observed_status": "fail",
+      "passed": true
+    }
+  ],
+  "summary": {
+    "cases": 25,
+    "method": "One isolated invocation per check with exactly one input broken; --only isolates the check.",
+    "schema_version": 1,
+    "unexpected": []
+  }
+}
