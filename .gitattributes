@@ -88,3 +88,7 @@ docs/release-evidence/llm-primary-20261021/latency/*.json linguist-generated=tru
 docs/release-evidence/llm-primary-20261021/quarters/*.jsonl linguist-generated=true
 docs/release-evidence/llm-primary-20261021/prefetch/*.jsonl linguist-generated=true
 docs/release-evidence/llm-primary-20261021/prefetch/*.json linguist-generated=true
+
+# Per-call cost reconciliation output from tools/release/measure_llm_cost.py.
+docs/release-evidence/llm-primary-20261021/cost/*/*.jsonl linguist-generated=true
+docs/release-evidence/llm-primary-20261021/cost/*/*.json linguist-generated=true
