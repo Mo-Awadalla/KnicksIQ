@@ -15,6 +15,7 @@ DEFAULT_EXPECTED_MODE = "llm_primary"
 DEFAULT_EXPECTED_CUTOFF = 2.0
 DEFAULT_LEDGER_KEY = f"ai-budget:{datetime.now(UTC):%Y-%m}"
 PRIMARY_QUESTION = "What was the Knicks record this season?"
+OVERALL_QUESTION = "What was the Knicks record overall this season?"
 
 
 @dataclass
@@ -32,6 +33,7 @@ class Context:
     settings: Any = None
     settings_error: str = ""
     db_record: tuple[int, int] | None = None
+    db_overall_record: tuple[int, int] | None = None
 
     def add(self, check_id: str, ok: bool, detail: str, evidence: dict[str, Any] | None = None):
         self.checks.append(Check(check_id, "pass" if ok else "fail", detail, evidence or {}))

@@ -10,8 +10,8 @@ grep -rnE "launch configuration is 10% shadow|deterministic answers delivered to
 # no matches
 
 grep -rnE "launch.*shadow|shadow.*launch|deliver(ed|s|y).*deterministic" docs/*.md | grep -v release-evidence/
-# docs/production-runbook.md:100:### Shadow: delivery stays deterministic, the loop is sampled
-# docs/release-checklist.md:34:  shadow gate from the llm_primary launch check. ...
+# docs/production-runbook.md:132:### Shadow: delivery stays deterministic, the loop is sampled
+# docs/release-checklist.md:50:  shadow gate from the llm_primary launch check. ...
 # docs/render-deploy.md:66:shadow gates in docs/evaluation.md pass and the owner approves the launch
 ```
 
@@ -20,12 +20,23 @@ not the launch mode.
 
 ```sh
 grep -rn '\$8' docs/*.md render.yaml
-# docs/analyst-evidence-loop.md:142: ... the original $8 default was not increased.
 # docs/production-runbook.md:44: ... The cutoff in force at that time was $8;
 ```
 
-Both remaining $8 mentions are historical. The current configured cutoff is $2 in `render.yaml`
-and in `docs/production-runbook.md`.
+The remaining $8 mention is historical. The current configured cutoff is $2 in `render.yaml` and
+in `docs/production-runbook.md`.
+
+Machine check after the docs update:
+
+```sh
+python3 tools/release/check_launch_mode_consistency.py \
+  --json-out docs/release-evidence/llm-primary-20261021/ops/docs-consistency.json
+# status: pass, mismatches: []
+```
+
+The script compares the mode, evidence-loop flag, shadow rate and cutoff in `render.yaml` with the
+authoritative release-checklist section. It requires `docs/analyst-evidence-loop.md` to link that
+section, name the launch mode and name all nine tools. Its output is `docs-consistency.json`.
 
 Blueprint and validator facts:
 

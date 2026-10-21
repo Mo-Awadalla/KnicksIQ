@@ -12,11 +12,34 @@ are declined rather than invented.
 - Neon Free Postgres: authoritative factual data and active release metadata.
 - Render Free Key Value: ephemeral shared rate limits, response caching, and AI budget state.
 - Qdrant Cloud provides optional hybrid retrieval; Postgres/lexical retrieval remains authoritative when it is unavailable.
-- OpenRouter: optional phrasing of already-computed facts.
+- OpenRouter: composes validated answers from backend-computed claims; deterministic cited facts
+  remain the fallback.
 - Sentry: scrubbed exception, trace, alert, and uptime monitoring.
 
 Workers, ingestion, report generation, MCP, admin routes, Swagger, and runtime data mutations are
 not part of the production deployment. NBA ingestion and release construction are offline tools.
+
+## Analyst
+
+The default answer path is the bounded evidence loop described in
+[docs/analyst-evidence-loop.md](docs/analyst-evidence-loop.md). Nine tools are registered:
+`get_player_stats`, `get_team_stats`, `compare_windows`, `discover_facts`, `search_archive`,
+`get_evidence`, `get_game_flow`, `get_team_splits` and `get_period_scoring`. Quarter,
+period, play-by-play and split questions are supported. Season-level records default to the
+regular season and the answer states the phase; the overall record appears only when asked.
+
+The backend computes every number as an immutable claim with a receipt. Prompt v4 and validator
+v2 add a deterministic number gate before the independent reviewer. `ANALYST_REASONING_EFFORT=none`
+is the default, token caps are enforced, and deterministic prefetch (`ANALYST_PREFETCH_ENABLED`)
+runs one clear tool before the first model call. Typed pre-model refusals cover instruction
+override, wagering and out-of-archive dates; other unsupported wording reaches the analyst, which
+declines or explains coverage. `refused=true` marks a decline or coverage explanation, not an
+error.
+
+At the $2 cutoff, measured capacity is about 1,413 questions per month on current routing, mean
+$0.001415 per question, and it is highly route dependent. Measured latency is p50 2,290 ms and p95
+4,608 ms; the four second p95 gate is not met. Approved figures and artifacts are indexed in
+[docs/release-evidence/llm-primary-20261021/README.md](docs/release-evidence/llm-primary-20261021/README.md).
 
 `apps/web` is the only maintained frontend. The retired frontend remains available
 in Git history; historical release evidence is kept unchanged. Install frontend
@@ -140,7 +163,7 @@ Backend:
 uv run ruff format --check apps packages migrations
 uv run ruff check apps packages migrations
 uv run pyright apps packages migrations
-uv run pytest
+TEST_MODE=true uv run pytest apps packages tools/report_audit
 ```
 
 Frontend:
