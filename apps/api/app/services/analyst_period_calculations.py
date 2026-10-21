@@ -16,6 +16,38 @@ if TYPE_CHECKING:
     from app.services.query_resolution import ResolvedQuery
 
 PHASE_ORDER = ("regular", "play_in", "playoffs")
+_TEAM_NAMES = {
+    "ATL": "Atlanta",
+    "BOS": "Boston",
+    "BKN": "Brooklyn",
+    "CHA": "Charlotte",
+    "CHI": "Chicago",
+    "CLE": "Cleveland",
+    "DAL": "Dallas",
+    "DEN": "Denver",
+    "DET": "Detroit",
+    "GSW": "Golden State",
+    "HOU": "Houston",
+    "IND": "Indiana",
+    "LAC": "LA Clippers",
+    "LAL": "LA Lakers",
+    "MEM": "Memphis",
+    "MIA": "Miami",
+    "MIL": "Milwaukee",
+    "MIN": "Minnesota",
+    "NOP": "New Orleans",
+    "NYK": "New York",
+    "OKC": "Oklahoma City",
+    "ORL": "Orlando",
+    "PHI": "Philadelphia",
+    "PHX": "Phoenix",
+    "POR": "Portland",
+    "SAC": "Sacramento",
+    "SAS": "San Antonio",
+    "TOR": "Toronto",
+    "UTA": "Utah",
+    "WAS": "Washington",
+}
 PHASE_LABEL = {"regular": "regular season", "play_in": "play-in", "playoffs": "playoffs"}
 REGULATION = (1, 2, 3, 4)
 
@@ -33,6 +65,10 @@ def phase_label(phases: list[str]) -> str:
     if set(unique) == {"regular", "playoffs"}:
         return "regular season and playoffs"
     return ", ".join(PHASE_LABEL[phase] for phase in unique) if unique else "selected games"
+
+
+def team_name(team_id: str) -> str:
+    return _TEAM_NAMES.get(team_id, team_id)
 
 
 def opponent(game: Game) -> str:

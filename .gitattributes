@@ -79,3 +79,6 @@ docs/release-evidence/llm-primary-20261021/reviewer/mutations.json linguist-gene
 # Scorer output for the 2026-10-21 llm_primary evidence run.
 docs/release-evidence/llm-primary-20261021/scoring/*.jsonl linguist-generated=true
 docs/release-evidence/llm-primary-20261021/scoring/*.json linguist-generated=true
+
+# Generated evaluation artifacts (JSONL run output).
+docs/release-evidence/llm-primary-20261021/quarters/*.jsonl linguist-generated=true

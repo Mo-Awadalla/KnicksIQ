@@ -29,6 +29,7 @@ from app.services.analyst_period_calculations import (
     phase_label,
     requested_periods,
     result,
+    team_name,
     venue,
 )
 from app.services.evidence_contracts import Evidence, ToolResult
@@ -146,7 +147,7 @@ def _halves_value(tools: AnalystTools, views: list[tuple[Game, dict[str, Any]]])
         game, view = entry
         return {
             "date": str(game.game_date),
-            "opp": opponent(game),
+            "opp": team_name(opponent(game)),
             "margin": abs(view["halftime_lead"]),
             "half": view["first_half"],
             "final": list(tools.score(game)),
@@ -203,7 +204,7 @@ def _compact_ref(game: Game, period: int, pair: list[int]) -> dict[str, Any]:
     return {
         "p": label(period),
         "date": str(game.game_date),
-        "opp": opponent(game),
+        "opp": team_name(opponent(game)),
         "venue": venue(game),
         "nyk": pair[0],
         "opp_pts": pair[1],
@@ -239,6 +240,9 @@ def _digest(
     parts = [f"{phase_scope.capitalize()}, {len(views)} of {len(selected)} games."]
     if gaps:
         parts.append(f"{len(gaps)} coverage gaps excluded, not zero-point games.")
+    opponents = {opponent(game) for game in selected}
+    if len(opponents) == 1:
+        parts.append(f"Opponent: {team_name(next(iter(opponents)))}.")
     if compact_games and multi_phase:
         counts = {
             name: sum(1 for game in selected if game.season_type == name)
@@ -275,12 +279,13 @@ def _digest(
                     worst = pick_extreme(pairs, lambda entry: entry[1][0], highest=False)
                     if best:
                         text += (
-                            f" Best {best[1][0]}-{best[1][1]} vs {opponent(best[0])} "
+                            f" Best {best[1][0]}-{best[1][1]} vs {team_name(opponent(best[0]))} "
                             f"{best[0].game_date};"
                         )
                     if worst:
                         text += (
-                            f" worst {worst[1][0]}-{worst[1][1]} at {opponent(worst[0])} "
+                            f" worst {worst[1][0]}-{worst[1][1]} at "
+                            f"{team_name(opponent(worst[0]))} "
                             f"{worst[0].game_date}."
                         )
                 parts.append(text)
