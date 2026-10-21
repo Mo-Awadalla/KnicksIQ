@@ -93,6 +93,7 @@ IDENTITY_COUNTS = {
     "knicks_box_scores": 2970,
     "knicks_reports": 101,
 }
+PLANNER_MAX_CALLS_PER_TURN = 3
 _turn: ContextVar[dict | None] = ContextVar("guarded_release_turn", default=None)
 
 
@@ -218,7 +219,7 @@ class NormalizedCandidateClient:
                         type(value) in {int, float} and math.isfinite(value) for value in vector
                     )
                     and abs(sum(value * value for value in vector) - 1) < 0.001,
-                    "Stored candidate embedding is not normalized local 384-dimensional data",
+                    "Stored candidate embedding is not normalized 384-dimensional data",
                 )
         return points, offset
 
@@ -307,10 +308,11 @@ class Admission:
             and settings.openrouter_allowed_models == [MODEL]
             and settings.openrouter_monthly_cutoff_usd == 2
             and settings.analyst_evidence_loop_enabled
-            and settings.rag_archive_source_units_enabled
+            and not settings.rag_archive_source_units_enabled
             and settings.rag_qdrant_enabled
-            and not settings.rag_qdrant_cloud_inference
-            and not settings.rag_llm_planner_enabled
+            and settings.rag_qdrant_cloud_inference
+            and settings.rag_hybrid_enabled
+            and settings.rag_llm_planner_enabled
             and not settings.rag_reranker_enabled
             and not settings.rag_conditional_reranker_enabled
             and not settings.sentry_dsn
@@ -332,11 +334,6 @@ class Admission:
             "Configuration differs from the isolated primary-release contract",
         )
         require(
-            os.environ.get("HF_HUB_OFFLINE") == "1"
-            and os.environ.get("TRANSFORMERS_OFFLINE") == "1",
-            "Local embedding admission forbids model downloads or cloud fallback",
-        )
-        require(
             bool(settings.ip_hash_secret)
             and settings.ip_hash_secret != "development-only-change-me",
             "Established isolated staging client identity is missing",
@@ -354,7 +351,6 @@ class Admission:
 
     async def verify_resources(self, *, full: bool) -> dict:
         from app.core.db import AsyncSessionLocal
-        from app.models.comparison_source import ComparisonSource
         from app.models.dataset_release import DatasetRelease
         from app.models.game import Game
         from app.services.qdrant_client import (
@@ -420,21 +416,11 @@ class Admission:
             release = (
                 await db.execute(select(DatasetRelease).where(DatasetRelease.status == "active"))
             ).scalar_one()
-            source = await db.get(ComparisonSource, release.id)
             require(
                 release.version == VERSION
                 and release.validation_passed
-                and release.manifest_sha256 == BUNDLE_SHA256
-                and source is not None
-                and source.bundle_sha256 == release.manifest_sha256,
+                and release.manifest_sha256 == BUNDLE_SHA256,
                 "Active dataset or approved bundle identity changed",
-            )
-            assert source is not None
-            require(
-                hashlib.sha256(source.facts_json.encode()).hexdigest() == source.facts_sha256
-                and hashlib.sha256(source.bindings_json.encode()).hexdigest()
-                == source.bindings_sha256,
-                "Stored comparison facts/bindings differ from their proof",
             )
             if full:
                 games = list(
@@ -506,7 +492,7 @@ class Admission:
                     abs(sum(value * value for value in typed_vector) - 1) < 0.001,
                     "Candidate probe point embedding changed",
                 )
-        if full:
+        if full and not get_settings().rag_qdrant_cloud_inference:
             from app.services.embeddings import embed_texts
 
             vectors = await asyncio.to_thread(
@@ -583,7 +569,7 @@ class Admission:
                 )
                 record["payload"]["_index_embedding"] = {
                     "model": "sentence-transformers/all-MiniLM-L6-v2",
-                    "mode": "local",
+                    "mode": "cloud",
                     "document_sha256": hashlib.sha256(document.encode()).hexdigest(),
                     "source_unit_schema": UNIT_RECIPE,
                 }
@@ -1517,7 +1503,9 @@ class GuardedSession:
             self.mode != "shadow" or _sample_shadow(turn["request_id"], 0.1),
             "Unselected fixed shadow case attempted a provider call",
         )
-        require(turn["calls"] < 6, "Original per-case request cap exceeded")
+        # Optional planners use separate reservations outside the analyst-loop call limit.
+        maximum_calls = get_settings().analyst_max_model_calls + PLANNER_MAX_CALLS_PER_TURN
+        require(turn["calls"] < maximum_calls, "Original per-case request cap exceeded")
         owned = self.owned()
         bounds = await self.admission.verify_request(payload, owned)
         self.record_price_snapshot(bounds)
@@ -1550,6 +1538,11 @@ class GuardedSession:
             and record["used"] < record["slots"]
             and not record["uncertain"]
         ]
+        preferred_identity = turn.get("preferred_normal_reservation_id")
+        if preferred_identity is not None:
+            candidates = [
+                candidate for candidate in candidates if candidate[0] == preferred_identity
+            ]
         require(bool(candidates), "No actual normal analyst reservation for outbound payload")
         identity, reservation = candidates[0]
         require(
