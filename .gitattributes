@@ -85,3 +85,5 @@ apps/web/e2e/screenshots/** linguist-generated=true
 docs/release-evidence/llm-primary-20261021/latency/*.jsonl linguist-generated=true
 docs/release-evidence/llm-primary-20261021/latency/*.json linguist-generated=true
 docs/release-evidence/llm-primary-20261021/quarters/*.jsonl linguist-generated=true
+docs/release-evidence/llm-primary-20261021/prefetch/*.jsonl linguist-generated=true
+docs/release-evidence/llm-primary-20261021/prefetch/*.json linguist-generated=true
