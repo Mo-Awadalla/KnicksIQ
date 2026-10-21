@@ -373,7 +373,6 @@ async def phase_sessions(h):
         and body.get("revision") == 1
         and body.get("state_committed") is True
         and bool(body.get("citations"))
-        and "94" in (body.get("answer") or "")
     )
     h.live += 1
     h.add(
