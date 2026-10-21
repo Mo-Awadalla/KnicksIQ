@@ -91,9 +91,7 @@ class ScriptedAdapter:
                             "verdict": "supported",
                             "assertion_type": "factual",
                             "offending_text": None,
-                            "supporting_claim_ids": [
-                                c["claim_id"] for c in answer["claims"]
-                            ],
+                            "supporting_claim_ids": [c["claim_id"] for c in answer["claims"]],
                             "supporting_evidence_ids": [],
                             "reason": "Matches backend claims.",
                         }
