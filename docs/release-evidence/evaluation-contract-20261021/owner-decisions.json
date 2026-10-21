@@ -1,0 +1,44 @@
+{
+  "schema": "knicksiq-scoped-owner-decisions/v1",
+  "owner": "interactive repository owner",
+  "approved_at": "2026-10-21T01:48:57.990908+00:00",
+  "source": "Explicit user selections in the scoped approval prompt in this session. No inferred deployment or quality approval.",
+  "serving_code_candidate": "976eb7c38e553844e3e992f89a3fa6e3a4560d28",
+  "recording_source_commit": "217c18f155375996deefc1ac37fd5bc1f4a39080",
+  "decisions": {
+    "adjudications": {
+      "selection": "Approve current draft",
+      "approved": true,
+      "artifact": "docs/release-evidence/evaluation-contract-20261019/adjudications-draft.json",
+      "sha256": "bf7def583f977cc760ad77d98e07480f5e03b0da39fe15867eb41a3e0a1b88a3",
+      "scope": "Current 20 adjudication proposals, documented definitions and complete targets, seven clarify-to-answer proposals, and conservative MIL whole-game PBP exclusion. Authorizes deterministic contract freeze, not exact frozen-hash approval or quality/deploy approval."
+    },
+    "launch_set": {
+      "selection": "Approve the set",
+      "approved": true,
+      "artifact": "docs/release-evidence/launch-set-20261020/launch-set.jsonl",
+      "sha256": "eddd13fa7a85ab92bcae770944523d55ef285f3fc55dd3ac7e749c0a7478bd2d",
+      "scope": "Separate 20-question set and expected facts only. Four accurate native fallbacks remain in diagnostic evidence; no model-validation or release gate waived."
+    },
+    "report_audit": {
+      "selection": "Approve content and audit",
+      "approved": true,
+      "artifact": "docs/release-evidence/report-audit-20261020/audit.json",
+      "sha256": "0e02fdf61c14d8b4b53821b460305c4ab9c3c4393ea24e1707f703d16c65b715",
+      "input_bundle_sha256": "549af2edd0d195eff60bb318bdc58a8c8e217ea0359c0684d492d5292dcb595b",
+      "scope": "Selected scoring interval template with inclusive event bounds, documented MIL scoreboard-correction exception, and fresh 101-report/303-player-line audit. Candidate-content approval only; active production identity and release approval remain absent."
+    }
+  },
+  "not_approved": [
+    "Exact generated frozen evaluation contract hash; still must be presented and approved",
+    "Official 120/50 quality results or gate pass",
+    "Production database/alias mapping",
+    "Hosted controlled-cold-start, analyst latency or error-rate acceptance",
+    "Completed release record digest",
+    "Deployment of any commit",
+    "Live alias promotion or data activation",
+    "Render plan change or production monthly-cutoff change"
+  ],
+  "release_ready": false,
+  "deployment_authorized": false
+}
