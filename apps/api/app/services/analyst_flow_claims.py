@@ -7,6 +7,7 @@ reference claim ids and values but never authors a number.
 
 from __future__ import annotations
 
+import re
 from typing import TYPE_CHECKING, Any
 
 from app.services.analyst_flow import (
@@ -468,4 +469,47 @@ def _single_claims(
             plays=[worst.start, worst.end],
             limitation="Period net counts scoring plays in that period only.",
         )
+
+    question = tools.question.lower()
+    comeback = bool(re.search(r"\b(erase|comeback|deficit|rally)\b", question))
+    collapse = bool(
+        re.search(r"\b(collapse|lose control|lost control|blow|blown|lead)\b", question)
+    )
+    run_question = bool(re.search(r"\b(run|runs|scoring run|surge|spurt)\b", question))
+    turn_question = bool(re.search(r"\b(turn|turned|where|when|sequence|control)\b", question))
+    clutch_question = bool(re.search(r"\b(clutch|late[- ]game|last \d|final minutes)\b", question))
+
+    def priority(claim: VerifiedClaim) -> tuple[int, int]:
+        metric = claim.metric_id
+        subject = claim.subject_id or ""
+        if metric == "final_score":
+            return (1, 0)
+        if clutch_question and metric in {"clutch_points", "clutch_lead_changes"}:
+            return (2 if subject == "team:NYK" else 3, 0)
+        if comeback and metric in {"deficit_erased", "comeback_scoring", "comeback_run"}:
+            return (
+                {"deficit_erased": 2, "comeback_scoring": 3, "comeback_run": 4}[metric],
+                0,
+            )
+        if collapse and metric == "lead_lost":
+            return (2, 0)
+        if turn_question and metric == "go_ahead_margin":
+            return (2, 0)
+        if turn_question and metric == "decisive_run":
+            return (3, 0)
+        if run_question and metric == "biggest_run":
+            return (2 if subject == "team:NYK" else 3, 0)
+        if metric == "largest_lead":
+            return (4 if subject == "team:NYK" else 5, 0)
+        if metric == "go_ahead_margin":
+            return (4, 0)
+        if metric == "biggest_run":
+            return (5 if subject == "team:NYK" else 6, 0)
+        if metric == "lead_changes":
+            return (7, 0)
+        if metric == "ties":
+            return (8, 0)
+        return (9, 0)
+
+    claims.sort(key=priority)
     return claims, evidence
