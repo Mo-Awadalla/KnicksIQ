@@ -146,7 +146,7 @@ at the time of this report, and the fix was not re-measured live (budget exhaust
 not edit `analyst_provider.py` or `analyst_loop.py`; the finding and the failing case were
 sent to LatencyCut.
 
-The commit that introduced the production reasoning value also changed the effective knob:
+The latency merge also changed the effective knob:
 `request_model` overrides `adapter.reasoning_effort` from `settings.analyst_reasoning_effort`
 (default `none`), so `AI_REASONING_EFFORT` alone no longer controls analyst calls. Use
 `ANALYST_REASONING_EFFORT` to reproduce the defect on `bbb5296`.
