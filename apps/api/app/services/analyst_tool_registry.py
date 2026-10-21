@@ -112,6 +112,15 @@ TOOLS: tuple[ToolSpec, ...] = (
         handler="app.services.analyst_tool_splits:run",
         needs_games=False,
     ),
+    ToolSpec(
+        name="get_period_scoring",
+        description=(
+            "quarter, half and overtime scoring for the Knicks and opponents, per game and "
+            "aggregated; use instead of get_team_stats for those questions"
+        ),
+        handler="app.services.analyst_tool_periods:run",
+        supports_periods=True,
+    ),
 )
 
 TOOLS_BY_NAME = {spec.name: spec for spec in TOOLS}

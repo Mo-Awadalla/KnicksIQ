@@ -65,7 +65,10 @@ async def execute_call(tools: AnalystTools, call: ToolCall) -> ToolResult:
     if scope.periods and not spec.supports_periods:
         return ToolResult(
             status="unsupported_metric_or_scope",
-            message="These calculations support full-game box scores only.",
+            message=(
+                f"{spec.name} supports full-game box scores only; use get_period_scoring "
+                "for quarter, half or overtime questions."
+            ),
         )
     games = []
     if spec.needs_games:
