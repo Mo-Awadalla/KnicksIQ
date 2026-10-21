@@ -32,11 +32,12 @@ phase; the overall record appears only when asked. Typed pre-model refusals cove
 override, wagering and out-of-archive dates. Other unsupported wording reaches the analyst, which
 declines or explains coverage through the `refused` flag. Prompt v4 and validator v2 run the
 deterministic number gate. Reasoning effort is `none` by default, token caps are enforced and
-deterministic prefetch is enabled. The $2 cutoff supports about 1,413 questions per month on
-current routing, and the measured p95 latency is 4,608 ms against a four second gate that is not
-met. Full behavior is in [the analyst implementation](analyst-evidence-loop.md). Evidence is
-indexed in
-[the llm_primary evidence directory](release-evidence/llm-primary-20261021/README.md).
+deterministic prefetch is enabled. The $2 cutoff supports about 1,009 questions per month on the
+70-question mix and about 750 on the held-out rate, at mean costs of $0.001981 and $0.002668
+per question, respectively. The measured p95 latency is 7,640 ms on 140 questions at the
+16,000-byte input budget. The four second gate is not met. Capacity is route dependent. Full
+behavior is in [the analyst implementation](analyst-evidence-loop.md). Evidence is in the
+[final measurement](release-evidence/llm-primary-20261021/final/README.md).
 
 Pre-promotion verification is a separate, earlier state: `answer_mode=shadow`,
 `shadow_sample_rate=0.1`, deterministic delivery. The `configuration` block in

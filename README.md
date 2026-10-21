@@ -36,10 +36,11 @@ override, wagering and out-of-archive dates; other unsupported wording reaches t
 declines or explains coverage. `refused=true` marks a decline or coverage explanation, not an
 error.
 
-At the $2 cutoff, measured capacity is about 1,413 questions per month on current routing, mean
-$0.001415 per question, and it is highly route dependent. Measured latency is p50 2,290 ms and p95
-4,608 ms; the four second p95 gate is not met. Approved figures and artifacts are indexed in
-[docs/release-evidence/llm-primary-20261021/README.md](docs/release-evidence/llm-primary-20261021/README.md).
+At the $2 cutoff, measured capacity is about 1,009 questions per month on the 70-question mix
+and about 750 on the held-out rate. Mean cost is $0.001981 per question on the 70-question mix.
+Capacity is route dependent. Measured latency on 140 questions at the 16,000-byte input budget is
+p50 3,312 ms and p95 7,640 ms; the four second p95 gate is not met. The final measurement is in
+[docs/release-evidence/llm-primary-20261021/final/README.md](docs/release-evidence/llm-primary-20261021/final/README.md).
 
 `apps/web` is the only maintained frontend. The retired frontend remains available
 in Git history; historical release evidence is kept unchanged. Install frontend
