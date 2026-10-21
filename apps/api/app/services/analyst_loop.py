@@ -37,6 +37,10 @@ from pydantic import ValidationError
 
 logger = logging.getLogger(__name__)
 
+# The model declares why it is not answering from archive facts. These actions are
+# refusals for API consumers even when related archive facts are included.
+REFUSAL_ACTIONS = frozenset({"decline", "explain_coverage"})
+
 
 class AnalystLoop:
     def __init__(
@@ -205,9 +209,10 @@ class AnalystLoop:
             if answer is None:  # next_action guarantees this; narrows the type
                 raise ValueError("Malformed answer action")
             self.last_answer = answer
+            refused = action.action in REFUSAL_ACTIONS
             supported, reason = await self.validate(answer)
             if supported:
-                return self.render(answer, llm=True)
+                return self.render(answer, llm=True, refused=refused)
             # Only one repair, with capacity and time for both revision and review.
             # Split remaining time between the calls instead of demanding two full
             # 20-second provider timeouts inside a 30-second application deadline.
@@ -230,7 +235,7 @@ class AnalystLoop:
                     )
                     supported, _ = await self.validate(repaired, timeout_seconds=repair_timeout)
                     if supported:
-                        return self.render(repaired, llm=True)
+                        return self.render(repaired, llm=True, refused=refused)
             return await self.fallback("Proposed wording did not pass evidence review.")
 
     async def validate(
@@ -317,9 +322,20 @@ class AnalystLoop:
             text=text,
             claims=[ClaimUse(claim_id=c.claim_id, displayed_value=c.value) for c in claims],
         )
-        return self.render(answer, llm=False, warning=reason)
+        # The fallback appends this same statement only for live/current questions, so the
+        # flag tracks what the delivered text actually says without parsing its wording.
+        return self.render(
+            answer, llm=False, warning=reason, refused=re_search_live(self.tools.question)
+        )
 
-    def render(self, answer: ProposedAnswer, *, llm: bool, warning: str = "") -> dict[str, Any]:
+    def render(
+        self,
+        answer: ProposedAnswer,
+        *,
+        llm: bool,
+        warning: str = "",
+        refused: bool = False,
+    ) -> dict[str, Any]:
         claims = [self.tools.claims[u.claim_id] for u in answer.claims]
         citations = []
         for claim in claims:
@@ -389,6 +405,7 @@ class AnalystLoop:
             "citations": citations,
             "warnings": [warning] if warning else [],
             "degraded": not llm,
+            "refused": refused,
             "route": "llm_analyst" if llm else "factual_fallback",
             "data_version": self.tools.release.version,
             "state": state,
