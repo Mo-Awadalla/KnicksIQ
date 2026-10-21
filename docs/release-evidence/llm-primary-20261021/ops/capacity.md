@@ -21,8 +21,16 @@ Artifacts: `capacity.json` (aggregates), `capacity.rows.jsonl` (one row per ques
   adapter invocations that reached the provider.
 - Latency is wall clock around the HTTP request, including all model calls and fallback work.
   p50 is the median; p95 is nearest-rank, which for 40 samples is the second-highest value.
-- The test cutoff was $0.30. The production cutoff is $2.00. Ledger start was $0.01 (a prior
-  failed-call reservation), end $0.04624128, so the run's isolated delta is $0.03624128.
+- The run was launched with a temporary $0.30 local test cap before the lead corrected the fence
+  to $2.00. The cap never bound: the ledger started at $0.01 and ended at $0.04624128, and even
+  with the maximum $0.06 of in-flight reservations the total stayed below $0.11. No row contains
+  `Budget unavailable`, no row has a `failed:*:RuntimeError` outcome, and no row was invalidated
+  by the cutoff. One row carries the generic `Model or budget unavailable.` warning; it made three
+  provider calls, its charged delta equals reported usage, and the run logged one ValidationError,
+  so it is a validation fallback, not budget exhaustion. All capacity math uses the corrected
+  $2.00 production cutoff.
+- Ledger start was $0.01 (a prior failed-call reservation), so the run's isolated delta is
+  $0.03624128.
 - Rate-limit environment variables were raised for the measurement. They are not deployment
   settings; production keeps its defaults.
 
@@ -40,6 +48,7 @@ Artifacts: `capacity.json` (aggregates), `capacity.rows.jsonl` (one row per ques
 | Tokens per question (mean) | 5,779.9 |
 | Charged cost total (ledger delta) | $0.03624128 |
 | Charged cost total (sum of rounded rows) | $0.03624125 |
+| Rows invalidated by the cutoff | 0 |
 | Charged cost per question (mean) | $0.00090603 |
 | Charged cost per question (p50) | $0.00089932 |
 | Charged cost per question (p95) | $0.00134087 |
@@ -167,5 +176,9 @@ the owner explicitly approves a gate exception. See the owner decision list in
 - Rate limits were raised for the run. Costs are unaffected, but throughput is not representative.
 - Costs are what the application ledger charged for these 40 turns. Provider invoice rounding,
   credits, and cache discounts are outside the ledger and not modeled.
+- One trial per question. The reviewer is stochastic on today's provider: the same question on an
+  unchanged tree validated once and was rejected once. The 36/40 validated split is a single-trial
+  screen, not a stable quality estimate, and it is not used for any before/after comparison. That
+  needs at least two trials per question or a larger sample with a stated spread.
 - Four turns fell back after validation failure. Their cost is included; their quality is not a
   capacity result. Quality is measured separately by the live E2E and audit workstreams.
