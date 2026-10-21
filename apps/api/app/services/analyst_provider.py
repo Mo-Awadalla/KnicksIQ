@@ -8,6 +8,7 @@ import re
 import time
 from typing import TYPE_CHECKING, Any, TypeVar
 
+from app.services.analyst_tool_registry import tools_hint
 from app.services.evidence_contracts import (
     CONTRACT_VERSION,
     INTERPRETATION_POLICY,
@@ -252,6 +253,28 @@ def build_payload(
     return payload
 
 
+def orchestrator_system_prompt() -> str:
+    return (
+        "You are KnicksIQ. Return JSON matching schema, using backend evidence only. "
+        + tools_hint()
+        + "call_tools requires tools and null answer. Answer actions require an answer "
+        "object containing text, claims, evidence_ids and fact_ids, never null. "
+        "Include EVERY used claim in answer.claims: copy claim_id and the claim's `value` "
+        "field alone into displayed_value, never the whole claim object; when `value` is an "
+        "object, copy every key of it. Use each claim once. Only numeric "
+        "rounding uses decimal_places. Copy selected candidates[].fact_id into fact_ids "
+        "and evidence[].evidence_id into evidence_ids exactly; never shorten IDs. "
+        "Answer briefly by default, usually in one or two short sentences. Explain "
+        "more deeply when asked. Include up to two relevant follow_up_questions "
+        "answerable from the available archive, or an empty list. Avoid evaluative "
+        "labels like efficient, dominant or all-around "
+        "without a supporting metric/baseline. Do not infer causes or rankings. "
+        "Explain prior facts directly. Clarify ambiguous subjects. For mixed requests, "
+        "answer the archive portion and briefly state the live-data gap. Scope is "
+        "backend-controlled. When no tool rounds remain, return an answer action."
+    )
+
+
 async def request_model[Schema: BaseModel](
     loop: AnalystLoop,
     schema: type[Schema],
@@ -292,31 +315,7 @@ async def request_model[Schema: BaseModel](
             "Return JSON matching schema."
         )
     else:
-        system = (
-            "You are KnicksIQ. Return JSON matching schema, using backend evidence only. "
-            "For interesting stats or another player, call discover_facts FIRST with the "
-            "user's question unchanged. Empty claims means call a tool before stating stats. "
-            "get_player_stats calculates player metrics; get_team_stats gives team wins and "
-            "losses plus points and margin, as totals (aggregation total) or per-game averages "
-            "(aggregation average), so choose the aggregation the user asked for; "
-            "compare_windows compares populations; search_archive finds narrative examples; "
-            "get_evidence expands returned references. Answer once evidence is sufficient. "
-            "call_tools requires tools and null answer. Answer actions require an answer "
-            "object containing text, claims, evidence_ids and fact_ids, never null. "
-            "Include EVERY used claim in answer.claims: copy claim_id and the claim's `value` "
-            "field alone into displayed_value, never the whole claim object; when `value` is an "
-            "object, copy every key of it. Use each claim once. Only numeric "
-            "rounding uses decimal_places. Copy selected candidates[].fact_id into fact_ids "
-            "and evidence[].evidence_id into evidence_ids exactly; never shorten IDs. "
-            "Answer briefly by default, usually in one or two short sentences. Explain "
-            "more deeply when asked. Include up to two relevant follow_up_questions "
-            "answerable from the available archive, or an empty list. Avoid evaluative "
-            "labels like efficient, dominant or all-around "
-            "without a supporting metric/baseline. Do not infer causes or rankings. "
-            "Explain prior facts directly. Clarify ambiguous subjects. For mixed requests, "
-            "answer the archive portion and briefly state the live-data gap. Scope is "
-            "backend-controlled. When no tool rounds remain, return an answer action."
-        )
+        system = orchestrator_system_prompt()
     if repair:
         system += " Repair unsupported wording using existing evidence only. No investigation."
     payload = loop.payload(

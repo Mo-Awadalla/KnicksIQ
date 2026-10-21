@@ -4,8 +4,9 @@ from __future__ import annotations
 
 import hashlib
 import json
-from typing import Any, Literal
+from typing import TYPE_CHECKING, Any, Literal
 
+from app.services.analyst_tool_registry import TOOL_NAMES, TOOLS
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 CONTRACT_VERSION = "analyst-evidence-v1"
@@ -95,18 +96,18 @@ class ToolResult(Contract):
     scope: dict[str, Any] = Field(default_factory=dict)
 
 
-PLAYER_METRIC_TOOLS = frozenset({"get_player_stats", "compare_windows"})
+# The registry is the only source of tool names. Pyright cannot evaluate a Literal built from
+# runtime data, so it sees the string fallback; Pydantic validates against the exact names.
+if TYPE_CHECKING:
+    ToolName = str
+else:
+    ToolName = Literal[*TOOL_NAMES]
+
+PLAYER_METRIC_TOOLS = frozenset(spec.name for spec in TOOLS if spec.reads_metric)
 
 
 class ToolCall(Contract):
-    name: Literal[
-        "get_player_stats",
-        "get_team_stats",
-        "compare_windows",
-        "discover_facts",
-        "search_archive",
-        "get_evidence",
-    ]
+    name: ToolName
     question: str = Field(max_length=1200)
     metric: (
         Literal[
