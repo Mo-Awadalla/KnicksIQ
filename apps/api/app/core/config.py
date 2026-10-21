@@ -125,6 +125,10 @@ class Settings(BaseSettings):
     analyst_investigation_seconds: float = Field(default=20, gt=0, le=20)
     analyst_max_model_calls: int = Field(default=6, ge=2, le=6)
     analyst_max_tool_rounds: int = Field(default=2, ge=1, le=2)
+    analyst_prefetch_enabled: bool = True
+    # The configured model reasons at high effort by default, and reasoning tokens consume
+    # max_tokens before any visible JSON. These bounded calls need no chain of thought.
+    analyst_reasoning_effort: Literal["none", "minimal", "low", "medium", "high"] | None = "none"
     analyst_evidence_tokens: int = Field(default=6000, ge=100, le=6000)
     analyst_input_tokens: int = Field(default=8000, ge=1000, le=8000)
     analyst_call_reservation_usd: float = Field(default=0.01, gt=0)
