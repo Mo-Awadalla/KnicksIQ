@@ -1,8 +1,9 @@
 # llm_primary preflight: passing run and scope
 
 Run on 2026-10-21 against the restored `2025-26.20260928.1` release with production settings,
-Redis database 5, and the real provider configured but no live model call. Result: **25/25 checks
-pass, exit code 0**. Artifact: `preflight.json`. Negative observations:
+Redis database 5, and the real provider configured but no live model call. This re-record used
+database 5; the earlier ReleaseOps preflight and failure matrix used database 6. Result: **25/25
+checks pass, exit code 0**. Artifact: `preflight.json`. Negative observations:
 `preflight-failures.json`, `preflight-failure-cases.md`, `record-policy.md`,
 `preflight-record-policy-fail.json` and `preflight-policy-broken-fail.json`.
 
