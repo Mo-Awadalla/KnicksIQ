@@ -1368,6 +1368,7 @@ class GuardedSession:
             transport=GuardedTransport(self, provider_transport),
         )
         self.execution.failed = self.failed
+        self.execution.protocol_failed = self.record_protocol_failure
         self.revalidate: Callable[[], dict] | None = None
         adapter_factory = self.execution.adapter
 
