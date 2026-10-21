@@ -59,11 +59,7 @@ async def _query_evidence_analyst(
         except SessionConflict as exc:
             raise HTTPException(
                 status_code=409,
-                detail={
-                    "reason": exc.reason,
-                    "session_token": req.session_token,
-                    "turn_id": req.turn_id,
-                },
+                detail={"reason": exc.reason},
             ) from exc
         except SessionUnavailable:
             turn = None
