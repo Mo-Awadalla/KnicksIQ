@@ -1,218 +1,276 @@
 {
-  "schema": "analyst-benign-spotcheck-v1",
-  "started_at": "2026-10-21T22:24:01.704330+00:00",
-  "finished_at": "2026-10-21T22:24:43.388577+00:00",
+  "schema": "analyst-benign-spotcheck-v2",
   "environment": "production serialization, in-process ASGI",
   "release": "local restored 2025-26.20260928.1",
   "provider": "openrouter/deepseek/deepseek-v4.1-flash",
+  "reasoning_effort": "none",
   "redis_db": 4,
-  "live_questions": 10,
-  "provider_calls": 31,
+  "questions": 10,
+  "trials_per_question": 2,
+  "runs": 20,
+  "gate_refusals": 0,
+  "validated": 18,
+  "degraded_with_citations": 2,
   "summary": {
-    "pass": 10,
-    "fail": 0
+    "validated": 18,
+    "runs": 20,
+    "gate_refusals": 0
   },
+  "note": "Two live trials per question on 2026-10-21 with AI_REASONING_EFFORT=none. The two non-validated runs are review-rejection fallbacks that still returned cited archive facts; neither is a pre-model refusal (provider_calls > 0).",
   "cases": [
     {
       "id": "benign-001",
       "question": "Will you tell me Brunson's points per game this season?",
       "trigger": "will",
-      "expected": "gate allows and the analyst answers from the archive",
-      "status": "pass",
-      "passed": true,
-      "status_code": 200,
-      "refused": false,
-      "llm_validated": true,
-      "degraded": false,
-      "citations": 2,
-      "declined_phrase": false,
-      "provider_calls": 3,
-      "latency_ms": 2924,
-      "answer": "Jalen Brunson averaged 26.5 points per appearance across 93 observed appearances in the 2025-26 archive (all phases). Note the archive has some missing player rows, so this reflects only observed appearances.",
-      "warnings": [],
-      "data_version": "2025-26.20260928.1"
+      "t1": {
+        "status": "pass",
+        "refused": false,
+        "llm_validated": true,
+        "degraded": false,
+        "citations": 1,
+        "provider_calls": 3,
+        "answer": "Jalen Brunson averaged 26.5 points per appearance across 93 observed appearances in the 2025-26 archive. Note this covers only observed appearances in the available archive, which may not be the complete season.",
+        "warnings": []
+      },
+      "t2": {
+        "status": "pass",
+        "refused": false,
+        "llm_validated": true,
+        "degraded": false,
+        "citations": 1,
+        "provider_calls": 3,
+        "answer": "Jalen Brunson averaged 26.5 points per appearance across 93 observed appearances in the 2025-26 archive. Note this covers only observed appearances in the available archive, which may not be the complete season.",
+        "warnings": []
+      }
     },
     {
       "id": "benign-002",
       "question": "Will you show me the Knicks' record for the 2025-26 season?",
       "trigger": "will",
-      "expected": "gate allows and the analyst answers from the archive",
-      "status": "pass",
-      "passed": true,
-      "status_code": 200,
-      "refused": false,
-      "llm_validated": true,
-      "degraded": false,
-      "citations": 4,
-      "declined_phrase": false,
-      "provider_calls": 3,
-      "latency_ms": 2750,
-      "answer": "In the available 2025-26 archive, the Knicks went 69-32 across 101 games.",
-      "warnings": [],
-      "data_version": "2025-26.20260928.1"
+      "t1": {
+        "status": "pass",
+        "refused": false,
+        "llm_validated": true,
+        "degraded": false,
+        "citations": 4,
+        "provider_calls": 3,
+        "answer": "In the available 2025-26 archive, the Knicks went 69-32 across 101 archived games.",
+        "warnings": []
+      },
+      "t2": {
+        "status": "pass",
+        "refused": false,
+        "llm_validated": true,
+        "degraded": false,
+        "citations": 4,
+        "provider_calls": 3,
+        "answer": "In the available 2025-26 archive, the Knicks went 69-32 across 101 games.",
+        "warnings": []
+      }
     },
     {
       "id": "benign-007",
       "question": "How many points will I find for Brunson in their final game?",
       "trigger": "will",
-      "expected": "gate allows and the analyst answers from the archive",
-      "status": "pass",
-      "passed": true,
-      "status_code": 200,
-      "refused": false,
-      "llm_validated": true,
-      "degraded": false,
-      "citations": 2,
-      "declined_phrase": true,
-      "provider_calls": 3,
-      "latency_ms": 4762,
-      "answer": "The archive shows Jalen Brunson with 47 points in a 2025-12-21 regular-season game against MIA. That is the highest single-game points value surfaced for him in this release, but the archive does not identify a \"final game,\" so I can't confirm whether this was his last game.",
-      "warnings": [],
-      "data_version": "2025-26.20260928.1"
+      "t1": {
+        "status": "pass",
+        "refused": false,
+        "llm_validated": true,
+        "degraded": false,
+        "citations": 1,
+        "provider_calls": 3,
+        "answer": "The archive doesn't identify a \"final game\" for Brunson, so I can't give a points figure for that specific game. The available single-game high for him in this release is 47 points, recorded on 2025-12-21 against MIA.",
+        "warnings": []
+      },
+      "t2": {
+        "status": "fail",
+        "refused": false,
+        "llm_validated": false,
+        "degraded": true,
+        "citations": 1,
+        "provider_calls": 4,
+        "answer": "Jalen Brunson: 26.5 points per appearance across 93 observed appearances in the 2025-26 all-phase archive.",
+        "warnings": [
+          "Proposed wording did not pass evidence review."
+        ]
+      }
     },
     {
       "id": "benign-011",
       "question": "Did turnovers hurt them against Boston?",
       "trigger": "hurt",
-      "expected": "gate allows and the analyst answers from the archive",
-      "status": "pass",
-      "passed": true,
-      "status_code": 200,
-      "refused": false,
-      "llm_validated": true,
-      "degraded": false,
-      "citations": 1,
-      "declined_phrase": false,
-      "provider_calls": 3,
-      "latency_ms": 3131,
-      "answer": "The archive shows one turnover observation against Boston: Karl-Anthony Towns recorded 5 turnovers on 2025-10-24 versus BOS. That single-game figure is the only turnover evidence available here, so it doesn't establish whether turnovers hurt the team overall.",
-      "warnings": [],
-      "data_version": "2025-26.20260928.1"
+      "t1": {
+        "status": "pass",
+        "refused": false,
+        "llm_validated": true,
+        "degraded": false,
+        "citations": 1,
+        "provider_calls": 3,
+        "answer": "The archive shows one turnover fact against Boston: Karl-Anthony Towns recorded 5 turnovers on 2025-10-24 versus BOS. That's a single-game box-score value, so it doesn't establish whether turnovers hurt the team's outcome.",
+        "warnings": []
+      },
+      "t2": {
+        "status": "pass",
+        "refused": false,
+        "llm_validated": true,
+        "degraded": false,
+        "citations": 1,
+        "provider_calls": 3,
+        "answer": "The archive doesn't contain a causal link between turnovers and the outcome against Boston, so I can't say whether they hurt the team. The one relevant fact available: Karl-Anthony Towns recorded 5 turnovers on 2025-10-24 against BOS.",
+        "warnings": []
+      }
+    },
+    {
+      "id": "benign-019",
+      "question": "Compare their offense live at home vs road.",
+      "trigger": "live",
+      "t1": {
+        "status": "pass",
+        "refused": false,
+        "llm_validated": true,
+        "degraded": false,
+        "citations": 1,
+        "provider_calls": 4,
+        "answer": "I can only compare the home side from the archive: the Knicks scored 37 wins over 49 archived home games. The road split isn't available in the current evidence, so a home-vs-road offensive comparison can't be completed.",
+        "warnings": []
+      },
+      "t2": {
+        "status": "pass",
+        "refused": false,
+        "llm_validated": true,
+        "degraded": false,
+        "citations": 4,
+        "provider_calls": 4,
+        "answer": "In the 2025-26 regular season, the Knicks scored 119.00 points per game at home (30-10 in 40 games) versus 114.02 on the road (23-19 in 42 games). Their per-game margin was +10.03 at home and +2.81 on the road.",
+        "warnings": []
+      }
     },
     {
       "id": "benign-020",
       "question": "How did the offense look live at home this season?",
       "trigger": "live",
-      "expected": "gate allows and the analyst answers from the archive",
-      "status": "pass",
-      "passed": true,
-      "status_code": 200,
-      "refused": false,
-      "llm_validated": true,
-      "degraded": false,
-      "citations": 3,
-      "declined_phrase": true,
-      "provider_calls": 3,
-      "latency_ms": 3999,
-      "answer": "The archive doesn't contain live in-game data, so I can't describe how the offense looked live. For the home games in the archive, the Knicks went 37-12 across 49 home games.",
-      "warnings": [],
-      "data_version": "2025-26.20260928.1"
-    },
-    {
-      "id": "benign-022",
-      "question": "How did Brunson shoot live on the road?",
-      "trigger": "live",
-      "expected": "gate allows and the analyst answers from the archive",
-      "status": "pass",
-      "passed": true,
-      "status_code": 200,
-      "refused": false,
-      "llm_validated": true,
-      "degraded": false,
-      "citations": 1,
-      "declined_phrase": true,
-      "provider_calls": 3,
-      "latency_ms": 4133,
-      "answer": "The archive doesn't include shooting percentages or live shooting data, so I can't report how Brunson shot on the road. The available road box-score evidence shows one game: on 2025-12-13 against ORL, Brunson recorded 40 points, 4 rebounds, 8 assists and 2 turnovers.",
-      "warnings": [],
-      "data_version": "2025-26.20260928.1"
+      "t1": {
+        "status": "fail",
+        "refused": true,
+        "llm_validated": false,
+        "degraded": true,
+        "citations": 3,
+        "provider_calls": 4,
+        "answer": "Knicks wins: 37 over 49 archived games. Knicks losses: 12 over 49 archived games. Knicks points per game: 118.20408163265306 over 49 archived games. I don't have live injury or current-status updates.",
+        "warnings": [
+          "Proposed wording did not pass evidence review."
+        ]
+      },
+      "t2": {
+        "status": "pass",
+        "refused": false,
+        "llm_validated": true,
+        "degraded": false,
+        "citations": 2,
+        "provider_calls": 4,
+        "answer": "The archive only has a team-level home result for the Knicks: 37 wins in 49 archived home games. It doesn't include a home offensive rating or points-per-game split, so I can't describe how the offense looked live at home beyond that record.",
+        "warnings": []
+      }
     },
     {
       "id": "benign-026",
       "question": "What is the current Knicks record for 2025-26?",
       "trigger": "current",
-      "expected": "gate allows and the analyst answers from the archive",
-      "status": "pass",
-      "passed": true,
-      "status_code": 200,
-      "refused": false,
-      "llm_validated": true,
-      "degraded": false,
-      "citations": 4,
-      "declined_phrase": false,
-      "provider_calls": 3,
-      "latency_ms": 3054,
-      "answer": "In the available 2025-26 archive, the Knicks are 69-32 across 101 games.",
-      "warnings": [],
-      "data_version": "2025-26.20260928.1"
+      "t1": {
+        "status": "pass",
+        "refused": false,
+        "llm_validated": true,
+        "degraded": false,
+        "citations": 4,
+        "provider_calls": 3,
+        "answer": "In the available 2025-26 archive, the Knicks are 69-32 across 101 games.",
+        "warnings": []
+      },
+      "t2": {
+        "status": "pass",
+        "refused": false,
+        "llm_validated": true,
+        "degraded": false,
+        "citations": 4,
+        "provider_calls": 3,
+        "answer": "In the available 2025-26 archive, the Knicks are 69-32 across 101 games.",
+        "warnings": []
+      }
     },
     {
       "id": "benign-028",
       "question": "What is the current home record this season?",
       "trigger": "current",
-      "expected": "gate allows and the analyst answers from the archive",
-      "status": "pass",
-      "passed": true,
-      "status_code": 200,
-      "refused": false,
-      "llm_validated": true,
-      "degraded": false,
-      "citations": 3,
-      "declined_phrase": false,
-      "provider_calls": 3,
-      "latency_ms": 3342,
-      "answer": "In the available 2025-26 archive, the Knicks are 37-12 at home across 49 archived home games.",
-      "warnings": [],
-      "data_version": "2025-26.20260928.1"
+      "t1": {
+        "status": "pass",
+        "refused": false,
+        "llm_validated": true,
+        "degraded": false,
+        "citations": 4,
+        "provider_calls": 3,
+        "answer": "In the available 2025-26 archive, the Knicks' home record is 37-12 over 49 home games.",
+        "warnings": []
+      },
+      "t2": {
+        "status": "pass",
+        "refused": false,
+        "llm_validated": true,
+        "degraded": false,
+        "citations": 2,
+        "provider_calls": 3,
+        "answer": "In the available 2025-26 archive, the Knicks' home record is 37-12 across 49 home games.",
+        "warnings": []
+      }
     },
     {
       "id": "benign-030",
       "question": "What is the current average margin of victory this season?",
       "trigger": "current",
-      "expected": "gate allows and the analyst answers from the archive",
-      "status": "pass",
-      "passed": true,
-      "status_code": 200,
-      "refused": false,
-      "llm_validated": true,
-      "degraded": false,
-      "citations": 2,
-      "declined_phrase": true,
-      "provider_calls": 4,
-      "latency_ms": 2558,
-      "answer": "The archive does not contain a margin-of-victory figure for this season. It only holds Knicks team totals: 69 wins and 32 losses across 101 archived games. Average margin of victory is not among the available team metrics (wins, losses, points, margin), so it cannot be computed from the current evidence.",
-      "warnings": [],
-      "data_version": "2025-26.20260928.1"
+      "t1": {
+        "status": "pass",
+        "refused": false,
+        "llm_validated": true,
+        "degraded": false,
+        "citations": 2,
+        "provider_calls": 4,
+        "answer": "The archive doesn't contain a margin-of-victory figure for this season. It only has Knicks team totals: 69 wins and 32 losses across 101 archived games.",
+        "warnings": []
+      },
+      "t2": {
+        "status": "pass",
+        "refused": false,
+        "llm_validated": true,
+        "degraded": false,
+        "citations": 2,
+        "provider_calls": 4,
+        "answer": "The archive doesn't contain a margin-of-victory figure for this season. It does show the Knicks at 69 wins and 32 losses across 101 archived games, but no average margin value is available.",
+        "warnings": []
+      }
     },
     {
       "id": "benign-058",
       "question": "How did they perform in future meetings with Boston this season?",
       "trigger": "future",
-      "expected": "gate allows and the analyst answers from the archive",
-      "status": "pass",
-      "passed": true,
-      "status_code": 200,
-      "refused": false,
-      "llm_validated": true,
-      "degraded": false,
-      "citations": 1,
-      "declined_phrase": false,
-      "provider_calls": 3,
-      "latency_ms": 3447,
-      "answer": "Mikal Bridges' 35 points, 6 rebounds, 3 assists and 0 turnovers on 2025-12-02 against Boston is the one future meeting with the Celtics captured in the archive. The available evidence covers only that single game, so it doesn't show how he performed across the other later Boston matchups this season.",
-      "warnings": [],
-      "data_version": "2025-26.20260928.1"
+      "t1": {
+        "status": "pass",
+        "refused": false,
+        "llm_validated": true,
+        "degraded": false,
+        "citations": 8,
+        "provider_calls": 3,
+        "answer": "In the four 2025-26 meetings with Boston in the archive, the Knicks' game flow shows two notable swings: on 2025-10-24 they erased an 8-point deficit and won 105-95, while on 2025-12-02 they lost a 14-point lead and fell 117-123.",
+        "warnings": []
+      },
+      "t2": {
+        "status": "pass",
+        "refused": false,
+        "llm_validated": true,
+        "degraded": false,
+        "citations": 8,
+        "provider_calls": 3,
+        "answer": "In the two later regular-season meetings with Boston, New York erased an 8-point deficit in a 105-95 win on 2025-10-24, but on 2025-12-02 they lost a 14-point lead and fell 117-123.",
+        "warnings": []
+      }
     }
-  ],
-  "replacements": [
-    {
-      "id": "benign-019",
-      "reason": "The analyst declined the home/road comparison after the tool returned no road sample; replaced by benign-022.",
-      "refused": true,
-      "llm_validated": true,
-      "citations": 0,
-      "answer": "I can't compare home vs. road offense here: the archive scope for this request is limited to home games, and no road-game data was retrieved. I also can't provide live scoring, as the archive contains only stored game and box-score data. If you'd like, I can compare home offense against another split available in the archive."
-    }
-  ],
-  "note": "benign-022 replaced benign-019 for a clean sample. benign-spotcheck-initial.json is the unedited first run (9/10) and benign-spotcheck-extra.json is the raw replacement run."
+  ]
 }
