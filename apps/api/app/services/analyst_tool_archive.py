@@ -1,0 +1,21 @@
+"""search_archive handler."""
+
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from app.models.game import Game
+    from app.services.analyst_tools import AnalystTools
+    from app.services.evidence_contracts import ToolCall, ToolResult
+    from app.services.query_resolution import ResolvedQuery
+
+
+async def run(
+    tools: AnalystTools,
+    call: ToolCall,
+    scope: ResolvedQuery | None,
+    games: list[Game],
+) -> ToolResult:
+    assert scope is not None
+    return await tools.search(call, scope, games)

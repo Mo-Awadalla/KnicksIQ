@@ -1,0 +1,144 @@
+{
+  "app": "/Users/mohamedawadalla/.local/share/knicksiq/worktrees/registry/apps/api/app/__init__.py",
+  "cases": {
+    "archive": {
+      "choices": [],
+      "claims": 0,
+      "evidence": 0,
+      "message": "Retrieved examples only, never a season denominator. ",
+      "sha256": "1040019f838d8a0e4deaf0532607f701049aaa9222d788e48ed1cbf21e2feba5",
+      "status": "no_matching_results"
+    },
+    "compare": {
+      "choices": [
+        "Ariel Hukporti",
+        "Dillon Jones",
+        "Guerschon Yabusele",
+        "Jalen Brunson",
+        "Jeremy Sochan",
+        "Jordan Clarkson",
+        "Jose Alvarado",
+        "Josh Hart",
+        "Karl-Anthony Towns",
+        "Kevin McCullar Jr.",
+        "Landry Shamet",
+        "Mikal Bridges",
+        "Miles McBride",
+        "Mitchell Robinson",
+        "Mohamed Diawara",
+        "OG Anunoby",
+        "Pac\u00f4me Dadiet",
+        "Tosan Evbuomwan",
+        "Trey Jemison III",
+        "Tyler Kolek"
+      ],
+      "claims": 0,
+      "evidence": 0,
+      "message": "Which Knicks player?",
+      "sha256": "4c69ce590cc0f50684db6891cdad3065958eefd9f1cf38ab600e7c56362c4194",
+      "status": "ambiguous_entity"
+    },
+    "discover": {
+      "choices": [],
+      "claims": 10,
+      "evidence": 10,
+      "message": "Choose a relevant candidate and explain its observed meaning.",
+      "sha256": "9353274e5fc658e4d718524c5d921382cb882e4b7b8345ec0aec84a240df5fff",
+      "status": "ok"
+    },
+    "empty_games": {
+      "choices": [],
+      "claims": 4,
+      "evidence": 101,
+      "message": "Archive team totals.",
+      "sha256": "82bc34245d6759b8b46a4822e0d35b9586fffa3e3a0f85984568c3e6331f2439",
+      "status": "ok"
+    },
+    "issued_evidence": {
+      "choices": [],
+      "claims": 0,
+      "evidence": 2,
+      "message": "Additional receipt detail.",
+      "requested": 2,
+      "sha256": "5caf27208e99607c28c1439ad1e0dc9997b092abe486193a3b9f24639b3f1f1c",
+      "status": "ok"
+    },
+    "missing_player": {
+      "choices": [
+        "Ariel Hukporti",
+        "Dillon Jones",
+        "Guerschon Yabusele",
+        "Jalen Brunson",
+        "Jeremy Sochan",
+        "Jordan Clarkson",
+        "Jose Alvarado",
+        "Josh Hart",
+        "Karl-Anthony Towns",
+        "Kevin McCullar Jr.",
+        "Landry Shamet",
+        "Mikal Bridges",
+        "Miles McBride",
+        "Mitchell Robinson",
+        "Mohamed Diawara",
+        "OG Anunoby",
+        "Pac\u00f4me Dadiet",
+        "Tosan Evbuomwan",
+        "Trey Jemison III",
+        "Tyler Kolek"
+      ],
+      "claims": 0,
+      "evidence": 0,
+      "message": "Which Knicks player?",
+      "sha256": "4c69ce590cc0f50684db6891cdad3065958eefd9f1cf38ab600e7c56362c4194",
+      "status": "ambiguous_entity"
+    },
+    "periods_guard": {
+      "choices": [],
+      "claims": 0,
+      "evidence": 0,
+      "message": "These calculations support full-game box scores only.",
+      "sha256": "5bc4dd1a06e58a1d9434a895231759fda602883dd417d6bf686f376faeb8f20a",
+      "status": "unsupported_metric_or_scope"
+    },
+    "player": {
+      "choices": [],
+      "claims": 1,
+      "evidence": 93,
+      "message": "Calculated from all applicable database rows; retrieval is not the denominator.",
+      "sha256": "6266ab995975b7af3498774aef6cb954ee747db70e90de5f7c0ee1aaf6110e3f",
+      "status": "incomplete_coverage"
+    },
+    "season_guard": {
+      "choices": [],
+      "claims": 0,
+      "evidence": 0,
+      "message": "Available season: 2025-26.",
+      "sha256": "11a188ef9a89b71979568301f2aa57549a0df924fd917d6b0de3e7c416a4cbee",
+      "status": "unsupported_metric_or_scope"
+    },
+    "team_average": {
+      "choices": [],
+      "claims": 4,
+      "evidence": 101,
+      "message": "Archive team totals.",
+      "sha256": "82bc34245d6759b8b46a4822e0d35b9586fffa3e3a0f85984568c3e6331f2439",
+      "status": "ok"
+    },
+    "team_total": {
+      "choices": [],
+      "claims": 4,
+      "evidence": 101,
+      "message": "Archive team totals.",
+      "sha256": "d0d976aa92f21736a8d0539e2704f92553adbebdc12cc92e87529187efc5cf59",
+      "status": "ok"
+    },
+    "unissued_evidence": {
+      "choices": [],
+      "claims": 0,
+      "evidence": 0,
+      "message": "Only previously returned release references are allowed.",
+      "sha256": "da941a5efa92398f8e5ccd7649c4fc9f058020b49292aa2f37e1dceb7d3c5c42",
+      "status": "unsupported_metric_or_scope"
+    }
+  }
+}
