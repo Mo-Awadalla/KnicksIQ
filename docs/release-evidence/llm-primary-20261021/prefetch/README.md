@@ -1,6 +1,7 @@
 # Prefetch contract fixes, 2026-10-21
 
-Branch `codex/llmp-prefetch`, merged from `codex/llmp-integration` at `a5b09fb`.
+Branch `codex/llmp-prefetch`, merged from `codex/llmp-integration` at `a5b09fb`; the later
+integration merge `304895a` changed no prefetch, payload, delivery or analyst test file.
 Scope: the 12 failing contracts after the quarters merge, plus a live check that
 prefetch still runs and its claims respect the input budget.
 
