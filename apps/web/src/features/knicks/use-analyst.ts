@@ -27,6 +27,7 @@ type Chat = {
   expiresAt?: string
   retry?: Turn
   pending: boolean
+  pendingSince?: number
   error?: string
   notice?: string
   generation: number
@@ -97,6 +98,7 @@ function boundary(message: string, retry?: Turn) {
     revision: 0,
     expiresAt: undefined,
     retry,
+    pendingSince: undefined,
     pending: false,
     generation: chat.generation + 1,
     error: undefined,
@@ -186,9 +188,10 @@ export function useAnalyst() {
   const queryClient = useQueryClient()
   const state = useSyncExternalStore(subscribe, () => chat)
   const [attempt, setAttempt] = useState(0)
-  const [slow, setSlow] = useState(false)
+  const [slowTimerDone, setSlowTimerDone] = useState(false)
+  const [clock, setClock] = useState(0)
   useEffect(() => {
-    const timer = setTimeout(() => setSlow(true), 5000)
+    const timer = setTimeout(() => setSlowTimerDone(true), 5000)
     return () => clearTimeout(timer)
   }, [attempt])
   const readiness = useQuery({
@@ -226,8 +229,16 @@ export function useAnalyst() {
     refetchOnWindowFocus: false,
   })
   const archiveReady = readiness.isSuccess && !readiness.isFetching
+  const slow = slowTimerDone && !readiness.isSuccess && !readiness.isError
+  useEffect(() => {
+    if (!state.pending || !state.pendingSince) return
+    const tick = () => setClock(Date.now())
+    tick()
+    const timer = setInterval(tick, 1000)
+    return () => clearInterval(timer)
+  }, [state.pending, state.pendingSince])
   const retryReadiness = () => {
-    setSlow(false)
+    setSlowTimerDone(false)
     setAttempt((value) => value + 1)
   }
   const setQuestion = (question: string) => change({ question })
@@ -284,6 +295,7 @@ export function useAnalyst() {
       question: '',
       retry: turn,
       pending: true,
+      pendingSince: Date.now(),
       error: undefined,
       notice: undefined,
     })
@@ -314,6 +326,7 @@ export function useAnalyst() {
           change({
             version: response.data_version,
             pending: false,
+            pendingSince: undefined,
             error: 'The archive changed. Edit or retry your question.',
           })
           void queryClient.invalidateQueries({
@@ -328,9 +341,12 @@ export function useAnalyst() {
         const failedCommit = response.warnings.some((warning) =>
           warning.includes('could not be committed')
         )
-        const stateless = response.warnings.some((warning) =>
-          warning.includes('Stateless factual fallback')
-        )
+        const stateless =
+          !failedCommit &&
+          (response.state_committed === false ||
+            response.warnings.some((warning) =>
+              warning.includes('Stateless factual fallback')
+            ))
         const updated = [
           ...chat.messages.filter(
             (message) => message.id !== `${turn.turn_id}:answer`
@@ -345,19 +361,30 @@ export function useAnalyst() {
         change({
           messages: updated,
           pending: false,
+          pendingSince: undefined,
           retry: failedCommit ? turn : undefined,
-          sessionToken: committed ? response.session_token! : chat.sessionToken,
-          revision: committed ? response.revision! : chat.revision,
+          sessionToken: committed
+            ? response.session_token!
+            : stateless
+              ? undefined
+              : chat.sessionToken,
+          revision: committed
+            ? response.revision!
+            : stateless
+              ? 0
+              : chat.revision,
           expiresAt: committed
             ? (response.session_expires_at ?? undefined)
-            : chat.expiresAt,
+            : stateless
+              ? undefined
+              : chat.expiresAt,
           error: failedCommit
-            ? 'Conversation state was not saved. Retry this question.'
+            ? 'This answer was not saved to your conversation. Retry the question.'
             : undefined,
         })
         if (stateless) {
           boundary(
-            'Conversation state was unavailable. Start a new conversation from here.'
+            'This answer was not saved to your conversation. Start a new conversation to ask a follow-up.'
           )
         }
         const focusAtResponse = document.activeElement
@@ -388,6 +415,7 @@ export function useAnalyst() {
             })
             change({
               pending: false,
+              pendingSince: undefined,
               question: turn.question,
               error: 'Your question is ready to retry or edit.',
             })
@@ -405,16 +433,35 @@ export function useAnalyst() {
             change({ retry: undefined })
           }
         }
+        const status = isAxiosError(error) ? error.response?.status : undefined
+        const code = isAxiosError(error) ? error.code : undefined
         change({
           pending: false,
-          error: navigator.onLine
-            ? 'The analyst could not answer that request. Retry your question.'
-            : 'You are offline. Reconnect and retry your question.',
+          pendingSince: undefined,
+          error: !navigator.onLine
+            ? 'You are offline. Reconnect and retry your question.'
+            : status === 429
+              ? 'The archive is busy right now. Wait a moment, then retry your question.'
+              : code === 'ECONNABORTED' || code === 'ETIMEDOUT'
+                ? 'That question took too long to finish. Retry it when you are ready.'
+                : 'The archive could not answer that request. Please retry.',
         })
       })
   }
   const retry = () => {
     if (chat.retry) submit(chat.retry.question)
+  }
+  const cancel = () => {
+    if (!chat.pending) return
+    controller?.abort()
+    change({
+      pending: false,
+      pendingSince: undefined,
+      generation: chat.generation + 1,
+      question: chat.retry?.question ?? chat.question,
+      error: undefined,
+      notice: 'Question stopped. Your question is ready to try again.',
+    })
   }
   return {
     question: state.question,
@@ -427,6 +474,10 @@ export function useAnalyst() {
     },
     submit,
     retry,
+    cancel,
+    elapsedSeconds: state.pendingSince
+      ? Math.max(0, Math.floor((clock - state.pendingSince) / 1000))
+      : 0,
     newChat,
     notice: state.notice,
     retryQuestion: state.retry?.question,
