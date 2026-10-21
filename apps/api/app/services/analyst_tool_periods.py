@@ -234,14 +234,23 @@ def _digest(
     extremes_wanted: bool,
 ) -> str:
     phase_scope = phase_label([name for _, _, phases, _ in groups for name in phases])
+    multi_phase = len({name for _, _, names, _ in groups for name in names}) > 1
+    compact_games = len(views) <= 10
     parts = [f"{phase_scope.capitalize()}, {len(views)} of {len(selected)} games."]
     if gaps:
         parts.append(f"{len(gaps)} coverage gaps excluded, not zero-point games.")
+    if compact_games and multi_phase:
+        counts = {
+            name: sum(1 for game in selected if game.season_type == name)
+            for name in dict.fromkeys(name for _, _, names, _ in groups for name in names)
+        }
+        listed = ", ".join(f"{count} {_short_phase(name)}" for name, count in counts.items())
+        parts.append(f"Phases: {listed}.")
     for _phase_metric, phase, _, group_games in groups:
         group_views = [(game, views[game.id]) for game in group_games if game.id in views]
         if not group_views:
             continue
-        if include_periods:
+        if include_periods and not (compact_games and multi_phase):
             for period in periods:
                 pairs = [
                     (game, view["periods"][str(period)])
@@ -255,14 +264,11 @@ def _digest(
                 opponent_points = sum(pair[1] for _, pair in pairs)
                 wins = sum(pair[0] > pair[1] for _, pair in pairs)
                 ties = sum(pair[0] == pair[1] for _, pair in pairs)
-                opponent_detail = (
-                    f" ({round(opponent_points / count, 2)})" if len(views) > 10 else ""
-                )
                 text = (
                     f"{_short_phase(phase)} {label(period)}: {points} pts "
-                    f"({round(points / count, 2)}/g), opp {opponent_points}"
-                    f"{opponent_detail}, diff {points - opponent_points:+d}, {wins}-{ties}-"
-                    f"{count - wins - ties}."
+                    f"({round(points / count, 2)}/g), opp {opponent_points} "
+                    f"({round(opponent_points / count, 2)}), diff "
+                    f"{points - opponent_points:+d}, {wins}-{ties}-{count - wins - ties}."
                 )
                 if len(views) > 10 and extremes_wanted:
                     best = pick_extreme(pairs, lambda entry: entry[1][0], highest=True)
@@ -278,11 +284,34 @@ def _digest(
                             f"{worst[0].game_date}."
                         )
                 parts.append(text)
+        if len(periods) == 2 and not (compact_games and multi_phase):
+            first, second = periods
+            first_pairs = [
+                view["periods"][str(first)]
+                for _, view in group_views
+                if str(first) in view["periods"]
+            ]
+            second_pairs = [
+                view["periods"][str(second)]
+                for _, view in group_views
+                if str(second) in view["periods"]
+            ]
+            if first_pairs and second_pairs:
+                first_pts = sum(pair[0] for pair in first_pairs)
+                second_pts = sum(pair[0] for pair in second_pairs)
+                first_ppg = first_pts / len(first_pairs)
+                second_ppg = second_pts / len(second_pairs)
+                parts.append(
+                    f"{_short_phase(phase)} {label(first)} vs {label(second)}: "
+                    f"{first_pts - second_pts:+d} pts, {first_ppg - second_ppg:+.2f}/g."
+                )
         if half_question:
             halves = _halves_value(tools, group_views)
             text = (
                 f"{phase} halves: H1 {halves['h1_ppg']}-{halves['h1_opp_ppg']}/g, "
-                f"H2 {halves['h2_ppg']}-{halves['h2_opp_ppg']}/g; led {halves['led']}, "
+                f"H2 {halves['h2_ppg']}-{halves['h2_opp_ppg']}/g; H2 vs H1 "
+                f"{halves['h2_ppg'] - halves['h1_ppg']:+.2f}/g, "
+                f"{halves['h2_pts'] - halves['h1_pts']:+d} pts; led {halves['led']}, "
                 f"trailed {halves['trailed']}; comebacks {halves['comebacks']}, blown "
                 f"{halves['blown']}."
             )
@@ -383,7 +412,9 @@ def _game_row(
         int(period) for period in view["periods"]
     ]
     scores = " ".join(
-        f"{label(period)} {view['periods'][str(period)][0]}-{view['periods'][str(period)][1]}"
+        f"{label(period)} {view['periods'][str(period)][0]}-"
+        f"{view['periods'][str(period)][1]} "
+        f"({view['periods'][str(period)][0] - view['periods'][str(period)][1]:+d})"
         for period in chosen
     )
     text = f"{game.game_date:%m-%d} {venue(game)[0]}"
@@ -396,7 +427,10 @@ def _game_row(
             f"; half {view['first_half'][0]}-{view['first_half'][1]}, "
             f"2H {view['second_half'][0]}-{view['second_half'][1]}"
         )
-    text += f"; {view['final'][0]}-{view['final'][1]} {result(game, tools)}"
+    text += (
+        f"; {view['final'][0]}-{view['final'][1]} {result(game, tools)} "
+        f"({view['final'][0] - view['final'][1]:+d})"
+    )
     return text
 
 
