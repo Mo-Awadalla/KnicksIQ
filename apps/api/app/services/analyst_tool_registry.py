@@ -103,9 +103,8 @@ TOOLS: tuple[ToolSpec, ...] = (
     ToolSpec(
         name="get_period_scoring",
         description=(
-            "gives Knicks and opponent points by quarter, half (including halftime lead) and "
-            "overtime, per game and aggregated; use it instead of get_team_stats for any "
-            "quarter, half, halftime or overtime question"
+            "quarter, half and overtime scoring for the Knicks and opponents, per game and "
+            "aggregated; use instead of get_team_stats for those questions"
         ),
         handler="app.services.analyst_tool_periods:run",
         supports_periods=True,
