@@ -78,19 +78,20 @@ The authoritative launch configuration is
 
 ## Capacity, cost and latency
 
-At the $2 cutoff the measured capacity is about 1,413 questions per month on current routing, at
-a mean of $0.001415 per question. Routing is unpinned, so the practical range is about 1,200 to
-1,400 questions. Pinning the cheapest endpoint would give about 10,000 to 12,000, but the adapter
-does not pin a provider today.
+At the $2 cutoff, the 16,000-byte measurement supports about 1,009 questions per month on the
+70-question mix and about 750 on the held-out rate. Mean cost is $0.001981 per question on the
+70-question mix and $0.002668 at the held-out rate. Capacity is route dependent because OpenRouter
+routing is unpinned and the adapter does not pin a provider today. See the
+[final measurement](release-evidence/llm-primary-20261021/final/README.md).
 
 Billed provider failures settle at the provider's reported cost. A call with no HTTP response
 keeps the flat reservation. Every measured run reconciles the ledger delta to settled cost plus
 the open reservation delta. Check the ledger and provider usage separately after an incident.
 
-Measured latency on 40 questions is p50 2,290 ms and p95 4,608 ms, with 2.5 provider calls per
-question. The release gate is p95 below four seconds and is not met. Treat a p95 rise above the
-recorded baseline as a regression. Evidence is in
-`release-evidence/llm-primary-20261021/latency/README.md`.
+Measured latency on 140 questions (70 questions in two trials) at the 16,000-byte input budget is
+p50 3,312 ms and p95 7,640 ms, with 2.74 provider calls per question. The release gate is p95 below
+four seconds and is not met. Treat a p95 rise above the recorded baseline as a regression. Evidence
+is in the [final measurement](release-evidence/llm-primary-20261021/final/README.md).
 
 ## Rollback drill: llm_primary to deterministic or shadow
 

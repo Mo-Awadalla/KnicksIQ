@@ -57,13 +57,15 @@ Release gates remain:
 - measured cost and monthly capacity at the $2 cutoff.
 
 The quality and latency gates are not met by the current evidence. The held-out baseline is 5/60.
-Measured latency is p50 2,290 ms and p95 4,608 ms on 40 questions. The independent audit supports
-the factual correctness of the responses it reviewed but does not replace the held-out quality
-gate. Promotion requires owner sign-off on the recorded exception or further work.
+Measured latency at the 16,000-byte input budget is p50 3,312 ms and p95 7,640 ms on 140 questions
+(70 questions in two trials). The independent audit supports the factual correctness of the
+responses it reviewed but does not replace the held-out quality gate. Promotion requires owner
+sign-off on the recorded exception or further work.
 
-Cost and capacity are measured at $2: mean $0.001415 per question and about 1,413 questions per
-month on current routing. Routing is unpinned, so the practical range is about 1,200 to 1,400.
-See `release-evidence/llm-primary-20261021/cost/README.md`.
+Cost and capacity are measured at $2: mean cost is $0.001981 per question on the 70-question mix,
+which supports about 1,009 questions per month. The held-out rate supports about 750 questions per
+month. Capacity is route dependent. See the [final measurement](release-evidence/llm-primary-20261021/final/README.md)
+and the cost evidence in `release-evidence/llm-primary-20261021/cost/README.md`.
 
 ## Offline harness
 

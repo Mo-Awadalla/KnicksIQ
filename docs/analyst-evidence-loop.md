@@ -87,11 +87,11 @@ player-versus-opponent questions, comparative metric questions and two-populatio
 Prefetch passes only a question and aggregation; the backend applies the resolved scope.
 Prefetched tools count toward the tool and model call bounds.
 
-Measured on 40 questions on the final tree: p50 2,290 ms, p95 4,608 ms, 2.5 provider calls per
-question, 35/40 validated. The base tree was p50 3,117 ms and p95 4,370 ms at 2.83 calls. The
-p95 gate of four seconds is not met, so promotion needs an owner exception or further work.
-Full stage tables and artifacts are in
-`release-evidence/llm-primary-20261021/latency/README.md`.
+Measured on 140 questions (70 questions in two trials) at the 16,000-byte input budget: p50
+3,312 ms, p95 7,640 ms, mean cost $0.001981 per question, 2.74 provider calls per question and
+99/140 validated. The base tree was p50 3,117 ms and p95 4,370 ms at 2.83 calls. The p95 gate of
+four seconds is not met, so promotion needs an owner exception or further work. Full stage tables
+and artifacts are in the [final measurement](release-evidence/llm-primary-20261021/final/README.md).
 
 ## Refusals and the `refused` flag
 
@@ -143,12 +143,12 @@ uncertain in-flight requests, then restore a conservative total through administ
 Redis access. The ledger has no automatic expiry. A new month also requires reconciliation. Shadow
 uses the same ledger.
 
-At $2 the measured capacity is about 1,413 questions per month on current routing, at a mean of
-$0.001415 per question. It is highly route dependent: OpenRouter routing is unpinned and the same
-model spans an 8.8x price range across endpoints. Current routing gives about 1,200 to 1,400
-questions per month; pinning the cheapest endpoint would give about 10,000 to 12,000. Category
-breakdowns and the accounting reconciliation are in
-`release-evidence/llm-primary-20261021/cost/README.md`.
+At $2, measured capacity is about 1,009 questions per month on the 70-question mix and about 750
+at the held-out rate. Mean cost is $0.001981 per question on the 70-question mix and $0.002668
+on the held-out rate. Capacity is highly route dependent: OpenRouter routing is unpinned, and the
+same model spans an 8.8x price range across endpoints. See the
+[final measurement](release-evidence/llm-primary-20261021/final/README.md). Category breakdowns and
+the accounting reconciliation are in `release-evidence/llm-primary-20261021/cost/README.md`.
 
 ## Session API
 
