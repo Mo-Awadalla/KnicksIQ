@@ -18,7 +18,7 @@ from typing import Any
 
 # Exact retained owner instruction for this verification goal. This journal
 # cannot use an unrelated approval or change production monthly accounting.
-SPENDING_DIRECTION_SHA256 = "23fb2fdecaabe72e38c7944b9566d1ac9358748a85f84fb5c5f4e653b28acda2"
+SPENDING_DIRECTION_SHA256 = "85e2139a3eff7d5d6a5d30c3590109611c7b1eb4ec7a244ac9a1cd4b6a0c6311"
 
 # Task-local identity, never a search across concurrent pending transmissions.
 current_ticket: ContextVar[int | None] = ContextVar("verification_ticket", default=None)

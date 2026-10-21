@@ -1,10 +1,9 @@
-"""Socket HTTP regressions recorded before the counted warm-load implementation.
+"""Socket HTTP regressions for the counted warm-load safety boundary.
 
 Synthetic provider transport and fixture-owned Redis only; these observations
-cannot certify original 30-second paid load, Docker identity or publication gates.
-Failure modes: altered/replayed requests, wrong phase cap, unselected shadow
-transmission, concurrent reservation joins, post-transmission uncertainty and
-admission denial. Ordinary minute/day quotas stay enabled.
+cannot certify the original paid load or publication gates. Failure modes cover
+altered/replayed requests, phase caps, sampler selection, exposure joins and
+post-transmission uncertainty. Ordinary quotas stay enabled.
 """
 
 import asyncio
@@ -19,6 +18,7 @@ import httpx
 import pytest
 from app.core.config import get_settings
 from app.core.db import AsyncSessionLocal
+from app.evaluation.release_runner import digest
 from app.evaluation.verification_adapter import MODEL
 from app.evaluation.verification_budget import VerificationBudget
 from app.models.game import Game
@@ -32,7 +32,7 @@ from sqlalchemy import update
 async def fixture_load(client, redis, monkeypatch, tmp_path, scenario="success", selected=1):
     from app.api.analysis import _sample_shadow
     from app.evaluation.guarded_load import LoadHTTP, load_cases, private_server
-    from app.evaluation.guarded_release import GuardedSession, MonthlyLedger
+    from app.evaluation.guarded_release import ROUTING_POLICY, GuardedSession, MonthlyLedger
     from app.services import analyst_budget, analyst_loop, runtime_store
 
     settings = get_settings()
@@ -116,10 +116,14 @@ async def fixture_load(client, redis, monkeypatch, tmp_path, scenario="success",
             await session.ledger.read(owned)
             if scenario == "deny":
                 raise ValueError("Synthetic live admission denied")
+            snapshot = {"active_provider_names": ["Synthetic"]}
             return {
                 "bound_nusd": 1_000_000,
-                "route": "morph/fp8",
-                "provider": "Morph",
+                "input_token_bound": 1000,
+                "output_token_bound": 500,
+                "provider_routing": ROUTING_POLICY,
+                "price_snapshot_sha256": digest(snapshot),
+                "endpoint_price_snapshot": snapshot,
                 "metadata_sha256": "synthetic",
             }
 
@@ -140,7 +144,7 @@ async def fixture_load(client, redis, monkeypatch, tmp_path, scenario="success",
             json={
                 "id": generation,
                 "model": MODEL,
-                "provider": "Morph",
+                "provider": "Synthetic",
                 "usage": {"cost": 0.000001},
                 "choices": [{"message": {"content": raw}}],
             },
@@ -350,7 +354,7 @@ async def test_selected_concurrent_load_and_unselected_shadow_keep_independent_j
 
 
 def test_original_load_cli_changed_frozen_input_never_opens_socket_or_resets_goal(tmp_path):
-    contract = tmp_path / "source-support-20261003/gold-review/frozen-expectations.json"
+    contract = tmp_path / "docs/release-evidence/evaluation-contract-20261021/expectations.json"
     contract.parent.mkdir(parents=True)
     contract.write_text('{"cases": []}')
     goal = tmp_path / "already-admitted"
@@ -373,6 +377,10 @@ def test_original_load_cli_changed_frozen_input_never_opens_socket_or_resets_goa
             str(tmp_path),
             "--goal-dir",
             str(goal),
+            "--bundle-path",
+            str(tmp_path / "bundle.json.gz"),
+            "--candidate-identity-dir",
+            str(tmp_path / "identity-payloads"),
             "--disabled-score",
             str(tmp_path / "score.json"),
             "--disabled-observations",
@@ -404,7 +412,12 @@ async def test_original_load_denies_unreviewed_quality_before_socket_or_reservat
     from types import SimpleNamespace
 
     from app.evaluation import guarded_load as load
-    from app.evaluation.guarded_release import GOAL_ANCHOR, MonthlyLedger, digest
+    from app.evaluation.guarded_release import (
+        GOAL_ANCHOR,
+        MINIMUM_PROVIDER_MONTHLY_NUSD,
+        MonthlyLedger,
+        digest,
+    )
     from app.evaluation.verification_budget import SPENDING_DIRECTION_SHA256
 
     root, goal = tmp_path, tmp_path / "goal"
@@ -436,8 +449,10 @@ async def test_original_load_denies_unreviewed_quality_before_socket_or_reservat
         _sample_shadow(evaluation_request_id("synthetic-gold", "shadow", case["id"]), 0.1)
         for case in contract["cases"]
     )
-    binding = {
-        "historical_floor_nusd": 72_217_900,
+    binding = {"synthetic_contract": "load-quality-denial"}
+    stored_binding = {
+        **binding,
+        "historical_floor_nusd": MINIMUM_PROVIDER_MONTHLY_NUSD,
         "redis_run_id": "synthetic",
         "resources": {"qdrant_aliases": {}},
     }
@@ -445,15 +460,18 @@ async def test_original_load_denies_unreviewed_quality_before_socket_or_reservat
         load,
         "goal_context",
         lambda *args: (
-            MonthlyLedger(month=f"{datetime.now(UTC):%Y-%m}", historical_floor="0.0722179"),
+            MonthlyLedger(month=f"{datetime.now(UTC):%Y-%m}", historical_floor="1.367010808"),
             binding,
             root / GOAL_ANCHOR,
         ),
     )
     binding_sha = digest(binding)
-    (root / GOAL_ANCHOR).parent.mkdir(parents=True)
+    (root / GOAL_ANCHOR).parent.mkdir(parents=True, exist_ok=True)
     (root / GOAL_ANCHOR).write_text(
         json.dumps({"goal_dir": str(goal), "binding_sha256": binding_sha})
+    )
+    (goal / "goal-binding.json").write_text(
+        json.dumps({"binding_sha256": binding_sha, **stored_binding})
     )
     VerificationBudget.create(goal / "goal.sqlite", binding=binding_sha, shadow_selected=selected)
     budget = VerificationBudget(goal / "goal.sqlite", binding=binding_sha)
@@ -461,7 +479,7 @@ async def test_original_load_denies_unreviewed_quality_before_socket_or_reservat
         db.execute("CREATE TABLE spending_direction (sha256 TEXT NOT NULL)")
         db.execute("INSERT INTO spending_direction VALUES (?)", (SPENDING_DIRECTION_SHA256,))
         db.execute("CREATE TABLE guard_goal (binding TEXT NOT NULL)")
-        db.execute("INSERT INTO guard_goal VALUES (?)", (json.dumps(binding),))
+        db.execute("INSERT INTO guard_goal VALUES (?)", (json.dumps(stored_binding),))
         db.execute("CREATE TABLE guard_runs (mode TEXT PRIMARY KEY, status TEXT NOT NULL)")
         db.executemany(
             "INSERT INTO guard_runs VALUES (?, 'complete')", [(phase,) for phase in phases]

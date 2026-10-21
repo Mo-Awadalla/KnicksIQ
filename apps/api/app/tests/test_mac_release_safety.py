@@ -35,7 +35,7 @@ def test_shared_cap_includes_inherited_and_concurrent_pending(tmp_path):
     )
     budget = VerificationBudget(path, binding="synthetic")
     direction = Path(__file__).resolve().parents[4] / (
-        "docs/release-evidence/implementation-20261001/confirmed-spending-direction.json"
+        "docs/release-evidence/evaluation-contract-20261021/owner-spending-direction.json"
     )
     budget.apply_spending_direction(direction)
 
