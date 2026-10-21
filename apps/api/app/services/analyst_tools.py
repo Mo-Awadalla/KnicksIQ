@@ -5,6 +5,7 @@ from __future__ import annotations
 import asyncio
 import json
 import re
+import time
 from typing import Any
 
 from app.core.config import get_settings
@@ -46,8 +47,10 @@ class AnalystTools:
         self.rows: list[tuple[PlayerGameStat, Player]] = []
         self.scope: ResolvedQuery | None = None
         self.different = bool(re.search(r"\bdifferent player\b", question, re.I))
+        self.timings: list[dict[str, Any]] = []
 
     async def prepare(self) -> None:
+        records_started = time.monotonic()
         self.games = list(
             (
                 await self.db.execute(
@@ -75,8 +78,35 @@ class AnalystTools:
             ).all()
         )
         self.rows = [(stat, player) for stat, player in loaded_rows]
+        self.timings.append(
+            {
+                "stage": "prepare",
+                "tool": "archive_records",
+                "latency_ms": round((time.monotonic() - records_started) * 1000),
+                "games": len(self.games),
+                "box_score_rows": len(self.rows),
+            }
+        )
+        resolve_started = time.monotonic()
         self.scope = await resolve_query(
             self.db, self.question, intent="analyst", data_version=self.release.version
+        )
+        self.timings.append(
+            {
+                "stage": "prepare",
+                "tool": "query_resolution",
+                "latency_ms": round((time.monotonic() - resolve_started) * 1000),
+                "resolved": bool(
+                    self.scope.player_ids
+                    or self.scope.team_ids
+                    or self.scope.game_ids
+                    or self.scope.date_start
+                    or self.scope.date_end
+                    or self.scope.relative_game_count
+                    or self.scope.periods
+                    or self.scope.metric
+                ),
+            }
         )
         if (
             self.scope.date_start

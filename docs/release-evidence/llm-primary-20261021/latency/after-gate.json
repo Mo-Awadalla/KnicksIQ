@@ -1,0 +1,277 @@
+{
+  "answer_mode": "llm_primary",
+  "by_category": {
+    "aliases_typos": {
+      "met": 3,
+      "p50_latency_ms": 3317.7,
+      "p95_latency_ms": 6277.5,
+      "provider_calls": 14,
+      "questions": 5
+    },
+    "comparisons": {
+      "met": 0,
+      "p50_latency_ms": 3536.8,
+      "p95_latency_ms": 4607.7,
+      "provider_calls": 20,
+      "questions": 6
+    },
+    "date_range_last_n": {
+      "met": 3,
+      "p50_latency_ms": 2561.9,
+      "p95_latency_ms": 3538.2,
+      "provider_calls": 15,
+      "questions": 6
+    },
+    "exact_statistics": {
+      "met": 4,
+      "p50_latency_ms": 2167.2,
+      "p95_latency_ms": 3861.6,
+      "provider_calls": 14,
+      "questions": 6
+    },
+    "single_game_narrative": {
+      "met": 0,
+      "p50_latency_ms": 2253.9,
+      "p95_latency_ms": 4259.6,
+      "provider_calls": 15,
+      "questions": 6
+    },
+    "turning_points": {
+      "met": 0,
+      "p50_latency_ms": 2381.6,
+      "p95_latency_ms": 3065.8,
+      "provider_calls": 12,
+      "questions": 6
+    },
+    "unsupported": {
+      "met": 4,
+      "p50_latency_ms": 1770.2,
+      "p95_latency_ms": 2114.9,
+      "provider_calls": 10,
+      "questions": 5
+    }
+  },
+  "call_latency_ms_p50": 887.7,
+  "call_latency_ms_p95": 1697.3,
+  "call_ttfb_ms_p50": 243.4,
+  "call_ttfb_ms_p95": 682.9,
+  "calls_per_question": 2.5,
+  "claim_backed_meets_expectation": 14,
+  "completion_tokens_per_question": 614.0,
+  "completion_tokens_total": 24559,
+  "content_kinds": {
+    "string": 100
+  },
+  "contexts_with_reasoning_tokens": 0,
+  "data_version": "2025-26.20260928.1",
+  "degraded": 5,
+  "empty_content_by_stage": {
+    "answer": {
+      "calls": 40,
+      "empty_content": 0,
+      "empty_rate": 0.0,
+      "max_tokens_seen": [
+        600,
+        1600
+      ],
+      "p50_latency_ms": 767.0,
+      "p95_latency_ms": 1492.4
+    },
+    "other": {
+      "calls": 0,
+      "empty_content": 0,
+      "empty_rate": null,
+      "max_tokens_seen": [],
+      "p50_latency_ms": null,
+      "p95_latency_ms": null
+    },
+    "plan": {
+      "calls": 18,
+      "empty_content": 0,
+      "empty_rate": 0.0,
+      "max_tokens_seen": [
+        600,
+        1600
+      ],
+      "p50_latency_ms": 490.4,
+      "p95_latency_ms": 2068.6
+    },
+    "repair": {
+      "calls": 7,
+      "empty_content": 0,
+      "empty_rate": 0.0,
+      "max_tokens_seen": [
+        1600
+      ],
+      "p50_latency_ms": 1002.0,
+      "p95_latency_ms": 2524.2
+    },
+    "review": {
+      "calls": 35,
+      "empty_content": 0,
+      "empty_rate": 0.0,
+      "max_tokens_seen": [
+        3000
+      ],
+      "p50_latency_ms": 1169.8,
+      "p95_latency_ms": 1835.5
+    }
+  },
+  "empty_content_calls": 0,
+  "empty_content_rate": 0.0,
+  "evidence_loop": true,
+  "finish_reasons": {
+    "stop": 100
+  },
+  "generated_at": "2026-10-21T22:25:23.357407+00:00",
+  "http_200": 40,
+  "latency_ms_max": 6277.5,
+  "latency_ms_mean": 2640.6,
+  "latency_ms_min": 1182.2,
+  "latency_ms_p50": 2290.4,
+  "latency_ms_p95": 4607.7,
+  "latency_ms_spread": 5095.3,
+  "ledger_delta_usd": 0.04446966,
+  "ledger_end_usd": 1.06949327,
+  "ledger_key": "ai-budget:2026-10",
+  "ledger_start_usd": 1.02502361,
+  "meets_expectation": 14,
+  "meets_expectation_rate": 0.35,
+  "model": "deepseek/deepseek-v4.1-flash",
+  "non_200": 0,
+  "old_meets_expectation": 19,
+  "outcomes": {
+    "fallback:review_rejected": 5,
+    "validated": 14,
+    "validated_declined": 21
+  },
+  "overhead": {
+    "mean_ms": 1.6,
+    "p50_ms": 0.0,
+    "p95_ms": 0.0
+  },
+  "prompt_tokens_per_question": 4291.8,
+  "prompt_tokens_total": 171673,
+  "provider": "openrouter",
+  "provider_calls": 100,
+  "providers": {
+    "Together": 100
+  },
+  "questions": 40,
+  "reasoning_effort": "none",
+  "reasoning_tokens_total": 0,
+  "request_timeout_seconds": 20.0,
+  "sample": [
+    "exact_statistics-001",
+    "date_range_last_n-001",
+    "comparisons-001",
+    "single_game_narrative-001",
+    "turning_points-001",
+    "aliases_typos-001",
+    "unsupported-001",
+    "exact_statistics-002",
+    "date_range_last_n-002",
+    "comparisons-002",
+    "single_game_narrative-002",
+    "turning_points-002",
+    "aliases_typos-002",
+    "unsupported-002",
+    "exact_statistics-003",
+    "date_range_last_n-003",
+    "comparisons-003",
+    "single_game_narrative-003",
+    "turning_points-003",
+    "aliases_typos-003",
+    "unsupported-003",
+    "exact_statistics-004",
+    "date_range_last_n-004",
+    "comparisons-004",
+    "single_game_narrative-004",
+    "turning_points-004",
+    "aliases_typos-004",
+    "unsupported-004",
+    "exact_statistics-005",
+    "date_range_last_n-005",
+    "comparisons-005",
+    "single_game_narrative-005",
+    "turning_points-005",
+    "aliases_typos-005",
+    "unsupported-005",
+    "exact_statistics-006",
+    "date_range_last_n-006",
+    "comparisons-006",
+    "single_game_narrative-006",
+    "turning_points-006"
+  ],
+  "scope": "In-process ASGI app, real OpenRouter provider, restored active release, llm_primary evidence loop, sequential single client, no answer cache.",
+  "stage_table": {
+    "answer": {
+      "mean_ms": 901.4,
+      "p50_ms": 767.5,
+      "p95_ms": 1493.0,
+      "questions_with_stage": 40,
+      "share_of_total_mean": 0.341
+    },
+    "archive_records": {
+      "mean_ms": 23.7,
+      "p50_ms": 19.0,
+      "p95_ms": 48.0,
+      "questions_with_stage": 40,
+      "share_of_total_mean": 0.009
+    },
+    "other": {
+      "mean_ms": 77.5,
+      "p50_ms": 74.5,
+      "p95_ms": 108.0,
+      "questions_with_stage": 40,
+      "share_of_total_mean": 0.029
+    },
+    "plan": {
+      "mean_ms": 265.4,
+      "p50_ms": 0.0,
+      "p95_ms": 1290.0,
+      "questions_with_stage": 11,
+      "share_of_total_mean": 0.101
+    },
+    "query_resolution": {
+      "mean_ms": 53.5,
+      "p50_ms": 53.0,
+      "p95_ms": 80.0,
+      "questions_with_stage": 40,
+      "share_of_total_mean": 0.02
+    },
+    "repair": {
+      "mean_ms": 182.2,
+      "p50_ms": 0.0,
+      "p95_ms": 1050.0,
+      "questions_with_stage": 7,
+      "share_of_total_mean": 0.069
+    },
+    "review": {
+      "mean_ms": 1073.3,
+      "p50_ms": 1116.5,
+      "p95_ms": 1668.0,
+      "questions_with_stage": 35,
+      "share_of_total_mean": 0.406
+    },
+    "session_and_release": {
+      "mean_ms": 4.4,
+      "p50_ms": 4.0,
+      "p95_ms": 6.0,
+      "questions_with_stage": 40,
+      "share_of_total_mean": 0.002
+    },
+    "tool": {
+      "mean_ms": 93.0,
+      "p50_ms": 59.0,
+      "p95_ms": 223.0,
+      "questions_with_stage": 29,
+      "share_of_total_mean": 0.035
+    }
+  },
+  "trials": [
+    0
+  ],
+  "validated": 35,
+  "validated_declined": 21
+}

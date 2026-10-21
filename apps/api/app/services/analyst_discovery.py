@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 from typing import TYPE_CHECKING, Any
 
 from app.models.box_score import PlayerGameStat
@@ -31,6 +32,18 @@ def discover(tools: AnalystTools, scope: ResolvedQuery, games: list[Game]) -> To
             status="no_matching_results",
             message="Single-game examples do not summarize a player matchup. Call "
             "get_player_stats for the full opponent population.",
+            scope=scope.model_dump(mode="json"),
+        )
+    if re.search(
+        r"\b(?:biggest|best|largest|worst|heaviest)\s+(?:win|victory|loss|defeat|blowout)\b"
+        r"|\b(?:highest|most)[- ]scoring\b|\bmost points (?:in a game|scored)\b",
+        tools.question,
+        re.I,
+    ):
+        # Single-game highlights are not the team extreme the question asks for.
+        return ToolResult(
+            status="no_matching_results",
+            message="Single-game highlights do not answer a team extreme. Call get_team_stats.",
             scope=scope.model_dump(mode="json"),
         )
     game_map = {g.id: g for g in games}

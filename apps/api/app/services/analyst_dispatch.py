@@ -84,4 +84,25 @@ async def execute_call(tools: AnalystTools, call: ToolCall) -> ToolResult:
             message="Which Knicks player?",
             choices=sorted({p.full_name for _, p in tools.rows}),
         )
-    return await spec.resolve_handler()(tools, call, scope, games)
+    result = await spec.resolve_handler()(tools, call, scope, games)
+    if (
+        spec.name == "discover_facts"
+        and result.status == "no_matching_results"
+        and (scope.opponent_id or _team_extreme(call.question))
+    ):
+        # Single-game highlights cannot answer a matchup or a team extreme; run the
+        # population tool the discovery result points at instead of leaving the model to.
+        follow = "get_player_stats" if scope.player_ids else "get_team_stats"
+        return await TOOLS_BY_NAME[follow].resolve_handler()(tools, call, scope, games)
+    return result
+
+
+def _team_extreme(question: str) -> bool:
+    return bool(
+        re.search(
+            r"\b(?:biggest|best|largest|worst|heaviest)\s+(?:win|victory|loss|defeat|blowout)\b"
+            r"|\b(?:highest|most)[- ]scoring\b|\bmost points (?:in a game|scored)\b",
+            question,
+            re.I,
+        )
+    )
