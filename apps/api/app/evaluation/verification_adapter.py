@@ -31,11 +31,13 @@ class CountedVerificationAdapter(LLMAdapter):
         verify_request: Callable[[dict[str, Any]], Awaitable[int]],
         reasoning_effort: str | None = None,
         on_failure: Callable[[str], None] | None = None,
+        on_protocol_failure: Callable[[BaseException], None] | None = None,
         transport: httpx.AsyncBaseTransport | None = None,
         max_tokens: int = 500,
         timeout_seconds: float = 20.0,
     ):
         self.on_failure = on_failure
+        self.on_protocol_failure = on_protocol_failure
         self.api_key = api_key
         self.budget = budget
         self.stage = stage
@@ -59,19 +61,23 @@ class CountedVerificationAdapter(LLMAdapter):
                 if protocol is None:
                     raise ValueError("Unknown counted analyst protocol")
             content = await self._generate(system=system, user=user)
-            if protocol is not None and isinstance(prompt, dict):
-                # Parsing outside this boundary would let later paid cases run
-                # after malformed output had already failed the analyst loop.
-                from app.services.analyst_loop import decode_model_response, parse_model_response
-
-                protocol.model_validate(
-                    decode_model_response(prompt, parse_model_response(content))
-                )
-            return content
         except BaseException as exc:
             if self.on_failure is not None:
                 self.on_failure(type(exc).__name__)
             raise
+        if protocol is not None and isinstance(prompt, dict):
+            # Malformed model output is a quality observation, not an accounting failure: the
+            # settled call is recorded and the analyst loop handles the content as in production.
+            from app.services.analyst_loop import decode_model_response, parse_model_response
+
+            try:
+                protocol.model_validate(
+                    decode_model_response(prompt, parse_model_response(content))
+                )
+            except Exception as exc:
+                if self.on_protocol_failure is not None:
+                    self.on_protocol_failure(exc)
+        return content
 
     async def _generate(self, *, system: str, user: str) -> str:
         self.last_metadata = {}
@@ -159,6 +165,7 @@ class CountedRun:
         self.verify_environment, self.verify_request = verify_environment, verify_request
         self.transport = transport
         self.failure: str | None = None
+        self.protocol_failed: Callable[[BaseException], None] | None = None
 
     def check(self) -> None:
         if self.failure or self.budget.snapshot()["stopped"]:
@@ -182,4 +189,5 @@ class CountedRun:
             max_tokens=settings.rag_generation_max_output_tokens,
             timeout_seconds=settings.ai_request_timeout_seconds,
             on_failure=self.failed,
+            on_protocol_failure=self.protocol_failed,
         )

@@ -13,6 +13,9 @@ Primary and optional shadow collection accept an explicit `CountedRun` dependenc
 It installs the counted transport, requires environment verification before the
 cohort and payload verification before every provider request, preserves partial
 evidence, and stops even if the analyst masks a provider failure with fallback.
+Schema-invalid model output on a settled call is not a provider failure: it is
+recorded as `protocol-failure-*.json` and the analyst handles it as in production,
+so the resulting fallback is reviewed and scored like any other answer.
 The command-line collector has no default live verifier: paid execution remains
 blocked until real monthly accounting, current conservative provider bounds,
 isolated resource identities and billed dependencies are independently verified.
