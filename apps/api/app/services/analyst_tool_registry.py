@@ -106,6 +106,12 @@ TOOLS: tuple[ToolSpec, ...] = (
         handler="app.services.analyst_tool_runs:run",
         supports_periods=True,
     ),
+    ToolSpec(
+        name="get_team_splits",
+        description="team splits",
+        handler="app.services.analyst_tool_splits:run",
+        needs_games=False,
+    ),
 )
 
 TOOLS_BY_NAME = {spec.name: spec for spec in TOOLS}
