@@ -51,9 +51,9 @@ async def run(env_file: Path, ids: list[str], out_path: Path) -> int:
     try:
         app = create_app()
         async with app.router.lifespan_context(app):
-            transport = ASGITransport(app=app)
+            transport = ASGITransport(app=app, raise_app_exceptions=False)
             async with AsyncClient(
-                transport=transport, base_url="http://test", timeout=60
+                transport=transport, base_url="https://api.knicksiq.win", timeout=60
             ) as client:
                 for item in ids:
                     row = rows[item]
