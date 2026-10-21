@@ -1,0 +1,22 @@
+{
+  "base": "d5800118b497e92e5e5609c7b66404d930e1e2fb",
+  "head": "4343dd6457eadb6ab286fe27f667a4ea7196b68c",
+  "prompt": {
+    "equal": true,
+    "sha256": "98edb2b22e4821db11988ecf1b6e6e5879d8ad70a977813a7d70e4cc71233386",
+    "characters": 1705
+  },
+  "action_schema": {
+    "equal": true,
+    "sha256": "53c961f6783f67e4b539560f0f44016a85e3c24ac50250377132ff3976b65593"
+  },
+  "tool_names": [
+    "get_player_stats",
+    "get_team_stats",
+    "compare_windows",
+    "discover_facts",
+    "search_archive",
+    "get_evidence"
+  ],
+  "branch_assignment": "request_model: system = orchestrator_system_prompt()"
+}

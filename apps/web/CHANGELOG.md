@@ -1,3 +1,9 @@
+## Unreleased
+
+### Fix
+
+- Give slow archive answers clear progress and cancellation, explain declines and data limits, and keep mobile source receipts readable.
+
 ## v2.2.1 (2025-11-06)
 
 ### Fix
