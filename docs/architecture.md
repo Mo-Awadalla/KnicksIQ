@@ -2,13 +2,13 @@
 
 ## Production system
 
-KnicksIQ serves one immutable Knicks 2025–26 archive. Render hosts a static
+KnicksIQ serves one immutable Knicks 2025-26 archive. Render hosts a static
 React application and a free, read-only FastAPI service. Neon Free Postgres is
 the authoritative store. Render Free Key Value supplies ephemeral shared rate
-limits, answer caching, and AI budget state. Qdrant Cloud holds release-versioned
-retrieval indexes. OpenRouter plans bounded retrieval and phrases evidence that
-KnicksIQ retrieved or computed. Sentry receives scrubbed errors and low-sample
-traces.
+limits, answer caching, session state, and AI budget state. Qdrant Cloud holds
+release-versioned retrieval indexes. OpenRouter composes validated answers from
+backend-computed claims or selects bounded retrieval; it never authors a number.
+Sentry receives scrubbed errors and low-sample traces.
 
 Postgres and one validated active `dataset_releases` row are required.
 Qdrant, Redis, and OpenRouter are optional at request time. Their failure must
@@ -30,19 +30,41 @@ expand-only Alembic migration against Neon before deployment.
 ## Runtime request flow
 
 The web application calls the public API anonymously. Archive endpoints read
-the active release directly from Postgres. `POST /analysis/query` first refuses
-explicit unsupported/live/tactical requests. In `llm_primary`, a schema-bound
-planner selects allowlisted searches and fact tools; the server validates its
-filters and injects the active data version. Qdrant supplies game, box-score,
-report, and possession evidence while Postgres analytics compute canonical
-numeric facts. The answer model emits evidence-linked claims, and the server
-rejects unsupported evidence IDs, entities, or numbers before rendering prose.
+the active release directly from Postgres. `POST /analysis/query` applies the
+typed pre-model refusal table first. It refuses only instruction override,
+wagering and out-of-archive date text, before any provider call. Ambiguous live,
+injury, trade and prediction wording reaches the analyst, which answers the
+archive part, declines or explains coverage.
 
-`deterministic` bypasses planning and synthesis. `shadow` returns the
-deterministic response and evaluates a sampled LLM candidate in a background
-task. `llm_primary` returns the validated LLM answer. Any vector, model, Redis
-budget, timeout, parsing, or validation failure returns the deterministic answer
-with `degraded=true`.
+When `ANALYST_EVIDENCE_LOOP_ENABLED=true`, the request runs one bounded evidence
+loop:
+
+1. Load the active release and resolve the question scope. Season-level records
+   and stats default to the regular season. The answer states the phase.
+2. Optionally run deterministic prefetch for a clear question: `discover_facts`,
+   `get_team_stats` or `get_player_stats`. `ANALYST_PREFETCH_ENABLED` defaults to
+   true.
+3. Let the model choose from nine registered tools. The backend computes every
+   number, emits an immutable `VerifiedClaim` with receipts and applies the
+   resolved scope. The model can reference claim IDs, never overwrite values.
+4. Run the reviewer with prompt v4 and validator v2. A deterministic gate
+   requires every answer number to match a claim, receipt or capability value.
+   The model returns one verdict per backend-owned sentence span. One revision
+   and re-review are allowed.
+5. Deliver the validated answer with `llm_validated=true`. Any provider, budget,
+   validation or deadline failure falls back to cited deterministic facts with
+   `degraded=true` and `llm_validated=false`.
+
+The tools cover player and team statistics, window comparisons, fact discovery,
+archive search, evidence expansion, game flow, team splits and period scoring.
+Period and play-by-play questions are in scope. The fallback and the team tools
+apply the same regular-season default, and opponent matchups keep all phases.
+
+The deterministic modes remain. `deterministic` bypasses planning and synthesis.
+`shadow` returns the deterministic response and validates a sampled candidate in
+the same metered loop. `llm_primary` returns the validated model answer. A
+validated refusal sets `refused=true` with `llm_validated=true` and
+`degraded=false`; the flag is not an error signal.
 
 Production routing deliberately excludes ingestion, job enqueue, run
 detection, report creation/deletion, Swagger, and OpenAPI. Workers and MCP are
