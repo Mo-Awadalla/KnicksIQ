@@ -101,6 +101,18 @@ TOOLS: tuple[ToolSpec, ...] = (
         needs_games=False,
     ),
     ToolSpec(
+        name="get_game_flow",
+        description="play-by-play flow",
+        handler="app.services.analyst_tool_runs:run",
+        supports_periods=True,
+    ),
+    ToolSpec(
+        name="get_team_splits",
+        description="team splits",
+        handler="app.services.analyst_tool_splits:run",
+        needs_games=False,
+    ),
+    ToolSpec(
         name="get_period_scoring",
         description=(
             "quarter, half and overtime scoring for the Knicks and opponents, per game and "
@@ -127,9 +139,12 @@ def recovery_tool(role: RecoveryRole) -> ToolSpec:
 def tools_hint() -> str:
     """The provider prompt segment that names every tool, in registry order."""
     lead = next(spec for spec in TOOLS if spec.prompt_lead)
+    flow = TOOLS_BY_NAME.get("get_game_flow")
+    flow_hint = f"Game-flow questions: call {flow.name} alone first. " if flow is not None else ""
     listed = "; ".join(f"{spec.name} {spec.description}" for spec in TOOLS if not spec.prompt_lead)
     return (
-        f"For interesting stats or another player, call {lead.name} {lead.description}. "
+        flow_hint
+        + f"For interesting stats or another player, call {lead.name} {lead.description}. "
         "Empty claims means call a tool before stating stats. "
         f"{listed}. Answer once evidence is sufficient. "
     )
