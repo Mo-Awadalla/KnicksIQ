@@ -159,6 +159,7 @@ class Action(Contract):
         "answer_from_available_evidence",
         "ask_clarification",
         "explain_coverage",
+        "decline",
     ]
     tools: list[ToolCall] = Field(default_factory=list, max_length=3)
     answer: ProposedAnswer | None = None
