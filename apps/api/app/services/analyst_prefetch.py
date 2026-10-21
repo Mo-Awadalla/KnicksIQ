@@ -71,7 +71,17 @@ def prefetch_calls(tools: AnalystTools) -> list[ToolCall]:
     if scope is None or scope.requires_clarification:
         return []
     question = tools.question
+    if scope.team_ids and not scope.player_ids and re.search(r"\bwhat happened\b", question, re.I):
+        return [ToolCall(name="get_team_stats", question=question, aggregation="total")]
     if _SKIP.search(question):
+        return []
+    if len(scope.player_ids) > 1:
+        return []
+    if (
+        scope.player_ids
+        and scope.opponent_id
+        and re.search(r"\b(vs\.?|versus|against)\b", question, re.I)
+    ):
         return []
     if scope.player_ids:
         metric = scope.metric
@@ -94,6 +104,8 @@ def prefetch_calls(tools: AnalystTools) -> list[ToolCall]:
     if not classify_query(question).is_aggregative:
         return [ToolCall(name="discover_facts", question=question)]
     if scope.metric in _PLAYER_ONLY_METRICS:
+        if _COMPARATIVE.search(question):
+            return []
         return [ToolCall(name="discover_facts", question=question)]
     windowed = bool(
         _TEAM_WINDOW.search(question)
