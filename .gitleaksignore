@@ -8,6 +8,7 @@
 # credential. It is compared with hashlib.sha256(key.encode()).hexdigest(); the
 # real key is loaded only from the owner's private dotenv. No rule/path allowlist.
 687285fadb47d5f546abbc0bea8fe4f314c096b1:apps/api/app/evaluation/guarded_release.py:generic-api-key:54
+f42e3b4192eb0ee2231c12a2a9d81f366bf7facf:apps/api/app/evaluation/guarded_release.py:generic-api-key:48
 
 # Exact false positive: a public Render deployment ID (dep-...) under the record's
 # "api_deployment" key matched the generic rule. It is not a credential.
