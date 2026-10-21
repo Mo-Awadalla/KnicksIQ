@@ -70,3 +70,6 @@ tools/report_audit/report80_fixture.json linguist-generated=true
 
 # Generated live analyst E2E responses
 docs/release-evidence/llm-primary-*/*.responses.jsonl linguist-generated=true
+
+# Machine-generated adversarial evidence; regenerate with tools/release/analyst_adversarial_e2e.py.
+docs/release-evidence/llm-primary-20261021/safety/*.json linguist-generated=true
