@@ -30,7 +30,11 @@ from httpx import ASGITransport, AsyncClient  # noqa: E402
 HERE = Path(__file__).resolve().parent
 QUESTIONS = HERE.parents[3] / "apps/api/app/evaluation/questions.jsonl"
 sys.path.insert(0, str(HERE.parents[3] / "tools/release"))
-from analyst_live_e2e import FailureCapture, classify, meets_expectation  # noqa: E402
+from analyst_live_e2e import (  # noqa: E402
+    FailureCapture,
+    classify,
+    old_meets_expectation,
+)
 
 
 def load(ids: list[str], categories: list[str]) -> list[dict]:
@@ -73,7 +77,7 @@ async def run(rows: list[dict], trials: int) -> list[dict]:
                             "question": row["question"],
                             "trial": trial,
                             "outcome": outcome,
-                            "meets_expectation": meets_expectation(row, outcome),
+                            "meets_expectation": old_meets_expectation(row, outcome),
                             "answer": body.get("answer") or "",
                             "warnings": body.get("warnings") or [],
                             "citations": len(body.get("citations") or []),
@@ -99,7 +103,11 @@ def main() -> None:
     responses = args.out.with_suffix(".responses.jsonl")
     responses.write_text("".join(json.dumps(item) + "\n" for item in results))
     outcomes = Counter(item["outcome"] for item in results)
-    print(json.dumps({"questions": len(rows), "answers": len(results), "outcomes": outcomes}, indent=2))
+    print(
+        json.dumps(
+            {"questions": len(rows), "answers": len(results), "outcomes": outcomes}, indent=2
+        )
+    )
 
 
 if __name__ == "__main__":
