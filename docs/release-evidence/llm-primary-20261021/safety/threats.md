@@ -32,7 +32,7 @@ Status vocabulary:
 | T11 | Malformed input | Bad JSON, blank question, invalid calendar date, NUL | Pydantic validators; NUL is not rejected | `http-bad-json`, `http-blank`, `http-invalid-date`, `http-control-chars` | verified safe |
 | T12 | Oversized context or request body | 100 context messages, 2000 chars each, unknown fields | Pydantic list and item caps; body size is not capped in app | `http-context-limits`, `http-extra-field` | verified safe; raw body cap is open at the edge |
 | T13 | Session token guessing or replay | Random 64-hex token, replayed turn, guessed turn id | 256-bit token; atomic turn lease and digest; 24h TTL | `session-wrong-token`, `session-replay`, `session-cross-client` | verified safe |
-| T14 | Opaque or leaking session conflict | 409 detail is a dict containing the bearer token | Global handler hides non-string detail | `session-conflict`, `session-wrong-token`, `session-revision` | reproduced: reason lost; token held in the exception detail |
+| T14 | Opaque or leaking session conflict | 409 detail is a dict containing the bearer token | Global handler exposes only the reason; no credentials | `session-conflict`, `session-wrong-token`, `session-revision` | fixed: reasons `turn_id_reused`, `session_expired`, current revision; no token echo |
 | T15 | Rate-limit bypass through forwarded headers | Client rotates `X-Forwarded-For` | Client id uses the ASGI peer only; proxy headers require trusted proxy | `rate-xff` | verified safe |
 | T16 | Rate limiting behind the Render proxy | Render forwards over HTTP from a private proxy | Uvicorn proxy trust must be configured | `proxy-https`, `proxy-client-identity`, `config-forwarded-allow-ips` | reproduced: no trusted proxy config |
 | T17 | Cost exhaustion and monthly cutoff | Repeated questions burn provider calls; cutoff reached | Atomic monthly ledger; fail closed to deterministic facts | `budget-cutoff`, `refuse-*` | verified safe at the cutoff; unsupported questions still spend before refusing (T05-T07) |
@@ -111,6 +111,10 @@ and the expected last-game value of 94 points.
   in 7-12 ms with zero provider calls; the 1017-character question returns 413 in 9 ms;
   the mixed injury/archive question still reaches the analyst (2 provider calls).
 - T14: session conflicts now return a machine-readable reason without the token.
+  `after-session-conflict.json`: 7/7 cases pass. Replay returns the identical committed
+  response with zero provider calls; conflicts return `turn_id_reused`,
+  `session_expired`, or the current revision (`1`) under `detail.reason`, matching the web
+  client. The bearer token is no longer placed in the exception detail.
 - T16: `render.yaml` sets `FORWARDED_ALLOW_IPS` to localhost plus the Render private
   ranges, so uvicorn resolves the real client and the forwarded scheme.
 
