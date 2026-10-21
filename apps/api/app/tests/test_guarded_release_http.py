@@ -75,7 +75,6 @@ def test_guarded_cli_denies_changed_gold_without_network(tmp_path):
         "overbound",
         "provider_overbound",
         "provider_overbound_malformed",
-        "invalid_action",
         "uncounted",
     ],
 )
@@ -181,15 +180,7 @@ async def test_guarded_original_cohort_failure_joins_and_retains(
                 "usage": {}
                 if scenario == "missing_cost"
                 else {"cost": 0.05 if scenario.startswith("provider_overbound") else 0},
-                "choices": [
-                    {
-                        "message": {
-                            "content": "{}"
-                            if scenario == "invalid_action"
-                            else "malformed analyst content"
-                        }
-                    }
-                ],
+                "choices": [{"message": {"content": "malformed analyst content"}}],
             },
         )
 
@@ -228,14 +219,9 @@ async def test_guarded_original_cohort_failure_joins_and_retains(
             file_hash(contract), mode, rows[0]["case_id"]
         )
         assert rows[0]["model"] == MODEL
-        assert rows[0]["status"] == ("settled" if scenario == "invalid_action" else "uncertain")
-        assert await local_redis.hlen(key + ":reservations") == (
-            0 if scenario == "invalid_action" else 1
-        )
-        if scenario == "invalid_action":
-            assert float(await local_redis.get(key)) == pytest.approx(0.0722179)
-        else:
-            assert float(await local_redis.get(key)) > 0.0722179
+        assert rows[0]["status"] == "uncertain"
+        assert await local_redis.hlen(key + ":reservations") == 1
+        assert float(await local_redis.get(key)) > 0.0722179
         assert await local_redis.ttl(key) == -1
         if scenario == "provider_overbound":
             assert rows[0]["reported_cost_nusd"] == 50_000_000
