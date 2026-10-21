@@ -71,6 +71,11 @@ tools/report_audit/report80_fixture.json linguist-generated=true
 # Generated live analyst E2E responses
 docs/release-evidence/llm-primary-*/*.responses.jsonl linguist-generated=true
 
+# Reviewer replay output: machine-recorded provider responses and derived tables.
+docs/release-evidence/llm-primary-20261021/reviewer/*.jsonl linguist-generated=true
+docs/release-evidence/llm-primary-20261021/reviewer/replay.json linguist-generated=true
+docs/release-evidence/llm-primary-20261021/reviewer/mutations.json linguist-generated=true
+
 # Scorer output for the 2026-10-21 llm_primary evidence run.
 docs/release-evidence/llm-primary-20261021/scoring/*.jsonl linguist-generated=true
 docs/release-evidence/llm-primary-20261021/scoring/*.json linguist-generated=true
