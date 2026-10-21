@@ -3,8 +3,13 @@
 from __future__ import annotations
 
 import re
+import unicodedata
 
-from app.services.query_resolution import _normalize
+
+def _normalize(value: str) -> str:
+    ascii_value = unicodedata.normalize("NFKD", value).encode("ascii", "ignore").decode()
+    return re.sub(r"[^a-z0-9]+", " ", ascii_value.lower()).strip()
+
 
 _PHASE_WORDS = re.compile(r"\b(?:playoff|postseason|play in|regular season|overall|all phases)\b")
 _OUTCOME_SUBSET = re.compile(
