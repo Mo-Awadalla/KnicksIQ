@@ -76,7 +76,9 @@ async def test_provider_schema_growth_uses_factual_fallback(db_session, local_re
     monkeypatch.setattr(analyst_provider, "get_llm_adapter", lambda: adapter)
     result = await AnalystLoop(tools, []).run()
     assert not result["llm_validated"]
-    assert len(adapter.prompts) == 1
+    # A larger tool registry can exceed the input budget at admission, before the first
+    # provider call; both paths still end in the deterministic factual fallback.
+    assert len(adapter.prompts) <= 1
     assert result["answer"]
 
 
