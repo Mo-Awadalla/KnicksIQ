@@ -102,9 +102,7 @@ TOOLS: tuple[ToolSpec, ...] = (
     ),
     ToolSpec(
         name="get_game_flow",
-        description=(
-            "gives play-by-play turning points: runs, leads, lead changes, go-ahead and clutch"
-        ),
+        description="play-by-play flow",
         handler="app.services.analyst_tool_runs:run",
         supports_periods=True,
     ),
@@ -127,12 +125,7 @@ def tools_hint() -> str:
     """The provider prompt segment that names every tool, in registry order."""
     lead = next(spec for spec in TOOLS if spec.prompt_lead)
     flow = TOOLS_BY_NAME.get("get_game_flow")
-    flow_hint = (
-        f"For game-flow questions, call {flow.name} alone first; discovery box scores do not "
-        "answer them. "
-        if flow is not None
-        else ""
-    )
+    flow_hint = f"Game-flow questions: call {flow.name} alone first. " if flow is not None else ""
     listed = "; ".join(f"{spec.name} {spec.description}" for spec in TOOLS if not spec.prompt_lead)
     return (
         flow_hint

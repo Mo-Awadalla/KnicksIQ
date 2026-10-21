@@ -86,8 +86,16 @@ async def run(category: str, trials: int, ids: set[str]) -> dict:
                             "outcome": outcome,
                             "meets_expectation": harness.meets_expectation(row, outcome),
                             "answer": body.get("answer") or "",
-                            "citations": len(body.get("citations") or []),
+                            "citations": body.get("citations") or [],
                             "warnings": body.get("warnings") or [],
+                            "refused": body.get("refused", False),
+                            "degraded": body.get("degraded", False),
+                            "llm_validated": body.get("llm_validated", False),
+                            "route": body.get("route"),
+                            "follow_up_questions": body.get("follow_up_questions") or [],
+                            "tool_calls": body.get("tool_calls") or [],
+                            "data_version": body.get("data_version"),
+                            "status_code": response.status_code,
                         }
                     )
     by_id: dict[str, list[dict]] = collections.defaultdict(list)

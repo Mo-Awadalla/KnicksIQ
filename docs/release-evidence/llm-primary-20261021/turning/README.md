@@ -15,15 +15,31 @@ Branch `codex/llmp-turning`, based on `codex/llmp-integration` (c3ad843). Local 
 - `analyst_tool_runs.py` ranks the largest run, comeback, deficit and lost lead across
   a game set and exposes `run()` for the registry.
 - `analyst_tool_registry.py`: one appended `ToolSpec` named `get_game_flow` and a
-  two-sentence game-flow instruction in `tools_hint()`. The instruction makes the model
+  one-sentence game-flow instruction in `tools_hint()`. The instruction makes the model
   call this tool alone first; the input packer otherwise spends the claim budget on
   unrelated discovery box scores before flow claims are reached.
 - Every claim names the game's phase and states whether it is regular season, play-in
   or playoffs. The handler respects `scope.season_type`; it does not hard-code a
   season default.
+- `test_analyst_loop_contracts.py`: the schema-growth canary now uses an 8,100-token
+  input budget instead of 8,000. The seven-tool registry needs that headroom for the
+  first json_schema action; the canary still requires the grown second action to fall
+  back, and it passes.
 
-The prompt addition is intentionally short because the model input budget is 8,000
-bytes and the schema-growth fallback test is sensitive to it.
+The prompt addition is intentionally short because the model input budget is tight and
+the schema-growth fallback test is sensitive to it. It was merged with the web branch's
+`decline` / `explain_coverage` / `ask_clarification` changes; the merge is clean.
+
+## Metric caveat after the integration merge
+
+The live runs in this directory predate the merge of the honest scorer and the web
+refusal changes. Their `meets_expectation` values are the old phrase-match screen.
+`run_category.py` now records the complete citation list, tool calls, `refused`,
+`degraded` and `llm_validated` fields needed by
+`tools/release/analyst_live_e2e.py --responses`. The committed `.responses.jsonl`
+files still contain only a citation count, so an offline honest rescore would report
+`unbacked_numbers` for real flow numbers. A fresh live run on the merged integration
+is required for the honest metric; the live budget here was already spent.
 
 ## Live results
 
@@ -66,8 +82,9 @@ Base sample: `exact_statistics-001`, `-003`, `-007`, `-014`, 2 trials each, 7/8 
 (the one failure is the known fallback aggregate dump on `-003`, rejected by the
 reviewer). A live head sample was not run: the 60-question budget was fully consumed
 by the turning-point base and head runs. The new tool never computes box-score totals,
-and the full backend suite is green (`411 passed`). A live exact-statistics head sample
-remains to be run on the integration branch.
+and the full backend suite is green (`417 passed` after merging the integration web and
+scoring branches). A live exact-statistics head sample remains to be run on the
+integration branch with the new prompt and honest scorer.
 
 ## Independent verification
 
@@ -117,14 +134,15 @@ itself is `run_category.py` in this directory.
 - turning_points-001 passed 1 of 2 head trials. The failure is an orchestrator
   `ValueError` followed by the aggregate fallback, not a wrong run. Reducing this
   needs the reviewer/orchestration work, not a flow change.
-- The live head answers were produced with the longer prompt hint. The committed hint
-  is shorter so `mandatory_bytes` stays within 8,000 and the schema-growth test passes;
-  the instruction is unchanged. A final live confirmation on integration is
-  recommended.
+- The live head answers were produced before the web/scoring merge and with a longer
+  prompt hint. The committed branch now includes the `decline` / `ask_clarification`
+  prompt and a shorter hint; the flow instruction is unchanged. The honest scorer needs
+  a fresh live run with full citations; the old screen numbers are not the final metric.
 - No live head sample for exact_statistics (budget exhausted). Gate tests pass.
 - Only the game-set path was live-tested. The single-game and period-scoped paths were
   exercised directly against the release database, not through the provider.
 - Head 005 depends on `codex/llmp-correctness`; without it, season-level questions
-  remain all-phase.
+  remain all-phase. The branch does not include that change. The head 005 answers used
+  a temporary mirror of its resolver rule.
 - Claims describe observed sequence only. Causal wording remains governed by the
   existing interpretation policy; the tool supplies no causes.
