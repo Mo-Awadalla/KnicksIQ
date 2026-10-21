@@ -8,6 +8,7 @@ import logging
 import re
 import time
 from collections import defaultdict, deque
+from dataclasses import dataclass
 from datetime import UTC, datetime
 
 from fastapi import HTTPException, Request, status
@@ -26,44 +27,59 @@ _WINDOW_SECONDS = 60
 _requests_by_client: dict[str, deque[float]] = defaultdict(deque)
 _daily_requests_by_client: dict[str, deque[float]] = defaultdict(deque)
 
-# Categories that no archive tool can answer. They are refused before the evidence loop,
-# so a public client cannot spend provider budget on them and the decline is deterministic.
-_BETTING = re.compile(
-    r"\b(?:bet|bets|betting|wager|wagers|wagering|gamble|gambling|parlay|parlays|"
-    r"moneyline|sportsbook|bookmaker|odds|over/under|prop bet|point spread|"
-    r"betting line|against the spread)\b",
-    re.IGNORECASE,
+
+@dataclass(frozen=True, slots=True)
+class PreModelRefusalCategory:
+    """One category no archive tool can answer, keyed only on unambiguous text."""
+
+    name: str
+    patterns: tuple[re.Pattern[str], ...]
+
+
+# Instruction extraction and persona changes have no archive reading at all.
+_INSTRUCTION_OVERRIDE_PATTERNS: tuple[re.Pattern[str], ...] = (
+    re.compile(
+        r"\b(?:ignore|disregard|forget|override|bypass|disable|break)\s+"
+        r"(?:all\s+|any\s+|the\s+|your\s+)*(?:previous\s+|prior\s+|above\s+|safety\s+|system\s+)*"
+        r"(?:instructions?|rules?|prompts?|guidelines?|guardrails?|polic(?:y|ies))\b",
+        re.IGNORECASE,
+    ),
+    re.compile(
+        r"\b(?:system|developer)\s+(?:prompt|instructions?|message)\b"
+        r"|\bjailbreak\b"
+        r"|\bdeveloper mode\b"
+        r"|\breveal\s+(?:your|the)\s+(?:system\s+)?(?:prompt|instructions?)\b"
+        r"|\b(?:tell|show|give|repeat|print|output)\s+(?:me\s+)?your\s+"
+        r"(?:system\s+)?(?:prompt|instructions?|rules)\b"
+        r"|\byou are now\b"
+        r"|\bpretend\s+(?:to\s+be|you\s+are)\b"
+        r"|\bact as\s+(?:an?\s+)?(?:developer|admin|administrator|system|assistant|bot|ai)\b",
+        re.IGNORECASE,
+    ),
 )
-_META_INSTRUCTION = re.compile(
-    r"(?:ignore|disregard|forget|override|bypass|disable|break)\s+"
-    r"(?:all\s+|any\s+|the\s+|your\s+)*(?:previous\s+|prior\s+|above\s+|safety\s+|system\s+)*"
-    r"(?:instructions?|rules?|prompts?|guidelines?|guardrails?|polic(?:y|ies))"
-    r"|(?:system|developer)\s+(?:prompt|instructions?|message)"
-    r"|jailbreak|developer mode"
-    r"|reveal\s+(?:your|the)\s+(?:system\s+)?(?:prompt|instructions?)"
-    r"|(?:tell|show|give|repeat|print|output)\s+(?:me\s+)?(?:your|the)\s+"
-    r"(?:system\s+)?(?:prompt|instructions?|rules)"
-    r"|you are now\b"
-    r"|pretend\s+(?:to\s+be|you\s+are)"
-    r"|act as\s+(?:an?\s+)?(?:developer|admin|administrator|system|assistant|bot|ai)\b",
-    re.IGNORECASE,
+
+# Wagering vocabulary is the narrow set that has no archive reading. Bare "odds" is
+# deliberately absent: "odds of winning when leading at half" is an archive question.
+_WAGERING_PATTERNS: tuple[re.Pattern[str], ...] = (
+    re.compile(
+        r"\b(?:bet|bets|betting|wager|wagers|wagering|gamble|gambling|parlay|parlays|"
+        r"moneyline|sportsbook|bookmaker|over/under|prop bet|point spread|"
+        r"betting line|against the spread)\b",
+        re.IGNORECASE,
+    ),
 )
-_LIVE_OR_FUTURE = re.compile(
-    r"\b(?:injur\w*|hurt|medical|diagnos\w*|concussion|surgery|surgical|illness|"
-    r"health status|live|tonight|tomorrow|yesterday|right now|currently|current|"
-    r"standings|next game|upcoming|trade|trades|traded|trading|free agent|future|"
-    r"next season|will|predict\w*|forecast|projections?)\b",
-    re.IGNORECASE,
+
+# A calendar date outside the archived season is unambiguous even when a fan uses it
+# next to archive words.
+_OUT_OF_ARCHIVE_DATE_PATTERNS: tuple[re.Pattern[str], ...] = (
+    re.compile(r"\b(?:202[7-9]|20[3-9]\d)(?:-\d{2}-\d{2})?\b", re.IGNORECASE),
+    re.compile(r"\b2026-(?:0[7-9]|1[0-2])-\d{2}\b", re.IGNORECASE),
 )
-_ARCHIVE_INTENT = re.compile(
-    r"\b(?:archived?|20\d{2}-\d{2}-\d{2}|last (?:game|match|night)|previous game|"
-    r"box score|play-by-play)\b"
-    r"|how did .{0,60}(?:perform|play|score)\b",
-    re.IGNORECASE,
-)
-_FUTURE_DATE = re.compile(
-    r"\b(?:202[7-9]|20[3-9]\d)(?:-\d{2}-\d{2})?\b|\b2026-(?:0[7-9]|1[0-2])-\d{2}\b",
-    re.IGNORECASE,
+
+PRE_MODEL_REFUSAL_CATEGORIES: tuple[PreModelRefusalCategory, ...] = (
+    PreModelRefusalCategory("instruction_override", _INSTRUCTION_OVERRIDE_PATTERNS),
+    PreModelRefusalCategory("wagering", _WAGERING_PATTERNS),
+    PreModelRefusalCategory("out_of_archive_date", _OUT_OF_ARCHIVE_DATE_PATTERNS),
 )
 
 
@@ -283,17 +299,23 @@ def _requires_explicit_refusal(question: str) -> bool:
     )
 
 
-def _requires_pre_model_refusal(question: str) -> bool:
-    """Refuse categories no archive tool can answer before spending provider budget.
+def pre_model_refusal_category(question: str) -> str | None:
+    """Return the unambiguous refusal category that caught the question, if any."""
+    for category in PRE_MODEL_REFUSAL_CATEGORIES:
+        if any(pattern.search(question) for pattern in category.patterns):
+            return category.name
+    return None
 
-    A mixed question with an explicit archive intent still reaches the analyst, which
-    answers the archive portion and states the live-data gap.
+
+def _requires_pre_model_refusal(question: str) -> bool:
+    """Refuse only unambiguous non-archive requests before spending provider budget.
+
+    Fan phrasing makes live, injury, trade and prediction words ambiguous: "will",
+    "live", "hurt", "current", "next" and "odds" all have archive readings. Those
+    questions reach the analyst, which answers the archive portion and states the
+    coverage gap, or declines. Only text with no archive reading is refused here.
     """
-    if _BETTING.search(question) or _META_INSTRUCTION.search(question):
-        return True
-    if _FUTURE_DATE.search(question):
-        return True
-    return bool(_LIVE_OR_FUTURE.search(question) and not _ARCHIVE_INTENT.search(question))
+    return pre_model_refusal_category(question) is not None
 
 
 def _is_greeting(question: str) -> bool:

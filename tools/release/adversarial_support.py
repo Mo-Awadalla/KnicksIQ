@@ -188,6 +188,16 @@ async def ask(h, cid, threat, question, expected, check, **kwargs):
     )
 
 
+DECLINE = re.compile(
+    r"\b(?:i can(?:'|’)?t|i cannot|can(?:'|’)?t (?:give|provide|answer|predict|verify|access)|"
+    r"cannot (?:give|provide|answer|predict|access)|not able to|unable to|"
+    r"do(?:es)? not (?:include|cover|contain|have|provide)|"
+    r"doesn(?:'|’)?t (?:include|cover|contain|have|provide)|"
+    r"don(?:'|’)?t have|no (?:live|future|current|injury|trade|playoffs?))\b",
+    re.I,
+)
+
+
 def refusal_check(expect_words=()):
     def check(response, body, calls, latency):
         answer = (body.get("answer") or "").lower()
@@ -203,6 +213,27 @@ def refusal_check(expect_words=()):
             ok,
             f"status={response.status_code} refused={body.get('refused')} "
             f"calls={calls} latency_ms={latency}",
+        )
+
+    return check
+
+
+def decline_check(expect_words=()):
+    """A model-dependent unsupported question must reach the analyst and be declined."""
+
+    def check(response, body, calls, latency):
+        answer = (body.get("answer") or "").lower()
+        declined = body.get("refused") is True or bool(DECLINE.search(answer))
+        ok = (
+            response.status_code == 200
+            and declined
+            and calls > 0
+            and not any(word in answer for word in expect_words)
+        )
+        return (
+            ok,
+            f"status={response.status_code} refused={body.get('refused')} "
+            f"declined={declined} calls={calls} latency_ms={latency}",
         )
 
     return check
@@ -244,12 +275,8 @@ def request_for(ip):
 
 
 def client_for(app, ip):
-    transport = httpx.ASGITransport(
-        app=app, raise_app_exceptions=False, client=(ip, 12345)
-    )
-    return httpx.AsyncClient(
-        transport=transport, base_url="https://api.knicksiq.win", timeout=60
-    )
+    transport = httpx.ASGITransport(app=app, raise_app_exceptions=False, client=(ip, 12345))
+    return httpx.AsyncClient(transport=transport, base_url="https://api.knicksiq.win", timeout=60)
 
 
 @contextlib.contextmanager
