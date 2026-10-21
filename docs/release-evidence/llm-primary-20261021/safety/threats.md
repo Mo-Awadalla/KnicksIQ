@@ -34,14 +34,14 @@ Status vocabulary:
 | T13 | Session token guessing or replay | Random 64-hex token, replayed turn, guessed turn id | 256-bit token; atomic turn lease and digest; 24h TTL | `session-wrong-token`, `session-replay`, `session-cross-client` | verified safe |
 | T14 | Opaque or leaking session conflict | 409 detail is a dict containing the bearer token | Global handler exposes only the reason; no credentials | `session-conflict`, `session-wrong-token`, `session-revision` | fixed: reasons `turn_id_reused`, `session_expired`, current revision; no token echo |
 | T15 | Rate-limit bypass through forwarded headers | Client rotates `X-Forwarded-For` | Client id uses the ASGI peer only; proxy headers require trusted proxy | `rate-xff` | verified safe |
-| T16 | Rate limiting behind the Render proxy | Render forwards over HTTP from a private proxy | Uvicorn proxy trust must be configured | `proxy-https`, `proxy-client-identity`, `config-forwarded-allow-ips` | reproduced: no trusted proxy config |
-| T17 | Cost exhaustion and monthly cutoff | Repeated questions burn provider calls; cutoff reached | Atomic monthly ledger; fail closed to deterministic facts | `budget-cutoff`, `refuse-*` | verified safe at the cutoff; unsupported questions still spend before refusing (T05-T07) |
+| T16 | Rate limiting behind the Render proxy | Render forwards over HTTP from a private proxy | Uvicorn trusts localhost and private proxy ranges | `proxy-https`, `proxy-client-identity`, `config-forwarded-allow-ips` | fixed: forwarded https returns 200; two clients get independent buckets |
+| T17 | Cost exhaustion and monthly cutoff | Repeated questions burn provider calls; cutoff reached | Atomic monthly ledger; fail closed to deterministic facts; unsupported categories refused pre-model | `budget-cutoff`, `refuse-*` | verified safe at the cutoff; supported questions still consume budget, bounded by the ledger |
 | T18 | Concurrent budget ledger updates | Parallel reservations near the cutoff | Single Lua compare-and-increment | `budget-concurrent` | verified safe |
 | T19 | Redis outage | Sessions, limits and budget unavailable | Each degrades independently; no model call without a session | `budget-redis-down` | verified safe |
 | T20 | Provider outage, timeout or malformed output | Connection failure, hang, invalid JSON | Bounded call timeout, then deterministic fallback | `provider-outage`, `provider-timeout`, `provider-garbage` | verified safe |
 | T21 | Cache poisoning across releases | Old answer served under a new release or model | Key includes schema, question, season, data and index versions, model, mode, prompt | `cache-key-isolation`, `cache-degraded` | verified safe |
 | T22 | Error leakage in HTTP errors | 422, 409, 429 and 500 bodies | Fixed error envelope; generic 500 message | `error-unhandled`, `http-bad-json` | verified safe |
-| T23 | CORS, host and HTTPS configuration | Foreign origin, invalid Host, HTTP behind TLS proxy | TrustedHost, CORS allowlist, HTTPS redirect in production | `http-host`, `cors-*`, `proxy-https` | reproduced for proxy trust; CORS and host checks pass |
+| T23 | CORS, host and HTTPS configuration | Foreign origin, invalid Host, HTTP behind TLS proxy | TrustedHost, CORS allowlist, HTTPS redirect, trusted proxy headers | `http-host`, `cors-*`, `proxy-https` | fixed for proxy trust; CORS and host checks pass |
 | T24 | Release integrity | No active release, multiple active releases, release mismatch | Active and validation-passed release required; sessions bind release | `config-release` | verified safe |
 
 ## Baseline
@@ -117,6 +117,8 @@ and the expected last-game value of 94 points.
   client. The bearer token is no longer placed in the exception detail.
 - T16: `render.yaml` sets `FORWARDED_ALLOW_IPS` to localhost plus the Render private
   ranges, so uvicorn resolves the real client and the forwarded scheme.
+  `after-proxy-trust.json`: 4/4 pass. Forwarded https returns 200 instead of 307, and
+  two forwarded client addresses produce two independent rate-limit buckets.
 
 ## Trial policy
 
