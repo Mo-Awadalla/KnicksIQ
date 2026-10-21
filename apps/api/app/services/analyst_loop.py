@@ -18,6 +18,7 @@ from app.services.analyst_provider import (
     encoded,
     request_model,
 )
+from app.services.analyst_review_checks import review_issues
 from app.services.analyst_tool_registry import recovery_tool
 from app.services.analyst_tools import AnalystTools
 from app.services.conversation_memory import bounded_history
@@ -31,6 +32,7 @@ from app.services.evidence_contracts import (
     ToolResult,
     VerifiedClaim,
     accepted_follow_ups,
+    split_review_spans,
     validate_review,
     validate_structure,
 )
@@ -298,12 +300,7 @@ class AnalystLoop:
                 "Invalid claim value, release, baseline or reference. displayed_value must equal "
                 "the claim's `value` field exactly, not the whole claim object."
             )
-        try:
-            review = await self.model(
-                AnswerReview, review=True, answer=answer, timeout_seconds=timeout_seconds
-            )
-        except (ValueError, RuntimeError):
-            return False, "Reviewer failed or returned malformed output."
+        spans = split_review_spans(answer.text)
         # A reviewer sees each claim's supporting_evidence_ids, so those backend-issued
         # receipts are legitimate citations even when the payload omitted their details.
         reviewable = dict(self.sent_evidence)
@@ -311,12 +308,46 @@ class AnalystLoop:
             for ref in claim.supporting_evidence_ids:
                 if ref in self.tools.evidence:
                     reviewable.setdefault(ref, self.tools.evidence[ref])
-        if not validate_review(review, answer, self.sent_claims, reviewable):
+        issues = review_issues(
+            answer,
+            spans,
+            self.sent_claims,
+            reviewable,
+            self.tools.manifest(),
+            self.tools.question,
+        )
+        if issues:
+            # Mechanical rejection: no model call and no chance for a stochastic verdict to
+            # accept a number that exists in no supplied record or to reject a checked value.
+            return False, "Deterministic evidence check failed: " + "; ".join(issues[:3])
+        review = await self.review(answer, timeout_seconds=timeout_seconds)
+        if review is None:
+            return False, "Reviewer failed or returned malformed output."
+        if not validate_review(review, answer, self.sent_claims, reviewable, spans=spans):
             return False, encoded(review.model_dump())
         self.accepted_suggestions = accepted_follow_ups(
             review, answer, self.sent_claims, reviewable
         )
         return True, ""
+
+    async def review(
+        self, answer: ProposedAnswer, *, timeout_seconds: float | None = None
+    ) -> AnswerReview | None:
+        """Review with one retry when the provider returns non-JSON, then fail closed."""
+        for attempt in range(2):
+            try:
+                return await self.model(
+                    AnswerReview, review=True, answer=answer, timeout_seconds=timeout_seconds
+                )
+            except ValidationError:
+                capacity = (
+                    self.calls < self.settings.analyst_max_model_calls - 2 and self.remaining() > 5
+                )
+                if attempt or not capacity:
+                    return None
+            except (ValueError, RuntimeError):
+                return None
+        return None
 
     def fallback_claims(self) -> list[VerifiedClaim]:
         return fallback_claims(self)

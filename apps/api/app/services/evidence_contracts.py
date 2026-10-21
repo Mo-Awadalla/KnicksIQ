@@ -4,14 +4,15 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 from typing import TYPE_CHECKING, Any, Literal
 
 from app.services.analyst_tool_registry import TOOL_NAMES, TOOLS
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 CONTRACT_VERSION = "analyst-evidence-v1"
-PROMPT_VERSION = "analyst-balanced-v3"
-VALIDATOR_VERSION = "whole-answer-v1"
+PROMPT_VERSION = "analyst-balanced-v4"
+VALIDATOR_VERSION = "whole-answer-v2"
 INTERPRETATION_POLICY = (
     "Explain observed magnitude, contrast and basketball meaning. Never infer unobserved "
     "mechanisms, motivation, tactics or causes, even with hedging. Causal explanations need "
@@ -188,6 +189,43 @@ class AnswerReview(Contract):
     follow_up_reviews: list[FollowUpReview] = Field(default_factory=list, max_length=2)
 
 
+_SPAN = re.compile(r".+?(?:[.!?](?:\s+|$)|$)", flags=re.DOTALL)
+
+
+def split_review_spans(text: str) -> list[str]:
+    """Backend-owned sentence spans. Concatenation always reproduces the answer exactly."""
+    return _SPAN.findall(text)
+
+
+def claim_value_issues(answer: ProposedAnswer, claims: dict[str, VerifiedClaim]) -> list[str]:
+    """Mechanical claim reference and display-value checks, before any model call."""
+    issues: list[str] = []
+    for use in answer.claims:
+        claim = claims.get(use.claim_id)
+        if claim is None:
+            issues.append(f"unknown claim id {use.claim_id}")
+            continue
+        if isinstance(use.displayed_value, bool):
+            issues.append(f"claim {use.claim_id} displayed a boolean value")
+            continue
+        value = claim.value
+        if isinstance(value, bool) or not isinstance(value, (int, float)):
+            if use.decimal_places is not None:
+                issues.append(f"claim {use.claim_id} is not numeric but requests rounding")
+            elif use.displayed_value != value:
+                issues.append(f"claim {use.claim_id} differs from the backend value")
+            continue
+        # The exact backend value is always acceptable; rounding is presentation only.
+        if use.displayed_value == value:
+            continue
+        if use.decimal_places is not None and use.displayed_value == round(
+            value, use.decimal_places
+        ):
+            continue
+        issues.append(f"claim {use.claim_id} differs from the backend value")
+    return issues
+
+
 def accepted_follow_ups(
     review: AnswerReview,
     answer: ProposedAnswer,
@@ -198,7 +236,6 @@ def accepted_follow_ups(
     accepted: list[str] = []
     if len(review.follow_up_reviews) != len(answer.follow_up_questions):
         return accepted
-    declared = {use.claim_id for use in answer.claims}
     for question, item in zip(answer.follow_up_questions, review.follow_up_reviews, strict=True):
         normalized = question.strip()
         if (
@@ -207,7 +244,6 @@ def accepted_follow_ups(
             or not normalized.endswith("?")
             or normalized.casefold() in {value.casefold() for value in accepted}
             or not (item.supporting_claim_ids or item.supporting_evidence_ids)
-            or not set(item.supporting_claim_ids) <= declared
             or not set(item.supporting_claim_ids) <= claims.keys()
             or not set(item.supporting_evidence_ids) <= evidence.keys()
         ):
@@ -227,17 +263,12 @@ def validate_structure(
         claim = claims.get(use.claim_id)
         if claim is None or claim.release_id != release:
             return False
-        value = claim.value
-        if use.decimal_places is not None:
-            if not isinstance(value, (int, float)):
-                return False
-            value = round(value, use.decimal_places)
-        if type(use.displayed_value) is bool or use.displayed_value != value:
-            return False
         if any(ref not in claims for ref in claim.baseline_claim_ids):
             return False
         if any(ref not in evidence for ref in claim.supporting_evidence_ids):
             return False
+    if claim_value_issues(answer, claims):
+        return False
     if any(
         ref not in evidence or evidence[ref].release_id != release for ref in answer.evidence_ids
     ):
@@ -258,19 +289,29 @@ def validate_review(
     answer: ProposedAnswer,
     claims: dict[str, VerifiedClaim],
     evidence: dict[str, Evidence],
+    spans: list[str] | None = None,
 ) -> bool:
-    if "".join(item.text for item in review.assertions) != answer.text:
-        return False
-    declared = {use.claim_id for use in answer.claims}
-    for item in review.assertions:
-        if item.verdict != "supported" or item.offending_text is not None:
+    # Backend spans are the coverage unit: one verdict per span in order. The echoed text
+    # is not an alignment key, because a paraphrased or whitespace-normalised echo is a
+    # formatting accident, not an unsupported answer.
+    if spans is not None:
+        if len(review.assertions) != len(spans) or not all(
+            item.text.strip() for item in review.assertions
+        ):
             return False
+    elif "".join(item.text for item in review.assertions) != answer.text:
+        return False
+    for item in review.assertions:
+        if item.verdict != "supported":
+            return False
+        # A supported verdict with a stale offending_text field is contradictory formatting;
+        # the verdict is authoritative and numbers have already been checked mechanically.
         if item.assertion_type in {"factual", "interpretation"} and not (
             item.supporting_claim_ids or item.supporting_evidence_ids
         ):
             return False
-        if not set(item.supporting_claim_ids) <= declared:
-            return False
+        # Any backend-issued claim may support a statement, including a baseline claim the
+        # writer did not repeat in answer.claims. Invented ids still fail closed.
         if not set(item.supporting_claim_ids) <= claims.keys():
             return False
         if not set(item.supporting_evidence_ids) <= evidence.keys():

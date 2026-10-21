@@ -35,20 +35,29 @@ Causal language requires explicit supporting source material and attribution;
 hedging, reviewed reports and connected events do not create blanket permission.
 
 The reviewer receives a fresh context with the complete proposed answer, backend
-claims, selected receipts, capabilities and interpretation policy. Its ordered
-assertion spans must reproduce the entire answer exactly. Malformed, incomplete,
-unknown and unsupported verdicts fail closed. Typed reference/value checks run
-before each review. This safeguard still requires human-labelled calibration;
-a reviewer verdict is not proof of truth.
+claims, selected receipts, capabilities and interpretation policy. The backend
+splits the answer into sentence spans and requires one verdict per span in order;
+the echoed text is not an alignment key, so a paraphrased echo cannot reject a
+supported answer. Before the model call, typed reference/value checks and numeric
+provenance checks run mechanically: every number in the answer must equal a
+supplied claim value (within rounding tolerance), receipt or capability number.
+Numbers from the question are accepted only in decline, coverage, date-window or
+clarification spans where they are criteria, not asserted facts. Malformed,
+incomplete, unknown and unsupported verdicts still fail closed, and a malformed
+review response is retried once before the turn falls back. This safeguard still
+requires human-labelled calibration; a reviewer verdict is not proof of truth.
 
 Input packing drops complete records and preserves their server-side references.
 UTF-8 byte counts conservatively bound input tokens, including a reserved system
 prompt allowance. This underfills context compared with a model-specific tokenizer
 and should be measured before promotion. Large claims that do not fit are omitted,
-never truncated. Investigation allows two rounds, three tools per round and six
-model calls total, including malformed output. Normal lookup uses choose/write/review;
-prior-evidence explanation uses write/review. Repairs require capacity and time for
-both calls. Replies remain buffered. No prompt logging is introduced.
+never truncated. Review packing drops eligibility policy and generic coverage
+caveats from claim views before it would abort a turn; the claim value, subject,
+scope, window, denominators and receipts remain. Investigation allows two rounds,
+three tools per round and six model calls total, including malformed output. Normal
+lookup uses choose/write/review; prior-evidence explanation uses write/review.
+Repairs require capacity and time for both calls. Replies remain buffered. No prompt
+logging is introduced.
 
 ## Session API
 
