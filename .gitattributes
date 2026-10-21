@@ -92,3 +92,8 @@ docs/release-evidence/llm-primary-20261021/prefetch/*.json linguist-generated=tr
 # Per-call cost reconciliation output from tools/release/measure_llm_cost.py.
 docs/release-evidence/llm-primary-20261021/cost/*/*.jsonl linguist-generated=true
 docs/release-evidence/llm-primary-20261021/cost/*/*.json linguist-generated=true
+
+# Final-phase A/B, audit, held-out and preflight machine output.
+docs/release-evidence/llm-primary-20261021/final/*.jsonl linguist-generated=true
+docs/release-evidence/llm-primary-20261021/final/*.json linguist-generated=true
+docs/release-evidence/llm-primary-20261021/final/audit-*/verdicts/*.jsonl linguist-generated=true

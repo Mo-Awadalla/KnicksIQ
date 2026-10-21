@@ -133,7 +133,7 @@ class Settings(BaseSettings):
     analyst_review_max_tokens: int = Field(default=3000, ge=256, le=8000)
     analyst_answer_max_tokens: int = Field(default=1600, ge=256, le=8000)
     analyst_evidence_tokens: int = Field(default=6000, ge=100, le=6000)
-    analyst_input_tokens: int = Field(default=8000, ge=1000, le=8000)
+    analyst_input_tokens: int = Field(default=16000, ge=1000, le=32000)
     analyst_call_reservation_usd: float = Field(default=0.01, gt=0)
 
     public_chat_rate_limit_per_minute: int = 10

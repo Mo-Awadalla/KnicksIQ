@@ -1,0 +1,104 @@
+{
+  "label": "budget-8000",
+  "generated_at": "2026-10-21T22:59:46.559929+00:00",
+  "input_tokens": "8000",
+  "redis_db": "15",
+  "questions": 140,
+  "trials": 2,
+  "by_trial": {
+    "0": {
+      "questions": 70,
+      "meets_expectation": 27,
+      "claim_backed": 27,
+      "validated": 45,
+      "p50_latency_ms": 2952.7,
+      "p95_latency_ms": 6223.9,
+      "cost_usd": 0.095710675
+    },
+    "1": {
+      "questions": 70,
+      "meets_expectation": 27,
+      "claim_backed": 27,
+      "validated": 49,
+      "p50_latency_ms": 3446.7,
+      "p95_latency_ms": 6470.4,
+      "cost_usd": 0.060161352
+    }
+  },
+  "meets_expectation": 54,
+  "claim_backed": 54,
+  "validated": 94,
+  "old_meets_expectation": 64,
+  "by_category": {
+    "aliases_typos": {
+      "questions": 20,
+      "meets_expectation": 9,
+      "validated": 14
+    },
+    "comparisons": {
+      "questions": 20,
+      "meets_expectation": 4,
+      "validated": 16
+    },
+    "date_range_last_n": {
+      "questions": 20,
+      "meets_expectation": 8,
+      "validated": 17
+    },
+    "exact_statistics": {
+      "questions": 20,
+      "meets_expectation": 15,
+      "validated": 20
+    },
+    "single_game_narrative": {
+      "questions": 20,
+      "meets_expectation": 0,
+      "validated": 8
+    },
+    "turning_points": {
+      "questions": 20,
+      "meets_expectation": 3,
+      "validated": 7
+    },
+    "unsupported": {
+      "questions": 20,
+      "meets_expectation": 15,
+      "validated": 12
+    }
+  },
+  "outcomes": {
+    "validated": 53,
+    "validated_declined": 41,
+    "fallback:review_rejected": 39,
+    "failed:review:ValueError": 2,
+    "failed:orchestrate:ValidationError": 1,
+    "fallback:other": 2,
+    "failed:orchestrate:ValueError": 2
+  },
+  "fallback_reasons": {
+    "fallback:review_rejected": 39,
+    "failed:review:ValueError": 2,
+    "failed:orchestrate:ValidationError": 1,
+    "fallback:other": 2,
+    "failed:orchestrate:ValueError": 2
+  },
+  "p50_latency_ms": 3260.5,
+  "p95_latency_ms": 6223.9,
+  "mean_latency_ms": 3472.5,
+  "ledger_delta_total": 0.155872027,
+  "settled_total": 0.155872027,
+  "open_delta_total": 0,
+  "mean_cost_per_question": 0.001113372,
+  "reconciles": true,
+  "unreconciled": [],
+  "budget_events": {
+    "exceeds_input_budget": 0,
+    "exceeds_messages": [],
+    "writer_claim_drop_events": 0,
+    "writer_claims_dropped": 0,
+    "questions_with_claim_drops": 0,
+    "max_claims_dropped_one_call": 0,
+    "review_packing_refusals": 0,
+    "review_refusal_messages": []
+  }
+}
