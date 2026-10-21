@@ -183,17 +183,17 @@
         "key": "ai-budget:2026-10",
         "reservation_total_usd": 0.0,
         "reservations": 0,
-        "total_usd": 0.046241279,
+        "total_usd": 0.056241279,
         "ttl_seconds": -1
       },
       "id": "ledger.consistent",
       "status": "pass"
     },
     {
-      "detail": "spend 0.046241279 of cutoff 2 USD",
+      "detail": "spend 0.056241279 of cutoff 2 USD",
       "evidence": {
         "cutoff_usd": 2.0,
-        "total_usd": 0.046241279
+        "total_usd": 0.056241279
       },
       "id": "ledger.capacity",
       "status": "pass"
@@ -253,7 +253,7 @@
           "losses": 32,
           "wins": 69
         },
-        "latency_ms": 160.6,
+        "latency_ms": 162.4,
         "llm_validated": false,
         "provider_attempts": 1,
         "status_code": 200,
@@ -278,7 +278,7 @@
           "wins": 69
         },
         "degraded": true,
-        "latency_ms": 224.9,
+        "latency_ms": 179.7,
         "llm_validated": false,
         "status_code": 200,
         "warnings": [
@@ -291,7 +291,7 @@
   ],
   "expected_cutoff_usd": 2.0,
   "expected_mode": "llm_primary",
-  "generated_at": "2026-10-21T21:35:08.889621+00:00",
+  "generated_at": "2026-10-21T21:42:59.951912+00:00",
   "mode": "in-process",
   "schema_version": 1,
   "secrets_printed": false,
