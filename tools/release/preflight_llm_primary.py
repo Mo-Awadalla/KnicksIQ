@@ -57,11 +57,13 @@ ledger.consistent
 ledger.capacity
     The recorded total already exceeds the configured cutoff. Every further model call degrades.
 kill_switch
-    With ANALYSIS_ANSWER_MODE=deterministic a request returns non-200, still reports a validated
-    model answer, has no citations, or the delivered wins/losses do not match the active release.
+    A season-level record probe fails when the response is non-200, still reports a validated
+    model answer, has no citations, or the answer does not match the regular-season record, does
+    not state that phase, or leaks the overall record. A second question that names "overall" must
+    return all-phase wins/losses instead.
 provider_failure
-    A provider exception escapes the request, or the fallback has no citations or wrong
-    wins/losses. Degradation would then be unsafe.
+    A provider exception escapes the request, or the fallback has no citations or the same wrong
+    record scope. Degradation would then be unsafe.
 
 The script is read-only except for Redis session/rate-limit keys created by ordinary requests and
 one settled failed-call reservation during the provider-failure probe.

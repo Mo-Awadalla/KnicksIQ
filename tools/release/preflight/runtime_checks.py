@@ -2,17 +2,22 @@
 
 from __future__ import annotations
 
+import re
 import time
 import uuid
 from contextlib import asynccontextmanager
 from typing import Any
 
-from preflight.common import PRIMARY_QUESTION, Context, selected
+from preflight.common import OVERALL_QUESTION, PRIMARY_QUESTION, Context, selected
+
+REGULAR_SEASON = "regular"
 
 
-async def fetch_team_record(ctx: Context) -> tuple[int, int]:
-    if ctx.db_record is not None:
-        return ctx.db_record
+async def fetch_team_record(ctx: Context, *, season_type: str | None) -> tuple[int, int]:
+    """Count the active release's Knicks record for one phase, or every phase."""
+    cached = ctx.db_record if season_type == REGULAR_SEASON else ctx.db_overall_record
+    if cached is not None:
+        return cached
     from sqlalchemy import text
     from sqlalchemy.ext.asyncio import create_async_engine
 
@@ -37,12 +42,21 @@ async def fetch_team_record(ctx: Context) -> tuple[int, int]:
                           ON r.id = g.release_id
                          AND r.status = 'active'
                          AND r.validation_passed IS TRUE
+                        WHERE (
+                          CAST(:season_type AS text) IS NULL
+                          OR g.season_type::text = :season_type
+                        )
                         """
-                    )
+                    ),
+                    {"season_type": season_type},
                 )
             ).one()
-        ctx.db_record = (int(row.wins), int(row.losses))
-        return ctx.db_record
+        record = (int(row.wins), int(row.losses))
+        if season_type == REGULAR_SEASON:
+            ctx.db_record = record
+        else:
+            ctx.db_overall_record = record
+        return record
     finally:
         await engine.dispose()
 
@@ -60,6 +74,22 @@ def claim_metrics(body: dict[str, Any]) -> dict[str, Any]:
 
 def answer_has_record(answer: str, wins: int, losses: int) -> bool:
     return str(wins) in answer and str(losses) in answer
+
+
+def answer_states_phase(answer: str) -> bool:
+    """A season-level answer must name the regular season it reports."""
+    return bool(re.search(r"\bregular season\b", answer, re.IGNORECASE))
+
+
+def record_matches(
+    body: dict[str, Any], expected: tuple[int, int], season_type: str | None
+) -> bool:
+    answer = body.get("answer") or ""
+    return (
+        claim_metrics(body) == {"wins": expected[0], "losses": expected[1]}
+        and answer_has_record(answer, *expected)
+        and (season_type != REGULAR_SEASON or answer_states_phase(answer))
+    )
 
 
 async def post_question(client: Any, question: str) -> tuple[int, dict[str, Any], float]:
@@ -175,26 +205,33 @@ async def check_target_trusted_host(ctx: Context, client: Any) -> None:
 
 
 async def check_kill_switch(ctx: Context, client: Any) -> None:
-    wins_losses = await fetch_team_record(ctx)
+    regular = await fetch_team_record(ctx, season_type=REGULAR_SEASON)
+    overall = await fetch_team_record(ctx, season_type=None)
     status, body, elapsed = await post_question(client, PRIMARY_QUESTION)
+    overall_status, overall_body, overall_elapsed = await post_question(client, OVERALL_QUESTION)
     metrics = claim_metrics(body)
+    overall_metrics = claim_metrics(overall_body)
     warnings = body.get("warnings") or []
     ok = (
         status == 200
+        and overall_status == 200
         and body.get("llm_validated") is False
         and body.get("degraded") is True
         and bool(body.get("citations"))
-        and bool(body.get("answer"))
-        and metrics == {"wins": wins_losses[0], "losses": wins_losses[1]}
-        and answer_has_record(body.get("answer") or "", *wins_losses)
+        and record_matches(body, regular, REGULAR_SEASON)
+        and not answer_has_record(body.get("answer") or "", *overall)
+        and overall_body.get("llm_validated") is False
+        and overall_body.get("degraded") is True
+        and bool(overall_body.get("citations"))
+        and record_matches(overall_body, overall, None)
         and any("Model or budget unavailable" in warning for warning in warnings)
     )
     ctx.add(
         "kill_switch",
         ok,
-        "deterministic mode returned cited facts with no model answer"
+        "deterministic mode returned cited facts for both record scopes"
         if ok
-        else "deterministic probe failed its factual or mode assertions",
+        else "deterministic probe failed its phase, factual or mode assertions",
         {
             "status_code": status,
             "latency_ms": round(elapsed, 1),
@@ -203,8 +240,17 @@ async def check_kill_switch(ctx: Context, client: Any) -> None:
             "citations": len(body.get("citations") or []),
             "warnings": warnings,
             "claim_metrics": metrics,
-            "db_record": {"wins": wins_losses[0], "losses": wins_losses[1]},
+            "db_record": {"wins": regular[0], "losses": regular[1], "season_type": REGULAR_SEASON},
+            "overall_status_code": overall_status,
+            "overall_latency_ms": round(overall_elapsed, 1),
+            "overall_claim_metrics": overall_metrics,
+            "db_overall_record": {
+                "wins": overall[0],
+                "losses": overall[1],
+                "season_type": "all phases",
+            },
             "answer": body.get("answer"),
+            "overall_answer": overall_body.get("answer"),
         },
     )
 
@@ -225,32 +271,40 @@ class _FailingAdapter:
 async def check_provider_failure(ctx: Context, client: Any) -> None:
     from app.services import analyst_provider
 
-    wins_losses = await fetch_team_record(ctx)
+    regular = await fetch_team_record(ctx, season_type=REGULAR_SEASON)
+    overall = await fetch_team_record(ctx, season_type=None)
     attempts: list[float] = []
     original = analyst_provider.get_llm_adapter
     analyst_provider.get_llm_adapter = lambda **kwargs: _FailingAdapter(attempts)
     try:
         status, body, elapsed = await post_question(client, PRIMARY_QUESTION)
+        overall_status, overall_body, overall_elapsed = await post_question(
+            client, OVERALL_QUESTION
+        )
     finally:
         analyst_provider.get_llm_adapter = original
     metrics = claim_metrics(body)
+    overall_metrics = claim_metrics(overall_body)
     warnings = body.get("warnings") or []
     ok = (
         status == 200
-        and bool(attempts)
+        and overall_status == 200
+        and len(attempts) >= 2
         and body.get("llm_validated") is False
-        and bool(body.get("answer"))
         and bool(body.get("citations"))
-        and metrics == {"wins": wins_losses[0], "losses": wins_losses[1]}
-        and answer_has_record(body.get("answer") or "", *wins_losses)
+        and record_matches(body, regular, REGULAR_SEASON)
+        and not answer_has_record(body.get("answer") or "", *overall)
+        and overall_body.get("llm_validated") is False
+        and bool(overall_body.get("citations"))
+        and record_matches(overall_body, overall, None)
         and bool(warnings)
     )
     ctx.add(
         "provider_failure",
         ok,
-        "provider exception degraded to cited deterministic facts"
+        "provider exception degraded to cited facts for both record scopes"
         if ok
-        else "provider failure probe failed its factual or degradation assertions",
+        else "provider failure probe failed its phase, factual or degradation assertions",
         {
             "status_code": status,
             "latency_ms": round(elapsed, 1),
@@ -259,8 +313,17 @@ async def check_provider_failure(ctx: Context, client: Any) -> None:
             "citations": len(body.get("citations") or []),
             "warnings": warnings,
             "claim_metrics": metrics,
-            "db_record": {"wins": wins_losses[0], "losses": wins_losses[1]},
+            "db_record": {"wins": regular[0], "losses": regular[1], "season_type": REGULAR_SEASON},
+            "overall_status_code": overall_status,
+            "overall_latency_ms": round(overall_elapsed, 1),
+            "overall_claim_metrics": overall_metrics,
+            "db_overall_record": {
+                "wins": overall[0],
+                "losses": overall[1],
+                "season_type": "all phases",
+            },
             "answer": body.get("answer"),
+            "overall_answer": overall_body.get("answer"),
         },
     )
 

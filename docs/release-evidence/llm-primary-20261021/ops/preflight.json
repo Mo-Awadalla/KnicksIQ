@@ -138,7 +138,7 @@
       "detail": "non-default secret of sufficient length",
       "evidence": {
         "is_default": false,
-        "length": 64
+        "length": 41
       },
       "id": "env.ip_hash_secret",
       "status": "pass"
@@ -183,17 +183,17 @@
         "key": "ai-budget:2026-10",
         "reservation_total_usd": 0.0,
         "reservations": 0,
-        "total_usd": 0.056241279,
+        "total_usd": 0.210606406,
         "ttl_seconds": -1
       },
       "id": "ledger.consistent",
       "status": "pass"
     },
     {
-      "detail": "spend 0.056241279 of cutoff 2 USD",
+      "detail": "spend 0.210606406 of cutoff 2 USD",
       "evidence": {
         "cutoff_usd": 2.0,
-        "total_usd": 0.056241279
+        "total_usd": 0.210606406
       },
       "id": "ledger.capacity",
       "status": "pass"
@@ -241,21 +241,34 @@
       "status": "pass"
     },
     {
-      "detail": "provider exception degraded to cited deterministic facts",
+      "detail": "provider exception degraded to cited facts for both record scopes",
       "evidence": {
-        "answer": "Knicks wins: 69 over 101 archived games. Knicks losses: 32 over 101 archived games.",
+        "answer": "Knicks regular season wins: 53 over 82 archived games. Knicks regular season losses: 29 over 82 archived games.",
         "citations": 2,
         "claim_metrics": {
+          "losses": 29,
+          "wins": 53
+        },
+        "db_overall_record": {
           "losses": 32,
+          "season_type": "all phases",
           "wins": 69
         },
         "db_record": {
+          "losses": 29,
+          "season_type": "regular",
+          "wins": 53
+        },
+        "latency_ms": 163.0,
+        "llm_validated": false,
+        "overall_answer": "Knicks wins: 69 over 101 archived games. Knicks losses: 32 over 101 archived games.",
+        "overall_claim_metrics": {
           "losses": 32,
           "wins": 69
         },
-        "latency_ms": 162.4,
-        "llm_validated": false,
-        "provider_attempts": 1,
+        "overall_latency_ms": 152.4,
+        "overall_status_code": 200,
+        "provider_attempts": 2,
         "status_code": 200,
         "warnings": [
           "Model or budget unavailable."
@@ -265,21 +278,34 @@
       "status": "pass"
     },
     {
-      "detail": "deterministic mode returned cited facts with no model answer",
+      "detail": "deterministic mode returned cited facts for both record scopes",
       "evidence": {
-        "answer": "Knicks wins: 69 over 101 archived games. Knicks losses: 32 over 101 archived games.",
+        "answer": "Knicks regular season wins: 53 over 82 archived games. Knicks regular season losses: 29 over 82 archived games.",
         "citations": 2,
         "claim_metrics": {
+          "losses": 29,
+          "wins": 53
+        },
+        "db_overall_record": {
           "losses": 32,
+          "season_type": "all phases",
           "wins": 69
         },
         "db_record": {
+          "losses": 29,
+          "season_type": "regular",
+          "wins": 53
+        },
+        "degraded": true,
+        "latency_ms": 222.7,
+        "llm_validated": false,
+        "overall_answer": "Knicks wins: 69 over 101 archived games. Knicks losses: 32 over 101 archived games.",
+        "overall_claim_metrics": {
           "losses": 32,
           "wins": 69
         },
-        "degraded": true,
-        "latency_ms": 179.7,
-        "llm_validated": false,
+        "overall_latency_ms": 144.5,
+        "overall_status_code": 200,
         "status_code": 200,
         "warnings": [
           "Model or budget unavailable."
@@ -291,7 +317,7 @@
   ],
   "expected_cutoff_usd": 2.0,
   "expected_mode": "llm_primary",
-  "generated_at": "2026-10-21T21:42:59.951912+00:00",
+  "generated_at": "2026-10-21T23:23:17.227640+00:00",
   "mode": "in-process",
   "schema_version": 1,
   "secrets_printed": false,

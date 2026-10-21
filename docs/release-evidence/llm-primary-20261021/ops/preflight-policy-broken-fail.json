@@ -1,0 +1,54 @@
+{
+  "checks": [
+    {
+      "detail": "deterministic probe failed its phase, factual or mode assertions",
+      "evidence": {
+        "answer": "Knicks wins: 69 over 101 archived games. Knicks losses: 32 over 101 archived games.",
+        "citations": 2,
+        "claim_metrics": {
+          "losses": 32,
+          "wins": 69
+        },
+        "db_overall_record": {
+          "losses": 32,
+          "season_type": "all phases",
+          "wins": 69
+        },
+        "db_record": {
+          "losses": 29,
+          "season_type": "regular",
+          "wins": 53
+        },
+        "degraded": true,
+        "latency_ms": 213.1,
+        "llm_validated": false,
+        "overall_answer": "Knicks wins: 69 over 101 archived games. Knicks losses: 32 over 101 archived games.",
+        "overall_claim_metrics": {
+          "losses": 32,
+          "wins": 69
+        },
+        "overall_latency_ms": 136.4,
+        "overall_status_code": 200,
+        "status_code": 200,
+        "warnings": [
+          "Model or budget unavailable."
+        ]
+      },
+      "id": "kill_switch",
+      "status": "fail"
+    }
+  ],
+  "expected_cutoff_usd": 2.0,
+  "expected_mode": "llm_primary",
+  "generated_at": "2026-10-21T23:24:23.212561+00:00",
+  "mode": "in-process",
+  "schema_version": 1,
+  "secrets_printed": false,
+  "summary": {
+    "fail": 1,
+    "pass": 0,
+    "skip": 0,
+    "status": "fail"
+  },
+  "target": "in-process ASGI api.knicksiq.win"
+}

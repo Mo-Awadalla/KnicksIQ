@@ -22,6 +22,22 @@ model, and a configured Sentry DSN. Users receive validated evidence-loop answer
 budget, validation or optional-dependency failure degrades to deterministic cited facts. These are
 the values declared by `render.yaml` and asserted by `test_render_blueprint_enables_the_grounded_ai_configuration`.
 
+### Analyst behavior at launch
+
+The evidence loop exposes nine registered tools: `get_player_stats`, `get_team_stats`,
+`compare_windows`, `discover_facts`, `search_archive`, `get_evidence`, `get_game_flow`,
+`get_team_splits` and `get_period_scoring`. Quarter, period, play-by-play and split questions are
+answerable. Season-level records and stats default to the regular season and the answer states the
+phase; the overall record appears only when asked. Typed pre-model refusals cover instruction
+override, wagering and out-of-archive dates. Other unsupported wording reaches the analyst, which
+declines or explains coverage through the `refused` flag. Prompt v4 and validator v2 run the
+deterministic number gate. Reasoning effort is `none` by default, token caps are enforced and
+deterministic prefetch is enabled. The $2 cutoff supports about 1,413 questions per month on
+current routing, and the measured p95 latency is 4,608 ms against a four second gate that is not
+met. Full behavior is in [the analyst implementation](analyst-evidence-loop.md). Evidence is
+indexed in
+[the llm_primary evidence directory](release-evidence/llm-primary-20261021/README.md).
+
 Pre-promotion verification is a separate, earlier state: `answer_mode=shadow`,
 `shadow_sample_rate=0.1`, deterministic delivery. The `configuration` block in
 `release-evidence/release-record.json` records that pre-promotion state. It is not the launch

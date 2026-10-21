@@ -62,6 +62,36 @@ The authoritative launch configuration is
    approves the launch configuration.
 4. Roll back instantly with the drill below; no data or index rollback is required.
 
+### Analyst runtime defaults
+
+- `ANALYST_REASONING_EFFORT=none` and `AI_REASONING_EFFORT=none`. Do not unset either value; the
+  provider otherwise reasons at high effort and truncates JSON.
+- `ANALYST_PREFETCH_ENABLED=true`. Prefetch runs one tool before the first model call for a clear
+  question and counts toward the loop bounds.
+- Review cap 3,000 output tokens, answer cap 1,600, planning action 600 tokens. The analyst input
+  budget is `see config` (`ANALYST_INPUT_TOKENS`).
+- The reviewer number gate is mandatory. Do not disable it to clear latency.
+- Season-level records default to the regular season and the answer states the phase. The overall
+  record appears only when asked.
+- Typed pre-model refusals cover instruction override, wagering and out-of-archive dates. Other
+  unsupported wording reaches the analyst, which declines or explains coverage.
+
+## Capacity, cost and latency
+
+At the $2 cutoff the measured capacity is about 1,413 questions per month on current routing, at
+a mean of $0.001415 per question. Routing is unpinned, so the practical range is about 1,200 to
+1,400 questions. Pinning the cheapest endpoint would give about 10,000 to 12,000, but the adapter
+does not pin a provider today.
+
+Billed provider failures settle at the provider's reported cost. A call with no HTTP response
+keeps the flat reservation. Every measured run reconciles the ledger delta to settled cost plus
+the open reservation delta. Check the ledger and provider usage separately after an incident.
+
+Measured latency on 40 questions is p50 2,290 ms and p95 4,608 ms, with 2.5 provider calls per
+question. The release gate is p95 below four seconds and is not met. Treat a p95 rise above the
+recorded baseline as a regression. Evidence is in
+`release-evidence/llm-primary-20261021/latency/README.md`.
+
 ## Rollback drill: llm_primary to deterministic or shadow
 
 Rehearse on a non-production service first. Production execution requires owner approval and two
@@ -90,8 +120,10 @@ Before changing anything, record the live API deployment ID and commit, `/health
    ```
 
    Expect HTTP 200, `"llm_validated": false`, `"degraded": true`, non-empty `citations`,
-   `warnings` containing `Model or budget unavailable.`, and wins/losses matching the active
-   release. A 200 alone is not proof; check these fields.
+   `warnings` containing `Model or budget unavailable.`, `"refused": false`, and 53 wins and 29
+   losses with `regular season` stated in the answer. Re-send the same question with `overall`
+   added and expect 69 wins and 32 losses. A 200 alone is not proof; check these fields. If the
+   phase or either record differs, stop.
 4. Confirm model spend stopped: the OpenRouter usage counter stays flat and the ledger total is
    unchanged after the three requests. This check is operator-side, not public.
 5. If any assertion fails, do not continue. Restore `ANALYSIS_ANSWER_MODE=llm_primary` with
