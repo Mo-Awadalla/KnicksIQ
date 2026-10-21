@@ -11,18 +11,22 @@ high-reasoning A/B, 6 + 2 on the final head. No other worker's Redis db was writ
 The 10x is not a production cost curve. It is two compounding defects plus a routing
 difference:
 
-1. The held-out run did not set `AI_REASONING_EFFORT=none`, which is the production value.
-   The model spent its completion budget on reasoning tokens, returned `null` content with
+1. The held-out run's recorded command does not set `AI_REASONING_EFFORT=none`, which is
+   the production value, and its failure signature is the reasoning-default defect that
+   ReviewerStability reproduced (1/29 validated and 25 `omitted message content` errors
+   without it, 8/8 with it). The model spent its completion budget on reasoning tokens,
+   returned `null` content with
    `finish_reason=length`, and the reviewer could not parse a verdict. 59 of the 294 traced
    calls in the 60 delivered held-out rows failed this way (53 review, 5 revise, 1
    orchestrate). The held-out run scored 5/60 on the honest `meets_expectation` check.
 2. On a failed call after a provider response, cost accounting discarded the provider's
    reported `usage.cost` and settlement charged the flat $0.01 call reservation. In the
-   controlled reproduction, 12 failed calls were billed $0.018147 by the provider and
-   charged $0.120000 by the ledger. Those calls carried real prompt tokens and a truncated
-   completion, so the provider invoice is real; the extra $0.0085 per call is phantom.
+   controlled reproduction, 11 billed failed calls reported $0.018147 and the ledger charged
+   $0.120000 for all 12 failures (the twelfth had no response). The billed calls carried
+   real prompt tokens and a truncated completion, so the provider invoice is real; the extra
+   $0.0085 per failed call is phantom.
 3. OpenRouter routing is unpinned (`sort: latency`). The same model costs $0.0342/$0.1368
-   per million prompt/completion tokens on Baidu and $0.30/$1.20 on Together, a 8.8x spread,
+   per million prompt/completion tokens on Baidu and $0.30/$1.20 on Together, an 8.8x spread,
    with a $0.60/$2.40 endpoint in the same list (17.5x). The db6 run's costs fit
    $0.0818/$0.620 per million, so it ran a much cheaper route than the held-out run, whose
    successful calls were on Together. On the same 10 questions and the same 32 calls, our
@@ -158,7 +162,9 @@ The commit that introduced the production reasoning value also changed the effec
 - The held-out question file was never read. Only trace metadata (stage, provider, outcome)
   and aggregate counts from the committed response artifact were used.
 - Redis db2 and db1 belonged to other workers and were read only. Their ledgers continued to
-  grow after the reads recorded here because those workers were still active.
+  grow after the reads recorded here because those workers were still active; the historical
+  table uses the first read ($1.146562208 for db2, $0.594955166 for db1), while
+  `provider-and-ledger-snapshot.json` records a later balance.
 - The provider key is shared by every worker. `provider-and-ledger-snapshot.json` records
   the key's daily/monthly usage beside the ledger snapshot; the two are not a clean
   one-to-one reconciliation because other dbs were active.
