@@ -1,0 +1,47 @@
+"""Team and player aliases shared by the scoped archive index."""
+
+from __future__ import annotations
+
+TEAM_ALIASES: dict[str, tuple[str, ...]] = {
+    "Knicks": ("Knicks", "New York", "New York Knicks", "NYK", "Knickerbockers"),
+    "Hawks": ("Hawks", "Atlanta", "ATL"),
+    "Nets": ("Nets", "Brooklyn", "BKN"),
+    "Celtics": ("Celtics", "Boston", "BOS", "Celts", "C's", "Cs"),
+    "Hornets": ("Hornets", "Charlotte", "CHA"),
+    "Bulls": ("Bulls", "Chicago", "CHI"),
+    "Cavaliers": ("Cavaliers", "Cavs", "Cleveland", "CLE"),
+    "Mavericks": ("Mavericks", "Dallas", "DAL", "Mavs"),
+    "Nuggets": ("Nuggets", "Denver", "DEN"),
+    "Pistons": ("Pistons", "Detroit", "DET"),
+    "Warriors": ("Warriors", "Golden State", "GSW", "Dubs"),
+    "Rockets": ("Rockets", "Houston", "HOU"),
+    "Pacers": ("Pacers", "Indiana", "IND"),
+    "Clippers": ("Clippers", "Los Angeles Clippers", "LAC"),
+    "Lakers": ("Lakers", "Los Angeles Lakers", "LAL"),
+    "Grizzlies": ("Grizzlies", "Memphis", "MEM"),
+    "Heat": ("Heat", "Miami", "MIA"),
+    "Bucks": ("Bucks", "Milwaukee", "MIL"),
+    "Timberwolves": ("Timberwolves", "Minnesota", "MIN", "Wolves"),
+    "Pelicans": ("Pelicans", "New Orleans", "NOP"),
+    "Thunder": ("Thunder", "Oklahoma City", "OKC"),
+    "Magic": ("Magic", "Orlando", "ORL"),
+    "76ers": ("76ers", "Sixers", "Philadelphia", "PHI"),
+    "Suns": ("Suns", "Phoenix", "PHX"),
+    "Trail Blazers": ("Trail Blazers", "Portland", "POR", "Blazers"),
+    "Kings": ("Kings", "Sacramento", "SAC"),
+    "Spurs": ("Spurs", "San Antonio", "SAS"),
+    "Raptors": ("Raptors", "Toronto", "TOR", "Raps"),
+    "Jazz": ("Jazz", "Utah", "UTA"),
+    "Wizards": ("Wizards", "Washington", "WAS"),
+}
+PLAYER_ALIASES = {
+    "Jalen Brunson": ("JB", "Brunson"),
+    "Karl-Anthony Towns": ("KAT", "Towns"),
+    "Mikal Bridges": ("Mikal", "Bridges"),
+    "OG Anunoby": ("OG", "Anunoby"),
+    "Mitchell Robinson": ("Mitch Rob", "Robinson"),
+    "Josh Hart": ("Hart",),
+    "Miles McBride": ("McBride",),
+    "Landry Shamet": ("Shamet",),
+    "Jordan Clarkson": ("Clarkson",),
+}
