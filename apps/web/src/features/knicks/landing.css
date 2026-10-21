@@ -372,8 +372,7 @@
   height: 1.3rem;
 }
 .archive-landing .archive-answer,
-.archive-landing .archive-question,
-.archive-landing .archive-state {
+.archive-landing .archive-question {
   animation: none;
 }
 .archive-landing .archive-answer {
@@ -383,10 +382,6 @@
 .archive-landing .archive-result-stack:has(.archive-message-list) {
   max-width: 60rem;
   margin-inline: auto;
-}
-.archive-landing .archive-state-error {
-  flex-wrap: wrap;
-  padding-block: 1rem;
 }
 .landing-method {
   display: grid;
