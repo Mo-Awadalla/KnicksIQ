@@ -3,22 +3,19 @@
 from __future__ import annotations
 
 import asyncio
-import re
 from typing import TYPE_CHECKING, Any
 
 from app.services.analyst_fallback import (
-    fallback_claims as select_fallback_claims,
+    decline_text,
+    re_search_discovery,
+    re_search_live,
 )
-from app.services.analyst_fallback import re_search_discovery
+from app.services.analyst_fallback import fallback_claims as select_fallback_claims
 from app.services.analyst_tool_registry import recovery_tool
 from app.services.evidence_contracts import ClaimUse, ProposedAnswer, ToolCall, VerifiedClaim
 
 if TYPE_CHECKING:
     from app.services.analyst_loop import AnalystLoop
-
-
-def re_search_live(question: str) -> bool:
-    return bool(re.search(r"\b(injur\w*|today|current|live|tonight)\b", question, re.I))
 
 
 def fallback_claims(loop: AnalystLoop) -> list[VerifiedClaim]:
@@ -55,23 +52,15 @@ async def fallback(loop: AnalystLoop, reason: str) -> dict[str, Any]:
 
 def render_fallback(loop: AnalystLoop, reason: str) -> dict[str, Any]:
     claims = fallback_claims(loop)
-    claims = claims[:3]
+    claims = claims[:6]
     text = " ".join(c.statement for c in claims)
     if not text:
-        text = next(
-            (
-                r.message + (" " + "; ".join(r.choices) if r.choices else "")
-                for r in reversed(loop.results)
-            ),
-            "Verified archive facts are unavailable on this turn. Please try again.",
-        )
-    if re_search_live(loop.tools.question):
-        text += " I don't have live injury or current-status updates."
+        text = decline_text(loop)
     answer = ProposedAnswer(
         text=text,
         claims=[ClaimUse(claim_id=c.claim_id, displayed_value=c.value) for c in claims],
     )
-    # The fallback appends this same statement only for live/current questions, so the
+    # The fallback appends the live statement only for live/current questions, so the
     # flag tracks what the delivered text actually says without parsing its wording.
     return loop.render(
         answer, llm=False, warning=reason, refused=re_search_live(loop.tools.question)
