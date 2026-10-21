@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 from typing import TYPE_CHECKING, Any
 
 from app.models.box_score import PlayerGameStat
@@ -17,6 +18,34 @@ from app.services.analyst_calculations import METRICS
 
 
 def discover(tools: AnalystTools, scope: ResolvedQuery, games: list[Game]) -> ToolResult:
+    if scope.opponent_id and not scope.player_ids:
+        # Single-game highlights cannot answer a matchup question; force the record tools.
+        return ToolResult(
+            status="no_matching_results",
+            message="Single-game examples do not summarize a matchup. Call get_team_stats "
+            "for the opponent record and phase breakdown.",
+            scope=scope.model_dump(mode="json"),
+        )
+    if scope.opponent_id and scope.player_ids:
+        # A player-vs-opponent question needs every appearance, not the best single line.
+        return ToolResult(
+            status="no_matching_results",
+            message="Single-game examples do not summarize a player matchup. Call "
+            "get_player_stats for the full opponent population.",
+            scope=scope.model_dump(mode="json"),
+        )
+    if re.search(
+        r"\b(?:biggest|best|largest|worst|heaviest)\s+(?:win|victory|loss|defeat|blowout)\b"
+        r"|\b(?:highest|most)[- ]scoring\b|\bmost points (?:in a game|scored)\b",
+        tools.question,
+        re.I,
+    ):
+        # Single-game highlights are not the team extreme the question asks for.
+        return ToolResult(
+            status="no_matching_results",
+            message="Single-game highlights do not answer a team extreme. Call get_team_stats.",
+            scope=scope.model_dump(mode="json"),
+        )
     game_map = {g.id: g for g in games}
     seen = set(tools.state.get("delivered_fact_ids", []))
     excluded = set(tools.state.get("last_subjects", [])) if tools.different else set()

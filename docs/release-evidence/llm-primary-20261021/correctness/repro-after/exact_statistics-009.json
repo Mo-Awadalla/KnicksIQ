@@ -1,0 +1,69 @@
+{
+  "id": "exact_statistics-009",
+  "question": "What was the Knicks worst loss by margin?",
+  "resolved_scope": {
+    "intent": "analyst",
+    "player_ids": [],
+    "team_ids": [],
+    "opponent_id": null,
+    "game_ids": 0,
+    "date_start": null,
+    "date_end": null,
+    "relative_game_count": null,
+    "periods": [],
+    "season_type": "regular",
+    "home_away": null,
+    "game_result": null,
+    "metric": null,
+    "requires_clarification": false,
+    "clarification_reason": null,
+    "clarification_options": [],
+    "data_version": "2025-26.20260928.1"
+  },
+  "tool": {
+    "status": "ok",
+    "message": "Archive team extreme.",
+    "claims": [
+      {
+        "metric_id": "loss_margin:extreme",
+        "value": 38,
+        "season_type": "regular",
+        "sample_size": 1,
+        "statement": "Knicks regular season worst loss by margin was 38 points: 80-118 at DET on 2026-02-06.",
+        "limitations": [
+          "Single-game extreme; selection does not establish improvement."
+        ]
+      }
+    ],
+    "evidence": 1,
+    "scope": {
+      "intent": "get_team_stats",
+      "player_ids": [],
+      "team_ids": [],
+      "opponent_id": null,
+      "game_ids": 0,
+      "date_start": null,
+      "date_end": null,
+      "relative_game_count": null,
+      "periods": [],
+      "season_type": "regular",
+      "home_away": null,
+      "game_result": null,
+      "metric": null,
+      "requires_clarification": false,
+      "clarification_reason": null,
+      "clarification_options": [],
+      "data_version": "2025-26.20260928.1"
+    }
+  },
+  "fallback": {
+    "answer": "Knicks regular season worst loss by margin was 38 points: 80-118 at DET on 2026-02-06.",
+    "route": "factual_fallback",
+    "warnings": [
+      "Model or budget unavailable."
+    ],
+    "claims": [
+      "loss_margin:extreme"
+    ]
+  }
+}
