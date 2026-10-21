@@ -1,0 +1,251 @@
+{
+  "app_source_path": "/private/tmp/kiq-fan-main-merge-20261020/apps/api/app/__init__.py",
+  "artifacts": [
+    {
+      "path": "/tmp/kiq-native-population-admission-before/rebound-single-game-high-ties.json",
+      "sha256": "a7c6f03c8e329886005026b6d04dc46856387acac9983276c2f1a06ca39829fe"
+    },
+    {
+      "path": "/tmp/kiq-native-population-admission-before/miami-date-rebound-leader.json",
+      "sha256": "e82c3c67c3522075e660a825cf3cecbcc2c5a17206ca47c20712ad8f65246f1a"
+    },
+    {
+      "path": "/tmp/kiq-native-high-validator-before/single-game-rebound-high-positive.json",
+      "sha256": "b7f6d8a6bc7a93dc7f77b3154a3fd138f448a31a80f9c995fd313460b543d07e"
+    },
+    {
+      "path": "/tmp/kiq-integration-artifacts/review-fixes-live-20261020.json",
+      "sha256": "7f67b9cca9194c5517b00f6daf0aafbe24202d1df6f5da8ee0c813093d7455c5"
+    },
+    {
+      "path": "/tmp/kiq-integration-artifacts/fan-review-fixes-http.xml",
+      "sha256": "834015e17bc162703b5b4faca44fe3a635b1d1efb94655e6b61b574e910f3f32"
+    },
+    {
+      "path": "/tmp/kiq-integration-artifacts/fan-parser-scope-after.xml",
+      "sha256": "143f39782e2cb8b6436397d01ab44dc48c816f35aaa9ff353a36e8037cc65a61"
+    }
+  ],
+  "failing_before": [
+    {
+      "candidate_ids": 4,
+      "http_status": 200,
+      "returned_ids": 4,
+      "route": "clarification",
+      "scenario": "Unanchored game reference",
+      "source": "artifact://1133"
+    },
+    {
+      "old_admitted_values": [
+        "Towns season rebound total71",
+        "Brunson scoped rebound total5"
+      ],
+      "old_llm_validated": true,
+      "scenario": "Omitted rebound high / scoped leader"
+    },
+    {
+      "consumer_result": "Complete factual fallback rather than valid primary answer",
+      "old_llm_validated": false,
+      "scenario": "Correct tied high rejected by newly broadened validator"
+    }
+  ],
+  "independent_sql_rebound_high": {
+    "maximum": 22,
+    "rows": [
+      {
+        "date": "2026-01-28",
+        "opponent": "TOR",
+        "player": "Karl-Anthony Towns",
+        "value": 22
+      },
+      {
+        "date": "2026-03-13",
+        "opponent": "IND",
+        "player": "Mitchell Robinson",
+        "value": 22
+      }
+    ]
+  },
+  "limits": [
+    "Runtime identity is the exercised worktree HEAD plus explicit dirty-source hashes, not falsely repinned to a later commit.",
+    "Unscoped pyright also visited ignored historical release-artifacts and failed; the CI command pyright apps packages migrations passed after correcting the one new optional-value type error.",
+    "Pytest record_property/xunit2 warnings retained, not suppressed.",
+    "No production write, alias promotion, budget change, approval or deploy."
+  ],
+  "observed_at": "2026-10-20T23:41:36.650901+00:00",
+  "passing_after": {
+    "ci_scoped_format": "251 files already formatted",
+    "ci_scoped_pyright": "0 errors, 0 warnings",
+    "ci_scoped_ruff": "passed",
+    "http_regression_cases": 54,
+    "runtime": [
+      {
+        "answer": "Which game/date and which event, stretch, or claim are you referring to?",
+        "checks": {
+          "clarifies": true,
+          "committed": true,
+          "http_200": true,
+          "no_citations": true,
+          "no_model_calls": true,
+          "no_retrieved_ids": true
+        },
+        "http_status": 200,
+        "id": "unanchored-disabled-0",
+        "mode": "disabled",
+        "provider_calls": [],
+        "question": "How did JB play in that game?"
+      },
+      {
+        "answer": "Which game/date and which event, stretch, or claim are you referring to?",
+        "checks": {
+          "clarifies": true,
+          "committed": true,
+          "http_200": true,
+          "no_citations": true,
+          "no_model_calls": true,
+          "no_retrieved_ids": true
+        },
+        "http_status": 200,
+        "id": "unanchored-disabled-1",
+        "mode": "disabled",
+        "provider_calls": [],
+        "question": "Who led the Knicks in rebounds that night?"
+      },
+      {
+        "answer": "Which game/date and which event, stretch, or claim are you referring to?",
+        "checks": {
+          "clarifies": true,
+          "committed": true,
+          "http_200": true,
+          "no_citations": true,
+          "no_model_calls": true,
+          "no_retrieved_ids": true
+        },
+        "http_status": 200,
+        "id": "unanchored-llm_primary-0",
+        "mode": "llm_primary",
+        "provider_calls": [],
+        "question": "How did JB play in that game?"
+      },
+      {
+        "answer": "Which game/date and which event, stretch, or claim are you referring to?",
+        "checks": {
+          "clarifies": true,
+          "committed": true,
+          "http_200": true,
+          "no_citations": true,
+          "no_model_calls": true,
+          "no_retrieved_ids": true
+        },
+        "http_status": 200,
+        "id": "unanchored-llm_primary-1",
+        "mode": "llm_primary",
+        "provider_calls": [],
+        "question": "Who led the Knicks in rebounds that night?"
+      },
+      {
+        "answer": "The most rebounds by a Knick in a single game in the available 2025-26 archive was 22, achieved twice: Karl-Anthony Towns on 2026-01-28 vs TOR, and Mitchell Robinson on 2026-03-13 vs IND. This reflects the available release archive only.",
+        "checks": {
+          "all_sql_ties_match": true,
+          "committed": true,
+          "http_200": true,
+          "mandatory_native_groups": true,
+          "model_validated": true,
+          "no_warnings": true
+        },
+        "http_status": 200,
+        "id": "single-game-rebound-high",
+        "mode": "llm_primary",
+        "provider_calls": [
+          {
+            "claim_uses": 1,
+            "kind": "writer",
+            "model": "deepseek/deepseek-v4.1-flash",
+            "provider": "InferenceNet",
+            "raw_bytes": 352,
+            "related_choices": 0,
+            "schema_enforced": false,
+            "slots": [
+              {
+                "choices": 1,
+                "claims": 1
+              }
+            ],
+            "system_bytes": 794,
+            "user_bytes": 3810
+          },
+          {
+            "kind": "review",
+            "model": "deepseek/deepseek-v4.1-flash",
+            "provider": "InferenceNet",
+            "raw_bytes": 872,
+            "schema_enforced": false,
+            "system_bytes": 1244,
+            "user_bytes": 4047
+          }
+        ],
+        "question": "What was the most rebounds a Knick had in a single game this season?"
+      },
+      {
+        "answer": "Josh Hart had the most rebounds for the Knicks against Miami on December 21, with 10 total rebounds in the archived game.",
+        "checks": {
+          "committed": true,
+          "correct_date_leader": true,
+          "http_200": true,
+          "mandatory_native_groups": true,
+          "model_validated": true,
+          "no_warnings": true
+        },
+        "http_status": 200,
+        "id": "date-scoped-rebound-leader",
+        "mode": "llm_primary",
+        "provider_calls": [
+          {
+            "claim_uses": 1,
+            "kind": "writer",
+            "model": "deepseek/deepseek-v4.1-flash",
+            "provider": "InferenceNet",
+            "raw_bytes": 322,
+            "related_choices": 0,
+            "schema_enforced": false,
+            "slots": [
+              {
+                "choices": 1,
+                "claims": 1
+              }
+            ],
+            "system_bytes": 794,
+            "user_bytes": 4091
+          },
+          {
+            "kind": "review",
+            "model": "deepseek/deepseek-v4.1-flash",
+            "provider": "InferenceNet",
+            "raw_bytes": 551,
+            "schema_enforced": false,
+            "system_bytes": 1244,
+            "user_bytes": 4104
+          }
+        ],
+        "question": "Who had the most rebounds for the Knicks against Miami on December 21?"
+      }
+    ],
+    "scope_parser_reliability_cases": 53
+  },
+  "release": {
+    "manifest_sha256": "549af2edd0d195eff60bb318bdc58a8c8e217ea0359c0684d492d5292dcb595b",
+    "version": "2025-26.20260928.1"
+  },
+  "schema_version": 1,
+  "scope": "Review-correction diagnostic, not frozen120/50 evaluation, deployment approval or hosted performance proof.",
+  "source_had_uncommitted_corrections": true,
+  "source_sha256": {
+    "apps/api/app/services/analyst_loop.py": "4822f87764f985ec1a82f7361ff43d732383efa1fe582b00855a9cf642fae399",
+    "apps/api/app/services/analyst_tools.py": "0a10f062fa599ada72849e30b75f6812036ae2a9b032a93c512b839054421b0b",
+    "apps/api/app/services/game_reference.py": "ac7da4f11ce2354b895d472adecafcbf3d033e21102afa0a68de8590b1b9ff2e",
+    "apps/api/app/services/population_facts.py": "44afd788746f6d9f68c8359a063e152a00796e1b4ed64bb0a6415c9b804a6ae6",
+    "apps/api/app/services/query_parsing.py": "4faa7f8e2520abbb9bd2d6610ec5f9c7a1dd61661e248213335c9b10bad96d47",
+    "apps/api/app/services/query_resolution.py": "2537c8f3537cb32e1aa20f4e4cba2f118bd7533931fd2c1300b1a23cad59a356"
+  },
+  "tested_worktree_head": "1fe0470a615c860a33d0ceeda2f6680e4c573b49"
+}

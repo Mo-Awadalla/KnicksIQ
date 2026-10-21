@@ -16,6 +16,12 @@ hash the release, definitions, calculation, subject, scope, value and provenance
 The writer can reference IDs and request rounding; it cannot overwrite claims.
 Analytics read the complete applicable release population. Zero-minute player rows
 are excluded from appearance denominators; missing rows are coverage gaps.
+Team score-threshold counts compare each game in the resolved population with the
+shared `StatThreshold` semantics and return `games:count`, not a season score sum.
+Player leader calculations use canonical Knicks box-score rows inside that same
+scope. Explicit single-game highs rank individual appearances, preserve every tie,
+and retain evidence for the complete candidate population; scoped leaders otherwise
+sum each player's rows only within the requested window.
 
 Discovery starts with observed box scores and the existing catalog, recomputed
 from complete release rows under its existing eligibility policies. It introduces
@@ -165,6 +171,11 @@ leaders over the complete requested team-game population, including ties.
 `discover_facts` supplies candidate facts, not an authoritative substitute for a
 requested multi-game leader calculation. The existing backend calculation and
 complete-population validator remain responsible for this distinction.
+Native preparation and admission share `population_facts.is_player_leader_request`,
+including non-points leaders and single-game highs. The complete requested
+statistic is a mandatory claim group; a supported but nonresponsive player total
+cannot replace it. Validation distinguishes `:single_game_high` from `:leaders`
+and retains the exact requested game population.
 
 `find_player_games` handles a named player's per-game threshold question from
 the complete scoped appearance population, including postseason. It uses the
@@ -223,6 +234,11 @@ Yearless calendar dates resolve only within the release-supported calendar;
 ambiguous or invalid dates ask for clarification. An uncommitted conversational
 reference requires both a game/date and the referenced event, stretch, or claim,
 plus comparison inputs when needed.
+An unresolved conversational game reference stops canonical discovery before
+archive-unit construction or retrieval. It clarifies with no candidate or returned
+evidence IDs and no model call, including in primary and sampled-shadow modes.
+Shared parsing helpers live in `query_parsing`; callers import them there rather
+than through resolver compatibility re-exports.
 
 Scoped ambiguous game questions offer actual archived dates without asserting
 a matching-game count. Explicit win, loss, closest, and biggest-win conditions

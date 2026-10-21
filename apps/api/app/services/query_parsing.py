@@ -85,6 +85,17 @@ def _normalize(value: str) -> str:
     return re.sub(r"[^a-z0-9]+", " ", ascii_value.lower()).strip()
 
 
+def _calendar_year(month: int, games: list[Game]) -> int | None:
+    years = {game.game_date.year for game in games if game.game_date.month == month}
+    if not years:
+        seasons = {game.season for game in games}
+        if len(seasons) == 1:
+            season = re.fullmatch(r"(20\d{2})-(\d{2})", next(iter(seasons)))
+            if season and (int(season[1]) + 1) % 100 == int(season[2]):
+                years.add(int(season[1]) + (month < 7))
+    return next(iter(years)) if len(years) == 1 else None
+
+
 def _explicit_dates(question: str, games: list[Game]) -> tuple[list[date], str | None]:
     """Parse dates, resolving omitted years only from the active archive calendar."""
     matches: list[tuple[int, tuple[int, int, int]]] = []
@@ -98,19 +109,16 @@ def _explicit_dates(question: str, games: list[Game]) -> tuple[list[date], str |
     ):
         month, day, year = match.groups()
         if year is None:
-            calendar_years = {
-                game.game_date.year for game in games if game.game_date.month == _MONTHS[month]
-            }
-            if not calendar_years:
-                seasons = {game.season for game in games}
-                if len(seasons) == 1:
-                    season = re.fullmatch(r"(20\d{2})-(\d{2})", next(iter(seasons)))
-                    if season and (int(season[1]) + 1) % 100 == int(season[2]):
-                        calendar_years.add(int(season[1]) + (_MONTHS[month] < 7))
-            if len(calendar_years) != 1:
+            resolved_year = _calendar_year(_MONTHS[month], games)
+            if resolved_year is None:
                 return [], "missing_date_year"
-            year = str(next(iter(calendar_years)))
+            year = str(resolved_year)
         matches.append((match.start(), (int(year), _MONTHS[month], int(day))))
+    for match in re.finditer(r"\bchristmas\s+day(?:,?\s+(20\d{2}))?\b", question, re.I):
+        year = int(match[1]) if match[1] else _calendar_year(12, games)
+        if year is None:
+            return [], "missing_date_year"
+        matches.append((match.start(), (year, 12, 25)))
     try:
         return [date(*parts) for _, parts in sorted(matches)], None
     except ValueError:
@@ -262,12 +270,17 @@ def _metric(question: str) -> str | None:
 
 
 def is_record_request(question: str) -> bool:
-    """A record spans both outcomes; explicit subsets still take precedence."""
+    """Detect outcome checks that must retain both wins and losses."""
     q = _normalize(question.replace("–", "-").replace("—", "-"))
     if re.search(r"\b(?:only|in)\s+(?:(?:home|road|away)\s+)?(?:wins?|loss(?:es)?)\b", q):
         return False
+    all_games_outcome = bool(
+        re.search(r"\b(?:all|each)\s+(?:of\s+)?(?:those|these|the)\s+games\b", q)
+        and re.search(r"\b(?:win|wins|won|lose|loses|lost|losses)\b", q)
+    )
     return bool(
         re.search(r"\brecord\b", q)
+        or all_games_outcome
         or (re.search(r"\bwins?\b", q) and re.search(r"\bloss(?:es)?\b", q))
         or (
             re.search(r"^how (?:did|have|has)\b.*\b(?:perform|do|done|fare)\b", q)
@@ -278,9 +291,12 @@ def is_record_request(question: str) -> bool:
 
 
 def is_game_score_request(question: str) -> bool:
-    """A game result, excluding scoring averages and individual point totals."""
+    """Detect a single game's score, not per-game player rates."""
     q = _normalize(question)
-    return bool(re.search(r"\b(?:the|final) score\b|\bscore (?:against|on|of)\b", q))
+    return bool(
+        not re.search(r"\bper\s+game\b", q)
+        and re.search(r"\b(?:the|final) score\b|\bscore (?:against|on|of)\b", q)
+    )
 
 
 def is_live_only_score_request(question: str) -> bool:

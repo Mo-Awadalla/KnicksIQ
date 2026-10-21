@@ -34,14 +34,17 @@ from app.services.player_threshold_games import (
     has_unresolved_player_subject,
     threshold_call,
 )
+from app.services.population_facts import (
+    is_player_leader_request,
+    player_leader_fact,
+    score_threshold_count,
+)
+from app.services.query_parsing import is_game_score_request, is_record_request
 from app.services.query_resolution import (
     ResolvedQuery,
     all_star_end,
-    is_game_score_request,
-    is_record_request,
     resolve_query,
 )
-from app.services.team_aliases import team_ids_in_text
 from app.services.team_scope import comparison_groups
 from basketball_core.analytics.catalog import _windows, build_fact_catalog
 from basketball_core.analytics.registry import STAT_REGISTRY
@@ -120,7 +123,25 @@ class AnalystTools:
             data_version=self.release.version,
             select_extrema=False,
         )
-        self.scope = resolve_game_reference(self.question, self.scope, self.context, self.games)
+        previous_release = self.state.get("release")
+        previous_intent = self.state.get("intent")
+        raw_previous_scope = self.state.get("scope")
+        previous_scope = raw_previous_scope if isinstance(raw_previous_scope, dict) else None
+        previous_claims: list[VerifiedClaim] = []
+        if previous_release == self.release.version:
+            for raw in self.state.get("claims", []):
+                claim = VerifiedClaim.model_validate(raw)
+                if claim.release_id == self.release.version:
+                    previous_claims.append(claim)
+        self.scope = resolve_game_reference(
+            self.question,
+            self.scope,
+            self.context,
+            self.games,
+            delivered_claims=previous_claims,
+            prior_intent=previous_intent,
+            prior_scope=previous_scope,
+        )
         if (
             self.scope.date_start
             and self.scope.date_end
@@ -128,7 +149,12 @@ class AnalystTools:
             and re.search(r"\b(between|from|through|until)\b", self.question, re.I)
         ):
             self.scope = self.scope.model_copy(update={"game_ids": []})
-        prior = self.state.get("scope", {})
+        prior = previous_scope or {}
+
+        leader_query = bool(
+            re.search(r"\b(?:who|which player)\b", self.question, re.I)
+            and re.search(r"\b(?:lead|led|leading|leader|most|highest|top)\b", self.question, re.I)
+        )
         followup = bool(
             re.search(
                 r"\b(he|him|his|that|another|different player)\b|^\s*(why|now|and|what about)",
@@ -136,9 +162,13 @@ class AnalystTools:
                 re.I,
             )
         )
-        if followup:
+        if followup and not leader_query and not self.scope.requires_clarification:
             updates = {}
             for key in ("player_ids", "season_type", "opponent_id", "home_away", "game_result"):
+                if key == "player_ids" and not re.search(
+                    r"\b(?:he|him|his)\b|^\s*(?:and|what about)\b", self.question, re.I
+                ):
+                    continue
                 if key == "game_result" and is_record_request(self.question):
                     continue
                 if not getattr(self.scope, key) and prior.get(key):
@@ -196,17 +226,21 @@ class AnalystTools:
                     "clarification_options": sorted({p.full_name for _, p in self.rows}),
                 }
             )
+        if leader_query or self.scope.requires_clarification:
+            self.state["claims"] = []
+            self.state["evidence"] = []
         self.state["scope"] = self.scope.model_dump(mode="json")
         self.state["scope_origin"] = "user" if not followup else "verified_followup"
         self.state["intent"] = self.question[:1200]
-        # Immutable release references are revalidated for identity and integrity at admission.
-        if self.state.get("release") == self.release.version:
+        if (
+            previous_release == self.release.version
+            and not leader_query
+            and not self.scope.requires_clarification
+        ):
             permitted_games = {g.id for g in self.selected_games(self.scope)}
-            for raw in self.state.get("claims", []):
-                claim = VerifiedClaim.model_validate(raw)
+            for claim in previous_claims:
                 if (
-                    claim.release_id == self.release.version
-                    and set(claim.game_ids or []) <= permitted_games
+                    set(claim.game_ids or []) <= permitted_games
                     and (
                         not self.scope.player_ids
                         or claim.subject_id in {f"player:{pid}" for pid in self.scope.player_ids}
@@ -220,7 +254,7 @@ class AnalystTools:
                 if item.release_id == self.release.version:
                     self.evidence[item.evidence_id] = item
                     self.issued_evidence_ids.add(item.evidence_id)
-        else:
+        elif previous_release != self.release.version:
             self.state["delivered_fact_ids"] = []
         self.state["release"] = self.release.version
 
@@ -1066,7 +1100,7 @@ class AnalystTools:
         groups = self.requested_team_groups()
         if groups:
             return await self.team_comparison(scope, groups)
-        if re.search(r"\b(?:who led|leaders?|which player)\b", self.question, re.I):
+        if is_player_leader_request(self.question):
             return self.team_leaders(scope, games)
         if is_record_request(self.question):
             games = [g for g in games if g.status == "final" and g.home_score != g.away_score]
@@ -1077,78 +1111,58 @@ class AnalystTools:
                 else games[-scope.relative_game_count :]
             )
         evidence = [self.receipt(g) for g in games]
-        wins = sum(self.score(g)[0] > self.score(g)[1] for g in games)
-        values = {
-            "wins": wins,
-            "losses": len(games) - wins,
-            "points": sum(self.score(g)[0] for g in games),
-            "margin": sum(self.score(g)[0] - self.score(g)[1] for g in games),
-        }
         question = self.question.lower()
         denominator = None
         eligibility: dict[str, Any] = {"game": "archived Knicks game"}
         threshold_description = ""
-        threshold = re.search(r"\b(at least|under|over|more than|fewer than)\s+(\d+)\b", question)
-        if threshold and re.search(r"\bhow many games\b", question):
-            cutoff = int(threshold[2])
-            opponent_points = bool(re.search(r"\b(opponents?|allow|hold)\b", question))
-            operator = (
-                ">="
-                if threshold[1] == "at least"
-                else "<"
-                if threshold[1] in {"under", "fewer than"}
-                else ">"
-            )
-            eligibility["score_predicate"] = {
-                "subject_id": "opponent" if opponent_points else "team:NYK",
-                "metric_id": "points",
-                "operator": operator,
-                "cutoff": cutoff,
-            }
+        threshold_count = score_threshold_count(self.question, games)
+        if threshold_count is not None:
+            eligibility["score_predicate"] = threshold_count.predicate
+            eligibility["matching_game_ids"] = list(threshold_count.matching_game_ids)
             threshold_description = (
-                f" with {'opponent' if opponent_points else 'NYK'} points {operator} {cutoff}"
+                f" with {'opponent' if threshold_count.opponent_score else 'NYK'} points "
+                f"{threshold_count.threshold.symbol} {threshold_count.threshold.value:g}"
             )
-            observed = [self.score(g)[1 if opponent_points else 0] for g in games]
-            count = sum(
-                v >= cutoff
-                if threshold[1] == "at least"
-                else v < cutoff
-                if threshold[1] in {"under", "fewer than"}
-                else v > cutoff
-                for v in observed
-            )
-            values = {"games:count": count}
-        elif is_record_request(self.question):
-            values = {"wins": wins, "losses": len(games) - wins}
-        elif re.search(r"\bhow many\b.*\b(?:win|wins|won)\b", question):
-            values = {"wins": wins}
-        elif re.search(r"\bhow many\b.*\b(?:lose|losses|lost)\b", question):
-            values = {"losses": len(games) - wins}
-        elif re.search(r"\bhow many games\b", question):
-            values = {"games:count": len(games)}
-        elif not is_record_request(self.question) and re.search(
-            r"\b(average|per game|points allowed)\b", question
-        ):
-            metric = (
-                "margin"
-                if "margin" in question
-                else "points_allowed"
-                if re.search(r"\b(allow(?:ed)?|opponents?)\b", question)
-                else "points"
-            )
-            total = (
-                sum(self.score(g)[1] for g in games)
-                if metric == "points_allowed"
-                else values[metric]
-            )
-            denominator = len(games)
-            values = {f"{metric}:average": total / denominator}
-        elif scope.metric == "points":
-            values = {"points": values["points"]}
-        elif "margin" in question:
-            values = {"margin": values["margin"]}
+            values = {"games:count": threshold_count.value}
         else:
-            values = {"wins": wins, "losses": len(games) - wins}
+            wins = sum(self.score(g)[0] > self.score(g)[1] for g in games)
+            values = {
+                "wins": wins,
+                "losses": len(games) - wins,
+                "points": sum(self.score(g)[0] for g in games),
+                "margin": sum(self.score(g)[0] - self.score(g)[1] for g in games),
+            }
+            if is_record_request(self.question):
+                values = {"wins": wins, "losses": len(games) - wins}
+            elif re.search(r"\bhow many\b.*\b(?:win|wins|won)\b", question):
+                values = {"wins": wins}
+            elif re.search(r"\bhow many\b.*\b(?:lose|losses|lost)\b", question):
+                values = {"losses": len(games) - wins}
+            elif re.search(r"\bhow many games\b", question):
+                values = {"games:count": len(games)}
+            elif not is_record_request(self.question) and re.search(
+                r"\b(average|per game|points allowed)\b", question
+            ):
+                metric = (
+                    "margin"
+                    if "margin" in question
+                    else "points_allowed"
+                    if re.search(r"\b(allow(?:ed)?|opponents?)\b", question)
+                    else "points"
+                )
+                total = (
+                    sum(self.score(g)[1] for g in games)
+                    if metric == "points_allowed"
+                    else values[metric]
+                )
+                denominator = len(games)
+                values = {f"{metric}:average": total / denominator}
+            elif scope.metric == "points":
+                values = {"points": values["points"]}
+            elif "margin" in question:
+                values = {"margin": values["margin"]}
+            else:
+                values = {"wins": wins, "losses": len(games) - wins}
         claims = [
             self.claim(
                 subject="team:NYK",
@@ -1184,38 +1198,84 @@ class AnalystTools:
                 status="unsupported_metric_or_scope",
                 message="Specify a supported leader statistic.",
             )
-        game_map = {g.id: g for g in games}
-        rows = [(s, p) for s, p in self.rows if s.game_id in game_map]
-        if {s.game_id for s, _ in rows} != set(game_map):
+        fact = player_leader_fact(
+            self.rows,
+            games,
+            metric,
+            self.question,
+            supported_metrics=METRICS,
+        )
+        if fact is None:
             return ToolResult(
                 status="incomplete_coverage",
                 message="Complete scoped player box scores are unavailable.",
             )
-        totals: dict[str, int | float] = {}
-        for stat, player in rows:
-            totals[player.full_name] = totals.get(player.full_name, 0) + getattr(stat, metric)
-        maximum = max(totals.values())
-        leaders = sorted(name for name, value in totals.items() if value == maximum)
-        evidence = [self.receipt(game_map[s.game_id], s, p) for s, p in rows]
+
+        game_map = {game.id: game for game in games}
+        evidence = [
+            self.receipt(game_map[stat.game_id], stat, player)
+            for stat, player in fact.evidence_rows
+        ]
+        if fact.single_game_high:
+            rows = [
+                {
+                    "player": entry.player.full_name,
+                    "date": entry.game.game_date.isoformat(),
+                    "opponent": (
+                        entry.game.away_team_id
+                        if entry.game.home_team_id == "NYK"
+                        else entry.game.home_team_id
+                    ),
+                    "value": entry.value,
+                }
+                for entry in fact.tied_rows
+            ]
+            value = {"maximum": fact.value, "rows": rows}
+            metric_id = f"{metric}:single_game_high"
+            statement = (
+                f"Knicks' single-game high was {fact.value:g} {fact.label}, recorded by "
+                + "; ".join(
+                    f"{row['player']} ({row['value']:g} on {row['date']} vs {row['opponent']})"
+                    for row in rows
+                )
+                + "."
+            )
+            unit = fact.label
+            eligibility = {
+                "player": "NYK box-score appearances with minutes > 0",
+                "reduction": "maximum per-game stat row",
+                "ties": "all tied rows",
+            }
+        else:
+            value = {"leaders": list(fact.leaders), "total": fact.value}
+            metric_id = f"{metric}:leaders"
+            statement = (
+                f"{', '.join(fact.leaders)} led the Knicks with {fact.value:g} total "
+                f"{fact.label} across {len(games)} archived games."
+            )
+            unit = f"total {fact.label}"
+            eligibility = {
+                "player": "NYK box-score rows",
+                "reduction": "season total by player",
+                "ties": "all leaders",
+            }
+
         claim = self.claim(
             subject="team:NYK",
-            metric=f"{metric}:leaders",
-            value={"leaders": leaders, "total": maximum},
-            unit=f"total {metric}",
+            metric=metric_id,
+            value=value,
+            unit=unit,
             games=games,
             evidence=evidence,
             scope=scope,
-            sample=len(games),
+            sample=fact.sample_size,
             denominator=None,
-            eligibility={"player": "NYK box-score rows", "ties": "all leaders"},
-            statement=(
-                f"{', '.join(leaders)} led the Knicks with {maximum} total {metric} "
-                f"across {len(games)} archived games."
-            ),
+            eligibility=eligibility,
+            statement=statement,
         )
         return ToolResult(
             status="ok",
-            message="Complete scoped leader population.",
+            message="Complete scoped player leader population.",
             claims=[claim],
             evidence=evidence,
             scope=scope.model_dump(mode="json"),
@@ -1692,15 +1752,17 @@ class AnalystTools:
         if self.scope is None:
             raise ValueError("Canonical discovery requires prepared request scope")
         scope = self.scope
+        if scope.clarification_reason == "missing_conversation_game":
+            self.discovery = ToolResult(
+                status="ambiguous_entity",
+                message="Which archived game date should I use?",
+                choices=scope.clarification_options,
+                scope=scope.model_dump(mode="json"),
+            )
+            return self.discovery
         games = self.selected_games(scope) if self.season == self.release.season else []
         names = sorted({p.full_name for _, p in self.rows if p.id in scope.player_ids})[:3]
         teams = {scope.opponent_id} if scope.opponent_id else set()
-        if scope.clarification_reason == "missing_conversation_game":
-            teams.update(
-                team_ids_in_text(" ".join(m["content"] for m in self.context[-10:])) - {"NYK"}
-            )
-        # Context team names are search terms only. They cannot establish the
-        # game or make an unverified assistant account authoritative.
         anchors = names + sorted(teams)
         expansion = " OR ".join(json.dumps(value) for value in anchors)
         # Tool questions retain their existing cap. Only ordinary independently

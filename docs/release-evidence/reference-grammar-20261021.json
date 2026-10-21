@@ -1,0 +1,232 @@
+{
+  "all_checks_passed": true,
+  "failing_before": {
+    "candidate_ids_per_input": 20,
+    "context": "A vague Boston lost-lead question and an unverified second-half narrative, without a canonical game/date.",
+    "fixed_cohort_run": "/tmp/kiq-integration-artifacts/fan-full-backend-closure.xml",
+    "missed_inputs": [
+      "Show me the receipts for that.",
+      "Compare that with the other Boston game."
+    ],
+    "returned_ids_per_input": 20
+  },
+  "observed_at": "2026-10-21T00:37:48.326435+00:00",
+  "passing_runtime": [
+    {
+      "answer": "Which game/date and which event, stretch, or claim are you referring to?",
+      "checks": {
+        "clarifies": true,
+        "committed": true,
+        "http_200": true,
+        "no_citations": true,
+        "no_model_calls": true,
+        "no_retrieved_ids": true
+      },
+      "id": "unanchored-disabled-0",
+      "mode": "disabled",
+      "request": {
+        "context": [],
+        "expected_revision": 0,
+        "question": "How did JB play in that game?",
+        "season": "2025-26",
+        "turn_id": "review-fix-986e45553e844157b99c1f8ee2240814"
+      }
+    },
+    {
+      "answer": "Which game/date and which event, stretch, or claim are you referring to?",
+      "checks": {
+        "clarifies": true,
+        "committed": true,
+        "http_200": true,
+        "no_citations": true,
+        "no_model_calls": true,
+        "no_retrieved_ids": true
+      },
+      "id": "unanchored-disabled-1",
+      "mode": "disabled",
+      "request": {
+        "context": [],
+        "expected_revision": 0,
+        "question": "Who led the Knicks in rebounds that night?",
+        "season": "2025-26",
+        "turn_id": "review-fix-f9a13721b7ee41b686b6da29803e6fd5"
+      }
+    },
+    {
+      "answer": "Which game/date and which event, stretch, or claim are you referring to?",
+      "checks": {
+        "clarifies": true,
+        "committed": true,
+        "http_200": true,
+        "no_citations": true,
+        "no_model_calls": true,
+        "no_retrieved_ids": true
+      },
+      "id": "unanchored-disabled-2",
+      "mode": "disabled",
+      "request": {
+        "context": [
+          {
+            "content": "How did the Knicks lose the lead against Boston?",
+            "role": "user"
+          },
+          {
+            "content": "Boston took control during a decisive second-half scoring run.",
+            "role": "assistant"
+          }
+        ],
+        "expected_revision": 0,
+        "question": "Show me the receipts for that.",
+        "season": "2025-26",
+        "turn_id": "review-fix-af9b16d8b06b44ffb3e59726120d759d"
+      }
+    },
+    {
+      "answer": "Which game/date and which event, stretch, or claim are you referring to? Which game/date should I compare it with?",
+      "checks": {
+        "clarifies": true,
+        "committed": true,
+        "http_200": true,
+        "no_citations": true,
+        "no_model_calls": true,
+        "no_retrieved_ids": true
+      },
+      "id": "unanchored-disabled-3",
+      "mode": "disabled",
+      "request": {
+        "context": [
+          {
+            "content": "How did the Knicks lose the lead against Boston?",
+            "role": "user"
+          },
+          {
+            "content": "Boston took control during a decisive second-half scoring run.",
+            "role": "assistant"
+          }
+        ],
+        "expected_revision": 0,
+        "question": "Compare that with the other Boston game.",
+        "season": "2025-26",
+        "turn_id": "review-fix-df8900574f9e4fa3a83826417cd6161f"
+      }
+    },
+    {
+      "answer": "Which game/date and which event, stretch, or claim are you referring to?",
+      "checks": {
+        "clarifies": true,
+        "committed": true,
+        "http_200": true,
+        "no_citations": true,
+        "no_model_calls": true,
+        "no_retrieved_ids": true
+      },
+      "id": "unanchored-llm_primary-0",
+      "mode": "llm_primary",
+      "request": {
+        "context": [],
+        "expected_revision": 0,
+        "question": "How did JB play in that game?",
+        "season": "2025-26",
+        "turn_id": "review-fix-d362198412a24cdba041044a24246c1d"
+      }
+    },
+    {
+      "answer": "Which game/date and which event, stretch, or claim are you referring to?",
+      "checks": {
+        "clarifies": true,
+        "committed": true,
+        "http_200": true,
+        "no_citations": true,
+        "no_model_calls": true,
+        "no_retrieved_ids": true
+      },
+      "id": "unanchored-llm_primary-1",
+      "mode": "llm_primary",
+      "request": {
+        "context": [],
+        "expected_revision": 0,
+        "question": "Who led the Knicks in rebounds that night?",
+        "season": "2025-26",
+        "turn_id": "review-fix-b14105e1458746e686815912201fa817"
+      }
+    },
+    {
+      "answer": "Which game/date and which event, stretch, or claim are you referring to?",
+      "checks": {
+        "clarifies": true,
+        "committed": true,
+        "http_200": true,
+        "no_citations": true,
+        "no_model_calls": true,
+        "no_retrieved_ids": true
+      },
+      "id": "unanchored-llm_primary-2",
+      "mode": "llm_primary",
+      "request": {
+        "context": [
+          {
+            "content": "How did the Knicks lose the lead against Boston?",
+            "role": "user"
+          },
+          {
+            "content": "Boston took control during a decisive second-half scoring run.",
+            "role": "assistant"
+          }
+        ],
+        "expected_revision": 0,
+        "question": "Show me the receipts for that.",
+        "season": "2025-26",
+        "turn_id": "review-fix-d35557ac84ae4ef09b144abdfbb02c2d"
+      }
+    },
+    {
+      "answer": "Which game/date and which event, stretch, or claim are you referring to? Which game/date should I compare it with?",
+      "checks": {
+        "clarifies": true,
+        "committed": true,
+        "http_200": true,
+        "no_citations": true,
+        "no_model_calls": true,
+        "no_retrieved_ids": true
+      },
+      "id": "unanchored-llm_primary-3",
+      "mode": "llm_primary",
+      "request": {
+        "context": [
+          {
+            "content": "How did the Knicks lose the lead against Boston?",
+            "role": "user"
+          },
+          {
+            "content": "Boston took control during a decisive second-half scoring run.",
+            "role": "assistant"
+          }
+        ],
+        "expected_revision": 0,
+        "question": "Compare that with the other Boston game.",
+        "season": "2025-26",
+        "turn_id": "review-fix-0e3d2a18bf9d4d02872dca9472fb3592"
+      }
+    }
+  ],
+  "raw_artifact": {
+    "path": "/tmp/kiq-integration-artifacts/reference-grammar-live-20261021.json",
+    "sha256": "3cfc0e80bcf7338254d35becb74f025e75e7ae15cfad87102774b241743f9c5b"
+  },
+  "release": {
+    "manifest_sha256": "549af2edd0d195eff60bb318bdc58a8c8e217ea0359c0684d492d5292dcb595b",
+    "version": "2025-26.20260928.1"
+  },
+  "schema_version": 1,
+  "scope": "Real local approved-bundle reference-boundary smoke, not quality evaluation or release approval.",
+  "source_had_uncommitted_corrections": true,
+  "source_sha256": {
+    "apps/api/app/services/analyst_loop.py": "4822f87764f985ec1a82f7361ff43d732383efa1fe582b00855a9cf642fae399",
+    "apps/api/app/services/analyst_tools.py": "0a10f062fa599ada72849e30b75f6812036ae2a9b032a93c512b839054421b0b",
+    "apps/api/app/services/game_reference.py": "af970a1a2ae4128245accd322a08595c5668f06a825562c3140b86f7e4f3a81b",
+    "apps/api/app/services/population_facts.py": "4e55423273dd8ac18784bd98c4ccc1ae626fe6b3a73562ae99e39ecfb0497754",
+    "apps/api/app/services/query_parsing.py": "4faa7f8e2520abbb9bd2d6610ec5f9c7a1dd61661e248213335c9b10bad96d47",
+    "apps/api/app/services/query_resolution.py": "2537c8f3537cb32e1aa20f4e4cba2f118bd7533931fd2c1300b1a23cad59a356"
+  },
+  "tested_worktree_head": "13dd8fef8be37ec790bd363d213e6461027ac538"
+}

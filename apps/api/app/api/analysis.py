@@ -50,7 +50,8 @@ from app.services.opponent_narrowing import requires_lead_change
 from app.services.player_analytics import answer_player_question
 from app.services.possession_chunks import chunk_evidence
 from app.services.query_classifier import QueryClassifierResult, classify_query
-from app.services.query_resolution import ResolvedQuery, is_live_only_score_request, resolve_query
+from app.services.query_parsing import is_live_only_score_request
+from app.services.query_resolution import ResolvedQuery, resolve_query
 from app.services.rag import SearchResult, search_possession_chunks, search_season_docs
 from app.services.releases import restrict_to_active_release
 from app.services.report_llm import get_llm_adapter

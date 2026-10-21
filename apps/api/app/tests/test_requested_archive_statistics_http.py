@@ -44,6 +44,20 @@ async def test_requested_archive_statistics(
         return g["away_score"] if g["home_team_id"] == "NYK" else g["home_score"]
 
     requests = []
+    score_predicates = {
+        "How many games did the Knicks score at least 120?": {
+            "subject_id": "team:NYK",
+            "metric_id": "points",
+            "operator": ">=",
+            "cutoff": 120.0,
+        },
+        "How many games did the Knicks hold opponents under 100?": {
+            "subject_id": "opponent",
+            "metric_id": "points",
+            "operator": "<",
+            "cutoff": 100.0,
+        },
+    }
 
     def team(question, metric, population, value):
         requests.append((question, metric, population, value, None))
@@ -201,6 +215,14 @@ async def test_requested_archive_statistics(
         wrong_value = abs(claim["value"] - value) > 0.00001
         if wrong_value or claim["sample_size"] != len(population):
             failures.append((index, "wrong value/population", claim))
+        expected_predicate = score_predicates.get(question)
+        if (
+            expected_predicate is not None
+            and claim["eligibility"].get("score_predicate") != expected_predicate
+        ):
+            failures.append(
+                (index, "wrong score predicate", claim["eligibility"].get("score_predicate"))
+            )
         expected_window: dict[str, object] = {
             "date_start": min(g["game_date"] for g in population),
             "date_end": max(g["game_date"] for g in population),

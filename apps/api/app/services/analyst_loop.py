@@ -38,7 +38,11 @@ from app.services.player_threshold_games import (
     parse_stat_threshold,
     wants_game_listing,
 )
-from app.services.query_resolution import is_game_score_request, is_record_request
+from app.services.population_facts import (
+    is_player_leader_request,
+    is_single_game_high_request,
+)
+from app.services.query_parsing import is_game_score_request, is_record_request
 from app.services.report_llm import get_llm_adapter
 from pydantic import BaseModel
 
@@ -1652,7 +1656,7 @@ class AnalystLoop:
             ) <= {"games", "wins", "losses"}:
                 return None
             return "get_team_stats"
-        if re.search(r"\b(?:who led|leaders?|which player)\b", question, re.I):
+        if is_player_leader_request(question):
             return "get_team_stats" if (scope.metric or "points") in PLAYER_METRICS else None
         if scope.metric not in {None, "points"}:
             return None
@@ -2009,7 +2013,7 @@ class AnalystLoop:
                 groups = requirements["team"]
                 if not groups or any(not domain & declared_ids for domain in groups):
                     return False, "Every requested team comparison population must be answered."
-            elif re.search(r"\b(?:who led|leaders?|which player)\b", self.tools.question, re.I):
+            elif is_player_leader_request(self.tools.question):
                 games = self.tools.selected_games(scope)
                 if scope.relative_game_count:
                     games = (
@@ -2017,13 +2021,21 @@ class AnalystLoop:
                         if scope.relative_game_order == "first"
                         else games[-scope.relative_game_count :]
                     )
+                leader_metric_id = (
+                    f"{scope.metric}:single_game_high"
+                    if is_single_game_high_request(self.tools.question)
+                    else f"{scope.metric}:leaders"
+                )
                 if not any(
                     claim.subject_id == "team:NYK"
-                    and claim.metric_id == f"{scope.metric}:leaders"
+                    and claim.metric_id == leader_metric_id
                     and set(claim.game_ids or []) == {game.id for game in games}
                     for claim in declared
                 ):
-                    return False, "A team leader requires the complete requested game population."
+                    return False, (
+                        "A team leader or single-game high requires the complete requested "
+                        "game population."
+                    )
         if "extreme" in requirements:
             groups = requirements["extreme"]
             if any(not domain & declared_ids for domain in groups) or len(declared) != len(groups):

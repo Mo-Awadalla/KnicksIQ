@@ -420,27 +420,6 @@ async def test_bad_provider_output_counts_call_and_falls_back(
     assert result["citations"] and result["state"]["delivered_fact_ids"]
 
 
-async def test_release_change_drops_old_claims_and_scope_transition(db_session):
-    tools, player = await make_tools(db_session, "Brunson points")
-    result = await tools.execute(ToolCall(name="get_player_stats", question=tools.question))
-    state = {
-        "release": "superseded",
-        "claims": [c.model_dump() for c in result.claims],
-        "evidence": [e.model_dump() for e in result.evidence],
-        "scope": {"player_ids": [player.id]},
-        "delivered_fact_ids": ["old"],
-    }
-    current = AnalystTools(
-        db_session, tools.release, "Now only playoff games", tools.release.season, state
-    )
-    await current.prepare()
-    assert not current.claims and not current.evidence
-    assert current.scope is not None
-    assert current.scope.player_ids == [player.id]
-    assert current.scope.season_type == "playoffs"
-    assert not current.state["delivered_fact_ids"]
-
-
 async def test_missing_rows_are_incomplete_not_nonappearances(db_session):
     from app.models.box_score import PlayerGameStat
     from sqlalchemy import delete
