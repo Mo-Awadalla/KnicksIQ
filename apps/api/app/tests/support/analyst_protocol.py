@@ -87,7 +87,7 @@ class ScriptedAdapter:
                 {
                     "assertions": [
                         {
-                            "text": answer["text"],
+                            "text": span,
                             "verdict": "supported",
                             "assertion_type": "factual",
                             "offending_text": None,
@@ -95,6 +95,7 @@ class ScriptedAdapter:
                             "supporting_evidence_ids": [],
                             "reason": "Matches backend claims.",
                         }
+                        for span in payload["review_spans"]
                     ]
                 }
             )
