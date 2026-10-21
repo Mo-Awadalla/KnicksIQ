@@ -71,6 +71,7 @@ async def _query_evidence_analyst(
         return AnalysisQueryResponse.model_validate(turn.replay)
     tools = AnalystTools(db, release, req.question, req.season, turn.state if turn else {})
     try:
+        prepare_started = time.monotonic()
         async with asyncio.timeout(
             max(
                 0.001,
@@ -78,7 +79,17 @@ async def _query_evidence_analyst(
             )
         ):
             await tools.prepare()
+        prepare_ms = round((time.monotonic() - prepare_started) * 1000)
         loop = AnalystLoop(tools, [m.model_dump() for m in req.context], started=started)
+        loop.trace.append(
+            {
+                "stage": "prepare",
+                "tool": "session_and_release",
+                "latency_ms": round((prepare_started - started) * 1000),
+            }
+        )
+        loop.trace.append({"stage": "prepare", "tool": "prepare_total", "latency_ms": prepare_ms})
+        loop.trace.extend(tools.timings)
         loop.request_id = getattr(request.state, "request_id", "")
         settings = runtime.get_settings()
         answer_mode = settings.analysis_answer_mode
