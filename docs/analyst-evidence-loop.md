@@ -49,11 +49,18 @@ requires human-labelled calibration; a reviewer verdict is not proof of truth.
 
 Input packing drops complete records and preserves their server-side references.
 UTF-8 byte counts conservatively bound input tokens, including a reserved system
-prompt allowance. This underfills context compared with a model-specific tokenizer
-and should be measured before promotion. Large claims that do not fit are omitted,
-never truncated. Review packing drops eligibility policy and generic coverage
-caveats from claim views before it would abort a turn; the claim value, subject,
-scope, window, denominators and receipts remain. Investigation allows two rounds,
+prompt allowance; the measured ratio is 3.5 to 3.9 JSON bytes per prompt token.
+The writer and reviewer budget is 16,000 bytes (`ANALYST_INPUT_TOKENS`), chosen by
+the 70-question A/B in `docs/release-evidence/llm-primary-20261021/final/README.md`
+against 8,000: honest `meets_expectation` rose from 27/70 to 38/70 in both trials,
+packing exceptions fell from 2 per 56 questions to zero, and claims dropped from
+the writer payload fell from 8.2 to 2.2 per question on the same 56 questions
+(p95 latency 6.2s to 7.6s, mean cost per question $0.0011 to $0.0020). At 16,000
+the payload still packs to p95 15,557 of 16,000 bytes, so the cap remains the
+binding constraint. Large claims that do not fit are omitted, never truncated.
+Review packing drops eligibility policy and generic coverage caveats from claim
+views before it would abort a turn; the claim value, subject, scope, window,
+denominators and receipts remain. Investigation allows two rounds,
 three tools per round and six model calls total, including malformed output. Normal
 lookup uses choose/write/review; prior-evidence explanation uses write/review.
 Repairs require capacity and time for both calls. Replies remain buffered. No prompt
