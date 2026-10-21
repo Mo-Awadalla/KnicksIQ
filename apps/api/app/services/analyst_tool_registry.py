@@ -100,6 +100,16 @@ TOOLS: tuple[ToolSpec, ...] = (
         needs_scope=False,
         needs_games=False,
     ),
+    ToolSpec(
+        name="get_game_flow",
+        description=(
+            "gives play-by-play turning points for one game or a set of games: largest lead, "
+            "lead changes, ties, scoring runs, the winning go-ahead score and clutch scoring, "
+            "each with period, clock and score"
+        ),
+        handler="app.services.analyst_tool_runs:run",
+        supports_periods=True,
+    ),
 )
 
 TOOLS_BY_NAME = {spec.name: spec for spec in TOOLS}
