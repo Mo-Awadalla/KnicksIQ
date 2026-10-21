@@ -1,9 +1,8 @@
-"""Guarded orchestration HTTP/CLI scenarios, recorded before implementation.
+"""Synthetic guarded orchestration and accounting failure regressions.
 
-Only synthetic metadata/completions and a fixture-owned Redis are permitted.
-The existing real analyst HTTP route/collector must stop on admission, payload,
-receipt, or interruption failures and keep case/ticket/monthly accounting joins.
-Production Docker/source/index checks are not certified by these synthetic tests.
+The real analyst HTTP route/collector must stop on admission, payload, receipt,
+or interruption failures and retain exact case/ticket/monthly joins. Fixtures
+use only synthetic provider responses and fixture-owned Redis.
 """
 
 import json
@@ -17,7 +16,7 @@ import httpx
 import pytest
 from app.core.config import get_settings
 from app.core.db import AsyncSessionLocal
-from app.evaluation.release_runner import collect, file_hash
+from app.evaluation.release_runner import collect, digest, file_hash
 from app.evaluation.verification_adapter import MODEL
 from app.evaluation.verification_budget import VerificationBudget
 from app.services.release_evidence import evaluation_request_id
@@ -28,7 +27,7 @@ from app.tests.test_release_evaluation import fixture_contract
 
 def test_guarded_cli_denies_changed_gold_without_network(tmp_path):
     """The actual CLI rejects changed frozen inputs before opening any socket."""
-    contract = tmp_path / "source-support-20261003/gold-review/frozen-expectations.json"
+    contract = tmp_path / "docs/release-evidence/evaluation-contract-20261021/expectations.json"
     contract.parent.mkdir(parents=True)
     contract.write_text('{"cases": []}')
     bootstrap = (
@@ -50,6 +49,10 @@ def test_guarded_cli_denies_changed_gold_without_network(tmp_path):
             str(tmp_path),
             "--goal-dir",
             str(tmp_path / "goal"),
+            "--bundle-path",
+            str(tmp_path / "bundle.json.gz"),
+            "--candidate-identity-dir",
+            str(tmp_path / "identity-payloads"),
         ],
         capture_output=True,
         text=True,
@@ -86,7 +89,7 @@ async def test_guarded_original_cohort_failure_joins_and_retains(
     record_property,  # noqa: F811
 ):
     from app.api.analysis import _sample_shadow
-    from app.evaluation.guarded_release import GuardedSession, MonthlyLedger
+    from app.evaluation.guarded_release import ROUTING_POLICY, GuardedSession, MonthlyLedger
 
     settings = get_settings()
     for name, value in {
@@ -134,6 +137,8 @@ async def test_guarded_original_cohort_failure_joins_and_retains(
             "INSERT INTO guard_goal VALUES (?)",
             (json.dumps({"historical_floor_nusd": 72_217_900}),),
         )
+    price_snapshot = {"active_provider_names": ["Synthetic"]}
+    price_snapshot_sha256 = digest(price_snapshot)
     seen = []
     ledger = MonthlyLedger(month=f"{datetime.now(UTC):%Y-%m}", historical_floor="0.0722179")
 
@@ -147,17 +152,13 @@ async def test_guarded_original_cohort_failure_joins_and_retains(
 
         async def verify_request(self, payload, owned):
             await ledger.read(owned)
-            if scenario == "overbound":
-                return {
-                    "bound_nusd": 20_000_000,
-                    "route": "morph/fp8",
-                    "provider": "Morph",
-                    "metadata_sha256": "synthetic",
-                }
             return {
-                "bound_nusd": 1_000_000,
-                "route": "morph/fp8",
-                "provider": "Morph",
+                "bound_nusd": 20_000_000 if scenario == "overbound" else 1_000_000,
+                "input_token_bound": 1000,
+                "output_token_bound": 500,
+                "provider_routing": ROUTING_POLICY,
+                "price_snapshot_sha256": price_snapshot_sha256,
+                "endpoint_price_snapshot": price_snapshot,
                 "metadata_sha256": "synthetic",
             }
 
@@ -176,7 +177,7 @@ async def test_guarded_original_cohort_failure_joins_and_retains(
             json={
                 "id": "synthetic-generation",
                 "model": MODEL,
-                "provider": "Foreign" if scenario == "wrong_provider" else "Morph",
+                "provider": "Foreign" if scenario == "wrong_provider" else "Synthetic",
                 "usage": {}
                 if scenario == "missing_cost"
                 else {"cost": 0.05 if scenario.startswith("provider_overbound") else 0},
@@ -281,7 +282,7 @@ async def test_guarded_original_cohort_failure_joins_and_retains(
 
 
 @pytest.mark.parametrize("fault", ["missing", "expiry", "foreign", "floor", "cutoff", "month"])
-async def test_guarded_admission_denies_unreconciled_monthly_ledger(local_redis, tmp_path, fault):  # noqa: F811
+async def test_guarded_admission_denies_invalid_monthly_ledger(local_redis, tmp_path, fault):  # noqa: F811
     from app.evaluation.guarded_release import MonthlyLedger
 
     month = f"{datetime.now(UTC):%Y-%m}"
@@ -315,7 +316,7 @@ async def test_guarded_successful_http_accounting_is_durable(
     tmp_path,
     record_property,  # noqa: F811
 ):
-    from app.evaluation.guarded_release import GuardedSession, MonthlyLedger
+    from app.evaluation.guarded_release import ROUTING_POLICY, GuardedSession, MonthlyLedger
     from app.services import analyst_loop
     from app.tests.test_analyst_contracts import ScriptedAdapter
 
@@ -346,6 +347,8 @@ async def test_guarded_successful_http_accounting_is_durable(
         "question": "Tell me an interesting Jalen Brunson stat.",
         "context": [],
     }
+    price_snapshot = {"active_provider_names": ["Synthetic"]}
+    price_snapshot_sha256 = digest(price_snapshot)
 
     class SyntheticAdmission:
         contract_sha256 = "synthetic-gold"
@@ -358,8 +361,11 @@ async def test_guarded_successful_http_accounting_is_durable(
             await ledger.read(owned)
             return {
                 "bound_nusd": 1_000_000,
-                "route": "morph/fp8",
-                "provider": "Morph",
+                "input_token_bound": 1000,
+                "output_token_bound": 500,
+                "provider_routing": ROUTING_POLICY,
+                "price_snapshot_sha256": price_snapshot_sha256,
+                "endpoint_price_snapshot": price_snapshot,
                 "metadata_sha256": "synthetic",
             }
 
@@ -375,7 +381,7 @@ async def test_guarded_successful_http_accounting_is_durable(
             json={
                 "id": f"generation-{len(protocol.prompts)}",
                 "model": MODEL,
-                "provider": "Morph",
+                "provider": "Synthetic",
                 "usage": {"cost": 0.000001},
                 "choices": [{"message": {"content": raw}}],
             },
@@ -420,6 +426,9 @@ async def test_guarded_successful_http_accounting_is_durable(
     assert await local_redis.hlen(key + ":reservations") == 0
     assert float(await local_redis.get(key)) == pytest.approx(0.0722179 + len(calls) * 0.000001)
     assert all(row["cost_nusd"] == 1000 and row["request_id"] == request_id for row in calls)
+    with budget._connect() as db:
+        recorded = db.execute("SELECT sha256, snapshot FROM guard_price_snapshots").fetchall()
+    assert recorded == [(price_snapshot_sha256, json.dumps(price_snapshot, sort_keys=True))]
     artifact = tmp_path / "guarded-success.json"
     artifact.write_text(
         json.dumps({"calls": calls, "journal": budget.snapshot(), "live_completions": 0}, indent=2)

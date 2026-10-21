@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "owner_statement": "Rebind and run now",
+  "scope": "Start the paid primary collection of the frozen 120-case evaluation on October's remaining OpenRouter monthly headroom under the unchanged $2 cutoff.",
+  "partial_run_policy": "A partial run is accepted as unusable; do not resume it or present it as a complete evaluation.",
+  "minimum_verified_monthly_authority_usd": "1.367010808",
+  "preserved_safety": [
+    "Keep the monthly Redis ledger read-only and never initialize, reset, lower, delete, or reconcile its keys.",
+    "Verify the exact environment before the cohort and recheck current key usage and endpoint-wide conservative prices before every provider request.",
+    "Count and durably journal every provider request; retain unknown charges and stop on any financial uncertainty.",
+    "Never exceed the unchanged $2 monthly cutoff.",
+    "Do not resume a failed or partial run.",
+    "Do not change the frozen contract, cohort, serving code, production settings, aliases, or deployment state."
+  ],
+  "production_budget_configuration_changed": false,
+  "production_launch_approved": false,
+  "deployment_authorized": false,
+  "alias_promotion_authorized": false
+}

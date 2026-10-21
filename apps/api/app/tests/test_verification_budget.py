@@ -112,7 +112,7 @@ def test_new_aggregate_hard_cap_cannot_be_lifted_by_historical_direction(tmp_pat
     budget = ledger(tmp_path, selected=120)
     direction = (
         Path(__file__).resolve().parents[4]
-        / "docs/release-evidence/implementation-20261001/confirmed-spending-direction.json"
+        / "docs/release-evidence/evaluation-contract-20261021/owner-spending-direction.json"
     )
     budget.apply_spending_direction(direction)
     for stage in ("smoke", "primary", "shadow"):
@@ -148,7 +148,7 @@ def test_aggregate_hard_cap_includes_inherited_failed_exposure(tmp_path):
     budget = VerificationBudget(path, binding="inherited-cap")
     budget.apply_spending_direction(
         Path(__file__).resolve().parents[4]
-        / "docs/release-evidence/implementation-20261001/confirmed-spending-direction.json"
+        / "docs/release-evidence/evaluation-contract-20261021/owner-spending-direction.json"
     )
     ticket = budget.reserve("shadow", 1)
     with pytest.raises(ValueError, match="cap exceeded"):
@@ -163,7 +163,7 @@ async def test_aggregate_hard_cap_reserves_concurrent_stages_before_send(tmp_pat
     budget = ledger(tmp_path, selected=120)
     budget.apply_spending_direction(
         Path(__file__).resolve().parents[4]
-        / "docs/release-evidence/implementation-20261001/confirmed-spending-direction.json"
+        / "docs/release-evidence/evaluation-contract-20261021/owner-spending-direction.json"
     )
     sent = []
 

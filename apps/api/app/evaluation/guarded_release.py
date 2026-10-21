@@ -1,18 +1,12 @@
-"""Private, fail-closed original120 admission and counted collection.
+"""Private, fail-closed admission and counted collection for the frozen 120-case evaluation.
 
-Run ``admit`` once into a new private goal directory, then ``collect`` for primary
-and shadow against that SAME goal. Admission is read-only: it does not initialize
-Redis, build indexes, promote aliases, modify the ordinary API, or send completions.
-Each collection re-admits current resources and every outbound payload rechecks
-metadata and monthly authority. Failed/partial runs cannot be resumed. Captured
-observations still require the unchanged independent semantic/release gates.
-An explicit, exact owner-authorized successor uses its own exclusive anchor;
-it inherits every counted request/charge and retains all original normal holds.
-Without both successor flags, the original no-new-attempt rule remains unchanged.
+Admission is read-only and sends no completions. Every run uses one private,
+durable goal; failed or partial runs cannot resume. Before each provider request
+the collector revalidates its environment, monthly ledger, and conservative
+endpoint-wide price snapshot. Captured observations still require independent
+semantic and release gates.
 
-The Docker socket is used ONLY for the fixed GET inspect whitelist below. A :ro
-socket mount does not itself restrict daemon permissions; never mount it in the
-ordinary API/web. This module performs no generic Docker calls or mutations.
+
 """
 
 from __future__ import annotations
@@ -23,8 +17,6 @@ import hashlib
 import json
 import math
 import os
-import re
-import sqlite3
 import time
 from collections.abc import Callable
 from contextlib import contextmanager
@@ -32,7 +24,7 @@ from contextvars import ContextVar
 from datetime import UTC, datetime
 from decimal import ROUND_CEILING, Decimal
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 from urllib.parse import urlsplit
 
 import httpx
@@ -51,92 +43,55 @@ from app.services import analyst_budget
 from app.services.release_evidence import evaluation_request_id
 
 VERSION = "2025-26.20260928.1"
-REVISION = "source-support-20261003-ac5018b"
-ROUTE = "morph/fp8"
-PROVIDER = "Morph"
-DESIGNATED_KEY_SHA256 = "b7258467823ff020470e6b01d5db23ea96fbad0f97701e3565f4f46ac05acb26"
+REVISION = "rev-20261020b"
+BUNDLE_SHA256: str = "549af2edd0d195eff60bb318bdc58a8c8e217ea0359c0684d492d5292dcb595b"
+DESIGNATED_KEY_SHA256 = "35d6d0521b6191980c586c6a7bb0b80721432ad53a68f6100f3d39e548029e8a"
+OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1"
 MONTHLY_CUTOFF = Decimal("2")
-NETWORK = "0d6a0006ed2a9185eff9933e8e2c81245a661554aa9b688cbb8afc13ac0babb1"
-NETWORK_NAME = "knicksiq-local-staging_default"
-EGRESS_NETWORK = "47227176f716f2c54ef2a024a316e2c558d8c13a7c470ef40a9cde56f0e55630"
-EGRESS_NETWORK_NAME = "knicksiq-local-staging_browser"
-RESOURCES = {
-    "postgres": (
-        "6ca6a3aa5b1403841a6284e7ab92295fc2e0f170d172d6e331863e8779d004a8",
-        "knicksiq-local-staging-postgres-1",
-        5432,
-    ),
-    "redis": (
-        "7034818f2d7dfc9e2ac091bd8a062a2e50cd0dca0c630e84f0d06e640ff84360",
-        "knicksiq-local-staging-redis-1",
-        6379,
-    ),
-    "qdrant": (
-        "713cc3a80d2f69903bc6520b3f44d2ea0ad3d23b819c92735081f51096928718",
-        "knicksiq-qdrant-release-20261003",
-        6333,
-    ),
-}
-POSTGRES_SYSTEM_ID = "7692066323950968866"
-GOLD = "source-support-20261003/gold-review/frozen-expectations.json"
-APPROVAL = "source-support-20261003/gold-review/evaluation-approval.json"
-HISTORY = "release-execution-20261003/historical-accounting.json"
-CANDIDATE = "release-execution-20261003/candidate-index"
-GOAL_ANCHOR = "release-execution-20261003/guarded-original120-goal.json"
-SUCCESSOR_AUTHORIZATION_SHA256 = "ad46e2cd9ce9b1bbd4142d6f156da6f81ca9c3e9d3c9ef956bb9dad067ba8dce"
-# Read-only owner safety inventory accompanying this one exact authorization.
-SUCCESSOR_MONTHLY_FLOOR_NUSD = 372_507_682
-KNOWN_COST_AUTHORIZATION_SHA256 = "327a6cc2e080c223858cca75b87402416c813eacb0e8528f85592793e74f9e0c"
-RECONCILIATION_AUTHORIZATION_SHA256 = (
-    "9210fcbf2d9311dfea2ffbaa07184084d89cfad74ed2f2c5a555f116b831113a"
-)
-ATLAS_AUTHORIZATION_SHA256 = "fae446a7af0a2b6fc86486046fc9450f6c7cb33417b646c26149bc0a35c450fc"
-ATLAS_ROUTE = "atlas-cloud/fp8"
-ATLAS_PROVIDER = "AtlasCloud"
-PRIOR_PROBE = (
-    "docker-staging-20261002/claim-value-format-20261002/review-format-fix/run-1/probe.json"
-)
-SOURCES = {
-    "bundle": (
-        "2025-26/reliability-approved-20260928.json.gz",
-        "549af2edd0d195eff60bb318bdc58a8c8e217ea0359c0684d492d5292dcb595b",
-    ),
-    "trajectories": (
-        "source-support-20261003/derived-source/e2e-final/approved/derived-scoring-events.jsonl",
-        "4baa15e256e050d713cb2d397a1ce0022390b116c4cff80ba368bf0079912174",
-    ),
-    "source_review": (
-        "source-support-20261003/derived-source/e2e-final/approved/derived-source-review.json",
-        "2229ca1f1b352059bbcc3b34b469aa8c0b1432f275a3198f5add98b341dfca33",
-    ),
-    "comparisons": (
-        "source-support-20261003/measure-comparisons/e2e-verified/approved/measure-comparisons.json",
-        "4ff9bfc6977c622b85e2074291dbf22addb9128203d2ee76338c5715456ab68b",
-    ),
-}
+MINIMUM_PROVIDER_MONTHLY_NUSD = 1_367_010_808
+GOLD = "docs/release-evidence/evaluation-contract-20261021/expectations.json"
+APPROVAL = "docs/release-evidence/evaluation-contract-20261021/evaluation-approval.json"
+GOAL_ANCHOR = "guarded-original120-goal.json"
+CONTRACT_SHA256 = "8da8be9d68a7111919d1e8d0d18d22da8bf8d3a7da34a7fe4688117cc37119f9"
 FROZEN = {
-    GOLD: "60184f109dd9d9f3cb1a68adf6d39f477711324792a4ff6aa75b12fd8eb15dfe",
-    APPROVAL: "4b685a6836f10585fe4284833ffc20c2ce589200ae3efd7f87838b7a99a7e867",
-    HISTORY: "8049c1ecd70507ca3d1c8491595402d794aa9885269689ceb2f634f0257fe825",
-    PRIOR_PROBE: "1e6802cc9daa80a1cab8df18101183b0b1f42f58ca24a129c46679ec3d70d4b7",
-    CANDIDATE + "/manifest.json": (
-        "0f41080ae853c125ea1c388977eac774a9f0117a0a9b5c29337f9dcc1cdc0515"
+    GOLD: CONTRACT_SHA256,
+    APPROVAL: "8c4877d50b1aff3a58a52df720c0df3a63f415e6b161e7c28b7fc8b03ab5a289",
+}
+IDENTITY_FILES = {
+    "manifest.json": "34e6ba6d8e8dcb57f124b800dac97431dcf3cb084bc9a8556efacc6ee5c8bc76",
+    "qdrant_payloads.jsonl": "2331f5ef4f89cf37d029db923e9679e5dc74e3e04e1f1ad904adab381ab7de4d",
+    "possession_chunks.jsonl": "4d125a4f0515ee19cccc534b35c37b91afd79dc72cdb4beb0798a6146271a00b",
+    "archive_units.jsonl": "ad23f0cf90f21c0b94bba8e36e815d03a05afe60c224fc616b210b618a3051fd",
+    "games_table.json": "7d5762d9d2a79616913cdb09784fff7f240db8954d196a9297acb935c443a7ab",
+}
+SERVING_CODE_SHA256 = {
+    "app/services/rag_index.py": (
+        "5482577b76fbec7491a6908eac0b30d0463d251caf025914050f58499efcb1b1"
     ),
-    CANDIDATE + "/preparation-receipt.json": (
-        "6bc71611cc99ffb5fdcf41b3a1aef33c2880062fe3d5dbaf517ae3b397821189"
+    "app/services/qdrant_client.py": (
+        "46f0cf3a5b6ba21e72a01fb09acd1b66041e8a37992b9df2ba0330e434bc53ba"
     ),
-    CANDIDATE
-    + "/qdrant_payloads.jsonl": "2331f5ef4f89cf37d029db923e9679e5dc74e3e04e1f1ad904adab381ab7de4d",
-    CANDIDATE
-    + "/archive_units.jsonl": "8175ec4ea95f6c5005bd7c49f34c21bfc8ce15b5500176cc41656b2b5221e8b3",
-    "source-support-20261003/source-units/cohort-inputs.json": (
-        "d3f1ab15468b1b5abf21d091142f111623b77ad087396f6810478ccb8c0eedb8"
+    "app/services/archive_units.py": (
+        "399326fc83491ff03cd461ba2f5de902dd1f975c1f31fff1cf27c2fb39599f10"
     ),
-    **{path: sha for path, sha in SOURCES.values()},
+    "app/services/possession_chunks.py": (
+        "066462a902ae7ace846e33caae809fef7118f82144ddb66ec4c4540ee86bd4a8"
+    ),
+}
+ROUTING_POLICY: dict[str, str | bool] = {
+    "allow_fallbacks": True,
+    "sort": "latency",
+    "require_parameters": True,
 }
 COLLECTIONS = {
-    base: base + "__2025_26_20260928_1__source_support_20261003_ac5018b"
+    base: base + "__2025_26_20260928_1__rev_20261020b"
     for base in ("knicks_possessions", "knicks_games", "knicks_box_scores", "knicks_reports")
+}
+IDENTITY_COUNTS = {
+    "knicks_possessions": 15864,
+    "knicks_games": 130,
+    "knicks_box_scores": 2970,
+    "knicks_reports": 101,
 }
 _turn: ContextVar[dict | None] = ContextVar("guarded_release_turn", default=None)
 
@@ -185,16 +140,13 @@ def durable_bytes(path: Path, content: bytes) -> None:
 
 
 class MonthlyLedger:
-    """Read existing monthly authority; never initialize/reconcile/reset it."""
+    """Read existing monthly authority; never initialize, reset, or mutate it."""
 
-    def __init__(
-        self, *, month: str, historical_floor: str, retained: dict[str, str] | None = None
-    ):
+    def __init__(self, *, month: str, historical_floor: str):
         self.month = month
         self.key = "ai-budget:" + month
         self.floor = money(historical_floor)
         self.run_id: str | None = None
-        self.retained = dict(retained or {})
 
     async def read(self, owned: dict[str, str] | None = None) -> dict:
         require(self.month == f"{datetime.now(UTC):%Y-%m}", "UTC accounting month changed")
@@ -220,21 +172,14 @@ class MonthlyLedger:
             }
             require(reservation_ttl in {-1, -2}, "Expiring normal reservations")
             active = owned or {}
-            require(
-                not (self.retained.keys() & active.keys()), "Retained hold reused by active turn"
-            )
-            require(
-                current == {**self.retained, **active},
-                "Unresolved, changed retained, or foreign monthly reservations",
-            )
+            require(current == active, "Foreign or unresolved monthly reservations")
             require(
                 nusd(self.floor) <= nusd(total) and total < MONTHLY_CUTOFF,
                 "Historical charge floor or real $2 cutoff violated",
             )
-            require(
-                sum((money(value) for value in current.values()), Decimal(0)) <= total,
-                "Reservations exceed monthly authority",
-            )
+            reserved = sum((money(value) for value in current.values()), Decimal(0))
+            require(reserved <= total, "Reservations exceed monthly authority")
+            require(total + reserved <= MONTHLY_CUTOFF, "Monthly reservations exceed the $2 cutoff")
             server = await redis.info("server")
             identity = server.get("run_id")
             require(isinstance(identity, str) and bool(identity), "Missing Redis server identity")
@@ -284,26 +229,19 @@ class Admission:
         *,
         evidence_root: Path,
         artifact_dir: Path,
+        bundle_path: Path,
+        candidate_identity_dir: Path,
         api_key: str,
         ledger: MonthlyLedger,
-        route: str = ROUTE,
-        provider: str = PROVIDER,
-        route_authorization_sha256: str | None = None,
     ):
-        require(
-            (route, provider, route_authorization_sha256) == (ROUTE, PROVIDER, None)
-            or (route, provider, route_authorization_sha256)
-            == (ATLAS_ROUTE, ATLAS_PROVIDER, ATLAS_AUTHORIZATION_SHA256),
-            "Provider route lacks the exact owner recipient/rebind authorization",
-        )
-        self.route, self.provider = route, provider
-        self.route_authorization_sha256 = route_authorization_sha256
-        self.root, self.artifact_dir = evidence_root.resolve(), artifact_dir
+        self.root = evidence_root.resolve()
+        self.artifact_dir = artifact_dir
+        self.bundle_path = bundle_path.resolve()
+        self.identity_dir = candidate_identity_dir.resolve()
         self.api_key, self.ledger = api_key, ledger
-        self.contract_sha256 = FROZEN[GOLD]
+        self.contract_sha256 = CONTRACT_SHA256
         self.cases = load_contract(self.root / GOLD, self.root / APPROVAL)["cases"]
-        self.manifest = json.loads((self.root / CANDIDATE / "manifest.json").read_text())
-        self.receipt = json.loads((self.root / CANDIDATE / "preparation-receipt.json").read_text())
+        self.manifest = json.loads((self.identity_dir / "manifest.json").read_text())
         self.metadata_count = 0
         self.resource_binding: dict | None = None
         self.alias_binding: dict | None = None
@@ -313,22 +251,38 @@ class Admission:
         for relative, expected in FROZEN.items():
             require(
                 file_hash(self.root / relative) == expected,
-                "Frozen source/contract/approval evidence changed: " + relative,
+                "Frozen contract or approval changed: " + relative,
             )
         require(
-            self.receipt["source_hashes"] == {key: sha for key, (_, sha) in SOURCES.items()},
-            "Comparison/archive source identity changed",
+            file_hash(self.bundle_path) == BUNDLE_SHA256,
+            "Approved dataset bundle changed",
         )
+        for relative, expected in IDENTITY_FILES.items():
+            require(
+                file_hash(self.identity_dir / relative) == expected,
+                "Candidate identity payload changed: " + relative,
+            )
+        for relative, expected in SERVING_CODE_SHA256.items():
+            require(
+                file_hash(self.root / "apps/api" / relative) == expected,
+                "Candidate serving source differs from the verified tested commit: " + relative,
+            )
         require(
             self.manifest["candidate_aliases"] == COLLECTIONS
             and self.manifest["data_version"] == VERSION
             and self.manifest["index_revision"] == REVISION
-            and not self.manifest["aliases_promoted"]
-            and not self.manifest["qdrant_reset"]
+            and self.manifest["source"] == "cached_db_only"
             and self.manifest["games"] == 101
             and self.manifest["events"] == 46500
-            and self.manifest["archive_source_units"] == 184,
-            "Candidate namespace or original workload coverage differs",
+            and self.manifest["possession_chunks"] == 15864
+            and self.manifest["archive_source_units"] == 49
+            and self.manifest["qdrant_supporting_counts"]
+            == {"knicks_games": 130, "knicks_box_scores": 2970, "knicks_reports": 101}
+            and self.manifest["qdrant_upserted"] == 0
+            and not self.manifest["aliases_promoted"]
+            and not self.manifest["qdrant_reset"]
+            and set(self.manifest["qdrant_reused_collections"]) == set(COLLECTIONS.values()),
+            "Candidate namespace, source, or workload identity differs",
         )
         load_contract(self.root / GOLD, self.root / APPROVAL)
 
@@ -342,9 +296,16 @@ class Admission:
             and settings.dataset_season == "2025-26"
             and settings.ai_provider == "none"
             and not settings.ai_api_key
+            and settings.ai_base_url.rstrip("/") == OPENROUTER_BASE_URL
             and settings.ai_chat_model == MODEL
+            and settings.ai_reasoning_effort == "none"
+            and settings.ai_request_timeout_seconds == 20
+            and settings.openrouter_summary_model == MODEL
+            and settings.openrouter_provider_route is None
+            and settings.openrouter_max_prompt_price is None
+            and settings.openrouter_max_completion_price is None
+            and settings.openrouter_allowed_models == [MODEL]
             and settings.openrouter_monthly_cutoff_usd == 2
-            and settings.ai_reasoning_effort is None
             and settings.analyst_evidence_loop_enabled
             and settings.rag_archive_source_units_enabled
             and settings.rag_qdrant_enabled
@@ -363,11 +324,12 @@ class Admission:
             and settings.analyst_deadline_seconds == 30
             and settings.analyst_investigation_seconds == 20
             and settings.analyst_call_reservation_usd == 0.01
+            and settings.rag_generation_max_output_tokens == 500
             and settings.public_chat_rate_limit_per_minute == 10
             and settings.public_chat_rate_limit_per_day == 100
             and settings.analysis_shadow_sample_rate == 0.1
             and settings.analysis_answer_mode == ("llm_primary" if mode == "primary" else "shadow"),
-            "Configuration differs from isolated original release contract",
+            "Configuration differs from the isolated primary-release contract",
         )
         require(
             os.environ.get("HF_HUB_OFFLINE") == "1"
@@ -389,98 +351,6 @@ class Admission:
                 getattr(settings, attribute) == COLLECTIONS[base],
                 "Runtime does not use inactive physical candidate",
             )
-        require(
-            settings.openrouter_allowed_models in ([], [MODEL]), "Foreign provider/model allowlist"
-        )
-
-    async def docker_identity(self) -> dict:
-        """Hard GET-only, exact inspect endpoints; no generic daemon request seam."""
-        # Docker's container network mode inherits PostgreSQL's hostname.
-        # The controller supplies this verifier's full daemon identity at exec.
-        own = os.environ.get("KNICKSIQ_VERIFIER_CONTAINER_ID", "")
-        require(
-            re.fullmatch(r"[a-f0-9]{64}", own) is not None,
-            "Missing exact controller-bound verifier container identity",
-        )
-        endpoints = {"/networks/" + NETWORK}
-        endpoints.add("/networks/" + EGRESS_NETWORK)
-        endpoints.update(
-            "/containers/" + identity + "/json" for identity, _, _ in RESOURCES.values()
-        )
-        endpoints.add("/containers/" + own + "/json")
-        transport = httpx.AsyncHTTPTransport(uds="/var/run/docker.sock", retries=0)
-        async with httpx.AsyncClient(
-            transport=transport,
-            base_url="http://docker",
-            follow_redirects=False,
-            timeout=5,
-            trust_env=False,
-        ) as client:
-
-            async def inspect(path: str) -> dict:
-                require(path in endpoints, "Docker inspect endpoint not authorized")
-                response = await client.get(path)
-                response.raise_for_status()
-                return response.json()
-
-            network = await inspect("/networks/" + NETWORK)
-            require(
-                network["Id"] == NETWORK and network["Name"] == NETWORK_NAME,
-                "Wrong isolated Docker network",
-            )
-            result = {}
-            for role, (identity, name, _) in RESOURCES.items():
-                item = await inspect("/containers/" + identity + "/json")
-                attached = item["NetworkSettings"]["Networks"].get(NETWORK_NAME, {})
-                require(
-                    item["Id"] == identity
-                    and item["Name"] == "/" + name
-                    and item["State"]["Running"]
-                    and attached.get("NetworkID") == NETWORK
-                    and bool(attached.get("IPAddress")),
-                    "Wrong or inactive isolated Docker resource",
-                )
-                result[role] = {
-                    "container_id": identity,
-                    "image_id": item["Image"],
-                    "address": attached["IPAddress"],
-                }
-            verifier = await inspect("/containers/" + own + "/json")
-            shared_postgres = verifier["HostConfig"]["NetworkMode"] in {
-                "container:" + RESOURCES["postgres"][0],
-                "container:" + RESOURCES["postgres"][1],
-            }
-            attachments = verifier["NetworkSettings"]["Networks"]
-            isolated_egress = (
-                set(attachments) == {NETWORK_NAME, EGRESS_NETWORK_NAME}
-                and attachments[NETWORK_NAME]["NetworkID"] == NETWORK
-                and attachments[EGRESS_NETWORK_NAME]["NetworkID"] == EGRESS_NETWORK
-            )
-            require(
-                verifier["Id"] == own
-                and verifier["State"]["Running"]
-                and (shared_postgres or isolated_egress),
-                "Verifier is not bound to exact isolated resource and egress networks",
-            )
-            if isolated_egress:
-                egress = await inspect("/networks/" + EGRESS_NETWORK)
-                require(
-                    egress["Id"] == EGRESS_NETWORK
-                    and egress["Name"] == EGRESS_NETWORK_NAME
-                    and not egress["Internal"],
-                    "Wrong verifier-only outbound network",
-                )
-            result["postgres"]["sql_address"] = (
-                "127.0.0.1" if shared_postgres else result["postgres"]["address"]
-            )
-            result["verifier"] = {
-                "container_id": own,
-                "image_id": verifier["Image"],
-                "network_mode": verifier["HostConfig"]["NetworkMode"],
-                "egress_network_id": EGRESS_NETWORK if isolated_egress else None,
-            }
-            # Docker environment arrays can contain secrets; never persist them.
-            return result
 
     async def verify_resources(self, *, full: bool) -> dict:
         from app.core.db import AsyncSessionLocal
@@ -497,66 +367,67 @@ class Admission:
         )
 
         settings = get_settings()
-        resources = await self.docker_identity()
         database = urlsplit(settings.effective_db_url)
         require(
             database.scheme == "postgresql+asyncpg"
-            and database.hostname == resources["postgres"]["sql_address"]
-            and database.port == 5432
+            and database.hostname in {"localhost", "127.0.0.1"}
+            and database.port == 55500
             and database.path == "/knicksiq"
             and database.username == "knicksiq",
-            "Wrong isolated SQL connection",
+            "Wrong isolated PostgreSQL endpoint",
         )
-        for role, url in (
-            ("redis", settings.redis_url or ""),
-            ("qdrant", settings.qdrant_url or ""),
-        ):
-            parsed = urlsplit(url)
-            require(
-                parsed.scheme == ("redis" if role == "redis" else "http")
-                and parsed.hostname in {RESOURCES[role][1], resources[role]["address"]}
-                and parsed.port == RESOURCES[role][2]
-                and not parsed.query
-                and not parsed.fragment
-                and parsed.path in ({"/14"} if role == "redis" else {"", "/"}),
-                "Runtime endpoint is not the exact admitted Docker resource",
-            )
+        redis = urlsplit(settings.redis_url or "")
+        require(
+            redis.scheme == "redis"
+            and redis.hostname in {"localhost", "127.0.0.1"}
+            and redis.port == 56500
+            and redis.path == "/0"
+            and not redis.query
+            and not redis.fragment,
+            "Wrong isolated Redis endpoint",
+        )
+        qdrant_url = urlsplit(settings.qdrant_url or "")
+        require(
+            qdrant_url.scheme == "https"
+            and bool(qdrant_url.hostname)
+            and qdrant_url.port in {None, 443, 6333}
+            and qdrant_url.username is None
+            and qdrant_url.password is None
+            and qdrant_url.path in {"", "/"}
+            and not qdrant_url.query
+            and not qdrant_url.fragment,
+            "Candidate Qdrant must be the admitted HTTPS cloud endpoint",
+        )
         async with AsyncSessionLocal() as db:
             identity = (
                 await db.execute(
                     text(
                         "SELECT system_identifier::text, current_database(), current_user, "
-                        "host(inet_server_addr()) FROM pg_control_system()"
+                        "host(inet_server_addr()), inet_server_port() FROM pg_control_system()"
                     )
                 )
             ).one()
             require(
-                tuple(identity)
-                == (
-                    POSTGRES_SYSTEM_ID,
-                    "knicksiq",
-                    "knicksiq",
-                    resources["postgres"]["sql_address"],
-                ),
-                "Wrong PostgreSQL cluster/SQL identity",
+                tuple(identity[1:3]) == ("knicksiq", "knicksiq")
+                and isinstance(identity[0], str)
+                and bool(identity[0])
+                and isinstance(identity[3], str)
+                and bool(identity[3])
+                and type(identity[4]) is int
+                and identity[4] == 5432,
+                "Wrong PostgreSQL cluster or SQL identity",
             )
             release = (
                 await db.execute(select(DatasetRelease).where(DatasetRelease.status == "active"))
             ).scalar_one()
             source = await db.get(ComparisonSource, release.id)
             require(
-                release.id == self.receipt["release_id"]
-                and release.version == VERSION
+                release.version == VERSION
                 and release.validation_passed
-                and release.manifest_sha256 == SOURCES["bundle"][1]
+                and release.manifest_sha256 == BUNDLE_SHA256
                 and source is not None
-                and source.bundle_sha256 == SOURCES["bundle"][1]
-                and source.source_sha256 == SOURCES["comparisons"][1]
-                and source.source_review_sha256 == SOURCES["source_review"][1]
-                and source.trajectories_sha256 == SOURCES["trajectories"][1]
-                and source.facts_sha256 == self.receipt["source_facts_sha256"]
-                and source.bindings_sha256 == self.receipt["source_bindings_sha256"],
-                "Active archive/comparison source identity changed",
+                and source.bundle_sha256 == release.manifest_sha256,
+                "Active dataset or approved bundle identity changed",
             )
             assert source is not None
             require(
@@ -580,28 +451,23 @@ class Admission:
         qdrant = get_qdrant_client()
         aliases = {item.alias_name: item.collection_name for item in qdrant.get_aliases().aliases}
         require(
-            not any(target in aliases for target in COLLECTIONS.values()),
+            not any(target in aliases.values() for target in COLLECTIONS.values()),
             "Physical candidate replaced by an alias",
         )
         if self.alias_binding is not None:
             require(aliases == self.alias_binding, "Qdrant aliases changed during guarded goal")
-        counts = {
-            "knicks_possessions": 15864,
-            "knicks_games": 265,
-            "knicks_box_scores": 2970,
-            "knicks_reports": 101,
-        }
         for base, target in COLLECTIONS.items():
             if full:
                 assert self.records is not None
                 require(
-                    len(self.records[base]) == counts[base], "Source-derived point coverage changed"
+                    len(self.records[base]) == IDENTITY_COUNTS[base],
+                    "Source-derived point coverage changed",
                 )
                 validate_candidate_identity(
                     target, VERSION, self.records[base], client=NormalizedCandidateClient(qdrant)
                 )
             else:
-                validate_candidate_collection(target, VERSION, counts[base], client=qdrant)
+                validate_candidate_collection(target, VERSION, IDENTITY_COUNTS[base], client=qdrant)
                 info = qdrant.get_collection(target)
                 for field, kind in {**PAYLOAD_INDEX_TYPES, **UNIT_PAYLOAD_INDEX_TYPES}.items():
                     index = info.payload_schema.get(field)
@@ -635,12 +501,9 @@ class Admission:
                     "Candidate probe point embedding changed",
                 )
                 assert isinstance(vector, list)
+                typed_vector = cast(list[float], vector)
                 require(
-                    abs(
-                        sum(value * value for value in vector if isinstance(value, (int, float)))
-                        - 1
-                    )
-                    < 0.001,
+                    abs(sum(value * value for value in typed_vector) - 1) < 0.001,
                     "Candidate probe point embedding changed",
                 )
         if full:
@@ -657,12 +520,22 @@ class Admission:
                 "Local embedding model unavailable, wrong-dimensional, or unnormalized",
             )
         result = {
-            "docker": resources,
-            "postgres_system_id": POSTGRES_SYSTEM_ID,
-            "release_id": self.receipt["release_id"],
+            "postgres": {
+                "system_identifier": identity[0],
+                "database": identity[1],
+                "user": identity[2],
+                "server_address": identity[3],
+                "server_port": identity[4],
+                "runtime_host": database.hostname,
+                "runtime_port": database.port,
+            },
+            "redis": {"runtime_host": redis.hostname, "runtime_port": redis.port, "database": 0},
+            "qdrant_host": qdrant_url.hostname,
+            "release_id": release.id,
             "data_version": VERSION,
-            "source_hashes": self.receipt["source_hashes"],
+            "bundle_sha256": BUNDLE_SHA256,
             "candidate_collections": COLLECTIONS,
+            "candidate_identity_files": IDENTITY_FILES,
             "qdrant_aliases": aliases,
         }
         if self.resource_binding is not None:
@@ -689,10 +562,10 @@ class Admission:
                 ("knicks_games", "knicks_box_scores", "knicks_reports"), canonical, strict=True
             )
         }
-        with (self.root / CANDIDATE / "qdrant_payloads.jsonl").open() as handle:
+        with (self.identity_dir / "qdrant_payloads.jsonl").open() as handle:
             records["knicks_possessions"] = [json.loads(line) for line in handle if line.strip()]
         units = await build_archive_units(db, games, VERSION)
-        require(len(units) == 184, "Incomplete source-aware index population")
+        require(len(units) == 49, "Incomplete source-aware index population")
         for unit in units:
             target = (
                 "knicks_games"
@@ -719,97 +592,223 @@ class Admission:
     async def provider_metadata(self) -> dict:
         observed = {}
         started = time.monotonic()
+        endpoints = (
+            ("key", "key"),
+            ("credits", "credits"),
+            ("model", "models"),
+            ("routes", "models/" + MODEL + "/endpoints"),
+        )
         async with httpx.AsyncClient(follow_redirects=False, timeout=10, trust_env=False) as client:
-            endpoints = (
-                ("key", "key"),
-                ("credits", "credits"),
-                ("model", "models"),
-                ("routes", "models/" + MODEL + "/endpoints"),
-            )
-            # All four current snapshots remain mandatory. Fetch independent
-            # endpoints together so admission does not unnecessarily consume
-            # four network round trips inside the original model deadline.
             responses = await asyncio.gather(
                 *(
                     client.get(
-                        "https://openrouter.ai/api/v1/" + endpoint,
+                        OPENROUTER_BASE_URL + "/" + endpoint,
                         headers={"Authorization": "Bearer " + self.api_key},
                     )
                     for _, endpoint in endpoints
                 ),
                 return_exceptions=True,
             )
-            for (name, _), response in zip(endpoints, responses, strict=True):
-                if isinstance(response, BaseException):
-                    raise response
-                response.raise_for_status()
-                body = response.json()
-                require(isinstance(body, dict), "Malformed current provider metadata")
-                data = body.get("data")
-                if name == "model":
-                    require(isinstance(data, list), "Missing current model parameter catalog")
-                    models = [
-                        item for item in data if isinstance(item, dict) and item.get("id") == MODEL
-                    ]
-                    require(len(models) == 1, "Exact current model metadata unavailable")
-                    observed[name] = models[0]
-                else:
-                    require(isinstance(data, dict), "Malformed current provider metadata")
-                    observed[name] = data
+        for (name, _), response in zip(endpoints, responses, strict=True):
+            if isinstance(response, BaseException):
+                raise response
+            response.raise_for_status()
+            body = response.json()
+            require(isinstance(body, dict), "Malformed current provider metadata")
+            data = body.get("data")
+            if name == "model":
+                require(isinstance(data, list), "Missing current model parameter catalog")
+                models = [
+                    item for item in data if isinstance(item, dict) and item.get("id") == MODEL
+                ]
+                require(len(models) == 1, "Exact current model metadata unavailable")
+                observed[name] = models[0]
+            else:
+                require(isinstance(data, dict), "Malformed current provider metadata")
+                observed[name] = data
+
         model = observed["model"]
+        model_parameters = model.get("supported_parameters")
+        required_parameters = {"temperature", "max_tokens", "response_format", "reasoning"}
         require(
             model.get("canonical_slug") == "deepseek/deepseek-v4.1-flash-20260910"
             and isinstance(model.get("reasoning"), dict)
             and model["reasoning"].get("mandatory") is False
-            and "reasoning" in (model.get("supported_parameters") or [])
+            and isinstance(model_parameters, list)
+            and required_parameters <= set(model_parameters)
             and (model.get("architecture") or {}).get("output_modalities") == ["text"],
-            "Current model cannot admit explicitly disabled reasoning and bounded text output",
+            "Current model cannot admit the production text, JSON, and disabled-reasoning request",
         )
-        routes = observed["routes"]
+        route_data = observed["routes"]
         require(
-            routes.get("id") == MODEL and isinstance(routes.get("endpoints"), list),
-            "Missing pinned model routes",
+            route_data.get("id") == MODEL and isinstance(route_data.get("endpoints"), list),
+            "Missing current model endpoint prices",
         )
-        matches = [item for item in routes["endpoints"] if item.get("tag") == self.route]
-        require(len(matches) == 1, "Pinned provider endpoint unavailable")
-        route = matches[0]
+
+        price_fields = {
+            "prompt",
+            "completion",
+            "request",
+            "input_cache_read",
+            "input_cache_write",
+            "discount",
+        }
+        maximum_prompt = Decimal(0)
+        maximum_completion = Decimal(0)
+        maximum_request = Decimal(0)
+        endpoint_snapshot = []
+        active_provider_names = set()
+        compatible_active_endpoints = 0
+
+        def normalize_prices(prices: dict) -> tuple[dict, Decimal, Decimal, Decimal]:
+            require(
+                {"prompt", "completion"} <= prices.keys() and set(prices) <= price_fields,
+                "Missing or unknown billable endpoint price fields",
+            )
+            rates = {name: money(value) for name, value in prices.items()}
+            prompt = rates["prompt"] + max(
+                rates.get("input_cache_read", Decimal(0)),
+                rates.get("input_cache_write", Decimal(0)),
+            )
+            completion = rates["completion"]
+            request = rates.get("request", Decimal(0))
+            require(
+                prompt > 0 and completion > 0 and rates.get("discount", Decimal(0)) <= 1,
+                "Invalid endpoint price schedule",
+            )
+            return (
+                {name: str(value) for name, value in rates.items()},
+                prompt,
+                completion,
+                request,
+            )
+
+        routes = route_data["endpoints"]
+        require(bool(routes), "No model endpoints are available for conservative pricing")
+        seen_tags = set()
+        for route in routes:
+            require(
+                isinstance(route, dict)
+                and isinstance(route.get("tag"), str)
+                and bool(route["tag"])
+                and isinstance(route.get("provider_name"), str)
+                and bool(route["provider_name"])
+                and type(route.get("status")) is int,
+                "Malformed provider endpoint identity",
+            )
+            tag = route["tag"]
+            require(tag not in seen_tags, "Duplicate provider endpoint identity")
+            seen_tags.add(tag)
+            pricing = route.get("pricing")
+            require(isinstance(pricing, dict), "Missing provider endpoint price schedule")
+            assert isinstance(pricing, dict)
+            base = {name: value for name, value in pricing.items() if name != "overrides"}
+            normalized_base, prompt, completion, request = normalize_prices(base)
+            maximum_prompt = max(maximum_prompt, prompt)
+            maximum_completion = max(maximum_completion, completion)
+            maximum_request = max(maximum_request, request)
+            overrides = pricing.get("overrides", [])
+            require(isinstance(overrides, list), "Malformed provider price overrides")
+            assert isinstance(overrides, list)
+            normalized_overrides = []
+            for override in overrides:
+                require(
+                    isinstance(override, dict)
+                    and {"utc_start", "utc_end"} <= override.keys()
+                    and set(override) <= price_fields | {"utc_start", "utc_end"}
+                    and all(type(override[key]) is int for key in ("utc_start", "utc_end"))
+                    and all(
+                        0 <= override[key] <= 2359
+                        and override[key] // 100 < 24
+                        and override[key] % 100 < 60
+                        for key in ("utc_start", "utc_end")
+                    ),
+                    "Malformed provider time-dependent price override",
+                )
+                price_override = {
+                    name: value
+                    for name, value in override.items()
+                    if name not in {"utc_start", "utc_end"}
+                }
+                normalized, prompt, completion, request = normalize_prices(price_override)
+                maximum_prompt = max(maximum_prompt, prompt)
+                maximum_completion = max(maximum_completion, completion)
+                maximum_request = max(maximum_request, request)
+                normalized_overrides.append(
+                    {
+                        "utc_start": override["utc_start"],
+                        "utc_end": override["utc_end"],
+                        "prices": normalized,
+                    }
+                )
+            supported = route.get("supported_parameters") or []
+            require(
+                isinstance(supported, list) and all(isinstance(item, str) for item in supported),
+                "Malformed provider endpoint parameter list",
+            )
+            endpoint_limits = {
+                field: route.get(field)
+                for field in ("context_length", "max_prompt_tokens", "max_completion_tokens")
+            }
+            require(
+                all(
+                    value is None or (type(value) is int and value > 0)
+                    for value in endpoint_limits.values()
+                ),
+                "Malformed provider endpoint context/token limits",
+            )
+            if route["status"] == 0:
+                active_provider_names.add(route["provider_name"])
+                if required_parameters <= set(supported):
+                    compatible_active_endpoints += 1
+            endpoint_snapshot.append(
+                {
+                    "tag": tag,
+                    "provider_name": route["provider_name"],
+                    "status": route["status"],
+                    "quantization": route.get("quantization"),
+                    "supported_parameters": sorted(supported),
+                    **endpoint_limits,
+                    "pricing": {
+                        "base": normalized_base,
+                        "overrides": normalized_overrides,
+                    },
+                }
+            )
         require(
-            route.get("model_id") == MODEL
-            and route.get("provider_name") == self.provider
-            and route.get("quantization") == "fp8"
-            and route.get("status") == 0,
-            "Provider/model/quantization identity changed",
+            compatible_active_endpoints > 0,
+            "No active provider endpoint supports the production request parameters",
         )
-        pricing = route.get("pricing")
-        require(
-            isinstance(pricing, dict)
-            and {"prompt", "completion"} <= pricing.keys()
-            and set(pricing)
-            <= {
-                "prompt",
-                "completion",
-                "request",
-                "input_cache_read",
-                "input_cache_write",
-                "discount",
-            },
-            "Missing or unknown billable provider pricing fields",
-        )
-        rates = {key: money(value) for key, value in pricing.items()}
-        require(rates.get("discount", Decimal(0)) == 0, "Unbounded provider discount semantics")
-        require(rates["prompt"] > 0 and rates["completion"] > 0, "Unverified paid route pricing")
+        endpoint_snapshot.sort(key=lambda item: item["tag"])
+        price_snapshot = {
+            "observed_at": datetime.now(UTC).isoformat(),
+            "model": MODEL,
+            "endpoint_count": len(endpoint_snapshot),
+            "compatible_active_endpoint_count": compatible_active_endpoints,
+            "active_provider_names": sorted(active_provider_names),
+            "maximum_prompt_usd_per_token": str(maximum_prompt),
+            "maximum_completion_usd_per_token": str(maximum_completion),
+            "maximum_request_usd": str(maximum_request),
+            "endpoints": endpoint_snapshot,
+        }
+        price_snapshot_sha256 = digest(price_snapshot)
+
         credits = observed["credits"]
         credit = money(credits.get("total_credits")) - money(credits.get("total_usage"))
         require(credit > 0, "Insufficient actual account credit")
         key = observed["key"]
         monthly = money(key.get("usage_monthly"))
         require(
-            monthly < MONTHLY_CUTOFF and key.get("is_free_tier") is False,
-            "Wrong key tier or provider UTC-month cutoff exhausted",
+            monthly >= Decimal(MINIMUM_PROVIDER_MONTHLY_NUSD) / 1_000_000_000
+            and monthly < MONTHLY_CUTOFF
+            and key.get("is_free_tier") is False
+            and hashlib.sha256(self.api_key.encode()).hexdigest() == DESIGNATED_KEY_SHA256,
+            "Wrong provider key identity, monthly floor, or $2 cutoff exhausted",
         )
         remaining = key.get("limit_remaining")
         if remaining is not None:
             credit = min(credit, money(remaining))
+        require(credit > 0, "Insufficient remaining provider credit")
         result = {
             "observed_at": datetime.now(UTC).isoformat(),
             "fetch_elapsed_ms": round((time.monotonic() - started) * 1000),
@@ -819,18 +818,24 @@ class Admission:
                 for field in ("usage", "usage_monthly", "limit", "limit_remaining", "is_free_tier")
             },
             "remaining_account_credit_usd": str(credit),
-            "route": route,
-            "model": model,
+            "model": {
+                "canonical_slug": model["canonical_slug"],
+                "reasoning": model["reasoning"],
+                "supported_parameters": sorted(model_parameters),
+                "output_modalities": model["architecture"]["output_modalities"],
+            },
+            "provider_routing": ROUTING_POLICY,
+            "endpoint_price_snapshot": price_snapshot,
+            "endpoint_price_snapshot_sha256": price_snapshot_sha256,
             "completion_requests": 0,
-            "route_authorization_sha256": self.route_authorization_sha256,
         }
         result["parameter_documentation"] = {
             "reasoning": "https://openrouter.ai/docs/guides/best-practices/reasoning-tokens",
             "routing": "https://openrouter.ai/docs/guides/routing/provider-selection",
             "reasoning_policy": (
-                "Unified reasoning.enabled=false; model is not mandatory, and selected "
-                "endpoint advertises reasoning support. All visible output remains billed "
-                "and bounded by actual max_tokens."
+                "The request uses the serving adapter's reasoning.enabled=false switch. "
+                "Every listed endpoint price schedule, including time-dependent overrides, "
+                "is retained and the maximum is used without relying on discounts."
             ),
         }
         self.metadata_count += 1
@@ -841,7 +846,7 @@ class Admission:
 
     async def verify_environment(self, identity: dict) -> None:
         mode = identity["mode"]
-        require(mode in {"primary", "shadow"}, "Unsupported original workload mode")
+        require(mode in {"primary", "shadow"}, "Unsupported evaluation workload mode")
         self.verify_inputs()
         self.verify_settings(mode)
         expected_ids = [
@@ -858,16 +863,20 @@ class Admission:
                 if mode == "shadow"
                 else []
             ),
-            "Changed original case identities or fixed 10% shadow membership",
+            "Changed frozen case identities or fixed shadow membership",
         )
         self.resource_binding = await self.verify_resources(full=True)
         ledger = await self.ledger.read()
         metadata = await self.provider_metadata()
+        monthly = money(metadata["key"]["usage_monthly"])
         require(
-            money(ledger["amount_usd"]) >= money(metadata["key"]["usage_monthly"]),
-            "Provider monthly charges are not fully reconciled into Redis",
+            nusd(monthly) >= MINIMUM_PROVIDER_MONTHLY_NUSD
+            and money(ledger["amount_usd"]) >= monthly,
+            "Provider monthly usage exceeds the read-only Redis ledger authority",
         )
+        self.ledger.floor = max(self.ledger.floor, monthly)
         self.ledger.run_id = ledger["redis_run_id"]
+        ledger = await self.ledger.read()
         durable_json(
             self.artifact_dir / "environment-admission.json",
             {
@@ -875,6 +884,7 @@ class Admission:
                 "resources": self.resource_binding,
                 "ledger": ledger,
                 "provider_metadata_sha256": metadata["metadata_sha256"],
+                "endpoint_price_snapshot_sha256": metadata["endpoint_price_snapshot_sha256"],
                 "status": "admitted_no_completion",
             },
         )
@@ -887,23 +897,35 @@ class Admission:
         ledger = await self.ledger.read(owned)
         metadata = await self.provider_metadata()
         ledger = await self.ledger.read(owned)
-        route = metadata["route"]
+        monthly = money(metadata["key"]["usage_monthly"])
+        monthly_amount = money(ledger["amount_usd"])
         require(
-            set(payload)
-            <= {
-                "model",
-                "messages",
-                "temperature",
-                "max_tokens",
-                "provider",
-                "response_format",
-                "reasoning",
-            }
+            nusd(monthly) >= MINIMUM_PROVIDER_MONTHLY_NUSD
+            and monthly_amount >= monthly
+            and monthly_amount
+            + sum((money(value) for value in ledger["reservations"].values()), Decimal(0))
+            <= MONTHLY_CUTOFF,
+            "Current provider charges or Redis reservations exceed verified authority",
+        )
+        settings = get_settings()
+        expected_fields = {
+            "model",
+            "messages",
+            "temperature",
+            "max_tokens",
+            "provider",
+            "response_format",
+            "reasoning",
+        }
+        require(
+            set(payload) == expected_fields
             and payload.get("model") == MODEL
             and payload.get("temperature") == 0
             and type(payload.get("max_tokens")) is int
-            and 0 < payload["max_tokens"] <= 1200,
-            "Actual payload has unbounded/foreign parameters",
+            and payload["max_tokens"] == settings.rag_generation_max_output_tokens
+            and payload["provider"] == ROUTING_POLICY
+            and payload["reasoning"] == {"enabled": False},
+            "Actual payload differs from bounded production model/routing settings",
         )
         messages = payload.get("messages")
         require(
@@ -916,80 +938,66 @@ class Admission:
             ),
             "Actual payload is not bounded text-only analyst input",
         )
-        assert isinstance(messages, list)
-        require("reasoning" not in payload, "Unbounded reasoning override")
-        # Unified enabled=false is the documented disable switch. Unlike an
-        # unsupported effort='none', it does not invent an accepted effort level.
-        # Seal BEFORE payload hashing, counted reservation, or transmission.
-        payload["reasoning"] = {"enabled": False}
-        parameters = {"temperature", "max_tokens", "response_format", "reasoning"}
-        format_type = payload["response_format"].get("type")
+        response_format = payload.get("response_format")
+        require(isinstance(response_format, dict), "Missing structured output contract")
+        assert isinstance(response_format, dict)
+        format_type = response_format.get("type")
         require(format_type in {"json_object", "json_schema"}, "Unbounded provider response format")
+        assert format_type in {"json_object", "json_schema"}
+        if format_type == "json_object":
+            require(set(response_format) == {"type"}, "Unexpected JSON-object response options")
+        assert isinstance(messages, list)
+        parameters = {"temperature", "max_tokens", "response_format", "reasoning"}
         if format_type == "json_schema":
             parameters.add("structured_outputs")
+        endpoint_snapshot = metadata["endpoint_price_snapshot"]
+        model_parameters = set(metadata["model"]["supported_parameters"])
         require(
-            parameters <= set(route.get("supported_parameters") or [])
-            and parameters <= set(metadata["model"].get("supported_parameters") or []),
-            "Current model/provider lacks actual parameter support",
+            parameters <= model_parameters,
+            "Current model lacks actual request parameter support",
         )
-        # UTF-8 bytes upper-bound text tokens; account separately for message and
-        # schema framing. No inferred chars/4 ratio and no optimistic cache credit.
         input_tokens = sum(len(message["content"].encode()) + 64 for message in messages)
-        input_tokens += (
-            len(json.dumps(payload["response_format"], ensure_ascii=False).encode()) + 512
-        )
+        input_tokens += len(json.dumps(response_format, ensure_ascii=False).encode()) + 512
         output_tokens = payload["max_tokens"]
+        compatible = []
+        for endpoint in endpoint_snapshot["endpoints"]:
+            if endpoint["status"] != 0 or not parameters <= set(endpoint["supported_parameters"]):
+                continue
+            context_length = endpoint.get("context_length")
+            if type(context_length) is not int or input_tokens + output_tokens > context_length:
+                continue
+            if any(
+                type(endpoint.get(field)) is int and needed > endpoint[field]
+                for field, needed in (
+                    ("max_prompt_tokens", input_tokens),
+                    ("max_completion_tokens", output_tokens),
+                )
+            ):
+                continue
+            compatible.append(endpoint)
         require(
-            type(route.get("context_length")) is int
-            and input_tokens + output_tokens <= route["context_length"],
-            "Provider context bound exceeded",
+            bool(compatible),
+            "No active endpoint admits this payload's parameters and context bound",
         )
-        for field, needed in (
-            ("max_prompt_tokens", input_tokens),
-            ("max_completion_tokens", output_tokens),
-        ):
-            limit = route.get(field)
-            require(
-                limit is None or (type(limit) is int and needed <= limit),
-                "Provider token limit incompatible",
-            )
-        rates = {key: money(value) for key, value in route["pricing"].items()}
-        prompt_rate = rates["prompt"] + max(
-            rates.get("input_cache_read", Decimal(0)), rates.get("input_cache_write", Decimal(0))
-        )
-        bound = (
-            input_tokens * prompt_rate
-            + output_tokens * rates["completion"]
-            + rates.get("request", Decimal(0))
+        prompt_rate = money(endpoint_snapshot["maximum_prompt_usd_per_token"])
+        completion_rate = money(endpoint_snapshot["maximum_completion_usd_per_token"])
+        request_rate = money(endpoint_snapshot["maximum_request_usd"])
+        bound = input_tokens * prompt_rate + output_tokens * completion_rate + request_rate
+        require(
+            bound > 0 and bound <= money(settings.analyst_call_reservation_usd),
+            "Actual payload exceeds the normal analyst reservation",
         )
         require(
-            bound > 0 and bound <= money(get_settings().analyst_call_reservation_usd),
-            "Actual payload exceeds normal analyst reservation",
+            money(metadata["remaining_account_credit_usd"]) >= bound
+            and monthly + bound <= MONTHLY_CUTOFF
+            and monthly_amount + bound <= MONTHLY_CUTOFF,
+            "Actual provider funding or $2 monthly headroom unavailable",
         )
-        require(
-            money(ledger["amount_usd"]) >= money(metadata["key"]["usage_monthly"])
-            and money(metadata["remaining_account_credit_usd"]) >= bound
-            and money(metadata["key"]["usage_monthly"]) + bound <= MONTHLY_CUTOFF,
-            "Actual provider funding/monthly headroom unavailable",
-        )
-        # This dict is the one the existing adapter transmits. Seal the route after
-        # reading fresh bounds, with no fallback/model router or parameter ignore.
-        payload["provider"] = {
-            "only": [self.route],
-            "order": [self.route],
-            "allow_fallbacks": False,
-            "require_parameters": True,
-            "quantizations": ["fp8"],
-            "max_price": {
-                "prompt": float(rates["prompt"] * 1_000_000),
-                "completion": float(rates["completion"] * 1_000_000),
-                "request": float(rates.get("request", Decimal(0))),
-            },
-        }
         return {
             "bound_nusd": nusd(bound),
-            "route": self.route,
-            "provider": self.provider,
+            "provider_routing": ROUTING_POLICY,
+            "price_snapshot_sha256": metadata["endpoint_price_snapshot_sha256"],
+            "endpoint_price_snapshot": endpoint_snapshot,
             "metadata_sha256": metadata["metadata_sha256"],
             "input_token_bound": input_tokens,
             "output_token_bound": output_tokens,
@@ -1005,21 +1013,43 @@ class GuardedTransport(httpx.AsyncBaseTransport):
     async def handle_async_request(self, request: httpx.Request) -> httpx.Response:
         session = self.session
         turn = _turn.get()
-        require(
-            turn is not None and turn.get("prepared") is not None,
-            "Uncounted provider transport invocation",
-        )
+        require(turn is not None, "Provider request has no exact bound evaluation turn")
         assert turn is not None
-        prepared = turn.pop("prepared")
+        prepared = turn.pop("prepared", None)
+        require(isinstance(prepared, dict), "Provider request lacks verified payload bounds")
+        assert isinstance(prepared, dict)
         require(
             request.method == "POST"
-            and str(request.url) == "https://openrouter.ai/api/v1/chat/completions"
-            and request.headers.get("authorization") == "Bearer " + session.api_key
-            and digest(json.loads(request.content)) == prepared["payload_sha256"],
+            and str(request.url) == f"{OPENROUTER_BASE_URL}/chat/completions"
+            and request.headers.get("authorization") == f"Bearer {session.api_key}"
+            and request.headers.get("content-type", "").split(";")[0] == "application/json",
+            "Actual outbound request differs from verified provider identity",
+        )
+        payload = json.loads(request.content)
+        require(
+            isinstance(payload, dict)
+            and digest(payload) == prepared["payload_sha256"]
+            and payload.get("model") == MODEL
+            and payload.get("provider") == ROUTING_POLICY
+            and prepared["provider_routing"] == ROUTING_POLICY,
             "Actual outbound request differs from verified payload/identity",
         )
+        ticket = current_ticket.get()
+        require(type(ticket) is int, "Missing exact counted provider ticket")
+        assert isinstance(ticket, int)
         with session.budget._connect() as db:
-            ticket = current_ticket.get()
+            price_row = db.execute(
+                "SELECT snapshot FROM guard_price_snapshots WHERE sha256=?",
+                (prepared["price_snapshot_sha256"],),
+            ).fetchone()
+            require(price_row is not None, "Missing durable endpoint price snapshot")
+            assert price_row is not None
+            endpoint_snapshot = json.loads(price_row[0])
+            require(
+                digest(endpoint_snapshot) == prepared["price_snapshot_sha256"]
+                and endpoint_snapshot == prepared["endpoint_price_snapshot"],
+                "Endpoint price snapshot changed before provider transmission",
+            )
             pending = db.execute(
                 "SELECT stage, amount FROM calls WHERE id=? AND status='pending'", (ticket,)
             ).fetchone()
@@ -1034,8 +1064,9 @@ class GuardedTransport(httpx.AsyncBaseTransport):
                 "mode": session.mode,
                 "stage": session.stage,
                 "model": MODEL,
-                "provider": prepared["provider"],
-                "route": prepared["route"],
+                "provider": None,
+                "provider_routing": prepared["provider_routing"],
+                "price_snapshot_sha256": prepared["price_snapshot_sha256"],
                 "normal_reservation_id": prepared["normal_reservation_id"],
                 "bound_nusd": prepared["bound_nusd"],
                 "payload_sha256": prepared["payload_sha256"],
@@ -1057,10 +1088,10 @@ class GuardedTransport(httpx.AsyncBaseTransport):
         durable_json(
             session.run_dir / f"request-{ticket:06d}.json",
             {
-                "payload": json.loads(request.content),
+                "payload": payload,
                 "join": row,
-                "input_token_bound": prepared.get("input_token_bound"),
-                "output_token_bound": prepared.get("output_token_bound"),
+                "input_token_bound": prepared["input_token_bound"],
+                "output_token_bound": prepared["output_token_bound"],
             },
         )
         # Each counted adapter closes its client. Never let that close another
@@ -1085,11 +1116,13 @@ class GuardedTransport(httpx.AsyncBaseTransport):
                 isinstance(body, dict)
                 and body.get("error") is None
                 and body.get("model") == MODEL
-                and body.get("provider") == prepared["provider"]
+                and isinstance(body.get("provider"), str)
+                and body["provider"] in endpoint_snapshot["active_provider_names"]
                 and isinstance(body.get("id"), str)
                 and bool(body["id"]),
                 "Missing/mismatched provider generation identity",
             )
+            row["provider"] = body["provider"]
             require(isinstance(body.get("usage"), dict), "Missing provider usage receipt")
             cost = nusd(body["usage"].get("cost"))
             row.update(
@@ -1106,19 +1139,19 @@ class GuardedTransport(httpx.AsyncBaseTransport):
             if cost > prepared["bound_nusd"]:
                 session.failed("provider_cost_above_bound")
                 try:
-                    await session.retain_known_cost(turn, reservation)
+                    await session.retain_actual_cost(turn, reservation)
                 finally:
-                    # The existing journal records the actual amount and stops
-                    # even if Redis retention itself becomes unavailable.
+                    # The journal records actual spend and stops even if Redis
+                    # retention itself becomes unavailable.
                     session.budget.settle(ticket, cost)
             for field, limit in (
-                ("prompt_tokens", prepared.get("input_token_bound")),
-                ("completion_tokens", prepared.get("output_token_bound")),
+                ("prompt_tokens", prepared["input_token_bound"]),
+                ("completion_tokens", prepared["output_token_bound"]),
             ):
                 tokens = body["usage"].get(field)
                 if tokens is not None:
                     require(
-                        type(tokens) is int and tokens >= 0 and (limit is None or tokens <= limit),
+                        type(tokens) is int and tokens >= 0 and tokens <= limit,
                         "Provider usage exceeds actual payload token bound",
                     )
             require(cost <= prepared["bound_nusd"], "Provider cost exceeds verified bound")
@@ -1204,8 +1237,6 @@ class TurnBinding:
             "HTTP request differs from exact frozen case identity",
         )
         assert case is not None
-        if self.session.subject_namespace:
-            scope = {**scope, "client": (self.session.subject_clients[request_id], 12345)}
         self.session.execution.check()
         token = _turn.set(
             {
@@ -1235,28 +1266,42 @@ class TurnBinding:
 def validate_counted_receipt_joins(
     budget: VerificationBudget, binding: str, receipts: list[dict]
 ) -> None:
-    """Join counted stages independently of their HTTP answer mode."""
+    """Join counted stages and durable endpoint-price snapshots."""
     require(
         all(row["status"] == "settled" for row in receipts),
-        "Unreconciled case/provider journal joins",
+        "Unjoined case/provider journal entries",
     )
     rows = {row["journal_ticket"]: row for row in receipts}
+    with budget._connect() as db:
+        price_snapshots = {
+            row[0]: json.loads(row[1])
+            for row in db.execute("SELECT sha256, snapshot FROM guard_price_snapshots")
+        }
     calls = budget.snapshot()["calls"]
     for call in calls:
         joined = rows.get(call["id"])
         expected_mode = "shadow" if call["stage"] == "load" else call["stage"]
+        price_sha = joined.get("price_snapshot_sha256") if joined is not None else None
+        price_snapshot = price_snapshots.get(price_sha) if isinstance(price_sha, str) else None
         require(
             joined is not None
             and call["status"] == "settled"
             and joined["cost_nusd"] == call["amount_nusd"]
+            and type(joined["bound_nusd"]) is int
+            and 0 <= joined["cost_nusd"] <= joined["bound_nusd"]
             and joined["stage"] == call["stage"]
             and joined["mode"] == expected_mode
-            and joined["journal_binding"] == binding,
+            and joined["journal_binding"] == binding
+            and joined["provider_routing"] == ROUTING_POLICY
+            and joined["model"] == MODEL
+            and isinstance(price_snapshot, dict)
+            and digest(price_snapshot) == price_sha
+            and joined["provider"] in price_snapshot.get("active_provider_names", []),
             "Missing/mismatched counted case/provider cost join",
         )
     require(
         len(rows) == len(receipts) == len(calls),
-        "Foreign provider receipt without journal call",
+        "Uncounted provider receipt in durable goal",
     )
 
 
@@ -1320,21 +1365,11 @@ class GuardedSession:
                 "CREATE TABLE IF NOT EXISTS guard_normal ("
                 "identity TEXT PRIMARY KEY, receipt TEXT NOT NULL)"
             )
+            db.execute(
+                "CREATE TABLE IF NOT EXISTS guard_price_snapshots ("
+                "sha256 TEXT PRIMARY KEY, snapshot TEXT NOT NULL)"
+            )
             self.binding = db.execute("SELECT binding FROM identity").fetchone()[0]
-            stored = json.loads(db.execute("SELECT binding FROM guard_goal").fetchone()[0])
-            self.subject_namespace = self.binding if stored.get("successor") else None
-        self.subject_clients = (
-            {
-                request_id: (
-                    f"guarded-successor-{self.subject_namespace}-load"
-                    if self.stage == "load"
-                    else f"guarded-successor-{self.subject_namespace}-{index + 1}"
-                )
-                for index, request_id in enumerate(bound_ids)
-            }
-            if self.subject_namespace
-            else {}
-        )
         self.execution = CountedRun(
             api_key=api_key,
             budget=budget,
@@ -1343,7 +1378,6 @@ class GuardedSession:
             transport=GuardedTransport(self, provider_transport),
         )
         self.execution.failed = self.failed
-        self.execution.subject_namespace = self.subject_namespace
         self.revalidate: Callable[[], dict] | None = None
         adapter_factory = self.execution.adapter
 
@@ -1402,22 +1436,22 @@ class GuardedSession:
         with self.budget._connect() as db:
             db.execute("UPDATE identity SET stopped=1")
 
-    async def retain_known_cost(self, turn: dict, reservation: dict) -> None:
+    async def retain_actual_cost(self, turn: dict, reservation: dict) -> None:
         rows = {row["journal_ticket"]: row for row in self.receipts()}
-        known = [
+        actual = [
             rows[ticket].get("reported_cost_nusd", rows[ticket].get("cost_nusd"))
             for ticket in reservation["tickets"]
         ]
         require(
-            all(type(value) is int and value >= 0 for value in known),
-            "Known provider exposure lost its reservation join",
+            all(type(value) is int and value >= 0 for value in actual),
+            "Provider exposure lost its request/cost join",
         )
         amount = 0
-        for value in known:
+        for value in actual:
             assert isinstance(value, int)
             amount += value
         reservation["uncertain"] = True
-        reservation["known_cost_nusd"] = amount
+        reservation["retained_actual_cost_nusd"] = amount
         identity = reservation["identity"]
         with self.budget._connect() as db:
             db.execute(
@@ -1444,6 +1478,29 @@ class GuardedSession:
     def validate_receipt_joins(self) -> None:
         validate_counted_receipt_joins(self.budget, self.binding, self.receipts())
 
+    def record_price_snapshot(self, bounds: dict) -> None:
+        snapshot = bounds["endpoint_price_snapshot"]
+        snapshot_sha256 = bounds["price_snapshot_sha256"]
+        require(
+            digest(snapshot) == snapshot_sha256,
+            "Endpoint price snapshot hash does not match provider admission",
+        )
+        with self.budget._connect() as db:
+            existing = db.execute(
+                "SELECT snapshot FROM guard_price_snapshots WHERE sha256=?",
+                (snapshot_sha256,),
+            ).fetchone()
+            if existing is None:
+                db.execute(
+                    "INSERT INTO guard_price_snapshots VALUES (?, ?)",
+                    (snapshot_sha256, json.dumps(snapshot, sort_keys=True)),
+                )
+            else:
+                require(
+                    json.loads(existing[0]) == snapshot,
+                    "Endpoint price snapshot journal binding changed",
+                )
+
     async def verify_request(self, payload: dict) -> int:
         self.execution.check()
         if self.revalidate is not None:
@@ -1463,6 +1520,7 @@ class GuardedSession:
         require(turn["calls"] < 6, "Original per-case request cap exceeded")
         owned = self.owned()
         bounds = await self.admission.verify_request(payload, owned)
+        self.record_price_snapshot(bounds)
         bound = bounds["bound_nusd"]
         require(
             type(bound) is int and 0 < bound <= nusd(get_settings().analyst_call_reservation_usd),
@@ -1473,8 +1531,8 @@ class GuardedSession:
             stored = json.loads(db.execute("SELECT binding FROM guard_goal").fetchone()[0])
             historical_amount = stored["historical_floor_nusd"]
         require(
-            snapshot["inherited_calls"] == stored.get("successor", {}).get("calls", []),
-            "Successor inherited exposure changed before transmission",
+            snapshot["inherited_calls"] == [],
+            "Unexpected inherited provider exposure",
         )
         require(
             type(historical_amount) is int and historical_amount >= nusd(self.ledger.floor),
@@ -1510,29 +1568,13 @@ class GuardedSession:
     @contextmanager
     def installed(self):
         from app import main
-        from app.services import analyst_loop, analyst_sessions, report_llm
+        from app.services import analyst_loop, report_llm
 
         session = self
         original_factory = main.create_app
         original_reservation = analyst_loop.BudgetReservation
         original_sync = report_llm.OpenAICompatibleLLMAdapter._generate_sync
         original_generate = report_llm.OpenAICompatibleLLMAdapter.generate
-        original_begin_descriptor = analyst_sessions.SessionTurn.__dict__["begin"]
-        original_begin = analyst_sessions.SessionTurn.begin
-
-        async def bound_begin(
-            cls: type[analyst_sessions.SessionTurn],
-            token: str | None,
-            turn_id: str,
-            revision: int,
-            request: dict[str, Any],
-        ) -> analyst_sessions.SessionTurn:
-            turn = _turn.get()
-            if session.subject_namespace and turn is not None:
-                require(turn_id == turn["request_id"], "Unbound successor session identity")
-                internal_turn_id = "guarded-successor:" + session.subject_namespace + ":" + turn_id
-                return await original_begin(token, internal_turn_id, revision, request)
-            return await original_begin(token, turn_id, revision, request)
 
         class BoundReservation(analyst_budget.BudgetReservation):
             def __init__(self, normal: analyst_budget.BudgetReservation, record: dict):
@@ -1621,7 +1663,7 @@ class GuardedSession:
 
         def denied_sync(*_args, **_kwargs):
             session.failed("uncounted_provider_path")
-            raise RuntimeError("Uncounted/legacy provider path denied in guarded workload")
+            raise RuntimeError("Uncounted provider path denied in guarded workload")
 
         async def denied_generate(*_args, **_kwargs):
             return denied_sync()
@@ -1637,1035 +1679,79 @@ class GuardedSession:
             report_llm.OpenAICompatibleLLMAdapter._generate_sync = denied_sync
             report_llm.OpenAICompatibleLLMAdapter.generate = denied_generate
             # Install the raw classmethod descriptor, not its bound method view.
-            type.__setattr__(analyst_sessions.SessionTurn, "begin", classmethod(bound_begin))
             yield
         finally:
             main.create_app = original_factory
             analyst_loop.BudgetReservation = original_reservation
             report_llm.OpenAICompatibleLLMAdapter._generate_sync = original_sync
             report_llm.OpenAICompatibleLLMAdapter.generate = original_generate
-            type.__setattr__(analyst_sessions.SessionTurn, "begin", original_begin_descriptor)
-
-
-def successor_lineage(
-    root: Path, goal: Path, authorization: Path | None, predecessor_goal: Path | None
-) -> dict | None:
-    """Authenticate the stopped predecessor without opening it for modification."""
-    require(
-        (authorization is None) == (predecessor_goal is None),
-        "Successor requires both explicit authorization and predecessor goal",
-    )
-    if authorization is None:
-        return None
-    assert predecessor_goal is not None
-    authorization_sha = file_hash(authorization.resolve())
-    if authorization_sha == ATLAS_AUTHORIZATION_SHA256:
-        approved = json.loads(authorization.read_text())
-        require(
-            approved["schema_version"] == 1
-            and approved["reconciliation_authorization_sha256"]
-            == RECONCILIATION_AUTHORIZATION_SHA256
-            and approved["predecessor_journal_sha256"]
-            == file_hash(predecessor_goal / "goal.sqlite")
-            and evidence_goal(root, approved["predecessor_goal"]) == predecessor_goal.resolve()
-            and approved["prior_route"] == ROUTE
-            and approved["prior_provider"] == PROVIDER
-            and approved["route"] == ATLAS_ROUTE
-            and approved["provider"] == ATLAS_PROVIDER
-            and approved["model"] == MODEL
-            and approved["quantization"] == "fp8"
-            and approved["frozen_contract_sha256"] == FROZEN[GOLD]
-            and approved["task_aggregate_hard_cap_usd"] == "6"
-            and approved["monthly_cutoff_usd"] == "2"
-            and approved["all28prior_requests_and_three_holds_preserved"] is True
-            and approved["one_exclusive_successor_only"] is True
-            and approved["stop_on_any_new_financial_uncertainty"] is True
-            and approved["fresh_metadata_and_actual_byte_bounds_every_payload"] is True
-            and approved["original_deadlines_and_quality_workload_gates_unchanged"] is True
-            and approved["public_upload_merge_or_production_authorized"] is False
-            and approved["budget_charged_ticket28_nusd"] == 818_196
-            and approved["provider_cost_ticket28_known"] is False,
-            "Exact Atlas recipient/rebind grant changes owner limits or history",
-        )
-        prior = evidence_goal(root, approved["reconciliation_authorization"])
-        require(
-            file_hash(prior) == RECONCILIATION_AUTHORIZATION_SHA256,
-            "Rebind changes the original reconciliation grant",
-        )
-        inherited = successor_lineage(root, goal, prior, predecessor_goal)
-        assert inherited is not None
-        require(
-            approved["request_caps"] == inherited["request_caps"],
-            "Rebind changes inherited original request caps",
-        )
-        return {
-            **inherited,
-            "authorization_sha256": ATLAS_AUTHORIZATION_SHA256,
-            "route_rebind": {
-                "from_route": ROUTE,
-                "from_provider": PROVIDER,
-                "route": ATLAS_ROUTE,
-                "provider": ATLAS_PROVIDER,
-                "model": MODEL,
-                "authorization_sha256": ATLAS_AUTHORIZATION_SHA256,
-                "reconciliation_authorization_sha256": RECONCILIATION_AUTHORIZATION_SHA256,
-            },
-        }
-    if authorization_sha == KNOWN_COST_AUTHORIZATION_SHA256:
-        return known_cost_lineage(root, goal, authorization, predecessor_goal)
-    if authorization_sha == RECONCILIATION_AUTHORIZATION_SHA256:
-        reconciliation = json.loads(authorization.read_text())
-        prior = evidence_goal(root, reconciliation["known_cost_authorization"])
-        return known_cost_lineage(root, goal, prior, predecessor_goal, reconciliation=authorization)
-    require(
-        authorization_sha == SUCCESSOR_AUTHORIZATION_SHA256,
-        "Successor authorization differs from exact owner safety choice",
-    )
-    approved = json.loads(authorization.read_text())
-    require(
-        approved["user_safety_choice"] == "New counted live attempt"
-        and approved["preserve_all_predecessor_charges_and_reservations"] is True
-        and approved["original_case_and_request_limits_remain"] is True
-        and approved["monthly_cutoff_usd_remains"] == "2"
-        and approved["expected_frozen_contract_sha256"] == FROZEN[GOLD],
-        "Successor authorization changes preserved accounting or frozen contract",
-    )
-    predecessor = predecessor_goal.resolve()
-    authorized_predecessor = root / Path(approved["predecessor_goal"]).relative_to("/evidence")
-    require(
-        predecessor == authorized_predecessor.resolve()
-        and predecessor.is_relative_to(root)
-        and predecessor != root
-        and predecessor != goal,
-        "Successor substitutes or reuses predecessor goal",
-    )
-    journal = predecessor / "goal.sqlite"
-    require(
-        file_hash(journal) == approved["predecessor_journal_sha256"],
-        "Stopped predecessor journal differs from owner-authorized SHA",
-    )
-    anchor = json.loads((root / GOAL_ANCHOR).read_text())
-    artifact = json.loads((predecessor / "goal-binding.json").read_text())
-    require(
-        anchor["goal_dir"] == str(predecessor)
-        and anchor["binding_sha256"] == artifact["binding_sha256"],
-        "Predecessor differs from immutable original aggregate anchor",
-    )
-    from app.api.analysis import _sample_shadow
-
-    cases = load_contract(root / GOLD, root / APPROVAL)["cases"]
-    selected = sum(
-        _sample_shadow(evaluation_request_id(FROZEN[GOLD], "shadow", case["id"]), 0.1)
-        for case in cases
-    )
-    db = sqlite3.connect(journal.as_uri() + "?mode=ro", uri=True)
-    try:
-        require(
-            db.execute("SELECT binding, stopped FROM identity").fetchall()
-            == [(artifact["binding_sha256"], 1)],
-            "Authorized predecessor is not the stopped bound original goal",
-        )
-        stored = json.loads(db.execute("SELECT binding FROM guard_goal").fetchone()[0])
-        require(
-            {"binding_sha256": artifact["binding_sha256"], **stored} == artifact
-            and stored["frozen_inputs"] == FROZEN
-            and stored["monthly_cutoff_nusd"] == 2_000_000_000,
-            "Predecessor source/contract/accounting binding differs",
-        )
-        require(
-            dict(db.execute("SELECT name, request_cap FROM stages"))
-            == {"smoke": 9, "primary": 720, "shadow": 6 * selected, "load": 66},
-            "Predecessor original phase/request ceilings changed",
-        )
-        require(
-            db.execute("SELECT sha256 FROM spending_direction").fetchall()
-            == [(SPENDING_DIRECTION_SHA256,)],
-            "Predecessor lacks retained original spending direction",
-        )
-        phases = dict(db.execute("SELECT mode, status FROM guard_runs"))
-        require(
-            "failed" in phases.values() and "started" not in phases.values(),
-            "Predecessor phase is not actually stopped",
-        )
-        calls = [
-            dict(zip(("id", "stage", "amount_nusd", "status", "error"), row, strict=True))
-            for row in db.execute("SELECT id, stage, amount, status, error FROM calls ORDER BY id")
-        ]
-        require(
-            bool(calls)
-            and all(
-                row["status"] in {"settled", "failed"}
-                and type(row["amount_nusd"]) is int
-                and row["amount_nusd"] >= 0
-                for row in calls
-            ),
-            "Predecessor has missing or in-flight counted exposure",
-        )
-        receipts = [
-            json.loads(row[0])
-            for row in db.execute("SELECT receipt FROM guard_receipts ORDER BY ticket")
-        ]
-        normal = [
-            json.loads(row[0])
-            for row in db.execute("SELECT receipt FROM guard_normal ORDER BY identity")
-        ]
-        joined = {row["journal_ticket"]: row for row in receipts}
-        require(
-            len(joined) == len(receipts) == len(calls),
-            "Predecessor counted receipt inventory differs",
-        )
-        normals = {row["identity"]: row for row in normal}
-        for call in calls:
-            receipt = joined.get(call["id"], {})
-            reservation = normals.get(receipt.get("normal_reservation_id"), {})
-            require(
-                receipt.get("journal_binding") == artifact["binding_sha256"]
-                and receipt.get("stage") == call["stage"]
-                and call["id"] in reservation.get("tickets", [])
-                and (
-                    receipt.get("status") == "settled"
-                    and receipt.get("cost_nusd") == call["amount_nusd"]
-                    if call["status"] == "settled"
-                    else receipt.get("status") == "uncertain"
-                ),
-                "Predecessor request/cost/normal reservation joins differ",
-            )
-        retained = {row["identity"]: row["amount"] for row in normal if row["settled"] is False}
-        require(
-            len(retained) == 2 and all(money(value) > 0 for value in retained.values()),
-            "Predecessor retained normal hold inventory differs",
-        )
-    finally:
-        db.close()
-    require(
-        file_hash(journal) == approved["predecessor_journal_sha256"],
-        "Predecessor journal changed while reading lineage",
-    )
-    return {
-        "authorization_sha256": SUCCESSOR_AUTHORIZATION_SHA256,
-        "predecessor_goal": approved["predecessor_goal"],
-        "predecessor_journal_sha256": approved["predecessor_journal_sha256"],
-        "predecessor_binding_sha256": artifact["binding_sha256"],
-        "predecessor_binding": stored,
-        "calls": calls,
-        "receipts": receipts,
-        "normal_reservations": normal,
-        "retained_reservations": retained,
-        "authoritative_monthly_floor_nusd": SUCCESSOR_MONTHLY_FLOOR_NUSD,
-    }
-
-
-def successor_anchor(root: Path, lineage: dict | None) -> Path:
-    anchor = root / GOAL_ANCHOR
-    if lineage is None:
-        return anchor
-    identity = lineage["authorization_sha256"]
-    if identity == KNOWN_COST_AUTHORIZATION_SHA256:
-        identity += "-" + lineage["predecessor_journal_sha256"]
-    elif identity not in {RECONCILIATION_AUTHORIZATION_SHA256, ATLAS_AUTHORIZATION_SHA256}:
-        require(identity == SUCCESSOR_AUTHORIZATION_SHA256, "Foreign successor authorization")
-    return anchor.with_name("guarded-counted-successor-" + identity + ".json")
-
-
-def evidence_goal(root: Path, declared: str) -> Path:
-    relative = Path(declared).relative_to("/evidence")
-    goal = (root / relative).resolve()
-    require(
-        goal.is_relative_to(root) and goal != root and ".." not in relative.parts,
-        "Substituted ancestor evidence path",
-    )
-    return goal
 
 
 def admitted_binding_sha(stored: dict) -> str:
-    # Admission seals identity before adding inspected resources and the actual
-    # Redis admission floor. Retain that historical convention for old journals.
     identity = {
-        key: value for key, value in stored.items() if key not in {"resources", "redis_run_id"}
+        field: value
+        for field, value in stored.items()
+        if field not in {"resources", "redis_run_id", "historical_floor_nusd"}
     }
-    identity["historical_floor_nusd"] = 72_217_900
     return digest(identity)
 
 
-def admission_seal(stored: dict) -> dict:
-    return {
-        "monthly_floor_nusd": stored["historical_floor_nusd"],
-        "resources_sha256": digest(stored["resources"]),
-        "redis_run_id": stored["redis_run_id"],
-    }
-
-
-def protocol_sources() -> dict[str, str]:
-    services = Path(__file__).resolve().parent.parent / "services"
-    return {
-        name: file_hash(services / name)
-        for name in ("analyst_loop.py", "evidence_contracts.py", "analyst_tools.py")
-    }
-
-
-def stage_limits(selected: int) -> dict[str, tuple[int, int]]:
-    return {
-        "smoke": (9, 100_000_000),
-        "primary": (720, 500_000_000),
-        "shadow": (6 * selected, 500_000_000),
-        "load": (66, 660_000_000),
-    }
-
-
-def target_resources(resources: dict) -> dict:
-    return {
-        **resources,
-        "docker": {
-            name: value for name, value in resources.get("docker", {}).items() if name != "verifier"
-        },
-    }
-
-
-def validate_protocol_stop(
-    goal: Path,
-    stored: dict,
-    fresh: list[dict],
-    receipts: list[dict],
-    normal: list[dict],
-    phases: dict,
-) -> list[dict]:
-    """Require settled local financial joins and durable typed-protocol evidence."""
-    joined = {row["journal_ticket"]: row for row in receipts}
-    normals = {row["identity"]: row for row in normal}
-    require(
-        bool(fresh) and len(joined) == len(receipts) == len(fresh) and len(normals) == len(normal),
-        "Missing or duplicate fresh financial provenance",
-    )
-    tickets = [ticket for row in normal for ticket in row["tickets"]]
-    require(
-        sorted(tickets) == sorted(row["id"] for row in fresh) and len(tickets) == len(set(tickets)),
-        "Fresh normal ticket inventory differs",
-    )
-    for reservation in normal:
-        require(
-            reservation["settled"] is True
-            and reservation["uncertain"] is False
-            and type(reservation.get("cost_nusd")) is int
-            and type(reservation.get("slots")) is int
-            and 0 < reservation["slots"] <= 6
-            and reservation.get("used") == len(reservation["tickets"]) <= reservation["slots"]
-            and money(reservation["amount"]) == Decimal("0.01") * reservation["slots"]
-            and 0 <= reservation["cost_nusd"] <= nusd(reservation["amount"])
-            and reservation["cost_nusd"]
-            == sum(joined[ticket]["cost_nusd"] for ticket in reservation["tickets"]),
-            "New normal reservation is held, uncertain or incompletely settled",
-        )
-    for call in fresh:
-        receipt = joined.get(call["id"], {})
-        reservation = normals.get(receipt.get("normal_reservation_id"), {})
-        require(
-            call["status"] == "settled"
-            and call["error"] is None
-            and receipt.get("status") == "settled"
-            and receipt.get("cost_nusd") == receipt.get("reported_cost_nusd") == call["amount_nusd"]
-            and type(receipt.get("bound_nusd")) is int
-            and 0 <= call["amount_nusd"] <= receipt["bound_nusd"]
-            and receipt["bound_nusd"] > 0
-            and receipt.get("journal_binding") == admitted_binding_sha(stored)
-            and receipt.get("stage") == call["stage"]
-            and receipt.get("mode") == ("shadow" if call["stage"] == "load" else call["stage"])
-            and call["id"] in reservation.get("tickets", [])
-            and reservation.get("request_id") == receipt.get("request_id")
-            and reservation.get("case_id") == receipt.get("case_id")
-            and receipt.get("model") == stored["model"]
-            and receipt.get("provider") == PROVIDER
-            and receipt.get("route") == stored["route"]
-            and receipt.get("provider_key_sha256") == stored["provider_key_sha256"],
-            "Fresh provider cost, bound, identity or normal joins differ",
-        )
-        directory = goal / call["stage"]
-        raw_path = directory / f"response-{call['id']:06d}.body"
-        raw = raw_path.read_bytes()
-        require(
-            hashlib.sha256(raw).hexdigest() == receipt.get("raw_response_sha256")
-            and raw_path.stat().st_mode & 0o777 == 0o600,
-            "Fresh private wire evidence differs",
-        )
-        body = json.loads(raw)
-        require(
-            isinstance(body["id"], str)
-            and bool(body["id"])
-            and body["id"] == receipt.get("provider_generation_id")
-            and body["model"] == stored["model"]
-            and body["provider"] == PROVIDER
-            and nusd(body["usage"]["cost"]) == call["amount_nusd"]
-            and digest(body) == receipt.get("response_sha256")
-            and body["choices"][0].get("finish_reason") == receipt.get("finish_reason"),
-            "Fresh wire generation/cost differs from settled receipt",
-        )
-        request = json.loads((directory / f"request-{call['id']:06d}.json").read_text())
-        require(
-            digest(request["payload"]) == receipt.get("payload_sha256")
-            and all(
-                request["join"].get(key) == value
-                for key, value in receipt.items()
-                if key in request["join"] and key != "status"
-            ),
-            "Fresh private request provenance differs",
-        )
-    failures = []
-    for stage, status in phases.items():
-        if status != "failed":
-            continue
-        local = [call for call in fresh if call["stage"] == stage]
-        require(bool(local), "Failed stage has no fresh settled protocol call")
-        ticket = local[-1]["id"]
-        receipt = joined[ticket]
-        path = goal / stage / f"protocol-failure-{ticket:06d}.json"
-        diagnosis = json.loads(path.read_text())
-        require(
-            diagnosis.get("journal_ticket") == ticket
-            and diagnosis.get("request_id") == receipt["request_id"]
-            and diagnosis.get("raw_response_sha256") == receipt["raw_response_sha256"]
-            and diagnosis.get("finish_reason") == receipt.get("finish_reason")
-            and diagnosis.get("error_type") == "ValidationError"
-            and isinstance(diagnosis.get("errors"), list)
-            and bool(diagnosis["errors"])
-            and all(
-                isinstance(error.get("loc"), list) and isinstance(error.get("type"), str)
-                for error in diagnosis["errors"]
-            ),
-            "Stopped stage lacks exact private typed-protocol diagnosis",
-        )
-        summary = json.loads((goal / stage / "execution-summary.json").read_text())
-        require(
-            summary["status"] == "failed"
-            and summary["mode"] == receipt["mode"]
-            and summary["calls"] == receipts
-            and summary["accounting"]["calls"] == fresh,
-            "Stopped protocol stage summary differs from local journal",
-        )
-        failures.append(
-            {
-                "journal_ticket": ticket,
-                "stage": stage,
-                "diagnosis_sha256": file_hash(path),
-                "raw_response_sha256": receipt["raw_response_sha256"],
-            }
-        )
-    require(bool(failures), "Predecessor is not an actual failed protocol stage")
-    return failures
-
-
-def validate_reconciled_stop(
-    goal: Path,
-    stored: dict,
-    fresh: list[dict],
-    receipts: list[dict],
-    normal: list[dict],
-    phases: dict,
-    approved: dict,
-) -> list[dict]:
-    """Carry one exact owner-charged bound without inventing provider settlement."""
-    request = approved["reconciled_request"]
-    ticket, bound = request["ticket"], request["budget_charged_nusd"]
-    require(
-        type(ticket) is int
-        and ticket == 28
-        and type(bound) is int
-        and bound == 818_196
-        and request["stage"] == "primary"
-        and request["journal_status"] == "failed"
-        and request["error_type"] == "CancelledError"
-        and request["provider_cost_known"] is False
-        and request["provider_cost_nusd"] is None
-        and request["normal_hold_usd"] == "0.03"
-        and fresh
-        == [
-            {
-                "id": ticket,
-                "stage": "primary",
-                "amount_nusd": bound,
-                "status": "failed",
-                "error": "CancelledError",
-            }
-        ]
-        and phases == {"primary": "failed"}
-        and len(receipts) == len(normal) == 1,
-        "Reconciliation is not the exact cancelled unpriced request",
-    )
-    receipt, reservation = receipts[0], normal[0]
-    require(
-        receipt.get("journal_ticket") == ticket
-        and receipt.get("bound_nusd") == bound
-        and receipt.get("status") == "uncertain"
-        and receipt.get("error_type") == "CancelledError"
-        and receipt.get("journal_binding") == admitted_binding_sha(stored)
-        and receipt.get("stage") == receipt.get("mode") == "primary"
-        and receipt.get("payload_sha256") == request["payload_sha256"]
-        and receipt.get("normal_reservation_id") == request["normal_reservation_id"]
-        and not {
-            "cost_nusd",
-            "reported_cost_nusd",
-            "provider_generation_id",
-            "raw_response_sha256",
-        }.intersection(receipt)
-        and reservation.get("identity") == request["normal_reservation_id"]
-        and reservation.get("request_id") == receipt.get("request_id")
-        and reservation.get("case_id") == receipt.get("case_id")
-        and reservation.get("tickets") == [ticket]
-        and reservation.get("slots") == 3
-        and reservation.get("used") == 1
-        and reservation.get("amount") == "0.03"
-        and reservation.get("settled") is False
-        and reservation.get("uncertain") is True,
-        "Cancelled request provenance, unknown cost or retained hold differs",
-    )
-    files = approved["immutable_failure_evidence_sha256"]
-    expected_names = {
-        f"primary/request-{ticket:06d}.json",
-        f"primary/protocol-failure-{ticket:06d}.json",
-        "primary/execution-summary.json",
-        "primary/observations.json",
-    }
-    require(set(files) == expected_names, "Reconciliation failure inventory differs")
-    for relative, expected in files.items():
-        require(file_hash(goal / relative) == expected, "Immutable cancellation evidence changed")
-    require(
-        not (goal / f"primary/response-{ticket:06d}.body").exists(),
-        "Reconciliation substitutes an available provider response",
-    )
-    wire = json.loads((goal / f"primary/request-{ticket:06d}.json").read_text())
-    failure = json.loads((goal / f"primary/protocol-failure-{ticket:06d}.json").read_text())
-    require(
-        digest(wire["payload"]) == request["payload_sha256"]
-        and wire["join"]["journal_ticket"] == ticket
-        and failure.get("journal_ticket") == ticket
-        and failure.get("error_type") == "CancelledError"
-        and failure.get("raw_response_sha256") is None,
-        "Exact cancelled wire payload or diagnosis differs",
-    )
-    return [
-        {
-            "journal_ticket": ticket,
-            "stage": "primary",
-            "budget_charged_nusd": bound,
-            "provider_cost_known": False,
-            "reconciliation_kind": "owner_charged_bound_not_provider_settlement",
-        }
-    ]
-
-
-def known_cost_lineage(
-    root: Path,
-    goal: Path,
-    authorization: Path,
-    predecessor_goal: Path,
-    *,
-    reconciliation: Path | None = None,
-) -> dict:
-    approved = json.loads(authorization.read_text())
-    from app.api.analysis import _sample_shadow
-
-    cases = load_contract(root / GOLD, root / APPROVAL)["cases"]
-    selected = sum(
-        _sample_shadow(evaluation_request_id(FROZEN[GOLD], "shadow", case["id"]), 0.1)
-        for case in cases
-    )
-    limits = stage_limits(selected)
-    reconciled = json.loads(reconciliation.read_text()) if reconciliation else None
-    if reconciled is not None:
-        assert reconciliation is not None
-        require(
-            file_hash(reconciliation) == RECONCILIATION_AUTHORIZATION_SHA256
-            and reconciled["schema_version"] == 1
-            and reconciled["known_cost_authorization_sha256"] == KNOWN_COST_AUTHORIZATION_SHA256
-            and reconciled["expected_frozen_contract_sha256"] == FROZEN[GOLD]
-            and reconciled["preserve_all_predecessor_charges_and_reservations"] is True
-            and reconciled["stop_on_any_new_financial_uncertainty"] is True
-            and reconciled["one_exclusive_successor_only"] is True
-            and reconciled["journal_and_hold_mutation_authorized"] is False
-            and reconciled["deploy_or_alias_promotion_authorized"] is False
-            and reconciled["public_upload_authorized"] is False
-            and reconciled["task_aggregate_hard_cap_usd"] == "6"
-            and reconciled["monthly_cutoff_usd_remains"] == "2"
-            and reconciled["request_caps"] == {name: cap for name, (cap, _) in limits.items()}
-            and type(reconciled["minimum_verified_monthly_authority_nusd"]) is int
-            and reconciled["minimum_verified_monthly_authority_nusd"] >= 402_549_812
-            and predecessor_goal.resolve() == evidence_goal(root, reconciled["predecessor_goal"])
-            and file_hash(predecessor_goal / "goal.sqlite")
-            == reconciled["predecessor_journal_sha256"],
-            "Exact one-use uncertainty reconciliation or preserved limits differ",
-        )
-    require(
-        approved["schema_version"] == 1
-        and approved["user_safety_choice"] == "Finish original live tests"
-        and approved["preserve_all_predecessor_charges_and_reservations"] is True
-        and approved["original_case_and_request_limits_remain"] is True
-        and approved["stop_on_any_new_financial_uncertainty"] is True
-        and approved["deploy_or_alias_promotion_authorized"] is False
-        and approved["monthly_cutoff_usd_remains"] == "2"
-        and approved["expected_frozen_contract_sha256"] == FROZEN[GOLD]
-        and approved["prior_authorization_sha256"] == SUCCESSOR_AUTHORIZATION_SHA256
-        and approved["request_caps"] == {name: cap for name, (cap, _) in limits.items()}
-        and type(approved["minimum_verified_monthly_authority_nusd"]) is int
-        and approved["minimum_verified_monthly_authority_nusd"] >= 372_549_812,
-        "Known-cost grant changes preserved owner limits or stop policy",
-    )
-    original = evidence_goal(root, approved["original_goal"])
-    initial = evidence_goal(root, approved["initial_predecessor_goal"])
-    predecessor = predecessor_goal.resolve()
-    require(
-        predecessor.is_relative_to(root) and predecessor not in {root, goal, original},
-        "Known-cost successor substitutes or reuses a predecessor",
-    )
-    expected_fixed = goal_binding(
-        root, MonthlyLedger(month=f"{datetime.now(UTC):%Y-%m}", historical_floor="0.0722179")
-    )
-    source_fields = {
-        "guarded_cli_sha256",
-        "runner_sha256",
-        "load_harness_sha256",
-        "verification_budget_sha256",
-        "verification_adapter_sha256",
-        "historical_floor_nusd",
-    }
-    seen: set[Path] = set()
-
-    def lineage_for(node: dict) -> dict:
-        return {
-            "authorization_sha256": KNOWN_COST_AUTHORIZATION_SHA256,
-            "predecessor_goal": "/evidence/" + node["goal"].relative_to(root).as_posix(),
-            "predecessor_journal_sha256": node["journal_sha256"],
-            "predecessor_binding_sha256": node["binding_sha256"],
-            "predecessor_binding": node["stored"],
-            "calls": node["calls"],
-            "receipts": node["receipts"],
-            "normal_reservations": node["normal_reservations"],
-            "retained_reservations": approved["retained_original_reservations"],
-            "authoritative_monthly_floor_nusd": approved["minimum_verified_monthly_authority_nusd"],
-            "fresh_calls": node["fresh_calls"],
-            "ancestor_journals": node["ancestor_journals"],
-            "protocol_failures": node["protocol_failures"],
-            "initial_predecessor_goal": approved["initial_predecessor_goal"],
-            "initial_predecessor_journal_sha256": approved["initial_predecessor_journal_sha256"],
-            "original_goal": approved["original_goal"],
-            "original_journal_sha256": approved["original_journal_sha256"],
-            "request_caps": approved["request_caps"],
-        }
-
-    def read_ancestor(path: Path, expected_sha: str | None = None) -> dict:
-        require(path not in seen and path != goal, "Cycle or substituted ancestor in lineage")
-        seen.add(path)
-        journal = path / "goal.sqlite"
-        journal_sha = file_hash(journal)
-        if path == original:
-            require(journal_sha == approved["original_journal_sha256"], "Original journal changed")
-        if path == initial:
-            require(
-                journal_sha == approved["initial_predecessor_journal_sha256"],
-                "Initial known-cost predecessor journal changed",
-            )
-        require(expected_sha is None or journal_sha == expected_sha, "Ancestor journal SHA differs")
-        artifact_path = path / "goal-binding.json"
-        artifact_sha = file_hash(artifact_path)
-        artifact = json.loads(artifact_path.read_text())
-        db = sqlite3.connect(journal.as_uri() + "?mode=ro", uri=True)
-        try:
-            require(
-                db.execute("SELECT binding, stopped FROM identity").fetchall()
-                == [(artifact["binding_sha256"], 1)],
-                "Ancestor is not the actual stopped bound goal",
-            )
-            stored = json.loads(db.execute("SELECT binding FROM guard_goal").fetchone()[0])
-            require(
-                artifact == {"binding_sha256": artifact["binding_sha256"], **stored}
-                and admitted_binding_sha(stored) == artifact["binding_sha256"]
-                and all(
-                    stored.get(field) == json.loads(json.dumps(value))
-                    for field, value in expected_fixed.items()
-                    if field not in source_fields
-                ),
-                "Ancestor artifact, source-independent binding or identity differs",
-            )
-            if (
-                stored.get("successor", {}).get("authorization_sha256")
-                == KNOWN_COST_AUTHORIZATION_SHA256
-            ):
-                require(
-                    stored.get("admission") == admission_seal(stored),
-                    "Ancestor admitted floor, resources or Redis identity changed",
-                )
-            require(
-                {
-                    name: (cap, cost)
-                    for name, cap, cost in db.execute(
-                        "SELECT name, request_cap, cost_cap FROM stages"
-                    )
-                }
-                == limits
-                and db.execute("SELECT sha256 FROM spending_direction").fetchall()
-                == [(SPENDING_DIRECTION_SHA256,)],
-                "Ancestor frozen stage limits or spending direction changed",
-            )
-            phases = dict(db.execute("SELECT mode, status FROM guard_runs"))
-            require(
-                "failed" in phases.values()
-                and "started" not in phases.values()
-                and all(status in {"failed", "complete"} for status in phases.values()),
-                "Ancestor phase is not actually stopped",
-            )
-            fresh = [
-                dict(zip(("id", "stage", "amount_nusd", "status", "error"), row, strict=True))
-                for row in db.execute(
-                    "SELECT id, stage, amount, status, error FROM calls ORDER BY id"
-                )
-            ]
-            inherited = [
-                dict(zip(("id", "stage", "amount_nusd", "status", "error"), row, strict=True))
-                for row in VerificationBudget._inherited(db)
-            ]
-            receipt_rows = [
-                (ticket, json.loads(raw), generation)
-                for ticket, raw, generation in db.execute(
-                    "SELECT ticket, receipt, generation FROM guard_receipts ORDER BY ticket"
-                )
-            ]
-            normal_rows = [
-                (identity, json.loads(raw))
-                for identity, raw in db.execute(
-                    "SELECT identity, receipt FROM guard_normal ORDER BY identity"
-                )
-            ]
-            require(
-                all(
-                    row["journal_ticket"] == ticket
-                    and (path == original or row.get("provider_generation_id") == generation)
-                    for ticket, row, generation in receipt_rows
-                )
-                and all(row["identity"] == identity for identity, row in normal_rows),
-                "Ancestor SQLite receipt or reservation keys differ from private provenance",
-            )
-            receipts = [row for _, row, _ in receipt_rows]
-            normal = [row for _, row in normal_rows]
-        finally:
-            db.close()
-        require(
-            journal_sha == file_hash(journal) and artifact_sha == file_hash(artifact_path),
-            "Immutable ancestor changed while reading",
-        )
-        own_lineage = stored.get("successor")
-        anchor = json.loads(successor_anchor(root, own_lineage).read_text())
-        require(
-            anchor["goal_dir"] == str(path)
-            and anchor["binding_sha256"] == artifact["binding_sha256"],
-            "Ancestor differs from its own exclusive admitted anchor",
-        )
-        require(
-            all(
-                type(call["id"]) is int
-                and call["id"] > 0
-                and type(call["amount_nusd"]) is int
-                and call["amount_nusd"] >= 0
-                and call["stage"] in limits
-                for call in fresh + inherited
-            ),
-            "Invalid ancestor counted exposure",
-        )
-        ancestor_calls, ancestor_receipts, ancestor_normal, journals = [], [], [], []
-        initial_seen = path == initial
-        if path == original:
-            require(
-                not own_lineage and not inherited and bool(fresh),
-                "Substituted original chain root",
-            )
-            joined = {row["journal_ticket"]: row for row in receipts}
-            normals = {row["identity"]: row for row in normal}
-            require(
-                len(joined) == len(receipts) == len(fresh) and len(normals) == len(normal),
-                "Original provenance contains duplicates or omissions",
-            )
-            for call in fresh:
-                receipt = joined.get(call["id"], {})
-                require(
-                    call["status"] in {"settled", "failed"}
-                    and receipt.get("journal_binding") == artifact["binding_sha256"]
-                    and receipt.get("stage") == call["stage"]
-                    and call["id"]
-                    in normals.get(receipt.get("normal_reservation_id"), {}).get("tickets", [])
-                    and (
-                        receipt.get("status") == "settled"
-                        and receipt.get("cost_nusd") == call["amount_nusd"]
-                        if call["status"] == "settled"
-                        else receipt.get("status") == "uncertain"
-                    ),
-                    "Original owner-authorized financial joins differ",
-                )
-            retained = {row["identity"]: row["amount"] for row in normal if row["settled"] is False}
-            require(
-                retained == approved["retained_original_reservations"]
-                and len(retained) == 2
-                and sorted(retained.values()) == ["0.02", "0.03"],
-                "Original retained hold identity or amounts changed",
-            )
-            failures = []
-        else:
-            require(isinstance(own_lineage, dict), "Foreign non-successor ancestor")
-            parent = read_ancestor(
-                evidence_goal(root, own_lineage["predecessor_goal"]),
-                own_lineage["predecessor_journal_sha256"],
-            )
-            ancestor_calls = parent["calls"]
-            ancestor_receipts = parent["receipts"]
-            ancestor_normal = parent["normal_reservations"]
-            journals = parent["ancestor_journals"]
-            require(
-                inherited == ancestor_calls
-                and own_lineage["predecessor_binding_sha256"] == parent["binding_sha256"]
-                and own_lineage["predecessor_binding"] == parent["stored"]
-                and own_lineage["calls"] == ancestor_calls
-                and own_lineage["receipts"] == ancestor_receipts
-                and own_lineage["normal_reservations"] == ancestor_normal
-                and own_lineage["retained_reservations"]
-                == approved["retained_original_reservations"]
-                and stored["redis_run_id"] == parent["stored"]["redis_run_id"]
-                and target_resources(stored["resources"])
-                == target_resources(parent["stored"]["resources"]),
-                "Ancestor inherited rows, provenance, holds or target resources changed",
-            )
-            if path == initial:
-                require(
-                    parent["goal"] == original
-                    and own_lineage["authorization_sha256"] == SUCCESSOR_AUTHORIZATION_SHA256,
-                    "Initial stop is not the original authorized successor",
-                )
-            else:
-                require(
-                    parent["initial_seen"] and own_lineage == lineage_for(parent),
-                    "Descendant does not belong to this exact owner-granted chain",
-                )
-            if reconciled is not None and path == predecessor:
-                failures = validate_reconciled_stop(
-                    path, stored, fresh, receipts, normal, phases, reconciled
-                )
-            else:
-                failures = validate_protocol_stop(path, stored, fresh, receipts, normal, phases)
-            initial_seen = initial_seen or parent["initial_seen"]
-        all_calls = ancestor_calls + fresh
-        all_receipts = ancestor_receipts + receipts
-        all_normal = ancestor_normal + normal
-        generations = [
-            row["provider_generation_id"]
-            for row in all_receipts
-            if row.get("provider_generation_id") is not None
-        ]
-        require(
-            len({call["id"] for call in all_calls}) == len(all_calls)
-            and len({row["journal_ticket"] for row in all_receipts}) == len(all_receipts)
-            and len({row["identity"] for row in all_normal}) == len(all_normal)
-            and len(generations) == len(set(generations))
-            and all(
-                sum(call["stage"] == stage for call in all_calls) <= cap
-                for stage, (cap, _) in limits.items()
-            ),
-            "Duplicate ancestor provenance or exhausted original stage inventory",
-        )
-        if path == initial:
-            require(
-                sum(call["stage"] == "primary" for call in all_calls)
-                == approved["inherited_primary_requests_at_authorization"],
-                "Initial owner-authorized primary inventory differs",
-            )
-        return {
-            "goal": path,
-            "journal_sha256": journal_sha,
-            "binding_sha256": artifact["binding_sha256"],
-            "stored": stored,
-            "fresh_calls": fresh,
-            "calls": all_calls,
-            "receipts": all_receipts,
-            "normal_reservations": all_normal,
-            "initial_seen": initial_seen,
-            "protocol_failures": failures,
-            "ancestor_journals": journals
-            + [
-                {
-                    "goal": "/evidence/" + path.relative_to(root).as_posix(),
-                    "journal_sha256": journal_sha,
-                    "binding_sha256": artifact["binding_sha256"],
-                }
-            ],
-        }
-
-    node = read_ancestor(predecessor)
-    require(node["initial_seen"], "Predecessor is not a descendant of the granted initial stop")
-    require(file_hash(authorization) == KNOWN_COST_AUTHORIZATION_SHA256, "Owner grant changed")
-    result = lineage_for(node)
-    if reconciled is not None:
-        retained = {
-            row["identity"]: row["amount"]
-            for row in node["normal_reservations"]
-            if row["settled"] is False
-        }
-        require(
-            len(node["calls"]) == reconciled["prior_counted_requests"] == 28
-            and retained == reconciled["retained_reservations"]
-            and len(retained) == 3
-            and sorted(retained.values()) == ["0.02", "0.03", "0.03"],
-            "Reconciliation drops prior requests or retained normal holds",
-        )
-        result.update(
-            authorization_sha256=RECONCILIATION_AUTHORIZATION_SHA256,
-            retained_reservations=retained,
-            authoritative_monthly_floor_nusd=reconciled["minimum_verified_monthly_authority_nusd"],
-            owner_budget_reconciliation=reconciled["reconciled_request"],
-            one_exclusive_successor_only=True,
-            stop_on_any_new_financial_uncertainty=True,
-        )
-    return result
-
-
 def validate_admitted_goal(goal: Path, budget: VerificationBudget, binding: dict) -> dict:
-    """Join the current artifact and journal to the recomputed owner/pred/source pair."""
+    """Join the one admitted artifact to its immutable counted journal."""
     with budget._connect() as db:
         stored = json.loads(db.execute("SELECT binding FROM guard_goal").fetchone()[0])
         identity = db.execute("SELECT binding FROM identity").fetchone()[0]
     artifact = json.loads((goal / "goal-binding.json").read_text())
+    snapshot = budget.snapshot()
     require(
         artifact == {"binding_sha256": identity, **stored}
         and admitted_binding_sha(stored) == identity
         and all(
-            stored.get(field) == json.loads(json.dumps(value))
-            for field, value in binding.items()
-            if field != "historical_floor_nusd"
+            stored.get(field) == json.loads(json.dumps(value)) for field, value in binding.items()
         )
-        and set(stored) == set(binding) | {"resources", "redis_run_id"}
-        and type(stored["historical_floor_nusd"]) is int,
-        "Current admitted artifact, owner/pred pair or source changed",
+        and set(stored) == set(binding) | {"resources", "redis_run_id", "historical_floor_nusd"}
+        and type(stored["historical_floor_nusd"]) is int
+        and stored["historical_floor_nusd"] >= MINIMUM_PROVIDER_MONTHLY_NUSD
+        and isinstance(stored["resources"], dict)
+        and isinstance(stored["redis_run_id"], str)
+        and snapshot["inherited_calls"] == [],
+        "Admitted artifact, owner binding, monthly floor, or counted inventory changed",
     )
-    require(
-        budget.snapshot()["inherited_calls"] == binding.get("successor", {}).get("calls", []),
-        "Current ancestral counted inventory changed",
-    )
-    lineage = binding.get("successor", {})
-    if lineage.get("authorization_sha256") in {
-        KNOWN_COST_AUTHORIZATION_SHA256,
-        RECONCILIATION_AUTHORIZATION_SHA256,
-        ATLAS_AUTHORIZATION_SHA256,
-    }:
-        with budget._connect() as db:
-            actual_limits = {
-                name: (cap, cost)
-                for name, cap, cost in db.execute("SELECT name, request_cap, cost_cap FROM stages")
-            }
-        require(
-            stored["admission"] == admission_seal(stored)
-            and actual_limits == stage_limits(lineage["request_caps"]["shadow"] // 6)
-            and stored["historical_floor_nusd"]
-            >= max(
-                lineage["authoritative_monthly_floor_nusd"],
-                lineage["predecessor_binding"]["historical_floor_nusd"]
-                + sum(row["amount_nusd"] for row in lineage["fresh_calls"]),
-            ),
-            "Admitted floor, resources, Redis identity or frozen limits changed",
-        )
     return stored
 
 
 def goal_context(root: Path, goal: Path, args) -> tuple[MonthlyLedger, dict, Path]:
-    lineage = successor_lineage(
-        root,
-        goal,
-        getattr(args, "successor_authorization", None),
-        getattr(args, "predecessor_goal", None),
-    )
-    minimum = (
-        max(
-            lineage["authoritative_monthly_floor_nusd"],
-            lineage["predecessor_binding"]["historical_floor_nusd"]
-            + sum(call["amount_nusd"] for call in lineage.get("fresh_calls", lineage["calls"])),
-        )
-        if lineage
-        else 72_217_900
+    root, goal = root.resolve(), goal.resolve()
+    require(
+        goal.is_relative_to(root) and goal != root, "Artifacts must remain in private evidence root"
     )
     ledger = MonthlyLedger(
         month=f"{datetime.now(UTC):%Y-%m}",
-        historical_floor=str(Decimal(minimum) / 1_000_000_000),
-        retained=lineage["retained_reservations"] if lineage else None,
+        historical_floor=str(Decimal(MINIMUM_PROVIDER_MONTHLY_NUSD) / 1_000_000_000),
     )
-    binding = goal_binding(root, ledger)
-    anchor = root / GOAL_ANCHOR
-    if lineage:
-        predecessor = lineage["predecessor_binding"]
-        source_fields = {
-            "guarded_cli_sha256",
-            "runner_sha256",
-            "load_harness_sha256",
-            "verification_budget_sha256",
-            "verification_adapter_sha256",
-            "historical_floor_nusd",
-        }
-        for field, value in binding.items():
-            if field not in source_fields:
-                require(
-                    predecessor[field] == json.loads(json.dumps(value)),
-                    "Successor changes original fixed contract: " + field,
-                )
-        ledger.run_id = predecessor["redis_run_id"]
-        binding["successor"] = lineage
-        anchor = successor_anchor(root, lineage)
-        if lineage["authorization_sha256"] == ATLAS_AUTHORIZATION_SHA256:
-            binding["route"] = ATLAS_ROUTE
-            binding["route_rebind"] = lineage["route_rebind"]
-        if lineage["authorization_sha256"] in {
-            KNOWN_COST_AUTHORIZATION_SHA256,
-            RECONCILIATION_AUTHORIZATION_SHA256,
-            ATLAS_AUTHORIZATION_SHA256,
-        }:
-            binding["protocol_sources"] = protocol_sources()
-            artifact_path = goal / "goal-binding.json"
-            if artifact_path.is_file():
-                binding["admission"] = json.loads(artifact_path.read_text())["admission"]
-    return ledger, binding, anchor
-
-
-def admission_route(binding: dict) -> dict:
-    rebind = binding.get("route_rebind")
-    if rebind is None:
-        require(binding["route"] == ROUTE, "Unapproved route binding")
-        return {}
-    require(
-        binding.get("successor", {}).get("authorization_sha256") == ATLAS_AUTHORIZATION_SHA256
-        and rebind.get("authorization_sha256") == ATLAS_AUTHORIZATION_SHA256
-        and rebind.get("reconciliation_authorization_sha256") == RECONCILIATION_AUTHORIZATION_SHA256
-        and rebind.get("route") == binding["route"] == ATLAS_ROUTE
-        and rebind.get("provider") == ATLAS_PROVIDER
-        and rebind.get("model") == binding["model"] == MODEL,
-        "Admitted Atlas route or authorization differs",
-    )
-    return {
-        "route": ATLAS_ROUTE,
-        "provider": ATLAS_PROVIDER,
-        "route_authorization_sha256": ATLAS_AUTHORIZATION_SHA256,
-    }
+    return ledger, goal_binding(root, ledger), root / GOAL_ANCHOR
 
 
 def goal_binding(root: Path, ledger: MonthlyLedger) -> dict:
-    history = json.loads((root / HISTORY).read_text())
-    require(
-        history["provider_calls"] == 22
-        and history["ledger_floor_usd"] == "0.0722179"
-        and history["retained_unknown_usd"] == "0.07205728",
-        "Retained historical accounting identity changed",
-    )
+    for relative, expected in FROZEN.items():
+        require(
+            file_hash(root / relative) == expected, "Frozen admission input mismatch: " + relative
+        )
+    settings = get_settings()
     return {
         "frozen_inputs": FROZEN,
+        "dataset_bundle_sha256": BUNDLE_SHA256,
+        "candidate_identity_sha256": IDENTITY_FILES,
+        "candidate_collections": COLLECTIONS,
+        "candidate_version": VERSION,
+        "candidate_revision": REVISION,
+        "serving_code_sha256": SERVING_CODE_SHA256,
         "model": MODEL,
-        "route": ROUTE,
+        "provider": "openrouter",
+        "provider_routing": ROUTING_POLICY,
         "provider_key_sha256": DESIGNATED_KEY_SHA256,
         "utc_month": ledger.month,
-        "docker_resources": RESOURCES,
-        "network_id": NETWORK,
-        "postgres_system_id": POSTGRES_SYSTEM_ID,
-        "historical_provider_calls": 22,
-        "historical_floor_nusd": nusd(history["ledger_floor_usd"]),
-        "historical_uncertainty_nusd": nusd(history["retained_unknown_usd"]),
-        "historical_probe_sha256": FROZEN[PRIOR_PROBE],
+        "minimum_provider_monthly_nusd": MINIMUM_PROVIDER_MONTHLY_NUSD,
         "monthly_cutoff_nusd": 2_000_000_000,
         "spending_direction_sha256": SPENDING_DIRECTION_SHA256,
         "guarded_cli_sha256": file_hash(Path(__file__)),
@@ -2679,11 +1765,9 @@ def goal_binding(root: Path, ledger: MonthlyLedger) -> dict:
         "verification_adapter_sha256": file_hash(
             Path(__file__).with_name("verification_adapter.py")
         ),
-        "client_identity_sha256": hashlib.sha256(
-            get_settings().ip_hash_secret.encode()
-        ).hexdigest(),
+        "client_identity_sha256": hashlib.sha256(settings.ip_hash_secret.encode()).hexdigest(),
         "runtime_settings_sha256": digest(
-            get_settings().model_dump(
+            settings.model_dump(
                 exclude={
                     "analysis_answer_mode",
                     "db_url",
@@ -2702,14 +1786,24 @@ def goal_binding(root: Path, ledger: MonthlyLedger) -> dict:
 
 async def run(args) -> None:
     root, goal = args.evidence_root.resolve(), args.goal_dir.resolve()
+    root.mkdir(mode=0o700, parents=True, exist_ok=True)
+    require(root.stat().st_mode & 0o777 == 0o700, "Evidence root must be private mode 0700")
     require(
         goal.is_relative_to(root) and goal != root, "Artifacts must remain in private evidence root"
     )
-    # Frozen files are checked before importing DB clients or opening sockets.
+    bundle_path = args.bundle_path.resolve()
+    identity_dir = args.candidate_identity_dir.resolve()
+    require(
+        bundle_path.is_file() and identity_dir.is_dir(), "Required candidate input file is missing"
+    )
     for relative, expected in FROZEN.items():
         require(
             file_hash(root / relative) == expected, "Frozen admission input mismatch: " + relative
         )
+    require(
+        file_hash(args.spending_direction.resolve()) == SPENDING_DIRECTION_SHA256,
+        "Missing exact owner spending direction",
+    )
     settings = get_settings()
     key = settings.openrouter_api_key
     require(isinstance(key, str) and key.startswith("sk-or-"), "Missing designated OpenRouter key")
@@ -2739,56 +1833,33 @@ async def run(args) -> None:
     }
     if args.action == "admit":
         require(
-            not anchor_path.exists(),
-            "This authorization/workload already has an aggregate goal; "
-            "no duplicate successor, journal reset, or new attempt bypass",
+            not anchor_path.exists(), "An admitted goal already exists; new attempts are forbidden"
         )
-        goal.mkdir(mode=0o700, parents=True, exist_ok=False)
+        goal.mkdir(mode=0o700, exist_ok=False)
         admission = Admission(
             evidence_root=root,
             artifact_dir=goal,
+            bundle_path=bundle_path,
+            candidate_identity_dir=identity_dir,
             api_key=key,
             ledger=ledger,
-            **admission_route(binding),
         )
         await admission.verify_environment(identity)
         assert admission.resource_binding is not None
         binding["resources"] = admission.resource_binding
         binding["redis_run_id"] = ledger.run_id
-        # Redis authority, not the retained historical floor, establishes current
-        # spend. Retain any extra existing charges as part of this goal's history.
         current = await ledger.read()
         binding["historical_floor_nusd"] = nusd(current["amount_usd"])
-        if binding.get("successor", {}).get("authorization_sha256") in {
-            KNOWN_COST_AUTHORIZATION_SHA256,
-            RECONCILIATION_AUTHORIZATION_SHA256,
-            ATLAS_AUTHORIZATION_SHA256,
-        }:
-            require(
-                target_resources(binding["resources"])
-                == target_resources(binding["successor"]["predecessor_binding"]["resources"]),
-                "Fresh admission changed original target resources",
-            )
-            binding["admission"] = admission_seal(binding)
-            binding_sha = admitted_binding_sha(binding)
-        durable_json(
-            anchor_path,
-            {
-                "goal_dir": str(goal),
-                "binding_sha256": binding_sha,
-                "policy": "One aggregate goal; no resume/retry or reset after uncertainty",
-            },
-        )
+        anchor = {
+            "goal_dir": str(goal),
+            "binding_sha256": binding_sha,
+            "policy": "One aggregate goal; no resume/retry or reset after uncertainty",
+        }
+        durable_json(anchor_path, anchor)
         path = goal / "goal.sqlite"
-        VerificationBudget.create(
-            path,
-            binding=binding_sha,
-            shadow_selected=selected,
-            inherited_calls=binding.get("successor", {}).get("calls"),
-        )
+        VerificationBudget.create(path, binding=binding_sha, shadow_selected=selected)
         budget = VerificationBudget(path, binding=binding_sha)
-        direction = args.spending_direction.resolve()
-        budget.apply_spending_direction(direction)
+        budget.apply_spending_direction(args.spending_direction.resolve())
         with budget._connect() as db:
             db.execute("CREATE TABLE guard_goal (binding TEXT NOT NULL)")
             db.execute("INSERT INTO guard_goal VALUES (?)", (json.dumps(binding),))
@@ -2804,59 +1875,56 @@ async def run(args) -> None:
             )
         )
         return
+
+    require(goal.stat().st_mode & 0o777 == 0o700, "Admitted goal must remain private mode 0700")
     path = goal / "goal.sqlite"
     anchor = json.loads(anchor_path.read_text())
     require(
         anchor["goal_dir"] == str(goal) and anchor["binding_sha256"] == binding_sha,
         "Collection does not use the admitted aggregate goal",
     )
-    require(
-        path.is_file(), "Run admit once before counted collection; no fresh journal/restart bypass"
-    )
+    require(path.is_file(), "Run admit once before counted collection; no restart bypass")
     budget = VerificationBudget(path, binding=binding_sha)
     admitted = validate_admitted_goal(goal, budget, binding)
     require(
-        nusd(ledger.floor) <= admitted["historical_floor_nusd"], "Admitted monthly floor lowered"
-    )
-    require(
-        budget.snapshot()["inherited_calls"] == binding.get("successor", {}).get("calls", []),
-        "Successor inherited counted request inventory changed",
+        nusd(ledger.floor) <= admitted["historical_floor_nusd"],
+        "Admitted monthly floor lowered",
     )
     require(
         budget.request_cap("smoke") == 9
         and budget.request_cap("primary") == 720
         and budget.request_cap("shadow") == 6 * selected
         and budget.request_cap("load") == 66,
-        "Original phase/request caps changed",
+        "Frozen phase/request caps changed",
     )
     require(
         not budget.snapshot()["stopped"]
-        and budget.snapshot()["spending_direction_sha256"] is not None,
+        and budget.snapshot()["spending_direction_sha256"] == SPENDING_DIRECTION_SHA256,
         "Stopped or unapproved aggregate goal",
     )
     with budget._connect() as db:
         db.execute("BEGIN IMMEDIATE")
         stored = json.loads(db.execute("SELECT binding FROM guard_goal").fetchone()[0])
-        for field in binding:
-            if field != "historical_floor_nusd":
-                require(
-                    stored[field] == json.loads(json.dumps(binding[field])),
-                    "Aggregate goal input binding changed",
-                )
+        for field, value in binding.items():
+            require(
+                stored[field] == json.loads(json.dumps(value)),
+                "Aggregate goal input binding changed",
+            )
         ledger.run_id = stored["redis_run_id"]
         ledger.floor = Decimal(stored["historical_floor_nusd"]) / 1_000_000_000
         require(
             not db.execute("SELECT 1 FROM guard_runs WHERE status != 'complete'").fetchone(),
-            "Interrupted/failed phase cannot resume",
+            "Interrupted or failed phase cannot resume",
         )
         db.execute("INSERT INTO guard_runs VALUES (?, 'started')", (args.mode,))
     run_dir = goal / args.mode
     admission = Admission(
         evidence_root=root,
         artifact_dir=run_dir,
+        bundle_path=bundle_path,
+        candidate_identity_dir=identity_dir,
         api_key=key,
         ledger=ledger,
-        **admission_route(binding),
     )
     admission.resource_binding = stored["resources"]
     admission.alias_binding = stored["resources"]["qdrant_aliases"]
@@ -2892,7 +1960,6 @@ async def run(args) -> None:
                     "mode": args.mode,
                     "observations": len(result["observations"]),
                     "paid_requests": result["paid_requests"],
-                    "historical_provider_calls": 22,
                 }
             )
         )
@@ -2902,14 +1969,20 @@ async def run(args) -> None:
     finally:
         with budget._connect() as db:
             db.execute("UPDATE guard_runs SET status=? WHERE mode=?", (status, args.mode))
+            snapshots = [
+                {"sha256": row[0], "snapshot": json.loads(row[1])}
+                for row in db.execute(
+                    "SELECT sha256, snapshot FROM guard_price_snapshots ORDER BY rowid"
+                )
+            ]
         durable_json(
             run_dir / "execution-summary.json",
             {
                 "status": status,
                 "mode": args.mode,
-                "historical_provider_calls": 22,
                 "calls": session.receipts(),
                 "accounting": budget.snapshot(),
+                "endpoint_price_snapshots": snapshots,
                 "semantic_release_gate": "not_scored_or_approved",
             },
         )
@@ -2922,15 +1995,15 @@ def main() -> None:
     parser.add_argument("--mode", required=True, choices=["primary", "shadow"])
     parser.add_argument("--evidence-root", required=True, type=Path)
     parser.add_argument("--goal-dir", required=True, type=Path)
-    parser.add_argument("--successor-authorization", type=Path)
-    parser.add_argument("--predecessor-goal", type=Path)
+    parser.add_argument("--bundle-path", required=True, type=Path)
+    parser.add_argument("--candidate-identity-dir", required=True, type=Path)
     parser.add_argument("--key-env-file", type=Path)
     parser.add_argument("--staging-env-file", type=Path)
     parser.add_argument(
         "--spending-direction",
         type=Path,
         default=Path(__file__).resolve().parents[4]
-        / "docs/release-evidence/implementation-20261001/confirmed-spending-direction.json",
+        / "docs/release-evidence/evaluation-contract-20261021/owner-spending-direction.json",
     )
     args = parser.parse_args()
     try:
@@ -2941,29 +2014,30 @@ def main() -> None:
             )
         require(
             file_hash(args.spending_direction.resolve()) == SPENDING_DIRECTION_SHA256,
-            "Missing exact retained owner spending direction",
+            "Missing exact owner spending direction",
         )
         if args.key_env_file is not None or args.staging_env_file is not None:
             from dotenv import dotenv_values
 
             if args.key_env_file is not None:
                 key = dotenv_values(args.key_env_file).get("OPENROUTER_API_KEY")
-                require(isinstance(key, str) and bool(key), "Designated dotenv lacks provider key")
+                require(
+                    isinstance(key, str) and bool(key), "Provider key file is missing its value"
+                )
                 assert isinstance(key, str)
                 os.environ["OPENROUTER_API_KEY"] = key
             if args.staging_env_file is not None:
                 secret = dotenv_values(args.staging_env_file).get("KNICKSIQ_STAGING_IP_HASH_SECRET")
                 require(
                     isinstance(secret, str) and bool(secret),
-                    "Staging dotenv lacks established client identity",
+                    "Staging environment lacks established client identity",
                 )
                 assert isinstance(secret, str)
                 os.environ["IP_HASH_SECRET"] = secret
             get_settings.cache_clear()
         asyncio.run(run(args))
     except BaseException as exc:
-        # HTTP/DB exception text may contain credential-bearing URLs or headers.
-        # Private receipts contain safe identity/joins; never print provider bodies.
+        # Exception text may contain credential-bearing URLs or headers.
         print(
             json.dumps({"status": "denied_or_stopped", "error_type": type(exc).__name__}),
             flush=True,

@@ -32,6 +32,8 @@ class CountedVerificationAdapter(LLMAdapter):
         reasoning_effort: str | None = None,
         on_failure: Callable[[str], None] | None = None,
         transport: httpx.AsyncBaseTransport | None = None,
+        max_tokens: int = 500,
+        timeout_seconds: float = 20.0,
     ):
         self.on_failure = on_failure
         self.api_key = api_key
@@ -40,6 +42,8 @@ class CountedVerificationAdapter(LLMAdapter):
         self.verify_request = verify_request
         self.reasoning_effort = reasoning_effort
         self.transport = transport
+        self.max_tokens = max_tokens
+        self.timeout_seconds = timeout_seconds
         self.last_metadata = {}
         self.response_schema = None
 
@@ -79,7 +83,9 @@ class CountedVerificationAdapter(LLMAdapter):
             "provider": {"allow_fallbacks": True, "sort": "latency", "require_parameters": True},
             "response_format": {"type": "json_object"},
         }
-        if self.reasoning_effort is not None:
+        if self.reasoning_effort == "none":
+            payload["reasoning"] = {"enabled": False}
+        elif self.reasoning_effort is not None:
             payload["reasoning"] = {"effort": self.reasoning_effort}
         if self.response_schema is not None:
             payload["response_format"] = {
@@ -140,8 +146,6 @@ class CountedRun:
     The CLI has no default implementation: unavailable verification stays blocked.
     """
 
-    subject_namespace: str | None
-
     def __init__(
         self,
         *,
@@ -164,7 +168,10 @@ class CountedRun:
         self.failure = error
 
     def adapter(self, stage: str, reasoning_effort: str | None) -> CountedVerificationAdapter:
+        from app.core.config import get_settings
+
         self.check()
+        settings = get_settings()
         return CountedVerificationAdapter(
             api_key=self.api_key,
             budget=self.budget,
@@ -172,5 +179,7 @@ class CountedRun:
             verify_request=self.verify_request,
             transport=self.transport,
             reasoning_effort=reasoning_effort,
+            max_tokens=settings.rag_generation_max_output_tokens,
+            timeout_seconds=settings.ai_request_timeout_seconds,
             on_failure=self.failed,
         )
