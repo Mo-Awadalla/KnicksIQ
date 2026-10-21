@@ -1,0 +1,7 @@
+{
+  "owner": "interactive repository owner",
+  "approved_at": "2026-10-21T01:53:14.963060+00:00",
+  "expectations_sha256": "8da8be9d68a7111919d1e8d0d18d22da8bf8d3a7da34a7fe4688117cc37119f9",
+  "scope": "Exact frozen 120-case contract only. Not an official quality result, release readiness, deployment or budget change.",
+  "source": "Explicit user selection \"Approve this exact hash\" in this session."
+}
