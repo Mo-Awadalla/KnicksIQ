@@ -65,11 +65,14 @@ def score_threshold_count(question: str, games: Sequence[Game]) -> ScoreThreshol
     """Count archived game scores using the shared stat-threshold semantics."""
     if not _COUNT_REQUEST.search(question) or not _GAME_FREQUENCY.search(question):
         return None
+    opponent_score = bool(_OPPONENT_SCORE.search(question))
     threshold = parse_stat_threshold(question)
+    if threshold is None and opponent_score:
+        # The shared parser infers points from a scoring verb; opponent defense
+        # phrases imply the same score metric without naming it explicitly.
+        threshold = parse_stat_threshold(f"score {question}")
     if threshold is None or threshold.stat != "points":
         return None
-
-    opponent_score = bool(_OPPONENT_SCORE.search(question))
     matching_game_ids = tuple(
         game.id
         for game in games

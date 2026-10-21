@@ -17,9 +17,10 @@ from basketball_core.analytics import parse_stat_threshold
 _REFERENCE = re.compile(
     r"\b(?:that (?:\w+ ){0,2}(?:game|stretch|run|possession|quarter|night)|"
     r"this game|same game|those games|these games|then|next|during it|after that|"
-    r"the other game|final possession)\b",
+    r"the other(?: \w+){0,3} game|final possession)\b",
     re.I,
 )
+_CLAIM_REFERENCE = re.compile(r"\b(?:receipts?|sources?|evidence)\s+for\s+(?:that|this|it)\b", re.I)
 _DATES = re.compile(r"\b20\d{2}-\d{2}-\d{2}\b")
 
 
@@ -65,6 +66,7 @@ def _topic_changed(messages: list[dict[str, str]]) -> bool:
     return bool(
         latest_user
         and not _REFERENCE.search(latest_user["content"])
+        and not _CLAIM_REFERENCE.search(latest_user["content"])
         and not _has_game_anchor(latest_user["content"])
     )
 
@@ -162,7 +164,10 @@ def resolve_game_reference(
     prior_scope: dict[str, Any] | None = None,
 ) -> ResolvedQuery:
     """Use recent messages or delivered claim identities as scope, never as facts."""
-    if not _REFERENCE.search(question):
+    # Generic receipts may cover verified multi-game claims, not one selected game.
+    if not _REFERENCE.search(question) and (
+        not _CLAIM_REFERENCE.search(question) or delivered_claims
+    ):
         return current
     recent = messages[-HISTORY_MESSAGES:]
     if _PLURAL_REFERENCE.search(question):
