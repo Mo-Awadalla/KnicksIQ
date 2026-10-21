@@ -37,7 +37,7 @@ class DeclaredAdapter(ScriptedAdapter):
                 {
                     "assertions": [
                         {
-                            "text": answer["text"],
+                            "text": span,
                             "assertion_type": self.review_type,
                             "verdict": "supported",
                             "offending_text": None,
@@ -47,6 +47,7 @@ class DeclaredAdapter(ScriptedAdapter):
                             "supporting_evidence_ids": [],
                             "reason": "Fixture supports the declared intent.",
                         }
+                        for span in payload["review_spans"]
                     ]
                 }
             )
