@@ -1,0 +1,24 @@
+{
+  "tested_commit": "976eb7c38e553844e3e992f89a3fa6e3a4560d28",
+  "scope": "Actual offline audit re-executed against final merged candidate; no owner approval or active production archive assertion.",
+  "command": "uv run --offline --frozen --package knicksiq-api python tools/report_audit/audit.py /tmp/kiq-report-audit-20261020/reliability-approved-20260928.json --output /tmp/kiq-final-artifacts/976eb7c38e553844e3e992f89a3fa6e3a4560d28/report-audit",
+  "auditor_sha256": "f129cafcf58082c55374264e7d0ece5981e28bc427d9f330d60bae7574984980",
+  "input_file_sha256": "931c8a2d3e18bd8bac8983bbaf74b6213e65fcd16d50ce2f9f81de9ca74ab6f6",
+  "audit_sha256": "0e02fdf61c14d8b4b53821b460305c4ab9c3c4393ea24e1707f703d16c65b715",
+  "audit_matches_retained_full_audit": true,
+  "summary": {
+    "reports": 101,
+    "content_hashes_passed": 101,
+    "score_summaries_passed": 101,
+    "player_lines_passed": 303,
+    "passed": 101,
+    "unresolved": 0,
+    "cross_period_reports": 0
+  },
+  "owner_approval": null,
+  "release_approved": false,
+  "blockers": [
+    "Active archive identity requires verification",
+    "Owner template, exceptions and audit approval required"
+  ]
+}
