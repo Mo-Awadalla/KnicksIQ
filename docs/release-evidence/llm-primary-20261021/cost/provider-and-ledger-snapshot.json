@@ -312,5 +312,6 @@
       "cache_read": 0.014,
       "context": 1048576
     }
-  ]
+  ],
+  "note": "Ledgers were read while other workers were active. The historical table uses the first read: db2 $1.146562208, db1 $0.594955166, db6 $0.066241279 (after the ops run). This snapshot is later and may include further runs."
 }
