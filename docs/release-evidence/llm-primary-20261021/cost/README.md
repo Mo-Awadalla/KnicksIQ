@@ -15,7 +15,7 @@ difference:
    The model spent its completion budget on reasoning tokens, returned `null` content with
    `finish_reason=length`, and the reviewer could not parse a verdict. 59 of the 294 traced
    calls in the 60 delivered held-out rows failed this way (53 review, 5 revise, 1
-   orchestrate). The held-out run validated 5/60.
+   orchestrate). The held-out run scored 5/60 on the honest `meets_expectation` check.
 2. On a failed call after a provider response, cost accounting discarded the provider's
    reported `usage.cost` and settlement charged the flat $0.01 call reservation. In the
    controlled reproduction, 12 failed calls were billed $0.018147 by the provider and
