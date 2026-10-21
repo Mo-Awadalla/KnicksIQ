@@ -117,6 +117,7 @@ class Harness:
         body = body_of(response) if response is not None else {}
         status = extra.pop("status", None) or ("pass" if passed else "fail")
         window = self.logs()[self.log_mark :]
+        window = re.sub(r"\x1b\[[0-9;]*m", "", window)
         errors = re.findall(r"analyst_execution_failed.*?error_type=(\w+)", window)
         self.log_mark = len(self.logs())
         record = {

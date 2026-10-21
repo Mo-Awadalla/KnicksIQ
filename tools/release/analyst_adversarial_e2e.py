@@ -27,7 +27,7 @@ import httpx
 from adversarial_support import Harness, Tee, configure_env
 
 
-async def run(env_file, out_path):
+async def run(env_file, out_path, phases="all"):
     configure_env(env_file)
     from app.core.config import get_settings
     from app.main import create_app
@@ -63,27 +63,41 @@ async def run(env_file, out_path):
 
             analyst_provider.get_llm_adapter = counting
 
-            async def refusals_first(harness):
+            async def policy_first(harness):
                 harness.trial = 1
-                await public.phase_refusals(harness)
+                await public.phase_policy(harness)
 
-            async def refusals_second(harness):
+            async def injections_first(harness):
+                harness.trial = 1
+                await public.phase_injections(harness)
+
+            async def policy_second(harness):
                 harness.trial = 2
-                await public.phase_refusals(harness)
+                await public.phase_policy(harness)
 
+            async def injections_second(harness):
+                harness.trial = 2
+                await public.phase_injections(harness)
+
+            sequence = (
+                ("http", public.phase_http),
+                ("policy", policy_first),
+                ("injections", injections_first),
+                ("policy-t2", policy_second),
+                ("injections-t2", injections_second),
+                ("sessions", public.phase_sessions),
+                ("budget", infra.phase_budget),
+                ("provider", infra.phase_provider),
+                ("rate", infra.phase_rate),
+                ("proxy", infra.phase_proxy),
+                ("cache", infra.phase_cache),
+                ("errors", public.phase_errors),
+            )
+            requested = None if phases == "all" else set(phases.split(","))
             try:
-                for name, phase in (
-                    ("http", public.phase_http),
-                    ("refusals-1", refusals_first),
-                    ("refusals-2", refusals_second),
-                    ("sessions", public.phase_sessions),
-                    ("budget", infra.phase_budget),
-                    ("provider", infra.phase_provider),
-                    ("rate", infra.phase_rate),
-                    ("proxy", infra.phase_proxy),
-                    ("cache", infra.phase_cache),
-                    ("errors", public.phase_errors),
-                ):
+                for name, phase in sequence:
+                    if requested is not None and name not in requested:
+                        continue
                     print(f"phase {name}", file=sys.stderr)
                     await phase(h)
             finally:
@@ -117,8 +131,9 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--out", type=Path, required=True)
     parser.add_argument("--env-file", type=Path)
+    parser.add_argument("--phases", default="all", help="Comma-separated phase names")
     args = parser.parse_args()
-    raise SystemExit(asyncio.run(run(args.env_file, args.out)))
+    raise SystemExit(asyncio.run(run(args.env_file, args.out, args.phases)))
 
 
 if __name__ == "__main__":
