@@ -29,6 +29,7 @@ from app.api.analysis_policy import (
     _looks_like_follow_up,
     _rate_limit,
     _requires_explicit_refusal,
+    _requires_pre_model_refusal,
     _retrieval_limitation_note,
     _unknown_data_question,
 )
@@ -36,6 +37,7 @@ from app.api.analysis_policy import (
     _requests_by_client as _requests_by_client,
 )
 from app.api.analysis_presenters import _format_answer
+from app.api.analysis_refusals import refuse
 from app.api.analysis_retrieval import (
     _active_data_version,
     _execute_archive_retrieval,
@@ -109,6 +111,13 @@ async def query_analysis(
             citations=[],
             tool_calls=[],
         )
+    if len(question) > settings.public_chat_max_prompt_chars:
+        raise HTTPException(
+            status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+            detail="Question is too long",
+        )
+    if _requires_pre_model_refusal(question):
+        return refuse(response_metadata)
     if getattr(settings, "analyst_evidence_loop_enabled", False):
         try:
             async with asyncio.timeout(settings.analyst_deadline_seconds):
@@ -127,11 +136,6 @@ async def query_analysis(
     context_question = (
         question if structured_conversation_enabled else _contextual_question(question, req.context)
     )
-    if len(question) > settings.public_chat_max_prompt_chars:
-        raise HTTPException(
-            status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
-            detail="Question is too long",
-        )
     if _requires_explicit_refusal(question):
         return AnalysisQueryResponse(
             **response_metadata,
