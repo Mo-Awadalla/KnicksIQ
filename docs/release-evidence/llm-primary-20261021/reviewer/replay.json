@@ -1,0 +1,1773 @@
+{
+  "units": 17,
+  "trials": 3,
+  "modes": [
+    "base",
+    "head"
+  ],
+  "replay": {
+    "results": {
+      "exact_statistics-001#0": {
+        "base": [
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.000579384
+          },
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.000584184
+          },
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.000581784
+          }
+        ],
+        "head": [
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.000511752
+          },
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.000511752
+          },
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.000511752
+          }
+        ]
+      },
+      "exact_statistics-002#0": {
+        "base": [
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.000617748
+          },
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.000622548
+          },
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.000621348
+          }
+        ],
+        "head": [
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.000544116
+          },
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.000556116
+          },
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.000547716
+          }
+        ]
+      },
+      "exact_statistics-003#0": {
+        "base": [
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.000504648
+          },
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.000504648
+          },
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.000509448
+          }
+        ],
+        "head": [
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.000427416
+          },
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.000426216
+          },
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.000432216
+          }
+        ]
+      },
+      "exact_statistics-004#0": {
+        "base": [
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.000524448
+          },
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.000524448
+          },
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.000522048
+          }
+        ],
+        "head": [
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.000378816
+          },
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.000394416
+          },
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.000378816
+          }
+        ]
+      },
+      "exact_statistics-005#0": {
+        "base": [
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.000479916
+          },
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.000475116
+          },
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.000476316
+          }
+        ],
+        "head": [
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.000434316
+          },
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.000435516
+          },
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.000435516
+          }
+        ]
+      },
+      "exact_statistics-006#0": {
+        "base": [
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.000480516
+          },
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.000496116
+          },
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.000481716
+          }
+        ],
+        "head": [
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.000426516
+          },
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.000416916
+          },
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.000425316
+          }
+        ]
+      },
+      "exact_statistics-007#0": {
+        "base": [
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.000439548
+          },
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.000447948
+          },
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.000432348
+          }
+        ],
+        "head": [
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.000431148
+          },
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.000431148
+          },
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.000429948
+          }
+        ]
+      },
+      "exact_statistics-008#0": {
+        "base": [
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.00058302
+          },
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.00067062
+          },
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.00065262
+          }
+        ],
+        "head": [
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.000601788
+          },
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.000602988
+          },
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.000602988
+          }
+        ]
+      },
+      "exact_statistics-010#0": {
+        "base": [
+          {
+            "outcome": "verdict_rejected",
+            "causes": [
+              "span3:missing_ids"
+            ],
+            "cost": 0.001144308,
+            "review": {
+              "assertions": [
+                {
+                  "text": "The highest-scoring individual Knicks game in the available 2025-26 archive is Jalen Brunson's 47 points on 2025-12-21 against MIA (regular season). ",
+                  "assertion_type": "factual",
+                  "verdict": "supported",
+                  "offending_text": null,
+                  "supporting_claim_ids": [
+                    "claim:fe425ac40864f4bfa9e33368bf60428b801bad3c80ce3ca4b4515981d84cf1ef"
+                  ],
+                  "supporting_evidence_ids": [
+                    "2025-26.20260928.1:game:28:player:134"
+                  ],
+                  "reason": "Claim states Jalen Brunson recorded 47 points on 2025-12-21 against MIA in the regular season, matching the span's value, date, opponent, and season type."
+                },
+                {
+                  "text": "The next-highest is his 45 points on 2026-06-13 against SAS in the playoffs. ",
+                  "assertion_type": "factual",
+                  "verdict": "supported",
+                  "offending_text": null,
+                  "supporting_claim_ids": [
+                    "claim:f1e6e09d89101c516c09bdcb4a1b68b69b585194203f72667020c6449e954dfb"
+                  ],
+                  "supporting_evidence_ids": [
+                    "2025-26.20260928.1:game:101:player:134"
+                  ],
+                  "reason": "Claim states Jalen Brunson recorded 45 points on 2026-06-13 against SAS in the playoffs, matching the span's value, date, opponent, and season type."
+                },
+                {
+                  "text": "Note: this reflects individual player scoring, not the team's total points in a game.",
+                  "assertion_type": "interpretation",
+                  "verdict": "supported",
+                  "offending_text": null,
+                  "supporting_claim_ids": [],
+                  "supporting_evidence_ids": [],
+                  "reason": "The claims are player-level points, so the clarification that this is individual scoring rather than team total is accurate."
+                }
+              ],
+              "follow_up_reviews": [
+                {
+                  "text": "What was the Knicks' highest team point total in a game?",
+                  "verdict": "supported",
+                  "supporting_claim_ids": [],
+                  "supporting_evidence_ids": [],
+                  "reason": "The archive includes team metrics such as points, so this follow-up is within scope and answerable."
+                },
+                {
+                  "text": "How many points did Jalen Brunson average in the 2025-26 regular season?",
+                  "verdict": "supported",
+                  "supporting_claim_ids": [],
+                  "supporting_evidence_ids": [],
+                  "reason": "The archive includes player box scores and regular-season data, so this follow-up is within scope and answerable."
+                }
+              ]
+            }
+          },
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.000977652
+          },
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.000956052
+          }
+        ],
+        "head": [
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.00082722
+          },
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.00082962
+          },
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.00083082
+          }
+        ]
+      },
+      "date_range_last_n-001#0": {
+        "base": [
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.000657648
+          },
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.000581184
+          },
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.000581184
+          }
+        ],
+        "head": [
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.000515952
+          },
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.000515952
+          },
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.000515952
+          }
+        ]
+      },
+      "date_range_last_n-002#0": {
+        "base": [
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.000828984
+          },
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.000713688
+          },
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.000707688
+          }
+        ],
+        "head": [
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.000640056
+          },
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.000640056
+          },
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.000640056
+          }
+        ]
+      },
+      "date_range_last_n-003#0": {
+        "base": [
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.000570216
+          },
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.000487752
+          },
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.000491352
+          }
+        ],
+        "head": [
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.00040692
+          },
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.00040572
+          },
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.00040692
+          }
+        ]
+      },
+      "date_range_last_n-004#0": {
+        "base": [
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.001185408
+          },
+          {
+            "outcome": "verdict_rejected",
+            "causes": [
+              "span1:verdict_unsupported",
+              "span1:offending_text"
+            ],
+            "cost": 0.000721488,
+            "review": {
+              "assertions": [
+                {
+                  "text": "From January 1 through January 31, the Knicks went 7-8 across 15 archived games, scoring 1,652 total points.",
+                  "assertion_type": "factual",
+                  "verdict": "unsupported",
+                  "offending_text": "From January 1 through January 31",
+                  "supporting_claim_ids": [
+                    "claim:8ae74bc11c415f391b098b9199758b96c5778d5e71a89a647b7c9a362e28d51c",
+                    "claim:5a43adf99c2a0a2ea22a22a49a7b16d024226960dd2e360e8d413ef5ca6e2854",
+                    "claim:030ed374b46dcae45c14e8faba1d5506eea08bbfd39ce356d5a813708e51b852"
+                  ],
+                  "supporting_evidence_ids": [
+                    "2025-26.20260928.1:game:34"
+                  ],
+                  "reason": "The 7-8 record and 1,652 points over 15 archived games match the claims, but the stated date range 'January 1 through January 31' conflicts with the archive scope (2026-01-02 to 2026-01-30), so the span is unsupported as written."
+                }
+              ],
+              "follow_up_reviews": [
+                {
+                  "text": "What was the Knicks' average points per game in January?",
+                  "verdict": "supported",
+                  "supporting_claim_ids": [
+                    "claim:030ed374b46dcae45c14e8faba1d5506eea08bbfd39ce356d5a813708e51b852"
+                  ],
+                  "supporting_evidence_ids": [
+                    "calculation:75a843af65b3c8554164886a37770bc95018581eff17c97f679cb45c8109b232"
+                  ],
+                  "reason": "The archive has Knicks total points and game count for the January window, so average points per game can be computed."
+                },
+                {
+                  "text": "How did the Knicks' January margin compare to another month?",
+                  "verdict": "insufficient_evidence",
+                  "supporting_claim_ids": [],
+                  "supporting_evidence_ids": [],
+                  "reason": "The archive scope is limited to 2026-01-02 through 2026-01-30, so there is no other month available for comparison."
+                }
+              ]
+            }
+          },
+          {
+            "outcome": "verdict_rejected",
+            "causes": [
+              "span1:verdict_unsupported",
+              "span1:offending_text"
+            ],
+            "cost": 0.000713088,
+            "review": {
+              "assertions": [
+                {
+                  "text": "From January 1 through January 31, the Knicks went 7-8 across 15 archived games, scoring 1,652 total points.",
+                  "assertion_type": "factual",
+                  "verdict": "unsupported",
+                  "offending_text": "From January 1 through January 31",
+                  "supporting_claim_ids": [
+                    "claim:8ae74bc11c415f391b098b9199758b96c5778d5e71a89a647b7c9a362e28d51c",
+                    "claim:5a43adf99c2a0a2ea22a22a49a7b16d024226960dd2e360e8d413ef5ca6e2854",
+                    "claim:030ed374b46dcae45c14e8faba1d5506eea08bbfd39ce356d5a813708e51b852"
+                  ],
+                  "supporting_evidence_ids": [
+                    "2025-26.20260928.1:game:34"
+                  ],
+                  "reason": "The 7-8 record and 1,652 points over 15 archived games are supported by the claims, but the stated date range 'January 1 through January 31' does not match the archive scope (2026-01-02 to 2026-01-30) and is not supported."
+                }
+              ],
+              "follow_up_reviews": [
+                {
+                  "text": "What was the Knicks' average points per game in January?",
+                  "verdict": "supported",
+                  "supporting_claim_ids": [
+                    "claim:030ed374b46dcae45c14e8faba1d5506eea08bbfd39ce356d5a813708e51b852"
+                  ],
+                  "supporting_evidence_ids": [
+                    "calculation:75a843af65b3c8554164886a37770bc95018581eff17c97f679cb45c8109b232"
+                  ],
+                  "reason": "The archive contains Knicks January points and game counts, so average points per game can be computed."
+                },
+                {
+                  "text": "How did the Knicks' January margin compare to another month?",
+                  "verdict": "unsupported",
+                  "supporting_claim_ids": [],
+                  "supporting_evidence_ids": [],
+                  "reason": "The archive scope is limited to 2026-01-02 through 2026-01-30, so it cannot support a comparison to another month."
+                }
+              ]
+            }
+          }
+        ],
+        "head": [
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.000579888
+          },
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.000579888
+          },
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.000579888
+          }
+        ]
+      },
+      "date_range_last_n-006#0": {
+        "base": [
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.000909708
+          },
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.000611052
+          },
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.000607452
+          }
+        ],
+        "head": [
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.000571452
+          },
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.000570252
+          },
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.000575052
+          }
+        ]
+      },
+      "date_range_last_n-008#0": {
+        "base": [
+          {
+            "outcome": "verdict_rejected",
+            "causes": [
+              "span1:verdict_unsupported",
+              "span1:offending_text"
+            ],
+            "cost": 0.001054908,
+            "review": {
+              "assertions": [
+                {
+                  "text": "Jalen Brunson recorded 45 points on 2026-06-13 against SAS, the highest single-game scoring value in the available archive for the last 3 games. ",
+                  "assertion_type": "factual",
+                  "verdict": "unsupported",
+                  "offending_text": "the highest single-game scoring value in the available archive for the last 3 games",
+                  "supporting_claim_ids": [
+                    "claim:f1e6e09d89101c516c09bdcb4a1b68b69b585194203f72667020c6449e954dfb"
+                  ],
+                  "supporting_evidence_ids": [
+                    "2025-26.20260928.1:game:101:player:134"
+                  ],
+                  "reason": "The 45-point game is supported, but the superlative that it is the highest single-game scoring value over the last 3 games is not supported by the provided claim or evidence."
+                },
+                {
+                  "text": "This is a single-game observation, not a 3-game total or average, so it does not by itself establish who led the team in total or average scoring across all three games.",
+                  "assertion_type": "interpretation",
+                  "verdict": "supported",
+                  "offending_text": null,
+                  "supporting_claim_ids": [
+                    "claim:f1e6e09d89101c516c09bdcb4a1b68b69b585194203f72667020c6449e954dfb"
+                  ],
+                  "supporting_evidence_ids": [
+                    "2025-26.20260928.1:game:101:player:134"
+                  ],
+                  "reason": "The claim is explicitly a single-game observation with sample_size 1, so it cannot establish a 3-game total or average leader."
+                }
+              ],
+              "follow_up_reviews": [
+                {
+                  "text": "What were Jalen Brunson's total points over the last 3 games?",
+                  "verdict": "supported",
+                  "supporting_claim_ids": [
+                    "claim:f1e6e09d89101c516c09bdcb4a1b68b69b585194203f72667020c6449e954dfb"
+                  ],
+                  "supporting_evidence_ids": [
+                    "2025-26.20260928.1:game:101:player:134"
+                  ],
+                  "reason": "The archive supports player box scores and the scope includes the last 3 games, so this follow-up is answerable."
+                },
+                {
+                  "text": "Who had the most total points for the Knicks over the last 3 games?",
+                  "verdict": "supported",
+                  "supporting_claim_ids": [],
+                  "supporting_evidence_ids": [],
+                  "reason": "The archive supports player box scores and team identification, and the scope includes the last 3 games, so this follow-up is answerable."
+                }
+              ]
+            }
+          },
+          {
+            "outcome": "verdict_rejected",
+            "causes": [
+              "span1:verdict_unsupported",
+              "span1:offending_text"
+            ],
+            "cost": 0.000747516,
+            "review": {
+              "assertions": [
+                {
+                  "text": "Jalen Brunson recorded 45 points on 2026-06-13 against SAS, the highest single-game scoring value in the available archive for the last 3 games. ",
+                  "assertion_type": "factual",
+                  "verdict": "unsupported",
+                  "offending_text": "the highest single-game scoring value in the available archive for the last 3 games",
+                  "supporting_claim_ids": [
+                    "claim:f1e6e09d89101c516c09bdcb4a1b68b69b585194203f72667020c6449e954dfb"
+                  ],
+                  "supporting_evidence_ids": [
+                    "2025-26.20260928.1:game:101:player:134"
+                  ],
+                  "reason": "The 45-point game is supported, but the claim that it is the highest single-game scoring value over the last 3 games is not supported by the provided claim or evidence, which only covers one game."
+                },
+                {
+                  "text": "This is a single-game observation, not a 3-game total or average, so it does not by itself establish who led the team in total or average scoring across all three games.",
+                  "assertion_type": "interpretation",
+                  "verdict": "supported",
+                  "offending_text": null,
+                  "supporting_claim_ids": [
+                    "claim:f1e6e09d89101c516c09bdcb4a1b68b69b585194203f72667020c6449e954dfb"
+                  ],
+                  "supporting_evidence_ids": [
+                    "2025-26.20260928.1:game:101:player:134"
+                  ],
+                  "reason": "The claim is explicitly a single-game observation with sample size 1, so it cannot establish 3-game totals or averages."
+                }
+              ],
+              "follow_up_reviews": [
+                {
+                  "text": "What were Jalen Brunson's total points over the last 3 games?",
+                  "verdict": "supported",
+                  "supporting_claim_ids": [],
+                  "supporting_evidence_ids": [],
+                  "reason": "The archive covers player box scores and the last 3 games, so this follow-up is within scope and answerable."
+                },
+                {
+                  "text": "Who had the most total points for the Knicks over the last 3 games?",
+                  "verdict": "supported",
+                  "supporting_claim_ids": [],
+                  "supporting_evidence_ids": [],
+                  "reason": "The archive covers player box scores and the last 3 games, so this follow-up is within scope and answerable."
+                }
+              ]
+            }
+          },
+          {
+            "outcome": "verdict_rejected",
+            "causes": [
+              "span1:verdict_unsupported",
+              "span1:offending_text"
+            ],
+            "cost": 0.000956316,
+            "review": {
+              "assertions": [
+                {
+                  "text": "Jalen Brunson recorded 45 points on 2026-06-13 against SAS, the highest single-game scoring value in the available archive for the last 3 games. ",
+                  "assertion_type": "factual",
+                  "verdict": "unsupported",
+                  "offending_text": "the highest single-game scoring value in the available archive for the last 3 games",
+                  "supporting_claim_ids": [
+                    "claim:f1e6e09d89101c516c09bdcb4a1b68b69b585194203f72667020c6449e954dfb"
+                  ],
+                  "supporting_evidence_ids": [
+                    "2025-26.20260928.1:game:101:player:134"
+                  ],
+                  "reason": "The 45-point game for Jalen Brunson on 2026-06-13 against SAS is supported by the claim and evidence. However, the superlative that this is the highest single-game scoring value in the available archive for the last 3 games is not supported by any claim or evidence; no comparison across the three games is provided."
+                },
+                {
+                  "text": "This is a single-game observation, not a 3-game total or average, so it does not by itself establish who led the team in total or average scoring across all three games.",
+                  "assertion_type": "interpretation",
+                  "verdict": "supported",
+                  "offending_text": null,
+                  "supporting_claim_ids": [
+                    "claim:f1e6e09d89101c516c09bdcb4a1b68b69b585194203f72667020c6449e954dfb"
+                  ],
+                  "supporting_evidence_ids": [
+                    "2025-26.20260928.1:game:101:player:134"
+                  ],
+                  "reason": "The claim is explicitly a single-game observation with sample_size 1 and coverage limitations noting it is not a season or historical ranking. The statement correctly notes that a single game does not establish a 3-game total or average leader, which is a valid interpretation of the limited data."
+                }
+              ],
+              "follow_up_reviews": [
+                {
+                  "text": "What were Jalen Brunson's total points over the last 3 games?",
+                  "verdict": "supported",
+                  "supporting_claim_ids": [
+                    "claim:f1e6e09d89101c516c09bdcb4a1b68b69b585194203f72667020c6449e954dfb"
+                  ],
+                  "supporting_evidence_ids": [
+                    "2025-26.20260928.1:game:101:player:134"
+                  ],
+                  "reason": "The archive includes player box scores for the last 3 games (game_ids 99, 100, 101) and the metric points, so it can support computing Jalen Brunson's total points over those games. The question is relevant and answerable."
+                },
+                {
+                  "text": "Who had the most total points for the Knicks over the last 3 games?",
+                  "verdict": "supported",
+                  "supporting_claim_ids": [],
+                  "supporting_evidence_ids": [],
+                  "reason": "The archive includes player box scores and team information for the last 3 games, so it can support determining which Knicks player had the most total points over that span. The question is relevant and answerable."
+                }
+              ]
+            }
+          }
+        ],
+        "head": [
+          {
+            "outcome": "verdict_rejected",
+            "causes": [
+              "span1:verdict_unsupported"
+            ],
+            "cost": 0.000731484,
+            "review": {
+              "assertions": [
+                {
+                  "text": "Jalen Brunson recorded 45 points on 2026-06-13 against SAS, the highest single-game scoring value in the available archive for the last 3 games. ",
+                  "assertion_type": "factual",
+                  "verdict": "unsupported",
+                  "offending_text": "the highest single-game scoring value in the available archive for the last 3 games",
+                  "supporting_claim_ids": [
+                    "claim:f1e6e09d89101c516c09bdcb4a1b68b69b585194203f72667020c6449e954dfb"
+                  ],
+                  "supporting_evidence_ids": [
+                    "2025-26.20260928.1:game:101:player:134"
+                  ],
+                  "reason": "Claim supports 45 points but not highest across last 3 games."
+                },
+                {
+                  "text": "This is a single-game observation, not a 3-game total or average, so it does not by itself establish who led the team in total or average scoring across all three games.",
+                  "assertion_type": "interpretation",
+                  "verdict": "supported",
+                  "offending_text": null,
+                  "supporting_claim_ids": [
+                    "claim:f1e6e09d89101c516c09bdcb4a1b68b69b585194203f72667020c6449e954dfb"
+                  ],
+                  "supporting_evidence_ids": [
+                    "2025-26.20260928.1:game:101:player:134"
+                  ],
+                  "reason": "Correctly notes single-game value cannot establish 3-game leader."
+                }
+              ],
+              "follow_up_reviews": [
+                {
+                  "text": "What were Jalen Brunson's total points over the last 3 games?",
+                  "verdict": "supported",
+                  "supporting_claim_ids": [
+                    "claim:f1e6e09d89101c516c09bdcb4a1b68b69b585194203f72667020c6449e954dfb"
+                  ],
+                  "supporting_evidence_ids": [
+                    "2025-26.20260928.1:game:101:player:134"
+                  ],
+                  "reason": "Archive has player box scores for the last 3 games."
+                },
+                {
+                  "text": "Who had the most total points for the Knicks over the last 3 games?",
+                  "verdict": "unsupported",
+                  "supporting_claim_ids": [],
+                  "supporting_evidence_ids": [],
+                  "reason": "No evidence the team is the Knicks."
+                }
+              ]
+            }
+          },
+          {
+            "outcome": "verdict_rejected",
+            "causes": [
+              "span1:verdict_unsupported"
+            ],
+            "cost": 0.000657084,
+            "review": {
+              "assertions": [
+                {
+                  "text": "Jalen Brunson recorded 45 points on 2026-06-13 against SAS, the highest single-game scoring value in the available archive for the last 3 games. ",
+                  "assertion_type": "factual",
+                  "verdict": "unsupported",
+                  "offending_text": "the highest single-game scoring value in the available archive for the last 3 games",
+                  "supporting_claim_ids": [
+                    "claim:f1e6e09d89101c516c09bdcb4a1b68b69b585194203f72667020c6449e954dfb"
+                  ],
+                  "supporting_evidence_ids": [
+                    "2025-26.20260928.1:game:101:player:134"
+                  ],
+                  "reason": "45 points supported, but no evidence it is highest across the 3 games."
+                },
+                {
+                  "text": "This is a single-game observation, not a 3-game total or average, so it does not by itself establish who led the team in total or average scoring across all three games.",
+                  "assertion_type": "interpretation",
+                  "verdict": "supported",
+                  "offending_text": null,
+                  "supporting_claim_ids": [
+                    "claim:f1e6e09d89101c516c09bdcb4a1b68b69b585194203f72667020c6449e954dfb"
+                  ],
+                  "supporting_evidence_ids": [
+                    "2025-26.20260928.1:game:101:player:134"
+                  ],
+                  "reason": "Correctly notes single-game value cannot establish 3-game total or average leader."
+                }
+              ],
+              "follow_up_reviews": [
+                {
+                  "text": "What were Jalen Brunson's total points over the last 3 games?",
+                  "verdict": "supported",
+                  "supporting_claim_ids": [],
+                  "supporting_evidence_ids": [],
+                  "reason": "Archive has player box scores for the last 3 games."
+                },
+                {
+                  "text": "Who had the most total points for the Knicks over the last 3 games?",
+                  "verdict": "unsupported",
+                  "supporting_claim_ids": [],
+                  "supporting_evidence_ids": [],
+                  "reason": "No evidence the team is the Knicks."
+                }
+              ]
+            }
+          },
+          {
+            "outcome": "verdict_rejected",
+            "causes": [
+              "span1:verdict_unsupported"
+            ],
+            "cost": 0.000646284,
+            "review": {
+              "assertions": [
+                {
+                  "text": "Jalen Brunson recorded 45 points on 2026-06-13 against SAS, the highest single-game scoring value in the available archive for the last 3 games. ",
+                  "assertion_type": "factual",
+                  "verdict": "unsupported",
+                  "offending_text": "the highest single-game scoring value in the available archive for the last 3 games",
+                  "supporting_claim_ids": [
+                    "claim:f1e6e09d89101c516c09bdcb4a1b68b69b585194203f72667020c6449e954dfb"
+                  ],
+                  "supporting_evidence_ids": [
+                    "2025-26.20260928.1:game:101:player:134"
+                  ],
+                  "reason": "Claim supports 45 points but not highest across the three games."
+                },
+                {
+                  "text": "This is a single-game observation, not a 3-game total or average, so it does not by itself establish who led the team in total or average scoring across all three games.",
+                  "assertion_type": "interpretation",
+                  "verdict": "supported",
+                  "offending_text": null,
+                  "supporting_claim_ids": [
+                    "claim:f1e6e09d89101c516c09bdcb4a1b68b69b585194203f72667020c6449e954dfb"
+                  ],
+                  "supporting_evidence_ids": [
+                    "2025-26.20260928.1:game:101:player:134"
+                  ],
+                  "reason": "Correctly notes single-game value cannot establish 3-game leader."
+                }
+              ],
+              "follow_up_reviews": [
+                {
+                  "text": "What were Jalen Brunson's total points over the last 3 games?",
+                  "verdict": "supported",
+                  "supporting_claim_ids": [],
+                  "supporting_evidence_ids": [],
+                  "reason": "Archive has player box scores for the three games."
+                },
+                {
+                  "text": "Who had the most total points for the Knicks over the last 3 games?",
+                  "verdict": "supported",
+                  "supporting_claim_ids": [],
+                  "supporting_evidence_ids": [],
+                  "reason": "Archive can compute team totals over the three games."
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "comparisons-002#0": {
+        "base": [
+          {
+            "outcome": "structure_rejected",
+            "causes": [
+              "structure"
+            ],
+            "cost": null
+          },
+          {
+            "outcome": "structure_rejected",
+            "causes": [
+              "structure"
+            ],
+            "cost": null
+          },
+          {
+            "outcome": "structure_rejected",
+            "causes": [
+              "structure"
+            ],
+            "cost": null
+          }
+        ],
+        "head": [
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.00067752
+          },
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.00067872
+          },
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.00067632
+          }
+        ]
+      },
+      "comparisons-004#0": {
+        "base": [
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.000370008
+          },
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.000257112
+          },
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.000257112
+          }
+        ],
+        "head": [
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.000272712
+          },
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.000267912
+          },
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.000267912
+          }
+        ]
+      }
+    },
+    "cost_usd": 0.056704
+  },
+  "rates": {
+    "correct": {
+      "base": {
+        "answers": 14,
+        "trials": 3,
+        "rejected": 5,
+        "observations": 42,
+        "reject_rate": 0.119,
+        "outcomes": {
+          "accepted": 37,
+          "verdict_rejected": 2,
+          "structure_rejected": 3
+        },
+        "per_answer": {
+          "exact_statistics-001#0": [
+            "accepted",
+            "accepted",
+            "accepted"
+          ],
+          "exact_statistics-002#0": [
+            "accepted",
+            "accepted",
+            "accepted"
+          ],
+          "exact_statistics-003#0": [
+            "accepted",
+            "accepted",
+            "accepted"
+          ],
+          "exact_statistics-004#0": [
+            "accepted",
+            "accepted",
+            "accepted"
+          ],
+          "exact_statistics-005#0": [
+            "accepted",
+            "accepted",
+            "accepted"
+          ],
+          "exact_statistics-006#0": [
+            "accepted",
+            "accepted",
+            "accepted"
+          ],
+          "exact_statistics-007#0": [
+            "accepted",
+            "accepted",
+            "accepted"
+          ],
+          "exact_statistics-008#0": [
+            "accepted",
+            "accepted",
+            "accepted"
+          ],
+          "date_range_last_n-001#0": [
+            "accepted",
+            "accepted",
+            "accepted"
+          ],
+          "date_range_last_n-002#0": [
+            "accepted",
+            "accepted",
+            "accepted"
+          ],
+          "date_range_last_n-003#0": [
+            "accepted",
+            "accepted",
+            "accepted"
+          ],
+          "date_range_last_n-004#0": [
+            "accepted",
+            "verdict_rejected",
+            "verdict_rejected"
+          ],
+          "comparisons-002#0": [
+            "structure_rejected",
+            "structure_rejected",
+            "structure_rejected"
+          ],
+          "comparisons-004#0": [
+            "accepted",
+            "accepted",
+            "accepted"
+          ]
+        }
+      },
+      "head": {
+        "answers": 14,
+        "trials": 3,
+        "rejected": 0,
+        "observations": 42,
+        "reject_rate": 0.0,
+        "outcomes": {
+          "accepted": 42
+        },
+        "per_answer": {
+          "exact_statistics-001#0": [
+            "accepted",
+            "accepted",
+            "accepted"
+          ],
+          "exact_statistics-002#0": [
+            "accepted",
+            "accepted",
+            "accepted"
+          ],
+          "exact_statistics-003#0": [
+            "accepted",
+            "accepted",
+            "accepted"
+          ],
+          "exact_statistics-004#0": [
+            "accepted",
+            "accepted",
+            "accepted"
+          ],
+          "exact_statistics-005#0": [
+            "accepted",
+            "accepted",
+            "accepted"
+          ],
+          "exact_statistics-006#0": [
+            "accepted",
+            "accepted",
+            "accepted"
+          ],
+          "exact_statistics-007#0": [
+            "accepted",
+            "accepted",
+            "accepted"
+          ],
+          "exact_statistics-008#0": [
+            "accepted",
+            "accepted",
+            "accepted"
+          ],
+          "date_range_last_n-001#0": [
+            "accepted",
+            "accepted",
+            "accepted"
+          ],
+          "date_range_last_n-002#0": [
+            "accepted",
+            "accepted",
+            "accepted"
+          ],
+          "date_range_last_n-003#0": [
+            "accepted",
+            "accepted",
+            "accepted"
+          ],
+          "date_range_last_n-004#0": [
+            "accepted",
+            "accepted",
+            "accepted"
+          ],
+          "comparisons-002#0": [
+            "accepted",
+            "accepted",
+            "accepted"
+          ],
+          "comparisons-004#0": [
+            "accepted",
+            "accepted",
+            "accepted"
+          ]
+        }
+      }
+    },
+    "wrong": {
+      "base": {
+        "answers": 3,
+        "trials": 3,
+        "rejected": 4,
+        "observations": 9,
+        "reject_rate": 0.444,
+        "outcomes": {
+          "verdict_rejected": 4,
+          "accepted": 5
+        },
+        "per_answer": {
+          "exact_statistics-010#0": [
+            "verdict_rejected",
+            "accepted",
+            "accepted"
+          ],
+          "date_range_last_n-006#0": [
+            "accepted",
+            "accepted",
+            "accepted"
+          ],
+          "date_range_last_n-008#0": [
+            "verdict_rejected",
+            "verdict_rejected",
+            "verdict_rejected"
+          ]
+        }
+      },
+      "head": {
+        "answers": 3,
+        "trials": 3,
+        "rejected": 3,
+        "observations": 9,
+        "reject_rate": 0.333,
+        "outcomes": {
+          "accepted": 6,
+          "verdict_rejected": 3
+        },
+        "per_answer": {
+          "exact_statistics-010#0": [
+            "accepted",
+            "accepted",
+            "accepted"
+          ],
+          "date_range_last_n-006#0": [
+            "accepted",
+            "accepted",
+            "accepted"
+          ],
+          "date_range_last_n-008#0": [
+            "verdict_rejected",
+            "verdict_rejected",
+            "verdict_rejected"
+          ]
+        }
+      }
+    },
+    "causes": {
+      "base:span3:missing_ids": 1,
+      "base:span1:verdict_unsupported": 5,
+      "base:span1:offending_text": 5,
+      "head:span1:verdict_unsupported": 3,
+      "base:structure": 3
+    }
+  },
+  "mutations": {
+    "rows": [
+      {
+        "unit": "exact_statistics-001#0",
+        "id": "exact_statistics-001",
+        "kind": "claim_value_mismatch",
+        "original": 69,
+        "replacement": 72,
+        "base": [
+          "structure_rejected",
+          "structure_rejected"
+        ],
+        "head": [
+          "structure_rejected",
+          "structure_rejected"
+        ]
+      },
+      {
+        "unit": "exact_statistics-002#0",
+        "id": "exact_statistics-002",
+        "kind": "text_number_swap",
+        "original": "11,750",
+        "replacement": "11751",
+        "base": [
+          "verdict_rejected",
+          "verdict_rejected"
+        ],
+        "head": [
+          "deterministic_rejected",
+          "deterministic_rejected"
+        ]
+      },
+      {
+        "unit": "exact_statistics-002#0",
+        "id": "exact_statistics-002",
+        "kind": "claim_value_mismatch",
+        "original": 69,
+        "replacement": 72,
+        "base": [
+          "accepted",
+          "accepted"
+        ],
+        "head": [
+          "accepted",
+          "accepted"
+        ]
+      },
+      {
+        "unit": "exact_statistics-003#0",
+        "id": "exact_statistics-003",
+        "kind": "text_number_swap",
+        "original": "116.34",
+        "replacement": "117.44",
+        "base": [
+          "verdict_rejected",
+          "verdict_rejected"
+        ],
+        "head": [
+          "deterministic_rejected",
+          "deterministic_rejected"
+        ]
+      },
+      {
+        "unit": "exact_statistics-003#0",
+        "id": "exact_statistics-003",
+        "kind": "claim_value_mismatch",
+        "original": 69,
+        "replacement": 72,
+        "base": [
+          "accepted",
+          "accepted"
+        ],
+        "head": [
+          "accepted",
+          "accepted"
+        ]
+      },
+      {
+        "unit": "exact_statistics-004#0",
+        "id": "exact_statistics-004",
+        "kind": "text_number_swap",
+        "original": "7.94",
+        "replacement": "9.04",
+        "base": [
+          "verdict_rejected",
+          "verdict_rejected"
+        ],
+        "head": [
+          "deterministic_rejected",
+          "deterministic_rejected"
+        ]
+      },
+      {
+        "unit": "exact_statistics-004#0",
+        "id": "exact_statistics-004",
+        "kind": "claim_value_mismatch",
+        "original": 69,
+        "replacement": 72,
+        "base": [
+          "accepted",
+          "accepted"
+        ],
+        "head": [
+          "accepted",
+          "accepted"
+        ]
+      },
+      {
+        "unit": "exact_statistics-005#0",
+        "id": "exact_statistics-005",
+        "kind": "text_number_swap",
+        "original": "37",
+        "replacement": "38",
+        "base": [
+          "verdict_rejected",
+          "verdict_rejected"
+        ],
+        "head": [
+          "deterministic_rejected",
+          "deterministic_rejected"
+        ]
+      },
+      {
+        "unit": "exact_statistics-005#0",
+        "id": "exact_statistics-005",
+        "kind": "claim_value_mismatch",
+        "original": 37,
+        "replacement": 40,
+        "base": [
+          "structure_rejected",
+          "structure_rejected"
+        ],
+        "head": [
+          "structure_rejected",
+          "structure_rejected"
+        ]
+      },
+      {
+        "unit": "exact_statistics-006#0",
+        "id": "exact_statistics-006",
+        "kind": "text_number_swap",
+        "original": "32",
+        "replacement": "33",
+        "base": [
+          "verdict_rejected",
+          "verdict_rejected"
+        ],
+        "head": [
+          "deterministic_rejected",
+          "deterministic_rejected"
+        ]
+      },
+      {
+        "unit": "exact_statistics-006#0",
+        "id": "exact_statistics-006",
+        "kind": "claim_value_mismatch",
+        "original": 32,
+        "replacement": 35,
+        "base": [
+          "structure_rejected",
+          "structure_rejected"
+        ],
+        "head": [
+          "structure_rejected",
+          "structure_rejected"
+        ]
+      },
+      {
+        "unit": "exact_statistics-007#0",
+        "id": "exact_statistics-007",
+        "kind": "claim_value_mismatch",
+        "original": 69,
+        "replacement": 72,
+        "base": [
+          "accepted",
+          "accepted"
+        ],
+        "head": [
+          "accepted",
+          "accepted"
+        ]
+      },
+      {
+        "unit": "exact_statistics-008#0",
+        "id": "exact_statistics-008",
+        "kind": "text_number_swap",
+        "original": "54",
+        "replacement": "55",
+        "base": [
+          "verdict_rejected",
+          "verdict_rejected"
+        ],
+        "head": [
+          "deterministic_rejected",
+          "deterministic_rejected"
+        ]
+      },
+      {
+        "unit": "exact_statistics-008#0",
+        "id": "exact_statistics-008",
+        "kind": "claim_value_mismatch",
+        "original": 1,
+        "replacement": 4,
+        "base": [
+          "structure_rejected",
+          "structure_rejected"
+        ],
+        "head": [
+          "structure_rejected",
+          "structure_rejected"
+        ]
+      },
+      {
+        "unit": "exact_statistics-010#0",
+        "id": "exact_statistics-010",
+        "kind": "text_number_swap",
+        "original": "47",
+        "replacement": "48",
+        "base": [
+          "verdict_rejected",
+          "verdict_rejected"
+        ],
+        "head": [
+          "deterministic_rejected",
+          "deterministic_rejected"
+        ]
+      },
+      {
+        "unit": "exact_statistics-010#0",
+        "id": "exact_statistics-010",
+        "kind": "claim_value_mismatch",
+        "original": 47,
+        "replacement": 50,
+        "base": [
+          "structure_rejected",
+          "structure_rejected"
+        ],
+        "head": [
+          "structure_rejected",
+          "structure_rejected"
+        ]
+      },
+      {
+        "unit": "date_range_last_n-001#0",
+        "id": "date_range_last_n-001",
+        "kind": "text_number_swap",
+        "original": "4",
+        "replacement": "6",
+        "base": [
+          "verdict_rejected",
+          "verdict_rejected"
+        ],
+        "head": [
+          "deterministic_rejected",
+          "deterministic_rejected"
+        ]
+      },
+      {
+        "unit": "date_range_last_n-001#0",
+        "id": "date_range_last_n-001",
+        "kind": "claim_value_mismatch",
+        "original": 4,
+        "replacement": 7,
+        "base": [
+          "structure_rejected",
+          "structure_rejected"
+        ],
+        "head": [
+          "structure_rejected",
+          "structure_rejected"
+        ]
+      },
+      {
+        "unit": "date_range_last_n-002#0",
+        "id": "date_range_last_n-002",
+        "kind": "text_number_swap",
+        "original": "114.1",
+        "replacement": "115.2",
+        "base": [
+          "verdict_rejected",
+          "verdict_rejected"
+        ],
+        "head": [
+          "deterministic_rejected",
+          "deterministic_rejected"
+        ]
+      },
+      {
+        "unit": "date_range_last_n-002#0",
+        "id": "date_range_last_n-002",
+        "kind": "claim_value_mismatch",
+        "original": 9,
+        "replacement": 12,
+        "base": [
+          "structure_rejected",
+          "structure_rejected"
+        ],
+        "head": [
+          "structure_rejected",
+          "structure_rejected"
+        ]
+      },
+      {
+        "unit": "date_range_last_n-003#0",
+        "id": "date_range_last_n-003",
+        "kind": "text_number_swap",
+        "original": "32.6",
+        "replacement": "33.7",
+        "base": [
+          "verdict_rejected",
+          "verdict_rejected"
+        ],
+        "head": [
+          "deterministic_rejected",
+          "deterministic_rejected"
+        ]
+      },
+      {
+        "unit": "date_range_last_n-003#0",
+        "id": "date_range_last_n-003",
+        "kind": "claim_value_mismatch",
+        "original": 32.6,
+        "replacement": 35.6,
+        "base": [
+          "structure_rejected",
+          "structure_rejected"
+        ],
+        "head": [
+          "structure_rejected",
+          "structure_rejected"
+        ]
+      },
+      {
+        "unit": "date_range_last_n-004#0",
+        "id": "date_range_last_n-004",
+        "kind": "text_number_swap",
+        "original": "7",
+        "replacement": "9",
+        "base": [
+          "verdict_rejected",
+          "verdict_rejected"
+        ],
+        "head": [
+          "deterministic_rejected",
+          "deterministic_rejected"
+        ]
+      },
+      {
+        "unit": "date_range_last_n-004#0",
+        "id": "date_range_last_n-004",
+        "kind": "claim_value_mismatch",
+        "original": 7,
+        "replacement": 10,
+        "base": [
+          "structure_rejected",
+          "structure_rejected"
+        ],
+        "head": [
+          "structure_rejected",
+          "structure_rejected"
+        ]
+      },
+      {
+        "unit": "date_range_last_n-006#0",
+        "id": "date_range_last_n-006",
+        "kind": "text_number_swap",
+        "original": "5",
+        "replacement": "6",
+        "base": [
+          "verdict_rejected",
+          "verdict_rejected"
+        ],
+        "head": [
+          "deterministic_rejected",
+          "deterministic_rejected"
+        ]
+      },
+      {
+        "unit": "date_range_last_n-006#0",
+        "id": "date_range_last_n-006",
+        "kind": "claim_value_mismatch",
+        "original": 5,
+        "replacement": 8,
+        "base": [
+          "structure_rejected",
+          "structure_rejected"
+        ],
+        "head": [
+          "structure_rejected",
+          "structure_rejected"
+        ]
+      },
+      {
+        "unit": "date_range_last_n-008#0",
+        "id": "date_range_last_n-008",
+        "kind": "text_number_swap",
+        "original": "45",
+        "replacement": "46",
+        "base": [
+          "verdict_rejected",
+          "verdict_rejected"
+        ],
+        "head": [
+          "deterministic_rejected",
+          "deterministic_rejected"
+        ]
+      },
+      {
+        "unit": "date_range_last_n-008#0",
+        "id": "date_range_last_n-008",
+        "kind": "claim_value_mismatch",
+        "original": 45,
+        "replacement": 48,
+        "base": [
+          "structure_rejected",
+          "structure_rejected"
+        ],
+        "head": [
+          "structure_rejected",
+          "structure_rejected"
+        ]
+      },
+      {
+        "unit": "comparisons-002#0",
+        "id": "comparisons-002",
+        "kind": "text_number_swap",
+        "original": "26.5",
+        "replacement": "27.6",
+        "base": [
+          "structure_rejected",
+          "structure_rejected"
+        ],
+        "head": [
+          "deterministic_rejected",
+          "deterministic_rejected"
+        ]
+      },
+      {
+        "unit": "comparisons-002#0",
+        "id": "comparisons-002",
+        "kind": "claim_value_mismatch",
+        "original": 19.21276595744681,
+        "replacement": 22.21276595744681,
+        "base": [
+          "structure_rejected",
+          "structure_rejected"
+        ],
+        "head": [
+          "structure_rejected",
+          "structure_rejected"
+        ]
+      }
+    ],
+    "wrong_number_observations": {
+      "base": 60,
+      "head": 60
+    },
+    "wrong_number_acceptances": {
+      "base": 8,
+      "head": 8
+    },
+    "zero_head_acceptances": false
+  }
+}
