@@ -67,7 +67,12 @@ reviewer is not proof of truth; human calibration remains a release gate.
 effort, spends the completion budget before any JSON and returns empty or truncated content.
 
 Token caps: review 3,000 output tokens, answer 1,600 output tokens, planning action 600 tokens
-with a 3,600-byte action guard. The analyst input budget is `see config` (`ANALYST_INPUT_TOKENS`).
+with a 3,600-byte action guard. The analyst input budget is 16,000 UTF-8 bytes
+(`ANALYST_INPUT_TOKENS`); measured JSON runs 3.5 to 3.9 bytes per prompt token. The 70-question
+A/B in `docs/release-evidence/llm-primary-20261021/final/README.md` chose it over 8,000: honest
+passes rose from 27/70 to 38/70 in both trials and dropped claims fell from 8.2 to 2.2 per
+question. p95 latency rose from 6.2 s to 7.6 s and mean cost from $0.0011 to $0.0020 per question.
+Payloads still reach p95 15,557 bytes, so the budget remains the binding constraint.
 Input packing drops whole records and preserves their server-side references. Large claims are
 omitted, never truncated. UTF-8 bytes bound input conservatively. Review packing drops eligibility
 policy and generic coverage caveats before aborting a turn; values, subjects, scope, windows,
