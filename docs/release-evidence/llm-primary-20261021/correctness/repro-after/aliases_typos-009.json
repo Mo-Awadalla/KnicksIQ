@@ -1,0 +1,78 @@
+{
+  "id": "aliases_typos-009",
+  "question": "How did OG look vs the C's?",
+  "resolved_scope": {
+    "intent": "analyst",
+    "player_ids": [
+      114
+    ],
+    "team_ids": [
+      "BOS"
+    ],
+    "opponent_id": "BOS",
+    "game_ids": 4,
+    "date_start": null,
+    "date_end": null,
+    "relative_game_count": null,
+    "periods": [],
+    "season_type": null,
+    "home_away": null,
+    "game_result": null,
+    "metric": null,
+    "requires_clarification": false,
+    "clarification_reason": null,
+    "clarification_options": [],
+    "data_version": "2025-26.20260928.1"
+  },
+  "tool": {
+    "status": "ok",
+    "message": "Calculated from all applicable database rows; retrieval is not the denominator.",
+    "claims": [
+      {
+        "metric_id": "points:average",
+        "value": 11.5,
+        "season_type": "regular",
+        "sample_size": 2,
+        "statement": "OG Anunoby: 11.5 points per appearance across 2 observed appearances in the 2025-26 regular season.",
+        "limitations": [
+          "Only observed appearances in the available archive.",
+          "No player row for archived game IDs [20, 53]; the player did not appear."
+        ]
+      }
+    ],
+    "evidence": 2,
+    "scope": {
+      "intent": "get_player_stats",
+      "player_ids": [
+        114
+      ],
+      "team_ids": [
+        "BOS"
+      ],
+      "opponent_id": "BOS",
+      "game_ids": 4,
+      "date_start": null,
+      "date_end": null,
+      "relative_game_count": null,
+      "periods": [],
+      "season_type": null,
+      "home_away": null,
+      "game_result": null,
+      "metric": null,
+      "requires_clarification": false,
+      "clarification_reason": null,
+      "clarification_options": [],
+      "data_version": "2025-26.20260928.1"
+    }
+  },
+  "fallback": {
+    "answer": "OG Anunoby: 11.5 points per appearance across 2 observed appearances in the 2025-26 regular season.",
+    "route": "factual_fallback",
+    "warnings": [
+      "Model or budget unavailable."
+    ],
+    "claims": [
+      "points:average"
+    ]
+  }
+}
