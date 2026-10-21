@@ -10,7 +10,7 @@ from app.services.analyst_tool_registry import TOOL_NAMES, TOOLS
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 CONTRACT_VERSION = "analyst-evidence-v1"
-PROMPT_VERSION = "analyst-balanced-v3"
+PROMPT_VERSION = "analyst-balanced-v4"
 VALIDATOR_VERSION = "whole-answer-v1"
 INTERPRETATION_POLICY = (
     "Explain observed magnitude, contrast and basketball meaning. Never infer unobserved "

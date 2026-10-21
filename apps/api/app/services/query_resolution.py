@@ -14,6 +14,7 @@ from app.models.dataset_release import DatasetRelease
 from app.models.game import Game
 from app.models.game_event import GameEvent
 from app.models.player import Player
+from app.services.query_policy import is_outcome_subset
 from app.services.team_aliases import team_ids_in_text
 from pydantic import BaseModel, ConfigDict, Field
 from sqlalchemy import func, select
@@ -377,6 +378,7 @@ async def resolve_query(
         date_start = games[0].game_date if games else None
         date_end = explicit_dates[0]
 
+    named_phase = bool(re.search(r"\bplayoff|\bpostseason|\bplay in\b|\bregular season\b", q))
     season_type = (
         "playoffs"
         if "playoff" in q or "postseason" in q
@@ -386,6 +388,12 @@ async def resolve_query(
         if "regular season" in q
         else None
     )
+    # Season-level stats are regular season; matchups span every phase.
+    season_level = not (opponent_id or explicit_dates or relative_count or date_start or date_end)
+    if "overall" in q or "including playoffs" in q or "all phases" in q:
+        season_type = None
+    elif season_type is None and season_level:
+        season_type = "regular"
     home_away = (
         "home"
         if re.search(r"\bhome\b", q)
@@ -393,15 +401,15 @@ async def resolve_query(
         if re.search(r"\b(?:road|away)\b", q)
         else None
     )
-    game_result = (
-        None
-        if is_record_request(question)
-        else "W"
-        if re.search(r"\bwins?\b", q)
-        else "L"
-        if re.search(r"\bloss(?:es)?\b", q)
-        else None
-    )
+    game_result = None
+    if not is_record_request(question) and is_outcome_subset(question):
+        game_result = (
+            "W"
+            if re.search(r"\bwins?\b|\bwon\b|\bwinning\b", q)
+            else "L"
+            if re.search(r"\bloss(?:es)?\b|\blost\b|\blosing\b", q)
+            else None
+        )
 
     candidates = games
     if opponent_id:
@@ -497,7 +505,7 @@ async def resolve_query(
             resolved_game_ids = [candidates[-1].id]
         elif len(candidates) == 1:
             resolved_game_ids = [candidates[0].id]
-    elif any((opponent_id, date_start, date_end, season_type, home_away, game_result)):
+    elif any((opponent_id, date_start, date_end, home_away, game_result)) or named_phase:
         resolved_game_ids = [game.id for game in candidates]
 
     clarification_options = ambiguous_players

@@ -27,6 +27,13 @@ PSQL = os.environ.get(
     "KIQ_PSQL", "docker exec kiq-integrate-postgres-1 psql -U knicksiq -d knicksiq"
 )
 CUTOFF = 0.005
+DECLINE = re.compile(
+    r"\b(i can(?:'|’)t|i cannot|can(?:'|’)t (?:give|provide|answer|confirm|determine|verify)|"
+    r"cannot (?:give|provide|answer|confirm|determine|verify)|not able to|unable to|"
+    r"do(?:es)? not (?:include|cover|contain|have)|doesn(?:'|’)t (?:include|cover|contain|have)|"
+    r"no (?:live|future|current))",
+    re.I,
+)
 
 
 def split_blocks(path):
@@ -121,9 +128,10 @@ def main():
     facts = load_facts()
     sys.path.insert(0, HERE)
     from checks_numeric import SPECS as NUMERIC
+    from checks_policy_20261021 import SPECS as POLICY
     from checks_semantic_a import SPECS as SEM_A
     from checks_semantic_b import SPECS as SEM_B
-    specs = {**NUMERIC, **SEM_A, **SEM_B}
+    specs = {**NUMERIC, **SEM_A, **SEM_B, **POLICY}
 
     rows = []
     for response in responses:
@@ -133,13 +141,26 @@ def main():
             rows.append({**response, "verdict": "INSUFFICIENT", "hand_labeled": True,
                          "note": "No check registered for this id."})
             continue
-        claims = [evaluate_claim(facts, c) for c in spec.get("claims", [])]
+        answer = response["answer"]
+        claims = []
+        for spec_claim in spec.get("claims", []):
+            claim = dict(spec_claim)
+            if "extract" in claim:
+                claim["claimed"] = claim["extract"](answer)
+                if claim.get("optional") and claim["claimed"] is None:
+                    continue
+            claims.append(evaluate_claim(facts, claim))
         failed = [c for c in claims if not c["pass"]]
         required = spec.get("required_terms", [])
-        missing_terms = [t for t in required if t.lower() not in response["answer"].lower()]
+        missing_terms = [t for t in required if t.lower() not in answer.lower()]
+        forbidden = [t for t in spec.get("forbidden_terms", []) if t.lower() in answer.lower()]
         verdict = spec.get("verdict")
-        if failed or missing_terms:
-            verdict = "INCORRECT"
+        if failed or missing_terms or forbidden:
+            declined = bool(DECLINE.search(answer))
+            if declined and spec.get("decline_verdict") and not forbidden:
+                verdict = spec["decline_verdict"]
+            else:
+                verdict = "INCORRECT"
         elif verdict is None:
             verdict = "CORRECT"
         row = {
