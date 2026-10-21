@@ -42,7 +42,8 @@ Controlled A/B, same 10 hard questions, same commit `5f6fe82`:
 The ledger ratio is 9.48x. It decomposes exactly: real provider usage rose 2.95x
 (reasoning tokens plus retries) and the ledger overstated the resulting usage by 3.21x
 (flat failed-call settlement). 2.95 x 3.21 = 9.48. The phantom share of the high-reasoning
-ledger is 68.9 percent.
+ledger is 68.9 percent. The reproduction's per-question ledger cost, $0.014786, is within
+9 percent of the db2 run's $0.013650, so the defect accounts for the held-out figure.
 
 ## Reconciliation
 
