@@ -1,0 +1,3832 @@
+[
+ {
+  "case_id": "exact_statistics-001",
+  "observation_sha256": "7c5968e28c90ac2968145f2f551f2867a1d67cced3e930d8f77629cd8f83c200",
+  "reviewer": "ReviewExactStats (agent reviewer)",
+  "rationale": "Independently compared all 101 approved NYK game rows and read-only DB scores: 69 wins and 32 losses.",
+  "actual_disposition": "answer",
+  "numeric_correct": true,
+  "entity_correct": true,
+  "citation_correct": true,
+  "paraphrase_correct": true,
+  "unsupported_assertions": false,
+  "assertions": [
+   {
+    "start": 0,
+    "end": 225,
+    "classification": "factual",
+    "canonical_fact_ids": [
+     "706bca199ec7679cfb6a97483b17e0fa9bd5ed6b252060d47e140778b5943d06",
+     "1ad9677b40f406d5082f98cdbdc7d521c1b5d1a8fddaf516dd9599a00c19a697",
+     "0b82b77d6cc77288c0ca83f72aa95c3804955a6bb8dd52fa58ac4066e694ad30"
+    ],
+    "citation_evidence_ids": [
+     "calculation:976625c44907bbf175677eaaa76535f3269e0bc176cd449af208533d1d743af4",
+     "calculation:f3c584256b27eb06be985e7d359c19bab4db8734a48149a62264896c7c2539f9"
+    ]
+   }
+  ]
+ },
+ {
+  "case_id": "exact_statistics-002",
+  "observation_sha256": "4ccbfa2ac87b64b081860d3beb269d0686b2c23f0e3a24aa48a05e29f70b68be",
+  "reviewer": "ReviewExactStats (agent reviewer)",
+  "rationale": "Summed NYK team_game_stats points over all 101 approved games in the bundle and read-only DB: 11,750.",
+  "actual_disposition": "answer",
+  "numeric_correct": true,
+  "entity_correct": true,
+  "citation_correct": true,
+  "paraphrase_correct": true,
+  "unsupported_assertions": false,
+  "assertions": [
+   {
+    "start": 0,
+    "end": 116,
+    "classification": "factual",
+    "canonical_fact_ids": [
+     "360d4050658c89b32429d4384a93384b4daf3311b879aaa8ec9486325deea00e"
+    ],
+    "citation_evidence_ids": [
+     "calculation:292029a0a3551d8af1d97e770afa170bbfe6024c97fe6925fec38e3c77d2ca76"
+    ]
+   }
+  ]
+ },
+ {
+  "case_id": "exact_statistics-003",
+  "observation_sha256": "112717c3bacbd77c546927286a1d1a568ccd3b572aa4cf8d65e1f2068a0ef698",
+  "reviewer": "ReviewExactStats (agent reviewer)",
+  "rationale": "Summed 11,750 NYK points and divided by 101 approved games (also matched read-only DB): 116.33663366 points/game.",
+  "actual_disposition": "answer",
+  "numeric_correct": true,
+  "entity_correct": true,
+  "citation_correct": true,
+  "paraphrase_correct": true,
+  "unsupported_assertions": false,
+  "assertions": [
+   {
+    "start": 0,
+    "end": 137,
+    "classification": "factual",
+    "canonical_fact_ids": [
+     "c9ef3ad4ce31a37fc78aade3c9bb6b18e723987ec195eb0e70475643ad5c2b3d"
+    ],
+    "citation_evidence_ids": [
+     "calculation:3abcf51030e2f8532f16eb09452f6add7d16cfb2172ac1ef3796621c90d16042"
+    ]
+   }
+  ]
+ },
+ {
+  "case_id": "exact_statistics-004",
+  "observation_sha256": "2d8e5a47369e4c50cfb3e7c6529b74468f8d42153807a0ff7219a08aa75cef1f",
+  "reviewer": "ReviewExactStats (agent reviewer)",
+  "rationale": "Summed NYK score margins from the 101 approved game rows: +802 total / 101 = 7.94059406.",
+  "actual_disposition": "answer",
+  "numeric_correct": true,
+  "entity_correct": true,
+  "citation_correct": true,
+  "paraphrase_correct": true,
+  "unsupported_assertions": false,
+  "assertions": [
+   {
+    "start": 0,
+    "end": 137,
+    "classification": "factual",
+    "canonical_fact_ids": [
+     "e937f38101476e0d8d39db8d56495958745fbd44ba2cd3618cde134f4873311a"
+    ],
+    "citation_evidence_ids": [
+     "calculation:d72518ce9c6cd2e9939f7461659cd57b79ed24c9433c356df6d8545c9242bb6a"
+    ]
+   }
+  ]
+ },
+ {
+  "case_id": "exact_statistics-005",
+  "observation_sha256": "46a667b3bf65b73b9bea76d1546af9e66a0fdf10aba456768963d12ffb7fa115",
+  "reviewer": "ReviewExactStats (agent reviewer)",
+  "rationale": "Counted NYK home wins by comparing home/away scores in the approved bundle and read-only DB: 37.",
+  "actual_disposition": "answer",
+  "numeric_correct": true,
+  "entity_correct": true,
+  "citation_correct": true,
+  "paraphrase_correct": true,
+  "unsupported_assertions": false,
+  "assertions": [
+   {
+    "start": 0,
+    "end": 135,
+    "classification": "factual",
+    "canonical_fact_ids": [
+     "b446076e905a89d0d1fa1517e2eeae323dea89425bc594591e265d68e5143dc3"
+    ],
+    "citation_evidence_ids": [
+     "calculation:f9d50c9be6db51038f3018f9b73645a3536b2959804ed04e7d1b03501b272886"
+    ]
+   }
+  ]
+ },
+ {
+  "case_id": "exact_statistics-006",
+  "observation_sha256": "8af0d86dee39a33963e62bfc24e9ceb1159649341a2340730e0299467dfdcdc2",
+  "reviewer": "ReviewExactStats (agent reviewer)",
+  "rationale": "Counted NYK road wins by comparing home/away scores in the approved bundle and read-only DB: 32.",
+  "actual_disposition": "answer",
+  "numeric_correct": true,
+  "entity_correct": true,
+  "citation_correct": true,
+  "paraphrase_correct": true,
+  "unsupported_assertions": false,
+  "assertions": [
+   {
+    "start": 0,
+    "end": 135,
+    "classification": "factual",
+    "canonical_fact_ids": [
+     "67bc88a76a0ac4e9b2d96fdc9ab7ddc1fdc1754351a18f3426dcee7e64e03a0a"
+    ],
+    "citation_evidence_ids": [
+     "calculation:04c05e12c8d68d82a1a573484383dfd77844e48533b396dc732bd46243176154"
+    ]
+   }
+  ]
+ },
+ {
+  "case_id": "exact_statistics-007",
+  "observation_sha256": "8d7a6d969afcaf4a5f9ea8aa644f8c2d587914807af7bbadfd6813e700e2aeb4",
+  "reviewer": "ReviewExactStats (agent reviewer)",
+  "rationale": "Compared scores in all 101 approved NYK game rows and read-only DB: 32 losses.",
+  "actual_disposition": "answer",
+  "numeric_correct": true,
+  "entity_correct": true,
+  "citation_correct": true,
+  "paraphrase_correct": true,
+  "unsupported_assertions": false,
+  "assertions": [
+   {
+    "start": 0,
+    "end": 113,
+    "classification": "factual",
+    "canonical_fact_ids": [
+     "0b82b77d6cc77288c0ca83f72aa95c3804955a6bb8dd52fa58ac4066e694ad30"
+    ],
+    "citation_evidence_ids": [
+     "calculation:f3c584256b27eb06be985e7d359c19bab4db8734a48149a62264896c7c2539f9"
+    ]
+   }
+  ]
+ },
+ {
+  "case_id": "exact_statistics-008",
+  "observation_sha256": "09b4c7f33f698e443cd0acd01d7cc119817a86d718aed2a54c4a7ecf15402b70",
+  "reviewer": "ReviewExactStats (agent reviewer)",
+  "rationale": "Recomputed every NYK game margin from approved final scores and read-only DB; maximum is +54 for NYK 120, BKN 66 on 2026-01-21.",
+  "actual_disposition": "answer",
+  "numeric_correct": true,
+  "entity_correct": true,
+  "citation_correct": true,
+  "paraphrase_correct": true,
+  "unsupported_assertions": false,
+  "assertions": [
+   {
+    "start": 0,
+    "end": 222,
+    "classification": "factual",
+    "canonical_fact_ids": [
+     "ab150755c744f5a2cce8b0ef795993a3910adab1d0420a572a2555307cf83b68",
+     "54499caf34b655f5ad2e7b90261778113f9a7db8135f1b7e1a8116c1660dabc6"
+    ],
+    "citation_evidence_ids": [
+     "calculation:eab37f9e33cfae79e48f7ccc7615e59a81afe1147aa91be1ff24d3dfe6b1fbb7"
+    ]
+   }
+  ]
+ },
+ {
+  "case_id": "exact_statistics-009",
+  "observation_sha256": "e6ddac76de3a2d3721a2857412dcd4dfe2d255bd7f95b3de93f60b3a08552988",
+  "reviewer": "ReviewExactStats (agent reviewer)",
+  "rationale": "Recomputed every NYK game margin from approved final scores and read-only DB; minimum is -38 for NYK 80, DET 118 on 2026-02-06.",
+  "actual_disposition": "answer",
+  "numeric_correct": true,
+  "entity_correct": true,
+  "citation_correct": true,
+  "paraphrase_correct": true,
+  "unsupported_assertions": false,
+  "assertions": [
+   {
+    "start": 0,
+    "end": 220,
+    "classification": "factual",
+    "canonical_fact_ids": [
+     "5836194cc93575a6a353a91d56e06a6fd6becd082663e312abc3913039ba51cb",
+     "ccd7b20be031cdc505f02ffa875198a40a49aefa7f2ef529c176f6d43765a8ac"
+    ],
+    "citation_evidence_ids": [
+     "calculation:54bda25b7cc036401de270dc30ccf5b84ed6476e9b872fea7dc851be36a21165"
+    ]
+   }
+  ]
+ },
+ {
+  "case_id": "exact_statistics-010",
+  "observation_sha256": "3ccab1b39b0d3fe60a4466bbed85cab49ede19375b3efde8c6e3c8718fe1c26f",
+  "reviewer": "ReviewExactStats (agent reviewer)",
+  "rationale": "Compared NYK points in all approved game rows and read-only DB; maximum is 146 (NYK 146, UTA 112 on 2025-12-05).",
+  "actual_disposition": "answer",
+  "numeric_correct": true,
+  "entity_correct": true,
+  "citation_correct": true,
+  "paraphrase_correct": true,
+  "unsupported_assertions": false,
+  "assertions": [
+   {
+    "start": 0,
+    "end": 168,
+    "classification": "factual",
+    "canonical_fact_ids": [
+     "84ee3340a5d5f47e07a753e166bbbfe9b0950f529f9f9384155efdea92795eb2"
+    ],
+    "citation_evidence_ids": [
+     "calculation:cc120b70559c1538b2f0c86c67fb6fa9e24225195cdc5bb5e8060adba84d294b"
+    ]
+   }
+  ]
+ },
+ {
+  "case_id": "exact_statistics-011",
+  "observation_sha256": "ea41145a8736700adfac55ccaf0e60e774fc8cafb3405d28ea6c8338d588c473",
+  "reviewer": "ReviewExactStats (agent reviewer)",
+  "rationale": "Compared NYK points in all approved game rows and read-only DB; minimum is 80 (NYK 80, DET 118 on 2026-02-06), with no tied minimum.",
+  "actual_disposition": "answer",
+  "numeric_correct": true,
+  "entity_correct": true,
+  "citation_correct": true,
+  "paraphrase_correct": true,
+  "unsupported_assertions": false,
+  "assertions": [
+   {
+    "start": 0,
+    "end": 169,
+    "classification": "factual",
+    "canonical_fact_ids": [
+     "5836194cc93575a6a353a91d56e06a6fd6becd082663e312abc3913039ba51cb"
+    ],
+    "citation_evidence_ids": [
+     "calculation:8592f2bbe735b46dd54e325371638e6b172d54fa2eba59b539c961785a4780bc"
+    ]
+   }
+  ]
+ },
+ {
+  "case_id": "exact_statistics-012",
+  "observation_sha256": "c29ca990c4f7c3eb5fbe7b402675da8c2368bcd392ace359904f27465111c6ae",
+  "reviewer": "ReviewExactStats (agent reviewer)",
+  "rationale": "Counted NYK team scores >=120 across the 101 approved game rows and read-only DB: 37.",
+  "actual_disposition": "answer",
+  "numeric_correct": true,
+  "entity_correct": true,
+  "citation_correct": true,
+  "paraphrase_correct": true,
+  "unsupported_assertions": false,
+  "assertions": [
+   {
+    "start": 0,
+    "end": 141,
+    "classification": "factual",
+    "canonical_fact_ids": [
+     "759d46a9b126617b970e250ab1a2a611fbaf0fa657b418e613043775997b8519"
+    ],
+    "citation_evidence_ids": [
+     "calculation:0c3c839df31d73bf4f17dcb4be5400e8482da1d0bcd65362b490b73e62494264"
+    ]
+   }
+  ]
+ },
+ {
+  "case_id": "exact_statistics-013",
+  "observation_sha256": "f8a150066accf309e10516f330fea6179747707098b7fc0a3755c2794a9ad399",
+  "reviewer": "ReviewExactStats (agent reviewer)",
+  "rationale": "Counted opponent scores <100 across the 101 approved NYK game rows and read-only DB: 26.",
+  "actual_disposition": "answer",
+  "numeric_correct": true,
+  "entity_correct": true,
+  "citation_correct": true,
+  "paraphrase_correct": true,
+  "unsupported_assertions": false,
+  "assertions": [
+   {
+    "start": 0,
+    "end": 145,
+    "classification": "factual",
+    "canonical_fact_ids": [
+     "268954622f01759ae79966c80bd96248f2a8b584ced586c18ebda3e7a79e6afe"
+    ],
+    "citation_evidence_ids": [
+     "calculation:e452db991534c9b655486f4b1003ae02b66f60166a087ca697bb659b7b716f3f"
+    ]
+   }
+  ]
+ },
+ {
+  "case_id": "exact_statistics-014",
+  "observation_sha256": "007870062c883d3c498a53ecedc228c07e5253424a247fd219fa62e4ef462c71",
+  "reviewer": "ReviewExactStats (agent reviewer)",
+  "rationale": "Recomputed 2,466 points / 93 appearances with minutes > 0 from approved player_game_stats and read-only DB: 26.5161 per appearance.",
+  "actual_disposition": "answer",
+  "numeric_correct": true,
+  "entity_correct": true,
+  "citation_correct": true,
+  "paraphrase_correct": true,
+  "unsupported_assertions": false,
+  "assertions": [
+   {
+    "start": 0,
+    "end": 144,
+    "classification": "factual",
+    "canonical_fact_ids": [
+     "442d727e67e99bb0098eea51762b6400f65df49b5579ccefd8f182ffc607fa87"
+    ],
+    "citation_evidence_ids": [
+     "calculation:847dd1cab99f2225ae01af0cd1959db0a67c7481b50cf79ab1f83e277e03621b"
+    ]
+   }
+  ]
+ },
+ {
+  "case_id": "exact_statistics-015",
+  "observation_sha256": "dc8f8da9cbbf2d25a180402d3003c1b4b35b5c38dc4d37bfeb19495b15a8ea8e",
+  "reviewer": "ReviewExactStats (agent reviewer)",
+  "rationale": "Summed Jalen Brunson points over 93 rows with minutes > 0 in the approved bundle and read-only DB: 2,466.",
+  "actual_disposition": "answer",
+  "numeric_correct": true,
+  "entity_correct": true,
+  "citation_correct": true,
+  "paraphrase_correct": true,
+  "unsupported_assertions": false,
+  "assertions": [
+   {
+    "start": 0,
+    "end": 131,
+    "classification": "factual",
+    "canonical_fact_ids": [
+     "7314c84810a1c84717c24a7652cc5982822cd62d274116d8c0ef6a119ae4c24a"
+    ],
+    "citation_evidence_ids": [
+     "calculation:b98514b112c9650b8f79bdbe6fd171995ebc575003eb3947487a4f2d9b5173c7"
+    ]
+   }
+  ]
+ },
+ {
+  "case_id": "exact_statistics-016",
+  "observation_sha256": "eaa9fe00e0e1ebc4ffd5182f6a4e4839b0545bd8a73c5bc34d5f8ccd370302ef",
+  "reviewer": "ReviewExactStats (agent reviewer)",
+  "rationale": "Summed Towns rebounds over 94 rows with minutes > 0 and divided: 1,090 / 94 = 11.5957.",
+  "actual_disposition": "answer",
+  "numeric_correct": true,
+  "entity_correct": true,
+  "citation_correct": true,
+  "paraphrase_correct": true,
+  "unsupported_assertions": false,
+  "assertions": [
+   {
+    "start": 0,
+    "end": 151,
+    "classification": "factual",
+    "canonical_fact_ids": [
+     "de3b96f4ffe7a18c74f17c466b5d56d58e5f24e23dd65395fb10e56b7b8e61fc"
+    ],
+    "citation_evidence_ids": [
+     "calculation:080a8ec47677e6f0e6f3c0d700c076a679a6b4af9c38858dc2592493ff87e66f"
+    ]
+   }
+  ]
+ },
+ {
+  "case_id": "exact_statistics-017",
+  "observation_sha256": "765ab7bf77612f36872eb88f485346466a7471f4c42e0dbb789679d0961e2055",
+  "reviewer": "ReviewExactStats (agent reviewer)",
+  "rationale": "Counted Towns appearances with at least two of points/rebounds/assists/steals/blocks >=10 from the approved bundle and read-only DB: 68 across 94 appearances.",
+  "actual_disposition": "answer",
+  "numeric_correct": true,
+  "entity_correct": true,
+  "citation_correct": true,
+  "paraphrase_correct": true,
+  "unsupported_assertions": false,
+  "assertions": [
+   {
+    "start": 0,
+    "end": 142,
+    "classification": "factual",
+    "canonical_fact_ids": [
+     "19d3447abc80b5faa1350ce55d0ae6b3de1c43cb891cee9209d1e7296da150e4"
+    ],
+    "citation_evidence_ids": [
+     "calculation:0bde1c48fea10da1f94af75b8ddb9035dfc5bbd331ed2b4f790eefb8212debb7"
+    ]
+   }
+  ]
+ },
+ {
+  "case_id": "exact_statistics-018",
+  "observation_sha256": "f1e304a804e2c5e7ec6e50d59ee972d000bc167da4da0beb0ae2d9297563dc49",
+  "reviewer": "ReviewExactStats (agent reviewer)",
+  "rationale": "Aggregated Knicks player assists from approved player_game_stats and read-only DB; Brunson leads at 618.",
+  "actual_disposition": "answer",
+  "numeric_correct": true,
+  "entity_correct": true,
+  "citation_correct": true,
+  "paraphrase_correct": true,
+  "unsupported_assertions": false,
+  "assertions": [
+   {
+    "start": 0,
+    "end": 78,
+    "classification": "factual",
+    "canonical_fact_ids": [
+     "b6b439f9bd1dbf3d515ee5fa49718f52490fce7b6b3b0bcf7121025456ed8534"
+    ],
+    "citation_evidence_ids": [
+     "calculation:bb4f9aafb1bb802cc2695e64c3e8a7d19c6140b7017243380b416d1a1aa91439"
+    ]
+   }
+  ]
+ },
+ {
+  "case_id": "exact_statistics-019",
+  "observation_sha256": "e57d55057fd2bae31081bbd0f316feebfac9e05d153be5378447f40c1c82cd3f",
+  "reviewer": "ReviewExactStats (agent reviewer)",
+  "rationale": "Aggregated Knicks player rebounds from approved player_game_stats and read-only DB; Towns leads at 1,090.",
+  "actual_disposition": "answer",
+  "numeric_correct": true,
+  "entity_correct": true,
+  "citation_correct": true,
+  "paraphrase_correct": true,
+  "unsupported_assertions": false,
+  "assertions": [
+   {
+    "start": 0,
+    "end": 85,
+    "classification": "factual",
+    "canonical_fact_ids": [
+     "b0d86ffad19a4ee8a2fe6ceab8748136c529ff5ca58949b5cf56f3d8cb09fe8c"
+    ],
+    "citation_evidence_ids": [
+     "calculation:f1227528e91b38479f164f24918548d42efaa9282af6ef8cffa1a7f3fcaade61"
+    ]
+   }
+  ]
+ },
+ {
+  "case_id": "exact_statistics-020",
+  "observation_sha256": "788a2d8ed8cbd653ef2d29315e5d91404474ab7003795b02cdb47d7f12b13da5",
+  "reviewer": "ReviewExactStats (agent reviewer)",
+  "rationale": "Aggregated Knicks player steals from approved player_game_stats and read-only DB; Anunoby leads at 130.",
+  "actual_disposition": "answer",
+  "numeric_correct": true,
+  "entity_correct": true,
+  "citation_correct": true,
+  "paraphrase_correct": true,
+  "unsupported_assertions": false,
+  "assertions": [
+   {
+    "start": 0,
+    "end": 74,
+    "classification": "factual",
+    "canonical_fact_ids": [
+     "1c62aad86137be67bdb2db985575fa994d92808eab8db986ed2528eea8af5c44"
+    ],
+    "citation_evidence_ids": [
+     "calculation:8ee35ec52e56a28fe17ad3b2203f4260a33947e6f6738c191180e36dc343186b"
+    ]
+   }
+  ]
+ },
+ {
+  "case_id": "exact_statistics-021",
+  "observation_sha256": "6686bf42d33b5a49315f023ff8083e06e7a544cf791429029d02852ebe5c19e6",
+  "reviewer": "ReviewExactStats (agent reviewer)",
+  "rationale": "Summed Bridges 179 makes / 483 attempts over 101 rows with minutes > 0 in approved player_game_stats and read-only DB: 37.06%.",
+  "actual_disposition": "answer",
+  "numeric_correct": true,
+  "entity_correct": true,
+  "citation_correct": true,
+  "paraphrase_correct": true,
+  "unsupported_assertions": false,
+  "assertions": [
+   {
+    "start": 0,
+    "end": 162,
+    "classification": "factual",
+    "canonical_fact_ids": [
+     "7707601748771fe0825ce8ca4961803265567d3066bd151df814f8a803ee20d2"
+    ],
+    "citation_evidence_ids": [
+     "calculation:0a2ee00fe17ac4e69346f7567263156bf27a5f0fe11e8c861a264ceab57efec1"
+    ]
+   }
+  ]
+ },
+ {
+  "case_id": "exact_statistics-022",
+  "observation_sha256": "bd0cd32f06a0f97ecf7a20f523b81ce0c2cfcde8c7b0272ddbd8a192a5dfcd43",
+  "reviewer": "ReviewExactStats (agent reviewer)",
+  "rationale": "Counted Hart starter=true over 85 rows with minutes > 0 in approved player_game_stats and read-only DB: 71 starts.",
+  "actual_disposition": "answer",
+  "numeric_correct": true,
+  "entity_correct": true,
+  "citation_correct": true,
+  "paraphrase_correct": true,
+  "unsupported_assertions": false,
+  "assertions": [
+   {
+    "start": 0,
+    "end": 125,
+    "classification": "factual",
+    "canonical_fact_ids": [
+     "e37a63d4229df1525c3c3cb6e846d10e8f0ac3909d34ccaded09e5e08ea29e14"
+    ],
+    "citation_evidence_ids": [
+     "calculation:8f72747d52134a1a41fc35762477e98ea93e74a451be993876fae15af442da6f"
+    ]
+   }
+  ]
+ },
+ {
+  "case_id": "exact_statistics-023",
+  "observation_sha256": "07d66f77a636347253147da3ca02aa3a4c2d8879566a5ff8edbc32598ae4b8ff",
+  "reviewer": "ReviewExactStats (agent reviewer)",
+  "rationale": "Summed Anunoby 1,460 points over 84 rows with minutes > 0 in the approved bundle and read-only DB: 17.381 per appearance.",
+  "actual_disposition": "answer",
+  "numeric_correct": true,
+  "entity_correct": true,
+  "citation_correct": true,
+  "paraphrase_correct": true,
+  "unsupported_assertions": false,
+  "assertions": [
+   {
+    "start": 0,
+    "end": 141,
+    "classification": "factual",
+    "canonical_fact_ids": [
+     "fb99196e0d1df8ac83fe1b95ec37c1caa061a4879f1f20aa34f204b95650b094"
+    ],
+    "citation_evidence_ids": [
+     "calculation:acd15fb23d3912aecb52c9e3b05916658431685aa4efca8ab9d33bb5443a989c"
+    ]
+   }
+  ]
+ },
+ {
+  "case_id": "exact_statistics-024",
+  "observation_sha256": "f7bf8bc29605e74ef35fc181e85dff1e9c0e3022a828c74e74b5e309aab760c3",
+  "reviewer": "ReviewExactStats (agent reviewer)",
+  "rationale": "Filtered approved game rows and read-only DB to BOS: 4 meetings, NYK won 3 and lost 1.",
+  "actual_disposition": "answer",
+  "numeric_correct": true,
+  "entity_correct": true,
+  "citation_correct": true,
+  "paraphrase_correct": true,
+  "unsupported_assertions": false,
+  "assertions": [
+   {
+    "start": 0,
+    "end": 243,
+    "classification": "factual",
+    "canonical_fact_ids": [
+     "d2880685ae78b9f5c640b26fb5cd89cdc1878ce070225842287040ede83d097f",
+     "a51566982f6391e15b7db0693edb26e7c06c7056beee78963a5315ecbe087c0f",
+     "25c77c15deee7e3b55d0523a8430edd1c7b364463146762500cc89316eb3217a"
+    ],
+    "citation_evidence_ids": [
+     "calculation:b7a503d7ef9cdce0242fa5cd6a0205b1b5f231a835469d8c0a0a57a5d94d2476",
+     "calculation:9fcc1574cd9046d1d9f4f47b17dcbf6a8b439a3bc03bf91ecf05fcf369842638"
+    ]
+   }
+  ]
+ },
+ {
+  "case_id": "exact_statistics-025",
+  "observation_sha256": "91c5f3b62fcdfd234ded38ef2a286cf31d0d2ae4d7acc79bdedc9538163b5190",
+  "reviewer": "ReviewExactStats (agent reviewer)",
+  "rationale": "Summed opponent scores for 101 approved NYK games and divided 10,948 / 101 = 108.3960 points allowed/game.",
+  "actual_disposition": "answer",
+  "numeric_correct": true,
+  "entity_correct": true,
+  "citation_correct": true,
+  "paraphrase_correct": true,
+  "unsupported_assertions": false,
+  "assertions": [
+   {
+    "start": 0,
+    "end": 145,
+    "classification": "factual",
+    "canonical_fact_ids": [
+     "d9aed298025762e4b3e86e1792c733e62982ac1fe562fece743b11fee6277f5e"
+    ],
+    "citation_evidence_ids": [
+     "calculation:5eec2957d5d7129ec5aca421bd8e904ff54f4c2a7a00c8841c5b9f3afe634346"
+    ]
+   }
+  ]
+ },
+ {
+  "case_id": "date_range_last_n-001",
+  "observation_sha256": "424f8e33a8171558307d0b04cc749e2a226bb9a001a3065b592348a6baf0da14",
+  "reviewer": "ReviewDateRangeUnsupported (agent reviewer)",
+  "rationale": "Checked the games rows for 2026-06-03 through 2026-06-13: the last five NYK games are all playoffs and produce 4 wins, 1 loss (5 total). Window and record are correct.",
+  "actual_disposition": "answer",
+  "numeric_correct": true,
+  "entity_correct": true,
+  "citation_correct": true,
+  "paraphrase_correct": true,
+  "unsupported_assertions": false,
+  "assertions": [
+   {
+    "start": 0,
+    "end": 265,
+    "classification": "factual",
+    "canonical_fact_ids": [
+     "a6af6428c6f957bab563472b5039b1e49586b775a3a0e07e61a575456e3ae0b3",
+     "0defd7eac9d558b534465e0de22c5a86a94d56657b502d8a1c69f821936b645a",
+     "447881fe096fecdfbe3d7013c1df5463f851f4ac88d447a804b78f793a6a296b"
+    ],
+    "citation_evidence_ids": [
+     "calculation:80b4952927058e9d89f6df216670f86d20728746e324d05c9deb48c47d060ad7"
+    ]
+   }
+  ]
+ },
+ {
+  "case_id": "date_range_last_n-002",
+  "observation_sha256": "bf80a8b33be4f1080541cff38729fb8f3451d80d4349cb80df5d18199294d768",
+  "reviewer": "ReviewDateRangeUnsupported (agent reviewer)",
+  "rationale": "Checked the last ten games rows, 2026-05-10 through 2026-06-13: all ten are playoff games; NYK scored 1,141 points, or 114.1 per game. Window and value are correct.",
+  "actual_disposition": "answer",
+  "numeric_correct": true,
+  "entity_correct": true,
+  "citation_correct": true,
+  "paraphrase_correct": true,
+  "unsupported_assertions": false,
+  "assertions": [
+   {
+    "start": 0,
+    "end": 147,
+    "classification": "factual",
+    "canonical_fact_ids": [
+     "fed31f8e4cb9ad1e494231e21ad735d4b264df293183afbf64bd5b4f2452ce90"
+    ],
+    "citation_evidence_ids": [
+     "calculation:43931426f630d7314e6f248c856fbea11bf32bee076d0a92827dcfa90d6b0723"
+    ]
+   }
+  ]
+ },
+ {
+  "case_id": "date_range_last_n-003",
+  "observation_sha256": "0cd7118557a543babb22cff31d5ff9905e2e9b93f0ddda7c7f3a31bd20031bd7",
+  "reviewer": "ReviewDateRangeUnsupported (agent reviewer)",
+  "rationale": "Checked Brunson player_game_stats for the last five positive-minute appearances, 2026-06-03 through 2026-06-13: 163 points / 5 = 32.6. The response additionally says archived game IDs are missing player rows; DB has 93 Brunson rows over 101 Knicks games, but the cited receipt only supports the five included appearances, not missing-row coverage.",
+  "actual_disposition": "answer",
+  "numeric_correct": true,
+  "entity_correct": true,
+  "citation_correct": true,
+  "paraphrase_correct": true,
+  "unsupported_assertions": false,
+  "assertions": [
+   {
+    "start": 0,
+    "end": 166,
+    "classification": "factual",
+    "canonical_fact_ids": [
+     "06e4a765f3e429179d5ee619a7c6f0a04c8aff13a8ae9ca13de16680a5025428"
+    ],
+    "citation_evidence_ids": [
+     "calculation:8ddea11878ee70f4a989cb9fa2a4312043d6a7aa60ecc2afce894aeb4a0bcec5"
+    ]
+   }
+  ]
+ },
+ {
+  "case_id": "date_range_last_n-004",
+  "observation_sha256": "7426b9531ff838dfddd2ef11ee07f41dda20583da8eb535d122ec4c8303beed6",
+  "reviewer": "ReviewDateRangeUnsupported (agent reviewer)",
+  "rationale": "Checked January 2026 games rows: 15 regular-season games from 2026-01-02 through 2026-01-30, with 7 wins and 8 losses. Window, phase, and record are correct.",
+  "actual_disposition": "answer",
+  "numeric_correct": true,
+  "entity_correct": true,
+  "citation_correct": true,
+  "paraphrase_correct": true,
+  "unsupported_assertions": false,
+  "assertions": [
+   {
+    "start": 0,
+    "end": 221,
+    "classification": "factual",
+    "canonical_fact_ids": [
+     "87946b783bbd1a874240ed4e18bf9016dbb7c44a0ac54895b78f802b9f0d4d1f",
+     "0ce93d65b4d4e066889259d0dfbf5af478eb42ac5b7d866775ecdb4e3ebc9c14",
+     "16fec1d28312ff0ecc15259a098c5976906bc7202eaf20b360b38ea8bf6acb3d"
+    ],
+    "citation_evidence_ids": [
+     "calculation:17f8b9a12a9a39446462db94593cb2d9eca1cae7659157c4d6e86466933ecf97"
+    ]
+   }
+  ]
+ },
+ {
+  "case_id": "date_range_last_n-005",
+  "observation_sha256": "fa9391d35e1d6a0035d462b50e46ae89056105abf5e9c9457ab78b6588f301b5",
+  "reviewer": "ReviewDateRangeUnsupported (agent reviewer)",
+  "rationale": "Checked games after 2026-02-15: 46 total from 2026-02-19 through 2026-06-13 (27 regular-season, 19 playoff), 34 wins and 12 losses. The answer includes both phases as the approved fact requires.",
+  "actual_disposition": "answer",
+  "numeric_correct": true,
+  "entity_correct": true,
+  "citation_correct": true,
+  "paraphrase_correct": true,
+  "unsupported_assertions": false,
+  "assertions": [
+   {
+    "start": 0,
+    "end": 223,
+    "classification": "factual",
+    "canonical_fact_ids": [
+     "6f7795a756a0cd16dd61c83fc1334c386bb6aafdeddca3254354bd2701d1c895",
+     "310ce8fe19fdff6666dbf5c15e95e78d35b3076346ec6369e680da920d10604e",
+     "97051d52ff6fb09bed3d5bf5a047b05ef3033026f8561d33b17bc644a44fbb63"
+    ],
+    "citation_evidence_ids": [
+     "calculation:bcff734e9e5e662ec34d9b4ae8f2d0278208fb8b46b9bf188efea89d5470571e"
+    ]
+   }
+  ]
+ },
+ {
+  "case_id": "date_range_last_n-006",
+  "observation_sha256": "2a611e34e7dfff82fa5b5c8db86213175517d0f69e80f3ba785494aa039c46a7",
+  "reviewer": "ReviewDateRangeUnsupported (agent reviewer)",
+  "rationale": "Checked December 2025 road games rows: 8 games from 2025-12-02 through 2025-12-31, 5 wins and 3 losses. The answer gives the correct five wins but incorrectly says there were only five archived away games and restricts the range to Dec 9\u201329 (six away games in that window); that denominator/window claim has no frozen fact or supporting receipt. Unresolved: the response includes a factual claim that is absent from a frozen fact or unsupported by any mapped citation; the failing span is preserved as factual, not relabeled.",
+  "actual_disposition": "answer",
+  "numeric_correct": false,
+  "entity_correct": true,
+  "citation_correct": false,
+  "paraphrase_correct": false,
+  "unsupported_assertions": true,
+  "assertions": [
+   {
+    "start": 0,
+    "end": 15,
+    "classification": "factual",
+    "canonical_fact_ids": [
+     "d08d534c6cfed0632c2d43b651709594c36564948689f6739419cdb1cd662bce"
+    ],
+    "citation_evidence_ids": [
+     "calculation:9a80b4a6ab9810d9263bd7ae5df1089d4bd21cefa3a778d44f3afc1be9f3e73d"
+    ]
+   },
+   {
+    "start": 15,
+    "end": 133,
+    "classification": "factual",
+    "canonical_fact_ids": [],
+    "citation_evidence_ids": []
+   }
+  ],
+  "unresolved": true
+ },
+ {
+  "case_id": "date_range_last_n-007",
+  "observation_sha256": "1a01959239c47e2e7d3ef51d0fe58249621aa50bf62d0f7a28299cf0c09b116f",
+  "reviewer": "ReviewDateRangeUnsupported (agent reviewer)",
+  "rationale": "Checked the last eight games rows: 2026-05-21 through 2026-06-13, all playoffs; margins sum to 78, so the average is 9.75. Window and value are correct.",
+  "actual_disposition": "answer",
+  "numeric_correct": true,
+  "entity_correct": true,
+  "citation_correct": true,
+  "paraphrase_correct": true,
+  "unsupported_assertions": false,
+  "assertions": [
+   {
+    "start": 0,
+    "end": 144,
+    "classification": "factual",
+    "canonical_fact_ids": [
+     "c5c6828d25e7c55800d94927e16d411814f143f543d9bd488e65f676f693ff5a"
+    ],
+    "citation_evidence_ids": [
+     "calculation:76abebe862da0215ba0914351d6c29bc069114af42fc69a5a0c74fd822f2fc08"
+    ]
+   }
+  ]
+ },
+ {
+  "case_id": "date_range_last_n-008",
+  "observation_sha256": "9f564a098c735fbaddb42e1aabd2694d9dd0dd419a83bd1f641fa8f5dcdf0975",
+  "reviewer": "ReviewDateRangeUnsupported (agent reviewer)",
+  "rationale": "Checked player_game_stats for the last three games (2026-06-08, 06-10, 06-13): Brunson scored 32 + 36 + 45 = 113, the highest team total. Correct.",
+  "actual_disposition": "answer",
+  "numeric_correct": true,
+  "entity_correct": true,
+  "citation_correct": true,
+  "paraphrase_correct": true,
+  "unsupported_assertions": false,
+  "assertions": [
+   {
+    "start": 0,
+    "end": 75,
+    "classification": "factual",
+    "canonical_fact_ids": [
+     "623442c58284e1daf8a73cfafc85a335268af7ad8086fdb5ac7dea6c0206ed98"
+    ],
+    "citation_evidence_ids": [
+     "calculation:cd8840dc5885da9ea1bcf88f73a7a0e2ce4e66414e7ec543e966afb1189f11fc"
+    ]
+   }
+  ]
+ },
+ {
+  "case_id": "date_range_last_n-009",
+  "observation_sha256": "a6c3b9e60f1fefd3dbbf2606004e6c7c4975c8c62efeb49f73d6e96e38e5f343",
+  "reviewer": "ReviewDateRangeUnsupported (agent reviewer)",
+  "rationale": "Checked the inclusive 2026-03-01 through 2026-03-15 games rows: 9 Knicks regular-season games. Boundaries and count are correct.",
+  "actual_disposition": "answer",
+  "numeric_correct": true,
+  "entity_correct": true,
+  "citation_correct": true,
+  "paraphrase_correct": true,
+  "unsupported_assertions": false,
+  "assertions": [
+   {
+    "start": 0,
+    "end": 115,
+    "classification": "factual",
+    "canonical_fact_ids": [
+     "31a753ef7637e9681d1a97b402d7023dc7501bba1db00e49f5289a388e880d41"
+    ],
+    "citation_evidence_ids": [
+     "calculation:ffdb3d98c21802c6ca7ef5791edf417bc4782b4c6cb97113fde2797bb2e8e459"
+    ]
+   }
+  ]
+ },
+ {
+  "case_id": "date_range_last_n-010",
+  "observation_sha256": "e80650803550088787c30f593a4addfc692d3c4676d486a600c096785d296bf1",
+  "reviewer": "ReviewDateRangeUnsupported (agent reviewer)",
+  "rationale": "Checked the first ten games rows by date: 2025-10-22 through 2025-11-11, all regular season, 7 wins and 3 losses. Window and record are correct.",
+  "actual_disposition": "answer",
+  "numeric_correct": true,
+  "entity_correct": true,
+  "citation_correct": true,
+  "paraphrase_correct": true,
+  "unsupported_assertions": false,
+  "assertions": [
+   {
+    "start": 0,
+    "end": 271,
+    "classification": "factual",
+    "canonical_fact_ids": [
+     "3e70b7131ce7743359da48eec560c2090eeb7f0ae0b0d8fe56bdec8acea4386e",
+     "105cbb9f615f8d740a293b9e1f54b648e2b9293a7a993a583b647b9ffd59b3ad",
+     "fbb43bc9183f7ea7132818dfa671cf4eb97696e680a52e27f98f65c0e8cb514f"
+    ],
+    "citation_evidence_ids": [
+     "calculation:5f71803b835e88803905203e490cbb61fc458862ce948733e65cd22393f6a85c"
+    ]
+   }
+  ]
+ },
+ {
+  "case_id": "date_range_last_n-011",
+  "observation_sha256": "5619f4d91fa27c9050f2f788bcfaabddd8162d02839be27b592776646bfe5a1d",
+  "reviewer": "ReviewDateRangeUnsupported (agent reviewer)",
+  "rationale": "Checked Towns player_game_stats for his last seven positive-minute appearances, 2026-05-23 through 2026-06-13: 97 points / 7 = 13.8571, rounded to 13.9. The primary wording additionally claims some game IDs lack player rows; DB has 96 Towns rows over 101 Knicks games, but the cited receipt supports only the seven appearances, not missing-row coverage.",
+  "actual_disposition": "answer",
+  "numeric_correct": true,
+  "entity_correct": true,
+  "citation_correct": true,
+  "paraphrase_correct": true,
+  "unsupported_assertions": false,
+  "assertions": [
+   {
+    "start": 0,
+    "end": 171,
+    "classification": "factual",
+    "canonical_fact_ids": [
+     "61af2dbd7bfd075f0f1faed6576837025b593bb3d660a9626776d94417ff6a78"
+    ],
+    "citation_evidence_ids": [
+     "calculation:4de10b3e22652895282769104e3fe294b2f54e791f5b6ab45d539eac0b21f027"
+    ]
+   }
+  ]
+ },
+ {
+  "case_id": "date_range_last_n-012",
+  "observation_sha256": "22cf741bd9083a112083f2d8b7678612aadf01ee9a5a702872769f6beccfb966",
+  "reviewer": "ReviewDateRangeUnsupported (agent reviewer)",
+  "rationale": "Checked the last five games rows, 2026-06-03 through 2026-06-13, all playoffs: opponents scored 510 total, 102.0 per game. The primary answer also says the archive lacks opponent shooting/other indicators; team_game_stats includes opponent shooting totals and turnovers, and no frozen fact/receipt supports this absence claim.",
+  "actual_disposition": "answer",
+  "numeric_correct": true,
+  "entity_correct": true,
+  "citation_correct": true,
+  "paraphrase_correct": true,
+  "unsupported_assertions": false,
+  "assertions": [
+   {
+    "start": 0,
+    "end": 153,
+    "classification": "factual",
+    "canonical_fact_ids": [
+     "89b1714d2ba0fba728c283bb3b72201e7abc1d2c265fecb13e3bf4548921f6cb"
+    ],
+    "citation_evidence_ids": [
+     "calculation:8e02b627b0b5b41283ca5b3e96796afa74dd14e558942bf295692cb62a8218a7"
+    ]
+   }
+  ]
+ },
+ {
+  "case_id": "date_range_last_n-013",
+  "observation_sha256": "35562b6b7d505db904f988c1e7fd5d1e5b27c588c8c419ddc66a1b6cc20c7bfd",
+  "reviewer": "ReviewDateRangeUnsupported (agent reviewer)",
+  "rationale": "Checked the final 15 regular-season games rows: 2026-03-13 through 2026-04-12, 11 wins and 4 losses. Dates, phase, and record are correct.",
+  "actual_disposition": "answer",
+  "numeric_correct": true,
+  "entity_correct": true,
+  "citation_correct": true,
+  "paraphrase_correct": true,
+  "unsupported_assertions": false,
+  "assertions": [
+   {
+    "start": 0,
+    "end": 266,
+    "classification": "factual",
+    "canonical_fact_ids": [
+     "c7aad0a7f046113eead5b273be327db8b4cd8bac2843edd2d8b45e84463d3b54",
+     "f8dce2ae2b00f3d3d4f99532e0838ed082f313cdf1d86000b0c4fea3b9d08bc8",
+     "2add6d0103696433d25271870e1dd7d84261ecd38ae1ef5ef7354846fca32c11"
+    ],
+    "citation_evidence_ids": [
+     "calculation:ad5158466669348ad337e0fbad79045ba9bee0497174325dfbe100fdab8ba226"
+    ]
+   }
+  ]
+ },
+ {
+  "case_id": "date_range_last_n-014",
+  "observation_sha256": "a52e28599f5335a887b975d340eb050692d012f262ee914dc8d17f2c703981af",
+  "reviewer": "ReviewDateRangeUnsupported (agent reviewer)",
+  "rationale": "The answer asks which back-to-back interpretation to count (first night, second night, or both games won); it states no results or unsupported facts. This clarification fits the ambiguity.",
+  "actual_disposition": "clarify",
+  "numeric_correct": true,
+  "entity_correct": true,
+  "citation_correct": true,
+  "paraphrase_correct": true,
+  "unsupported_assertions": false,
+  "assertions": [
+   {
+    "start": 0,
+    "end": 118,
+    "classification": "clarification",
+    "canonical_fact_ids": [],
+    "citation_evidence_ids": []
+   }
+  ]
+ },
+ {
+  "case_id": "date_range_last_n-015",
+  "observation_sha256": "68a395d15a894425f44c4a119592665778c4bbecc915d3dd2ff12beed9facb34",
+  "reviewer": "ReviewDateRangeUnsupported (agent reviewer)",
+  "rationale": "Checked January (15 games, 7-8) and February (12 games, 8-4) 2026 regular-season rows. The comparisons (one more win, four fewer losses, three fewer games in February) are correct.",
+  "actual_disposition": "answer",
+  "numeric_correct": true,
+  "entity_correct": true,
+  "citation_correct": true,
+  "paraphrase_correct": true,
+  "unsupported_assertions": false,
+  "assertions": [
+   {
+    "start": 0,
+    "end": 130,
+    "classification": "factual",
+    "canonical_fact_ids": [
+     "87946b783bbd1a874240ed4e18bf9016dbb7c44a0ac54895b78f802b9f0d4d1f",
+     "0ce93d65b4d4e066889259d0dfbf5af478eb42ac5b7d866775ecdb4e3ebc9c14",
+     "16fec1d28312ff0ecc15259a098c5976906bc7202eaf20b360b38ea8bf6acb3d",
+     "13391e2ca19c6a7ea90f4b02df9dca9fbae8c9ab7e1198753a54c5318795e076",
+     "36151da15487c1ee29cc2dec85c64a0b432a827c5c907c43d4094ed12afcbd70",
+     "f763e8b18bee853128bfb08b61d920e4ba70d1dc8d5904f3168e250f03d24a0b"
+    ],
+    "citation_evidence_ids": [
+     "calculation:44f027269b66c43ec5c32fe1d4c1a1b1c7e8b8879c4df6422381b43ff20e6c31",
+     "calculation:17dafe1c085efa6371578a8eed9373d8bd6b1d4d017d3d8b163afb4e0593a823"
+    ]
+   }
+  ]
+ },
+ {
+  "case_id": "comparisons-001",
+  "observation_sha256": "22389f7e38d1198d85311c1156bdf1547e43239e96cf099ae6d76ff1960bafb2",
+  "reviewer": "ReviewComparisons (agent reviewer)",
+  "rationale": "Recomputed Knicks home scores from 49 games (5,792/49 = 118.2041) and away scores from 52 (5,958/52 = 114.5769) in games; both sides and scopes are correct.",
+  "actual_disposition": "answer",
+  "numeric_correct": true,
+  "entity_correct": true,
+  "citation_correct": true,
+  "paraphrase_correct": true,
+  "unsupported_assertions": false,
+  "assertions": [
+   {
+    "start": 0,
+    "end": 115,
+    "classification": "factual",
+    "canonical_fact_ids": [
+     "3373676f5a5beacd19c4ebc372d8c4a0eadc31c00058a464b92727d87edc250f",
+     "16b73c40b1ac8eba0a4cc633614ef3b63d657e6804dda586be7c95f2ddc715c5"
+    ],
+    "citation_evidence_ids": [
+     "calculation:5dfd130a4048f31488186ff7d172fe451187c61c269788f396caf251e7443d04",
+     "calculation:6cc41557878ec5e0441a5fdcb8f3de1df65c349509c9fbaa331f86d81fe81d41"
+    ]
+   }
+  ]
+ },
+ {
+  "case_id": "comparisons-002",
+  "observation_sha256": "a7267ce3801c510242708dc89525708a985a7278701e5131995b570b9208d42c",
+  "reviewer": "ReviewComparisons (agent reviewer)",
+  "rationale": "Recomputed points from player_game_stats for rows with minutes > 0: Brunson 2,466/93 = 26.5161 and Towns 1,806/94 = 19.2128. Names, appearances and rounded scoring averages match.",
+  "actual_disposition": "answer",
+  "numeric_correct": true,
+  "entity_correct": true,
+  "citation_correct": true,
+  "paraphrase_correct": true,
+  "unsupported_assertions": false,
+  "assertions": [
+   {
+    "start": 0,
+    "end": 294,
+    "classification": "factual",
+    "canonical_fact_ids": [
+     "442d727e67e99bb0098eea51762b6400f65df49b5579ccefd8f182ffc607fa87",
+     "cdb2d0f92c9e9a2dc2ae08f1d13febe4e54d43712967ac57f09e9c070b60210f"
+    ],
+    "citation_evidence_ids": [
+     "calculation:8ba05948a8b4340b7166c8e11f69530998e55d6cae70c83a9759334840d696c2",
+     "calculation:847dd1cab99f2225ae01af0cd1959db0a67c7481b50cf79ab1f83e277e03621b"
+    ]
+   }
+  ]
+ },
+ {
+  "case_id": "comparisons-003",
+  "observation_sha256": "94de69709e8e3da39b79c130ed09dab2007a422bce316be0bb2f2724de1e6050",
+  "reviewer": "ReviewComparisons (agent reviewer)",
+  "rationale": "Recomputed Knicks outcomes from games: Boston 4 meetings, 3-1, average margin +8.0; Toronto 5 meetings, 5-0, +19.6. Both sides and the comparative results match.",
+  "actual_disposition": "answer",
+  "numeric_correct": true,
+  "entity_correct": true,
+  "citation_correct": true,
+  "paraphrase_correct": true,
+  "unsupported_assertions": false,
+  "assertions": [
+   {
+    "start": 0,
+    "end": 166,
+    "classification": "factual",
+    "canonical_fact_ids": [
+     "d2880685ae78b9f5c640b26fb5cd89cdc1878ce070225842287040ede83d097f",
+     "a51566982f6391e15b7db0693edb26e7c06c7056beee78963a5315ecbe087c0f",
+     "25c77c15deee7e3b55d0523a8430edd1c7b364463146762500cc89316eb3217a",
+     "63ee97eed2a3e2559023370d4f503438048207e7010371d24ea2e582b81a7af0",
+     "b81a7cd5f9ab91ffe684cd98b11a6c6b658e80f35a27805a57029a1094803702",
+     "af1d7d6700333233191532ca0a1d2aaa39aeabd2ecdf8de249f8b0c49bd87a2f",
+     "e2779f32e8e262a4e82b71c14d393dfe5a93e763b60b0005d0e91713ff138bb7",
+     "211171918ce2abc3fc8ccd2e767ae0b72e8b70c850862b315111b70e2235eb48"
+    ],
+    "citation_evidence_ids": [
+     "calculation:279791413b7ca0237fcbf2426a8ef50b4fbb606ce0f356847bed8b26a35e0360",
+     "calculation:9eec31ffa56edbca8d620c6b2aa545b9c6ea8b27df6539957b77b83e8afef763"
+    ]
+   }
+  ]
+ },
+ {
+  "case_id": "comparisons-004",
+  "observation_sha256": "75ba870875ad8037680d106656fc0a1f8b003eb301b797733439a39c672598a4",
+  "reviewer": "ReviewComparisons (agent reviewer)",
+  "rationale": "Recomputed the first and last ten Knicks games ordered by date: first window 7-3, 2025-10-22 to 2025-11-11; last window 9-1, 2026-05-10 to 2026-06-13. The disabled response reports the records correctly.",
+  "actual_disposition": "answer",
+  "numeric_correct": true,
+  "entity_correct": true,
+  "citation_correct": true,
+  "paraphrase_correct": true,
+  "unsupported_assertions": false,
+  "assertions": [
+   {
+    "start": 0,
+    "end": 142,
+    "classification": "factual",
+    "canonical_fact_ids": [
+     "27d207269a05b47856f724cebda52139f841d1619627a585adc227690eb362d8",
+     "75330dec6298f343c8ed695f1a59a189689b42d2fcda21796c1a896f88a363b2",
+     "411ef0e37d44640cbfb0ab264231766d70aace773cc38cafa405f1ff8868a6b6",
+     "73402679cfcadf1237c2d5af7fd7b651d7a63fe26e8d018f61d35d54d64ced70",
+     "1612fe9c414076283c378de41628187e0fecd9db94f7e762c15c48a0568dc35d",
+     "7229018186f358e34ab83fe0d75e6d74f05d68562d3784557b57c2b7d5949695"
+    ],
+    "citation_evidence_ids": [
+     "calculation:785145ab6f0758a6d15735df4fb3cb3317c4e940a3d1b0d31f2c3bf5e2147b4e",
+     "calculation:15703f98654794297d34ad5e42c58897d76f6eaece91e613ac8d3c079ef20309"
+    ]
+   }
+  ]
+ },
+ {
+  "case_id": "comparisons-005",
+  "observation_sha256": "4c452de7b0cf28f5df020f5e9b0d57516bb4f9ac8e31d4e4e608cd586832a90a",
+  "reviewer": "ReviewComparisons (agent reviewer)",
+  "rationale": "Recomputed Knicks team_game_stats turnovers by game outcome: wins averaged 11.9710 over 69 games; losses total 457 turnovers over 32, or 14.28125 (14.2812 to four decimals). Both reported averages are correctly rounded.",
+  "actual_disposition": "answer",
+  "numeric_correct": true,
+  "entity_correct": true,
+  "citation_correct": true,
+  "paraphrase_correct": true,
+  "unsupported_assertions": false,
+  "assertions": [
+   {
+    "start": 0,
+    "end": 121,
+    "classification": "factual",
+    "canonical_fact_ids": [
+     "5cbf35ea30501bd468d409ba1b2621b987baf2419fba80bba30df0748e198fdd",
+     "1376095275e5701840b4ef968e76cbae07a075eaa99de6e9b1c2321da5be5ae8"
+    ],
+    "citation_evidence_ids": [
+     "calculation:0768c020122b6974038c2f11a78194780ea57b87b12fcb6dcc44367412faf91a",
+     "calculation:f000213b06e08667ea395f7a913adb6fc773db8d5e2969daa7dcbe9e1f5d0743"
+    ]
+   }
+  ]
+ },
+ {
+  "case_id": "comparisons-006",
+  "observation_sha256": "13927a5f81f4fbfc3092eb5ff5217de6d26d4f0598747d2bacd48f2c77c80604",
+  "reviewer": "ReviewComparisons (agent reviewer)",
+  "rationale": "Recomputed NYK non-starter player_game_stats points with minutes > 0: home 1,574/49 = 32.1224; away 1,554/52 = 29.8846. The updated mapping covers all 428 canonical home box IDs and 451 away box IDs; the DB rows for each are starter=false. The cited calculation values and game counts are accurate and supported.",
+  "actual_disposition": "answer",
+  "numeric_correct": true,
+  "entity_correct": true,
+  "citation_correct": true,
+  "paraphrase_correct": true,
+  "unsupported_assertions": false,
+  "assertions": [
+   {
+    "start": 0,
+    "end": 135,
+    "classification": "factual",
+    "canonical_fact_ids": [
+     "4d3442e7c49e53008c8df1ea7e0790477c30bddfb0f997a31649cbae3fab3b91",
+     "3f405cfdc9cda3bba9807f1e097ee5bdf9ae13bf98d4c964d8345daefb4f3eb4"
+    ],
+    "citation_evidence_ids": [
+     "calculation:ee4e68b7fb941c8688be39a334ebb3c38ef5fee58fceec8b6f0baf90f80e8105",
+     "calculation:aabd9fe199c09774cd9aff481c488172405038c9d45fe6d8863a9634ef35d63c"
+    ]
+   }
+  ]
+ },
+ {
+  "case_id": "comparisons-007",
+  "observation_sha256": "283cc010e8fadf6e233ca6d45d6cfd542bcf5fc5d750cf019a746e7ccf8be54b",
+  "reviewer": "ReviewComparisons (agent reviewer)",
+  "rationale": "The response requests two specific dates among four Knicks-Boston games in the archive. It is an actual clarification, not a factual comparison, with no numeric or cited claims.",
+  "actual_disposition": "clarify",
+  "numeric_correct": true,
+  "entity_correct": true,
+  "citation_correct": true,
+  "paraphrase_correct": true,
+  "unsupported_assertions": false,
+  "assertions": [
+   {
+    "start": 0,
+    "end": 74,
+    "classification": "clarification",
+    "canonical_fact_ids": [],
+    "citation_evidence_ids": []
+   }
+  ]
+ },
+ {
+  "case_id": "comparisons-008",
+  "observation_sha256": "b0a0ef65aa05d297df2d864e59b1c080d1dd5c8b5306383156a6b7536cfe00d4",
+  "reviewer": "ReviewComparisons (agent reviewer)",
+  "rationale": "Recomputed rebounds from player_game_stats rows with minutes > 0: Towns 1,090/94 = 11.5957; Hart 656/85 = 7.7176. The stated identities, counts and rounded rates match.",
+  "actual_disposition": "answer",
+  "numeric_correct": true,
+  "entity_correct": true,
+  "citation_correct": true,
+  "paraphrase_correct": true,
+  "unsupported_assertions": false,
+  "assertions": [
+   {
+    "start": 0,
+    "end": 293,
+    "classification": "factual",
+    "canonical_fact_ids": [
+     "de3b96f4ffe7a18c74f17c466b5d56d58e5f24e23dd65395fb10e56b7b8e61fc",
+     "913752c3acca85dc2cd6d39fe9f913eeb3f2feba40d46596e76194b3a6fad4f8"
+    ],
+    "citation_evidence_ids": [
+     "calculation:080a8ec47677e6f0e6f3c0d700c076a679a6b4af9c38858dc2592493ff87e66f",
+     "calculation:16727de870bbb990cb0b6b92f7bd400cb712da6c3a1c6a6844e8bb4f2b659ee0"
+    ]
+   }
+  ]
+ },
+ {
+  "case_id": "comparisons-009",
+  "observation_sha256": "80b044f2cf3c48d68878280adb8a5c850316f0419c10de18de2993ceec93883a",
+  "reviewer": "ReviewComparisons (agent reviewer)",
+  "rationale": "Recomputed period_scores for NYK: quarter 3 totals 2,931 points over 101 games (29.0198/game); quarter 4 totals 2,817 over 101 (27.8911/game). All reported totals and averages are correct.",
+  "actual_disposition": "answer",
+  "numeric_correct": true,
+  "entity_correct": true,
+  "citation_correct": true,
+  "paraphrase_correct": true,
+  "unsupported_assertions": false,
+  "assertions": [
+   {
+    "start": 0,
+    "end": 165,
+    "classification": "factual",
+    "canonical_fact_ids": [
+     "1b8aee47630279faebb6b2c0e83f0b115ee828b6edd0fd7960d85b8c6df38ce9",
+     "ac234b77a230ccc9694ffc793a7c2948af5f9f7c5ba4a89a72d56a219755e607"
+    ],
+    "citation_evidence_ids": [
+     "calculation:37dc0f672b9d22fd15566e5cef30367bf4b7a834e0dbbd1cdc23fb8733d09246",
+     "calculation:6d5e8741ea9a80efa2deb06f5fc0367ea3975b4c362ca35af67288f86a8342fc"
+    ]
+   }
+  ]
+ },
+ {
+  "case_id": "comparisons-010",
+  "observation_sha256": "a905f2156cc86e1ea844cf31a9e529b81d04fc0d3e3a5a5e39abdcdf704b664a",
+  "reviewer": "ReviewComparisons (agent reviewer)",
+  "rationale": "Recomputed weighted team field-goal percentages from team_game_stats: wins 3,037/6,105 = 49.7461%; losses 1,256/2,844 = 44.1632%. These differ by 5.5829 percentage points, so the comparison is correct.",
+  "actual_disposition": "answer",
+  "numeric_correct": true,
+  "entity_correct": true,
+  "citation_correct": true,
+  "paraphrase_correct": true,
+  "unsupported_assertions": false,
+  "assertions": [
+   {
+    "start": 0,
+    "end": 127,
+    "classification": "factual",
+    "canonical_fact_ids": [
+     "701c9dc4bcba822f326f2f762590854bf2a5faaa7c6aed121df1a7a3ba141bd7",
+     "55ecc20d9f8dd9b13b988bbd1d17c3b59b9fad83c29e5e23699b2656e2872949"
+    ],
+    "citation_evidence_ids": [
+     "calculation:4b158023cb280bc3211077108d9a37abb911301a093ded9987cbabbc2e2ff39d",
+     "calculation:d9bb8f40743cea389a708890420865a0e842d9cb60fd183b772399303d599116"
+    ]
+   }
+  ]
+ },
+ {
+  "case_id": "comparisons-011",
+  "observation_sha256": "2906e9eb86a2eb884af993c856d35ceced937cdf13973c202be2adb721043d4d",
+  "reviewer": "ReviewComparisons (agent reviewer)",
+  "rationale": "Recomputed Bridges scoring from player_game_stats (minutes > 0) split at 2026-02-15: before the break 876/55 = 15.9273; after 561/46 = 12.1957. The after-break sample includes postseason appearances, as the frozen scope specifies; the response's values are correct.",
+  "actual_disposition": "answer",
+  "numeric_correct": true,
+  "entity_correct": true,
+  "citation_correct": true,
+  "paraphrase_correct": true,
+  "unsupported_assertions": false,
+  "assertions": [
+   {
+    "start": 0,
+    "end": 168,
+    "classification": "factual",
+    "canonical_fact_ids": [
+     "954478cca3e024ac9f602db939c8ff0a92c439da7ade65bb44b3a353ce39914f",
+     "6b3f6a2485f5ef34f654d4f69f1a2664be1a8104d28f7873479935ac9cc1c816"
+    ],
+    "citation_evidence_ids": [
+     "calculation:7b023ae5106c8a12ad12f3281aee8eda4feaee95de1da415d8b9d8f417c74e79"
+    ]
+   }
+  ]
+ },
+ {
+  "case_id": "comparisons-012",
+  "observation_sha256": "2cd8e8a75d467b235ade42118450683388b7c22c2fc0e100315ffecb0df673ad",
+  "reviewer": "ReviewComparisons (agent reviewer)",
+  "rationale": "No offense-versus-defense strength metric or benchmark is specified. The response asks for the missing definitions and makes no factual claims.",
+  "actual_disposition": "clarify",
+  "numeric_correct": true,
+  "entity_correct": true,
+  "citation_correct": true,
+  "paraphrase_correct": true,
+  "unsupported_assertions": false,
+  "assertions": [
+   {
+    "start": 0,
+    "end": 134,
+    "classification": "clarification",
+    "canonical_fact_ids": [],
+    "citation_evidence_ids": []
+   }
+  ]
+ },
+ {
+  "case_id": "comparisons-013",
+  "observation_sha256": "cc19092c26ac03a7e2406c5cd7432689e6b9293beb7c20fa037f4cfbafa778d3",
+  "reviewer": "ReviewComparisons (agent reviewer)",
+  "rationale": "No final-margin thresholds are defined for close games or blowouts. The response asks for that missing threshold and makes no factual comparison.",
+  "actual_disposition": "clarify",
+  "numeric_correct": true,
+  "entity_correct": true,
+  "citation_correct": true,
+  "paraphrase_correct": true,
+  "unsupported_assertions": false,
+  "assertions": [
+   {
+    "start": 0,
+    "end": 120,
+    "classification": "clarification",
+    "canonical_fact_ids": [],
+    "citation_evidence_ids": []
+   }
+  ]
+ },
+ {
+  "case_id": "comparisons-014",
+  "observation_sha256": "a9af45a359bc1499e158463185349034974277d4e4911a68e17f1946d3fea3cb",
+  "reviewer": "ReviewComparisons (agent reviewer)",
+  "rationale": "Recomputed by Knicks opponent conference from games: East 66 games, 47-19, +9.7424 average margin (71.2121% wins); West 35, 22-13, +4.5429 (62.8571%). The counts, margins and higher East win share are accurate.",
+  "actual_disposition": "answer",
+  "numeric_correct": true,
+  "entity_correct": true,
+  "citation_correct": true,
+  "paraphrase_correct": true,
+  "unsupported_assertions": false,
+  "assertions": [
+   {
+    "start": 0,
+    "end": 181,
+    "classification": "factual",
+    "canonical_fact_ids": [
+     "2d4b6d39e2e250a0fd828fb2d16ae93d6059eeb4613a01e7574aa61b2183d9f0",
+     "c90684ef7f2a5687c3cd28701d661c96ffad4e33bb9ecb75f3e8ba46d5f96ea7",
+     "9d32efc8b67553605a794cb93f933b8ffd36af6f0b607f07548b460063b29308",
+     "f48243d831a540eb83f5734db617db5ea6dd1a57f42a4d25a66be7ed26713dd1",
+     "572604b15bc082647a980c57cfa22dc3062f2faea4dff259458e37c8213e29af",
+     "4e51e63660eeefe2b1b16d3b3867f247bb733e9a60417265260f910d78c83544",
+     "165322eac4fa6c7289d63a0fe535eb3c53317a6050069e5f631c9eff87b66872",
+     "720edfeca5953a0b56b53893fd71fec7c7a74c790233a47457cfcdb220dba495"
+    ],
+    "citation_evidence_ids": [
+     "calculation:6080f6c8ecb642a94e7fd7859f8e42ecd1502126c34652a4f3d116941b5cdfa3",
+     "calculation:ef3a176d5f32fe56dace5bd4165f15c5a9a0229afcfd2b317068f0a1223f7703"
+    ]
+   }
+  ]
+ },
+ {
+  "case_id": "comparisons-015",
+  "observation_sha256": "63653a89cf8faacdc73843befe96d41ab2296492683d4a94c7ce33bf849f0730",
+  "reviewer": "ReviewComparisons (agent reviewer)",
+  "rationale": "Recomputed Brunson's last five appearances from player_game_stats with minutes > 0: 163 points over 5, 32.6 average, June 3 through June 13, 2026. Season total 2,466/93 = 26.5161. The windows and values are correct.",
+  "actual_disposition": "answer",
+  "numeric_correct": true,
+  "entity_correct": true,
+  "citation_correct": true,
+  "paraphrase_correct": true,
+  "unsupported_assertions": false,
+  "assertions": [
+   {
+    "start": 0,
+    "end": 311,
+    "classification": "factual",
+    "canonical_fact_ids": [
+     "775fc09c247b2846816f20c2f012ea22af187e77da815f60cb6f24f17dc8adf2",
+     "e1dfb51987bd5ac8063f136c312be11cf326e34168e16ebf73886924bef6b525"
+    ],
+    "citation_evidence_ids": [
+     "calculation:8ddea11878ee70f4a989cb9fa2a4312043d6a7aa60ecc2afce894aeb4a0bcec5",
+     "calculation:847dd1cab99f2225ae01af0cd1959db0a67c7481b50cf79ab1f83e277e03621b"
+    ]
+   }
+  ]
+ },
+ {
+  "case_id": "single_game_narrative-001",
+  "observation_sha256": "b7e40d44a663a56582c652770fbe2abc8cbafb68b0b844f34544852d2bc766da",
+  "reviewer": "ReviewNarrative (agent reviewer)",
+  "rationale": "The listed candidate dates map to the matching frozen game-score facts and were checked against games rows. The response has no citations, so these factual date assertions have no mapped receipts and remain unresolved.",
+  "actual_disposition": "clarify",
+  "numeric_correct": true,
+  "entity_correct": true,
+  "citation_correct": false,
+  "paraphrase_correct": true,
+  "unsupported_assertions": true,
+  "assertions": [
+   {
+    "start": 0,
+    "end": 43,
+    "classification": "clarification",
+    "canonical_fact_ids": [],
+    "citation_evidence_ids": []
+   },
+   {
+    "start": 43,
+    "end": 90,
+    "classification": "factual",
+    "canonical_fact_ids": [
+     "6427d04746908b87eb632c9c24f650dd17432f49b7ece6c4fd2802d1ffdf99c3",
+     "c8e335cc5a011bc5f62133be910404a78fe076b56e2c80fac3b2f6bc4ae1fce9",
+     "fce71b453f1fc6170efff99e6a7d68bf6adb3b601bfb1e53d86f62c6f44dab03",
+     "773bcad36a86520efda749307fe0b14b69f57b2f1984f865f500e18fd475b6d1"
+    ],
+    "citation_evidence_ids": []
+   }
+  ],
+  "unresolved": true,
+  "listed_candidate_game_ids": [
+   "0022500018",
+   "0022500320",
+   "0022500757",
+   "0022501168"
+  ]
+ },
+ {
+  "case_id": "single_game_narrative-002",
+  "observation_sha256": "cdb34a903591907e9f4755372ab965240d1027703fd8771fc110cbe42b7a9ee6",
+  "reviewer": "ReviewNarrative (agent reviewer)",
+  "rationale": "The listed candidate dates map to the matching frozen game-score facts and were checked against games rows. The response has no citations, so these factual date assertions have no mapped receipts and remain unresolved.",
+  "actual_disposition": "clarify",
+  "numeric_correct": true,
+  "entity_correct": true,
+  "citation_correct": false,
+  "paraphrase_correct": true,
+  "unsupported_assertions": true,
+  "assertions": [
+   {
+    "start": 0,
+    "end": 43,
+    "classification": "clarification",
+    "canonical_fact_ids": [],
+    "citation_evidence_ids": []
+   },
+   {
+    "start": 43,
+    "end": 102,
+    "classification": "factual",
+    "canonical_fact_ids": [
+     "a6e99031954d990d84d6b7c7dffb2545e5cc36065e979d183f93fc12411ae9a4",
+     "58f9cc0b9fccb05ddd4c794905eaf3a4be612a893e956b8029837c15319e3568",
+     "1ced1f95aa8723572815ea5bc77b768da169963ccc372f45f6f10ea3cf832a0c",
+     "606bfce980b33213d403120911b80a0258f5343072417af24ec8d396b885b30e",
+     "525f0467f0d4f1abe1d2fc3c082ced280c9bcc0ac6d3202523d71b4c98793b8b"
+    ],
+    "citation_evidence_ids": []
+   }
+  ],
+  "unresolved": true,
+  "listed_candidate_game_ids": [
+   "0022500303",
+   "0022501202",
+   "0022500675",
+   "0022500887",
+   "0022501176"
+  ]
+ },
+ {
+  "case_id": "single_game_narrative-003",
+  "observation_sha256": "5d1681d389af288463e3d1985802107ab5e04205e43afcad409f44d2c6a9b9e9",
+  "reviewer": "ReviewNarrative (agent reviewer)",
+  "rationale": "The listed candidate dates map to the matching frozen game-score facts and were checked against games rows. The response has no citations, so these factual date assertions have no mapped receipts and remain unresolved.",
+  "actual_disposition": "clarify",
+  "numeric_correct": true,
+  "entity_correct": true,
+  "citation_correct": false,
+  "paraphrase_correct": true,
+  "unsupported_assertions": true,
+  "assertions": [
+   {
+    "start": 0,
+    "end": 43,
+    "classification": "clarification",
+    "canonical_fact_ids": [],
+    "citation_evidence_ids": []
+   },
+   {
+    "start": 43,
+    "end": 150,
+    "classification": "factual",
+    "canonical_fact_ids": [
+     "f50b31eed0b0b8bd99bee9d0d3f6ec9fbabc6b4ab21f30f21eb25fa3798179d5",
+     "e5bde4486d3d632a5f316c98abddcb703e6349be4ff4230a26457a67b520ace2",
+     "7dc42ee615a1e4afa39c651000e77e886f6dacfcaf64ef9b1c638789e4bcbf92",
+     "8873ee91d9a7b94cccbb9b025aa50de21917c46378dd70547c0e13fab7f02d35",
+     "42a780887824aa8b4c3200eb669b24ddd6988e06db5f22e97d8759c193a2142a",
+     "3cb00e16ee3097c028bc437c3c6feefe23d5b380f33734372e66fa8dca765cb5",
+     "d39ecebb096408023c71e25f3d448583b864e2d109e418d2902eab2021baad30",
+     "14082db8db89f2116ea7aaf139366d95289d379876d13609efd1b67054246447",
+     "b3d419c48609bd727b76b1a187cdc0df4b317ee6f17ce60ab3f313fddf51a690"
+    ],
+    "citation_evidence_ids": []
+   }
+  ],
+  "unresolved": true,
+  "listed_candidate_game_ids": [
+   "0022500435",
+   "0022500479",
+   "0022501143",
+   "0042500121",
+   "0042500122",
+   "0042500123",
+   "0042500124",
+   "0042500125",
+   "0042500126"
+  ]
+ },
+ {
+  "case_id": "single_game_narrative-004",
+  "observation_sha256": "a5cd3107f2a1b6ba1cbfd1def06d7cedaf91085f707de814e766376150ce62c0",
+  "reviewer": "ReviewNarrative (agent reviewer)",
+  "rationale": "The listed candidate dates map to the matching frozen game-score facts and were checked against games rows. The response has no citations, so these factual date assertions have no mapped receipts and remain unresolved.",
+  "actual_disposition": "clarify",
+  "numeric_correct": true,
+  "entity_correct": true,
+  "citation_correct": false,
+  "paraphrase_correct": true,
+  "unsupported_assertions": true,
+  "assertions": [
+   {
+    "start": 0,
+    "end": 43,
+    "classification": "clarification",
+    "canonical_fact_ids": [],
+    "citation_evidence_ids": []
+   },
+   {
+    "start": 43,
+    "end": 78,
+    "classification": "factual",
+    "canonical_fact_ids": [
+     "3d3be57381a7b373f29a43c9d5ec5e52203e4fdd31d534973fde03ba54c4c226",
+     "0b8b18d5caa33ca345fb6ff3beea542cd06e105b0244ee0e1c39b15c38e3e905",
+     "a5a621059ea102a60cc62a76c7b9aba1d3d0764e5f2151547c404a50fa1cf976"
+    ],
+    "citation_evidence_ids": []
+   }
+  ],
+  "unresolved": true,
+  "listed_candidate_game_ids": [
+   "0022500153",
+   "0022500825",
+   "0022501123"
+  ]
+ },
+ {
+  "case_id": "single_game_narrative-005",
+  "observation_sha256": "c5b4ba5686b6698323cebedd745c9d5f4458e1898c41d2fea9e4252ceb5bd059",
+  "reviewer": "ReviewNarrative (agent reviewer)",
+  "rationale": "The listed candidate dates map to the matching frozen game-score facts and were checked against games rows. The response has no citations, so these factual date assertions have no mapped receipts and remain unresolved.",
+  "actual_disposition": "clarify",
+  "numeric_correct": true,
+  "entity_correct": true,
+  "citation_correct": false,
+  "paraphrase_correct": true,
+  "unsupported_assertions": true,
+  "assertions": [
+   {
+    "start": 0,
+    "end": 43,
+    "classification": "clarification",
+    "canonical_fact_ids": [],
+    "citation_evidence_ids": []
+   },
+   {
+    "start": 43,
+    "end": 90,
+    "classification": "factual",
+    "canonical_fact_ids": [
+     "25e8803b7a55373d25e7c23c55aee927f721e1be3338869de778cb6445fc7ec4",
+     "10e4f266c718b5fc21b472ec91e721bdb2c3af1f9f54cf0f8baf81539dc854eb",
+     "aeeebd096d5de3fb17dcd8946dc17bb66e0abeae0d475fc6cb7e99a2edb22918",
+     "c56938012bdc4c8131669bca66180aaec93f137913704fa7ea5eca7fa0822f75"
+    ],
+    "citation_evidence_ids": []
+   }
+  ],
+  "unresolved": true,
+  "listed_candidate_game_ids": [
+   "0022500061",
+   "0022500328",
+   "0022501063",
+   "0022501190"
+  ]
+ },
+ {
+  "case_id": "single_game_narrative-006",
+  "observation_sha256": "ab5a858314a1f17ce7f6aa068019d5ad7c90fe6cfbbd535305b890a5e9276a3b",
+  "reviewer": "ReviewNarrative (agent reviewer)",
+  "rationale": "DB game rows confirm all six reported Knicks games were tied for the smallest absolute margin (1 point); period_scores match every listed quarter. The answer gives all six candidates, but answers with score summaries instead of clarifying which closest-game story is intended.",
+  "actual_disposition": "answer",
+  "numeric_correct": true,
+  "entity_correct": true,
+  "citation_correct": true,
+  "paraphrase_correct": false,
+  "unsupported_assertions": false,
+  "assertions": [
+   {
+    "start": 0,
+    "end": 925,
+    "classification": "factual",
+    "canonical_fact_ids": [
+     "eaccd199630d3070075c5421aa8fcccec9c683c8724b9f0316278fbe359d8477",
+     "a06b6e5e5d0b5814321346773911a5a32d1b528644a2b88aeebc214cc6d21077",
+     "42a780887824aa8b4c3200eb669b24ddd6988e06db5f22e97d8759c193a2142a",
+     "3cb00e16ee3097c028bc437c3c6feefe23d5b380f33734372e66fa8dca765cb5",
+     "e26fef462c9552675685659c0bf2c588547dc8f63112b9d055d7688e8445be68",
+     "35fd22c0221974527c98d821ddf55d7870841678b2e5c973d41b84778bdab4e0"
+    ],
+    "citation_evidence_ids": [
+     "2025-26.20260928.1:narrative:cdf59352580f6ee68aae8e9009b3e37ac325811c2ae6a0fa6092e83b185203c7"
+    ]
+   }
+  ],
+  "listed_candidate_game_ids": [
+   "0022500372",
+   "0022501016",
+   "0042500122",
+   "0042500123",
+   "0042500402",
+   "0042500404"
+  ]
+ },
+ {
+  "case_id": "single_game_narrative-007",
+  "observation_sha256": "7b9221e58122b86df7a568f3a3ea46ed9c8fd33cd0076ff4134100e3bd28ba33",
+  "reviewer": "ReviewNarrative (agent reviewer)",
+  "rationale": "The listed candidate dates map to the matching frozen game-score facts and were checked against games rows. The response has no citations, so these factual date assertions have no mapped receipts and remain unresolved.",
+  "actual_disposition": "clarify",
+  "numeric_correct": true,
+  "entity_correct": true,
+  "citation_correct": false,
+  "paraphrase_correct": true,
+  "unsupported_assertions": true,
+  "assertions": [
+   {
+    "start": 0,
+    "end": 43,
+    "classification": "clarification",
+    "canonical_fact_ids": [],
+    "citation_evidence_ids": []
+   },
+   {
+    "start": 43,
+    "end": 90,
+    "classification": "factual",
+    "canonical_fact_ids": [
+     "6427d04746908b87eb632c9c24f650dd17432f49b7ece6c4fd2802d1ffdf99c3",
+     "c8e335cc5a011bc5f62133be910404a78fe076b56e2c80fac3b2f6bc4ae1fce9",
+     "fce71b453f1fc6170efff99e6a7d68bf6adb3b601bfb1e53d86f62c6f44dab03",
+     "773bcad36a86520efda749307fe0b14b69f57b2f1984f865f500e18fd475b6d1"
+    ],
+    "citation_evidence_ids": []
+   }
+  ],
+  "unresolved": true,
+  "listed_candidate_game_ids": [
+   "0022500018",
+   "0022500320",
+   "0022500757",
+   "0022501168"
+  ]
+ },
+ {
+  "case_id": "single_game_narrative-008",
+  "observation_sha256": "e00db484eb8bdb79bfbe863640205b9fb1eb55d3af6622557e94c166e16a3e71",
+  "reviewer": "ReviewNarrative (agent reviewer)",
+  "rationale": "The listed candidate dates map to the matching frozen game-score facts and were checked against games rows. The response has no citations, so these factual date assertions have no mapped receipts and remain unresolved.",
+  "actual_disposition": "clarify",
+  "numeric_correct": true,
+  "entity_correct": true,
+  "citation_correct": false,
+  "paraphrase_correct": true,
+  "unsupported_assertions": true,
+  "assertions": [
+   {
+    "start": 0,
+    "end": 43,
+    "classification": "clarification",
+    "canonical_fact_ids": [],
+    "citation_evidence_ids": []
+   },
+   {
+    "start": 43,
+    "end": 102,
+    "classification": "factual",
+    "canonical_fact_ids": [
+     "a6e99031954d990d84d6b7c7dffb2545e5cc36065e979d183f93fc12411ae9a4",
+     "58f9cc0b9fccb05ddd4c794905eaf3a4be612a893e956b8029837c15319e3568",
+     "1ced1f95aa8723572815ea5bc77b768da169963ccc372f45f6f10ea3cf832a0c",
+     "606bfce980b33213d403120911b80a0258f5343072417af24ec8d396b885b30e",
+     "525f0467f0d4f1abe1d2fc3c082ced280c9bcc0ac6d3202523d71b4c98793b8b"
+    ],
+    "citation_evidence_ids": []
+   },
+   {
+    "start": 102,
+    "end": 187,
+    "classification": "clarification",
+    "canonical_fact_ids": [],
+    "citation_evidence_ids": []
+   },
+   {
+    "start": 187,
+    "end": 254,
+    "classification": "nonfactual",
+    "canonical_fact_ids": [],
+    "citation_evidence_ids": []
+   }
+  ],
+  "unresolved": true,
+  "listed_candidate_game_ids": [
+   "0022500303",
+   "0022501202",
+   "0022500675",
+   "0022500887",
+   "0022501176"
+  ]
+ },
+ {
+  "case_id": "single_game_narrative-009",
+  "observation_sha256": "38ff8c1006860d14bb8e5685af26f7dbcae2fa7f3622cdb5975fccfd464ffe82",
+  "reviewer": "ReviewNarrative (agent reviewer)",
+  "rationale": "The listed candidate dates map to the matching frozen game-score facts and were checked against games rows. The response has no citations, so these factual date assertions have no mapped receipts and remain unresolved.",
+  "actual_disposition": "clarify",
+  "numeric_correct": true,
+  "entity_correct": true,
+  "citation_correct": false,
+  "paraphrase_correct": true,
+  "unsupported_assertions": true,
+  "assertions": [
+   {
+    "start": 0,
+    "end": 43,
+    "classification": "clarification",
+    "canonical_fact_ids": [],
+    "citation_evidence_ids": []
+   },
+   {
+    "start": 43,
+    "end": 150,
+    "classification": "factual",
+    "canonical_fact_ids": [
+     "f50b31eed0b0b8bd99bee9d0d3f6ec9fbabc6b4ab21f30f21eb25fa3798179d5",
+     "e5bde4486d3d632a5f316c98abddcb703e6349be4ff4230a26457a67b520ace2",
+     "7dc42ee615a1e4afa39c651000e77e886f6dacfcaf64ef9b1c638789e4bcbf92",
+     "8873ee91d9a7b94cccbb9b025aa50de21917c46378dd70547c0e13fab7f02d35",
+     "42a780887824aa8b4c3200eb669b24ddd6988e06db5f22e97d8759c193a2142a",
+     "3cb00e16ee3097c028bc437c3c6feefe23d5b380f33734372e66fa8dca765cb5",
+     "d39ecebb096408023c71e25f3d448583b864e2d109e418d2902eab2021baad30",
+     "14082db8db89f2116ea7aaf139366d95289d379876d13609efd1b67054246447",
+     "b3d419c48609bd727b76b1a187cdc0df4b317ee6f17ce60ab3f313fddf51a690"
+    ],
+    "citation_evidence_ids": []
+   }
+  ],
+  "unresolved": true,
+  "listed_candidate_game_ids": [
+   "0022500435",
+   "0022500479",
+   "0022501143",
+   "0042500121",
+   "0042500122",
+   "0042500123",
+   "0042500124",
+   "0042500125",
+   "0042500126"
+  ]
+ },
+ {
+  "case_id": "single_game_narrative-010",
+  "observation_sha256": "431784c69e163b1a1a5aa30e9a2d56a053745ce1993083e4da657b203c7f5c62",
+  "reviewer": "ReviewNarrative (agent reviewer)",
+  "rationale": "The listed candidate dates map to the matching frozen game-score facts and were checked against games rows. The response has no citations, so these factual date assertions have no mapped receipts and remain unresolved.",
+  "actual_disposition": "clarify",
+  "numeric_correct": true,
+  "entity_correct": true,
+  "citation_correct": false,
+  "paraphrase_correct": true,
+  "unsupported_assertions": true,
+  "assertions": [
+   {
+    "start": 0,
+    "end": 43,
+    "classification": "clarification",
+    "canonical_fact_ids": [],
+    "citation_evidence_ids": []
+   },
+   {
+    "start": 43,
+    "end": 90,
+    "classification": "factual",
+    "canonical_fact_ids": [
+     "0cb888c91fd34c7d590a40369e16f76afccbfc5a9ca7a825a0304be65001a7da",
+     "3d3be57381a7b373f29a43c9d5ec5e52203e4fdd31d534973fde03ba54c4c226",
+     "0b8b18d5caa33ca345fb6ff3beea542cd06e105b0244ee0e1c39b15c38e3e905",
+     "a5a621059ea102a60cc62a76c7b9aba1d3d0764e5f2151547c404a50fa1cf976"
+    ],
+    "citation_evidence_ids": []
+   }
+  ],
+  "unresolved": true,
+  "listed_candidate_game_ids": [
+   "0022500023",
+   "0022500153",
+   "0022500825",
+   "0022501123"
+  ]
+ },
+ {
+  "case_id": "single_game_narrative-011",
+  "observation_sha256": "db27eaeec10b462dd2c46ce9f30748c0d664767a5dd1c1b6d1ab821f1384ce5c",
+  "reviewer": "ReviewNarrative (agent reviewer)",
+  "rationale": "DB player_game_stats (minutes > 0) confirms Towns had 14 points, 8 rebounds, and 3 assists in game 0022500622; the game row confirms 2026-01-21 and NYK 120\u2013BKN 66, the archive-high Knicks win margin.",
+  "actual_disposition": "answer",
+  "numeric_correct": true,
+  "entity_correct": true,
+  "citation_correct": true,
+  "paraphrase_correct": true,
+  "unsupported_assertions": false,
+  "assertions": [
+   {
+    "start": 0,
+    "end": 482,
+    "classification": "factual",
+    "canonical_fact_ids": [
+     "0ce804ddbfdc4aef9cbca9a309c467901cad7c6965b640a8ab3fce7425510c81",
+     "39126d607c20370267c76a83c288e225896c1d310ca136cdfee77b81e8573d08",
+     "3a8944d62541137896447ec17d2e58f83512cd039356f7348177dd56ce71f0df",
+     "ab150755c744f5a2cce8b0ef795993a3910adab1d0420a572a2555307cf83b68"
+    ],
+    "citation_evidence_ids": [
+     "2025-26.20260928.1:game:44:player:75",
+     "2025-26.20260928.1:game:44"
+    ]
+   }
+  ]
+ },
+ {
+  "case_id": "single_game_narrative-012",
+  "observation_sha256": "decec7c4d7f573cc0866c1d1e7c20298df9691eb420122436116064a467545c6",
+  "reviewer": "ReviewNarrative (agent reviewer)",
+  "rationale": "The listed candidate dates map to the matching frozen game-score facts and were checked against games rows. The response has no citations, so these factual date assertions have no mapped receipts and remain unresolved.",
+  "actual_disposition": "clarify",
+  "numeric_correct": true,
+  "entity_correct": true,
+  "citation_correct": false,
+  "paraphrase_correct": true,
+  "unsupported_assertions": true,
+  "assertions": [
+   {
+    "start": 0,
+    "end": 43,
+    "classification": "clarification",
+    "canonical_fact_ids": [],
+    "citation_evidence_ids": []
+   },
+   {
+    "start": 43,
+    "end": 90,
+    "classification": "factual",
+    "canonical_fact_ids": [
+     "25e8803b7a55373d25e7c23c55aee927f721e1be3338869de778cb6445fc7ec4",
+     "10e4f266c718b5fc21b472ec91e721bdb2c3af1f9f54cf0f8baf81539dc854eb",
+     "aeeebd096d5de3fb17dcd8946dc17bb66e0abeae0d475fc6cb7e99a2edb22918",
+     "c56938012bdc4c8131669bca66180aaec93f137913704fa7ea5eca7fa0822f75"
+    ],
+    "citation_evidence_ids": []
+   }
+  ],
+  "unresolved": true,
+  "listed_candidate_game_ids": [
+   "0022500061",
+   "0022500328",
+   "0022501063",
+   "0022501190"
+  ]
+ },
+ {
+  "case_id": "single_game_narrative-013",
+  "observation_sha256": "15059f4a8b01b5743f2d4acc8daa737b8a9d4ecde6af30e5e23bb41c07dc0f62",
+  "reviewer": "ReviewNarrative (agent reviewer)",
+  "rationale": "The listed candidate dates map to the matching frozen game-score facts and were checked against games rows. The response has no citations, so these factual date assertions have no mapped receipts and remain unresolved.",
+  "actual_disposition": "clarify",
+  "numeric_correct": true,
+  "entity_correct": true,
+  "citation_correct": false,
+  "paraphrase_correct": true,
+  "unsupported_assertions": true,
+  "assertions": [
+   {
+    "start": 0,
+    "end": 43,
+    "classification": "clarification",
+    "canonical_fact_ids": [],
+    "citation_evidence_ids": []
+   },
+   {
+    "start": 43,
+    "end": 102,
+    "classification": "factual",
+    "canonical_fact_ids": [
+     "a6e99031954d990d84d6b7c7dffb2545e5cc36065e979d183f93fc12411ae9a4",
+     "58f9cc0b9fccb05ddd4c794905eaf3a4be612a893e956b8029837c15319e3568",
+     "1ced1f95aa8723572815ea5bc77b768da169963ccc372f45f6f10ea3cf832a0c",
+     "606bfce980b33213d403120911b80a0258f5343072417af24ec8d396b885b30e",
+     "525f0467f0d4f1abe1d2fc3c082ced280c9bcc0ac6d3202523d71b4c98793b8b"
+    ],
+    "citation_evidence_ids": []
+   }
+  ],
+  "unresolved": true,
+  "listed_candidate_game_ids": [
+   "0022500303",
+   "0022501202",
+   "0022500675",
+   "0022500887",
+   "0022501176"
+  ]
+ },
+ {
+  "case_id": "single_game_narrative-014",
+  "observation_sha256": "e1f08ec72e893498eae03bcdb5468849d2446fd363b8fbf15a0de2f58aacc417",
+  "reviewer": "ReviewNarrative (agent reviewer)",
+  "rationale": "The listed candidate dates map to the matching frozen game-score facts and were checked against games rows. The response has no citations, so these factual date assertions have no mapped receipts and remain unresolved.",
+  "actual_disposition": "clarify",
+  "numeric_correct": true,
+  "entity_correct": true,
+  "citation_correct": false,
+  "paraphrase_correct": true,
+  "unsupported_assertions": true,
+  "assertions": [
+   {
+    "start": 0,
+    "end": 43,
+    "classification": "clarification",
+    "canonical_fact_ids": [],
+    "citation_evidence_ids": []
+   },
+   {
+    "start": 43,
+    "end": 90,
+    "classification": "factual",
+    "canonical_fact_ids": [
+     "6427d04746908b87eb632c9c24f650dd17432f49b7ece6c4fd2802d1ffdf99c3",
+     "c8e335cc5a011bc5f62133be910404a78fe076b56e2c80fac3b2f6bc4ae1fce9",
+     "fce71b453f1fc6170efff99e6a7d68bf6adb3b601bfb1e53d86f62c6f44dab03",
+     "773bcad36a86520efda749307fe0b14b69f57b2f1984f865f500e18fd475b6d1"
+    ],
+    "citation_evidence_ids": []
+   }
+  ],
+  "unresolved": true,
+  "listed_candidate_game_ids": [
+   "0022500018",
+   "0022500320",
+   "0022500757",
+   "0022501168"
+  ]
+ },
+ {
+  "case_id": "single_game_narrative-015",
+  "observation_sha256": "66f46270c38e28091faef18e5a9a37e36afd201cb610290db35081fc16bf4bdb",
+  "reviewer": "ReviewNarrative (agent reviewer)",
+  "rationale": "DB confirms 2026-01-21 NYK 120\u2013BKN 66 was the 66-point opponent minimum among 101 Knicks games; the answer\u2019s selection measure, phases, date and score agree with its calculation citation and game row.",
+  "actual_disposition": "answer",
+  "numeric_correct": true,
+  "entity_correct": true,
+  "citation_correct": true,
+  "paraphrase_correct": true,
+  "unsupported_assertions": false,
+  "assertions": [
+   {
+    "start": 0,
+    "end": 171,
+    "classification": "factual",
+    "canonical_fact_ids": [
+     "ab150755c744f5a2cce8b0ef795993a3910adab1d0420a572a2555307cf83b68"
+    ],
+    "citation_evidence_ids": [
+     "calculation:58101b4a5e8d0159e95eb9edeec3409c9c850a19753ffaa8aa82ceaf02b2152b"
+    ]
+   }
+  ]
+ },
+ {
+  "case_id": "single_game_narrative-016",
+  "observation_sha256": "5f32bf66bef7719661178ffe2fe21506dbde418904724bb5d85a7cfa1620e3cb",
+  "reviewer": "ReviewNarrative (agent reviewer)",
+  "rationale": "The listed candidate dates map to the matching frozen game-score facts and were checked against games rows. The response has no citations, so these factual date assertions have no mapped receipts and remain unresolved.",
+  "actual_disposition": "clarify",
+  "numeric_correct": true,
+  "entity_correct": true,
+  "citation_correct": false,
+  "paraphrase_correct": true,
+  "unsupported_assertions": true,
+  "assertions": [
+   {
+    "start": 0,
+    "end": 43,
+    "classification": "clarification",
+    "canonical_fact_ids": [],
+    "citation_evidence_ids": []
+   },
+   {
+    "start": 43,
+    "end": 150,
+    "classification": "factual",
+    "canonical_fact_ids": [
+     "f50b31eed0b0b8bd99bee9d0d3f6ec9fbabc6b4ab21f30f21eb25fa3798179d5",
+     "e5bde4486d3d632a5f316c98abddcb703e6349be4ff4230a26457a67b520ace2",
+     "7dc42ee615a1e4afa39c651000e77e886f6dacfcaf64ef9b1c638789e4bcbf92",
+     "8873ee91d9a7b94cccbb9b025aa50de21917c46378dd70547c0e13fab7f02d35",
+     "42a780887824aa8b4c3200eb669b24ddd6988e06db5f22e97d8759c193a2142a",
+     "3cb00e16ee3097c028bc437c3c6feefe23d5b380f33734372e66fa8dca765cb5",
+     "d39ecebb096408023c71e25f3d448583b864e2d109e418d2902eab2021baad30",
+     "14082db8db89f2116ea7aaf139366d95289d379876d13609efd1b67054246447",
+     "b3d419c48609bd727b76b1a187cdc0df4b317ee6f17ce60ab3f313fddf51a690"
+    ],
+    "citation_evidence_ids": []
+   }
+  ],
+  "unresolved": true,
+  "listed_candidate_game_ids": [
+   "0022500435",
+   "0022500479",
+   "0022501143",
+   "0042500121",
+   "0042500122",
+   "0042500123",
+   "0042500124",
+   "0042500125",
+   "0042500126"
+  ]
+ },
+ {
+  "case_id": "single_game_narrative-017",
+  "observation_sha256": "272b90d8e44d6230bc498b6f13b52cf60e0f73905141b91e2aa4a2113bb09488",
+  "reviewer": "ReviewNarrative (agent reviewer)",
+  "rationale": "The listed candidate dates map to the matching frozen game-score facts and were checked against games rows. The response has no citations, so these factual date assertions have no mapped receipts and remain unresolved.",
+  "actual_disposition": "clarify",
+  "numeric_correct": true,
+  "entity_correct": true,
+  "citation_correct": false,
+  "paraphrase_correct": true,
+  "unsupported_assertions": true,
+  "assertions": [
+   {
+    "start": 0,
+    "end": 43,
+    "classification": "clarification",
+    "canonical_fact_ids": [],
+    "citation_evidence_ids": []
+   },
+   {
+    "start": 43,
+    "end": 90,
+    "classification": "factual",
+    "canonical_fact_ids": [
+     "0cb888c91fd34c7d590a40369e16f76afccbfc5a9ca7a825a0304be65001a7da",
+     "3d3be57381a7b373f29a43c9d5ec5e52203e4fdd31d534973fde03ba54c4c226",
+     "0b8b18d5caa33ca345fb6ff3beea542cd06e105b0244ee0e1c39b15c38e3e905",
+     "a5a621059ea102a60cc62a76c7b9aba1d3d0764e5f2151547c404a50fa1cf976"
+    ],
+    "citation_evidence_ids": []
+   }
+  ],
+  "unresolved": true,
+  "listed_candidate_game_ids": [
+   "0022500023",
+   "0022500153",
+   "0022500825",
+   "0022501123"
+  ]
+ },
+ {
+  "case_id": "single_game_narrative-018",
+  "observation_sha256": "edf74800990c564c26f7d0ddf1a1f489986c8ce0b55dec659fdce116db4246e4",
+  "reviewer": "ReviewNarrative (agent reviewer)",
+  "rationale": "The response asks for both the meaning of \u201cworst\u201d and the comparison scope; it names no game/date candidate and makes no factual assertion.",
+  "actual_disposition": "clarify",
+  "numeric_correct": true,
+  "entity_correct": true,
+  "citation_correct": true,
+  "paraphrase_correct": true,
+  "unsupported_assertions": false,
+  "assertions": [
+   {
+    "start": 0,
+    "end": 127,
+    "classification": "clarification",
+    "canonical_fact_ids": [],
+    "citation_evidence_ids": []
+   }
+  ],
+  "listed_candidate_game_ids": []
+ },
+ {
+  "case_id": "single_game_narrative-019",
+  "observation_sha256": "204602ce5bbd727652b2d09ad52de3a2daf4f181ab49316ce36335831486925f",
+  "reviewer": "ReviewNarrative (agent reviewer)",
+  "rationale": "The listed candidate dates map to the matching frozen game-score facts and were checked against games rows. The response has no citations, so these factual date assertions have no mapped receipts and remain unresolved.",
+  "actual_disposition": "clarify",
+  "numeric_correct": true,
+  "entity_correct": true,
+  "citation_correct": false,
+  "paraphrase_correct": true,
+  "unsupported_assertions": true,
+  "assertions": [
+   {
+    "start": 0,
+    "end": 43,
+    "classification": "clarification",
+    "canonical_fact_ids": [],
+    "citation_evidence_ids": []
+   },
+   {
+    "start": 43,
+    "end": 102,
+    "classification": "factual",
+    "canonical_fact_ids": [
+     "a6e99031954d990d84d6b7c7dffb2545e5cc36065e979d183f93fc12411ae9a4",
+     "58f9cc0b9fccb05ddd4c794905eaf3a4be612a893e956b8029837c15319e3568",
+     "1ced1f95aa8723572815ea5bc77b768da169963ccc372f45f6f10ea3cf832a0c",
+     "606bfce980b33213d403120911b80a0258f5343072417af24ec8d396b885b30e",
+     "525f0467f0d4f1abe1d2fc3c082ced280c9bcc0ac6d3202523d71b4c98793b8b"
+    ],
+    "citation_evidence_ids": []
+   }
+  ],
+  "unresolved": true,
+  "listed_candidate_game_ids": [
+   "0022500303",
+   "0022501202",
+   "0022500675",
+   "0022500887",
+   "0022501176"
+  ]
+ },
+ {
+  "case_id": "single_game_narrative-020",
+  "observation_sha256": "d35f286cfcead6fdfdfeb7ec5f160c2e0abd946c97257a73192746ac07c1256e",
+  "reviewer": "ReviewNarrative (agent reviewer)",
+  "rationale": "DB game_events and period_scores confirm the cited Boston run endpoints, final score and quarter totals, but the response omits the frozen NYK 12-point run at events 334\u2013351 and its generic run-rule statement is broader than the mapped event receipts. The omitted fact cannot truthfully be assigned to an assertion span.",
+  "actual_disposition": "answer",
+  "numeric_correct": true,
+  "entity_correct": true,
+  "citation_correct": false,
+  "paraphrase_correct": false,
+  "unsupported_assertions": true,
+  "assertions": [
+   {
+    "start": 0,
+    "end": 448,
+    "classification": "factual",
+    "canonical_fact_ids": [
+     "c8e335cc5a011bc5f62133be910404a78fe076b56e2c80fac3b2f6bc4ae1fce9",
+     "7dcde3f041b1715322021616a9589e37e2520f7b6880ac6ae3cab0576569ba1c"
+    ],
+    "citation_evidence_ids": [
+     "2025-26.20260928.1:narrative:0eea2a728e72d279826986c6411d705694929b2f7c7b42cd8dfc0cd2517f7b7a"
+    ]
+   }
+  ],
+  "unresolved": true
+ },
+ {
+  "case_id": "turning_points-001",
+  "observation_sha256": "e14b6a9b801efbdea95877d597253708064cfb195443d66d17d36ad3e072c654",
+  "reviewer": "ReviewTurningAliases (agent reviewer)",
+  "rationale": "The BOS clarification lists 2025-10-24, 2025-12-02, 2026-02-08, and 2026-04-09; the read-only games rows confirm these dates. It did not answer the approved largest-unanswered-run query, and none of these factual date claims has a response citation; three dates also have no frozen fact in this case. The candidate-date factual spans lack response citations; they are retained as factual, not hidden as clarification.",
+  "actual_disposition": "clarify",
+  "numeric_correct": true,
+  "entity_correct": true,
+  "citation_correct": false,
+  "paraphrase_correct": false,
+  "unsupported_assertions": true,
+  "assertions": [
+   {
+    "start": 0,
+    "end": 43,
+    "classification": "clarification",
+    "canonical_fact_ids": [],
+    "citation_evidence_ids": []
+   },
+   {
+    "start": 43,
+    "end": 55,
+    "classification": "factual",
+    "canonical_fact_ids": [
+     "6427d04746908b87eb632c9c24f650dd17432f49b7ece6c4fd2802d1ffdf99c3"
+    ],
+    "citation_evidence_ids": []
+   },
+   {
+    "start": 55,
+    "end": 67,
+    "classification": "factual",
+    "canonical_fact_ids": [],
+    "citation_evidence_ids": []
+   },
+   {
+    "start": 67,
+    "end": 79,
+    "classification": "factual",
+    "canonical_fact_ids": [],
+    "citation_evidence_ids": []
+   },
+   {
+    "start": 79,
+    "end": 89,
+    "classification": "factual",
+    "canonical_fact_ids": [],
+    "citation_evidence_ids": []
+   },
+   {
+    "start": 89,
+    "end": 242,
+    "classification": "clarification",
+    "canonical_fact_ids": [],
+    "citation_evidence_ids": []
+   }
+  ],
+  "listed_candidate_game_ids": [],
+  "unresolved": true
+ },
+ {
+  "case_id": "turning_points-002",
+  "observation_sha256": "bb3d4724bd7f41e694580a1a8b549c4421e29c2fa4990cc5c0bde858fa16bd04",
+  "reviewer": "ReviewTurningAliases (agent reviewer)",
+  "rationale": "The five TOR dates match the case game_score facts and read-only games rows. The response appropriately asks which Toronto game and run/window meaning, but its candidate-date assertions have no response citations. The candidate-date factual spans lack response citations; they are retained as factual, not hidden as clarification.",
+  "actual_disposition": "clarify",
+  "numeric_correct": true,
+  "entity_correct": true,
+  "citation_correct": false,
+  "paraphrase_correct": true,
+  "unsupported_assertions": true,
+  "assertions": [
+   {
+    "start": 0,
+    "end": 43,
+    "classification": "clarification",
+    "canonical_fact_ids": [],
+    "citation_evidence_ids": []
+   },
+   {
+    "start": 43,
+    "end": 55,
+    "classification": "factual",
+    "canonical_fact_ids": [
+     "a6e99031954d990d84d6b7c7dffb2545e5cc36065e979d183f93fc12411ae9a4"
+    ],
+    "citation_evidence_ids": []
+   },
+   {
+    "start": 55,
+    "end": 67,
+    "classification": "factual",
+    "canonical_fact_ids": [
+     "58f9cc0b9fccb05ddd4c794905eaf3a4be612a893e956b8029837c15319e3568"
+    ],
+    "citation_evidence_ids": []
+   },
+   {
+    "start": 67,
+    "end": 79,
+    "classification": "factual",
+    "canonical_fact_ids": [
+     "1ced1f95aa8723572815ea5bc77b768da169963ccc372f45f6f10ea3cf832a0c"
+    ],
+    "citation_evidence_ids": []
+   },
+   {
+    "start": 79,
+    "end": 91,
+    "classification": "factual",
+    "canonical_fact_ids": [
+     "606bfce980b33213d403120911b80a0258f5343072417af24ec8d396b885b30e"
+    ],
+    "citation_evidence_ids": []
+   },
+   {
+    "start": 91,
+    "end": 101,
+    "classification": "factual",
+    "canonical_fact_ids": [
+     "525f0467f0d4f1abe1d2fc3c082ced280c9bcc0ac6d3202523d71b4c98793b8b"
+    ],
+    "citation_evidence_ids": []
+   },
+   {
+    "start": 101,
+    "end": 254,
+    "classification": "clarification",
+    "canonical_fact_ids": [],
+    "citation_evidence_ids": []
+   }
+  ],
+  "listed_candidate_game_ids": [
+   "game:0022500303",
+   "game:0022501202",
+   "game:0022500675",
+   "game:0022500887",
+   "game:0022501176"
+  ],
+  "unresolved": true
+ },
+ {
+  "case_id": "turning_points-003",
+  "observation_sha256": "01511a99fc3f87ece9b1ba097e56ddd97fe0a38333371a685292b863040b7be1",
+  "reviewer": "ReviewTurningAliases (agent reviewer)",
+  "rationale": "The eight listed ATL dates map to the eight game_score candidates selected by the frozen collapse rule; the read-only games rows confirm them. The response omits 2026-04-28, correctly, but provides no citations for its factual candidate dates. The candidate-date factual spans lack response citations; they are retained as factual, not hidden as clarification.",
+  "actual_disposition": "clarify",
+  "numeric_correct": true,
+  "entity_correct": true,
+  "citation_correct": false,
+  "paraphrase_correct": true,
+  "unsupported_assertions": true,
+  "assertions": [
+   {
+    "start": 0,
+    "end": 43,
+    "classification": "clarification",
+    "canonical_fact_ids": [],
+    "citation_evidence_ids": []
+   },
+   {
+    "start": 43,
+    "end": 55,
+    "classification": "factual",
+    "canonical_fact_ids": [
+     "f50b31eed0b0b8bd99bee9d0d3f6ec9fbabc6b4ab21f30f21eb25fa3798179d5"
+    ],
+    "citation_evidence_ids": []
+   },
+   {
+    "start": 55,
+    "end": 67,
+    "classification": "factual",
+    "canonical_fact_ids": [
+     "e5bde4486d3d632a5f316c98abddcb703e6349be4ff4230a26457a67b520ace2"
+    ],
+    "citation_evidence_ids": []
+   },
+   {
+    "start": 67,
+    "end": 79,
+    "classification": "factual",
+    "canonical_fact_ids": [
+     "7dc42ee615a1e4afa39c651000e77e886f6dacfcaf64ef9b1c638789e4bcbf92"
+    ],
+    "citation_evidence_ids": []
+   },
+   {
+    "start": 79,
+    "end": 91,
+    "classification": "factual",
+    "canonical_fact_ids": [
+     "8873ee91d9a7b94cccbb9b025aa50de21917c46378dd70547c0e13fab7f02d35"
+    ],
+    "citation_evidence_ids": []
+   },
+   {
+    "start": 91,
+    "end": 103,
+    "classification": "factual",
+    "canonical_fact_ids": [
+     "42a780887824aa8b4c3200eb669b24ddd6988e06db5f22e97d8759c193a2142a"
+    ],
+    "citation_evidence_ids": []
+   },
+   {
+    "start": 103,
+    "end": 115,
+    "classification": "factual",
+    "canonical_fact_ids": [
+     "3cb00e16ee3097c028bc437c3c6feefe23d5b380f33734372e66fa8dca765cb5"
+    ],
+    "citation_evidence_ids": []
+   },
+   {
+    "start": 115,
+    "end": 127,
+    "classification": "factual",
+    "canonical_fact_ids": [
+     "d39ecebb096408023c71e25f3d448583b864e2d109e418d2902eab2021baad30"
+    ],
+    "citation_evidence_ids": []
+   },
+   {
+    "start": 127,
+    "end": 137,
+    "classification": "factual",
+    "canonical_fact_ids": [
+     "b3d419c48609bd727b76b1a187cdc0df4b317ee6f17ce60ab3f313fddf51a690"
+    ],
+    "citation_evidence_ids": []
+   },
+   {
+    "start": 137,
+    "end": 138,
+    "classification": "clarification",
+    "canonical_fact_ids": [],
+    "citation_evidence_ids": []
+   }
+  ],
+  "listed_candidate_game_ids": [
+   "game:0022500435",
+   "game:0022500479",
+   "game:0022501143",
+   "game:0042500121",
+   "game:0042500122",
+   "game:0042500123",
+   "game:0042500124",
+   "game:0042500126"
+  ],
+  "unresolved": true
+ },
+ {
+  "case_id": "turning_points-004",
+  "observation_sha256": "26d02054e4d398d9bad6aac11a55c62ec4fcead854c4b2a7c763eb978562faf6",
+  "reviewer": "ReviewTurningAliases (agent reviewer)",
+  "rationale": "The four listed CHI dates match the frozen game_score facts and read-only games rows. The response asks for the game and run/window definition, but its factual candidate dates are uncited. The candidate-date factual spans lack response citations; they are retained as factual, not hidden as clarification.",
+  "actual_disposition": "clarify",
+  "numeric_correct": true,
+  "entity_correct": true,
+  "citation_correct": false,
+  "paraphrase_correct": true,
+  "unsupported_assertions": true,
+  "assertions": [
+   {
+    "start": 0,
+    "end": 43,
+    "classification": "clarification",
+    "canonical_fact_ids": [],
+    "citation_evidence_ids": []
+   },
+   {
+    "start": 43,
+    "end": 55,
+    "classification": "factual",
+    "canonical_fact_ids": [
+     "0cb888c91fd34c7d590a40369e16f76afccbfc5a9ca7a825a0304be65001a7da"
+    ],
+    "citation_evidence_ids": []
+   },
+   {
+    "start": 55,
+    "end": 67,
+    "classification": "factual",
+    "canonical_fact_ids": [
+     "3d3be57381a7b373f29a43c9d5ec5e52203e4fdd31d534973fde03ba54c4c226"
+    ],
+    "citation_evidence_ids": []
+   },
+   {
+    "start": 67,
+    "end": 79,
+    "classification": "factual",
+    "canonical_fact_ids": [
+     "0b8b18d5caa33ca345fb6ff3beea542cd06e105b0244ee0e1c39b15c38e3e905"
+    ],
+    "citation_evidence_ids": []
+   },
+   {
+    "start": 79,
+    "end": 89,
+    "classification": "factual",
+    "canonical_fact_ids": [
+     "a5a621059ea102a60cc62a76c7b9aba1d3d0764e5f2151547c404a50fa1cf976"
+    ],
+    "citation_evidence_ids": []
+   },
+   {
+    "start": 89,
+    "end": 242,
+    "classification": "clarification",
+    "canonical_fact_ids": [],
+    "citation_evidence_ids": []
+   }
+  ],
+  "listed_candidate_game_ids": [
+   "game:0022500023",
+   "game:0022500153",
+   "game:0022500825",
+   "game:0022501123"
+  ],
+  "unresolved": true
+ },
+ {
+  "case_id": "turning_points-005",
+  "observation_sha256": "43e70d55706d65dcca6cfd3a0c6c9a7e078d9b376c27e40754083108e1323130",
+  "reviewer": "ReviewTurningAliases (agent reviewer)",
+  "rationale": "The response only asks for scope and the meaning of erased; it states no independently checkable game fact. This is a clarification although the approved disposition is answer. The clarification contains no factual assertion to bind to the expected-answer facts; inventing such a span would misrepresent the response, so the mechanical fact-coverage failure is retained.",
+  "actual_disposition": "clarify",
+  "numeric_correct": true,
+  "entity_correct": true,
+  "citation_correct": true,
+  "paraphrase_correct": false,
+  "unsupported_assertions": false,
+  "assertions": [
+   {
+    "start": 0,
+    "end": 180,
+    "classification": "clarification",
+    "canonical_fact_ids": [],
+    "citation_evidence_ids": []
+   }
+  ],
+  "listed_candidate_game_ids": []
+ },
+ {
+  "case_id": "turning_points-006",
+  "observation_sha256": "ac071360fb86a23c16e826acb96a378e5755e810d1a5f8c6e009c1b5bb50de0b",
+  "reviewer": "ReviewTurningAliases (agent reviewer)",
+  "rationale": "Read-only games, period_scores, and game_events rows for 0022500320 confirm the 117-123 final, both 12-point BOS runs at sequences 128-146 and 282-299, and the stated Q1-Q4 scores/times. The quarters are true but not among this case\u2019s frozen facts, so that factual span is deliberately unresolved. The uncatalogued quarter-score assertions are kept as factual with no invented fact IDs.",
+  "actual_disposition": "answer",
+  "numeric_correct": true,
+  "entity_correct": true,
+  "citation_correct": true,
+  "paraphrase_correct": true,
+  "unsupported_assertions": false,
+  "assertions": [
+   {
+    "start": 0,
+    "end": 142,
+    "classification": "nonfactual",
+    "canonical_fact_ids": [],
+    "citation_evidence_ids": []
+   },
+   {
+    "start": 142,
+    "end": 193,
+    "classification": "factual",
+    "canonical_fact_ids": [
+     "c8e335cc5a011bc5f62133be910404a78fe076b56e2c80fac3b2f6bc4ae1fce9"
+    ],
+    "citation_evidence_ids": [
+     "2025-26.20260928.1:narrative:0eea2a728e72d279826986c6411d705694929b2f7c7b42cd8dfc0cd2517f7b7a"
+    ]
+   },
+   {
+    "start": 193,
+    "end": 288,
+    "classification": "factual",
+    "canonical_fact_ids": [],
+    "citation_evidence_ids": [
+     "2025-26.20260928.1:narrative:0eea2a728e72d279826986c6411d705694929b2f7c7b42cd8dfc0cd2517f7b7a"
+    ]
+   },
+   {
+    "start": 288,
+    "end": 368,
+    "classification": "factual",
+    "canonical_fact_ids": [
+     "7dcde3f041b1715322021616a9589e37e2520f7b6880ac6ae3cab0576569ba1c"
+    ],
+    "citation_evidence_ids": [
+     "2025-26.20260928.1:narrative:0eea2a728e72d279826986c6411d705694929b2f7c7b42cd8dfc0cd2517f7b7a"
+    ]
+   },
+   {
+    "start": 368,
+    "end": 448,
+    "classification": "factual",
+    "canonical_fact_ids": [
+     "7dcde3f041b1715322021616a9589e37e2520f7b6880ac6ae3cab0576569ba1c"
+    ],
+    "citation_evidence_ids": [
+     "2025-26.20260928.1:narrative:0eea2a728e72d279826986c6411d705694929b2f7c7b42cd8dfc0cd2517f7b7a"
+    ]
+   }
+  ],
+  "listed_candidate_game_ids": [],
+  "unresolved": true
+ },
+ {
+  "case_id": "turning_points-007",
+  "observation_sha256": "1d91d72ec2d383a03fbd53fe2d7fb072fab9db722c3c9d25a2d662c022c8265d",
+  "reviewer": "ReviewTurningAliases (agent reviewer)",
+  "rationale": "The response asks which run boundaries and damage measure to use; it makes no factual assertion. The approved definition is the largest unanswered opponent scoring run, so the clarification is a disposition mismatch. The clarification contains no factual assertion to bind to the expected-answer facts; inventing such a span would misrepresent the response, so the mechanical fact-coverage failure is retained.",
+  "actual_disposition": "clarify",
+  "numeric_correct": true,
+  "entity_correct": true,
+  "citation_correct": true,
+  "paraphrase_correct": false,
+  "unsupported_assertions": false,
+  "assertions": [
+   {
+    "start": 0,
+    "end": 145,
+    "classification": "clarification",
+    "canonical_fact_ids": [],
+    "citation_evidence_ids": []
+   }
+  ],
+  "listed_candidate_game_ids": []
+ },
+ {
+  "case_id": "turning_points-008",
+  "observation_sha256": "cfc8536211a98892ad46d1cc181db096d6a08e6b7e677d3453b0e4f28d1c6d2c",
+  "reviewer": "ReviewTurningAliases (agent reviewer)",
+  "rationale": "The four CHA dates are real archived games per frozen game_score facts and read-only games rows. But the answer presents all four as candidates while only 2026-03-26 and 2026-04-12 fit the frozen lead-then-opponent-lead rule; it also has no citations for the factual date list. The candidate-date factual spans lack response citations; they are retained as factual, not hidden as clarification.",
+  "actual_disposition": "clarify",
+  "numeric_correct": true,
+  "entity_correct": true,
+  "citation_correct": false,
+  "paraphrase_correct": false,
+  "unsupported_assertions": true,
+  "assertions": [
+   {
+    "start": 0,
+    "end": 43,
+    "classification": "clarification",
+    "canonical_fact_ids": [],
+    "citation_evidence_ids": []
+   },
+   {
+    "start": 43,
+    "end": 55,
+    "classification": "factual",
+    "canonical_fact_ids": [
+     "25e8803b7a55373d25e7c23c55aee927f721e1be3338869de778cb6445fc7ec4"
+    ],
+    "citation_evidence_ids": []
+   },
+   {
+    "start": 55,
+    "end": 67,
+    "classification": "factual",
+    "canonical_fact_ids": [
+     "10e4f266c718b5fc21b472ec91e721bdb2c3af1f9f54cf0f8baf81539dc854eb"
+    ],
+    "citation_evidence_ids": []
+   },
+   {
+    "start": 67,
+    "end": 79,
+    "classification": "factual",
+    "canonical_fact_ids": [
+     "aeeebd096d5de3fb17dcd8946dc17bb66e0abeae0d475fc6cb7e99a2edb22918"
+    ],
+    "citation_evidence_ids": []
+   },
+   {
+    "start": 79,
+    "end": 89,
+    "classification": "factual",
+    "canonical_fact_ids": [
+     "c56938012bdc4c8131669bca66180aaec93f137913704fa7ea5eca7fa0822f75"
+    ],
+    "citation_evidence_ids": []
+   },
+   {
+    "start": 89,
+    "end": 242,
+    "classification": "clarification",
+    "canonical_fact_ids": [],
+    "citation_evidence_ids": []
+   }
+  ],
+  "listed_candidate_game_ids": [
+   "game:0022500061",
+   "game:0022500328",
+   "game:0022501063",
+   "game:0022501190"
+  ],
+  "unresolved": true
+ },
+ {
+  "case_id": "turning_points-009",
+  "observation_sha256": "6f88673f18e4556a796e555716c24a8238a6de0d979323112a7006c1e481504c",
+  "reviewer": "ReviewTurningAliases (agent reviewer)",
+  "rationale": "The five listed TOR dates match the frozen game_score facts and read-only games rows. Asking which game is appropriate, but the factual candidate dates have no response citations. The candidate-date factual spans lack response citations; they are retained as factual, not hidden as clarification.",
+  "actual_disposition": "clarify",
+  "numeric_correct": true,
+  "entity_correct": true,
+  "citation_correct": false,
+  "paraphrase_correct": true,
+  "unsupported_assertions": true,
+  "assertions": [
+   {
+    "start": 0,
+    "end": 43,
+    "classification": "clarification",
+    "canonical_fact_ids": [],
+    "citation_evidence_ids": []
+   },
+   {
+    "start": 43,
+    "end": 55,
+    "classification": "factual",
+    "canonical_fact_ids": [
+     "a6e99031954d990d84d6b7c7dffb2545e5cc36065e979d183f93fc12411ae9a4"
+    ],
+    "citation_evidence_ids": []
+   },
+   {
+    "start": 55,
+    "end": 67,
+    "classification": "factual",
+    "canonical_fact_ids": [
+     "58f9cc0b9fccb05ddd4c794905eaf3a4be612a893e956b8029837c15319e3568"
+    ],
+    "citation_evidence_ids": []
+   },
+   {
+    "start": 67,
+    "end": 79,
+    "classification": "factual",
+    "canonical_fact_ids": [
+     "1ced1f95aa8723572815ea5bc77b768da169963ccc372f45f6f10ea3cf832a0c"
+    ],
+    "citation_evidence_ids": []
+   },
+   {
+    "start": 79,
+    "end": 91,
+    "classification": "factual",
+    "canonical_fact_ids": [
+     "606bfce980b33213d403120911b80a0258f5343072417af24ec8d396b885b30e"
+    ],
+    "citation_evidence_ids": []
+   },
+   {
+    "start": 91,
+    "end": 101,
+    "classification": "factual",
+    "canonical_fact_ids": [
+     "525f0467f0d4f1abe1d2fc3c082ced280c9bcc0ac6d3202523d71b4c98793b8b"
+    ],
+    "citation_evidence_ids": []
+   },
+   {
+    "start": 101,
+    "end": 102,
+    "classification": "clarification",
+    "canonical_fact_ids": [],
+    "citation_evidence_ids": []
+   }
+  ],
+  "listed_candidate_game_ids": [
+   "game:0022500303",
+   "game:0022501202",
+   "game:0022500675",
+   "game:0022500887",
+   "game:0022501176"
+  ],
+  "unresolved": true
+ },
+ {
+  "case_id": "turning_points-010",
+  "observation_sha256": "d4a23a2b7367d631f3f53869d5401a7d31ad4d2a7f6cb576d6a4a9993afa2c76",
+  "reviewer": "ReviewTurningAliases (agent reviewer)",
+  "rationale": "The nine listed ATL dates match the frozen game_score candidates and read-only games rows, including the 2026-04-28 playoff game. Asking for a date/metric is appropriate; the factual candidate dates are uncited. The candidate-date factual spans lack response citations; they are retained as factual, not hidden as clarification.",
+  "actual_disposition": "clarify",
+  "numeric_correct": true,
+  "entity_correct": true,
+  "citation_correct": false,
+  "paraphrase_correct": true,
+  "unsupported_assertions": true,
+  "assertions": [
+   {
+    "start": 0,
+    "end": 43,
+    "classification": "clarification",
+    "canonical_fact_ids": [],
+    "citation_evidence_ids": []
+   },
+   {
+    "start": 43,
+    "end": 55,
+    "classification": "factual",
+    "canonical_fact_ids": [
+     "f50b31eed0b0b8bd99bee9d0d3f6ec9fbabc6b4ab21f30f21eb25fa3798179d5"
+    ],
+    "citation_evidence_ids": []
+   },
+   {
+    "start": 55,
+    "end": 67,
+    "classification": "factual",
+    "canonical_fact_ids": [
+     "e5bde4486d3d632a5f316c98abddcb703e6349be4ff4230a26457a67b520ace2"
+    ],
+    "citation_evidence_ids": []
+   },
+   {
+    "start": 67,
+    "end": 79,
+    "classification": "factual",
+    "canonical_fact_ids": [
+     "7dc42ee615a1e4afa39c651000e77e886f6dacfcaf64ef9b1c638789e4bcbf92"
+    ],
+    "citation_evidence_ids": []
+   },
+   {
+    "start": 79,
+    "end": 91,
+    "classification": "factual",
+    "canonical_fact_ids": [
+     "8873ee91d9a7b94cccbb9b025aa50de21917c46378dd70547c0e13fab7f02d35"
+    ],
+    "citation_evidence_ids": []
+   },
+   {
+    "start": 91,
+    "end": 103,
+    "classification": "factual",
+    "canonical_fact_ids": [
+     "42a780887824aa8b4c3200eb669b24ddd6988e06db5f22e97d8759c193a2142a"
+    ],
+    "citation_evidence_ids": []
+   },
+   {
+    "start": 103,
+    "end": 115,
+    "classification": "factual",
+    "canonical_fact_ids": [
+     "3cb00e16ee3097c028bc437c3c6feefe23d5b380f33734372e66fa8dca765cb5"
+    ],
+    "citation_evidence_ids": []
+   },
+   {
+    "start": 115,
+    "end": 127,
+    "classification": "factual",
+    "canonical_fact_ids": [
+     "d39ecebb096408023c71e25f3d448583b864e2d109e418d2902eab2021baad30"
+    ],
+    "citation_evidence_ids": []
+   },
+   {
+    "start": 127,
+    "end": 139,
+    "classification": "factual",
+    "canonical_fact_ids": [
+     "14082db8db89f2116ea7aaf139366d95289d379876d13609efd1b67054246447"
+    ],
+    "citation_evidence_ids": []
+   },
+   {
+    "start": 139,
+    "end": 149,
+    "classification": "factual",
+    "canonical_fact_ids": [
+     "b3d419c48609bd727b76b1a187cdc0df4b317ee6f17ce60ab3f313fddf51a690"
+    ],
+    "citation_evidence_ids": []
+   },
+   {
+    "start": 149,
+    "end": 302,
+    "classification": "clarification",
+    "canonical_fact_ids": [],
+    "citation_evidence_ids": []
+   }
+  ],
+  "listed_candidate_game_ids": [
+   "game:0022500435",
+   "game:0022500479",
+   "game:0022501143",
+   "game:0042500121",
+   "game:0042500122",
+   "game:0042500123",
+   "game:0042500124",
+   "game:0042500125",
+   "game:0042500126"
+  ],
+  "unresolved": true
+ },
+ {
+  "case_id": "follow_ups-001",
+  "observation_sha256": "28aaf528aa87f48cd9eb6ac8bd3ea0aa21cd052bbe1e6282766b984062722034",
+  "reviewer": "ReviewFollowUps (agent reviewer)",
+  "rationale": "The conversation gives only a Boston matchup and an unsupported prior claim about a decisive second-half run. Read-only games rows confirm four distinct Knicks-Boston games in the frozen target set (2025-10-24, 2025-12-02, 2026-02-08, 2026-04-09); none is identified as the event. The answer correctly requests game/date and event scope; no factual assertion or candidate is made.",
+  "actual_disposition": "clarify",
+  "numeric_correct": true,
+  "entity_correct": true,
+  "citation_correct": true,
+  "paraphrase_correct": true,
+  "unsupported_assertions": false,
+  "assertions": [
+   {
+    "start": 0,
+    "end": 72,
+    "classification": "clarification",
+    "canonical_fact_ids": [],
+    "citation_evidence_ids": []
+   }
+  ],
+  "listed_candidate_game_ids": []
+ },
+ {
+  "case_id": "follow_ups-002",
+  "observation_sha256": "6ee7e909a6863084799bdb171cbdd9e0d4bc7b44247672f600dc413440164795",
+  "reviewer": "ReviewFollowUps (agent reviewer)",
+  "rationale": "The prior turn's claim that Boston made a decisive run is unsupported and the conversation does not identify which of four distinct Knicks-Boston games or which interval is meant. The answer properly seeks a game/date and event before explaining why a stretch was decisive; it makes no factual claim or candidate selection.",
+  "actual_disposition": "clarify",
+  "numeric_correct": true,
+  "entity_correct": true,
+  "citation_correct": true,
+  "paraphrase_correct": true,
+  "unsupported_assertions": false,
+  "assertions": [
+   {
+    "start": 0,
+    "end": 72,
+    "classification": "clarification",
+    "canonical_fact_ids": [],
+    "citation_evidence_ids": []
+   }
+  ],
+  "listed_candidate_game_ids": []
+ },
+ {
+  "case_id": "follow_ups-003",
+  "observation_sha256": "45d89ca5a59f7914fc4c9bebdbf85920fbe9e70bad136a21c7c6629a66ca177b",
+  "reviewer": "ReviewFollowUps (agent reviewer)",
+  "rationale": "The conversation supplies neither a specific Boston game nor an event interval to anchor 'then'; the earlier asserted run is not evidence. A lineup cannot be identified from this context, so requesting game/date and event scope is appropriate. No factual assertion or candidate is made.",
+  "actual_disposition": "clarify",
+  "numeric_correct": true,
+  "entity_correct": true,
+  "citation_correct": true,
+  "paraphrase_correct": true,
+  "unsupported_assertions": false,
+  "assertions": [
+   {
+    "start": 0,
+    "end": 72,
+    "classification": "clarification",
+    "canonical_fact_ids": [],
+    "citation_evidence_ids": []
+   }
+  ],
+  "listed_candidate_game_ids": []
+ },
+ {
+  "case_id": "follow_ups-004",
+  "observation_sha256": "dcdc3180807996afaeded8e5f345d3cdd63d88378d1246eb224227cf1d0ab3ed",
+  "reviewer": "ReviewFollowUps (agent reviewer)",
+  "rationale": "The prior assistant's second-half-run statement does not establish a supported interval or select one of the four Boston games. Duration therefore cannot be evaluated from the supplied context; the answer requests the needed game/date and event scope without asserting a duration or candidate.",
+  "actual_disposition": "clarify",
+  "numeric_correct": true,
+  "entity_correct": true,
+  "citation_correct": true,
+  "paraphrase_correct": true,
+  "unsupported_assertions": false,
+  "assertions": [
+   {
+    "start": 0,
+    "end": 72,
+    "classification": "clarification",
+    "canonical_fact_ids": [],
+    "citation_evidence_ids": []
+   }
+  ],
+  "listed_candidate_game_ids": []
+ },
+ {
+  "case_id": "follow_ups-005",
+  "observation_sha256": "2d249654173aaf3dc0e33fdc168ac7b947ab50f6039f50b0b6bc07843e42ab26",
+  "reviewer": "ReviewFollowUps (agent reviewer)",
+  "rationale": "'That' refers to an unsupported alleged run, and the context does not distinguish among the four Knicks-Boston games. Whether New York recovered afterward needs a particular game and interval; the response appropriately requests these rather than supplying an unsupported outcome.",
+  "actual_disposition": "clarify",
+  "numeric_correct": true,
+  "entity_correct": true,
+  "citation_correct": true,
+  "paraphrase_correct": true,
+  "unsupported_assertions": false,
+  "assertions": [
+   {
+    "start": 0,
+    "end": 72,
+    "classification": "clarification",
+    "canonical_fact_ids": [],
+    "citation_evidence_ids": []
+   }
+  ],
+  "listed_candidate_game_ids": []
+ },
+ {
+  "case_id": "follow_ups-006",
+  "observation_sha256": "8c0b93f114a8aa82330d9b7ee1d3b0b8ac38089a2be3d5527a67d9dfb679dbc9",
+  "reviewer": "ReviewFollowUps (agent reviewer)",
+  "rationale": "Brunson is named in the question, but the conversation still does not identify which Boston game or interval the unsupported run refers to. His actions during it cannot be grounded from the context; asking for game/date and event scope is correct. No candidate or factual claim is given.",
+  "actual_disposition": "clarify",
+  "numeric_correct": true,
+  "entity_correct": true,
+  "citation_correct": true,
+  "paraphrase_correct": true,
+  "unsupported_assertions": false,
+  "assertions": [
+   {
+    "start": 0,
+    "end": 72,
+    "classification": "clarification",
+    "canonical_fact_ids": [],
+    "citation_evidence_ids": []
+   }
+  ],
+  "listed_candidate_game_ids": []
+ },
+ {
+  "case_id": "follow_ups-007",
+  "observation_sha256": "1d0c63147929b21fc5bcdcee20b50b61c47ee91777ffc961151d7fb20d5d5a8c",
+  "reviewer": "ReviewFollowUps (agent reviewer)",
+  "rationale": "The requested receipts concern an unsupported prior assertion, not a validated event, and no specific game/date is established by the conversation. The response correctly asks which game/date and claim/event is meant rather than implying it can substantiate the claim; it lists no candidate.",
+  "actual_disposition": "clarify",
+  "numeric_correct": true,
+  "entity_correct": true,
+  "citation_correct": true,
+  "paraphrase_correct": true,
+  "unsupported_assertions": false,
+  "assertions": [
+   {
+    "start": 0,
+    "end": 72,
+    "classification": "clarification",
+    "canonical_fact_ids": [],
+    "citation_evidence_ids": []
+   }
+  ],
+  "listed_candidate_game_ids": []
+ },
+ {
+  "case_id": "follow_ups-008",
+  "observation_sha256": "bf9fc311e7dfc6ec63d435461a7ae77ca2a0fb50933fd51c3a7817baeef9564d",
+  "reviewer": "ReviewFollowUps (agent reviewer)",
+  "rationale": "The conversation neither identifies a game/event for 'that' nor defines a comparison measure for 'worst'; the earlier run claim is unsupported. The response requests both the event/game scope and comparison measure, correctly using context without treating the old claim as established. No candidate is named.",
+  "actual_disposition": "clarify",
+  "numeric_correct": true,
+  "entity_correct": true,
+  "citation_correct": true,
+  "paraphrase_correct": true,
+  "unsupported_assertions": false,
+  "assertions": [
+   {
+    "start": 0,
+    "end": 131,
+    "classification": "clarification",
+    "canonical_fact_ids": [],
+    "citation_evidence_ids": []
+   }
+  ],
+  "listed_candidate_game_ids": []
+ },
+ {
+  "case_id": "follow_ups-009",
+  "observation_sha256": "2b23bd29383ba012ce381ec38b7bb24d0c01ca500f6870a883c42a4dc69d6bec",
+  "reviewer": "ReviewFollowUps (agent reviewer)",
+  "rationale": "Conversation context mentions Boston but identifies no first game, and the frozen target rows include four distinct Knicks-Boston games, so 'the other Boston game' has no unique referent. Asking for both game/date and comparison game is appropriate; no game is explicitly proposed as a candidate.",
+  "actual_disposition": "clarify",
+  "numeric_correct": true,
+  "entity_correct": true,
+  "citation_correct": true,
+  "paraphrase_correct": true,
+  "unsupported_assertions": false,
+  "assertions": [
+   {
+    "start": 0,
+    "end": 114,
+    "classification": "clarification",
+    "canonical_fact_ids": [],
+    "citation_evidence_ids": []
+   }
+  ],
+  "listed_candidate_game_ids": []
+ },
+ {
+  "case_id": "follow_ups-010",
+  "observation_sha256": "5d0648f053537a90b90c25c91bd70be909c1b4c1f557035d25f192dc5ce54b39",
+  "reviewer": "ReviewFollowUps (agent reviewer)",
+  "rationale": "The conversation does not identify a game or validate any final possession associated with the earlier alleged run. A final-possession account requires game/event scope; the response appropriately requests it without adding facts or naming a candidate game.",
+  "actual_disposition": "clarify",
+  "numeric_correct": true,
+  "entity_correct": true,
+  "citation_correct": true,
+  "paraphrase_correct": true,
+  "unsupported_assertions": false,
+  "assertions": [
+   {
+    "start": 0,
+    "end": 72,
+    "classification": "clarification",
+    "canonical_fact_ids": [],
+    "citation_evidence_ids": []
+   }
+  ],
+  "listed_candidate_game_ids": []
+ },
+ {
+  "case_id": "aliases_typos-001",
+  "observation_sha256": "352d63d5db55d3bd1a094bcf8bf5fb040f60b8dcb092fc9453df86931cfe0753",
+  "reviewer": "ReviewTurningAliases (agent reviewer)",
+  "rationale": "Read-only games rows for the four BOS game IDs yield three NYK wins and one loss from 2025-10-24 through 2026-04-09; the response record is correct.",
+  "actual_disposition": "answer",
+  "numeric_correct": true,
+  "entity_correct": true,
+  "citation_correct": true,
+  "paraphrase_correct": true,
+  "unsupported_assertions": false,
+  "assertions": [
+   {
+    "start": 0,
+    "end": 243,
+    "classification": "factual",
+    "canonical_fact_ids": [
+     "d2880685ae78b9f5c640b26fb5cd89cdc1878ce070225842287040ede83d097f",
+     "a51566982f6391e15b7db0693edb26e7c06c7056beee78963a5315ecbe087c0f",
+     "25c77c15deee7e3b55d0523a8430edd1c7b364463146762500cc89316eb3217a"
+    ],
+    "citation_evidence_ids": [
+     "calculation:b7a503d7ef9cdce0242fa5cd6a0205b1b5f231a835469d8c0a0a57a5d94d2476",
+     "calculation:9fcc1574cd9046d1d9f4f47b17dcbf6a8b439a3bc03bf91ecf05fcf369842638"
+    ]
+   }
+  ],
+  "listed_candidate_game_ids": []
+ },
+ {
+  "case_id": "aliases_typos-002",
+  "observation_sha256": "03919cf9a62d2682317897968ee531ff5a87e1008eb295927d86bd0c89b5287a",
+  "reviewer": "ReviewTurningAliases (agent reviewer)",
+  "rationale": "All four BOS dates in the clarification match frozen game_score facts and read-only games rows. It correctly resolves \u201cCelts\u201d to Boston and asks which game; the candidate dates are uncited. The candidate-date factual spans lack response citations; they are retained as factual, not hidden as clarification.",
+  "actual_disposition": "clarify",
+  "numeric_correct": true,
+  "entity_correct": true,
+  "citation_correct": false,
+  "paraphrase_correct": true,
+  "unsupported_assertions": true,
+  "assertions": [
+   {
+    "start": 0,
+    "end": 43,
+    "classification": "clarification",
+    "canonical_fact_ids": [],
+    "citation_evidence_ids": []
+   },
+   {
+    "start": 43,
+    "end": 55,
+    "classification": "factual",
+    "canonical_fact_ids": [
+     "6427d04746908b87eb632c9c24f650dd17432f49b7ece6c4fd2802d1ffdf99c3"
+    ],
+    "citation_evidence_ids": []
+   },
+   {
+    "start": 55,
+    "end": 67,
+    "classification": "factual",
+    "canonical_fact_ids": [
+     "c8e335cc5a011bc5f62133be910404a78fe076b56e2c80fac3b2f6bc4ae1fce9"
+    ],
+    "citation_evidence_ids": []
+   },
+   {
+    "start": 67,
+    "end": 79,
+    "classification": "factual",
+    "canonical_fact_ids": [
+     "fce71b453f1fc6170efff99e6a7d68bf6adb3b601bfb1e53d86f62c6f44dab03"
+    ],
+    "citation_evidence_ids": []
+   },
+   {
+    "start": 79,
+    "end": 89,
+    "classification": "factual",
+    "canonical_fact_ids": [
+     "773bcad36a86520efda749307fe0b14b69f57b2f1984f865f500e18fd475b6d1"
+    ],
+    "citation_evidence_ids": []
+   },
+   {
+    "start": 89,
+    "end": 90,
+    "classification": "clarification",
+    "canonical_fact_ids": [],
+    "citation_evidence_ids": []
+   }
+  ],
+  "listed_candidate_game_ids": [
+   "game:0022500018",
+   "game:0022500320",
+   "game:0022500757",
+   "game:0022501168"
+  ],
+  "unresolved": true
+ },
+ {
+  "case_id": "aliases_typos-003",
+  "observation_sha256": "75cde9b1d0536239415343967b3b63e1c1602a153a0b9fed522a914c30bffe0d",
+  "reviewer": "ReviewTurningAliases (agent reviewer)",
+  "rationale": "This context-free clarification asks for the missing game/date and event/claim, lists no game candidate, and contains no factual assertion.",
+  "actual_disposition": "clarify",
+  "numeric_correct": true,
+  "entity_correct": true,
+  "citation_correct": true,
+  "paraphrase_correct": true,
+  "unsupported_assertions": false,
+  "assertions": [
+   {
+    "start": 0,
+    "end": 72,
+    "classification": "clarification",
+    "canonical_fact_ids": [],
+    "citation_evidence_ids": []
+   }
+  ],
+  "listed_candidate_game_ids": []
+ },
+ {
+  "case_id": "aliases_typos-004",
+  "observation_sha256": "b6a0bbdd6eb16136df56cc0ebfb3e1cc27176c3890e87f43b8c8f3f15708c5c2",
+  "reviewer": "ReviewTurningAliases (agent reviewer)",
+  "rationale": "For Towns, read-only player_game_stats rows with minutes > 0 against TOR sum to 87 points over five appearances; 87/5 = 17.4. The player, opponent, scope, and date range are correct.",
+  "actual_disposition": "answer",
+  "numeric_correct": true,
+  "entity_correct": true,
+  "citation_correct": true,
+  "paraphrase_correct": true,
+  "unsupported_assertions": false,
+  "assertions": [
+   {
+    "start": 0,
+    "end": 160,
+    "classification": "factual",
+    "canonical_fact_ids": [
+     "6bd4d7e87e405e7d1d2237488607e9ff0bf8b882cdcc8835d9e7c10c7d4a2f6e"
+    ],
+    "citation_evidence_ids": [
+     "calculation:22c672a46d0ea5a9e50256f7430509bc455677e292cf119ebad3fd9cc60556b4"
+    ]
+   }
+  ],
+  "listed_candidate_game_ids": []
+ },
+ {
+  "case_id": "aliases_typos-005",
+  "observation_sha256": "7fafd53aa19be5ce72d36583344669603194e5132ae118d1a587a920828dfb0c",
+  "reviewer": "ReviewTurningAliases (agent reviewer)",
+  "rationale": "The response asks what run metric/window/scope to use and makes no factual assertion. The frozen approved meaning is the largest unanswered NYK scoring run across verified games, so this clarification mismatches the expected answer. The clarification contains no factual assertion to bind to the expected-answer facts; inventing such a span would misrepresent the response, so the mechanical fact-coverage failure is retained.",
+  "actual_disposition": "clarify",
+  "numeric_correct": true,
+  "entity_correct": true,
+  "citation_correct": true,
+  "paraphrase_correct": false,
+  "unsupported_assertions": false,
+  "assertions": [
+   {
+    "start": 0,
+    "end": 135,
+    "classification": "clarification",
+    "canonical_fact_ids": [],
+    "citation_evidence_ids": []
+   }
+  ],
+  "listed_candidate_game_ids": []
+ },
+ {
+  "case_id": "aliases_typos-006",
+  "observation_sha256": "20616918bab7760c44003bbb6aa9fe92fb9564930c21c2f299d399dd4d891659",
+  "reviewer": "ReviewTurningAliases (agent reviewer)",
+  "rationale": "Read-only games rows for all nine ATL games (regular season and playoffs) yield six NYK wins and three losses, spanning 2025-12-27 through 2026-04-30; the answer is correct.",
+  "actual_disposition": "answer",
+  "numeric_correct": true,
+  "entity_correct": true,
+  "citation_correct": true,
+  "paraphrase_correct": true,
+  "unsupported_assertions": false,
+  "assertions": [
+   {
+    "start": 0,
+    "end": 243,
+    "classification": "factual",
+    "canonical_fact_ids": [
+     "23c948ca8280b8175fdc8620e6e4e039ae5d83cf65052aa5a195b5031f3667ca",
+     "5a2f56d1a256737f7abdb7700efbcb6669fe3dfd7c000e2025b67d489a292794",
+     "227d79c41f80b2d184a6cfec5364f66fd01da87b234097af0eca307f7776f7f1"
+    ],
+    "citation_evidence_ids": [
+     "calculation:b8cc936065b0bde64ff5f0542815d7415fc5bbaeb38806f9613d719296195ad3",
+     "calculation:c10e13de8f669c683d73f0d1f161160994ac0c1109ed158eb4ed131721e25555"
+    ]
+   }
+  ],
+  "listed_candidate_game_ids": []
+ },
+ {
+  "case_id": "aliases_typos-007",
+  "observation_sha256": "85376858213281ee584c2bcd0a840b2d6c90e5fe4f63e50a9a5b6a560dcf291f",
+  "reviewer": "ReviewTurningAliases (agent reviewer)",
+  "rationale": "The four CHI dates match frozen game_score facts and read-only games rows. The response appropriately asks which 4Q game; its factual candidate dates have no response citations. The candidate-date factual spans lack response citations; they are retained as factual, not hidden as clarification.",
+  "actual_disposition": "clarify",
+  "numeric_correct": true,
+  "entity_correct": true,
+  "citation_correct": false,
+  "paraphrase_correct": true,
+  "unsupported_assertions": true,
+  "assertions": [
+   {
+    "start": 0,
+    "end": 43,
+    "classification": "clarification",
+    "canonical_fact_ids": [],
+    "citation_evidence_ids": []
+   },
+   {
+    "start": 43,
+    "end": 55,
+    "classification": "factual",
+    "canonical_fact_ids": [
+     "0cb888c91fd34c7d590a40369e16f76afccbfc5a9ca7a825a0304be65001a7da"
+    ],
+    "citation_evidence_ids": []
+   },
+   {
+    "start": 55,
+    "end": 67,
+    "classification": "factual",
+    "canonical_fact_ids": [
+     "3d3be57381a7b373f29a43c9d5ec5e52203e4fdd31d534973fde03ba54c4c226"
+    ],
+    "citation_evidence_ids": []
+   },
+   {
+    "start": 67,
+    "end": 79,
+    "classification": "factual",
+    "canonical_fact_ids": [
+     "0b8b18d5caa33ca345fb6ff3beea542cd06e105b0244ee0e1c39b15c38e3e905"
+    ],
+    "citation_evidence_ids": []
+   },
+   {
+    "start": 79,
+    "end": 89,
+    "classification": "factual",
+    "canonical_fact_ids": [
+     "a5a621059ea102a60cc62a76c7b9aba1d3d0764e5f2151547c404a50fa1cf976"
+    ],
+    "citation_evidence_ids": []
+   },
+   {
+    "start": 89,
+    "end": 90,
+    "classification": "clarification",
+    "canonical_fact_ids": [],
+    "citation_evidence_ids": []
+   }
+  ],
+  "listed_candidate_game_ids": [
+   "game:0022500023",
+   "game:0022500153",
+   "game:0022500825",
+   "game:0022501123"
+  ],
+  "unresolved": true
+ },
+ {
+  "case_id": "aliases_typos-008",
+  "observation_sha256": "139016ab8bebfc0b1fcc3b3c6c52fc88cae0eefcdd986e8e817358a836503ad7",
+  "reviewer": "ReviewTurningAliases (agent reviewer)",
+  "rationale": "Read-only player_game_stats rows with minutes > 0 for Mikal Bridges versus TOR total 83 points over five appearances (16.6 points per appearance), and also contain rebounds, assists, steals, blocks, and plus-minus. The primary answer\u2019s assertion that these other measures are absent from the archive is false and unsupported by its cited average claim.",
+  "actual_disposition": "answer",
+  "numeric_correct": true,
+  "entity_correct": true,
+  "citation_correct": false,
+  "paraphrase_correct": true,
+  "unsupported_assertions": true,
+  "assertions": [
+   {
+    "start": 0,
+    "end": 155,
+    "classification": "factual",
+    "canonical_fact_ids": [
+     "303560ec3bcca3274cda488980c2bcf4af1f71afb78a31afc6f777efa7bf0247"
+    ],
+    "citation_evidence_ids": [
+     "calculation:3b5b5b2e98c9911ac8bba6eacef6cc6fbac35ceba62ce84a5b8228301017c7fc"
+    ]
+   }
+  ],
+  "listed_candidate_game_ids": []
+ },
+ {
+  "case_id": "aliases_typos-009",
+  "observation_sha256": "bf9bc9c41e08320ee01b12abf18c9e25bcfd679e406595e5bea4191e93ff6d31",
+  "reviewer": "ReviewTurningAliases (agent reviewer)",
+  "rationale": "Read-only OG Anunoby rows for game IDs 2 and 80 confirm 10 and 13 points, 11.5 average, the listed box statistics, and the 105-95/112-106 Knicks wins; game IDs 20 and 53 have no positive-minute OG row. Those added details are outside the frozen points-average fact, and the absence claim is not supported by the response citations; deliberately unresolved.",
+  "actual_disposition": "answer",
+  "numeric_correct": true,
+  "entity_correct": true,
+  "citation_correct": false,
+  "paraphrase_correct": true,
+  "unsupported_assertions": true,
+  "assertions": [
+   {
+    "start": 0,
+    "end": 152,
+    "classification": "factual",
+    "canonical_fact_ids": [
+     "12b612a774cbb4e30fd88123194dd8e5723a2d59d99bd30dfa527668c5b5e9dd"
+    ],
+    "citation_evidence_ids": [
+     "2025-26.20260928.1:game:2:player:114",
+     "2025-26.20260928.1:game:80:player:114"
+    ]
+   }
+  ],
+  "listed_candidate_game_ids": []
+ },
+ {
+  "case_id": "aliases_typos-010",
+  "observation_sha256": "7e45075d39028f5f7ddb92f60c5b33e477e101c582f58d2d6ae6eedda8380657",
+  "reviewer": "ReviewTurningAliases (agent reviewer)",
+  "rationale": "The response only asks for a collapse definition, time window, scope, and whether a loss is required; it makes no factual assertion. The frozen definition already settles a lead later lost, so the expected answer was not provided. The clarification contains no factual assertion to bind to the expected-answer facts; inventing such a span would misrepresent the response, so the mechanical fact-coverage failure is retained.",
+  "actual_disposition": "clarify",
+  "numeric_correct": true,
+  "entity_correct": true,
+  "citation_correct": true,
+  "paraphrase_correct": false,
+  "unsupported_assertions": false,
+  "assertions": [
+   {
+    "start": 0,
+    "end": 158,
+    "classification": "clarification",
+    "canonical_fact_ids": [],
+    "citation_evidence_ids": []
+   }
+  ],
+  "listed_candidate_game_ids": []
+ },
+ {
+  "case_id": "unsupported-001",
+  "observation_sha256": "965f6df798544d4f8b16770e4102ac4d7a891e0012f2f88e05cb717178f64b5b",
+  "reviewer": "ReviewDateRangeUnsupported (agent reviewer)",
+  "rationale": "The response refuses live-score coverage and offers archived Knicks-game questions; it adds no unsupported game result.",
+  "actual_disposition": "refuse",
+  "numeric_correct": true,
+  "entity_correct": true,
+  "citation_correct": true,
+  "paraphrase_correct": true,
+  "unsupported_assertions": false,
+  "assertions": [
+   {
+    "start": 0,
+    "end": 82,
+    "classification": "refusal",
+    "canonical_fact_ids": [],
+    "citation_evidence_ids": []
+   }
+  ]
+ },
+ {
+  "case_id": "unsupported-002",
+  "observation_sha256": "be769ba779efb9c578866b7c15bf9ce9c3b33054d1ddd05899729fb6922a1984",
+  "reviewer": "ReviewDateRangeUnsupported (agent reviewer)",
+  "rationale": "The response refuses future prediction/current coverage and redirects to archived 2025-26 games; it adds no forecast or unsupported player claim.",
+  "actual_disposition": "refuse",
+  "numeric_correct": true,
+  "entity_correct": true,
+  "citation_correct": true,
+  "paraphrase_correct": true,
+  "unsupported_assertions": false,
+  "assertions": [
+   {
+    "start": 0,
+    "end": 136,
+    "classification": "refusal",
+    "canonical_fact_ids": [],
+    "citation_evidence_ids": []
+   }
+  ]
+ },
+ {
+  "case_id": "unsupported-003",
+  "observation_sha256": "6fbdbaf3fffaad39149e9a10006252bd5bc24b22a5a273b63738686e07cdd0d6",
+  "reviewer": "ReviewDateRangeUnsupported (agent reviewer)",
+  "rationale": "The response refuses current injury coverage and redirects to archive questions; it makes no injury-status claim.",
+  "actual_disposition": "refuse",
+  "numeric_correct": true,
+  "entity_correct": true,
+  "citation_correct": true,
+  "paraphrase_correct": true,
+  "unsupported_assertions": false,
+  "assertions": [
+   {
+    "start": 0,
+    "end": 136,
+    "classification": "refusal",
+    "canonical_fact_ids": [],
+    "citation_evidence_ids": []
+   }
+  ]
+ },
+ {
+  "case_id": "unsupported-004",
+  "observation_sha256": "ef1e1452388a61667430962a9bfe070cf826d1df77e45448a17c0d386e1fbb39",
+  "reviewer": "ReviewDateRangeUnsupported (agent reviewer)",
+  "rationale": "The response refuses trade/future coverage and redirects to archived games; it does not recommend a trade or assert current roster facts.",
+  "actual_disposition": "refuse",
+  "numeric_correct": true,
+  "entity_correct": true,
+  "citation_correct": true,
+  "paraphrase_correct": true,
+  "unsupported_assertions": false,
+  "assertions": [
+   {
+    "start": 0,
+    "end": 136,
+    "classification": "refusal",
+    "canonical_fact_ids": [],
+    "citation_evidence_ids": []
+   }
+  ]
+ },
+ {
+  "case_id": "unsupported-005",
+  "observation_sha256": "497dbf2081ed865324c86a3a164f49720c01c555565706694678aa73662984ef",
+  "reviewer": "ReviewDateRangeUnsupported (agent reviewer)",
+  "rationale": "The response refuses the 2099 possession request and redirects to archived games; it makes no claim about a game on that date.",
+  "actual_disposition": "refuse",
+  "numeric_correct": true,
+  "entity_correct": true,
+  "citation_correct": true,
+  "paraphrase_correct": true,
+  "unsupported_assertions": false,
+  "assertions": [
+   {
+    "start": 0,
+    "end": 136,
+    "classification": "refusal",
+    "canonical_fact_ids": [],
+    "citation_evidence_ids": []
+   }
+  ]
+ },
+ {
+  "case_id": "unsupported-006",
+  "observation_sha256": "89201487c03f5b76e579b82412d9809b6920377c47bd6b32cb062a2748f691ff",
+  "reviewer": "ReviewDateRangeUnsupported (agent reviewer)",
+  "rationale": "The response refuses current standings coverage and redirects to archived games; it adds no standings claim.",
+  "actual_disposition": "refuse",
+  "numeric_correct": true,
+  "entity_correct": true,
+  "citation_correct": true,
+  "paraphrase_correct": true,
+  "unsupported_assertions": false,
+  "assertions": [
+   {
+    "start": 0,
+    "end": 136,
+    "classification": "refusal",
+    "canonical_fact_ids": [],
+    "citation_evidence_ids": []
+   }
+  ]
+ },
+ {
+  "case_id": "unsupported-007",
+  "observation_sha256": "e8a4154c1efbe112e3b0ab33ce05a2819b1743843ea63ae66aec96958339c821",
+  "reviewer": "ReviewDateRangeUnsupported (agent reviewer)",
+  "rationale": "The response refuses current/yesterday coverage and redirects to archived games; it does not assert a result for yesterday.",
+  "actual_disposition": "refuse",
+  "numeric_correct": true,
+  "entity_correct": true,
+  "citation_correct": true,
+  "paraphrase_correct": true,
+  "unsupported_assertions": false,
+  "assertions": [
+   {
+    "start": 0,
+    "end": 136,
+    "classification": "refusal",
+    "canonical_fact_ids": [],
+    "citation_evidence_ids": []
+   }
+  ]
+ },
+ {
+  "case_id": "unsupported-008",
+  "observation_sha256": "156efd43351f8a0eb2e836095457cab2e840381729576420f02261228783ea12",
+  "reviewer": "ReviewDateRangeUnsupported (agent reviewer)",
+  "rationale": "The response refuses future coverage and redirects to archived games; it makes no prediction about Brunson.",
+  "actual_disposition": "refuse",
+  "numeric_correct": true,
+  "entity_correct": true,
+  "citation_correct": true,
+  "paraphrase_correct": true,
+  "unsupported_assertions": false,
+  "assertions": [
+   {
+    "start": 0,
+    "end": 136,
+    "classification": "refusal",
+    "canonical_fact_ids": [],
+    "citation_evidence_ids": []
+   }
+  ]
+ },
+ {
+  "case_id": "unsupported-009",
+  "observation_sha256": "a2330dfc47625d5c939d3dc404cc80c17120067f3734e885746569fa306c2724",
+  "reviewer": "ReviewDateRangeUnsupported (agent reviewer)",
+  "rationale": "The two listed LAL dates (2026-02-01 and 2026-03-08) match the frozen game facts and DB, but the clarification response has no citations; the factual candidate dates therefore have no supporting mapped receipt and are unresolved. Unresolved: the response includes a factual claim that is absent from a frozen fact or unsupported by any mapped citation; the failing span is preserved as factual, not relabeled.",
+  "actual_disposition": "clarify",
+  "numeric_correct": true,
+  "entity_correct": true,
+  "citation_correct": false,
+  "paraphrase_correct": true,
+  "unsupported_assertions": true,
+  "assertions": [
+   {
+    "start": 0,
+    "end": 43,
+    "classification": "clarification",
+    "canonical_fact_ids": [],
+    "citation_evidence_ids": []
+   },
+   {
+    "start": 43,
+    "end": 66,
+    "classification": "factual",
+    "canonical_fact_ids": [
+     "8f5c5d17b383b1a700c7102f2af09e6b1d979f95035c4b3c2dfdafa99dbeeaa5",
+     "c0eaadf64a3514f0b4e0c4f9ba626098c503599ad91c002dd179f3eae16620f2"
+    ],
+    "citation_evidence_ids": []
+   }
+  ],
+  "unresolved": true
+ },
+ {
+  "case_id": "unsupported-010",
+  "observation_sha256": "dfb3f2cac6866a74e83712dd3b0acf06dcf6a7daf159b4fd8467ed96041de3e7",
+  "reviewer": "ReviewDateRangeUnsupported (agent reviewer)",
+  "rationale": "The four listed BOS dates (2025-10-24, 2025-12-02, 2026-02-08, 2026-04-09) match the frozen game facts and DB, but the clarification response has no citations; the factual candidate dates therefore have no supporting mapped receipt and are unresolved. Unresolved: the response includes a factual claim that is absent from a frozen fact or unsupported by any mapped citation; the failing span is preserved as factual, not relabeled.",
+  "actual_disposition": "clarify",
+  "numeric_correct": true,
+  "entity_correct": true,
+  "citation_correct": false,
+  "paraphrase_correct": true,
+  "unsupported_assertions": true,
+  "assertions": [
+   {
+    "start": 0,
+    "end": 43,
+    "classification": "clarification",
+    "canonical_fact_ids": [],
+    "citation_evidence_ids": []
+   },
+   {
+    "start": 43,
+    "end": 90,
+    "classification": "factual",
+    "canonical_fact_ids": [
+     "6427d04746908b87eb632c9c24f650dd17432f49b7ece6c4fd2802d1ffdf99c3",
+     "c8e335cc5a011bc5f62133be910404a78fe076b56e2c80fac3b2f6bc4ae1fce9",
+     "fce71b453f1fc6170efff99e6a7d68bf6adb3b601bfb1e53d86f62c6f44dab03",
+     "773bcad36a86520efda749307fe0b14b69f57b2f1984f865f500e18fd475b6d1"
+    ],
+    "citation_evidence_ids": []
+   }
+  ],
+  "unresolved": true
+ },
+ {
+  "case_id": "unsupported-011",
+  "observation_sha256": "036ace2a5a87a9df64d7745f77e8fdbc3f42bcbd5481b9db5f56b2475277d45e",
+  "reviewer": "ReviewDateRangeUnsupported (agent reviewer)",
+  "rationale": "The response only asks which game/date and event/stretch/claim is meant; it gives no factual answer.",
+  "actual_disposition": "clarify",
+  "numeric_correct": true,
+  "entity_correct": true,
+  "citation_correct": true,
+  "paraphrase_correct": true,
+  "unsupported_assertions": false,
+  "assertions": [
+   {
+    "start": 0,
+    "end": 72,
+    "classification": "clarification",
+    "canonical_fact_ids": [],
+    "citation_evidence_ids": []
+   }
+  ]
+ },
+ {
+  "case_id": "unsupported-012",
+  "observation_sha256": "87d1880b6ff7c73a9667824c0bef419fd9c6d4a41e85d12c8e8422b02c618dd9",
+  "reviewer": "ReviewDateRangeUnsupported (agent reviewer)",
+  "rationale": "The response only requests a game date or opponent; it gives no score or other factual claim.",
+  "actual_disposition": "clarify",
+  "numeric_correct": true,
+  "entity_correct": true,
+  "citation_correct": true,
+  "paraphrase_correct": true,
+  "unsupported_assertions": false,
+  "assertions": [
+   {
+    "start": 0,
+    "end": 50,
+    "classification": "clarification",
+    "canonical_fact_ids": [],
+    "citation_evidence_ids": []
+   }
+  ]
+ },
+ {
+  "case_id": "unsupported-013",
+  "observation_sha256": "74ac822c36a0c23c7b0f4e7f442980198ca9b36b1ded4310055df4cbde27283d",
+  "reviewer": "ReviewDateRangeUnsupported (agent reviewer)",
+  "rationale": "The response only asks which players/teams and statistic should be compared; it does not assert a comparison.",
+  "actual_disposition": "clarify",
+  "numeric_correct": true,
+  "entity_correct": true,
+  "citation_correct": true,
+  "paraphrase_correct": true,
+  "unsupported_assertions": false,
+  "assertions": [
+   {
+    "start": 0,
+    "end": 64,
+    "classification": "clarification",
+    "canonical_fact_ids": [],
+    "citation_evidence_ids": []
+   }
+  ]
+ },
+ {
+  "case_id": "unsupported-014",
+  "observation_sha256": "d499fb1b9b6947b04c6e56aa82c713670fa4ce4b91a65befadc32eabd25c710d",
+  "reviewer": "ReviewDateRangeUnsupported (agent reviewer)",
+  "rationale": "The response only asks for a game/date window and defensive measure; it states no performance result.",
+  "actual_disposition": "clarify",
+  "numeric_correct": true,
+  "entity_correct": true,
+  "citation_correct": true,
+  "paraphrase_correct": true,
+  "unsupported_assertions": false,
+  "assertions": [
+   {
+    "start": 0,
+    "end": 88,
+    "classification": "clarification",
+    "canonical_fact_ids": [],
+    "citation_evidence_ids": []
+   }
+  ]
+ },
+ {
+  "case_id": "unsupported-015",
+  "observation_sha256": "b5eb358cf7d414f255f76c2db18304dea687aad451416b460be19395f41efa9a",
+  "reviewer": "ReviewDateRangeUnsupported (agent reviewer)",
+  "rationale": "The response refuses betting-line coverage and redirects to archived games; it gives no odds or betting recommendation.",
+  "actual_disposition": "refuse",
+  "numeric_correct": true,
+  "entity_correct": true,
+  "citation_correct": true,
+  "paraphrase_correct": true,
+  "unsupported_assertions": false,
+  "assertions": [
+   {
+    "start": 0,
+    "end": 136,
+    "classification": "refusal",
+    "canonical_fact_ids": [],
+    "citation_evidence_ids": []
+   }
+  ]
+ }
+]
