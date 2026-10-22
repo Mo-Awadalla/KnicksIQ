@@ -1,0 +1,222 @@
+{
+  "generated_at": "2026-10-22T15:30:50.234837+00:00",
+  "redis_db": "8",
+  "questions": 60,
+  "trials": 2,
+  "by_trial": {
+    "1": {
+      "questions": 30,
+      "meets_expectation": 17,
+      "claim_backed": 17,
+      "validated": 19,
+      "p50_latency_ms": 7703.8,
+      "p95_latency_ms": 15809.2,
+      "mean_latency_ms": 9269.1,
+      "ledger_delta_usd": 0.0773319,
+      "mean_cost_per_question_usd": 0.00257773,
+      "provider_calls": 75,
+      "mean_calls_per_question": 2.5,
+      "unsupported_declined": 2,
+      "unsupported_questions": 4,
+      "reconciles": true
+    },
+    "2": {
+      "questions": 30,
+      "meets_expectation": 15,
+      "claim_backed": 15,
+      "validated": 17,
+      "p50_latency_ms": 8032.6,
+      "p95_latency_ms": 20171.8,
+      "mean_latency_ms": 9238.7,
+      "ledger_delta_usd": 0.0753706,
+      "mean_cost_per_question_usd": 0.002512353,
+      "provider_calls": 76,
+      "mean_calls_per_question": 2.53,
+      "unsupported_declined": 3,
+      "unsupported_questions": 4,
+      "reconciles": true
+    }
+  },
+  "spread_meets_expectation": 2,
+  "by_category": {
+    "aliases_typos": {
+      "trial1": "4/5",
+      "trial2": "2/5"
+    },
+    "comparisons": {
+      "trial1": "2/5",
+      "trial2": "1/5"
+    },
+    "date_range_last_n": {
+      "trial1": "3/4",
+      "trial2": "3/4"
+    },
+    "exact_statistics": {
+      "trial1": "2/4",
+      "trial2": "2/4"
+    },
+    "single_game_narrative": {
+      "trial1": "1/4",
+      "trial2": "2/4"
+    },
+    "turning_points": {
+      "trial1": "1/4",
+      "trial2": "1/4"
+    },
+    "unsupported": {
+      "trial1": "4/4",
+      "trial2": "4/4"
+    }
+  },
+  "latency": {
+    "p50_ms": 8032.6,
+    "p95_ms": 15809.2,
+    "mean_ms": 9253.9,
+    "by_stage": {
+      "session_and_release": {
+        "calls": 60,
+        "p50_ms": 5.0,
+        "p95_ms": 9.0,
+        "mean_ms": 6.9,
+        "share_of_stage_total": 0.001
+      },
+      "archive_records": {
+        "calls": 60,
+        "p50_ms": 21.0,
+        "p95_ms": 67.0,
+        "mean_ms": 28.0,
+        "share_of_stage_total": 0.003
+      },
+      "query_resolution": {
+        "calls": 60,
+        "p50_ms": 58.0,
+        "p95_ms": 78.0,
+        "mean_ms": 58.2,
+        "share_of_stage_total": 0.006
+      },
+      "plan": {
+        "calls": 10,
+        "p50_ms": 1674.0,
+        "p95_ms": 2734.0,
+        "mean_ms": 1702.4,
+        "share_of_stage_total": 0.031
+      },
+      "tool": {
+        "calls": 49,
+        "p50_ms": 65.0,
+        "p95_ms": 155.0,
+        "mean_ms": 102.7,
+        "share_of_stage_total": 0.009
+      },
+      "answer": {
+        "calls": 62,
+        "p50_ms": 2940.0,
+        "p95_ms": 5408.0,
+        "mean_ms": 3202.2,
+        "share_of_stage_total": 0.36
+      },
+      "review": {
+        "calls": 47,
+        "p50_ms": 4789.0,
+        "p95_ms": 9602.0,
+        "mean_ms": 5081.7,
+        "share_of_stage_total": 0.434
+      },
+      "repair": {
+        "calls": 32,
+        "p50_ms": 2437.0,
+        "p95_ms": 4476.0,
+        "mean_ms": 2682.2,
+        "share_of_stage_total": 0.156
+      },
+      "other": {
+        "calls": 0,
+        "p50_ms": null,
+        "p95_ms": null,
+        "mean_ms": null,
+        "share_of_stage_total": 0.0
+      }
+    }
+  },
+  "calls": {
+    "total": 151,
+    "mean_per_question": 2.52,
+    "p50_per_question": 2.0,
+    "p95_per_question": 4.0,
+    "max_per_question": 6,
+    "by_stage": {
+      "orchestrate": 72,
+      "review": 47,
+      "revise": 32
+    },
+    "by_model": {
+      "deepseek-v4.1-flash": 104,
+      "gpt-6-luna": 47
+    },
+    "by_protocol": {
+      "chat": 104,
+      "responses": 47
+    },
+    "errors": 0
+  },
+  "cost": {
+    "ledger_delta_total_usd": 0.1527025,
+    "per_call_charged_total_usd": 0.1527025,
+    "settled_total_usd": 0.1527025,
+    "open_delta_total_usd": 0,
+    "reconciled_total_usd": 0.1527025,
+    "reconciles": true,
+    "unreconciled_questions": [],
+    "mean_per_question_usd": 0.002545042,
+    "p50_per_question_usd": 0.0021286,
+    "p95_per_question_usd": 0.0051934,
+    "monthly_capacity_at_2_usd": 785
+  },
+  "outcomes": {
+    "failed:orchestrate:ValidationError": 1,
+    "failed:revise:ValidationError": 11,
+    "fallback:review_rejected": 12,
+    "validated": 30,
+    "validated_declined": 6
+  },
+  "by_hour_utc": {
+    "2026-10-22T15:00Z": {
+      "calls": 151,
+      "p50_ms": 3162,
+      "p95_ms": 6788
+    }
+  },
+  "sample_ids": [
+    "aliases_typos-001",
+    "comparisons-001",
+    "date_range_last_n-001",
+    "exact_statistics-001",
+    "single_game_narrative-001",
+    "turning_points-001",
+    "unsupported-001",
+    "aliases_typos-002",
+    "comparisons-002",
+    "date_range_last_n-002",
+    "exact_statistics-002",
+    "single_game_narrative-002",
+    "turning_points-002",
+    "unsupported-002",
+    "aliases_typos-003",
+    "comparisons-003",
+    "date_range_last_n-003",
+    "exact_statistics-003",
+    "single_game_narrative-003",
+    "turning_points-003",
+    "unsupported-003",
+    "aliases_typos-004",
+    "comparisons-004",
+    "date_range_last_n-004",
+    "exact_statistics-004",
+    "single_game_narrative-004",
+    "turning_points-004",
+    "unsupported-004",
+    "aliases_typos-005",
+    "comparisons-005"
+  ],
+  "sample": "round-robin 5/5/4/4/4/4/4 of the 10-per-category bench sample"
+}

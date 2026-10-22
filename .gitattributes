@@ -142,3 +142,7 @@ docs/release-evidence/llm-primary-20261021/w4-state/*.txt linguist-generated=tru
 # w4-failed machine output (raw provider replies, response sets).
 docs/release-evidence/llm-primary-20261021/w4-failed/**/*.json linguist-generated=true
 docs/release-evidence/llm-primary-20261021/w4-failed/**/*.jsonl linguist-generated=true
+
+# Generated measurement artifacts (wave 4 latency).
+docs/release-evidence/llm-primary-20261021/w4-latency/**/*.jsonl linguist-generated=true
+docs/release-evidence/llm-primary-20261021/w4-latency/**/*.json linguist-generated=true
