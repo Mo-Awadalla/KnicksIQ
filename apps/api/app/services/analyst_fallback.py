@@ -23,6 +23,18 @@ _EXTREME = re.compile(
     re.I,
 )
 _RECORD = re.compile(r"\bhow many\s+(?:total\s+)?(?:wins?|losses?|games?)\b", re.I)
+# A forecast is not an archive fact. "Will you/I ..." is a request to show archive data,
+# not a prediction, so only future scopes and predictive phrasing make the turn
+# unanswerable; the addressee forms keep their archive answer.
+_FUTURE = re.compile(
+    r"\b(?:next|upcoming|future|following)\s+"
+    r"(?:season|year|game|games|playoffs?|postseason|month|week)\b"
+    r"|\btomorrow\b|\bpredict\w*\b|\bprojections?\b|\bforecast\w*\b|\bgoing forward\b"
+    r"|\b(?:will|won't|would)\s+(?!(?:you|i)\b)"
+    r"(?:\w+\s+){0,4}?(?:play|score|do|be|have|win|make|average|perform|lead|start|"
+    r"return|improve|regress|contend|reach)\b",
+    re.I,
+)
 _FLOW_CLAIM_METRICS = frozenset(
     {
         "biggest_run",
@@ -58,6 +70,11 @@ def re_search_live(question: str) -> bool:
     )
 
 
+def future_requested(question: str) -> bool:
+    """A prediction or a future-time scope the archive cannot answer."""
+    return bool(_FUTURE.search(question))
+
+
 def _family(tools) -> str:
     """What kind of answer this question needs, or "" when the archive cannot answer it."""
     # "And in the playoffs?" asks the previous topic in a new scope; the scope is already
@@ -66,6 +83,8 @@ def _family(tools) -> str:
     scope = tools.scope
     if re_search_live(tools.question) or re_search_live(question):
         return "live"
+    if future_requested(tools.question) or future_requested(question):
+        return "future"
     # The same question shape that chose a specialized tool in prefetch chooses its
     # claim family here. Without this, a reviewer rejection discards valid split, flow
     # or period claims and delivers a decline for an answerable question.
@@ -137,8 +156,8 @@ def fallback_claims(loop: AnalystLoop) -> list[VerifiedClaim]:
         )
     ):
         return []
-    if not family or family == "live":
-        # No archived fact answers a live/current-date question.
+    if not family or family in {"live", "future"}:
+        # No archived fact answers a live/current-date or future question.
         return []
     games = tools.selected_games(scope)
     if family in {"record", "matchup", "extreme", "game"}:
@@ -272,6 +291,11 @@ def decline_text(loop: AnalystLoop) -> str:
     """A plain coverage statement; never unrelated aggregates dressed as an answer."""
     tools = loop.tools
     latest = tools.games[-1].game_date if tools.games else None
+    if future_requested(tools.question) or future_requested(tools.topic):
+        text = "I can't answer questions about future games or seasons."
+        if latest:
+            text += f" The archive's most recent game is {latest}."
+        return text
     if re_search_live(tools.question):
         text = "I don't have live or current-date data."
         if latest:

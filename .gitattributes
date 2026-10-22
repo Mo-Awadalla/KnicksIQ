@@ -138,3 +138,7 @@ docs/release-evidence/llm-primary-20261021/w4-scorer/**/*.txt linguist-generated
 # Follow-up state/topic fixes: live session output and offline transcripts.
 docs/release-evidence/llm-primary-20261021/w4-state/*.json linguist-generated=true
 docs/release-evidence/llm-primary-20261021/w4-state/*.txt linguist-generated=true
+
+# w4-failed machine output (raw provider replies, response sets).
+docs/release-evidence/llm-primary-20261021/w4-failed/**/*.json linguist-generated=true
+docs/release-evidence/llm-primary-20261021/w4-failed/**/*.jsonl linguist-generated=true
