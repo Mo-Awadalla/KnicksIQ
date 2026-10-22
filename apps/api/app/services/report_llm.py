@@ -15,6 +15,7 @@ import ssl
 import time
 import urllib.error
 import urllib.request
+import uuid
 from abc import ABC, abstractmethod
 from collections.abc import Mapping
 from typing import Any
@@ -83,8 +84,10 @@ class OpenAICompatibleLLMAdapter(LLMAdapter):
         self.protocols = dict(protocols or {})
         self.prices = dict(prices or {})
         self.user_agent = user_agent
-        # A random per-conversation id for host-side routing and caching; never a user token.
-        self.session_id: str | None = None
+        # A random id for host-side routing and caching; never a user token. Go rejects any
+        # request without one, so every adapter starts with its own; the analyst loop
+        # replaces it with one id per turn.
+        self.session_id: str | None = uuid.uuid4().hex
         self.response_schema: dict[str, Any] | None = None
         self.last_metadata: dict[str, Any] = {}
 
