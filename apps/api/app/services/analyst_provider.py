@@ -35,6 +35,24 @@ def token_upper_bound(text: str) -> int:
     return len(text.encode("utf-8"))
 
 
+def without_json_mode_echo(raw: str) -> tuple[str, bool]:
+    """Drop the host's JSON-mode echo of response_format from a top-level object.
+
+    Go serves this writer in json_object mode (json_schema is rejected upstream), and in
+    about half of the measured repair calls the model copied ``{"type":"json_object"}``
+    into the reply next to the answer fields. The contract forbids unknown keys, so the
+    turn fell back. The echo carries no answer content: remove exactly that key/value.
+    """
+    try:
+        body = json.loads(raw)
+    except (TypeError, ValueError):
+        return raw, False
+    if isinstance(body, dict) and body.get("type") == "json_object" and len(body) > 1:
+        body.pop("type")
+        return encoded(body), True
+    return raw, False
+
+
 def compact_schema(schema: type) -> dict[str, Any]:
     def strip(value: Any) -> Any:
         if isinstance(value, dict):
@@ -260,13 +278,15 @@ async def request_model[Schema: BaseModel](
     started = time.monotonic()
     metadata: dict[str, Any] = {}
     raw: str | None = None
+    format_echo = False
     try:
         raw = await asyncio.wait_for(
             adapter.generate(system=system, user=encoded(payload)), timeout=call_timeout
         )
         metadata = getattr(adapter, "last_metadata", {}) or {}
         loop.costs[-1] = (metadata.get("usage") or {}).get("cost")
-        value = schema.model_validate_json(raw)
+        normalized, format_echo = without_json_mode_echo(raw)
+        value = schema.model_validate_json(normalized)
         if isinstance(value, Action) and value.action == "call_tools" and len(raw) > 3600:
             raise ValueError("Tool action exceeds output cap")
         return value
@@ -300,6 +320,7 @@ async def request_model[Schema: BaseModel](
                 ),
                 "finish_reason": metadata.get("finish_reason"),
                 "content_kind": metadata.get("content_kind"),
+                "provider_format_echo": format_echo,
                 "input_bytes": token_upper_bound(system) + token_upper_bound(encoded(payload)),
                 "response_bytes": len(raw) if raw is not None else None,
                 "max_tokens": getattr(adapter, "max_tokens", None),
