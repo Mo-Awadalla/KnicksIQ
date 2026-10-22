@@ -54,7 +54,8 @@ def require_live_env() -> None:
         "ANALYST_EVIDENCE_LOOP_ENABLED": os.environ.get("ANALYST_EVIDENCE_LOOP_ENABLED", ""),
         "DB_URL": os.environ.get("DB_URL", ""),
         "REDIS_URL": os.environ.get("REDIS_URL", ""),
-        "OPENROUTER_API_KEY": os.environ.get("OPENROUTER_API_KEY", ""),
+        # Go exposes AI_API_KEY; the legacy OpenRouter name still works for old shells.
+        "API_KEY": os.environ.get("AI_API_KEY") or os.environ.get("OPENROUTER_API_KEY", ""),
     }
     problems = []
     if settings["ANALYSIS_ANSWER_MODE"] != "llm_primary":
@@ -69,8 +70,8 @@ def require_live_env() -> None:
         problems.append("REDIS_URL is required")
     elif urlparse(settings["REDIS_URL"]).path.strip("/") in {"", "0"}:
         problems.append("REDIS_URL must select this worker's db, never db 0")
-    if not settings["OPENROUTER_API_KEY"]:
-        problems.append("OPENROUTER_API_KEY is required")
+    if not settings["API_KEY"]:
+        problems.append("AI_API_KEY (or OPENROUTER_API_KEY) is required")
     if problems:
         raise SystemExit("; ".join(problems))
 
@@ -205,7 +206,23 @@ async def run_session(
         stages = [
             {
                 key: item.get(key)
-                for key in ("stage", "tool", "action", "tools_requested", "status", "claims")
+                for key in (
+                    "stage",
+                    "tool",
+                    "action",
+                    "tools_requested",
+                    "status",
+                    "claims",
+                    # Keep the per-call routing evidence: which model served each call.
+                    "model",
+                    "served_model",
+                    "protocol",
+                    "provider",
+                    "finish_reason",
+                    "review_accepted",
+                    "review_spans",
+                    "latency_ms",
+                )
                 if item.get(key) is not None
             }
             for item in (body.get("tool_calls") or [])

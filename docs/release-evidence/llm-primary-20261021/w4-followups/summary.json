@@ -1,0 +1,76 @@
+{
+  "measured_sha": "536d12e",
+  "trials": 2,
+  "sessions": 27,
+  "turns": 128,
+  "turn_passes": 90,
+  "session_runs": 54,
+  "session_passes": 24,
+  "by_trial": {
+    "1": {
+      "turn_passes": 46,
+      "session_passes": 13,
+      "turns": 64,
+      "llm_validated": 53,
+      "fallback": 11,
+      "degraded": 11
+    },
+    "2": {
+      "turn_passes": 44,
+      "session_passes": 11,
+      "turns": 64,
+      "llm_validated": 53,
+      "fallback": 11,
+      "degraded": 12
+    }
+  },
+  "overall": {
+    "turns": 128,
+    "llm_validated": 106,
+    "fallback": 22,
+    "degraded": 23
+  },
+  "by_turn_position": {
+    "1": {
+      "turns": 54,
+      "llm_validated": 45,
+      "fallback": 9,
+      "degraded": 10
+    },
+    "2": {
+      "turns": 54,
+      "llm_validated": 44,
+      "fallback": 10,
+      "degraded": 10
+    },
+    "3": {
+      "turns": 20,
+      "llm_validated": 17,
+      "fallback": 3,
+      "degraded": 3
+    }
+  },
+  "session_spread": {
+    "both": 9,
+    "exactly_one": 6,
+    "none": 12
+  },
+  "failure_classes": {
+    "fallback:validation_or_budget": 10,
+    "benchmark:record_regex": 1,
+    "benchmark:rounding": 9,
+    "reviewer_rejection": 10,
+    "model_wording:aggregation": 1,
+    "model_wording:uncited_date": 1,
+    "model_wording:declined_answerable": 2,
+    "state_after_refusal": 3,
+    "fallback:commit": 1
+  },
+  "harness_causes": {
+    "pipeline:degraded": 23,
+    "answer:value": 12,
+    "answer:declined": 2,
+    "scope": 1
+  },
+  "scope_clean_trials": 51
+}
