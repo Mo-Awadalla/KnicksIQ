@@ -64,9 +64,7 @@ async def phase_budget(h):
     await h.redis.set(h.ledger_key, "0")
     h.settings.openrouter_monthly_cutoff_usd = 0.05
     try:
-        reservations = await asyncio.gather(
-            *(BudgetReservation.reserve(0.01) for _ in range(10))
-        )
+        reservations = await asyncio.gather(*(BudgetReservation.reserve(0.01) for _ in range(10)))
         accepted = [item for item in reservations if item is not None]
         for item in accepted:
             await item.settle(0.01)
@@ -139,9 +137,7 @@ async def phase_provider(h):
         ("provider-garbage", "garbage", 5000),
     ):
         before = await ledger_value(h)
-        with adapter_override(
-            analyst_provider, lambda mode=mode: FaultAdapter(mode)
-        ) as calls:
+        with adapter_override(analyst_provider, lambda mode=mode: FaultAdapter(mode)) as calls:
             started = time.monotonic()
             response = await h.client.post(
                 "/analysis/query",
@@ -313,9 +309,7 @@ async def phase_proxy(h):
         f"FORWARDED_ALLOW_IPS={trusted!r}",
     )
     wrapped = ProxyHeadersMiddleware(h.app, trusted_hosts=trusted)
-    transport = ASGITransport(
-        app=wrapped, raise_app_exceptions=False, client=("10.0.0.5", 443)
-    )
+    transport = ASGITransport(app=wrapped, raise_app_exceptions=False, client=("10.0.0.5", 443))
     async with AsyncClient(
         transport=transport, base_url="http://api.knicksiq.win", timeout=60
     ) as client:
@@ -341,9 +335,7 @@ async def phase_proxy(h):
         analysis_policy._daily_requests_by_client.clear()
         for ip in ("198.51.100.1", "198.51.100.2"):
             await clear_limits(h, ip)
-        transport = ASGITransport(
-            app=wrapped, raise_app_exceptions=False, client=("10.0.0.5", 443)
-        )
+        transport = ASGITransport(app=wrapped, raise_app_exceptions=False, client=("10.0.0.5", 443))
         async with AsyncClient(
             transport=transport, base_url="https://api.knicksiq.win", timeout=60
         ) as client:
@@ -402,9 +394,7 @@ async def phase_cache(h):
         "T21 cache poisoning",
         "Release, index, model, mode, prompt and season all change the key",
         None,
-        first == same
-        and all(value != first for value in variants)
-        and len(set(variants)) == 6,
+        first == same and all(value != first for value in variants) and len(set(variants)) == 6,
         f"variants={len(set(variants))}",
     )
     import app.api.analysis as analysis_module

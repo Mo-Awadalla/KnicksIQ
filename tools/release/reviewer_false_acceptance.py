@@ -118,8 +118,7 @@ def review_max_tokens() -> int:
 async def _recording_call_reviewer(
     system: str, payload: dict[str, Any], max_tokens: int | None = None
 ) -> Any:
-    del max_tokens
-    result = await _original_call_reviewer(system, payload, review_max_tokens())
+    result = await _original_call_reviewer(system, payload, max_tokens or review_max_tokens())
     review = result.review.model_dump(mode="json") if result.review is not None else None
     _reviews.append(review)
     return result

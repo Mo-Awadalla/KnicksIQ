@@ -33,6 +33,7 @@ from analyst_review_base import (
     load_models,
     reject_causes,
 )
+from app.core.config import get_settings
 from app.services.analyst_provider import encoded, get_llm_adapter, reviewer_system_prompt
 from app.services.analyst_review_checks import number_tokens, review_issues, trusted_numbers
 from app.services.evidence_contracts import (
@@ -56,9 +57,12 @@ class CallResult:
     cost: float | None
 
 
-async def call_reviewer(system: str, payload: dict[str, Any], max_tokens: int = 1200) -> CallResult:
+async def call_reviewer(
+    system: str, payload: dict[str, Any], max_tokens: int | None = None
+) -> CallResult:
     adapter = get_llm_adapter()
-    adapter.max_tokens = max_tokens
+    # Default to the deployed reviewer cap so a replay measures the production reviewer.
+    adapter.max_tokens = max_tokens or get_settings().analyst_review_max_tokens
     adapter.timeout_seconds = 30
     if hasattr(adapter, "response_schema"):
         adapter.response_schema = None
