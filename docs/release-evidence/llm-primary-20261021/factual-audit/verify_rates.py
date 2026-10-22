@@ -5,7 +5,7 @@ from __future__ import annotations
 import re
 
 from model import Session, number
-from verify_common import claim_number, scope_for, scalar_atom
+from verify_common import claim_number, scalar_atom, scope_for
 
 
 def verify_team_rates(s: Session) -> None:
