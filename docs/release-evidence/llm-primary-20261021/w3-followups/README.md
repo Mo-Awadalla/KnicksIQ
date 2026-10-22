@@ -63,7 +63,7 @@ alias from the archive row. The model never writes an expected value.
 ## Offline results (deterministic, two runs)
 
 Two runs are byte-identical (`offline_spread.json`; audit sha256
-`412dbcc25079a3d8d44c0371e0ce81422153a73cd725c51ace55069d12bc338d`). Spread is 0 turns across
+`aa24911452df282f09add9d734d28a75615472758ec0b51019ed38ef1ec88af1`). Spread is 0 turns across
 the two runs. Totals: 7/27 sessions pass, 35/64 turns pass the fallback content check, 42/64
 turns resolve the expected scope. Causes: scope 11, scope+decline 10, answer:value 5,
 answer:declined 2, latent_scope 1.
