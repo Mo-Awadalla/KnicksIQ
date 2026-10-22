@@ -238,6 +238,33 @@ class AnalystLoop:
             self.tool_count += 1
             await self.run_tool(call)
 
+    async def repair(
+        self, answer: ProposedAnswer, reason: str, *, timeout_seconds: float
+    ) -> ProposedAnswer | None:
+        """Retry an off-schema repair once when two calls stay free, then fail closed.
+
+        The writer intermittently adds a host-format key or a malformed tail; the same
+        request usually succeeds, and a schema failure must not discard a backed answer.
+        """
+        for attempt in range(2):
+            try:
+                return await self.model(
+                    ProposedAnswer,
+                    answer=answer,
+                    repair=reason,
+                    timeout_seconds=timeout_seconds,
+                )
+            except ValidationError:
+                available = sum(slots for _, slots in self.reservations) - self.calls
+                if (
+                    attempt
+                    or self.calls + 2 > self.settings.analyst_max_model_calls
+                    or self.remaining() < 2
+                    or (available < 2 and not await self.reserve(2 - available))
+                ):
+                    return None
+        return None
+
     async def investigate(self) -> dict[str, Any]:
         await self.prefetch()
         while True:
@@ -283,15 +310,14 @@ class AnalystLoop:
             ):
                 available = sum(slots for _, slots in self.reservations) - self.calls
                 if available >= 2 or await self.reserve(2 - available):
-                    repaired = await self.model(
-                        ProposedAnswer,
-                        answer=answer,
-                        repair=reason,
-                        timeout_seconds=repair_timeout,
-                    )
-                    supported, _ = await self.validate(repaired, timeout_seconds=repair_timeout)
-                    if supported:
-                        return self.render(repaired, llm=True, refused=refused)
+                    repaired = await self.repair(answer, reason, timeout_seconds=repair_timeout)
+                    if repaired is not None:
+                        supported, _ = await self.validate(repaired, timeout_seconds=repair_timeout)
+                        if supported:
+                            return self.render(repaired, llm=True, refused=refused)
+                    else:
+                        # Both repair replies were off-schema; this is not a review verdict.
+                        return await self.fallback("Repair output did not pass schema validation.")
             return await self.fallback("Proposed wording did not pass evidence review.")
 
     async def validate(
