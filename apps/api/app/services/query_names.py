@@ -110,6 +110,27 @@ def _typo_alias_allowed(candidate: str, alias: str) -> bool:
     return abs(len(candidate_key) - len(alias_key)) <= 2
 
 
+def _longer_name_typo(
+    candidate: str,
+    alias: str,
+    aliases: dict[str, list[Player]],
+    typo_threshold: float,
+) -> bool:
+    """Do not let an exact first token preempt a near-match compound surname."""
+    words = candidate.split()
+    if len(words) != 2 or words[0] != alias:
+        return False
+    for longer_alias in aliases:
+        if not longer_alias.startswith(f"{alias} ") or len(longer_alias.split()) != len(words):
+            continue
+        if (
+            _typo_alias_allowed(candidate, longer_alias)
+            and SequenceMatcher(None, candidate, longer_alias).ratio() >= typo_threshold
+        ):
+            return True
+    return False
+
+
 def resolve_player_mentions(
     question: str,
     players: list[Player],
@@ -119,6 +140,7 @@ def resolve_player_mentions(
     allow_fuzzy: bool = True,
 ) -> tuple[list[int], list[str]]:
     normalized_question = f" {normalize(question)} "
+    name_candidates = _name_candidates(question)
     aliases: dict[str, list[Player]] = defaultdict(list)
     for player in players:
         for alias in player_aliases(player, unique_givens):
@@ -145,6 +167,11 @@ def resolve_player_mentions(
     for alias in sorted(aliases, key=len, reverse=True):
         if alias in CURATED_PLAYER_ALIASES:
             continue
+        if " " not in alias and any(
+            _longer_name_typo(candidate, alias, aliases, typo_threshold)
+            for candidate in name_candidates
+        ):
+            continue
         if re.search(rf"\b{re.escape(alias)}\b", remaining):
             matches = aliases[alias]
             knicks_matches = [player for player in matches if player.team_id == "NYK"]
@@ -159,7 +186,7 @@ def resolve_player_mentions(
     exact_resolved = dict(resolved)
     exact_ambiguous = dict(ambiguous)
     if allow_fuzzy and not resolved and not ambiguous:
-        for candidate in _name_candidates(question):
+        for candidate in name_candidates:
             scores: list[tuple[float, Player]] = []
             for player in players:
                 given = name_parts(player.full_name)[1]
