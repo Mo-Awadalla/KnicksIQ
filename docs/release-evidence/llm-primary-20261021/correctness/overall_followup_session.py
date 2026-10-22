@@ -71,6 +71,12 @@ async def run_session(client: AsyncClient, turns_spec: list[tuple[str, str]]) ->
                 "records_in_answer": records,
                 "ok": want in records,
                 "llm_validated": body.get("llm_validated"),
+                "warnings": body.get("warnings"),
+                "stages": [
+                    {k: t.get(k) for k in ("stage", "tool", "action", "tools_requested", "status")}
+                    for t in body.get("tool_calls", [])
+                    if t.get("stage") != "prepare"
+                ],
                 "revision": body.get("revision"),
                 "answer": answer,
             }
