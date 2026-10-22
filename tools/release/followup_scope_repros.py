@@ -16,109 +16,18 @@ The lease case uses ANALYST_SESSION_LEASE_SECONDS (default 35) so the wait stays
 from __future__ import annotations
 
 import asyncio
-import json
 import uuid
 from typing import Any
 
 from app.core.db import AsyncSessionLocal
 from app.models.dataset_release import DatasetRelease
-from app.services.analyst_fallback import decline_text, fallback_claims, re_search_discovery
 from app.services.analyst_loop import AnalystLoop
-from app.services.analyst_prefetch import prefetch_calls
 from app.services.analyst_sessions import SessionTurn
-from app.services.analyst_tool_registry import recovery_tool
-from app.services.analyst_tools import AnalystTools
 from app.services.evidence_contracts import ClaimUse, ProposedAnswer, ToolCall
 from app.services.runtime_store import _redis
+from followup_repro_support import claim_state, fallback_result, next_state, prepare, show
 from pydantic import ValidationError
 from sqlalchemy import select
-
-
-class FakeLoop:
-    def __init__(self, tools: AnalystTools, results: list) -> None:
-        self.tools = tools
-        self.results = results
-        self.recovery_ran = True
-        self.remaining = lambda: 0.0
-
-
-def clone(value: Any) -> Any:
-    return json.loads(json.dumps(value))
-
-
-async def prepare(db, release, question: str, state: dict) -> AnalystTools:
-    tools = AnalystTools(db, release, question, release.season, clone(state))
-    await tools.prepare()
-    return tools
-
-
-def next_state(tools: AnalystTools, claims: list | None = None, evidence: list | None = None) -> dict:
-    # The session store commits the whole state dict prepare produced, not only the
-    # fields it names; keep last_topic/last_scope so a later decline can fall back.
-    state = clone(tools.state)
-    state.update(
-        {
-            "scope": tools.scope.model_dump(mode="json") if tools.scope else {},
-            "intent": tools.topic,
-            "claims": [claim.model_dump(mode="json") for claim in (claims or [])],
-            "evidence": [item.model_dump(mode="json") for item in (evidence or [])],
-            "release": tools.release.version,
-        }
-    )
-    return state
-
-
-async def claim_state(tools: AnalystTools) -> dict:
-    """State after a turn that ran the backend plan and committed its claims."""
-    calls = prefetch_calls(tools)
-    results = [await tools.execute(call) for call in calls]
-    claims = [claim for result in results for claim in result.claims]
-    # Delivery commits every receipt a used claim references, including a calculation
-    # receipt's source evidence; the follow-up revalidates the same set.
-    return next_state(tools, claims, list(tools.evidence.values()))
-
-
-async def fallback_result(db, release, question: str, state: dict) -> dict:
-    tools = await prepare(db, release, question, state)
-    calls = prefetch_calls(tools)
-    results = [await tools.execute(call) for call in calls]
-    if not any(result.claims for result in results):
-        spec = recovery_tool(
-            "discovery"
-            if re_search_discovery(tools.question)
-            else "player"
-            if tools.scope.player_ids
-            else "team"
-        )
-        results.append(
-            await tools.execute(
-                ToolCall(
-                    name=spec.name,
-                    question=tools.question,
-                    aggregation=spec.recovery_aggregation,
-                )
-            )
-        )
-    loop = FakeLoop(tools, results)
-    claims = fallback_claims(loop)
-    return {
-        "scope": tools.scope.model_dump(mode="json"),
-        "topic": tools.topic,
-        "games": len(tools.selected_games(tools.scope)),
-        "prefetch": [
-            (call.name, call.aggregation, result.status)
-            for call, result in zip(calls, results, strict=False)
-        ],
-        "claims": [claim.metric_id for claim in claims],
-        "text": " ".join(claim.statement for claim in claims) or decline_text(loop),
-    }
-
-
-def show(name: str, expected: str, actual: str, reproduced: bool) -> bool:
-    print(f"{'REPRODUCED' if reproduced else 'NOT REPRODUCED'} {name}")
-    print(f"  want {expected}")
-    print(f"  got  {actual}")
-    return reproduced
 
 
 async def main() -> None:
@@ -411,6 +320,42 @@ async def main() -> None:
                 "commit=True after lease expiry, repeat commit=True",
                 f"commit={committed}, repeat={repeated}",
                 not committed or not repeated,
+            )
+        )
+
+        # 17. A refused answer that fails validation is delivered as a factual fallback;
+        #     the fallback must not turn the refusal into the accepted topic either.
+        prior = await prepare(
+            db, release, "How many points did Brunson average in December?", {}
+        )
+        refusal = await prepare(
+            db, release, "Is Brunson's hamstring healthy?", await claim_state(prior)
+        )
+        loop = AnalystLoop(refusal, [])
+        loop.model_refused = True
+        loop.results = [
+            await refusal.execute(
+                ToolCall(
+                    name="get_player_stats",
+                    question=refusal.question,
+                    metric="points",
+                    aggregation="average",
+                )
+            )
+        ]
+        rendered = loop.render_fallback("Proposed wording did not pass evidence review.")
+        followup = await prepare(db, release, "And his assists?", rendered["state"])
+        scope = followup.scope.model_dump(mode="json")
+        outcomes.append(
+            show(
+                "refused turn's factual fallback overwrites the prior month",
+                "declined=True, date_start=2025-12-02, 14 games",
+                f"declined={rendered['state'].get('declined')}, "
+                f"answer={rendered['answer'][:60]!r}, date_start={scope['date_start']}, "
+                f"games={len(followup.selected_games(followup.scope))}",
+                rendered["state"].get("declined") is not True
+                or str(scope["date_start"]) != "2025-12-02"
+                or len(followup.selected_games(followup.scope)) != 14,
             )
         )
     print("REPRODUCED", sum(outcomes), "of", len(outcomes))

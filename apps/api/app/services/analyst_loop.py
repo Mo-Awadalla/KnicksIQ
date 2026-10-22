@@ -83,6 +83,9 @@ class AnalystLoop:
         self.recovery_ran = False
         self.request_id = ""
         self.preplanned: list[str] = []
+        # The writer chose decline/explain_coverage this turn; a fallback delivery must
+        # still not turn that refusal into the next turn's accepted topic.
+        self.model_refused = False
 
     def payload(
         self,
@@ -154,9 +157,7 @@ class AnalystLoop:
             except Exception as exc:
                 failure = exc
             result = await self.fallback(
-                "Model or budget unavailable."
-                if failure is None
-                else fallback_warning(failure)
+                "Model or budget unavailable." if failure is None else fallback_warning(failure)
             )
             if failure is not None:
                 logger.warning(
@@ -290,6 +291,7 @@ class AnalystLoop:
                 raise ValueError("Malformed answer action")
             self.last_answer = answer
             refused = action.action in REFUSAL_ACTIONS
+            self.model_refused = refused
             supported, reason = await self.validate(answer)
             if supported:
                 return self.render(answer, llm=True, refused=refused)
