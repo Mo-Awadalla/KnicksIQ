@@ -302,7 +302,12 @@ async def resolve_query(
 
     resolved_game_ids: list[int] = []
     if relative_count:
-        resolved_game_ids = [game.id for game in candidates[-relative_count:]]
+        selected = (
+            candidates[:relative_count]
+            if window.relative_from_start
+            else candidates[-relative_count:]
+        )
+        resolved_game_ids = [game.id for game in selected]
     elif descriptive_reference:
         if "most recent" in q and candidates:
             resolved_game_ids = [candidates[-1].id]

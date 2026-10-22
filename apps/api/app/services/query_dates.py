@@ -52,6 +52,7 @@ class DateWindow(NamedTuple):
     single_day: bool
     named_month: int | None
     relative_count: int | None
+    relative_from_start: bool
 
 
 def _infer_year(month: int, day: int, games: list[Game], latest: date | None) -> int | None:
@@ -108,12 +109,18 @@ def _date_mentions(
     return sorted(mentions)
 
 
-def _relative_game_count(q: str) -> int | None:
+def _relative_window(q: str) -> tuple[int, bool] | None:
+    """A relative count and whether it selects from the beginning of the scope."""
     count = re.search(r"\b(?:last|past|previous)\s+(\d+)\s+games?\b", q)
     if count:
-        return max(1, min(int(count.group(1)), 82))
+        return max(1, min(int(count.group(1)), 82)), False
+    opening = re.search(r"\b(?:first|opening)\s+(\d+)\s+games?\b", q)
+    if opening:
+        return max(1, min(int(opening.group(1)), 82)), True
     if re.search(r"\b(?:last|previous)\s+game\b", q):
-        return 1
+        return 1, False
+    if re.search(r"\b(?:first|opening)\s+game\b", q):
+        return 1, True
     return None
 
 
@@ -123,8 +130,29 @@ def date_window(question: str, games: list[Game], latest_date: date | None) -> D
     first_game = dates[0] if dates else None
     q = normalize(question)
     mentions = _date_mentions(question, games, latest_date)
-    relative_count = _relative_game_count(q)
+    relative = _relative_window(q)
+    relative_count = relative[0] if relative else None
+    relative_from_start = relative[1] if relative else False
     explicit = bool(mentions) or relative_count is not None
+
+    def make(
+        start: date | None,
+        end: date | None,
+        named_dates: list[date],
+        is_explicit: bool,
+        single_day: bool,
+        named_month: int | None,
+    ) -> DateWindow:
+        return DateWindow(
+            start,
+            end,
+            named_dates,
+            is_explicit,
+            single_day,
+            named_month,
+            relative_count,
+            relative_from_start,
+        )
 
     if mentions:
         first_start, first_end, first_value = mentions[0]
@@ -132,33 +160,25 @@ def date_window(question: str, games: list[Game], latest_date: date | None) -> D
             second_start, _, second_value = mentions[1]
             connector = question[first_end:second_start]
             if re.search(r"\b(?:and|to|through|thru|until)\b|[-–—]", connector, re.IGNORECASE):
-                return DateWindow(first_value, second_value, [], True, False, None, relative_count)
+                return make(first_value, second_value, [], True, False, None)
         prefix = question[max(0, first_start - 24) : first_start].lower()
         if re.search(r"\bsince\b", prefix):
-            return DateWindow(first_value, latest_date, [], True, False, None, relative_count)
+            return make(first_value, latest_date, [], True, False, None)
         if re.search(r"\bafter\b", prefix):
-            return DateWindow(
-                first_value + timedelta(days=1), latest_date, [], True, False, None, relative_count
-            )
+            return make(first_value + timedelta(days=1), latest_date, [], True, False, None)
         if re.search(r"\bbefore\b", prefix):
-            return DateWindow(
-                first_game, first_value - timedelta(days=1), [], True, False, None, relative_count
-            )
+            return make(first_game, first_value - timedelta(days=1), [], True, False, None)
         if re.search(r"\b(?:through|thru|until)\b", prefix):
-            return DateWindow(first_game, first_value, [], True, False, None, relative_count)
+            return make(first_game, first_value, [], True, False, None)
         if re.search(r"\bfrom\b", prefix):
-            return DateWindow(first_value, latest_date, [], True, False, None, relative_count)
-        return DateWindow(first_value, first_value, [first_value], True, True, None, relative_count)
+            return make(first_value, latest_date, [], True, False, None)
+        return make(first_value, first_value, [first_value], True, True, None)
 
     if latest_date and re.search(r"\bthis month\b", q):
-        return DateWindow(
-            latest_date.replace(day=1), latest_date, [], True, False, None, relative_count
-        )
+        return make(latest_date.replace(day=1), latest_date, [], True, False, None)
     if latest_date and re.search(r"\blast month\b", q):
         previous_end = latest_date.replace(day=1) - timedelta(days=1)
-        return DateWindow(
-            previous_end.replace(day=1), previous_end, [], True, False, None, relative_count
-        )
+        return make(previous_end.replace(day=1), previous_end, [], True, False, None)
 
     names = "|".join(sorted(_MONTH_ALIASES, key=len, reverse=True))
     month_match = re.search(rf"\b({names})\b(?:\s+(20\d{{2}}))?", q, re.IGNORECASE)
@@ -198,5 +218,5 @@ def date_window(question: str, games: list[Game], latest_date: date | None) -> D
                     start, end = first_game, start - timedelta(days=1)
                 elif re.search(r"\bfrom\b", prefix):
                     end = latest_date or end
-                return DateWindow(start, end, [], True, False, month, relative_count)
-    return DateWindow(None, None, [], explicit, False, None, relative_count)
+                return make(start, end, [], True, False, month)
+    return make(None, None, [], explicit, False, None)
