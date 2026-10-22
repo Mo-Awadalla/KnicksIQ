@@ -1,5 +1,5 @@
 {
-  "measured_at": "2026-10-22T14:54:04+00:00",
+  "measured_at": "2026-10-22T15:13:16+00:00",
   "model": "deepseek-v4.1-flash",
   "records": [
     "docs/release-evidence/llm-primary-20261021/reviewer/head-units.jsonl"
@@ -11,31 +11,31 @@
     "model_requested": "deepseek-v4.1-flash",
     "max_tokens": 3000,
     "observed_max_tokens": {
-      "3000": 64
+      "3000": 58
     },
     "requested_models": {
-      "deepseek-v4.1-flash": 64
+      "deepseek-v4.1-flash": 58
     },
     "served_models": {
-      "deepseek-v4.1-flash": 64
+      "deepseek-v4.1-flash": 58
     },
     "providers": {
-      "null": 64
+      "null": 58
     },
     "protocols": {
-      "chat": 64
+      "chat": 58
     },
-    "calls": 64,
-    "cost_usd": 0.059632,
-    "cost_per_call": 0.000932,
+    "calls": 58,
+    "cost_usd": 0.05358,
+    "cost_per_call": 0.000924,
     "call_latency_ms": {
-      "p50": 2618.4,
-      "p95": 3878.8,
-      "samples": 64
+      "p50": 2556.5,
+      "p95": 4749.9,
+      "samples": 58
     },
     "outcomes": {
-      "accepted": 30,
-      "verdict_rejected": 34
+      "accepted": 28,
+      "verdict_rejected": 30
     },
     "retried_trials": 0
   },
@@ -147,15 +147,21 @@
       },
       {
         "case_id": "record_swap_season",
-        "gate_issues": []
+        "gate_issues": [
+          "span 1 states the record 32-69 with wins and losses reversed"
+        ]
       },
       {
         "case_id": "record_swap_last_five",
-        "gate_issues": []
+        "gate_issues": [
+          "span 1 states the record 1-4 with wins and losses reversed"
+        ]
       },
       {
         "case_id": "record_swap_january",
-        "gate_issues": []
+        "gate_issues": [
+          "span 1 states the record 8-7 with wins and losses reversed"
+        ]
       },
       {
         "case_id": "unit_per_game_as_total",
@@ -212,17 +218,17 @@
       0.8794,
       1.0
     ],
-    "cost_usd": 0.024961,
-    "cost_per_call": 0.000891,
+    "cost_usd": 0.025473,
+    "cost_per_call": 0.00091,
     "reviewer_calls": 28,
     "latency_ms": {
-      "p50": 2814,
-      "p95": 3749,
+      "p50": 2257,
+      "p95": 3774,
       "samples": 28
     },
     "call_latency_ms": {
-      "p50": 2813.7,
-      "p95": 3747.4,
+      "p50": 2256.6,
+      "p95": 3770.9,
       "samples": 28
     },
     "max_tokens": {
@@ -243,42 +249,42 @@
   },
   "mutations_summary": {
     "cases": 21,
-    "gate_rejected": 3,
+    "gate_rejected": 6,
     "trials_per_case": 2,
-    "observations": 36,
-    "accepted": 2,
-    "accept_rate": 0.0556,
+    "observations": 30,
+    "accepted": 0,
+    "accept_rate": 0.0,
     "wilson_95": [
-      0.0154,
-      0.1814
+      0.0,
+      0.1135
     ],
-    "cost_usd": 0.034672,
-    "cost_per_call": 0.000963,
-    "reviewer_calls": 36,
+    "cost_usd": 0.028107,
+    "cost_per_call": 0.000937,
+    "reviewer_calls": 30,
     "latency_ms": {
-      "p50": 2327,
-      "p95": 4741,
-      "samples": 36
+      "p50": 2975,
+      "p95": 4777,
+      "samples": 30
     },
     "call_latency_ms": {
-      "p50": 2326.8,
-      "p95": 4735.0,
-      "samples": 36
+      "p50": 2974.9,
+      "p95": 4776.0,
+      "samples": 30
     },
     "max_tokens": {
-      "3000": 36
+      "3000": 30
     },
     "protocols": {
-      "chat": 36
+      "chat": 30
     },
     "requested_models": {
-      "deepseek-v4.1-flash": 36
+      "deepseek-v4.1-flash": 30
     },
     "providers": {
-      "null": 36
+      "null": 30
     },
     "models": {
-      "deepseek-v4.1-flash": 36
+      "deepseek-v4.1-flash": 30
     }
   },
   "by_class": {
@@ -293,17 +299,17 @@
         0.0,
         0.3903
       ],
-      "cost_usd": 0.005043,
-      "cost_per_call": 0.00084,
+      "cost_usd": 0.004957,
+      "cost_per_call": 0.000826,
       "reviewer_calls": 6,
       "latency_ms": {
-        "p50": 2303,
-        "p95": 3098,
+        "p50": 2277,
+        "p95": 5285,
         "samples": 6
       },
       "call_latency_ms": {
-        "p50": 2302.4,
-        "p95": 3097.1,
+        "p50": 2276.0,
+        "p95": 5284.6,
         "samples": 6
       },
       "max_tokens": {
@@ -333,17 +339,17 @@
         0.0,
         0.3903
       ],
-      "cost_usd": 0.00587,
-      "cost_per_call": 0.000978,
+      "cost_usd": 0.005769,
+      "cost_per_call": 0.000962,
       "reviewer_calls": 6,
       "latency_ms": {
-        "p50": 2212,
-        "p95": 2537,
+        "p50": 2702,
+        "p95": 4777,
         "samples": 6
       },
       "call_latency_ms": {
-        "p50": 2211.5,
-        "p95": 2537.0,
+        "p50": 2701.0,
+        "p95": 4776.0,
         "samples": 6
       },
       "max_tokens": {
@@ -373,17 +379,17 @@
         0.0,
         0.3903
       ],
-      "cost_usd": 0.005014,
-      "cost_per_call": 0.000836,
+      "cost_usd": 0.00507,
+      "cost_per_call": 0.000845,
       "reviewer_calls": 6,
       "latency_ms": {
-        "p50": 2049,
-        "p95": 2686,
+        "p50": 2975,
+        "p95": 4751,
         "samples": 6
       },
       "call_latency_ms": {
-        "p50": 2048.1,
-        "p95": 2686.1,
+        "p50": 2974.9,
+        "p95": 4749.9,
         "samples": 6
       },
       "max_tokens": {
@@ -404,43 +410,30 @@
     },
     "wins_losses_swapped": {
       "cases": 3,
-      "gate_rejected": 0,
+      "gate_rejected": 3,
       "trials_per_case": 2,
-      "observations": 6,
-      "accepted": 2,
-      "accept_rate": 0.3333,
-      "wilson_95": [
-        0.0968,
-        0.7
-      ],
-      "cost_usd": 0.005952,
-      "cost_per_call": 0.000992,
-      "reviewer_calls": 6,
+      "observations": 0,
+      "accepted": 0,
+      "accept_rate": null,
+      "wilson_95": null,
+      "cost_usd": 0,
+      "cost_per_call": null,
+      "reviewer_calls": 0,
       "latency_ms": {
-        "p50": 2252,
-        "p95": 5419,
-        "samples": 6
+        "p50": null,
+        "p95": null,
+        "samples": 0
       },
       "call_latency_ms": {
-        "p50": 2251.7,
-        "p95": 5418.7,
-        "samples": 6
+        "p50": null,
+        "p95": null,
+        "samples": 0
       },
-      "max_tokens": {
-        "3000": 6
-      },
-      "protocols": {
-        "chat": 6
-      },
-      "requested_models": {
-        "deepseek-v4.1-flash": 6
-      },
-      "providers": {
-        "null": 6
-      },
-      "models": {
-        "deepseek-v4.1-flash": 6
-      }
+      "max_tokens": {},
+      "protocols": {},
+      "requested_models": {},
+      "providers": {},
+      "models": {}
     },
     "per_game_total_confusion": {
       "cases": 3,
@@ -453,17 +446,17 @@
         0.0,
         0.3903
       ],
-      "cost_usd": 0.005773,
-      "cost_per_call": 0.000962,
+      "cost_usd": 0.005508,
+      "cost_per_call": 0.000918,
       "reviewer_calls": 6,
       "latency_ms": {
-        "p50": 3184,
-        "p95": 3650,
+        "p50": 2659,
+        "p95": 3616,
         "samples": 6
       },
       "call_latency_ms": {
-        "p50": 3183.5,
-        "p95": 3649.2,
+        "p50": 2658.7,
+        "p95": 3615.6,
         "samples": 6
       },
       "max_tokens": {
@@ -493,17 +486,17 @@
         0.0,
         0.3903
       ],
-      "cost_usd": 0.007021,
-      "cost_per_call": 0.00117,
+      "cost_usd": 0.006803,
+      "cost_per_call": 0.001134,
       "reviewer_calls": 6,
       "latency_ms": {
-        "p50": 2359,
-        "p95": 4741,
+        "p50": 3536,
+        "p95": 4574,
         "samples": 6
       },
       "call_latency_ms": {
-        "p50": 2356.9,
-        "p95": 4735.0,
+        "p50": 3534.0,
+        "p95": 4561.4,
         "samples": 6
       },
       "max_tokens": {
@@ -550,13 +543,13 @@
       "models": {}
     }
   },
-  "reviewer_calls": 64,
-  "cost_usd": 0.059632,
+  "reviewer_calls": 58,
+  "cost_usd": 0.05358,
   "providers": {
-    "null": 64
+    "null": 58
   },
   "models": {
-    "deepseek-v4.1-flash": 64
+    "deepseek-v4.1-flash": 58
   },
   "controls": [
     {
@@ -571,8 +564,8 @@
           "causes": [],
           "error": null,
           "retried": false,
-          "cost_usd": 0.0009738,
-          "latency_ms": 3248,
+          "cost_usd": 0.0009762,
+          "latency_ms": 2200,
           "calls": [
             {
               "provider": null,
@@ -581,19 +574,19 @@
               "requested_model": "deepseek-v4.1-flash",
               "protocol": "chat",
               "max_tokens": 3000,
-              "cost_usd": 0.0009738,
+              "cost_usd": 0.0009762,
               "prompt_tokens": 1870,
-              "completion_tokens": 344,
+              "completion_tokens": 346,
               "finish_reason": "stop",
-              "latency_ms": 3244.6,
-              "ttfb_ms": 3244.4
+              "latency_ms": 2196.1,
+              "ttfb_ms": 2195.7
             }
           ],
           "review": {
             "assertions": [
               {
                 "text": "In the available 2025-26 archive, the Knicks went 69-32 across 101 games.",
-                "assertion_type": "factual",
+                "assertion_type": "interpretation",
                 "verdict": "supported",
                 "offending_text": null,
                 "supporting_claim_ids": [
@@ -604,7 +597,7 @@
                   "calculation:976625c44907bbf175677eaaa76535f3269e0bc176cd449af208533d1d743af4",
                   "calculation:f3c584256b27eb06be985e7d359c19bab4db8734a48149a62264896c7c2539f9"
                 ],
-                "reason": "Claims confirm 69 wins and 32 losses over 101 archived games."
+                "reason": "Claims give 69 wins and 32 losses over 101 archived games."
               }
             ],
             "follow_up_reviews": [
@@ -613,14 +606,14 @@
                 "verdict": "supported",
                 "supporting_claim_ids": [],
                 "supporting_evidence_ids": [],
-                "reason": "Margin is an available team metric in capabilities."
+                "reason": "Team margin metric exists in capabilities for this season."
               },
               {
                 "text": "How many points did the Knicks score in total this season?",
                 "verdict": "supported",
                 "supporting_claim_ids": [],
                 "supporting_evidence_ids": [],
-                "reason": "Points is an available team metric in capabilities."
+                "reason": "Points is a supported team metric in the archive."
               }
             ]
           },
@@ -632,8 +625,8 @@
           "causes": [],
           "error": null,
           "retried": false,
-          "cost_usd": 0.0008826,
-          "latency_ms": 2695,
+          "cost_usd": 0.0008886,
+          "latency_ms": 2836,
           "calls": [
             {
               "provider": null,
@@ -642,12 +635,12 @@
               "requested_model": "deepseek-v4.1-flash",
               "protocol": "chat",
               "max_tokens": 3000,
-              "cost_usd": 0.0008826,
+              "cost_usd": 0.0008886,
               "prompt_tokens": 1870,
-              "completion_tokens": 268,
+              "completion_tokens": 273,
               "finish_reason": "stop",
-              "latency_ms": 2694.2,
-              "ttfb_ms": 2694.0
+              "latency_ms": 2835.3,
+              "ttfb_ms": 2834.9
             }
           ],
           "review": {
@@ -662,7 +655,7 @@
                   "claim:755cd7abc5d4380efd7d5e411145b32485817ed483eaa2b570e3a36b0c03094c"
                 ],
                 "supporting_evidence_ids": [],
-                "reason": "Claims give 69 wins, 32 losses over 101 archived games."
+                "reason": "Claims show 69 wins and 32 losses over 101 archived games."
               }
             ],
             "follow_up_reviews": [
@@ -671,14 +664,14 @@
                 "verdict": "supported",
                 "supporting_claim_ids": [],
                 "supporting_evidence_ids": [],
-                "reason": "Margin is an available team metric."
+                "reason": "Team margin is an available team metric."
               },
               {
                 "text": "How many points did the Knicks score in total this season?",
                 "verdict": "supported",
                 "supporting_claim_ids": [],
                 "supporting_evidence_ids": [],
-                "reason": "Points is an available team metric."
+                "reason": "Points is an available metric for the Knicks."
               }
             ]
           },
@@ -698,8 +691,8 @@
           "causes": [],
           "error": null,
           "retried": false,
-          "cost_usd": 0.0008865,
-          "latency_ms": 3173,
+          "cost_usd": 0.0008757,
+          "latency_ms": 2396,
           "calls": [
             {
               "provider": null,
@@ -708,12 +701,12 @@
               "requested_model": "deepseek-v4.1-flash",
               "protocol": "chat",
               "max_tokens": 3000,
-              "cost_usd": 0.0008865,
+              "cost_usd": 0.0008757,
               "prompt_tokens": 1631,
-              "completion_tokens": 331,
+              "completion_tokens": 322,
               "finish_reason": "stop",
-              "latency_ms": 3172.3,
-              "ttfb_ms": 3171.9
+              "latency_ms": 2395.2,
+              "ttfb_ms": 2395.0
             }
           ],
           "review": {
@@ -729,7 +722,7 @@
                 "supporting_evidence_ids": [
                   "calculation:292029a0a3551d8af1d97e770afa170bbfe6024c97fe6925fec38e3c77d2ca76"
                 ],
-                "reason": "Claim states Knicks 11750 points over 101 archived games."
+                "reason": "Claim confirms Knicks points total over 101 archived games."
               }
             ],
             "follow_up_reviews": [
@@ -740,14 +733,14 @@
                   "claim:f9b34fee66aed1e531b68052b5b1c7bc8f66127dca6d755e6b1c6c9b07bde8c4"
                 ],
                 "supporting_evidence_ids": [],
-                "reason": "Points and games are available; average is computable."
+                "reason": "Points and games available enable average computation."
               },
               {
                 "text": "How many total points did the Knicks allow (margin context)?",
                 "verdict": "unsupported",
                 "supporting_claim_ids": [],
                 "supporting_evidence_ids": [],
-                "reason": "Opponent points allowed metric is not in capabilities metrics list."
+                "reason": "Archive lacks opponent points-allowed totals."
               }
             ]
           },
@@ -759,8 +752,8 @@
           "causes": [],
           "error": null,
           "retried": false,
-          "cost_usd": 0.0007905,
-          "latency_ms": 2853,
+          "cost_usd": 0.0009249,
+          "latency_ms": 3138,
           "calls": [
             {
               "provider": null,
@@ -769,12 +762,12 @@
               "requested_model": "deepseek-v4.1-flash",
               "protocol": "chat",
               "max_tokens": 3000,
-              "cost_usd": 0.0007905,
+              "cost_usd": 0.0009249,
               "prompt_tokens": 1631,
-              "completion_tokens": 251,
+              "completion_tokens": 363,
               "finish_reason": "stop",
-              "latency_ms": 2833.0,
-              "ttfb_ms": 2832.7
+              "latency_ms": 3137.1,
+              "ttfb_ms": 3136.6
             }
           ],
           "review": {
@@ -790,23 +783,27 @@
                 "supporting_evidence_ids": [
                   "calculation:292029a0a3551d8af1d97e770afa170bbfe6024c97fe6925fec38e3c77d2ca76"
                 ],
-                "reason": "Claim states Knicks 11750 points over 101 archived games."
+                "reason": "Claim supports 11750 points over 101 archived games."
               }
             ],
             "follow_up_reviews": [
               {
                 "text": "What was the Knicks' average points per game?",
                 "verdict": "supported",
-                "supporting_claim_ids": [],
-                "supporting_evidence_ids": [],
-                "reason": "Archive has points and game counts to compute average."
+                "supporting_claim_ids": [
+                  "claim:f9b34fee66aed1e531b68052b5b1c7bc8f66127dca6d755e6b1c6c9b07bde8c4"
+                ],
+                "supporting_evidence_ids": [
+                  "calculation:292029a0a3551d8af1d97e770afa170bbfe6024c97fe6925fec38e3c77d2ca76"
+                ],
+                "reason": "Derivable from points total and game count."
               },
               {
                 "text": "How many total points did the Knicks allow (margin context)?",
-                "verdict": "insufficient_evidence",
+                "verdict": "supported",
                 "supporting_claim_ids": [],
                 "supporting_evidence_ids": [],
-                "reason": "Opponent points allowed not clearly available in archive."
+                "reason": "Margin and points allowed are within team metrics scope."
               }
             ]
           },
@@ -826,8 +823,8 @@
           "causes": [],
           "error": null,
           "retried": false,
-          "cost_usd": 0.0007818,
-          "latency_ms": 2015,
+          "cost_usd": 0.0008226,
+          "latency_ms": 2718,
           "calls": [
             {
               "provider": null,
@@ -836,71 +833,12 @@
               "requested_model": "deepseek-v4.1-flash",
               "protocol": "chat",
               "max_tokens": 3000,
-              "cost_usd": 0.0007818,
+              "cost_usd": 0.0008226,
               "prompt_tokens": 1638,
-              "completion_tokens": 242,
+              "completion_tokens": 276,
               "finish_reason": "stop",
-              "latency_ms": 2014.6,
-              "ttfb_ms": 2014.4
-            }
-          ],
-          "review": {
-            "assertions": [
-              {
-                "text": "The Knicks averaged 116.34 points per game across 101 archived games in the 2025-26 release.",
-                "assertion_type": "factual",
-                "verdict": "supported",
-                "offending_text": null,
-                "supporting_claim_ids": [
-                  "claim:deafd8c4fbb345abf20ac4820b893127789e3a5b6339c1a6425567c7590cbe1c"
-                ],
-                "supporting_evidence_ids": [
-                  "calculation:d993ae6cd86202ac698d33453fb7b54ea7c565db4bdb5d356719825cd640d79a"
-                ],
-                "reason": "Claim states NYK points per game 116.34 over 101 archived games."
-              }
-            ],
-            "follow_up_reviews": [
-              {
-                "text": "What was the Knicks' average margin per game?",
-                "verdict": "supported",
-                "supporting_claim_ids": [],
-                "supporting_evidence_ids": [],
-                "reason": "Margin is a supported team metric in the archive."
-              },
-              {
-                "text": "How many games did the Knicks win and lose in the archive?",
-                "verdict": "supported",
-                "supporting_claim_ids": [],
-                "supporting_evidence_ids": [],
-                "reason": "Wins and losses are supported team metrics."
-              }
-            ]
-          },
-          "trial": 0
-        },
-        {
-          "outcome": "accepted",
-          "accepted": true,
-          "causes": [],
-          "error": null,
-          "retried": false,
-          "cost_usd": 0.0008202,
-          "latency_ms": 2915,
-          "calls": [
-            {
-              "provider": null,
-              "model": "deepseek-v4.1-flash",
-              "served_model": "deepseek-v4.1-flash",
-              "requested_model": "deepseek-v4.1-flash",
-              "protocol": "chat",
-              "max_tokens": 3000,
-              "cost_usd": 0.0008202,
-              "prompt_tokens": 1638,
-              "completion_tokens": 274,
-              "finish_reason": "stop",
-              "latency_ms": 2914.8,
-              "ttfb_ms": 2914.7
+              "latency_ms": 2717.3,
+              "ttfb_ms": 2717.0
             }
           ],
           "review": {
@@ -917,6 +855,63 @@
                   "calculation:d993ae6cd86202ac698d33453fb7b54ea7c565db4bdb5d356719825cd640d79a"
                 ],
                 "reason": "Claim states Knicks points per game 116.34 over 101 archived games."
+              }
+            ],
+            "follow_up_reviews": [
+              {
+                "text": "What was the Knicks' average margin per game?",
+                "verdict": "supported",
+                "supporting_claim_ids": [],
+                "supporting_evidence_ids": [],
+                "reason": "Margin is a supported team metric in capabilities."
+              },
+              {
+                "text": "How many games did the Knicks win and lose in the archive?",
+                "verdict": "supported",
+                "supporting_claim_ids": [],
+                "supporting_evidence_ids": [],
+                "reason": "Wins and losses are supported team metrics in capabilities."
+              }
+            ]
+          },
+          "trial": 0
+        },
+        {
+          "outcome": "accepted",
+          "accepted": true,
+          "causes": [],
+          "error": null,
+          "retried": false,
+          "cost_usd": 0.0007722,
+          "latency_ms": 2449,
+          "calls": [
+            {
+              "provider": null,
+              "model": "deepseek-v4.1-flash",
+              "served_model": "deepseek-v4.1-flash",
+              "requested_model": "deepseek-v4.1-flash",
+              "protocol": "chat",
+              "max_tokens": 3000,
+              "cost_usd": 0.0007722,
+              "prompt_tokens": 1638,
+              "completion_tokens": 234,
+              "finish_reason": "stop",
+              "latency_ms": 2447.8,
+              "ttfb_ms": 2447.4
+            }
+          ],
+          "review": {
+            "assertions": [
+              {
+                "text": "The Knicks averaged 116.34 points per game across 101 archived games in the 2025-26 release.",
+                "assertion_type": "factual",
+                "verdict": "supported",
+                "offending_text": null,
+                "supporting_claim_ids": [
+                  "claim:deafd8c4fbb345abf20ac4820b893127789e3a5b6339c1a6425567c7590cbe1c"
+                ],
+                "supporting_evidence_ids": [],
+                "reason": "Claim states Knicks points per game over 101 archived games."
               }
             ],
             "follow_up_reviews": [
@@ -952,8 +947,8 @@
           "causes": [],
           "error": null,
           "retried": false,
-          "cost_usd": 0.0007764,
-          "latency_ms": 2353,
+          "cost_usd": 0.0007752,
+          "latency_ms": 1919,
           "calls": [
             {
               "provider": null,
@@ -962,12 +957,12 @@
               "requested_model": "deepseek-v4.1-flash",
               "protocol": "chat",
               "max_tokens": 3000,
-              "cost_usd": 0.0007764,
+              "cost_usd": 0.0007752,
               "prompt_tokens": 1620,
-              "completion_tokens": 242,
+              "completion_tokens": 241,
               "finish_reason": "stop",
-              "latency_ms": 2352.8,
-              "ttfb_ms": 2352.6
+              "latency_ms": 1918.0,
+              "ttfb_ms": 1917.7
             }
           ],
           "review": {
@@ -981,7 +976,7 @@
                   "claim:848e341e0d5b5a56add6d9677f544187e4754afa6e4d3768bf2c668ffd0d3c87"
                 ],
                 "supporting_evidence_ids": [],
-                "reason": "Claim states Knicks margin per game 7.94 over 101 archived games."
+                "reason": "Claim gives Knicks margin per game over 101 archived games."
               }
             ],
             "follow_up_reviews": [
@@ -990,14 +985,14 @@
                 "verdict": "supported",
                 "supporting_claim_ids": [],
                 "supporting_evidence_ids": [],
-                "reason": "Team points metric supported by capabilities."
+                "reason": "Team points metric and game scores are in capabilities."
               },
               {
                 "text": "How many wins and losses did the Knicks have in the archive?",
                 "verdict": "supported",
                 "supporting_claim_ids": [],
                 "supporting_evidence_ids": [],
-                "reason": "Wins and losses are supported team metrics."
+                "reason": "Wins and losses are available team metrics."
               }
             ]
           },
@@ -1009,8 +1004,8 @@
           "causes": [],
           "error": null,
           "retried": false,
-          "cost_usd": 0.0007512,
-          "latency_ms": 2700,
+          "cost_usd": 0.0007752,
+          "latency_ms": 2175,
           "calls": [
             {
               "provider": null,
@@ -1019,12 +1014,12 @@
               "requested_model": "deepseek-v4.1-flash",
               "protocol": "chat",
               "max_tokens": 3000,
-              "cost_usd": 0.0007512,
+              "cost_usd": 0.0007752,
               "prompt_tokens": 1620,
-              "completion_tokens": 221,
+              "completion_tokens": 241,
               "finish_reason": "stop",
-              "latency_ms": 2699.5,
-              "ttfb_ms": 2699.3
+              "latency_ms": 2174.0,
+              "ttfb_ms": 2173.6
             }
           ],
           "review": {
@@ -1038,7 +1033,7 @@
                   "claim:848e341e0d5b5a56add6d9677f544187e4754afa6e4d3768bf2c668ffd0d3c87"
                 ],
                 "supporting_evidence_ids": [],
-                "reason": "Claim states Knicks margin per game 7.94 over 101 archived games in 2025-26."
+                "reason": "Claim states Knicks margin per game over 101 archived games."
               }
             ],
             "follow_up_reviews": [
@@ -1047,14 +1042,14 @@
                 "verdict": "supported",
                 "supporting_claim_ids": [],
                 "supporting_evidence_ids": [],
-                "reason": "Team points metric is supported by capabilities and archive."
+                "reason": "Team points are an available team metric in scope."
               },
               {
                 "text": "How many wins and losses did the Knicks have in the archive?",
                 "verdict": "supported",
                 "supporting_claim_ids": [],
                 "supporting_evidence_ids": [],
-                "reason": "Wins and losses are supported team metrics in capabilities."
+                "reason": "Wins and losses are available team metrics."
               }
             ]
           },
@@ -1074,8 +1069,8 @@
           "causes": [],
           "error": null,
           "retried": false,
-          "cost_usd": 0.0007839,
-          "latency_ms": 2113,
+          "cost_usd": 0.0008367,
+          "latency_ms": 2257,
           "calls": [
             {
               "provider": null,
@@ -1084,69 +1079,12 @@
               "requested_model": "deepseek-v4.1-flash",
               "protocol": "chat",
               "max_tokens": 3000,
-              "cost_usd": 0.0007839,
+              "cost_usd": 0.0008367,
               "prompt_tokens": 1693,
-              "completion_tokens": 230,
+              "completion_tokens": 274,
               "finish_reason": "stop",
-              "latency_ms": 2112.7,
-              "ttfb_ms": 2112.5
-            }
-          ],
-          "review": {
-            "assertions": [
-              {
-                "text": "The Knicks won 37 home games in the available 2025-26 archive.",
-                "assertion_type": "factual",
-                "verdict": "supported",
-                "offending_text": null,
-                "supporting_claim_ids": [
-                  "claim:b10b251d937dc4ee2cfd8206cef9737c50e452c8891f9f95f23a8f4c90db8a29"
-                ],
-                "supporting_evidence_ids": [],
-                "reason": "Claim states 37 Knicks home wins in archived 2025-26 games."
-              }
-            ],
-            "follow_up_reviews": [
-              {
-                "text": "How many home games did the Knicks lose?",
-                "verdict": "supported",
-                "supporting_claim_ids": [],
-                "supporting_evidence_ids": [],
-                "reason": "Archive has game scores enabling home loss counts."
-              },
-              {
-                "text": "How many total points did the Knicks score in home wins?",
-                "verdict": "supported",
-                "supporting_claim_ids": [],
-                "supporting_evidence_ids": [],
-                "reason": "Points metric and home win filters are available."
-              }
-            ]
-          },
-          "trial": 0
-        },
-        {
-          "outcome": "accepted",
-          "accepted": true,
-          "causes": [],
-          "error": null,
-          "retried": false,
-          "cost_usd": 0.0007947,
-          "latency_ms": 3260,
-          "calls": [
-            {
-              "provider": null,
-              "model": "deepseek-v4.1-flash",
-              "served_model": "deepseek-v4.1-flash",
-              "requested_model": "deepseek-v4.1-flash",
-              "protocol": "chat",
-              "max_tokens": 3000,
-              "cost_usd": 0.0007947,
-              "prompt_tokens": 1693,
-              "completion_tokens": 239,
-              "finish_reason": "stop",
-              "latency_ms": 3258.8,
-              "ttfb_ms": 3258.5
+              "latency_ms": 2256.6,
+              "ttfb_ms": 2256.2
             }
           ],
           "review": {
@@ -1162,7 +1100,7 @@
                 "supporting_evidence_ids": [
                   "calculation:f9d50c9be6db51038f3018f9b73645a3536b2959804ed04e7d1b03501b272886"
                 ],
-                "reason": "Claim gives 37 Knicks home wins in archived 2025-26 games."
+                "reason": "Claim reports 37 Knicks home wins in 2025-26 archive."
               }
             ],
             "follow_up_reviews": [
@@ -1171,14 +1109,73 @@
                 "verdict": "supported",
                 "supporting_claim_ids": [],
                 "supporting_evidence_ids": [],
-                "reason": "Archive tracks wins and losses for home games."
+                "reason": "Archive has home_away and game_result filters for losses."
               },
               {
                 "text": "How many total points did the Knicks score in home wins?",
                 "verdict": "supported",
                 "supporting_claim_ids": [],
                 "supporting_evidence_ids": [],
-                "reason": "Team points metric and home win filters are available."
+                "reason": "Points metric and home win scope are available in archive."
+              }
+            ]
+          },
+          "trial": 0
+        },
+        {
+          "outcome": "accepted",
+          "accepted": true,
+          "causes": [],
+          "error": null,
+          "retried": false,
+          "cost_usd": 0.0008271,
+          "latency_ms": 2241,
+          "calls": [
+            {
+              "provider": null,
+              "model": "deepseek-v4.1-flash",
+              "served_model": "deepseek-v4.1-flash",
+              "requested_model": "deepseek-v4.1-flash",
+              "protocol": "chat",
+              "max_tokens": 3000,
+              "cost_usd": 0.0008271,
+              "prompt_tokens": 1693,
+              "completion_tokens": 266,
+              "finish_reason": "stop",
+              "latency_ms": 2240.3,
+              "ttfb_ms": 2240.1
+            }
+          ],
+          "review": {
+            "assertions": [
+              {
+                "text": "The Knicks won 37 home games in the available 2025-26 archive.",
+                "assertion_type": "factual",
+                "verdict": "supported",
+                "offending_text": null,
+                "supporting_claim_ids": [
+                  "claim:b10b251d937dc4ee2cfd8206cef9737c50e452c8891f9f95f23a8f4c90db8a29"
+                ],
+                "supporting_evidence_ids": [
+                  "calculation:f9d50c9be6db51038f3018f9b73645a3536b2959804ed04e7d1b03501b272886"
+                ],
+                "reason": "Claim shows 37 Knicks home wins in archive."
+              }
+            ],
+            "follow_up_reviews": [
+              {
+                "text": "How many home games did the Knicks lose?",
+                "verdict": "supported",
+                "supporting_claim_ids": [],
+                "supporting_evidence_ids": [],
+                "reason": "Home game losses derivable from same archive scope."
+              },
+              {
+                "text": "How many total points did the Knicks score in home wins?",
+                "verdict": "supported",
+                "supporting_claim_ids": [],
+                "supporting_evidence_ids": [],
+                "reason": "Points metric and home wins scope available in archive."
               }
             ]
           },
@@ -1198,8 +1195,8 @@
           "causes": [],
           "error": null,
           "retried": false,
-          "cost_usd": 0.0007785,
-          "latency_ms": 2606,
+          "cost_usd": 0.0007725,
+          "latency_ms": 2026,
           "calls": [
             {
               "provider": null,
@@ -1208,71 +1205,12 @@
               "requested_model": "deepseek-v4.1-flash",
               "protocol": "chat",
               "max_tokens": 3000,
-              "cost_usd": 0.0007785,
+              "cost_usd": 0.0007725,
               "prompt_tokens": 1675,
-              "completion_tokens": 230,
+              "completion_tokens": 225,
               "finish_reason": "stop",
-              "latency_ms": 2604.9,
-              "ttfb_ms": 2604.7
-            }
-          ],
-          "review": {
-            "assertions": [
-              {
-                "text": "The Knicks won 32 road games in the available 2025-26 archive.",
-                "assertion_type": "interpretation",
-                "verdict": "supported",
-                "offending_text": null,
-                "supporting_claim_ids": [
-                  "claim:0be31ae07e2e8a524a3b2a87a17f10abe5034cc39e8d0f036ffa839a8b81365b"
-                ],
-                "supporting_evidence_ids": [
-                  "calculation:04c05e12c8d68d82a1a573484383dfd77844e48533b396dc732bd46243176154"
-                ],
-                "reason": "Claim states 32 road wins in the archived release."
-              }
-            ],
-            "follow_up_reviews": [
-              {
-                "text": "How many road games did the Knicks lose?",
-                "verdict": "supported",
-                "supporting_claim_ids": [],
-                "supporting_evidence_ids": [],
-                "reason": "Archive supports road losses via game scores and team metrics."
-              },
-              {
-                "text": "What was the Knicks' average margin in road wins?",
-                "verdict": "supported",
-                "supporting_claim_ids": [],
-                "supporting_evidence_ids": [],
-                "reason": "Margin is a supported team metric for road wins."
-              }
-            ]
-          },
-          "trial": 0
-        },
-        {
-          "outcome": "accepted",
-          "accepted": true,
-          "causes": [],
-          "error": null,
-          "retried": false,
-          "cost_usd": 0.0007689,
-          "latency_ms": 2441,
-          "calls": [
-            {
-              "provider": null,
-              "model": "deepseek-v4.1-flash",
-              "served_model": "deepseek-v4.1-flash",
-              "requested_model": "deepseek-v4.1-flash",
-              "protocol": "chat",
-              "max_tokens": 3000,
-              "cost_usd": 0.0007689,
-              "prompt_tokens": 1675,
-              "completion_tokens": 222,
-              "finish_reason": "stop",
-              "latency_ms": 2441.0,
-              "ttfb_ms": 2440.8
+              "latency_ms": 2025.7,
+              "ttfb_ms": 2025.5
             }
           ],
           "review": {
@@ -1286,7 +1224,7 @@
                   "claim:0be31ae07e2e8a524a3b2a87a17f10abe5034cc39e8d0f036ffa839a8b81365b"
                 ],
                 "supporting_evidence_ids": [],
-                "reason": "Claim supports 32 away wins in the archive."
+                "reason": "Claim states 32 away wins in available archive."
               }
             ],
             "follow_up_reviews": [
@@ -1295,14 +1233,71 @@
                 "verdict": "supported",
                 "supporting_claim_ids": [],
                 "supporting_evidence_ids": [],
-                "reason": "Archive supports losses metric with away filter."
+                "reason": "Archive has away losses via wins/losses team metric."
               },
               {
                 "text": "What was the Knicks' average margin in road wins?",
                 "verdict": "supported",
                 "supporting_claim_ids": [],
                 "supporting_evidence_ids": [],
-                "reason": "Margin team metric available with away and win filters."
+                "reason": "Margin and away filters are within archive capabilities."
+              }
+            ]
+          },
+          "trial": 0
+        },
+        {
+          "outcome": "accepted",
+          "accepted": true,
+          "causes": [],
+          "error": null,
+          "retried": false,
+          "cost_usd": 0.0007761,
+          "latency_ms": 1643,
+          "calls": [
+            {
+              "provider": null,
+              "model": "deepseek-v4.1-flash",
+              "served_model": "deepseek-v4.1-flash",
+              "requested_model": "deepseek-v4.1-flash",
+              "protocol": "chat",
+              "max_tokens": 3000,
+              "cost_usd": 0.0007761,
+              "prompt_tokens": 1675,
+              "completion_tokens": 228,
+              "finish_reason": "stop",
+              "latency_ms": 1642.4,
+              "ttfb_ms": 1642.1
+            }
+          ],
+          "review": {
+            "assertions": [
+              {
+                "text": "The Knicks won 32 road games in the available 2025-26 archive.",
+                "assertion_type": "factual",
+                "verdict": "supported",
+                "offending_text": null,
+                "supporting_claim_ids": [
+                  "claim:0be31ae07e2e8a524a3b2a87a17f10abe5034cc39e8d0f036ffa839a8b81365b"
+                ],
+                "supporting_evidence_ids": [],
+                "reason": "Claim shows 32 road wins in 2025-26 archive."
+              }
+            ],
+            "follow_up_reviews": [
+              {
+                "text": "How many road games did the Knicks lose?",
+                "verdict": "supported",
+                "supporting_claim_ids": [],
+                "supporting_evidence_ids": [],
+                "reason": "Team losses and away filter are within archive capabilities."
+              },
+              {
+                "text": "What was the Knicks' average margin in road wins?",
+                "verdict": "supported",
+                "supporting_claim_ids": [],
+                "supporting_evidence_ids": [],
+                "reason": "Margin and away game scores are available in archive."
               }
             ]
           },
@@ -1322,8 +1317,8 @@
           "causes": [],
           "error": null,
           "retried": false,
-          "cost_usd": 0.0007839,
-          "latency_ms": 2797,
+          "cost_usd": 0.0007515,
+          "latency_ms": 2055,
           "calls": [
             {
               "provider": null,
@@ -1332,12 +1327,12 @@
               "requested_model": "deepseek-v4.1-flash",
               "protocol": "chat",
               "max_tokens": 3000,
-              "cost_usd": 0.0007839,
+              "cost_usd": 0.0007515,
               "prompt_tokens": 1585,
-              "completion_tokens": 257,
+              "completion_tokens": 230,
               "finish_reason": "stop",
-              "latency_ms": 2796.6,
-              "ttfb_ms": 2796.4
+              "latency_ms": 2054.4,
+              "ttfb_ms": 2054.2
             }
           ],
           "review": {
@@ -1353,7 +1348,7 @@
                 "supporting_evidence_ids": [
                   "calculation:f3c584256b27eb06be985e7d359c19bab4db8734a48149a62264896c7c2539f9"
                 ],
-                "reason": "Claim states Knicks had 32 losses over 101 archived games."
+                "reason": "Claim states 32 Knicks losses over 101 archived games, matching answer."
               }
             ],
             "follow_up_reviews": [
@@ -1362,14 +1357,14 @@
                 "verdict": "supported",
                 "supporting_claim_ids": [],
                 "supporting_evidence_ids": [],
-                "reason": "Wins metric available for Knicks in scope."
+                "reason": "Wins is a supported team metric in the archive."
               },
               {
                 "text": "What was the Knicks' total point margin?",
                 "verdict": "supported",
                 "supporting_claim_ids": [],
                 "supporting_evidence_ids": [],
-                "reason": "Margin is a supported team metric."
+                "reason": "Margin is a supported team metric in the archive."
               }
             ]
           },
@@ -1382,7 +1377,7 @@
           "error": null,
           "retried": false,
           "cost_usd": 0.0007455,
-          "latency_ms": 2652,
+          "latency_ms": 1957,
           "calls": [
             {
               "provider": null,
@@ -1395,8 +1390,8 @@
               "prompt_tokens": 1585,
               "completion_tokens": 225,
               "finish_reason": "stop",
-              "latency_ms": 2651.6,
-              "ttfb_ms": 2651.4
+              "latency_ms": 1956.4,
+              "ttfb_ms": 1956.3
             }
           ],
           "review": {
@@ -1412,7 +1407,7 @@
                 "supporting_evidence_ids": [
                   "calculation:f3c584256b27eb06be985e7d359c19bab4db8734a48149a62264896c7c2539f9"
                 ],
-                "reason": "Claim states 32 losses over 101 archived Knicks games, matching wording."
+                "reason": "Claim states 32 losses over 101 archived games for NYK."
               }
             ],
             "follow_up_reviews": [
@@ -1421,14 +1416,14 @@
                 "verdict": "supported",
                 "supporting_claim_ids": [],
                 "supporting_evidence_ids": [],
-                "reason": "Team wins metric is available in capabilities."
+                "reason": "Wins is an available team metric in scope."
               },
               {
                 "text": "What was the Knicks' total point margin?",
                 "verdict": "supported",
                 "supporting_claim_ids": [],
                 "supporting_evidence_ids": [],
-                "reason": "Team margin metric and points are available."
+                "reason": "Margin is an available team metric in scope."
               }
             ]
           },
@@ -1448,8 +1443,73 @@
           "causes": [],
           "error": null,
           "retried": false,
+          "cost_usd": 0.0012171,
+          "latency_ms": 2708,
+          "calls": [
+            {
+              "provider": null,
+              "model": "deepseek-v4.1-flash",
+              "served_model": "deepseek-v4.1-flash",
+              "requested_model": "deepseek-v4.1-flash",
+              "protocol": "chat",
+              "max_tokens": 3000,
+              "cost_usd": 0.0012171,
+              "prompt_tokens": 2157,
+              "completion_tokens": 475,
+              "finish_reason": "stop",
+              "latency_ms": 2707.6,
+              "ttfb_ms": 2707.4
+            }
+          ],
+          "review": {
+            "assertions": [
+              {
+                "text": "In the available 2025-26 archive, the Knicks' biggest win by margin is a 54-point win (120 points scored, 0 losses in that filtered set).",
+                "assertion_type": "interpretation",
+                "verdict": "supported",
+                "offending_text": null,
+                "supporting_claim_ids": [
+                  "claim:9c6bc3cf1f0903a822350f7d40a1d539d65ff5144e6a4fa92d78d55a21fe8a29",
+                  "claim:0c71e5955cc8971472e2e5b2577e320e15b0613d70939cb1913da57f69af1792",
+                  "claim:ef0e0d89e43e6acc322351898526ad6019e9a54a343122f8299a7a0baad59d36"
+                ],
+                "supporting_evidence_ids": [
+                  "2025-26.20260928.1:game:44"
+                ],
+                "reason": "Margin, points, and losses match archived game claim data."
+              }
+            ],
+            "follow_up_reviews": [
+              {
+                "text": "What was the Knicks' biggest loss by margin?",
+                "verdict": "insufficient_evidence",
+                "supporting_claim_ids": [],
+                "supporting_evidence_ids": [],
+                "reason": "No archived loss data provided to support the query."
+              },
+              {
+                "text": "How many points did the Knicks score in that game?",
+                "verdict": "supported",
+                "supporting_claim_ids": [
+                  "claim:0c71e5955cc8971472e2e5b2577e320e15b0613d70939cb1913da57f69af1792"
+                ],
+                "supporting_evidence_ids": [
+                  "2025-26.20260928.1:game:44"
+                ],
+                "reason": "Points total for that game is supported by archived claim."
+              }
+            ]
+          },
+          "trial": 0
+        },
+        {
+          "outcome": "accepted",
+          "accepted": true,
+          "causes": [],
+          "error": null,
+          "retried": false,
           "cost_usd": 0.0011331,
-          "latency_ms": 3105,
+          "latency_ms": 2205,
           "calls": [
             {
               "provider": null,
@@ -1462,8 +1522,8 @@
               "prompt_tokens": 2157,
               "completion_tokens": 405,
               "finish_reason": "stop",
-              "latency_ms": 3104.9,
-              "ttfb_ms": 3104.7
+              "latency_ms": 2204.9,
+              "ttfb_ms": 2204.7
             }
           ],
           "review": {
@@ -1481,16 +1541,16 @@
                 "supporting_evidence_ids": [
                   "2025-26.20260928.1:game:44"
                 ],
-                "reason": "Margin 54, points 120, zero losses backed by claims and game evidence."
+                "reason": "Margin 54, points 120, and zero losses match the cited claims."
               }
             ],
             "follow_up_reviews": [
               {
                 "text": "What was the Knicks' biggest loss by margin?",
-                "verdict": "supported",
+                "verdict": "insufficient_evidence",
                 "supporting_claim_ids": [],
                 "supporting_evidence_ids": [],
-                "reason": "Archive holds game scores and margin; loss query is answerable."
+                "reason": "Archive shows no Knicks losses in this filtered set."
               },
               {
                 "text": "How many points did the Knicks score in that game?",
@@ -1501,72 +1561,7 @@
                 "supporting_evidence_ids": [
                   "2025-26.20260928.1:game:44"
                 ],
-                "reason": "Points for that game available in claims and evidence."
-              }
-            ]
-          },
-          "trial": 0
-        },
-        {
-          "outcome": "accepted",
-          "accepted": true,
-          "causes": [],
-          "error": null,
-          "retried": false,
-          "cost_usd": 0.0011295,
-          "latency_ms": 3820,
-          "calls": [
-            {
-              "provider": null,
-              "model": "deepseek-v4.1-flash",
-              "served_model": "deepseek-v4.1-flash",
-              "requested_model": "deepseek-v4.1-flash",
-              "protocol": "chat",
-              "max_tokens": 3000,
-              "cost_usd": 0.0011295,
-              "prompt_tokens": 2157,
-              "completion_tokens": 402,
-              "finish_reason": "stop",
-              "latency_ms": 3820.0,
-              "ttfb_ms": 3819.8
-            }
-          ],
-          "review": {
-            "assertions": [
-              {
-                "text": "In the available 2025-26 archive, the Knicks' biggest win by margin is a 54-point win (120 points scored, 0 losses in that filtered set).",
-                "assertion_type": "interpretation",
-                "verdict": "supported",
-                "offending_text": null,
-                "supporting_claim_ids": [
-                  "claim:9c6bc3cf1f0903a822350f7d40a1d539d65ff5144e6a4fa92d78d55a21fe8a29",
-                  "claim:0c71e5955cc8971472e2e5b2577e320e15b0613d70939cb1913da57f69af1792",
-                  "claim:ef0e0d89e43e6acc322351898526ad6019e9a54a343122f8299a7a0baad59d36"
-                ],
-                "supporting_evidence_ids": [
-                  "2025-26.20260928.1:game:44"
-                ],
-                "reason": "Margin 54, points 120, zero losses all match claims scoped to wins."
-              }
-            ],
-            "follow_up_reviews": [
-              {
-                "text": "What was the Knicks' biggest loss by margin?",
-                "verdict": "supported",
-                "supporting_claim_ids": [],
-                "supporting_evidence_ids": [],
-                "reason": "Archive covers losses and margin team metrics."
-              },
-              {
-                "text": "How many points did the Knicks score in that game?",
-                "verdict": "supported",
-                "supporting_claim_ids": [
-                  "claim:0c71e5955cc8971472e2e5b2577e320e15b0613d70939cb1913da57f69af1792"
-                ],
-                "supporting_evidence_ids": [
-                  "2025-26.20260928.1:game:44"
-                ],
-                "reason": "Points for game 44 available via claims and evidence."
+                "reason": "Points total is available from the cited claim."
               }
             ]
           },
@@ -1586,8 +1581,8 @@
           "causes": [],
           "error": null,
           "retried": false,
-          "cost_usd": 0.0009444,
-          "latency_ms": 2178,
+          "cost_usd": 0.0009816,
+          "latency_ms": 1993,
           "calls": [
             {
               "provider": null,
@@ -1596,12 +1591,12 @@
               "requested_model": "deepseek-v4.1-flash",
               "protocol": "chat",
               "max_tokens": 3000,
-              "cost_usd": 0.0009444,
+              "cost_usd": 0.0009816,
               "prompt_tokens": 1880,
-              "completion_tokens": 317,
+              "completion_tokens": 348,
               "finish_reason": "stop",
-              "latency_ms": 2177.6,
-              "ttfb_ms": 2177.4
+              "latency_ms": 1992.2,
+              "ttfb_ms": 1992.0
             }
           ],
           "review": {
@@ -1619,7 +1614,7 @@
                   "calculation:80b4952927058e9d89f6df216670f86d20728746e324d05c9deb48c47d060ad7",
                   "calculation:0d82fecf467186c91ae453d29549937f59c40b02548a0944356961e8e13ae376"
                 ],
-                "reason": "Claims confirm 4 wins and 1 loss over 5 archived Knicks games."
+                "reason": "Claims state 4 wins and 1 loss over 5 archived Knicks games."
               }
             ],
             "follow_up_reviews": [
@@ -1628,14 +1623,14 @@
                 "verdict": "supported",
                 "supporting_claim_ids": [],
                 "supporting_evidence_ids": [],
-                "reason": "Margin is a listed team metric and games scope covers 5 games."
+                "reason": "Margin is an available team metric for the 5 archived games."
               },
               {
                 "text": "How many total points did the Knicks score over those 5 games?",
                 "verdict": "supported",
                 "supporting_claim_ids": [],
                 "supporting_evidence_ids": [],
-                "reason": "Points is a listed team metric within the 5-game scope."
+                "reason": "Points is an available team metric for the 5 archived games."
               }
             ]
           },
@@ -1647,8 +1642,8 @@
           "causes": [],
           "error": null,
           "retried": false,
-          "cost_usd": 0.0008796,
-          "latency_ms": 3448,
+          "cost_usd": 0.0008772,
+          "latency_ms": 2000,
           "calls": [
             {
               "provider": null,
@@ -1657,12 +1652,12 @@
               "requested_model": "deepseek-v4.1-flash",
               "protocol": "chat",
               "max_tokens": 3000,
-              "cost_usd": 0.0008796,
+              "cost_usd": 0.0008772,
               "prompt_tokens": 1880,
-              "completion_tokens": 263,
+              "completion_tokens": 261,
               "finish_reason": "stop",
-              "latency_ms": 3447.6,
-              "ttfb_ms": 3447.2
+              "latency_ms": 1999.6,
+              "ttfb_ms": 1999.3
             }
           ],
           "review": {
@@ -1686,14 +1681,14 @@
                 "verdict": "supported",
                 "supporting_claim_ids": [],
                 "supporting_evidence_ids": [],
-                "reason": "Margin is a supported team metric for archived games."
+                "reason": "Team margin metric is available in capabilities."
               },
               {
                 "text": "How many total points did the Knicks score over those 5 games?",
                 "verdict": "supported",
                 "supporting_claim_ids": [],
                 "supporting_evidence_ids": [],
-                "reason": "Points is a supported metric in the archive."
+                "reason": "Team points metric available for the referenced games."
               }
             ]
           },
@@ -1713,8 +1708,8 @@
           "causes": [],
           "error": null,
           "retried": false,
-          "cost_usd": 0.0010698,
-          "latency_ms": 2921,
+          "cost_usd": 0.0011226,
+          "latency_ms": 2736,
           "calls": [
             {
               "provider": null,
@@ -1723,12 +1718,12 @@
               "requested_model": "deepseek-v4.1-flash",
               "protocol": "chat",
               "max_tokens": 3000,
-              "cost_usd": 0.0010698,
+              "cost_usd": 0.0011226,
               "prompt_tokens": 2234,
-              "completion_tokens": 333,
+              "completion_tokens": 377,
               "finish_reason": "stop",
-              "latency_ms": 2920.4,
-              "ttfb_ms": 2920.2
+              "latency_ms": 2734.6,
+              "ttfb_ms": 2729.6
             }
           ],
           "review": {
@@ -1743,8 +1738,10 @@
                   "claim:b1e1bcc1f7a34299630cca503f26a16b882ea8fdb5d1908eeebbfaf9a6c59fcb",
                   "claim:5ae1cfd59359c95904ef60375d14d1ad308b87b70bd38d74e631e784ab00efc7"
                 ],
-                "supporting_evidence_ids": [],
-                "reason": "Claims cover Knicks points per game and 9-1 record over 10 archived games."
+                "supporting_evidence_ids": [
+                  "calculation:c9cf8f3bb452e386ea3515e2838ea72cce1887b6426022ecf6e5ff2c467b3532"
+                ],
+                "reason": "Claims confirm 114.1 points per game, 9 wins and 1 loss over 10 games."
               }
             ],
             "follow_up_reviews": [
@@ -1753,14 +1750,14 @@
                 "verdict": "supported",
                 "supporting_claim_ids": [],
                 "supporting_evidence_ids": [],
-                "reason": "Margin is an available team metric within the same 10-game scope."
+                "reason": "Margin is an available team metric; scope matches the 10 archived games."
               },
               {
                 "text": "How many points did the Knicks allow per game over those 10 games?",
-                "verdict": "unsupported",
+                "verdict": "insufficient_evidence",
                 "supporting_claim_ids": [],
                 "supporting_evidence_ids": [],
-                "reason": "Points allowed is not an available team metric in capabilities."
+                "reason": "No opponent points allowed metric is in the capabilities."
               }
             ]
           },
@@ -1772,8 +1769,8 @@
           "causes": [],
           "error": null,
           "retried": false,
-          "cost_usd": 0.001113,
-          "latency_ms": 3239,
+          "cost_usd": 0.0011154,
+          "latency_ms": 2857,
           "calls": [
             {
               "provider": null,
@@ -1782,19 +1779,19 @@
               "requested_model": "deepseek-v4.1-flash",
               "protocol": "chat",
               "max_tokens": 3000,
-              "cost_usd": 0.001113,
+              "cost_usd": 0.0011154,
               "prompt_tokens": 2234,
-              "completion_tokens": 369,
+              "completion_tokens": 371,
               "finish_reason": "stop",
-              "latency_ms": 3238.5,
-              "ttfb_ms": 3238.3
+              "latency_ms": 2856.0,
+              "ttfb_ms": 2855.8
             }
           ],
           "review": {
             "assertions": [
               {
                 "text": "Over their last 10 archived games, the Knicks averaged 114.1 points per game (9 wins, 1 loss).",
-                "assertion_type": "interpretation",
+                "assertion_type": "factual",
                 "verdict": "supported",
                 "offending_text": null,
                 "supporting_claim_ids": [
@@ -1805,7 +1802,7 @@
                 "supporting_evidence_ids": [
                   "calculation:c9cf8f3bb452e386ea3515e2838ea72cce1887b6426022ecf6e5ff2c467b3532"
                 ],
-                "reason": "Claims match 10-game archive window with points per game and records."
+                "reason": "Claims confirm 114.1 PPG, 9 wins, 1 loss over 10 archived games."
               }
             ],
             "follow_up_reviews": [
@@ -1814,14 +1811,14 @@
                 "verdict": "supported",
                 "supporting_claim_ids": [],
                 "supporting_evidence_ids": [],
-                "reason": "Margin is a team metric in capabilities for same 10-game window."
+                "reason": "Margin is a supported team metric in scope."
               },
               {
                 "text": "How many points did the Knicks allow per game over those 10 games?",
-                "verdict": "unsupported",
+                "verdict": "insufficient_evidence",
                 "supporting_claim_ids": [],
                 "supporting_evidence_ids": [],
-                "reason": "Opponent points allowed per game is not an available team metric."
+                "reason": "Opponent points allowed is not among supported team metrics."
               }
             ]
           },
@@ -1841,8 +1838,8 @@
           "causes": [],
           "error": null,
           "retried": false,
-          "cost_usd": 0.0008802,
-          "latency_ms": 2745,
+          "cost_usd": 0.0008778,
+          "latency_ms": 1728,
           "calls": [
             {
               "provider": null,
@@ -1851,12 +1848,12 @@
               "requested_model": "deepseek-v4.1-flash",
               "protocol": "chat",
               "max_tokens": 3000,
-              "cost_usd": 0.0008802,
+              "cost_usd": 0.0008778,
               "prompt_tokens": 1998,
-              "completion_tokens": 234,
+              "completion_tokens": 232,
               "finish_reason": "stop",
-              "latency_ms": 2744.0,
-              "ttfb_ms": 2743.8
+              "latency_ms": 1727.3,
+              "ttfb_ms": 1727.1
             }
           ],
           "review": {
@@ -1872,7 +1869,7 @@
                 "supporting_evidence_ids": [
                   "2025-26.20260928.1:game:97:player:134"
                 ],
-                "reason": "Claim confirms 32.6 points over 5 observed playoff appearances in that window."
+                "reason": "Claim confirms 32.6 points across 5 playoffs games in that date window."
               }
             ],
             "follow_up_reviews": [
@@ -1881,14 +1878,14 @@
                 "verdict": "supported",
                 "supporting_claim_ids": [],
                 "supporting_evidence_ids": [],
-                "reason": "Assists are an available metric within the same game window."
+                "reason": "Assists are an available metric and same game window applies."
               },
               {
                 "text": "How did Brunson's scoring average compare to his regular-season average?",
                 "verdict": "supported",
                 "supporting_claim_ids": [],
                 "supporting_evidence_ids": [],
-                "reason": "Points metric available for both playoffs and regular season in archive."
+                "reason": "Regular season points metric available in archive for comparison."
               }
             ]
           },
@@ -1900,8 +1897,8 @@
           "causes": [],
           "error": null,
           "retried": false,
-          "cost_usd": 0.0009102,
-          "latency_ms": 3485,
+          "cost_usd": 0.0009138,
+          "latency_ms": 3290,
           "calls": [
             {
               "provider": null,
@@ -1910,12 +1907,12 @@
               "requested_model": "deepseek-v4.1-flash",
               "protocol": "chat",
               "max_tokens": 3000,
-              "cost_usd": 0.0009102,
+              "cost_usd": 0.0009138,
               "prompt_tokens": 1998,
-              "completion_tokens": 259,
+              "completion_tokens": 262,
               "finish_reason": "stop",
-              "latency_ms": 3484.1,
-              "ttfb_ms": 3483.9
+              "latency_ms": 3289.9,
+              "ttfb_ms": 3289.6
             }
           ],
           "review": {
@@ -1931,7 +1928,7 @@
                 "supporting_evidence_ids": [
                   "calculation:8ddea11878ee70f4a989cb9fa2a4312043d6a7aa60ecc2afce894aeb4a0bcec5"
                 ],
-                "reason": "Claim gives Brunson 32.6 PPG over 5 playoff games in that window."
+                "reason": "Claim confirms 32.6 points per appearance across 5 appearances in that window."
               }
             ],
             "follow_up_reviews": [
@@ -1940,14 +1937,14 @@
                 "verdict": "supported",
                 "supporting_claim_ids": [],
                 "supporting_evidence_ids": [],
-                "reason": "Assists are an available metric for the same player and window."
+                "reason": "Assists are an available metric and same 5-game window applies."
               },
               {
                 "text": "How did Brunson's scoring average compare to his regular-season average?",
-                "verdict": "supported",
+                "verdict": "unsupported",
                 "supporting_claim_ids": [],
                 "supporting_evidence_ids": [],
-                "reason": "Archive includes regular season games and points metric for comparison."
+                "reason": "Five-game window is playoffs; regular-season average scope not established."
               }
             ]
           },
@@ -1967,8 +1964,8 @@
           "causes": [],
           "error": null,
           "retried": false,
-          "cost_usd": 0.0011136,
-          "latency_ms": 3738,
+          "cost_usd": 0.0011184,
+          "latency_ms": 2387,
           "calls": [
             {
               "provider": null,
@@ -1977,12 +1974,12 @@
               "requested_model": "deepseek-v4.1-flash",
               "protocol": "chat",
               "max_tokens": 3000,
-              "cost_usd": 0.0011136,
+              "cost_usd": 0.0011184,
               "prompt_tokens": 2184,
-              "completion_tokens": 382,
+              "completion_tokens": 386,
               "finish_reason": "stop",
-              "latency_ms": 3737.4,
-              "ttfb_ms": 3737.2
+              "latency_ms": 2386.0,
+              "ttfb_ms": 2385.5
             }
           ],
           "review": {
@@ -2000,7 +1997,7 @@
                 "supporting_evidence_ids": [
                   "2025-26.20260928.1:game:34"
                 ],
-                "reason": "Claims support wins, losses, points over 15 archived January games."
+                "reason": "Claims give 7 wins, 8 losses and 1,652 points for 15 archived games."
               }
             ],
             "follow_up_reviews": [
@@ -2011,14 +2008,14 @@
                   "claim:030ed374b46dcae45c14e8faba1d5506eea08bbfd39ce356d5a813708e51b852"
                 ],
                 "supporting_evidence_ids": [],
-                "reason": "Points and game count available to compute average."
+                "reason": "Points and game counts are available for averaging."
               },
               {
                 "text": "How did the Knicks' January margin compare to another month?",
-                "verdict": "insufficient_evidence",
+                "verdict": "unsupported",
                 "supporting_claim_ids": [],
                 "supporting_evidence_ids": [],
-                "reason": "Scope limited to January; no other month comparison data provided."
+                "reason": "Scope only covers January; no other month data confirmed."
               }
             ]
           },
@@ -2030,8 +2027,8 @@
           "causes": [],
           "error": null,
           "retried": false,
-          "cost_usd": 0.0010464,
-          "latency_ms": 2814,
+          "cost_usd": 0.0010404,
+          "latency_ms": 2265,
           "calls": [
             {
               "provider": null,
@@ -2040,19 +2037,19 @@
               "requested_model": "deepseek-v4.1-flash",
               "protocol": "chat",
               "max_tokens": 3000,
-              "cost_usd": 0.0010464,
+              "cost_usd": 0.0010404,
               "prompt_tokens": 2184,
-              "completion_tokens": 326,
+              "completion_tokens": 321,
               "finish_reason": "stop",
-              "latency_ms": 2813.7,
-              "ttfb_ms": 2813.6
+              "latency_ms": 2264.2,
+              "ttfb_ms": 2263.5
             }
           ],
           "review": {
             "assertions": [
               {
                 "text": "From January 1 through January 31, the Knicks went 7-8 across 15 archived games, scoring 1,652 total points.",
-                "assertion_type": "factual",
+                "assertion_type": "interpretation",
                 "verdict": "supported",
                 "offending_text": null,
                 "supporting_claim_ids": [
@@ -2072,14 +2069,14 @@
                 "verdict": "supported",
                 "supporting_claim_ids": [],
                 "supporting_evidence_ids": [],
-                "reason": "Points and game count are available, so average is computable."
+                "reason": "Points and game counts are in scope and derivable from claims."
               },
               {
                 "text": "How did the Knicks' January margin compare to another month?",
                 "verdict": "insufficient_evidence",
                 "supporting_claim_ids": [],
                 "supporting_evidence_ids": [],
-                "reason": "Archive scope only covers Jan 2-30 games, no other month data."
+                "reason": "Archive scope is January; other months not confirmed available."
               }
             ]
           },
@@ -2099,8 +2096,8 @@
           "causes": [],
           "error": null,
           "retried": false,
-          "cost_usd": 0.0011592,
-          "latency_ms": 3749,
+          "cost_usd": 0.0012528,
+          "latency_ms": 3848,
           "calls": [
             {
               "provider": null,
@@ -2109,12 +2106,12 @@
               "requested_model": "deepseek-v4.1-flash",
               "protocol": "chat",
               "max_tokens": 3000,
-              "cost_usd": 0.0011592,
+              "cost_usd": 0.0012528,
               "prompt_tokens": 2064,
-              "completion_tokens": 450,
+              "completion_tokens": 528,
               "finish_reason": "stop",
-              "latency_ms": 3747.4,
-              "ttfb_ms": 3746.9
+              "latency_ms": 3847.0,
+              "ttfb_ms": 3845.7
             }
           ],
           "review": {
@@ -2129,7 +2126,7 @@
                   "claim:1d8f1a95b71e9fcabfd9a1630d83feacb39f60646afe6aa711052b1419333e49"
                 ],
                 "supporting_evidence_ids": [],
-                "reason": "Both averages and appearance counts match the cited claims exactly."
+                "reason": "Both point averages and appearance counts match cited claims."
               },
               {
                 "text": "Both figures cover only observed appearances, and some archived games are missing player rows.",
@@ -2141,7 +2138,7 @@
                   "claim:1d8f1a95b71e9fcabfd9a1630d83feacb39f60646afe6aa711052b1419333e49"
                 ],
                 "supporting_evidence_ids": [],
-                "reason": "Coverage limitations on both claims state only observed appearances and missing rows."
+                "reason": "Claims' coverage limitations note only observed appearances and missing rows."
               }
             ],
             "follow_up_reviews": [
@@ -2150,14 +2147,17 @@
                 "verdict": "supported",
                 "supporting_claim_ids": [],
                 "supporting_evidence_ids": [],
-                "reason": "three_pointers_made is an available metric and scope matches."
+                "reason": "three_pointers_made is an available metric for these players."
               },
               {
                 "text": "How do Brunson and Towns compare in total points scored this season?",
                 "verdict": "supported",
-                "supporting_claim_ids": [],
+                "supporting_claim_ids": [
+                  "claim:f93db38157478faeea46e511c3f0206cdd6365b4d6e232bc0b65384ae1ff0c36",
+                  "claim:1d8f1a95b71e9fcabfd9a1630d83feacb39f60646afe6aa711052b1419333e49"
+                ],
                 "supporting_evidence_ids": [],
-                "reason": "Total points is derivable from available points box score data."
+                "reason": "Points total derivable from available points metric and sample sizes."
               }
             ]
           },
@@ -2169,8 +2169,8 @@
           "causes": [],
           "error": null,
           "retried": false,
-          "cost_usd": 0.0011112,
-          "latency_ms": 3187,
+          "cost_usd": 0.0011508,
+          "latency_ms": 3774,
           "calls": [
             {
               "provider": null,
@@ -2179,12 +2179,12 @@
               "requested_model": "deepseek-v4.1-flash",
               "protocol": "chat",
               "max_tokens": 3000,
-              "cost_usd": 0.0011112,
+              "cost_usd": 0.0011508,
               "prompt_tokens": 2064,
-              "completion_tokens": 410,
+              "completion_tokens": 443,
               "finish_reason": "stop",
-              "latency_ms": 3185.6,
-              "ttfb_ms": 3185.4
+              "latency_ms": 3770.9,
+              "ttfb_ms": 3769.1
             }
           ],
           "review": {
@@ -2199,11 +2199,11 @@
                   "claim:1d8f1a95b71e9fcabfd9a1630d83feacb39f60646afe6aa711052b1419333e49"
                 ],
                 "supporting_evidence_ids": [],
-                "reason": "Both averages and appearance counts match the claims."
+                "reason": "Both averages and appearance counts match the cited claims."
               },
               {
                 "text": "Both figures cover only observed appearances, and some archived games are missing player rows.",
-                "assertion_type": "interpretation",
+                "assertion_type": "coverage",
                 "verdict": "supported",
                 "offending_text": null,
                 "supporting_claim_ids": [
@@ -2211,7 +2211,7 @@
                   "claim:1d8f1a95b71e9fcabfd9a1630d83feacb39f60646afe6aa711052b1419333e49"
                 ],
                 "supporting_evidence_ids": [],
-                "reason": "Coverage limitations note observed appearances and missing player rows."
+                "reason": "Matches stated coverage limitations in both claims."
               }
             ],
             "follow_up_reviews": [
@@ -2220,14 +2220,14 @@
                 "verdict": "supported",
                 "supporting_claim_ids": [],
                 "supporting_evidence_ids": [],
-                "reason": "Three-pointers made is an available metric for both players."
+                "reason": "three_pointers_made is an available metric for both players."
               },
               {
                 "text": "How do Brunson and Towns compare in total points scored this season?",
                 "verdict": "supported",
                 "supporting_claim_ids": [],
                 "supporting_evidence_ids": [],
-                "reason": "Points metric and appearance counts allow total points comparison."
+                "reason": "points metric available; totals derivable from averages and appearances."
               }
             ]
           },
@@ -2247,8 +2247,8 @@
           "causes": [],
           "error": null,
           "retried": false,
-          "cost_usd": 0.0005754,
-          "latency_ms": 2027,
+          "cost_usd": 0.0005802,
+          "latency_ms": 2452,
           "calls": [
             {
               "provider": null,
@@ -2257,12 +2257,12 @@
               "requested_model": "deepseek-v4.1-flash",
               "protocol": "chat",
               "max_tokens": 3000,
-              "cost_usd": 0.0005754,
+              "cost_usd": 0.0005802,
               "prompt_tokens": 1322,
-              "completion_tokens": 149,
+              "completion_tokens": 153,
               "finish_reason": "stop",
-              "latency_ms": 2026.6,
-              "ttfb_ms": 2026.3
+              "latency_ms": 2449.8,
+              "ttfb_ms": 2449.4
             }
           ],
           "review": {
@@ -2274,7 +2274,7 @@
                 "offending_text": null,
                 "supporting_claim_ids": [],
                 "supporting_evidence_ids": [],
-                "reason": "Clarifying question about ambiguous pronoun; no factual claim required."
+                "reason": "Clarifying question about an ambiguous pronoun reference is appropriate."
               },
               {
                 "text": "Please name the player (or team) whose first 10 games and last 10 games you want compared.",
@@ -2283,7 +2283,7 @@
                 "offending_text": null,
                 "supporting_claim_ids": [],
                 "supporting_evidence_ids": [],
-                "reason": "Request for clarification, no factual assertion to verify."
+                "reason": "Requests needed subject to perform the first-10 versus last-10 comparison."
               }
             ],
             "follow_up_reviews": []
@@ -2296,8 +2296,8 @@
           "causes": [],
           "error": null,
           "retried": false,
-          "cost_usd": 0.0005766,
-          "latency_ms": 1687,
+          "cost_usd": 0.0005718,
+          "latency_ms": 1860,
           "calls": [
             {
               "provider": null,
@@ -2306,12 +2306,12 @@
               "requested_model": "deepseek-v4.1-flash",
               "protocol": "chat",
               "max_tokens": 3000,
-              "cost_usd": 0.0005766,
+              "cost_usd": 0.0005718,
               "prompt_tokens": 1322,
-              "completion_tokens": 150,
+              "completion_tokens": 146,
               "finish_reason": "stop",
-              "latency_ms": 1686.1,
-              "ttfb_ms": 1685.9
+              "latency_ms": 1858.5,
+              "ttfb_ms": 1858.3
             }
           ],
           "review": {
@@ -2323,7 +2323,7 @@
                 "offending_text": null,
                 "supporting_claim_ids": [],
                 "supporting_evidence_ids": [],
-                "reason": "Clarifying question to the user; no IDs needed."
+                "reason": "Clarifying question about unspecified pronoun; no factual claim."
               },
               {
                 "text": "Please name the player (or team) whose first 10 games and last 10 games you want compared.",
@@ -2332,7 +2332,7 @@
                 "offending_text": null,
                 "supporting_claim_ids": [],
                 "supporting_evidence_ids": [],
-                "reason": "Request for clarification; scope has no player or team specified."
+                "reason": "Request for clarification; no factual claim."
               }
             ],
             "follow_up_reviews": []
@@ -2367,8 +2367,8 @@
           ],
           "error": null,
           "retried": false,
-          "cost_usd": 0.0008274,
-          "latency_ms": 1919,
+          "cost_usd": 0.0007878,
+          "latency_ms": 3149,
           "calls": [
             {
               "provider": null,
@@ -2377,12 +2377,12 @@
               "requested_model": "deepseek-v4.1-flash",
               "protocol": "chat",
               "max_tokens": 3000,
-              "cost_usd": 0.0008274,
+              "cost_usd": 0.0007878,
               "prompt_tokens": 1638,
-              "completion_tokens": 280,
+              "completion_tokens": 247,
               "finish_reason": "stop",
-              "latency_ms": 1918.5,
-              "ttfb_ms": 1918.3
+              "latency_ms": 3148.2,
+              "ttfb_ms": 3148.0
             }
           ],
           "review": {
@@ -2398,68 +2398,7 @@
                 "supporting_evidence_ids": [
                   "calculation:d993ae6cd86202ac698d33453fb7b54ea7c565db4bdb5d356719825cd640d79a"
                 ],
-                "reason": "Claim value is 116.34 points per game, not 7.94."
-              }
-            ],
-            "follow_up_reviews": [
-              {
-                "text": "What was the Knicks' average margin per game?",
-                "verdict": "supported",
-                "supporting_claim_ids": [],
-                "supporting_evidence_ids": [],
-                "reason": "Margin is an available team metric in the archive."
-              },
-              {
-                "text": "How many games did the Knicks win and lose in the archive?",
-                "verdict": "supported",
-                "supporting_claim_ids": [],
-                "supporting_evidence_ids": [],
-                "reason": "Wins and losses are available team metrics."
-              }
-            ]
-          },
-          "trial": 0
-        },
-        {
-          "outcome": "verdict_rejected",
-          "accepted": false,
-          "causes": [
-            "span1:verdict_unsupported"
-          ],
-          "error": null,
-          "retried": false,
-          "cost_usd": 0.0008286,
-          "latency_ms": 3098,
-          "calls": [
-            {
-              "provider": null,
-              "model": "deepseek-v4.1-flash",
-              "served_model": "deepseek-v4.1-flash",
-              "requested_model": "deepseek-v4.1-flash",
-              "protocol": "chat",
-              "max_tokens": 3000,
-              "cost_usd": 0.0008286,
-              "prompt_tokens": 1638,
-              "completion_tokens": 281,
-              "finish_reason": "stop",
-              "latency_ms": 3097.1,
-              "ttfb_ms": 3096.7
-            }
-          ],
-          "review": {
-            "assertions": [
-              {
-                "text": "The Knicks averaged 7.94 points per game across 101 archived games in the 2025-26 release.",
-                "assertion_type": "factual",
-                "verdict": "unsupported",
-                "offending_text": "7.94 points per game",
-                "supporting_claim_ids": [
-                  "claim:deafd8c4fbb345abf20ac4820b893127789e3a5b6339c1a6425567c7590cbe1c"
-                ],
-                "supporting_evidence_ids": [
-                  "calculation:d993ae6cd86202ac698d33453fb7b54ea7c565db4bdb5d356719825cd640d79a"
-                ],
-                "reason": "Claim value is ~116.34 points per game, not 7.94."
+                "reason": "Claim value is 116.34, not 7.94 points per game."
               }
             ],
             "follow_up_reviews": [
@@ -2475,7 +2414,66 @@
                 "verdict": "supported",
                 "supporting_claim_ids": [],
                 "supporting_evidence_ids": [],
-                "reason": "Wins and losses are supported team metrics in capabilities."
+                "reason": "Wins and losses are supported team metrics."
+              }
+            ]
+          },
+          "trial": 0
+        },
+        {
+          "outcome": "verdict_rejected",
+          "accepted": false,
+          "causes": [
+            "span1:verdict_unsupported"
+          ],
+          "error": null,
+          "retried": false,
+          "cost_usd": 0.0007842,
+          "latency_ms": 2277,
+          "calls": [
+            {
+              "provider": null,
+              "model": "deepseek-v4.1-flash",
+              "served_model": "deepseek-v4.1-flash",
+              "requested_model": "deepseek-v4.1-flash",
+              "protocol": "chat",
+              "max_tokens": 3000,
+              "cost_usd": 0.0007842,
+              "prompt_tokens": 1638,
+              "completion_tokens": 244,
+              "finish_reason": "stop",
+              "latency_ms": 2276.0,
+              "ttfb_ms": 2275.7
+            }
+          ],
+          "review": {
+            "assertions": [
+              {
+                "text": "The Knicks averaged 7.94 points per game across 101 archived games in the 2025-26 release.",
+                "assertion_type": "factual",
+                "verdict": "unsupported",
+                "offending_text": "7.94 points per game",
+                "supporting_claim_ids": [
+                  "claim:deafd8c4fbb345abf20ac4820b893127789e3a5b6339c1a6425567c7590cbe1c"
+                ],
+                "supporting_evidence_ids": [],
+                "reason": "Claim value is about 116.34, not 7.94 points per game."
+              }
+            ],
+            "follow_up_reviews": [
+              {
+                "text": "What was the Knicks' average margin per game?",
+                "verdict": "supported",
+                "supporting_claim_ids": [],
+                "supporting_evidence_ids": [],
+                "reason": "Margin is a listed team metric in capabilities."
+              },
+              {
+                "text": "How many games did the Knicks win and lose in the archive?",
+                "verdict": "supported",
+                "supporting_claim_ids": [],
+                "supporting_evidence_ids": [],
+                "reason": "Wins and losses are listed team metrics."
               }
             ]
           },
@@ -2507,8 +2505,8 @@
           ],
           "error": null,
           "retried": false,
-          "cost_usd": 0.0008301,
-          "latency_ms": 1758,
+          "cost_usd": 0.0009297,
+          "latency_ms": 2524,
           "calls": [
             {
               "provider": null,
@@ -2517,12 +2515,12 @@
               "requested_model": "deepseek-v4.1-flash",
               "protocol": "chat",
               "max_tokens": 3000,
-              "cost_usd": 0.0008301,
+              "cost_usd": 0.0009297,
               "prompt_tokens": 1627,
-              "completion_tokens": 285,
+              "completion_tokens": 368,
               "finish_reason": "stop",
-              "latency_ms": 1757.3,
-              "ttfb_ms": 1756.9
+              "latency_ms": 2524.0,
+              "ttfb_ms": 2523.8
             }
           ],
           "review": {
@@ -2535,8 +2533,10 @@
                 "supporting_claim_ids": [
                   "claim:f9b34fee66aed1e531b68052b5b1c7bc8f66127dca6d755e6b1c6c9b07bde8c4"
                 ],
-                "supporting_evidence_ids": [],
-                "reason": "Cited claim states 11750 points, not 802."
+                "supporting_evidence_ids": [
+                  "calculation:292029a0a3551d8af1d97e770afa170bbfe6024c97fe6925fec38e3c77d2ca76"
+                ],
+                "reason": "Claim states 11750 points, not 802."
               }
             ],
             "follow_up_reviews": [
@@ -2546,15 +2546,17 @@
                 "supporting_claim_ids": [
                   "claim:f9b34fee66aed1e531b68052b5b1c7bc8f66127dca6d755e6b1c6c9b07bde8c4"
                 ],
-                "supporting_evidence_ids": [],
-                "reason": "Points and game count available to compute average."
+                "supporting_evidence_ids": [
+                  "calculation:292029a0a3551d8af1d97e770afa170bbfe6024c97fe6925fec38e3c77d2ca76"
+                ],
+                "reason": "Points and game counts available to derive per-game average."
               },
               {
                 "text": "How many total points did the Knicks allow (margin context)?",
-                "verdict": "insufficient_evidence",
+                "verdict": "unsupported",
                 "supporting_claim_ids": [],
                 "supporting_evidence_ids": [],
-                "reason": "No opponent points allowed data in archive."
+                "reason": "No opponent/points-allowed data in claims or capabilities."
               }
             ]
           },
@@ -2568,8 +2570,8 @@
           ],
           "error": null,
           "retried": false,
-          "cost_usd": 0.0009261,
-          "latency_ms": 2303,
+          "cost_usd": 0.0008841,
+          "latency_ms": 5285,
           "calls": [
             {
               "provider": null,
@@ -2578,12 +2580,12 @@
               "requested_model": "deepseek-v4.1-flash",
               "protocol": "chat",
               "max_tokens": 3000,
-              "cost_usd": 0.0009261,
+              "cost_usd": 0.0008841,
               "prompt_tokens": 1627,
-              "completion_tokens": 365,
+              "completion_tokens": 330,
               "finish_reason": "stop",
-              "latency_ms": 2302.4,
-              "ttfb_ms": 2302.2
+              "latency_ms": 5284.6,
+              "ttfb_ms": 5284.4
             }
           ],
           "review": {
@@ -2599,7 +2601,7 @@
                 "supporting_evidence_ids": [
                   "calculation:292029a0a3551d8af1d97e770afa170bbfe6024c97fe6925fec38e3c77d2ca76"
                 ],
-                "reason": "Stated value conflicts with claim value of 11750 points."
+                "reason": "Claim and displayed value state 11750 points, not 802."
               }
             ],
             "follow_up_reviews": [
@@ -2609,17 +2611,15 @@
                 "supporting_claim_ids": [
                   "claim:f9b34fee66aed1e531b68052b5b1c7bc8f66127dca6d755e6b1c6c9b07bde8c4"
                 ],
-                "supporting_evidence_ids": [
-                  "calculation:292029a0a3551d8af1d97e770afa170bbfe6024c97fe6925fec38e3c77d2ca76"
-                ],
-                "reason": "Points and games counts available for per-game average."
+                "supporting_evidence_ids": [],
+                "reason": "Derivable from total points and games in archive scope."
               },
               {
                 "text": "How many total points did the Knicks allow (margin context)?",
-                "verdict": "unsupported",
+                "verdict": "insufficient_evidence",
                 "supporting_claim_ids": [],
                 "supporting_evidence_ids": [],
-                "reason": "Archive lacks opponent-points allowed metric."
+                "reason": "Points allowed not among available metrics or claims."
               }
             ]
           },
@@ -2651,8 +2651,8 @@
           ],
           "error": null,
           "retried": false,
-          "cost_usd": 0.000846,
-          "latency_ms": 2331,
+          "cost_usd": 0.0007884,
+          "latency_ms": 1959,
           "calls": [
             {
               "provider": null,
@@ -2661,28 +2661,26 @@
               "requested_model": "deepseek-v4.1-flash",
               "protocol": "chat",
               "max_tokens": 3000,
-              "cost_usd": 0.000846,
+              "cost_usd": 0.0007884,
               "prompt_tokens": 1620,
-              "completion_tokens": 300,
+              "completion_tokens": 252,
               "finish_reason": "stop",
-              "latency_ms": 2330.5,
-              "ttfb_ms": 2330.3
+              "latency_ms": 1958.2,
+              "ttfb_ms": 1957.8
             }
           ],
           "review": {
             "assertions": [
               {
                 "text": "The Knicks' average margin was 116.34 points per game across 101 archived games in the 2025-26 release.",
-                "assertion_type": "factual",
+                "assertion_type": "interpretation",
                 "verdict": "unsupported",
                 "offending_text": "average margin was 116.34 points per game",
                 "supporting_claim_ids": [
                   "claim:848e341e0d5b5a56add6d9677f544187e4754afa6e4d3768bf2c668ffd0d3c87"
                 ],
-                "supporting_evidence_ids": [
-                  "calculation:6b6a6b4cfce40e7583ead6582ab939b1e996097ec029e4031a12e06d2a3f2885"
-                ],
-                "reason": "Claim value is 7.94 margin per game, not 116.34 points."
+                "supporting_evidence_ids": [],
+                "reason": "Claim value is 7.94 margin per game, not 116.34."
               }
             ],
             "follow_up_reviews": [
@@ -2691,14 +2689,14 @@
                 "verdict": "supported",
                 "supporting_claim_ids": [],
                 "supporting_evidence_ids": [],
-                "reason": "Points metric available; archive holds scores to sum totals."
+                "reason": "Team points metric is in capabilities data."
               },
               {
                 "text": "How many wins and losses did the Knicks have in the archive?",
                 "verdict": "supported",
                 "supporting_claim_ids": [],
                 "supporting_evidence_ids": [],
-                "reason": "Wins and losses are supported team metrics in capabilities."
+                "reason": "Wins and losses are in team metrics."
               }
             ]
           },
@@ -2712,8 +2710,8 @@
           ],
           "error": null,
           "retried": false,
-          "cost_usd": 0.0007848,
-          "latency_ms": 2327,
+          "cost_usd": 0.0007824,
+          "latency_ms": 1962,
           "calls": [
             {
               "provider": null,
@@ -2722,12 +2720,12 @@
               "requested_model": "deepseek-v4.1-flash",
               "protocol": "chat",
               "max_tokens": 3000,
-              "cost_usd": 0.0007848,
+              "cost_usd": 0.0007824,
               "prompt_tokens": 1620,
-              "completion_tokens": 249,
+              "completion_tokens": 247,
               "finish_reason": "stop",
-              "latency_ms": 2326.8,
-              "ttfb_ms": 2326.6
+              "latency_ms": 1961.2,
+              "ttfb_ms": 1961.0
             }
           ],
           "review": {
@@ -2741,7 +2739,7 @@
                   "claim:848e341e0d5b5a56add6d9677f544187e4754afa6e4d3768bf2c668ffd0d3c87"
                 ],
                 "supporting_evidence_ids": [],
-                "reason": "Claim states margin per game is 7.94, not 116.34."
+                "reason": "Claim value is 7.94 margin per game, not 116.34."
               }
             ],
             "follow_up_reviews": [
@@ -2750,14 +2748,14 @@
                 "verdict": "supported",
                 "supporting_claim_ids": [],
                 "supporting_evidence_ids": [],
-                "reason": "Points is a supported team metric in archive."
+                "reason": "Team points metric is in capabilities."
               },
               {
                 "text": "How many wins and losses did the Knicks have in the archive?",
                 "verdict": "supported",
                 "supporting_claim_ids": [],
                 "supporting_evidence_ids": [],
-                "reason": "Wins and losses are supported team metrics."
+                "reason": "Wins and losses team metrics are supported."
               }
             ]
           },
@@ -2793,8 +2791,8 @@
           ],
           "error": null,
           "retried": false,
-          "cost_usd": 0.0012144,
-          "latency_ms": 2537,
+          "cost_usd": 0.0011868,
+          "latency_ms": 2437,
           "calls": [
             {
               "provider": null,
@@ -2803,19 +2801,19 @@
               "requested_model": "deepseek-v4.1-flash",
               "protocol": "chat",
               "max_tokens": 3000,
-              "cost_usd": 0.0012144,
+              "cost_usd": 0.0011868,
               "prompt_tokens": 2064,
-              "completion_tokens": 496,
+              "completion_tokens": 473,
               "finish_reason": "stop",
-              "latency_ms": 2537.0,
-              "ttfb_ms": 2536.8
+              "latency_ms": 2436.1,
+              "ttfb_ms": 2435.8
             }
           ],
           "review": {
             "assertions": [
               {
                 "text": "In the 2025-26 all-phase archive, Jalen Brunson averaged 19.2 points per appearance across 93 observed appearances, while Karl-Anthony Towns averaged 26.5 across 94. ",
-                "assertion_type": "interpretation",
+                "assertion_type": "factual",
                 "verdict": "unsupported",
                 "offending_text": "Jalen Brunson averaged 19.2 points per appearance across 93 observed appearances, while Karl-Anthony Towns averaged 26.5 across 94",
                 "supporting_claim_ids": [
@@ -2823,7 +2821,7 @@
                   "claim:1d8f1a95b71e9fcabfd9a1630d83feacb39f60646afe6aa711052b1419333e49"
                 ],
                 "supporting_evidence_ids": [],
-                "reason": "Values assigned to wrong players; Brunson 26.5/93 and Towns 19.2/94 per claims."
+                "reason": "Values and sample sizes are swapped between the two players."
               },
               {
                 "text": "Both figures cover only observed appearances, and some archived games are missing player rows.",
@@ -2835,7 +2833,7 @@
                   "claim:1d8f1a95b71e9fcabfd9a1630d83feacb39f60646afe6aa711052b1419333e49"
                 ],
                 "supporting_evidence_ids": [],
-                "reason": "Coverage limitations match claim coverage notes on observed appearances and missing rows."
+                "reason": "Matches coverage limitations in both claims."
               }
             ],
             "follow_up_reviews": [
@@ -2851,7 +2849,7 @@
                 "verdict": "supported",
                 "supporting_claim_ids": [],
                 "supporting_evidence_ids": [],
-                "reason": "Points metric is available and total is derivable from archive."
+                "reason": "Total points derivable from points metric and appearances."
               }
             ]
           },
@@ -2865,8 +2863,8 @@
           ],
           "error": null,
           "retried": false,
-          "cost_usd": 0.001206,
-          "latency_ms": 2453,
+          "cost_usd": 0.0011556,
+          "latency_ms": 4777,
           "calls": [
             {
               "provider": null,
@@ -2875,12 +2873,12 @@
               "requested_model": "deepseek-v4.1-flash",
               "protocol": "chat",
               "max_tokens": 3000,
-              "cost_usd": 0.001206,
+              "cost_usd": 0.0011556,
               "prompt_tokens": 2064,
-              "completion_tokens": 489,
+              "completion_tokens": 447,
               "finish_reason": "stop",
-              "latency_ms": 2452.6,
-              "ttfb_ms": 2452.4
+              "latency_ms": 4776.0,
+              "ttfb_ms": 4775.6
             }
           ],
           "review": {
@@ -2889,17 +2887,17 @@
                 "text": "In the 2025-26 all-phase archive, Jalen Brunson averaged 19.2 points per appearance across 93 observed appearances, while Karl-Anthony Towns averaged 26.5 across 94. ",
                 "assertion_type": "factual",
                 "verdict": "unsupported",
-                "offending_text": "Jalen Brunson averaged 19.2 points per appearance across 93 observed appearances, while Karl-Anthony Towns averaged 26.5 across 94.",
+                "offending_text": "Jalen Brunson averaged 19.2 points per appearance across 93 observed appearances, while Karl-Anthony Towns averaged 26.5 across 94",
                 "supporting_claim_ids": [
                   "claim:f93db38157478faeea46e511c3f0206cdd6365b4d6e232bc0b65384ae1ff0c36",
                   "claim:1d8f1a95b71e9fcabfd9a1630d83feacb39f60646afe6aa711052b1419333e49"
                 ],
                 "supporting_evidence_ids": [],
-                "reason": "Player-value assignments are swapped: Brunson 26.5/93, Towns 19.2/94."
+                "reason": "Values and appearance counts are swapped between the two players."
               },
               {
                 "text": "Both figures cover only observed appearances, and some archived games are missing player rows.",
-                "assertion_type": "coverage",
+                "assertion_type": "interpretation",
                 "verdict": "supported",
                 "offending_text": null,
                 "supporting_claim_ids": [
@@ -2907,7 +2905,7 @@
                   "claim:1d8f1a95b71e9fcabfd9a1630d83feacb39f60646afe6aa711052b1419333e49"
                 ],
                 "supporting_evidence_ids": [],
-                "reason": "Both claims note observed-only appearances and missing player rows."
+                "reason": "Both claims list coverage limitations about observed appearances and missing rows."
               }
             ],
             "follow_up_reviews": [
@@ -2916,14 +2914,14 @@
                 "verdict": "supported",
                 "supporting_claim_ids": [],
                 "supporting_evidence_ids": [],
-                "reason": "three_pointers_made is a supported metric."
+                "reason": "three_pointers_made is an available metric for both players."
               },
               {
                 "text": "How do Brunson and Towns compare in total points scored this season?",
                 "verdict": "supported",
                 "supporting_claim_ids": [],
                 "supporting_evidence_ids": [],
-                "reason": "Points metric supported; totals derivable from averages and appearances."
+                "reason": "Points and appearance data exist, enabling total points comparison."
               }
             ]
           },
@@ -2955,8 +2953,8 @@
           ],
           "error": null,
           "retried": false,
-          "cost_usd": 0.0009312,
-          "latency_ms": 2212,
+          "cost_usd": 0.0009264,
+          "latency_ms": 3359,
           "calls": [
             {
               "provider": null,
@@ -2965,12 +2963,12 @@
               "requested_model": "deepseek-v4.1-flash",
               "protocol": "chat",
               "max_tokens": 3000,
-              "cost_usd": 0.0009312,
+              "cost_usd": 0.0009264,
               "prompt_tokens": 2000,
-              "completion_tokens": 276,
+              "completion_tokens": 272,
               "finish_reason": "stop",
-              "latency_ms": 2211.5,
-              "ttfb_ms": 2211.4
+              "latency_ms": 3356.2,
+              "ttfb_ms": 3356.0
             }
           ],
           "review": {
@@ -2986,7 +2984,7 @@
                 "supporting_evidence_ids": [
                   "2025-26.20260928.1:game:97:player:134"
                 ],
-                "reason": "Claim attributes the average to Jalen Brunson, not Towns."
+                "reason": "Claim and evidence attribute this to Jalen Brunson, not Towns."
               }
             ],
             "follow_up_reviews": [
@@ -2995,14 +2993,14 @@
                 "verdict": "supported",
                 "supporting_claim_ids": [],
                 "supporting_evidence_ids": [],
-                "reason": "Assists are an available metric for the same player and window."
+                "reason": "Assists are an available metric and scope is Brunson's last 5 games."
               },
               {
                 "text": "How did Brunson's scoring average compare to his regular-season average?",
-                "verdict": "insufficient_evidence",
+                "verdict": "supported",
                 "supporting_claim_ids": [],
                 "supporting_evidence_ids": [],
-                "reason": "Only 2025-26 playoffs data observed; regular-season average not established."
+                "reason": "Regular-season points data available in archive for comparison."
               }
             ]
           },
@@ -3016,8 +3014,8 @@
           ],
           "error": null,
           "retried": false,
-          "cost_usd": 0.0009276,
-          "latency_ms": 1995,
+          "cost_usd": 0.0009468,
+          "latency_ms": 2702,
           "calls": [
             {
               "provider": null,
@@ -3026,12 +3024,12 @@
               "requested_model": "deepseek-v4.1-flash",
               "protocol": "chat",
               "max_tokens": 3000,
-              "cost_usd": 0.0009276,
+              "cost_usd": 0.0009468,
               "prompt_tokens": 2000,
-              "completion_tokens": 273,
+              "completion_tokens": 289,
               "finish_reason": "stop",
-              "latency_ms": 1994.4,
-              "ttfb_ms": 1994.2
+              "latency_ms": 2701.0,
+              "ttfb_ms": 2700.8
             }
           ],
           "review": {
@@ -3047,7 +3045,7 @@
                 "supporting_evidence_ids": [
                   "2025-26.20260928.1:game:97:player:134"
                 ],
-                "reason": "Claim and evidence attribute the average to Jalen Brunson, not Towns."
+                "reason": "Claim attributes 32.6 average to Jalen Brunson, not Towns."
               }
             ],
             "follow_up_reviews": [
@@ -3055,15 +3053,17 @@
                 "text": "What was Brunson's assist average over those same 5 games?",
                 "verdict": "supported",
                 "supporting_claim_ids": [],
-                "supporting_evidence_ids": [],
-                "reason": "Assists are an available metric for the same five-game window."
+                "supporting_evidence_ids": [
+                  "2025-26.20260928.1:game:97:player:134"
+                ],
+                "reason": "Assists are available metric; same scope and window."
               },
               {
                 "text": "How did Brunson's scoring average compare to his regular-season average?",
-                "verdict": "supported",
+                "verdict": "insufficient_evidence",
                 "supporting_claim_ids": [],
                 "supporting_evidence_ids": [],
-                "reason": "Regular-season playoff-scoped points averages can be computed from archive data."
+                "reason": "No regular-season average data provided in evidence."
               }
             ]
           },
@@ -3095,8 +3095,8 @@
           ],
           "error": null,
           "retried": false,
-          "cost_usd": 0.0007995,
-          "latency_ms": 1993,
+          "cost_usd": 0.0007767,
+          "latency_ms": 3179,
           "calls": [
             {
               "provider": null,
@@ -3105,12 +3105,12 @@
               "requested_model": "deepseek-v4.1-flash",
               "protocol": "chat",
               "max_tokens": 3000,
-              "cost_usd": 0.0007995,
+              "cost_usd": 0.0007767,
               "prompt_tokens": 1689,
-              "completion_tokens": 244,
+              "completion_tokens": 225,
               "finish_reason": "stop",
-              "latency_ms": 1992.9,
-              "ttfb_ms": 1992.7
+              "latency_ms": 3178.2,
+              "ttfb_ms": 3178.0
             }
           ],
           "review": {
@@ -3123,10 +3123,8 @@
                 "supporting_claim_ids": [
                   "claim:b10b251d937dc4ee2cfd8206cef9737c50e452c8891f9f95f23a8f4c90db8a29"
                 ],
-                "supporting_evidence_ids": [
-                  "calculation:f9d50c9be6db51038f3018f9b73645a3536b2959804ed04e7d1b03501b272886"
-                ],
-                "reason": "Claim is about Knicks, not Celtics; wrong team subject."
+                "supporting_evidence_ids": [],
+                "reason": "Claim is about Knicks wins, not Celtics."
               }
             ],
             "follow_up_reviews": [
@@ -3135,14 +3133,14 @@
                 "verdict": "supported",
                 "supporting_claim_ids": [],
                 "supporting_evidence_ids": [],
-                "reason": "In scope; archive has home losses data for Knicks."
+                "reason": "Home losses derivable from archive game scores."
               },
               {
                 "text": "How many total points did the Knicks score in home wins?",
-                "verdict": "insufficient_evidence",
+                "verdict": "supported",
                 "supporting_claim_ids": [],
                 "supporting_evidence_ids": [],
-                "reason": "Team points metric may not be supported for this aggregation."
+                "reason": "Team points metric available for home wins in scope."
               }
             ]
           },
@@ -3156,8 +3154,8 @@
           ],
           "error": null,
           "retried": false,
-          "cost_usd": 0.0007911,
-          "latency_ms": 2249,
+          "cost_usd": 0.0007767,
+          "latency_ms": 1599,
           "calls": [
             {
               "provider": null,
@@ -3166,12 +3164,12 @@
               "requested_model": "deepseek-v4.1-flash",
               "protocol": "chat",
               "max_tokens": 3000,
-              "cost_usd": 0.0007911,
+              "cost_usd": 0.0007767,
               "prompt_tokens": 1689,
-              "completion_tokens": 237,
+              "completion_tokens": 225,
               "finish_reason": "stop",
-              "latency_ms": 2248.4,
-              "ttfb_ms": 2248.2
+              "latency_ms": 1597.9,
+              "ttfb_ms": 1597.2
             }
           ],
           "review": {
@@ -3184,10 +3182,8 @@
                 "supporting_claim_ids": [
                   "claim:b10b251d937dc4ee2cfd8206cef9737c50e452c8891f9f95f23a8f4c90db8a29"
                 ],
-                "supporting_evidence_ids": [
-                  "calculation:f9d50c9be6db51038f3018f9b73645a3536b2959804ed04e7d1b03501b272886"
-                ],
-                "reason": "Claim attributes the 37 home wins to Knicks, not Celtics."
+                "supporting_evidence_ids": [],
+                "reason": "Claim subject is Knicks, not Celtics."
               }
             ],
             "follow_up_reviews": [
@@ -3196,14 +3192,14 @@
                 "verdict": "supported",
                 "supporting_claim_ids": [],
                 "supporting_evidence_ids": [],
-                "reason": "Relevant to Knicks home record in archive."
+                "reason": "Relevant scope; archive supports home loss counts."
               },
               {
                 "text": "How many total points did the Knicks score in home wins?",
                 "verdict": "supported",
                 "supporting_claim_ids": [],
                 "supporting_evidence_ids": [],
-                "reason": "Archive supports points and home win filtering."
+                "reason": "Points and home/win filters are supported metrics."
               }
             ]
           },
@@ -3235,8 +3231,8 @@
           ],
           "error": null,
           "retried": false,
-          "cost_usd": 0.0007887,
-          "latency_ms": 2510,
+          "cost_usd": 0.0008379,
+          "latency_ms": 3148,
           "calls": [
             {
               "provider": null,
@@ -3245,12 +3241,12 @@
               "requested_model": "deepseek-v4.1-flash",
               "protocol": "chat",
               "max_tokens": 3000,
-              "cost_usd": 0.0007887,
+              "cost_usd": 0.0008379,
               "prompt_tokens": 1693,
-              "completion_tokens": 234,
+              "completion_tokens": 275,
               "finish_reason": "stop",
-              "latency_ms": 2509.3,
-              "ttfb_ms": 2509.1
+              "latency_ms": 3146.6,
+              "ttfb_ms": 3146.5
             }
           ],
           "review": {
@@ -3266,7 +3262,7 @@
                 "supporting_evidence_ids": [
                   "calculation:f9d50c9be6db51038f3018f9b73645a3536b2959804ed04e7d1b03501b272886"
                 ],
-                "reason": "Claim filters home games, not road games."
+                "reason": "Claim filters are home_away=home, so 37 wins are home, not road."
               }
             ],
             "follow_up_reviews": [
@@ -3275,14 +3271,14 @@
                 "verdict": "supported",
                 "supporting_claim_ids": [],
                 "supporting_evidence_ids": [],
-                "reason": "Team losses in home games are within archive scope."
+                "reason": "Archive supports home losses via team_metrics and game results."
               },
               {
                 "text": "How many total points did the Knicks score in home wins?",
                 "verdict": "supported",
                 "supporting_claim_ids": [],
                 "supporting_evidence_ids": [],
-                "reason": "Team points in home wins are supported by game scores."
+                "reason": "Archive supports team points in home wins."
               }
             ]
           },
@@ -3296,8 +3292,8 @@
           ],
           "error": null,
           "retried": false,
-          "cost_usd": 0.0007887,
-          "latency_ms": 2252,
+          "cost_usd": 0.0007791,
+          "latency_ms": 2975,
           "calls": [
             {
               "provider": null,
@@ -3306,12 +3302,12 @@
               "requested_model": "deepseek-v4.1-flash",
               "protocol": "chat",
               "max_tokens": 3000,
-              "cost_usd": 0.0007887,
+              "cost_usd": 0.0007791,
               "prompt_tokens": 1693,
-              "completion_tokens": 234,
+              "completion_tokens": 226,
               "finish_reason": "stop",
-              "latency_ms": 2251.5,
-              "ttfb_ms": 2251.3
+              "latency_ms": 2974.9,
+              "ttfb_ms": 2974.7
             }
           ],
           "review": {
@@ -3324,10 +3320,8 @@
                 "supporting_claim_ids": [
                   "claim:b10b251d937dc4ee2cfd8206cef9737c50e452c8891f9f95f23a8f4c90db8a29"
                 ],
-                "supporting_evidence_ids": [
-                  "calculation:f9d50c9be6db51038f3018f9b73645a3536b2959804ed04e7d1b03501b272886"
-                ],
-                "reason": "Claim filters home_away=home, not road games."
+                "supporting_evidence_ids": [],
+                "reason": "Claim and scope specify home games, not road games."
               }
             ],
             "follow_up_reviews": [
@@ -3336,14 +3330,14 @@
                 "verdict": "supported",
                 "supporting_claim_ids": [],
                 "supporting_evidence_ids": [],
-                "reason": "Archive supports home-away and result filters."
+                "reason": "Archive supports home-away results via game scores."
               },
               {
                 "text": "How many total points did the Knicks score in home wins?",
                 "verdict": "supported",
                 "supporting_claim_ids": [],
                 "supporting_evidence_ids": [],
-                "reason": "Team points and home win filters are available."
+                "reason": "Team points and home wins are supported metrics."
               }
             ]
           },
@@ -3375,8 +3369,8 @@
           ],
           "error": null,
           "retried": false,
-          "cost_usd": 0.0009996,
-          "latency_ms": 2049,
+          "cost_usd": 0.0009108,
+          "latency_ms": 4751,
           "calls": [
             {
               "provider": null,
@@ -3385,12 +3379,73 @@
               "requested_model": "deepseek-v4.1-flash",
               "protocol": "chat",
               "max_tokens": 3000,
-              "cost_usd": 0.0009996,
+              "cost_usd": 0.0009108,
               "prompt_tokens": 2000,
-              "completion_tokens": 333,
+              "completion_tokens": 259,
               "finish_reason": "stop",
-              "latency_ms": 2048.1,
-              "ttfb_ms": 2047.9
+              "latency_ms": 4749.9,
+              "ttfb_ms": 4749.4
+            }
+          ],
+          "review": {
+            "assertions": [
+              {
+                "text": "Jalen Brunson averaged 32.6 points per game over his last 5 games (2025-26 regular season, June 3\u201313, 2026).",
+                "assertion_type": "factual",
+                "verdict": "unsupported",
+                "offending_text": "regular season",
+                "supporting_claim_ids": [
+                  "claim:b360281320642f137147e69b2e8c1deac80438a219592a4dfc929d490ddc448a"
+                ],
+                "supporting_evidence_ids": [
+                  "2025-26.20260928.1:game:97:player:134"
+                ],
+                "reason": "Claim and evidence are playoffs, not regular season."
+              }
+            ],
+            "follow_up_reviews": [
+              {
+                "text": "What was Brunson's assist average over those same 5 games?",
+                "verdict": "supported",
+                "supporting_claim_ids": [],
+                "supporting_evidence_ids": [],
+                "reason": "Assists are in box scores for same window."
+              },
+              {
+                "text": "How did Brunson's scoring average compare to his regular-season average?",
+                "verdict": "insufficient_evidence",
+                "supporting_claim_ids": [],
+                "supporting_evidence_ids": [],
+                "reason": "No regular-season average available in archive."
+              }
+            ]
+          },
+          "trial": 0
+        },
+        {
+          "outcome": "verdict_rejected",
+          "accepted": false,
+          "causes": [
+            "span1:verdict_unsupported"
+          ],
+          "error": null,
+          "retried": false,
+          "cost_usd": 0.0009432,
+          "latency_ms": 3093,
+          "calls": [
+            {
+              "provider": null,
+              "model": "deepseek-v4.1-flash",
+              "served_model": "deepseek-v4.1-flash",
+              "requested_model": "deepseek-v4.1-flash",
+              "protocol": "chat",
+              "max_tokens": 3000,
+              "cost_usd": 0.0009432,
+              "prompt_tokens": 2000,
+              "completion_tokens": 286,
+              "finish_reason": "stop",
+              "latency_ms": 3090.0,
+              "ttfb_ms": 3088.2
             }
           ],
           "review": {
@@ -3406,7 +3461,7 @@
                 "supporting_evidence_ids": [
                   "2025-26.20260928.1:game:97:player:134"
                 ],
-                "reason": "Claim window is playoffs, not regular season."
+                "reason": "Claim window is 2025-26 playoffs, not regular season."
               }
             ],
             "follow_up_reviews": [
@@ -3417,75 +3472,14 @@
                 "supporting_evidence_ids": [
                   "2025-26.20260928.1:game:97:player:134"
                 ],
-                "reason": "Assists are an available metric for these games."
+                "reason": "Assists are an available metric over the same game window."
               },
               {
                 "text": "How did Brunson's scoring average compare to his regular-season average?",
                 "verdict": "insufficient_evidence",
                 "supporting_claim_ids": [],
                 "supporting_evidence_ids": [],
-                "reason": "No regular-season average is available in scope."
-              }
-            ]
-          },
-          "trial": 0
-        },
-        {
-          "outcome": "verdict_rejected",
-          "accepted": false,
-          "causes": [
-            "span1:verdict_unsupported"
-          ],
-          "error": null,
-          "retried": false,
-          "cost_usd": 0.0008772,
-          "latency_ms": 2007,
-          "calls": [
-            {
-              "provider": null,
-              "model": "deepseek-v4.1-flash",
-              "served_model": "deepseek-v4.1-flash",
-              "requested_model": "deepseek-v4.1-flash",
-              "protocol": "chat",
-              "max_tokens": 3000,
-              "cost_usd": 0.0008772,
-              "prompt_tokens": 2000,
-              "completion_tokens": 231,
-              "finish_reason": "stop",
-              "latency_ms": 2006.4,
-              "ttfb_ms": 2006.2
-            }
-          ],
-          "review": {
-            "assertions": [
-              {
-                "text": "Jalen Brunson averaged 32.6 points per game over his last 5 games (2025-26 regular season, June 3\u201313, 2026).",
-                "assertion_type": "factual",
-                "verdict": "unsupported",
-                "offending_text": "2025-26 regular season",
-                "supporting_claim_ids": [
-                  "claim:b360281320642f137147e69b2e8c1deac80438a219592a4dfc929d490ddc448a"
-                ],
-                "supporting_evidence_ids": [
-                  "2025-26.20260928.1:game:97:player:134"
-                ],
-                "reason": "Claim specifies playoffs, not regular season."
-              }
-            ],
-            "follow_up_reviews": [
-              {
-                "text": "What was Brunson's assist average over those same 5 games?",
-                "verdict": "supported",
-                "supporting_claim_ids": [],
-                "supporting_evidence_ids": [],
-                "reason": "Assists metric available and scope matches same window."
-              },
-              {
-                "text": "How did Brunson's scoring average compare to his regular-season average?",
-                "verdict": "unsupported",
-                "supporting_claim_ids": [],
-                "supporting_evidence_ids": [],
-                "reason": "No regular-season claim or scope available in this archive slice."
+                "reason": "No regular-season scoring average is provided in claims."
               }
             ]
           },
@@ -3517,8 +3511,8 @@
           ],
           "error": null,
           "retried": false,
-          "cost_usd": 0.0007797,
-          "latency_ms": 2686,
+          "cost_usd": 0.0008133,
+          "latency_ms": 2808,
           "calls": [
             {
               "provider": null,
@@ -3527,12 +3521,12 @@
               "requested_model": "deepseek-v4.1-flash",
               "protocol": "chat",
               "max_tokens": 3000,
-              "cost_usd": 0.0007797,
+              "cost_usd": 0.0008133,
               "prompt_tokens": 1675,
-              "completion_tokens": 231,
+              "completion_tokens": 259,
               "finish_reason": "stop",
-              "latency_ms": 2686.1,
-              "ttfb_ms": 2686.0
+              "latency_ms": 2805.6,
+              "ttfb_ms": 2804.7
             }
           ],
           "review": {
@@ -3545,8 +3539,10 @@
                 "supporting_claim_ids": [
                   "claim:0be31ae07e2e8a524a3b2a87a17f10abe5034cc39e8d0f036ffa839a8b81365b"
                 ],
-                "supporting_evidence_ids": [],
-                "reason": "Claim filters are away wins, not home; 32 road wins mislabeled."
+                "supporting_evidence_ids": [
+                  "calculation:04c05e12c8d68d82a1a573484383dfd77844e48533b396dc732bd46243176154"
+                ],
+                "reason": "Claim filters are away wins, not home games."
               }
             ],
             "follow_up_reviews": [
@@ -3555,14 +3551,14 @@
                 "verdict": "supported",
                 "supporting_claim_ids": [],
                 "supporting_evidence_ids": [],
-                "reason": "Archive supports away games with losses via team metrics."
+                "reason": "Archive has away games with losses available."
               },
               {
                 "text": "What was the Knicks' average margin in road wins?",
                 "verdict": "supported",
                 "supporting_claim_ids": [],
                 "supporting_evidence_ids": [],
-                "reason": "Team margin metric available filtered to road wins."
+                "reason": "Margin metric and away wins within archive scope."
               }
             ]
           },
@@ -3576,8 +3572,8 @@
           ],
           "error": null,
           "retried": false,
-          "cost_usd": 0.0007797,
-          "latency_ms": 1986,
+          "cost_usd": 0.0007857,
+          "latency_ms": 2504,
           "calls": [
             {
               "provider": null,
@@ -3586,12 +3582,12 @@
               "requested_model": "deepseek-v4.1-flash",
               "protocol": "chat",
               "max_tokens": 3000,
-              "cost_usd": 0.0007797,
+              "cost_usd": 0.0007857,
               "prompt_tokens": 1675,
-              "completion_tokens": 231,
+              "completion_tokens": 236,
               "finish_reason": "stop",
-              "latency_ms": 1985.1,
-              "ttfb_ms": 1984.5
+              "latency_ms": 2502.4,
+              "ttfb_ms": 2501.2
             }
           ],
           "review": {
@@ -3605,7 +3601,7 @@
                   "claim:0be31ae07e2e8a524a3b2a87a17f10abe5034cc39e8d0f036ffa839a8b81365b"
                 ],
                 "supporting_evidence_ids": [],
-                "reason": "Claim is road wins, not home wins; scope mismatched."
+                "reason": "Claim is for away wins, not home games; question asked about road."
               }
             ],
             "follow_up_reviews": [
@@ -3614,14 +3610,14 @@
                 "verdict": "supported",
                 "supporting_claim_ids": [],
                 "supporting_evidence_ids": [],
-                "reason": "Archive tracks losses and away filter consistent with scope."
+                "reason": "Archive has away games and results, so road losses are answerable."
               },
               {
                 "text": "What was the Knicks' average margin in road wins?",
                 "verdict": "supported",
                 "supporting_claim_ids": [],
                 "supporting_evidence_ids": [],
-                "reason": "Margin is a team metric and away wins scope is available."
+                "reason": "Team margin and away win filters are available in archive."
               }
             ]
           },
@@ -3634,7 +3630,9 @@
       "class": "wins_losses_swapped",
       "unit": "exact_statistics-001",
       "why_gate_passes": "Both 69 and 32 are supplied wins/losses claim values.",
-      "gate_issues": [],
+      "gate_issues": [
+        "span 1 states the record 32-69 with wins and losses reversed"
+      ],
       "original": "In the available 2025-26 archive, the Knicks went 69-32 across 101 games.",
       "mutated": "In the available 2025-26 archive, the Knicks went 32-69 across 101 games.",
       "append": "",
@@ -3644,141 +3642,16 @@
           "went 32-69"
         ]
       ],
-      "observations": [
-        {
-          "outcome": "verdict_rejected",
-          "accepted": false,
-          "causes": [
-            "span1:verdict_unsupported"
-          ],
-          "error": null,
-          "retried": false,
-          "cost_usd": 0.0009426,
-          "latency_ms": 2252,
-          "calls": [
-            {
-              "provider": null,
-              "model": "deepseek-v4.1-flash",
-              "served_model": "deepseek-v4.1-flash",
-              "requested_model": "deepseek-v4.1-flash",
-              "protocol": "chat",
-              "max_tokens": 3000,
-              "cost_usd": 0.0009426,
-              "prompt_tokens": 1870,
-              "completion_tokens": 318,
-              "finish_reason": "stop",
-              "latency_ms": 2251.7,
-              "ttfb_ms": 2251.5
-            }
-          ],
-          "review": {
-            "assertions": [
-              {
-                "text": "In the available 2025-26 archive, the Knicks went 32-69 across 101 games.",
-                "assertion_type": "factual",
-                "verdict": "unsupported",
-                "offending_text": "32-69",
-                "supporting_claim_ids": [
-                  "claim:6967a12a584c5b797f5522c968d0474cc9cfe47b49e27ad4f9ad75caf8521a49",
-                  "claim:755cd7abc5d4380efd7d5e411145b32485817ed483eaa2b570e3a36b0c03094c"
-                ],
-                "supporting_evidence_ids": [
-                  "calculation:976625c44907bbf175677eaaa76535f3269e0bc176cd449af208533d1d743af4",
-                  "calculation:f3c584256b27eb06be985e7d359c19bab4db8734a48149a62264896c7c2539f9"
-                ],
-                "reason": "Record reversed; claims give 69 wins and 32 losses."
-              }
-            ],
-            "follow_up_reviews": [
-              {
-                "text": "What was the Knicks' point differential this season?",
-                "verdict": "supported",
-                "supporting_claim_ids": [],
-                "supporting_evidence_ids": [],
-                "reason": "Margin is an available team metric for this season."
-              },
-              {
-                "text": "How many points did the Knicks score in total this season?",
-                "verdict": "insufficient_evidence",
-                "supporting_claim_ids": [],
-                "supporting_evidence_ids": [],
-                "reason": "No total team points metric is listed in capabilities."
-              }
-            ]
-          },
-          "trial": 0
-        },
-        {
-          "outcome": "verdict_rejected",
-          "accepted": false,
-          "causes": [
-            "span1:verdict_unsupported"
-          ],
-          "error": null,
-          "retried": false,
-          "cost_usd": 0.0009522,
-          "latency_ms": 2096,
-          "calls": [
-            {
-              "provider": null,
-              "model": "deepseek-v4.1-flash",
-              "served_model": "deepseek-v4.1-flash",
-              "requested_model": "deepseek-v4.1-flash",
-              "protocol": "chat",
-              "max_tokens": 3000,
-              "cost_usd": 0.0009522,
-              "prompt_tokens": 1870,
-              "completion_tokens": 326,
-              "finish_reason": "stop",
-              "latency_ms": 2095.5,
-              "ttfb_ms": 2095.3
-            }
-          ],
-          "review": {
-            "assertions": [
-              {
-                "text": "In the available 2025-26 archive, the Knicks went 32-69 across 101 games.",
-                "assertion_type": "factual",
-                "verdict": "unsupported",
-                "offending_text": "32-69",
-                "supporting_claim_ids": [
-                  "claim:6967a12a584c5b797f5522c968d0474cc9cfe47b49e27ad4f9ad75caf8521a49",
-                  "claim:755cd7abc5d4380efd7d5e411145b32485817ed483eaa2b570e3a36b0c03094c"
-                ],
-                "supporting_evidence_ids": [
-                  "calculation:976625c44907bbf175677eaaa76535f3269e0bc176cd449af208533d1d743af4",
-                  "calculation:f3c584256b27eb06be985e7d359c19bab4db8734a48149a62264896c7c2539f9"
-                ],
-                "reason": "Claims show 69 wins and 32 losses, so record is reversed."
-              }
-            ],
-            "follow_up_reviews": [
-              {
-                "text": "What was the Knicks' point differential this season?",
-                "verdict": "supported",
-                "supporting_claim_ids": [],
-                "supporting_evidence_ids": [],
-                "reason": "Margin is an available team metric; Knicks season scope applies."
-              },
-              {
-                "text": "How many points did the Knicks score in total this season?",
-                "verdict": "insufficient_evidence",
-                "supporting_claim_ids": [],
-                "supporting_evidence_ids": [],
-                "reason": "Points metric exists but no team total aggregate is confirmed available."
-              }
-            ]
-          },
-          "trial": 1
-        }
-      ]
+      "observations": []
     },
     {
       "case_id": "record_swap_last_five",
       "class": "wins_losses_swapped",
       "unit": "date_range_last_n-001",
       "why_gate_passes": "Both 4 and 1 are supplied wins/losses claim values.",
-      "gate_issues": [],
+      "gate_issues": [
+        "span 1 states the record 1-4 with wins and losses reversed"
+      ],
       "original": "Over their last 5 archived games, the Knicks went 4-1.",
       "mutated": "Over their last 5 archived games, the Knicks went 1-4.",
       "append": "",
@@ -3788,138 +3661,16 @@
           "went 1-4"
         ]
       ],
-      "observations": [
-        {
-          "outcome": "verdict_rejected",
-          "accepted": false,
-          "causes": [
-            "span1:verdict_unsupported"
-          ],
-          "error": null,
-          "retried": false,
-          "cost_usd": 0.000852,
-          "latency_ms": 2619,
-          "calls": [
-            {
-              "provider": null,
-              "model": "deepseek-v4.1-flash",
-              "served_model": "deepseek-v4.1-flash",
-              "requested_model": "deepseek-v4.1-flash",
-              "protocol": "chat",
-              "max_tokens": 3000,
-              "cost_usd": 0.000852,
-              "prompt_tokens": 1880,
-              "completion_tokens": 240,
-              "finish_reason": "stop",
-              "latency_ms": 2618.4,
-              "ttfb_ms": 2618.0
-            }
-          ],
-          "review": {
-            "assertions": [
-              {
-                "text": "Over their last 5 archived games, the Knicks went 1-4.",
-                "assertion_type": "factual",
-                "verdict": "unsupported",
-                "offending_text": "went 1-4",
-                "supporting_claim_ids": [
-                  "claim:018e2e515080da77386bbbae0862a4f70faf33162972c82852e7ef06aa607adb",
-                  "claim:5d86ab6c2808529e561724f6f6978443eeded4884edfd1bfefac304c8cf7691c"
-                ],
-                "supporting_evidence_ids": [],
-                "reason": "Claims show 4 wins and 1 loss, not 1-4."
-              }
-            ],
-            "follow_up_reviews": [
-              {
-                "text": "What was the Knicks' average margin over those 5 games?",
-                "verdict": "supported",
-                "supporting_claim_ids": [],
-                "supporting_evidence_ids": [],
-                "reason": "Margin is a team metric within capabilities for same game set."
-              },
-              {
-                "text": "How many total points did the Knicks score over those 5 games?",
-                "verdict": "supported",
-                "supporting_claim_ids": [],
-                "supporting_evidence_ids": [],
-                "reason": "Points is a team metric available for same games."
-              }
-            ]
-          },
-          "trial": 0
-        },
-        {
-          "outcome": "verdict_rejected",
-          "accepted": false,
-          "causes": [
-            "span1:verdict_unsupported"
-          ],
-          "error": null,
-          "retried": false,
-          "cost_usd": 0.000948,
-          "latency_ms": 1991,
-          "calls": [
-            {
-              "provider": null,
-              "model": "deepseek-v4.1-flash",
-              "served_model": "deepseek-v4.1-flash",
-              "requested_model": "deepseek-v4.1-flash",
-              "protocol": "chat",
-              "max_tokens": 3000,
-              "cost_usd": 0.000948,
-              "prompt_tokens": 1880,
-              "completion_tokens": 320,
-              "finish_reason": "stop",
-              "latency_ms": 1990.6,
-              "ttfb_ms": 1989.7
-            }
-          ],
-          "review": {
-            "assertions": [
-              {
-                "text": "Over their last 5 archived games, the Knicks went 1-4.",
-                "assertion_type": "factual",
-                "verdict": "unsupported",
-                "offending_text": "1-4",
-                "supporting_claim_ids": [
-                  "claim:018e2e515080da77386bbbae0862a4f70faf33162972c82852e7ef06aa607adb",
-                  "claim:5d86ab6c2808529e561724f6f6978443eeded4884edfd1bfefac304c8cf7691c"
-                ],
-                "supporting_evidence_ids": [
-                  "calculation:80b4952927058e9d89f6df216670f86d20728746e324d05c9deb48c47d060ad7",
-                  "calculation:0d82fecf467186c91ae453d29549937f59c40b02548a0944356961e8e13ae376"
-                ],
-                "reason": "Claims show 4 wins and 1 loss, so record is 4-1 not 1-4."
-              }
-            ],
-            "follow_up_reviews": [
-              {
-                "text": "What was the Knicks' average margin over those 5 games?",
-                "verdict": "supported",
-                "supporting_claim_ids": [],
-                "supporting_evidence_ids": [],
-                "reason": "Margin is an available team metric for these archived games."
-              },
-              {
-                "text": "How many total points did the Knicks score over those 5 games?",
-                "verdict": "supported",
-                "supporting_claim_ids": [],
-                "supporting_evidence_ids": [],
-                "reason": "Points is an available team metric for these archived games."
-              }
-            ]
-          },
-          "trial": 1
-        }
-      ]
+      "observations": []
     },
     {
       "case_id": "record_swap_january",
       "class": "wins_losses_swapped",
       "unit": "date_range_last_n-004",
       "why_gate_passes": "Both 7 and 8 are supplied wins/losses claim values.",
-      "gate_issues": [],
+      "gate_issues": [
+        "span 1 states the record 8-7 with wins and losses reversed"
+      ],
       "original": "From January 1 through January 31, the Knicks went 7-8 across 15 archived games, scoring 1,652 total points.",
       "mutated": "From January 1 through January 31, the Knicks went 8-7 across 15 archived games, scoring 1,652 total points.",
       "append": "",
@@ -3929,133 +3680,7 @@
           "went 8-7"
         ]
       ],
-      "observations": [
-        {
-          "outcome": "accepted",
-          "accepted": true,
-          "causes": [],
-          "error": null,
-          "retried": false,
-          "cost_usd": 0.0011592,
-          "latency_ms": 2692,
-          "calls": [
-            {
-              "provider": null,
-              "model": "deepseek-v4.1-flash",
-              "served_model": "deepseek-v4.1-flash",
-              "requested_model": "deepseek-v4.1-flash",
-              "protocol": "chat",
-              "max_tokens": 3000,
-              "cost_usd": 0.0011592,
-              "prompt_tokens": 2184,
-              "completion_tokens": 420,
-              "finish_reason": "stop",
-              "latency_ms": 2691.4,
-              "ttfb_ms": 2691.2
-            }
-          ],
-          "review": {
-            "assertions": [
-              {
-                "text": "From January 1 through January 31, the Knicks went 8-7 across 15 archived games, scoring 1,652 total points.",
-                "assertion_type": "interpretation",
-                "verdict": "supported",
-                "offending_text": null,
-                "supporting_claim_ids": [
-                  "claim:8ae74bc11c415f391b098b9199758b96c5778d5e71a89a647b7c9a362e28d51c",
-                  "claim:5a43adf99c2a0a2ea22a22a49a7b16d024226960dd2e360e8d413ef5ca6e2854",
-                  "claim:030ed374b46dcae45c14e8faba1d5506eea08bbfd39ce356d5a813708e51b852"
-                ],
-                "supporting_evidence_ids": [
-                  "2025-26.20260928.1:game:34"
-                ],
-                "reason": "Wins, losses and points match cited claims over the archived games."
-              }
-            ],
-            "follow_up_reviews": [
-              {
-                "text": "What was the Knicks' average points per game in January?",
-                "verdict": "supported",
-                "supporting_claim_ids": [
-                  "claim:030ed374b46dcae45c14e8faba1d5506eea08bbfd39ce356d5a813708e51b852",
-                  "claim:8ae74bc11c415f391b098b9199758b96c5778d5e71a89a647b7c9a362e28d51c"
-                ],
-                "supporting_evidence_ids": [],
-                "reason": "Points and games available; average derivable from claims."
-              },
-              {
-                "text": "How did the Knicks' January margin compare to another month?",
-                "verdict": "supported",
-                "supporting_claim_ids": [],
-                "supporting_evidence_ids": [],
-                "reason": "Margin metric available for team across archive months."
-              }
-            ]
-          },
-          "trial": 0
-        },
-        {
-          "outcome": "accepted",
-          "accepted": true,
-          "causes": [],
-          "error": null,
-          "retried": false,
-          "cost_usd": 0.001098,
-          "latency_ms": 5419,
-          "calls": [
-            {
-              "provider": null,
-              "model": "deepseek-v4.1-flash",
-              "served_model": "deepseek-v4.1-flash",
-              "requested_model": "deepseek-v4.1-flash",
-              "protocol": "chat",
-              "max_tokens": 3000,
-              "cost_usd": 0.001098,
-              "prompt_tokens": 2184,
-              "completion_tokens": 369,
-              "finish_reason": "stop",
-              "latency_ms": 5418.7,
-              "ttfb_ms": 5418.3
-            }
-          ],
-          "review": {
-            "assertions": [
-              {
-                "text": "From January 1 through January 31, the Knicks went 8-7 across 15 archived games, scoring 1,652 total points.",
-                "assertion_type": "interpretation",
-                "verdict": "supported",
-                "offending_text": null,
-                "supporting_claim_ids": [
-                  "claim:8ae74bc11c415f391b098b9199758b96c5778d5e71a89a647b7c9a362e28d51c",
-                  "claim:5a43adf99c2a0a2ea22a22a49a7b16d024226960dd2e360e8d413ef5ca6e2854",
-                  "claim:030ed374b46dcae45c14e8faba1d5506eea08bbfd39ce356d5a813708e51b852"
-                ],
-                "supporting_evidence_ids": [],
-                "reason": "Claims give 7 wins, 8 losses, 1652 points over 15 games."
-              }
-            ],
-            "follow_up_reviews": [
-              {
-                "text": "What was the Knicks' average points per game in January?",
-                "verdict": "supported",
-                "supporting_claim_ids": [
-                  "claim:030ed374b46dcae45c14e8faba1d5506eea08bbfd39ce356d5a813708e51b852"
-                ],
-                "supporting_evidence_ids": [],
-                "reason": "Points and game count available for January average."
-              },
-              {
-                "text": "How did the Knicks' January margin compare to another month?",
-                "verdict": "insufficient_evidence",
-                "supporting_claim_ids": [],
-                "supporting_evidence_ids": [],
-                "reason": "No margin claim or other month data provided."
-              }
-            ]
-          },
-          "trial": 1
-        }
-      ]
+      "observations": []
     },
     {
       "case_id": "unit_per_game_as_total",
@@ -4081,8 +3706,8 @@
           ],
           "error": null,
           "retried": false,
-          "cost_usd": 0.00078,
-          "latency_ms": 2636,
+          "cost_usd": 0.0007938,
+          "latency_ms": 3616,
           "calls": [
             {
               "provider": null,
@@ -4091,12 +3716,12 @@
               "requested_model": "deepseek-v4.1-flash",
               "protocol": "chat",
               "max_tokens": 3000,
-              "cost_usd": 0.00078,
-              "prompt_tokens": 1636,
-              "completion_tokens": 241,
+              "cost_usd": 0.0007938,
+              "prompt_tokens": 1614,
+              "completion_tokens": 258,
               "finish_reason": "stop",
-              "latency_ms": 2635.8,
-              "ttfb_ms": 2635.6
+              "latency_ms": 3615.6,
+              "ttfb_ms": 3615.4
             }
           ],
           "review": {
@@ -4105,12 +3730,12 @@
                 "text": "The Knicks scored 116.34 total points across 101 archived games in the 2025-26 release.",
                 "assertion_type": "factual",
                 "verdict": "unsupported",
-                "offending_text": "116.34 total points across 101 archived games",
+                "offending_text": "116.34 total points",
                 "supporting_claim_ids": [
                   "claim:deafd8c4fbb345abf20ac4820b893127789e3a5b6339c1a6425567c7590cbe1c"
                 ],
                 "supporting_evidence_ids": [],
-                "reason": "116.34 is per-game average, not total points."
+                "reason": "Value is per game average, not total points."
               }
             ],
             "follow_up_reviews": [
@@ -4119,14 +3744,14 @@
                 "verdict": "supported",
                 "supporting_claim_ids": [],
                 "supporting_evidence_ids": [],
-                "reason": "Margin is a team metric the archive supports."
+                "reason": "Margin is an available team metric within archive scope."
               },
               {
                 "text": "How many games did the Knicks win and lose in the archive?",
                 "verdict": "supported",
                 "supporting_claim_ids": [],
                 "supporting_evidence_ids": [],
-                "reason": "Wins and losses are archived team metrics."
+                "reason": "Wins and losses are supported team metrics in scope."
               }
             ]
           },
@@ -4140,8 +3765,8 @@
           ],
           "error": null,
           "retried": false,
-          "cost_usd": 0.0008124,
-          "latency_ms": 3242,
+          "cost_usd": 0.0008196,
+          "latency_ms": 2659,
           "calls": [
             {
               "provider": null,
@@ -4150,28 +3775,28 @@
               "requested_model": "deepseek-v4.1-flash",
               "protocol": "chat",
               "max_tokens": 3000,
-              "cost_usd": 0.0008124,
+              "cost_usd": 0.0008196,
               "prompt_tokens": 1636,
-              "completion_tokens": 268,
+              "completion_tokens": 274,
               "finish_reason": "stop",
-              "latency_ms": 3241.6,
-              "ttfb_ms": 3241.4
+              "latency_ms": 2658.7,
+              "ttfb_ms": 2656.5
             }
           ],
           "review": {
             "assertions": [
               {
                 "text": "The Knicks scored 116.34 total points across 101 archived games in the 2025-26 release.",
-                "assertion_type": "interpretation",
+                "assertion_type": "factual",
                 "verdict": "unsupported",
-                "offending_text": "total points",
+                "offending_text": "116.34 total points",
                 "supporting_claim_ids": [
                   "claim:deafd8c4fbb345abf20ac4820b893127789e3a5b6339c1a6425567c7590cbe1c"
                 ],
                 "supporting_evidence_ids": [
                   "calculation:d993ae6cd86202ac698d33453fb7b54ea7c565db4bdb5d356719825cd640d79a"
                 ],
-                "reason": "Value is a per-game average, not total points."
+                "reason": "Value is per-game average, not total points; misstates metric."
               }
             ],
             "follow_up_reviews": [
@@ -4180,14 +3805,14 @@
                 "verdict": "supported",
                 "supporting_claim_ids": [],
                 "supporting_evidence_ids": [],
-                "reason": "Margin is a supported team metric in capabilities."
+                "reason": "Margin is an available team metric in capabilities."
               },
               {
                 "text": "How many games did the Knicks win and lose in the archive?",
                 "verdict": "supported",
                 "supporting_claim_ids": [],
                 "supporting_evidence_ids": [],
-                "reason": "Wins and losses are supported team metrics."
+                "reason": "Wins and losses are available team metrics."
               }
             ]
           },
@@ -4219,8 +3844,8 @@
           ],
           "error": null,
           "retried": false,
-          "cost_usd": 0.0009039,
-          "latency_ms": 3188,
+          "cost_usd": 0.0008079,
+          "latency_ms": 2187,
           "calls": [
             {
               "provider": null,
@@ -4229,75 +3854,12 @@
               "requested_model": "deepseek-v4.1-flash",
               "protocol": "chat",
               "max_tokens": 3000,
-              "cost_usd": 0.0009039,
+              "cost_usd": 0.0008079,
               "prompt_tokens": 1633,
-              "completion_tokens": 345,
+              "completion_tokens": 265,
               "finish_reason": "stop",
-              "latency_ms": 3187.3,
-              "ttfb_ms": 3187.1
-            }
-          ],
-          "review": {
-            "assertions": [
-              {
-                "text": "The Knicks averaged 11,750 points per game across 101 archived games in the 2025-26 release.",
-                "assertion_type": "factual",
-                "verdict": "unsupported",
-                "offending_text": "averaged 11,750 points per game",
-                "supporting_claim_ids": [
-                  "claim:f9b34fee66aed1e531b68052b5b1c7bc8f66127dca6d755e6b1c6c9b07bde8c4"
-                ],
-                "supporting_evidence_ids": [
-                  "calculation:292029a0a3551d8af1d97e770afa170bbfe6024c97fe6925fec38e3c77d2ca76"
-                ],
-                "reason": "11750 is total points over 101 games, not a per-game average."
-              }
-            ],
-            "follow_up_reviews": [
-              {
-                "text": "What was the Knicks' average points per game?",
-                "verdict": "supported",
-                "supporting_claim_ids": [
-                  "claim:f9b34fee66aed1e531b68052b5b1c7bc8f66127dca6d755e6b1c6c9b07bde8c4"
-                ],
-                "supporting_evidence_ids": [],
-                "reason": "Archive has points and game counts to compute a per-game average."
-              },
-              {
-                "text": "How many total points did the Knicks allow (margin context)?",
-                "verdict": "insufficient_evidence",
-                "supporting_claim_ids": [],
-                "supporting_evidence_ids": [],
-                "reason": "No opponent scoring or points-allowed data in capabilities."
-              }
-            ]
-          },
-          "trial": 0
-        },
-        {
-          "outcome": "verdict_rejected",
-          "accepted": false,
-          "causes": [
-            "span1:verdict_unsupported"
-          ],
-          "error": null,
-          "retried": false,
-          "cost_usd": 0.0008979,
-          "latency_ms": 3184,
-          "calls": [
-            {
-              "provider": null,
-              "model": "deepseek-v4.1-flash",
-              "served_model": "deepseek-v4.1-flash",
-              "requested_model": "deepseek-v4.1-flash",
-              "protocol": "chat",
-              "max_tokens": 3000,
-              "cost_usd": 0.0008979,
-              "prompt_tokens": 1633,
-              "completion_tokens": 340,
-              "finish_reason": "stop",
-              "latency_ms": 3183.5,
-              "ttfb_ms": 3183.1
+              "latency_ms": 2186.0,
+              "ttfb_ms": 2185.9
             }
           ],
           "review": {
@@ -4313,25 +3875,84 @@
                 "supporting_evidence_ids": [
                   "calculation:292029a0a3551d8af1d97e770afa170bbfe6024c97fe6925fec38e3c77d2ca76"
                 ],
-                "reason": "11750 is total points, not per-game average."
+                "reason": "Claim states 11750 total points, not a per-game average."
               }
             ],
             "follow_up_reviews": [
               {
                 "text": "What was the Knicks' average points per game?",
                 "verdict": "supported",
+                "supporting_claim_ids": [],
+                "supporting_evidence_ids": [],
+                "reason": "Archive holds points and game counts to compute per-game average."
+              },
+              {
+                "text": "How many total points did the Knicks allow (margin context)?",
+                "verdict": "unsupported",
+                "supporting_claim_ids": [],
+                "supporting_evidence_ids": [],
+                "reason": "Archive has scores but no points-allowed total metric; inference unverified."
+              }
+            ]
+          },
+          "trial": 0
+        },
+        {
+          "outcome": "verdict_rejected",
+          "accepted": false,
+          "causes": [
+            "span1:verdict_unsupported"
+          ],
+          "error": null,
+          "retried": false,
+          "cost_usd": 0.0008103,
+          "latency_ms": 3066,
+          "calls": [
+            {
+              "provider": null,
+              "model": "deepseek-v4.1-flash",
+              "served_model": "deepseek-v4.1-flash",
+              "requested_model": "deepseek-v4.1-flash",
+              "protocol": "chat",
+              "max_tokens": 3000,
+              "cost_usd": 0.0008103,
+              "prompt_tokens": 1633,
+              "completion_tokens": 267,
+              "finish_reason": "stop",
+              "latency_ms": 3065.3,
+              "ttfb_ms": 3065.2
+            }
+          ],
+          "review": {
+            "assertions": [
+              {
+                "text": "The Knicks averaged 11,750 points per game across 101 archived games in the 2025-26 release.",
+                "assertion_type": "interpretation",
+                "verdict": "unsupported",
+                "offending_text": "averaged 11,750 points per game",
                 "supporting_claim_ids": [
                   "claim:f9b34fee66aed1e531b68052b5b1c7bc8f66127dca6d755e6b1c6c9b07bde8c4"
                 ],
+                "supporting_evidence_ids": [
+                  "calculation:292029a0a3551d8af1d97e770afa170bbfe6024c97fe6925fec38e3c77d2ca76"
+                ],
+                "reason": "11,750 is the total, not a per-game average, across 101 games."
+              }
+            ],
+            "follow_up_reviews": [
+              {
+                "text": "What was the Knicks' average points per game?",
+                "verdict": "supported",
+                "supporting_claim_ids": [],
                 "supporting_evidence_ids": [],
-                "reason": "Archive has total points and game count to compute average."
+                "reason": "Total points and game count support computing a per-game average."
               },
               {
                 "text": "How many total points did the Knicks allow (margin context)?",
                 "verdict": "insufficient_evidence",
                 "supporting_claim_ids": [],
                 "supporting_evidence_ids": [],
-                "reason": "Archive claims only Knicks points scored, not points allowed."
+                "reason": "Archive lacks opponent points-allowed totals to answer this."
               }
             ]
           },
@@ -4363,8 +3984,8 @@
           ],
           "error": null,
           "retried": false,
-          "cost_usd": 0.0012084,
-          "latency_ms": 3650,
+          "cost_usd": 0.0011688,
+          "latency_ms": 3350,
           "calls": [
             {
               "provider": null,
@@ -4373,19 +3994,19 @@
               "requested_model": "deepseek-v4.1-flash",
               "protocol": "chat",
               "max_tokens": 3000,
-              "cost_usd": 0.0012084,
+              "cost_usd": 0.0011688,
               "prompt_tokens": 2232,
-              "completion_tokens": 449,
+              "completion_tokens": 416,
               "finish_reason": "stop",
-              "latency_ms": 3649.2,
-              "ttfb_ms": 3649.0
+              "latency_ms": 3349.8,
+              "ttfb_ms": 3349.6
             }
           ],
           "review": {
             "assertions": [
               {
                 "text": "Over their last 10 archived games, the Knicks scored 114.1 total points (9 wins, 1 loss).",
-                "assertion_type": "interpretation",
+                "assertion_type": "factual",
                 "verdict": "unsupported",
                 "offending_text": "114.1 total points",
                 "supporting_claim_ids": [
@@ -4398,7 +4019,7 @@
                   "calculation:1e974a510ff9c26ecac65e82b020ad3d63b9c953968cc22ab2f66d7a1977595b",
                   "calculation:fd05e1b96033c76bfbd6c89d305b78cafd18831201f2293e77ad3cbdc4651d12"
                 ],
-                "reason": "114.1 is points per game, not total points."
+                "reason": "114.1 is per-game average, not total points."
               }
             ],
             "follow_up_reviews": [
@@ -4407,14 +4028,14 @@
                 "verdict": "supported",
                 "supporting_claim_ids": [],
                 "supporting_evidence_ids": [],
-                "reason": "Margin is an available team metric for team games."
+                "reason": "Margin is a supported team metric; games in scope."
               },
               {
                 "text": "How many points did the Knicks allow per game over those 10 games?",
                 "verdict": "insufficient_evidence",
                 "supporting_claim_ids": [],
                 "supporting_evidence_ids": [],
-                "reason": "Opponent points allowed per game is not an available metric."
+                "reason": "Opponent points allowed is not among archive metrics."
               }
             ]
           },
@@ -4428,8 +4049,8 @@
           ],
           "error": null,
           "retried": false,
-          "cost_usd": 0.00117,
-          "latency_ms": 2119,
+          "cost_usd": 0.0011076,
+          "latency_ms": 2310,
           "calls": [
             {
               "provider": null,
@@ -4438,12 +4059,12 @@
               "requested_model": "deepseek-v4.1-flash",
               "protocol": "chat",
               "max_tokens": 3000,
-              "cost_usd": 0.00117,
+              "cost_usd": 0.0011076,
               "prompt_tokens": 2232,
-              "completion_tokens": 417,
+              "completion_tokens": 365,
               "finish_reason": "stop",
-              "latency_ms": 2118.3,
-              "ttfb_ms": 2118.1
+              "latency_ms": 2309.4,
+              "ttfb_ms": 2309.2
             }
           ],
           "review": {
@@ -4452,18 +4073,16 @@
                 "text": "Over their last 10 archived games, the Knicks scored 114.1 total points (9 wins, 1 loss).",
                 "assertion_type": "interpretation",
                 "verdict": "unsupported",
-                "offending_text": "114.1 total points",
+                "offending_text": "total points",
                 "supporting_claim_ids": [
                   "claim:17fd24efa5e43c5d99e05614eab9f77ce82daf192b01a2fced23776f214723cb",
                   "claim:b1e1bcc1f7a34299630cca503f26a16b882ea8fdb5d1908eeebbfaf9a6c59fcb",
                   "claim:5ae1cfd59359c95904ef60375d14d1ad308b87b70bd38d74e631e784ab00efc7"
                 ],
                 "supporting_evidence_ids": [
-                  "calculation:c9cf8f3bb452e386ea3515e2838ea72cce1887b6426022ecf6e5ff2c467b3532",
-                  "calculation:1e974a510ff9c26ecac65e82b020ad3d63b9c953968cc22ab2f66d7a1977595b",
-                  "calculation:fd05e1b96033c76bfbd6c89d305b78cafd18831201f2293e77ad3cbdc4651d12"
+                  "calculation:c9cf8f3bb452e386ea3515e2838ea72cce1887b6426022ecf6e5ff2c467b3532"
                 ],
-                "reason": "114.1 is a per-game average, not total points."
+                "reason": "Claim states 114.1 points per game, not total points."
               }
             ],
             "follow_up_reviews": [
@@ -4472,14 +4091,14 @@
                 "verdict": "supported",
                 "supporting_claim_ids": [],
                 "supporting_evidence_ids": [],
-                "reason": "Margin is an available team metric and could be computed for the window."
+                "reason": "Margin is a supported team metric over the archived games."
               },
               {
                 "text": "How many points did the Knicks allow per game over those 10 games?",
-                "verdict": "supported",
+                "verdict": "unsupported",
                 "supporting_claim_ids": [],
                 "supporting_evidence_ids": [],
-                "reason": "Opponent scoring derivable from archived game scores."
+                "reason": "Opponent points allowed is not an available team metric."
               }
             ]
           },
@@ -4507,8 +4126,8 @@
           ],
           "error": null,
           "retried": false,
-          "cost_usd": 0.0010629,
-          "latency_ms": 2248,
+          "cost_usd": 0.0009477,
+          "latency_ms": 2932,
           "calls": [
             {
               "provider": null,
@@ -4517,12 +4136,82 @@
               "requested_model": "deepseek-v4.1-flash",
               "protocol": "chat",
               "max_tokens": 3000,
-              "cost_usd": 0.0010629,
+              "cost_usd": 0.0009477,
               "prompt_tokens": 1895,
-              "completion_tokens": 412,
+              "completion_tokens": 316,
               "finish_reason": "stop",
-              "latency_ms": 2247.8,
-              "ttfb_ms": 2247.5
+              "latency_ms": 2931.3,
+              "ttfb_ms": 2931.1
+            }
+          ],
+          "review": {
+            "assertions": [
+              {
+                "text": "In the available 2025-26 archive, the Knicks went 69-32 across 101 games. ",
+                "assertion_type": "factual",
+                "verdict": "supported",
+                "offending_text": null,
+                "supporting_claim_ids": [
+                  "claim:6967a12a584c5b797f5522c968d0474cc9cfe47b49e27ad4f9ad75caf8521a49",
+                  "claim:755cd7abc5d4380efd7d5e411145b32485817ed483eaa2b570e3a36b0c03094c"
+                ],
+                "supporting_evidence_ids": [],
+                "reason": "Wins and losses claims match 69-32 over 101 archived games."
+              },
+              {
+                "text": "That record proves their defense is the best in the league.",
+                "assertion_type": "interpretation",
+                "verdict": "unsupported",
+                "offending_text": "proves their defense is the best in the league",
+                "supporting_claim_ids": [],
+                "supporting_evidence_ids": [],
+                "reason": "No defensive claims or league-wide comparison support this assertion."
+              }
+            ],
+            "follow_up_reviews": [
+              {
+                "text": "What was the Knicks' point differential this season?",
+                "verdict": "supported",
+                "supporting_claim_ids": [],
+                "supporting_evidence_ids": [],
+                "reason": "Team margin is a supported team metric in capabilities."
+              },
+              {
+                "text": "How many points did the Knicks score in total this season?",
+                "verdict": "supported",
+                "supporting_claim_ids": [],
+                "supporting_evidence_ids": [],
+                "reason": "Team points is a supported team metric in capabilities."
+              }
+            ]
+          },
+          "trial": 0
+        },
+        {
+          "outcome": "verdict_rejected",
+          "accepted": false,
+          "causes": [
+            "span2:verdict_unsupported",
+            "span2:missing_ids"
+          ],
+          "error": null,
+          "retried": false,
+          "cost_usd": 0.0010617,
+          "latency_ms": 3618,
+          "calls": [
+            {
+              "provider": null,
+              "model": "deepseek-v4.1-flash",
+              "served_model": "deepseek-v4.1-flash",
+              "requested_model": "deepseek-v4.1-flash",
+              "protocol": "chat",
+              "max_tokens": 3000,
+              "cost_usd": 0.0010617,
+              "prompt_tokens": 1895,
+              "completion_tokens": 411,
+              "finish_reason": "stop",
+              "latency_ms": 3617.8,
+              "ttfb_ms": 3617.6
             }
           ],
           "review": {
@@ -4540,76 +4229,6 @@
                   "calculation:976625c44907bbf175677eaaa76535f3269e0bc176cd449af208533d1d743af4",
                   "calculation:f3c584256b27eb06be985e7d359c19bab4db8734a48149a62264896c7c2539f9"
                 ],
-                "reason": "Wins and losses match claims over same 101-game archive."
-              },
-              {
-                "text": "That record proves their defense is the best in the league.",
-                "assertion_type": "interpretation",
-                "verdict": "unsupported",
-                "offending_text": "proves their defense is the best in the league",
-                "supporting_claim_ids": [],
-                "supporting_evidence_ids": [],
-                "reason": "Record does not establish defensive quality or league ranking."
-              }
-            ],
-            "follow_up_reviews": [
-              {
-                "text": "What was the Knicks' point differential this season?",
-                "verdict": "supported",
-                "supporting_claim_ids": [],
-                "supporting_evidence_ids": [],
-                "reason": "Team margin metric is available in capabilities."
-              },
-              {
-                "text": "How many points did the Knicks score in total this season?",
-                "verdict": "supported",
-                "supporting_claim_ids": [],
-                "supporting_evidence_ids": [],
-                "reason": "Team points metric is available in capabilities."
-              }
-            ]
-          },
-          "trial": 0
-        },
-        {
-          "outcome": "verdict_rejected",
-          "accepted": false,
-          "causes": [
-            "span2:verdict_unsupported",
-            "span2:missing_ids"
-          ],
-          "error": null,
-          "retried": false,
-          "cost_usd": 0.0009777,
-          "latency_ms": 3880,
-          "calls": [
-            {
-              "provider": null,
-              "model": "deepseek-v4.1-flash",
-              "served_model": "deepseek-v4.1-flash",
-              "requested_model": "deepseek-v4.1-flash",
-              "protocol": "chat",
-              "max_tokens": 3000,
-              "cost_usd": 0.0009777,
-              "prompt_tokens": 1895,
-              "completion_tokens": 341,
-              "finish_reason": "stop",
-              "latency_ms": 3878.8,
-              "ttfb_ms": 3878.4
-            }
-          ],
-          "review": {
-            "assertions": [
-              {
-                "text": "In the available 2025-26 archive, the Knicks went 69-32 across 101 games. ",
-                "assertion_type": "factual",
-                "verdict": "supported",
-                "offending_text": null,
-                "supporting_claim_ids": [
-                  "claim:6967a12a584c5b797f5522c968d0474cc9cfe47b49e27ad4f9ad75caf8521a49",
-                  "claim:755cd7abc5d4380efd7d5e411145b32485817ed483eaa2b570e3a36b0c03094c"
-                ],
-                "supporting_evidence_ids": [],
                 "reason": "Wins and losses match claims over 101 archived games."
               },
               {
@@ -4619,7 +4238,7 @@
                 "offending_text": "proves their defense is the best in the league",
                 "supporting_claim_ids": [],
                 "supporting_evidence_ids": [],
-                "reason": "Record alone cannot establish defensive quality or league ranking."
+                "reason": "No defensive metric; record cannot establish league-best defense."
               }
             ],
             "follow_up_reviews": [
@@ -4628,14 +4247,14 @@
                 "verdict": "supported",
                 "supporting_claim_ids": [],
                 "supporting_evidence_ids": [],
-                "reason": "Margin is an available team metric in archive."
+                "reason": "Team margin metric available in archive."
               },
               {
                 "text": "How many points did the Knicks score in total this season?",
                 "verdict": "supported",
                 "supporting_claim_ids": [],
                 "supporting_evidence_ids": [],
-                "reason": "Points is an available team metric in archive."
+                "reason": "Points and team metrics available in archive."
               }
             ]
           },
@@ -4663,8 +4282,8 @@
           ],
           "error": null,
           "retried": false,
-          "cost_usd": 0.0012861,
-          "latency_ms": 4137,
+          "cost_usd": 0.0011325,
+          "latency_ms": 3646,
           "calls": [
             {
               "provider": null,
@@ -4673,12 +4292,12 @@
               "requested_model": "deepseek-v4.1-flash",
               "protocol": "chat",
               "max_tokens": 3000,
-              "cost_usd": 0.0012861,
+              "cost_usd": 0.0011325,
               "prompt_tokens": 2103,
-              "completion_tokens": 546,
+              "completion_tokens": 418,
               "finish_reason": "stop",
-              "latency_ms": 4135.9,
-              "ttfb_ms": 4134.9
+              "latency_ms": 3645.5,
+              "ttfb_ms": 3645.2
             }
           ],
           "review": {
@@ -4693,7 +4312,7 @@
                   "claim:1d8f1a95b71e9fcabfd9a1630d83feacb39f60646afe6aa711052b1419333e49"
                 ],
                 "supporting_evidence_ids": [],
-                "reason": "Both averages, subjects, and appearance counts match the claims."
+                "reason": "Both averages and appearance counts match the cited claims."
               },
               {
                 "text": "Both figures cover only observed appearances, and some archived games are missing player rows. ",
@@ -4705,7 +4324,7 @@
                   "claim:1d8f1a95b71e9fcabfd9a1630d83feacb39f60646afe6aa711052b1419333e49"
                 ],
                 "supporting_evidence_ids": [],
-                "reason": "Coverage limitations in both claims note observed-only and missing rows."
+                "reason": "Limitations listed in both claims match this wording."
               },
               {
                 "text": "Brunson's scoring average is why the Knicks had the best offense in the league.",
@@ -4714,25 +4333,10 @@
                 "offending_text": "Brunson's scoring average is why the Knicks had the best offense in the league.",
                 "supporting_claim_ids": [],
                 "supporting_evidence_ids": [],
-                "reason": "Unattributed causal claim about team offense, unsupported by any claim or evidence."
+                "reason": "Causal claim with no team-offense evidence or support."
               }
             ],
-            "follow_up_reviews": [
-              {
-                "text": "How do Brunson and Towns compare on three-pointers made per game this season?",
-                "verdict": "supported",
-                "supporting_claim_ids": [],
-                "supporting_evidence_ids": [],
-                "reason": "Both players in scope; three-pointers made is an available metric."
-              },
-              {
-                "text": "How do Brunson and Towns compare in total points scored this season?",
-                "verdict": "supported",
-                "supporting_claim_ids": [],
-                "supporting_evidence_ids": [],
-                "reason": "Both players in scope; points total is an available metric."
-              }
-            ]
+            "follow_up_reviews": []
           },
           "trial": 0
         },
@@ -4745,8 +4349,8 @@
           ],
           "error": null,
           "retried": false,
-          "cost_usd": 0.0012345,
-          "latency_ms": 4741,
+          "cost_usd": 0.0012729,
+          "latency_ms": 2557,
           "calls": [
             {
               "provider": null,
@@ -4755,12 +4359,12 @@
               "requested_model": "deepseek-v4.1-flash",
               "protocol": "chat",
               "max_tokens": 3000,
-              "cost_usd": 0.0012345,
+              "cost_usd": 0.0012729,
               "prompt_tokens": 2103,
-              "completion_tokens": 503,
+              "completion_tokens": 535,
               "finish_reason": "stop",
-              "latency_ms": 4735.0,
-              "ttfb_ms": 4731.2
+              "latency_ms": 2556.5,
+              "ttfb_ms": 2555.6
             }
           ],
           "review": {
@@ -4775,7 +4379,7 @@
                   "claim:1d8f1a95b71e9fcabfd9a1630d83feacb39f60646afe6aa711052b1419333e49"
                 ],
                 "supporting_evidence_ids": [],
-                "reason": "Claim values and appearance counts match for both players."
+                "reason": "Matches both claims' averages, samples and season window."
               },
               {
                 "text": "Both figures cover only observed appearances, and some archived games are missing player rows. ",
@@ -4787,7 +4391,7 @@
                   "claim:1d8f1a95b71e9fcabfd9a1630d83feacb39f60646afe6aa711052b1419333e49"
                 ],
                 "supporting_evidence_ids": [],
-                "reason": "Both claims carry coverage limitations about missing player rows."
+                "reason": "Coverage limitations match both claims' stated gaps."
               },
               {
                 "text": "Brunson's scoring average is why the Knicks had the best offense in the league.",
@@ -4796,7 +4400,7 @@
                 "offending_text": "Brunson's scoring average is why the Knicks had the best offense in the league.",
                 "supporting_claim_ids": [],
                 "supporting_evidence_ids": [],
-                "reason": "Causal claim lacks source support; no team offense data present."
+                "reason": "Causal and team-offense claim unsupported by provided data."
               }
             ],
             "follow_up_reviews": [
@@ -4805,14 +4409,14 @@
                 "verdict": "supported",
                 "supporting_claim_ids": [],
                 "supporting_evidence_ids": [],
-                "reason": "Three-pointers made is an available metric for both players."
+                "reason": "three_pointers_made is a supported metric for both players."
               },
               {
                 "text": "How do Brunson and Towns compare in total points scored this season?",
                 "verdict": "supported",
                 "supporting_claim_ids": [],
                 "supporting_evidence_ids": [],
-                "reason": "Points metric available; totals derivable from archive box scores."
+                "reason": "Points totals derivable from supported box score data."
               }
             ]
           },
@@ -4840,8 +4444,8 @@
           ],
           "error": null,
           "retried": false,
-          "cost_usd": 0.0012231,
-          "latency_ms": 2359,
+          "cost_usd": 0.0012351,
+          "latency_ms": 4574,
           "calls": [
             {
               "provider": null,
@@ -4850,12 +4454,12 @@
               "requested_model": "deepseek-v4.1-flash",
               "protocol": "chat",
               "max_tokens": 3000,
-              "cost_usd": 0.0012231,
+              "cost_usd": 0.0012351,
               "prompt_tokens": 2217,
-              "completion_tokens": 465,
+              "completion_tokens": 475,
               "finish_reason": "stop",
-              "latency_ms": 2356.9,
-              "ttfb_ms": 2356.7
+              "latency_ms": 4561.4,
+              "ttfb_ms": 4560.9
             }
           ],
           "review": {
@@ -4873,16 +4477,16 @@
                 "supporting_evidence_ids": [
                   "2025-26.20260928.1:game:34"
                 ],
-                "reason": "Record and points total match team claims over archived games."
+                "reason": "Claims give 7 wins, 8 losses, 1652 points over 15 games."
               },
               {
                 "text": "Their January schedule was the easiest in the league, which caused the winning record.",
                 "assertion_type": "interpretation",
                 "verdict": "unsupported",
-                "offending_text": "Their January schedule was the easiest in the league, which caused the winning record.",
+                "offending_text": "easiest in the league, which caused the winning record",
                 "supporting_claim_ids": [],
                 "supporting_evidence_ids": [],
-                "reason": "No data on schedule strength or causation; also record was below .500."
+                "reason": "No schedule strength or causal data; team had a losing 7-8 record."
               }
             ],
             "follow_up_reviews": [
@@ -4893,14 +4497,14 @@
                   "claim:030ed374b46dcae45c14e8faba1d5506eea08bbfd39ce356d5a813708e51b852"
                 ],
                 "supporting_evidence_ids": [],
-                "reason": "Points and games available to compute per-game average."
+                "reason": "Points and game counts available; simple average derivable."
               },
               {
                 "text": "How did the Knicks' January margin compare to another month?",
-                "verdict": "unsupported",
+                "verdict": "insufficient_evidence",
                 "supporting_claim_ids": [],
                 "supporting_evidence_ids": [],
-                "reason": "Archive covers only January range, no other month for comparison."
+                "reason": "Scope only covers January; margin data for other months not established."
               }
             ]
           },
@@ -4915,8 +4519,8 @@
           ],
           "error": null,
           "retried": false,
-          "cost_usd": 0.0012363,
-          "latency_ms": 2268,
+          "cost_usd": 0.0011535,
+          "latency_ms": 3536,
           "calls": [
             {
               "provider": null,
@@ -4925,12 +4529,12 @@
               "requested_model": "deepseek-v4.1-flash",
               "protocol": "chat",
               "max_tokens": 3000,
-              "cost_usd": 0.0012363,
+              "cost_usd": 0.0011535,
               "prompt_tokens": 2217,
-              "completion_tokens": 476,
+              "completion_tokens": 407,
               "finish_reason": "stop",
-              "latency_ms": 2267.9,
-              "ttfb_ms": 2267.6
+              "latency_ms": 3534.0,
+              "ttfb_ms": 3533.7
             }
           ],
           "review": {
@@ -4948,34 +4552,32 @@
                 "supporting_evidence_ids": [
                   "2025-26.20260928.1:game:34"
                 ],
-                "reason": "Claims cite 7 wins, 8 losses, 1652 points over 15 archived games."
+                "reason": "Claims give 7 wins, 8 losses, 1652 points over 15 archived games."
               },
               {
                 "text": "Their January schedule was the easiest in the league, which caused the winning record.",
                 "assertion_type": "interpretation",
                 "verdict": "unsupported",
-                "offending_text": "schedule was the easiest in the league, which caused the winning record",
+                "offending_text": "easiest in the league, which caused the winning record",
                 "supporting_claim_ids": [],
                 "supporting_evidence_ids": [],
-                "reason": "No evidence for schedule strength or causation; record is 7-8, not winning."
+                "reason": "No evidence of schedule strength or causal mechanism; record is 7-8."
               }
             ],
             "follow_up_reviews": [
               {
                 "text": "What was the Knicks' average points per game in January?",
                 "verdict": "supported",
-                "supporting_claim_ids": [
-                  "claim:030ed374b46dcae45c14e8faba1d5506eea08bbfd39ce356d5a813708e51b852"
-                ],
+                "supporting_claim_ids": [],
                 "supporting_evidence_ids": [],
-                "reason": "Points total and game count available to compute average."
+                "reason": "Points and game counts are available for January."
               },
               {
                 "text": "How did the Knicks' January margin compare to another month?",
                 "verdict": "insufficient_evidence",
                 "supporting_claim_ids": [],
                 "supporting_evidence_ids": [],
-                "reason": "Archive scope limited; margin data for another month unavailable."
+                "reason": "Archive scope limited to 2025-26 January games; no comparison month data."
               }
             ]
           },
@@ -5026,29 +4628,5 @@
       "observations": []
     }
   ],
-  "worst_accepted": [
-    {
-      "case_id": "record_swap_january",
-      "class": "wins_losses_swapped",
-      "unit": "date_range_last_n-004",
-      "answer": "From January 1 through January 31, the Knicks went 8-7 across 15 archived games, scoring 1,652 total points.",
-      "edit": [
-        [
-          "went 7-8",
-          "went 8-7"
-        ]
-      ],
-      "append": "",
-      "trial": 0,
-      "provider": null,
-      "review_assertions": [
-        {
-          "text": "From January 1 through January 31, the Knicks went 8-7 across 15 archived games, scoring 1,652 total points.",
-          "type": "interpretation",
-          "verdict": "supported",
-          "reason": "Wins, losses and points match cited claims over the archived games."
-        }
-      ]
-    }
-  ]
+  "worst_accepted": []
 }
