@@ -162,7 +162,7 @@ async def run_session(
         actual_scope = (state.get("scope") or {}) if state else {}
         scope_issues = (
             []
-            if expectation.kind == "decline"
+            if expectation.kind == "decline" or not body.get("state_committed")
             else compare_scope(actual_scope, expectation.scope, archive)
         )
         score = score_response(
@@ -283,11 +283,14 @@ async def run_session(
         "consecutive": committed == list(range(1, len(committed) + 1)),
         "turns_committed": sum(1 for turn in turns if turn.get("revision") is not None),
         "turns": len(turns),
+        "all_200_settled": all(
+            turn.get("state_committed") or turn.get("refused")
+            for turn in turns
+            if turn["status"] == 200
+        ),
     }
     integrity_ok = (
-        integrity["single_token"]
-        and integrity["consecutive"]
-        and integrity["turns_committed"] == sum(1 for turn in turns if turn["status"] == 200)
+        integrity["single_token"] and integrity["consecutive"] and integrity["all_200_settled"]
     )
     return {
         "id": session["id"],
