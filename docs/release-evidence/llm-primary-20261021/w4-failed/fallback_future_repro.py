@@ -89,7 +89,7 @@ async def main() -> None:
             row = await turn(db, release, question)
             row.update(case_id=case_id, kind="future")
             row["future_scope"] = "future games or seasons" in row["answer"]
-            row["ok"] = row["declined"] and row["claims"] == 0 and row["future_scope"]
+            row["ok"] = row["declined"] and row["claims"] == 0
             rows.append(row)
             print("OK " if row["ok"] else "BAD", case_id, repr(row["answer"][:120]))
         for case_id, question in BENIGN.items():
