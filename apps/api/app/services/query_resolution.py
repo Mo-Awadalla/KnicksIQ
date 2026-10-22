@@ -3,9 +3,7 @@
 from __future__ import annotations
 
 import re
-from collections import defaultdict
 from datetime import date
-from difflib import SequenceMatcher
 from typing import Literal
 
 from app.models.box_score import PlayerGameStat
@@ -13,7 +11,14 @@ from app.models.dataset_release import DatasetRelease
 from app.models.game import Game
 from app.models.game_event import GameEvent
 from app.models.player import Player
+from app.services.query_dates import date_window
 from app.services.query_game_scope import InheritedScope, referenced_game
+from app.services.query_names import (
+    resolve_player_mentions as _resolve_player_mentions,
+)
+from app.services.query_names import (
+    unique_given_names,
+)
 from app.services.query_policy import (
     Phase,
     SeasonType,
@@ -22,7 +27,6 @@ from app.services.query_policy import (
     resolve_phase,
 )
 from app.services.query_text import (
-    MONTHS,
     is_explanation,
     is_record_request,
     metric_in_text,
@@ -31,37 +35,8 @@ from app.services.query_text import (
 )
 from app.services.team_aliases import team_ids_in_text
 from pydantic import BaseModel, ConfigDict, Field
-from sqlalchemy import func, select
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-
-_CURATED_PLAYER_ALIASES = {
-    "jb": "Jalen Brunson",
-    "brunson": "Jalen Brunson",
-    "kat": "Karl-Anthony Towns",
-    "karl towns": "Karl-Anthony Towns",
-    "og": "OG Anunoby",
-}
-_NAME_STOPWORDS = {
-    "against",
-    "average",
-    "before",
-    "compare",
-    "game",
-    "games",
-    "home",
-    "knicks",
-    "last",
-    "losses",
-    "month",
-    "points",
-    "previous",
-    "road",
-    "season",
-    "since",
-    "the",
-    "this",
-    "wins",
-}
 
 
 class ResolvedQuery(BaseModel):
@@ -116,106 +91,6 @@ class ResolvedQuery(BaseModel):
         }
 
 
-def _player_aliases(player: Player) -> set[str]:
-    normalized = normalize(player.full_name)
-    parts = normalized.split()
-    aliases = {normalized, parts[-1]}
-    if len(parts) > 1:
-        aliases.add(f"{parts[0][0]} {parts[-1]}")
-    aliases.update(
-        alias for alias, target in _CURATED_PLAYER_ALIASES.items() if target == player.full_name
-    )
-    return aliases
-
-
-def _name_candidates(question: str) -> list[str]:
-    candidates: list[str] = []
-    for raw in re.findall(r"\b[A-Za-z][A-Za-z'-]{2,}(?:\s+[A-Za-z][A-Za-z'-]{2,})?\b", question):
-        normalized = normalize(raw)
-        words = normalized.split()
-        if words and not all(word in _NAME_STOPWORDS for word in words):
-            candidates.append(normalized)
-            if len(words) == 2:
-                candidates.extend(word for word in words if word not in _NAME_STOPWORDS)
-    return list(dict.fromkeys(candidates))
-
-
-def _resolve_player_mentions(
-    question: str,
-    players: list[Player],
-    *,
-    typo_threshold: float,
-    allow_fuzzy: bool = True,
-) -> tuple[list[int], list[str]]:
-    normalized_question = f" {normalize(question)} "
-    aliases: dict[str, list[Player]] = defaultdict(list)
-    for player in players:
-        for alias in _player_aliases(player):
-            aliases[alias].append(player)
-
-    resolved: dict[int, Player] = {}
-    ambiguous: dict[int, Player] = {}
-    remaining = normalized_question
-    # Full names and curated aliases are authoritative and consume their spans
-    # before ambiguous surname matching.
-    for player in sorted(players, key=lambda item: -len(normalize(item.full_name))):
-        full_name = normalize(player.full_name)
-        if re.search(rf"\b{re.escape(full_name)}\b", remaining):
-            resolved[player.id] = player
-            remaining = re.sub(rf"\b{re.escape(full_name)}\b", " ", remaining)
-    for alias, target in sorted(
-        _CURATED_PLAYER_ALIASES.items(),
-        key=lambda item: -len(item[0]),
-    ):
-        if re.search(rf"\b{re.escape(alias)}\b", remaining):
-            matches = [player for player in players if player.full_name == target]
-            resolved.update({player.id: player for player in matches})
-            remaining = re.sub(rf"\b{re.escape(alias)}\b", " ", remaining)
-
-    for alias in sorted(aliases, key=len, reverse=True):
-        if alias in _CURATED_PLAYER_ALIASES:
-            continue
-        if re.search(rf"\b{re.escape(alias)}\b", remaining):
-            curated_target = _CURATED_PLAYER_ALIASES.get(alias)
-            matches = (
-                [player for player in aliases[alias] if player.full_name == curated_target]
-                if curated_target
-                else aliases[alias]
-            )
-            knicks_matches = [player for player in matches if player.team_id == "NYK"]
-            if len(matches) > 1 and len(knicks_matches) == 1:
-                matches = knicks_matches
-            if len(matches) == 1:
-                resolved[matches[0].id] = matches[0]
-            else:
-                ambiguous.update({player.id: player for player in matches})
-            remaining = re.sub(rf"\b{re.escape(alias)}\b", " ", remaining)
-
-    if allow_fuzzy and not resolved and not ambiguous:
-        for candidate in _name_candidates(question):
-            scores = [
-                (
-                    max(
-                        SequenceMatcher(None, candidate, alias).ratio()
-                        for alias in _player_aliases(player)
-                    ),
-                    player,
-                )
-                for player in players
-            ]
-            scores.sort(key=lambda item: (-item[0], item[1].id))
-            if not scores or scores[0][0] < typo_threshold:
-                continue
-            best_score = scores[0][0]
-            close = [player for score, player in scores if best_score - score < 0.06]
-            if len(close) == 1:
-                resolved[close[0].id] = close[0]
-            else:
-                ambiguous.update({player.id: player for player in close})
-            break
-    return sorted(resolved), sorted(player.full_name for player in ambiguous.values())
-
-
 async def _active_release(
     db: AsyncSession,
     data_version: str | None,
@@ -266,34 +141,12 @@ async def resolve_query(
             .distinct()
         )
     players = list((await db.execute(player_stmt)).scalars().all())
-    postgres = bool(db.bind and db.bind.dialect.name == "postgresql")
     player_ids, ambiguous_players = _resolve_player_mentions(
         question,
         players,
         typo_threshold=typo_threshold,
-        allow_fuzzy=not postgres,
+        unique_givens=unique_given_names(players),
     )
-    if not player_ids and not ambiguous_players and postgres:
-        # pg_trgm proposes a deliberately small candidate set; the stricter
-        # deterministic similarity/margin checks above still decide whether
-        # automatic typo resolution is safe.
-        proposed: dict[int, Player] = {}
-        for candidate in _name_candidates(question):
-            similarity = func.word_similarity(candidate, func.lower(Player.full_name))
-            proposal_stmt = (
-                select(Player)
-                .where(similarity >= 0.3)
-                .order_by(similarity.desc(), Player.id)
-                .limit(5)
-            )
-            for player in (await db.execute(proposal_stmt)).scalars():
-                proposed[player.id] = player
-        if proposed:
-            player_ids, ambiguous_players = _resolve_player_mentions(
-                question,
-                list(proposed.values()),
-                typo_threshold=typo_threshold,
-            )
 
     q = normalize(question)
     team_ids = sorted(team_ids_in_text(question) - {"NYK"})
@@ -301,37 +154,15 @@ async def resolve_query(
         opponent_id = team_ids[0] if len(team_ids) == 1 else None
     else:
         opponent_id = inherit.opponent_id if inherit else None
-    explicit_dates = [
-        date.fromisoformat(value) for value in re.findall(r"\b20\d{2}-\d{2}-\d{2}\b", question)
-    ]
-    date_start = explicit_dates[0] if explicit_dates else None
-    date_end = explicit_dates[-1] if explicit_dates else None
     latest_date = games[-1].game_date if games else None
-    relative_count: int | None = None
-    count_match = re.search(r"\blast\s+(\d+)\s+games?\b", q)
-    if count_match:
-        relative_count = max(1, min(int(count_match.group(1)), 82))
-    elif re.search(r"\b(?:last|previous)\s+game\b", q):
-        relative_count = 1
-
-    if latest_date and "this month" in q:
-        date_start = latest_date.replace(day=1)
-        date_end = latest_date
-    else:
-        named_month = next((month for name, month in MONTHS.items() if name in q), None)
-        if named_month and games:
-            month_dates = [game.game_date for game in games if game.game_date.month == named_month]
-            if month_dates:
-                date_start, date_end = min(month_dates), max(month_dates)
-    if explicit_dates and "since" in q:
-        date_end = latest_date
-    elif explicit_dates and "before" in q:
-        date_start = games[0].game_date if games else None
-        date_end = explicit_dates[0]
+    window = date_window(question, games, latest_date)
+    date_start, date_end = window.start, window.end
+    explicit_dates = window.dates
+    relative_count = window.relative_count
 
     named_phase = names_phase(question)
     reference = referenced_game(question, inherit, games)
-    named_window = bool(explicit_dates or relative_count or date_start or date_end or reference)
+    named_window = bool(window.explicit or reference)
     if reference:
         # A deictic game reference names the whole window, not only one filter.
         date_start = date_end = reference.game_date
@@ -340,7 +171,6 @@ async def resolve_query(
         relative_count = inherit.relative_game_count
         date_start = inherit.date_start
         date_end = inherit.date_end
-
     season_level = not (opponent_id or explicit_dates or relative_count or date_start or date_end)
     if inherit is not None and not named_phase:
         phase = Phase(named=False, season_type=inherit.season_type, all_phases=inherit.all_phases)
@@ -480,7 +310,12 @@ async def resolve_query(
     if reference:
         resolved_game_ids = [reference.id]
     elif relative_count:
-        resolved_game_ids = [game.id for game in candidates[-relative_count:]]
+        selected = (
+            candidates[:relative_count]
+            if window.relative_from_start
+            else candidates[-relative_count:]
+        )
+        resolved_game_ids = [game.id for game in selected]
     elif descriptive_reference:
         if "most recent" in q and candidates:
             resolved_game_ids = [candidates[-1].id]
