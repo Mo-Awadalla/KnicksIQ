@@ -39,7 +39,9 @@ ROOT = Path(__file__).resolve().parents[4]
 sys.path.insert(0, str(ROOT / "tools" / "release"))
 
 import analyst_review_record as recorder  # noqa: E402
+from app.core.config import get_settings  # noqa: E402
 from app.services.analyst_provider import (  # noqa: E402
+    configure_reviewer,
     encoded,
     get_llm_adapter,
     reviewer_system_prompt,
@@ -118,6 +120,7 @@ async def live(args: argparse.Namespace) -> None:
 
 async def call_reviewer(payload: dict[str, Any], max_tokens: int) -> dict[str, Any]:
     adapter = get_llm_adapter()
+    configure_reviewer(adapter, get_settings())
     adapter.max_tokens = max_tokens
     adapter.timeout_seconds = 30
     if hasattr(adapter, "response_schema"):
