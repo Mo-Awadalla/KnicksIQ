@@ -12,7 +12,11 @@ from app.models.game import Game
 from app.models.game_event import GameEvent
 from app.models.player import Player
 from app.services.query_dates import MONTH_WORDS, date_window
-from app.services.query_game_scope import InheritedScope, referenced_game
+from app.services.query_game_scope import (
+    InheritedScope,
+    names_season_scope,
+    referenced_game,
+)
 from app.services.query_names import (
     resolve_player_mentions as _resolve_player_mentions,
 )
@@ -173,19 +177,44 @@ async def resolve_query(
     relative_from_start = window.relative_from_start
 
     named_phase = names_phase(question)
+    named_site = (
+        "home"
+        if re.search(r"\bhome\b", q)
+        else "away"
+        if re.search(r"\b(?:road|away)\b", q)
+        else None
+    )
+    # A follow-up that names the season asks for the season population: the inherited
+    # game/date window is replaced while the topic's subject and metric survive.
+    season_scope = inherit is not None and not named_phase and names_season_scope(question)
     reference = referenced_game(question, inherit, games)
-    named_window = bool(window.explicit or reference)
+    named_window = bool(window.explicit or reference or season_scope)
+    # Game ids are the prior window's output, not an input: they may bound an elliptical
+    # turn only when it names no opponent, site or outcome of its own.
+    inherited_games: list[int] = []
     if reference:
         # A deictic game reference names the whole window, not only one filter.
         date_start = date_end = reference.game_date
         relative_count = None
+    elif season_scope:
+        date_start = date_end = None
+        relative_count = None
+        relative_from_start = False
     elif inherit is not None and not named_window and not named_phase:
         relative_count = inherit.relative_game_count
         relative_from_start = inherit.relative_from_start
         date_start = inherit.date_start
         date_end = inherit.date_end
+        if not team_ids and named_site is None and not is_outcome_subset(question):
+            inherited_games = inherit.game_ids
     season_level = not (opponent_id or explicit_dates or relative_count or date_start or date_end)
-    if inherit is not None and not named_phase:
+    if season_scope:
+        phase = Phase(
+            named=True,
+            season_type=(inherit.season_type if inherit is not None else None) or "regular",
+            all_phases=False,
+        )
+    elif inherit is not None and not named_phase:
         phase = Phase(named=False, season_type=inherit.season_type, all_phases=inherit.all_phases)
     else:
         phase = resolve_phase(
@@ -195,13 +224,6 @@ async def resolve_query(
             default_all_phases=default_all_phases,
         )
     named_phase, season_type = phase.named, phase.season_type
-    named_site = (
-        "home"
-        if re.search(r"\bhome\b", q)
-        else "away"
-        if re.search(r"\b(?:road|away)\b", q)
-        else None
-    )
     home_away = named_site or (inherit.home_away if inherit else None)
     if is_record_request(question):
         game_result = None
@@ -232,6 +254,9 @@ async def resolve_query(
         metric = inherit.metric
 
     candidates = [reference] if reference else games
+    if inherited_games:
+        inherited_ids = set(inherited_games)
+        candidates = [game for game in candidates if game.id in inherited_ids]
     if opponent_id:
         candidates = [
             game for game in candidates if opponent_id in {game.home_team_id, game.away_team_id}
@@ -327,6 +352,8 @@ async def resolve_query(
             candidates[:relative_count] if relative_from_start else candidates[-relative_count:]
         )
         resolved_game_ids = [game.id for game in selected]
+    elif inherited_games:
+        resolved_game_ids = [game.id for game in candidates]
     elif descriptive_reference:
         if "most recent" in q and candidates:
             resolved_game_ids = [candidates[-1].id]
