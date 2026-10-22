@@ -173,6 +173,35 @@ class AnalystTools:
                     continue
                 if not getattr(self.scope, key) and prior.get(key):
                     updates[key] = prior[key]
+            prior_query = ResolvedQuery.model_validate({**self.scope.model_dump(), **prior})
+            names_window = bool(
+                self.scope.date_start
+                or self.scope.date_end
+                or self.scope.relative_game_count
+                or self.scope.calendar_boundary
+                or re.search(r"\b(?:season|overall|playoffs?|postseason)\b", self.question, re.I)
+            )
+            if not names_window:
+                for key in (
+                    "date_start",
+                    "date_end",
+                    "calendar_boundary",
+                    "relative_game_count",
+                    "relative_game_order",
+                ):
+                    updates[key] = getattr(prior_query, key)
+                if (
+                    not self.scope.game_ids
+                    and not self.scope.team_ids
+                    and not self.scope.home_away
+                    and not self.scope.game_result
+                ):
+                    updates["game_ids"] = prior_query.game_ids
+            if not self.scope.requested_metrics and not is_record_request(self.question):
+                updates["metric"] = prior_query.metric
+                updates["requested_metrics"] = prior_query.requested_metrics
+            if not self.scope.requested_aggregations:
+                updates["requested_aggregations"] = prior_query.requested_aggregations
             if self.different:
                 updates["player_ids"] = []
             self.scope = self.scope.model_copy(update=updates)
@@ -624,6 +653,37 @@ class AnalystTools:
                 choices=sorted({p.full_name for _, p in self.rows}),
             )
         metric = call.metric or scope.metric or "points"
+        if (
+            call.name == "get_player_stats"
+            and call.metric is None
+            and (
+                len(self.scope.requested_metrics) > 1 or len(self.scope.requested_aggregations) > 1
+            )
+        ):
+            metrics = self.scope.requested_metrics or [scope.metric or "points"]
+            aggregations = self.scope.requested_aggregations or ["average"]
+            if not set(metrics) <= set(PLAYER_METRICS) or len(metrics) * len(aggregations) > 6:
+                return ToolResult(
+                    status="unsupported_metric_or_scope",
+                    message="The requested compound statistics exceed the supported calculation.",
+                )
+            results = [
+                self.player(scope, games, metric, aggregation)
+                for metric in metrics
+                for aggregation in aggregations
+            ]
+            return ToolResult(
+                status="ok" if all(r.status == "ok" for r in results) else "incomplete_coverage",
+                message="Every requested player statistic over the resolved population.",
+                claims=[c for r in results for c in r.claims],
+                evidence=[e for r in results for e in r.evidence],
+                scope=scope.model_dump(mode="json"),
+            )
+        if self.scope.requested_metrics and metric not in self.scope.requested_metrics:
+            return ToolResult(
+                status="unsupported_metric_or_scope",
+                message="The tool metric differs from the user's requested statistics.",
+            )
         if self.scope.metric:
             if call.metric and call.metric != self.scope.metric:
                 return ToolResult(
@@ -684,8 +744,13 @@ class AnalystTools:
             # A baseline may intentionally use a different phase/window, never another release.
             baseline_scope = baseline_scope.model_copy(update={"player_ids": scope.player_ids})
             baseline_games = self.selected_games(baseline_scope)
-            first = self.player(scope, games, metric, call.aggregation)
-            second = self.player(baseline_scope, baseline_games, metric, call.aggregation)
+            aggregation = (
+                self.scope.requested_aggregations[0]
+                if len(self.scope.requested_aggregations) == 1
+                else call.aggregation
+            )
+            first = self.player(scope, games, metric, aggregation)
+            second = self.player(baseline_scope, baseline_games, metric, aggregation)
             if not first.claims or not second.claims:
                 return ToolResult(
                     status="incomplete_coverage",
@@ -724,10 +789,11 @@ class AnalystTools:
                 claims=first.claims + second.claims + comparisons,
                 evidence=first.evidence + second.evidence,
             )
-        if re.search(r"\btotal\b", self.question, re.I):
-            aggregation = "total"
-        else:
-            aggregation = call.aggregation
+        aggregation = (
+            self.scope.requested_aggregations[0]
+            if len(self.scope.requested_aggregations) == 1
+            else call.aggregation
+        )
         return self.player(scope, games, metric, aggregation)
 
     def all_star_comparison(
@@ -881,7 +947,7 @@ class AnalystTools:
             limitations = ["Only observed appearances in the available archive."]
             if absent:
                 missing = True
-                limitations.append(f"Missing player rows for archived game IDs: {absent}.")
+                limitations.append("Some selected games lack a player row; coverage is incomplete.")
             name = rows[0][1].full_name
             unit = f"{metric} per appearance" if aggregation == "average" else metric
             observed_games = [game_map[s.game_id] for s, _ in rows]

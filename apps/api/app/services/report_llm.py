@@ -15,16 +15,20 @@ import math
 import ssl
 import urllib.error
 import urllib.request
+import uuid
 from abc import ABC, abstractmethod
 from typing import Any
 
 from app.core.config import get_settings
+from app.services.llm_wire import PROTOCOLS, priced
+from app.services.llm_wire import Request as WireRequest
 
 
 class LLMAdapter(ABC):
     """Interface for a report-generating LLM."""
 
     max_tokens: int = 500
+    model: str = ""
     timeout_seconds: float = 20
     response_schema: dict[str, Any] | None = None
     last_metadata: dict[str, Any] = {}
@@ -64,6 +68,8 @@ class OpenAICompatibleLLMAdapter(LLMAdapter):
         provider_route: str | None = None,
         max_prompt_price: float | None = None,
         max_completion_price: float | None = None,
+        model_protocols: dict[str, str] | None = None,
+        model_prices: dict[str, list[float]] | None = None,
     ) -> None:
         self.base_url = base_url.rstrip("/")
         self.api_key = api_key
@@ -75,6 +81,9 @@ class OpenAICompatibleLLMAdapter(LLMAdapter):
         self.provider_route = provider_route
         self.max_prompt_price = max_prompt_price
         self.max_completion_price = max_completion_price
+        self.model_protocols = model_protocols or {}
+        self.model_prices = model_prices or {}
+        self.session_id = uuid.uuid4().hex
         policy = (provider_route, max_prompt_price, max_completion_price)
         if any(value is not None for value in policy):
             if not isinstance(provider_route, str) or not provider_route.strip():
@@ -96,6 +105,20 @@ class OpenAICompatibleLLMAdapter(LLMAdapter):
         return await asyncio.to_thread(self._generate_sync, system, user)
 
     def _request_body(self, system: str, user: str) -> dict[str, Any]:
+        if self.model_protocols.get(self.model) == "responses":
+            return PROTOCOLS["responses"][0](
+                WireRequest(
+                    model=self.model,
+                    system=system,
+                    user=user,
+                    max_tokens=self.max_tokens,
+                    reasoning_effort=self.reasoning_effort,
+                    response_schema=self.response_schema,
+                    json_object=self.response_format_json,
+                    openrouter=False,
+                    provider={},
+                )
+            )[1]
         payload_body: dict[str, Any] = {
             "model": self.model,
             "messages": [
@@ -128,6 +151,8 @@ class OpenAICompatibleLLMAdapter(LLMAdapter):
                 payload_body["reasoning"] = {"enabled": False}
             elif self.reasoning_effort is not None:
                 payload_body["reasoning"] = {"effort": self.reasoning_effort}
+        elif self.reasoning_effort is not None:
+            payload_body["reasoning_effort"] = self.reasoning_effort
         if self.response_schema is not None:
             payload_body["response_format"] = {
                 "type": "json_schema",
@@ -142,13 +167,20 @@ class OpenAICompatibleLLMAdapter(LLMAdapter):
         return payload_body
 
     def _generate_sync(self, system: str, user: str) -> str:
+        self.last_metadata = {}
+        protocol = self.model_protocols.get(self.model, "chat")
+        if protocol not in PROTOCOLS:
+            raise ValueError("Unsupported model wire protocol")
         payload = json.dumps(self._request_body(system, user)).encode("utf-8")
+        endpoint = "/responses" if protocol == "responses" else "/chat/completions"
         req = urllib.request.Request(
-            f"{self.base_url}/chat/completions",
+            f"{self.base_url}{endpoint}",
             data=payload,
             headers={
                 "Authorization": f"Bearer {self.api_key}",
                 "Content-Type": "application/json",
+                "User-Agent": "knicksiq/1.0",
+                "x-opencode-session": self.session_id,
             },
             method="POST",
         )
@@ -173,16 +205,24 @@ class OpenAICompatibleLLMAdapter(LLMAdapter):
         if body.get("error") is not None:
             detail = json.dumps(body["error"], ensure_ascii=False)
             raise RuntimeError(f"AI provider returned an error: {detail[:1000]}")
-        choices = body.get("choices")
-        if not isinstance(choices, list) or not choices:
-            detail = json.dumps(body, ensure_ascii=False)
-            raise RuntimeError(f"AI provider response omitted choices: {detail[:1000]}")
-        message = choices[0].get("message") if isinstance(choices[0], dict) else None
-        content = message.get("content") if isinstance(message, dict) else None
-        if not isinstance(content, str):
+        reply = PROTOCOLS[protocol][1](body)
+        usage = dict(reply.usage)
+        if usage.get("cost") is None:
+            estimate = priced(usage, self.model, self.model_prices)
+            if estimate is not None:
+                usage["cost"] = estimate
+                usage["cost_source"] = "configured_token_rates"
+        self.last_metadata = {
+            **{key: body.get(key) for key in ("id", "model", "provider")},
+            "protocol": protocol,
+            "finish_reason": reply.finish_reason,
+            "usage": usage,
+        }
+        if reply.finish_reason in {"length", "incomplete", "failed", "cancelled"}:
+            raise RuntimeError("AI provider returned an incomplete response")
+        if not isinstance(reply.content, str) or not reply.content.strip():
             raise RuntimeError("AI provider response omitted message content")
-        self.last_metadata = {key: body.get(key) for key in ("id", "model", "provider", "usage")}
-        return content
+        return reply.content
 
 
 def get_llm_adapter(*, response_format_json: bool = True) -> LLMAdapter:
@@ -204,6 +244,8 @@ def get_llm_adapter(*, response_format_json: bool = True) -> LLMAdapter:
         provider_route=settings.openrouter_provider_route,
         max_prompt_price=settings.openrouter_max_prompt_price,
         max_completion_price=settings.openrouter_max_completion_price,
+        model_protocols=getattr(settings, "ai_model_protocols", {}),
+        model_prices=getattr(settings, "ai_model_prices", {}),
     )
 
 
