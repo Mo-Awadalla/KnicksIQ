@@ -1,10 +1,30 @@
-"""Deterministic public refusal payloads shared by the analyst endpoint."""
+"""Deterministic admission replies, delivered through the analyst session lifecycle."""
 
 from __future__ import annotations
 
 from typing import Any
 
 from app.api.analysis_models import AnalysisQueryResponse
+from app.api.analysis_policy import _is_greeting, _requires_pre_model_refusal
+
+
+def immediate_reply(
+    question: str, response_metadata: dict[str, Any]
+) -> AnalysisQueryResponse | None:
+    if _is_greeting(question):
+        return AnalysisQueryResponse(
+            **response_metadata,
+            route="greeting",
+            answer=(
+                "Hi. Ask me about an archived Knicks game, player stat, streak, "
+                "opponent, or turning point."
+            ),
+            citations=[],
+            tool_calls=[],
+        )
+    if _requires_pre_model_refusal(question):
+        return refuse(response_metadata)
+    return None
 
 
 def refuse(response_metadata: dict[str, Any]) -> AnalysisQueryResponse:

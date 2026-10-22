@@ -24,12 +24,10 @@ from app.api.analysis_policy import (
 )
 from app.api.analysis_policy import (
     _contextual_question,
-    _is_greeting,
     _is_supported_question,
     _looks_like_follow_up,
     _rate_limit,
     _requires_explicit_refusal,
-    _requires_pre_model_refusal,
     _retrieval_limitation_note,
     _unknown_data_question,
 )
@@ -37,7 +35,7 @@ from app.api.analysis_policy import (
     _requests_by_client as _requests_by_client,
 )
 from app.api.analysis_presenters import _format_answer
-from app.api.analysis_refusals import refuse
+from app.api.analysis_refusals import immediate_reply
 from app.api.analysis_retrieval import (
     _active_data_version,
     _execute_archive_retrieval,
@@ -100,34 +98,26 @@ async def query_analysis(
         "degraded": redis_degraded,
     }
     question = req.question.strip()
-    if _is_greeting(question):
-        return AnalysisQueryResponse(
-            **response_metadata,
-            route="greeting",
-            answer=(
-                "Hi — ask me about an archived Knicks game, player stat, streak, "
-                "opponent, or turning point."
-            ),
-            citations=[],
-            tool_calls=[],
-        )
     if len(question) > settings.public_chat_max_prompt_chars:
         raise HTTPException(
             status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
             detail="Question is too long",
         )
-    if _requires_pre_model_refusal(question):
-        return refuse(response_metadata)
+    immediate_response = immediate_reply(question, response_metadata)
     if getattr(settings, "analyst_evidence_loop_enabled", False):
         try:
             async with asyncio.timeout(settings.analyst_deadline_seconds):
-                return await _query_evidence_analyst(req, request, db)
+                return await _query_evidence_analyst(
+                    req, request, db, immediate_response=immediate_response
+                )
         except TimeoutError:
             return AnalysisQueryResponse(
                 answer="The archive could not be verified within this turn's deadline.",
                 citations=[],
                 degraded=True,
             )
+    if immediate_response is not None:
+        return immediate_response
     structured_conversation_enabled = getattr(
         settings,
         "rag_structured_conversation_state_enabled",

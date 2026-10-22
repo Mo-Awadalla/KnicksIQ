@@ -6,6 +6,7 @@ import asyncio
 import logging
 import time
 from datetime import UTC, datetime, timedelta
+from typing import TYPE_CHECKING, Any
 
 from fastapi import HTTPException, Request
 from sqlalchemy import select
@@ -16,13 +17,42 @@ from app.api.analysis_models import AnalysisQueryRequest, AnalysisQueryResponse
 from app.api.analysis_retrieval import _sample_shadow
 from app.models.dataset_release import DatasetRelease
 
+if TYPE_CHECKING:
+    from app.services.analyst_sessions import SessionTurn
+
 logger = logging.getLogger(__name__)
+
+
+async def _finish_turn(
+    turn: SessionTurn | None, response: AnalysisQueryResponse, state: dict[str, Any]
+) -> AnalysisQueryResponse:
+    if turn is None:
+        return response
+    response.session_token = turn.token
+    response.session_expires_at = datetime.now(UTC) + timedelta(seconds=86_400)
+    response.revision = turn.revision + 1
+    response.state_committed = True
+    outcome = await turn.commit(response.model_dump(mode="json"), state)
+    if outcome.response is not None:
+        return AnalysisQueryResponse.model_validate(outcome.response)
+    if not outcome.committed:
+        response.session_token = None
+        response.session_expires_at = None
+        response.revision = None
+        response.state_committed = False
+        response.degraded = True
+        response.warnings.append(
+            "Conversation state could not be committed. Retry the same turn."
+        )
+    return response
 
 
 async def _query_evidence_analyst(
     req: AnalysisQueryRequest,
     request: Request,
     db: AsyncSession,
+    *,
+    immediate_response: AnalysisQueryResponse | None = None,
 ) -> AnalysisQueryResponse:
     from app.services.analyst_loop import AnalystLoop
     from app.services.analyst_sessions import SessionConflict, SessionTurn, SessionUnavailable
@@ -37,7 +67,7 @@ async def _query_evidence_analyst(
             )
         )
     ).scalar_one_or_none()
-    if release is None:
+    if release is None and immediate_response is None:
         return AnalysisQueryResponse(
             answer="No verified archive release is available.", citations=[], degraded=True
         )
@@ -65,8 +95,13 @@ async def _query_evidence_analyst(
             turn = None
     if turn and turn.replay is not None:
         return AnalysisQueryResponse.model_validate(turn.replay)
-    tools = AnalystTools(db, release, req.question, req.season, turn.state if turn else {})
     try:
+        if immediate_response is not None:
+            # Policy and greeting turns participate in revision/replay handling without
+            # changing the archive topic or spending a model call.
+            return await _finish_turn(turn, immediate_response, turn.state if turn else {})
+        assert release is not None
+        tools = AnalystTools(db, release, req.question, req.season, turn.state if turn else {})
         prepare_started = time.monotonic()
         async with asyncio.timeout(
             max(
@@ -116,35 +151,17 @@ async def _query_evidence_analyst(
         response = AnalysisQueryResponse(
             **result, request_id=getattr(request.state, "request_id", "")
         )
-        if turn:
-            response.session_token = turn.token
-            response.session_expires_at = datetime.now(UTC) + timedelta(seconds=86_400)
-            response.revision = turn.revision + 1
-            response.state_committed = True
-            outcome = await turn.commit(response.model_dump(mode="json"), state)
-            if outcome.response is not None:
-                # Another execution of this same turn committed first; its answer is canonical.
-                return AnalysisQueryResponse.model_validate(outcome.response)
-            if not outcome.committed:
-                response.session_token = None
-                response.session_expires_at = None
-                response.revision = None
-                response.state_committed = False
-                response.degraded = True
-                response.warnings.append(
-                    "Conversation state could not be committed. Retry the same turn."
-                )
-        else:
+        if turn is None:
             response.warnings.append(
                 "Stateless factual fallback: conversation storage unavailable."
             )
-        return response
+        return await _finish_turn(turn, response, state)
     except TimeoutError:
         return AnalysisQueryResponse(
             answer="The archive could not be verified within this turn's deadline.",
             citations=[],
             degraded=True,
-            data_version=release.version,
+            data_version=release.version if release else "unreleased",
         )
     finally:
         if turn:
