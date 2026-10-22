@@ -1,0 +1,1409 @@
+{
+  "mode": "live_llm_primary",
+  "base": "536d12e",
+  "trials": 1,
+  "sessions": {
+    "record_home_road": [
+      {
+        "id": "record_home_road",
+        "category": "home_road",
+        "turns": [
+          {
+            "turn": 1,
+            "question": "What was the Knicks' record?",
+            "status": 200,
+            "answer": "In the 2025-26 regular season, the Knicks went 53-29 over 82 archived games.",
+            "cause": "ok",
+            "expected": {
+              "kind": "record",
+              "fact": "53-29",
+              "record": [
+                53,
+                29
+              ],
+              "scope": {
+                "season_type": "regular",
+                "all_phases": false,
+                "game_count": 82,
+                "game_ids": null,
+                "player_ids": [],
+                "metric": null,
+                "home_away": null,
+                "opponent_id": null,
+                "relative_game_count": null,
+                "date_start": null,
+                "date_end": null
+              }
+            },
+            "expected_checks": {
+              "record": "53-29",
+              "records_in_answer": [
+                "53-29"
+              ],
+              "record_ok": true
+            },
+            "expected_ok": true,
+            "honest_ok": true,
+            "failures": [],
+            "checks": {
+              "validated": true,
+              "decline_signal": null,
+              "decline_signals": [],
+              "declined": false,
+              "clarification": false,
+              "substantive": true,
+              "evidence_mode": "claims",
+              "claim_citations": 2,
+              "archive_receipts": 2,
+              "numbers_total": 2,
+              "unbacked_numbers": [],
+              "detected_entities": [
+                "Knicks"
+              ],
+              "unbacked_entities": [],
+              "required_facts": [
+                "53-29"
+              ],
+              "required_facts_ok": true,
+              "required_entities_ok": true,
+              "required_phrases_ok": null,
+              "echo_question": false,
+              "hedged_causal": false,
+              "missing_turning_detail": false
+            },
+            "actual_scope": {
+              "intent": "analyst",
+              "player_ids": [],
+              "team_ids": [],
+              "opponent_id": null,
+              "game_ids": [],
+              "date_start": null,
+              "date_end": null,
+              "relative_game_count": null,
+              "relative_from_start": false,
+              "periods": [],
+              "season_type": "regular",
+              "all_phases": false,
+              "home_away": null,
+              "game_result": null,
+              "metric": null,
+              "requires_clarification": false,
+              "clarification_reason": null,
+              "clarification_options": [],
+              "data_version": "2025-26.20260928.1"
+            },
+            "scope_issues": [],
+            "state_intent": "What was the Knicks' record?",
+            "carried_claims": [
+              {
+                "metric": "wins",
+                "season_type": "regular",
+                "games": 82
+              },
+              {
+                "metric": "losses",
+                "season_type": "regular",
+                "games": 82
+              }
+            ],
+            "stages": [
+              {
+                "stage": "prepare",
+                "tool": "query_resolution",
+                "latency_ms": 50
+              },
+              {
+                "stage": "orchestrate",
+                "tool": "llm_orchestrate",
+                "action": "call_tools",
+                "tools_requested": [
+                  "get_team_stats"
+                ],
+                "model": "deepseek-v4.1-flash",
+                "served_model": "deepseek-v4.1-flash",
+                "protocol": "chat",
+                "finish_reason": "stop",
+                "latency_ms": 2485
+              },
+              {
+                "stage": "tool",
+                "tool": "get_team_stats",
+                "status": "ok",
+                "claims": 4,
+                "latency_ms": 97
+              },
+              {
+                "stage": "orchestrate",
+                "tool": "llm_orchestrate",
+                "action": "answer_from_available_evidence",
+                "tools_requested": [],
+                "model": "deepseek-v4.1-flash",
+                "served_model": "deepseek-v4.1-flash",
+                "protocol": "chat",
+                "finish_reason": "stop",
+                "latency_ms": 2363
+              },
+              {
+                "stage": "review",
+                "tool": "llm_review",
+                "model": "gpt-6-luna",
+                "served_model": "gpt-6-luna",
+                "protocol": "responses",
+                "finish_reason": "stop",
+                "review_accepted": true,
+                "review_spans": 1,
+                "latency_ms": 2665
+              }
+            ],
+            "citations": [
+              {
+                "metric": "wins",
+                "value": 53,
+                "season_type": "regular",
+                "games": 82
+              },
+              {
+                "metric": "losses",
+                "value": 29,
+                "season_type": "regular",
+                "games": 82
+              },
+              {
+                "metric": null,
+                "value": null,
+                "season_type": null,
+                "games": 0
+              },
+              {
+                "metric": null,
+                "value": null,
+                "season_type": null,
+                "games": 0
+              }
+            ],
+            "warnings": [],
+            "llm_validated": true,
+            "refused": false,
+            "degraded": false,
+            "revision": 1,
+            "expected_revision": 0,
+            "revision_ok": true,
+            "state_committed": true,
+            "session_token_returned": true
+          },
+          {
+            "turn": 2,
+            "question": "And at home?",
+            "status": 200,
+            "answer": "At home in the 2025-26 regular season, the Knicks went 30-10 over 40 archived home games. They scored 4,760 points (119.0 per game) with a +401 total margin in those games.",
+            "cause": "ok",
+            "expected": {
+              "kind": "record",
+              "fact": "30-10",
+              "record": [
+                30,
+                10
+              ],
+              "scope": {
+                "season_type": "regular",
+                "all_phases": false,
+                "game_count": 40,
+                "game_ids": null,
+                "player_ids": [],
+                "metric": null,
+                "home_away": "home",
+                "opponent_id": null,
+                "relative_game_count": null,
+                "date_start": null,
+                "date_end": null
+              }
+            },
+            "expected_checks": {
+              "record": "30-10",
+              "records_in_answer": [
+                "30-10"
+              ],
+              "record_ok": true
+            },
+            "expected_ok": true,
+            "honest_ok": true,
+            "failures": [],
+            "checks": {
+              "validated": true,
+              "decline_signal": null,
+              "decline_signals": [],
+              "declined": false,
+              "clarification": false,
+              "substantive": true,
+              "evidence_mode": "claims",
+              "claim_citations": 4,
+              "archive_receipts": 2,
+              "numbers_total": 5,
+              "unbacked_numbers": [],
+              "detected_entities": [
+                "Knicks"
+              ],
+              "unbacked_entities": [],
+              "required_facts": [
+                "30-10"
+              ],
+              "required_facts_ok": true,
+              "required_entities_ok": true,
+              "required_phrases_ok": null,
+              "echo_question": false,
+              "hedged_causal": false,
+              "missing_turning_detail": false
+            },
+            "actual_scope": {
+              "intent": "analyst",
+              "player_ids": [],
+              "team_ids": [],
+              "opponent_id": null,
+              "game_ids": [
+                1,
+                2,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                18,
+                19,
+                21,
+                22,
+                23,
+                27,
+                28,
+                30,
+                34,
+                35,
+                37,
+                42,
+                43,
+                44,
+                46,
+                48,
+                49,
+                51,
+                54,
+                56,
+                57,
+                61,
+                63,
+                69,
+                70,
+                72,
+                73,
+                78,
+                80,
+                81,
+                82
+              ],
+              "date_start": null,
+              "date_end": null,
+              "relative_game_count": null,
+              "relative_from_start": false,
+              "periods": [],
+              "season_type": "regular",
+              "all_phases": false,
+              "home_away": "home",
+              "game_result": null,
+              "metric": null,
+              "requires_clarification": false,
+              "clarification_reason": null,
+              "clarification_options": [],
+              "data_version": "2025-26.20260928.1"
+            },
+            "scope_issues": [],
+            "state_intent": "What was the Knicks' record?",
+            "carried_claims": [
+              {
+                "metric": "wins",
+                "season_type": "regular",
+                "games": 40
+              },
+              {
+                "metric": "losses",
+                "season_type": "regular",
+                "games": 40
+              },
+              {
+                "metric": "points",
+                "season_type": "regular",
+                "games": 40
+              },
+              {
+                "metric": "margin",
+                "season_type": "regular",
+                "games": 40
+              }
+            ],
+            "stages": [
+              {
+                "stage": "prepare",
+                "tool": "query_resolution",
+                "latency_ms": 41
+              },
+              {
+                "stage": "tool",
+                "tool": "get_team_stats",
+                "status": "ok",
+                "claims": 4,
+                "latency_ms": 50
+              },
+              {
+                "stage": "orchestrate",
+                "tool": "llm_orchestrate",
+                "action": "answer_from_available_evidence",
+                "tools_requested": [],
+                "model": "deepseek-v4.1-flash",
+                "served_model": "deepseek-v4.1-flash",
+                "protocol": "chat",
+                "finish_reason": "stop",
+                "latency_ms": 2525
+              },
+              {
+                "stage": "review",
+                "tool": "llm_review",
+                "model": "gpt-6-luna",
+                "served_model": "gpt-6-luna",
+                "protocol": "responses",
+                "finish_reason": "stop",
+                "review_accepted": true,
+                "review_spans": 2,
+                "latency_ms": 4173
+              }
+            ],
+            "citations": [
+              {
+                "metric": "wins",
+                "value": 30,
+                "season_type": "regular",
+                "games": 40
+              },
+              {
+                "metric": "losses",
+                "value": 10,
+                "season_type": "regular",
+                "games": 40
+              },
+              {
+                "metric": "points",
+                "value": 4760,
+                "season_type": "regular",
+                "games": 40
+              },
+              {
+                "metric": "margin",
+                "value": 401,
+                "season_type": "regular",
+                "games": 40
+              },
+              {
+                "metric": null,
+                "value": null,
+                "season_type": null,
+                "games": 0
+              },
+              {
+                "metric": null,
+                "value": null,
+                "season_type": null,
+                "games": 0
+              }
+            ],
+            "warnings": [],
+            "llm_validated": true,
+            "refused": false,
+            "degraded": false,
+            "revision": 2,
+            "expected_revision": 1,
+            "revision_ok": true,
+            "state_committed": true,
+            "session_token_returned": true
+          },
+          {
+            "turn": 3,
+            "question": "And on the road?",
+            "status": 200,
+            "answer": "On the road in the 2025-26 regular season, the Knicks went 23-19 over 42 archived away games. They scored 4,789 points with a +118 total margin in those games.",
+            "cause": "ok",
+            "expected": {
+              "kind": "record",
+              "fact": "23-19",
+              "record": [
+                23,
+                19
+              ],
+              "scope": {
+                "season_type": "regular",
+                "all_phases": false,
+                "game_count": 42,
+                "game_ids": null,
+                "player_ids": [],
+                "metric": null,
+                "home_away": "away",
+                "opponent_id": null,
+                "relative_game_count": null,
+                "date_start": null,
+                "date_end": null
+              }
+            },
+            "expected_checks": {
+              "record": "23-19",
+              "records_in_answer": [
+                "23-19"
+              ],
+              "record_ok": true
+            },
+            "expected_ok": true,
+            "honest_ok": true,
+            "failures": [],
+            "checks": {
+              "validated": true,
+              "decline_signal": null,
+              "decline_signals": [],
+              "declined": false,
+              "clarification": false,
+              "substantive": true,
+              "evidence_mode": "claims",
+              "claim_citations": 4,
+              "archive_receipts": 2,
+              "numbers_total": 4,
+              "unbacked_numbers": [],
+              "detected_entities": [
+                "Knicks"
+              ],
+              "unbacked_entities": [],
+              "required_facts": [
+                "23-19"
+              ],
+              "required_facts_ok": true,
+              "required_entities_ok": true,
+              "required_phrases_ok": null,
+              "echo_question": false,
+              "hedged_causal": false,
+              "missing_turning_detail": false
+            },
+            "actual_scope": {
+              "intent": "analyst",
+              "player_ids": [],
+              "team_ids": [],
+              "opponent_id": null,
+              "game_ids": [
+                3,
+                4,
+                5,
+                13,
+                14,
+                15,
+                16,
+                17,
+                20,
+                24,
+                25,
+                26,
+                29,
+                31,
+                32,
+                33,
+                36,
+                38,
+                39,
+                40,
+                41,
+                45,
+                47,
+                50,
+                52,
+                53,
+                55,
+                58,
+                59,
+                60,
+                62,
+                64,
+                65,
+                66,
+                67,
+                68,
+                71,
+                74,
+                75,
+                76,
+                77,
+                79
+              ],
+              "date_start": null,
+              "date_end": null,
+              "relative_game_count": null,
+              "relative_from_start": false,
+              "periods": [],
+              "season_type": "regular",
+              "all_phases": false,
+              "home_away": "away",
+              "game_result": null,
+              "metric": null,
+              "requires_clarification": false,
+              "clarification_reason": null,
+              "clarification_options": [],
+              "data_version": "2025-26.20260928.1"
+            },
+            "scope_issues": [],
+            "state_intent": "What was the Knicks' record?",
+            "carried_claims": [
+              {
+                "metric": "wins",
+                "season_type": "regular",
+                "games": 42
+              },
+              {
+                "metric": "losses",
+                "season_type": "regular",
+                "games": 42
+              },
+              {
+                "metric": "points",
+                "season_type": "regular",
+                "games": 42
+              },
+              {
+                "metric": "margin",
+                "season_type": "regular",
+                "games": 42
+              }
+            ],
+            "stages": [
+              {
+                "stage": "prepare",
+                "tool": "query_resolution",
+                "latency_ms": 37
+              },
+              {
+                "stage": "tool",
+                "tool": "get_team_stats",
+                "status": "ok",
+                "claims": 4,
+                "latency_ms": 44
+              },
+              {
+                "stage": "orchestrate",
+                "tool": "llm_orchestrate",
+                "action": "answer_from_available_evidence",
+                "tools_requested": [],
+                "model": "deepseek-v4.1-flash",
+                "served_model": "deepseek-v4.1-flash",
+                "protocol": "chat",
+                "finish_reason": "stop",
+                "latency_ms": 3624
+              },
+              {
+                "stage": "review",
+                "tool": "llm_review",
+                "model": "gpt-6-luna",
+                "served_model": "gpt-6-luna",
+                "protocol": "responses",
+                "finish_reason": "stop",
+                "review_accepted": true,
+                "review_spans": 2,
+                "latency_ms": 4031
+              }
+            ],
+            "citations": [
+              {
+                "metric": "wins",
+                "value": 23,
+                "season_type": "regular",
+                "games": 42
+              },
+              {
+                "metric": "losses",
+                "value": 19,
+                "season_type": "regular",
+                "games": 42
+              },
+              {
+                "metric": "points",
+                "value": 4789,
+                "season_type": "regular",
+                "games": 42
+              },
+              {
+                "metric": "margin",
+                "value": 118,
+                "season_type": "regular",
+                "games": 42
+              },
+              {
+                "metric": null,
+                "value": null,
+                "season_type": null,
+                "games": 0
+              },
+              {
+                "metric": null,
+                "value": null,
+                "season_type": null,
+                "games": 0
+              }
+            ],
+            "warnings": [],
+            "llm_validated": true,
+            "refused": false,
+            "degraded": false,
+            "revision": 3,
+            "expected_revision": 2,
+            "revision_ok": true,
+            "state_committed": true,
+            "session_token_returned": true
+          }
+        ],
+        "integrity": {
+          "single_token": true,
+          "revisions": [
+            1,
+            2,
+            3
+          ],
+          "consecutive": true,
+          "turns_committed": 3,
+          "turns": 3,
+          "all_200_settled": true
+        },
+        "pass": true,
+        "trial": 1
+      }
+    ],
+    "opponent_phase_switch": [
+      {
+        "id": "opponent_phase_switch",
+        "category": "phase_change",
+        "turns": [
+          {
+            "turn": 1,
+            "question": "What was their record against Philadelphia in the regular season?",
+            "status": 200,
+            "answer": "In the 2025-26 regular season, the Knicks went 2-2 against Philadelphia across four archived games, scoring 476 total points with a +32 aggregate margin. The results: a 107-116 loss (Dec 19), a 119-130 loss (Jan 3), a 112-109 win at Philadelphia (Jan 24), and a 138-89 win at Philadelphia (Feb 11).",
+            "cause": "ok",
+            "expected": {
+              "kind": "record",
+              "fact": "2-2",
+              "record": [
+                2,
+                2
+              ],
+              "scope": {
+                "season_type": "regular",
+                "all_phases": false,
+                "game_count": 4,
+                "game_ids": null,
+                "player_ids": [],
+                "metric": null,
+                "home_away": null,
+                "opponent_id": "PHI",
+                "relative_game_count": null,
+                "date_start": null,
+                "date_end": null
+              }
+            },
+            "expected_checks": {
+              "record": "2-2",
+              "records_in_answer": [
+                "2-2",
+                "107-116",
+                "119-130",
+                "112-109",
+                "138-89"
+              ],
+              "record_ok": true
+            },
+            "expected_ok": true,
+            "honest_ok": true,
+            "failures": [],
+            "checks": {
+              "validated": true,
+              "decline_signal": null,
+              "decline_signals": [],
+              "declined": false,
+              "clarification": false,
+              "substantive": true,
+              "evidence_mode": "claims",
+              "claim_citations": 4,
+              "archive_receipts": 4,
+              "numbers_total": 11,
+              "unbacked_numbers": [],
+              "detected_entities": [
+                "76ers",
+                "Knicks"
+              ],
+              "unbacked_entities": [],
+              "required_facts": [
+                "2-2"
+              ],
+              "required_facts_ok": true,
+              "required_entities_ok": true,
+              "required_phrases_ok": null,
+              "echo_question": false,
+              "hedged_causal": false,
+              "missing_turning_detail": false
+            },
+            "actual_scope": {
+              "intent": "analyst",
+              "player_ids": [],
+              "team_ids": [
+                "PHI"
+              ],
+              "opponent_id": "PHI",
+              "game_ids": [
+                27,
+                35,
+                45,
+                55
+              ],
+              "date_start": null,
+              "date_end": null,
+              "relative_game_count": null,
+              "relative_from_start": false,
+              "periods": [],
+              "season_type": "regular",
+              "all_phases": false,
+              "home_away": null,
+              "game_result": null,
+              "metric": null,
+              "requires_clarification": false,
+              "clarification_reason": null,
+              "clarification_options": [],
+              "data_version": "2025-26.20260928.1"
+            },
+            "scope_issues": [],
+            "state_intent": "What was their record against Philadelphia in the regular season?",
+            "carried_claims": [
+              {
+                "metric": "wins",
+                "season_type": "regular",
+                "games": 4
+              },
+              {
+                "metric": "losses",
+                "season_type": "regular",
+                "games": 4
+              },
+              {
+                "metric": "points",
+                "season_type": "regular",
+                "games": 4
+              },
+              {
+                "metric": "margin",
+                "season_type": "regular",
+                "games": 4
+              }
+            ],
+            "stages": [
+              {
+                "stage": "prepare",
+                "tool": "query_resolution",
+                "latency_ms": 66
+              },
+              {
+                "stage": "tool",
+                "tool": "get_team_stats",
+                "status": "ok",
+                "claims": 4,
+                "latency_ms": 71
+              },
+              {
+                "stage": "orchestrate",
+                "tool": "llm_orchestrate",
+                "action": "answer_from_available_evidence",
+                "tools_requested": [],
+                "model": "deepseek-v4.1-flash",
+                "served_model": "deepseek-v4.1-flash",
+                "protocol": "chat",
+                "finish_reason": "stop",
+                "latency_ms": 2442
+              },
+              {
+                "stage": "review",
+                "tool": "llm_review",
+                "model": "gpt-6-luna",
+                "served_model": "gpt-6-luna",
+                "protocol": "responses",
+                "finish_reason": "stop",
+                "review_accepted": true,
+                "review_spans": 2,
+                "latency_ms": 4562
+              }
+            ],
+            "citations": [
+              {
+                "metric": "wins",
+                "value": 2,
+                "season_type": "regular",
+                "games": 4
+              },
+              {
+                "metric": "losses",
+                "value": 2,
+                "season_type": "regular",
+                "games": 4
+              },
+              {
+                "metric": "points",
+                "value": 476,
+                "season_type": "regular",
+                "games": 4
+              },
+              {
+                "metric": "margin",
+                "value": 32,
+                "season_type": "regular",
+                "games": 4
+              },
+              {
+                "metric": null,
+                "value": null,
+                "season_type": null,
+                "games": 0
+              },
+              {
+                "metric": null,
+                "value": null,
+                "season_type": null,
+                "games": 0
+              },
+              {
+                "metric": null,
+                "value": null,
+                "season_type": null,
+                "games": 0
+              },
+              {
+                "metric": null,
+                "value": null,
+                "season_type": null,
+                "games": 0
+              }
+            ],
+            "warnings": [],
+            "llm_validated": true,
+            "refused": false,
+            "degraded": false,
+            "revision": 1,
+            "expected_revision": 0,
+            "revision_ok": true,
+            "state_committed": true,
+            "session_token_returned": true
+          },
+          {
+            "turn": 2,
+            "question": "And in the playoffs?",
+            "status": 200,
+            "answer": "In the 2025-26 playoffs against Philadelphia, the Knicks went 4-0 across four archived games, scoring 497 total points with a +89 aggregate margin. The results: a 137-98 win (May 4), a 108-102 win (May 6), a 108-94 win at Philadelphia (May 8), and a 144-114 win at Philadelphia (May 10).",
+            "cause": "ok",
+            "expected": {
+              "kind": "record",
+              "fact": "4-0",
+              "record": [
+                4,
+                0
+              ],
+              "scope": {
+                "season_type": "playoffs",
+                "all_phases": false,
+                "game_count": 4,
+                "game_ids": null,
+                "player_ids": [],
+                "metric": null,
+                "home_away": null,
+                "opponent_id": "PHI",
+                "relative_game_count": null,
+                "date_start": null,
+                "date_end": null
+              }
+            },
+            "expected_checks": {
+              "record": "4-0",
+              "records_in_answer": [
+                "4-0",
+                "137-98",
+                "108-102",
+                "108-94",
+                "144-114"
+              ],
+              "record_ok": true
+            },
+            "expected_ok": true,
+            "honest_ok": true,
+            "failures": [],
+            "checks": {
+              "validated": true,
+              "decline_signal": null,
+              "decline_signals": [],
+              "declined": false,
+              "clarification": false,
+              "substantive": true,
+              "evidence_mode": "claims",
+              "claim_citations": 4,
+              "archive_receipts": 4,
+              "numbers_total": 11,
+              "unbacked_numbers": [],
+              "detected_entities": [
+                "76ers",
+                "Knicks"
+              ],
+              "unbacked_entities": [],
+              "required_facts": [
+                "4-0"
+              ],
+              "required_facts_ok": true,
+              "required_entities_ok": true,
+              "required_phrases_ok": null,
+              "echo_question": false,
+              "hedged_causal": false,
+              "missing_turning_detail": false
+            },
+            "actual_scope": {
+              "intent": "analyst",
+              "player_ids": [],
+              "team_ids": [],
+              "opponent_id": "PHI",
+              "game_ids": [
+                89,
+                90,
+                91,
+                92
+              ],
+              "date_start": null,
+              "date_end": null,
+              "relative_game_count": null,
+              "relative_from_start": false,
+              "periods": [],
+              "season_type": "playoffs",
+              "all_phases": false,
+              "home_away": null,
+              "game_result": null,
+              "metric": null,
+              "requires_clarification": false,
+              "clarification_reason": null,
+              "clarification_options": [],
+              "data_version": "2025-26.20260928.1"
+            },
+            "scope_issues": [],
+            "state_intent": "What was their record against Philadelphia in the regular season?",
+            "carried_claims": [
+              {
+                "metric": "wins",
+                "season_type": "playoffs",
+                "games": 4
+              },
+              {
+                "metric": "losses",
+                "season_type": "playoffs",
+                "games": 4
+              },
+              {
+                "metric": "points",
+                "season_type": "playoffs",
+                "games": 4
+              },
+              {
+                "metric": "margin",
+                "season_type": "playoffs",
+                "games": 4
+              }
+            ],
+            "stages": [
+              {
+                "stage": "prepare",
+                "tool": "query_resolution",
+                "latency_ms": 50
+              },
+              {
+                "stage": "tool",
+                "tool": "get_team_stats",
+                "status": "ok",
+                "claims": 4,
+                "latency_ms": 48
+              },
+              {
+                "stage": "orchestrate",
+                "tool": "llm_orchestrate",
+                "action": "answer_from_available_evidence",
+                "tools_requested": [],
+                "model": "deepseek-v4.1-flash",
+                "served_model": "deepseek-v4.1-flash",
+                "protocol": "chat",
+                "finish_reason": "stop",
+                "latency_ms": 5889
+              },
+              {
+                "stage": "review",
+                "tool": "llm_review",
+                "model": "gpt-6-luna",
+                "served_model": "gpt-6-luna",
+                "protocol": "responses",
+                "finish_reason": "stop",
+                "review_accepted": true,
+                "review_spans": 2,
+                "latency_ms": 5588
+              }
+            ],
+            "citations": [
+              {
+                "metric": "wins",
+                "value": 4,
+                "season_type": "playoffs",
+                "games": 4
+              },
+              {
+                "metric": "losses",
+                "value": 0,
+                "season_type": "playoffs",
+                "games": 4
+              },
+              {
+                "metric": "points",
+                "value": 497,
+                "season_type": "playoffs",
+                "games": 4
+              },
+              {
+                "metric": "margin",
+                "value": 89,
+                "season_type": "playoffs",
+                "games": 4
+              },
+              {
+                "metric": null,
+                "value": null,
+                "season_type": null,
+                "games": 0
+              },
+              {
+                "metric": null,
+                "value": null,
+                "season_type": null,
+                "games": 0
+              },
+              {
+                "metric": null,
+                "value": null,
+                "season_type": null,
+                "games": 0
+              },
+              {
+                "metric": null,
+                "value": null,
+                "season_type": null,
+                "games": 0
+              }
+            ],
+            "warnings": [],
+            "llm_validated": true,
+            "refused": false,
+            "degraded": false,
+            "revision": 2,
+            "expected_revision": 1,
+            "revision_ok": true,
+            "state_committed": true,
+            "session_token_returned": true
+          },
+          {
+            "turn": 3,
+            "question": "And overall?",
+            "status": 200,
+            "answer": "Across all archived phases combined, the Knicks went 6-2 against Philadelphia, scoring 973 total points with a +121 aggregate margin. That splits into 2-2 in the regular season and 4-0 in the playoffs.",
+            "cause": "ok",
+            "expected": {
+              "kind": "record",
+              "fact": "6-2",
+              "record": [
+                6,
+                2
+              ],
+              "scope": {
+                "season_type": null,
+                "all_phases": true,
+                "game_count": 8,
+                "game_ids": null,
+                "player_ids": [],
+                "metric": null,
+                "home_away": null,
+                "opponent_id": "PHI",
+                "relative_game_count": null,
+                "date_start": null,
+                "date_end": null
+              }
+            },
+            "expected_checks": {
+              "record": "6-2",
+              "records_in_answer": [
+                "6-2",
+                "2-2",
+                "4-0"
+              ],
+              "record_ok": true
+            },
+            "expected_ok": true,
+            "honest_ok": true,
+            "failures": [],
+            "checks": {
+              "validated": true,
+              "decline_signal": null,
+              "decline_signals": [],
+              "declined": false,
+              "clarification": false,
+              "substantive": true,
+              "evidence_mode": "claims",
+              "claim_citations": 8,
+              "archive_receipts": 2,
+              "numbers_total": 5,
+              "unbacked_numbers": [],
+              "detected_entities": [
+                "76ers",
+                "Knicks"
+              ],
+              "unbacked_entities": [],
+              "required_facts": [
+                "6-2"
+              ],
+              "required_facts_ok": true,
+              "required_entities_ok": true,
+              "required_phrases_ok": null,
+              "echo_question": false,
+              "hedged_causal": false,
+              "missing_turning_detail": false
+            },
+            "actual_scope": {
+              "intent": "analyst",
+              "player_ids": [],
+              "team_ids": [],
+              "opponent_id": "PHI",
+              "game_ids": [
+                27,
+                35,
+                45,
+                55,
+                89,
+                90,
+                91,
+                92
+              ],
+              "date_start": null,
+              "date_end": null,
+              "relative_game_count": null,
+              "relative_from_start": false,
+              "periods": [],
+              "season_type": null,
+              "all_phases": true,
+              "home_away": null,
+              "game_result": null,
+              "metric": null,
+              "requires_clarification": false,
+              "clarification_reason": null,
+              "clarification_options": [],
+              "data_version": "2025-26.20260928.1"
+            },
+            "scope_issues": [],
+            "state_intent": "What was their record against Philadelphia in the regular season?",
+            "carried_claims": [
+              {
+                "metric": "wins",
+                "season_type": null,
+                "games": 8
+              },
+              {
+                "metric": "losses",
+                "season_type": null,
+                "games": 8
+              },
+              {
+                "metric": "points",
+                "season_type": null,
+                "games": 8
+              },
+              {
+                "metric": "margin",
+                "season_type": null,
+                "games": 8
+              },
+              {
+                "metric": "wins",
+                "season_type": "regular",
+                "games": 4
+              },
+              {
+                "metric": "losses",
+                "season_type": "regular",
+                "games": 4
+              },
+              {
+                "metric": "wins",
+                "season_type": "playoffs",
+                "games": 4
+              },
+              {
+                "metric": "losses",
+                "season_type": "playoffs",
+                "games": 4
+              }
+            ],
+            "stages": [
+              {
+                "stage": "prepare",
+                "tool": "query_resolution",
+                "latency_ms": 45
+              },
+              {
+                "stage": "tool",
+                "tool": "get_team_stats",
+                "status": "ok",
+                "claims": 8,
+                "latency_ms": 56
+              },
+              {
+                "stage": "orchestrate",
+                "tool": "llm_orchestrate",
+                "action": "answer_from_available_evidence",
+                "tools_requested": [],
+                "model": "deepseek-v4.1-flash",
+                "served_model": "deepseek-v4.1-flash",
+                "protocol": "chat",
+                "finish_reason": "stop",
+                "latency_ms": 3605
+              },
+              {
+                "stage": "review",
+                "tool": "llm_review",
+                "model": "gpt-6-luna",
+                "served_model": "gpt-6-luna",
+                "protocol": "responses",
+                "finish_reason": "stop",
+                "review_accepted": true,
+                "review_spans": 2,
+                "latency_ms": 4065
+              }
+            ],
+            "citations": [
+              {
+                "metric": "wins",
+                "value": 6,
+                "season_type": null,
+                "games": 8
+              },
+              {
+                "metric": "losses",
+                "value": 2,
+                "season_type": null,
+                "games": 8
+              },
+              {
+                "metric": "points",
+                "value": 973,
+                "season_type": null,
+                "games": 8
+              },
+              {
+                "metric": "margin",
+                "value": 121,
+                "season_type": null,
+                "games": 8
+              },
+              {
+                "metric": "wins",
+                "value": 2,
+                "season_type": "regular",
+                "games": 4
+              },
+              {
+                "metric": "losses",
+                "value": 2,
+                "season_type": "regular",
+                "games": 4
+              },
+              {
+                "metric": "wins",
+                "value": 4,
+                "season_type": "playoffs",
+                "games": 4
+              },
+              {
+                "metric": "losses",
+                "value": 0,
+                "season_type": "playoffs",
+                "games": 4
+              },
+              {
+                "metric": null,
+                "value": null,
+                "season_type": null,
+                "games": 0
+              },
+              {
+                "metric": null,
+                "value": null,
+                "season_type": null,
+                "games": 0
+              }
+            ],
+            "warnings": [],
+            "llm_validated": true,
+            "refused": false,
+            "degraded": false,
+            "revision": 3,
+            "expected_revision": 2,
+            "revision_ok": true,
+            "state_committed": true,
+            "session_token_returned": true
+          }
+        ],
+        "integrity": {
+          "single_token": true,
+          "revisions": [
+            1,
+            2,
+            3
+          ],
+          "consecutive": true,
+          "turns_committed": 3,
+          "turns": 3,
+          "all_200_settled": true
+        },
+        "pass": true,
+        "trial": 1
+      }
+    ]
+  },
+  "summary": {
+    "record_home_road": {
+      "passes": 1,
+      "trials": 1,
+      "turn_passes": [
+        3
+      ],
+      "turns": [
+        3
+      ]
+    },
+    "opponent_phase_switch": {
+      "passes": 1,
+      "trials": 1,
+      "turn_passes": [
+        3
+      ],
+      "turns": [
+        3
+      ]
+    }
+  },
+  "causes": {},
+  "totals": {
+    "turns": 6,
+    "turn_passes": 6,
+    "session_passes": 2,
+    "session_runs": 2
+  }
+}
