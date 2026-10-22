@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any
 
 from app.services.analyst_provider import compact_schema, encoded, token_upper_bound
+from app.services.answer_evidence import review_evidence_view, select_answer_evidence
 from app.services.evidence_contracts import (
     INTERPRETATION_POLICY,
     Candidate,
@@ -71,18 +72,30 @@ def build_payload(
         "evidence": [],
         "candidates": [],
     }
-    if loop.preplanned:
+    if loop.preplanned and not review:
         payload["preplanned_tools"] = list(loop.preplanned)
     if review:
-        # Fresh context: no writer history, tool planning, or self-declared support verdicts.
-        payload["proposed_answer"] = answer.model_dump(mode="json") if answer else None
-        # Preserve punctuation and whitespace at backend-defined review boundaries.
-        # A span fails if any assertion within it is unsupported.
-        payload["review_spans"] = split_review_spans(answer.text) if answer else []
-        payload["follow_up_questions"] = answer.follow_up_questions if answer else []
-        claims = [loop.sent_claims[u.claim_id] for u in answer.claims] if answer else []
-        evidence = list(loop.sent_evidence.values())
-        candidates = []
+        if answer is None:
+            raise ValueError("Review requires a proposed answer")
+        selected = select_answer_evidence(
+            answer, loop.sent_claims, loop.sent_evidence, loop.tools.evidence
+        )
+        payload["proposed_answer"] = answer.model_dump(mode="json")
+        payload["review_spans"] = split_review_spans(answer.text)
+        payload["follow_up_questions"] = answer.follow_up_questions
+        payload["claims"] = [review_claim_view(c) for c in selected.claims.values()]
+        payload["evidence"] = [review_evidence_view(e) for e in selected.evidence.values()]
+        evidence_size = token_upper_bound(encoded(payload["claims"])) + token_upper_bound(
+            encoded(payload["evidence"])
+        )
+        if evidence_size > loop.settings.analyst_evidence_tokens:
+            raise ValueError("Full referenced evidence cannot fit reviewer input")
+        if (
+            token_upper_bound(encoded(payload)) + instruction_bytes
+            > loop.settings.analyst_input_tokens
+        ):
+            raise ValueError("Required review context exceeds input budget")
+        return payload
     else:
         payload.update(
             question=loop.tools.question,
@@ -134,7 +147,7 @@ def build_payload(
                 ref for cid in list(group_ids) for ref in loop.tools.claims[cid].baseline_claim_ids
             )
             group = [loop.tools.claims[ref] for ref in sorted(group_ids) if ref not in kept_claims]
-            data = [(review_claim_view if review else claim_view)(c) for c in group]
+            data = [claim_view(c) for c in group]
             size = token_upper_bound(encoded(data))
             related = [
                 c
@@ -150,8 +163,6 @@ def build_payload(
             if retained_size + size > loop.settings.analyst_evidence_tokens or (
                 token_upper_bound(encoded(candidate_payload)) > limit
             ):
-                if review:
-                    raise ValueError("Full referenced claims cannot fit reviewer input")
                 continue
             retained = candidate_payload
             retained_size += size
@@ -181,7 +192,6 @@ def build_payload(
             payload = candidate_payload
             evidence_size += size
             sent_evidence[item.evidence_id] = item
-    if not review:
-        loop.sent_claims, loop.sent_evidence = sent_claims, sent_evidence
-        loop.sent_candidates = sent_candidates
+    loop.sent_claims, loop.sent_evidence = sent_claims, sent_evidence
+    loop.sent_candidates = sent_candidates
     return payload

@@ -34,6 +34,7 @@ from analyst_review_base import (
     reject_causes,
 )
 from app.core.config import get_settings
+from app.services.analyst_payload import review_claim_view
 from app.services.analyst_provider import (
     configure_reviewer,
     encoded,
@@ -41,6 +42,7 @@ from app.services.analyst_provider import (
     reviewer_system_prompt,
 )
 from app.services.analyst_review_checks import number_tokens, review_issues, trusted_numbers
+from app.services.answer_evidence import review_evidence_view, select_answer_evidence
 from app.services.evidence_contracts import (
     AnswerReview,
     Evidence,
@@ -145,6 +147,16 @@ async def head_review_once(
     evidence: dict[str, Evidence],
     spans: list[str],
 ) -> dict[str, Any]:
+    try:
+        selected = select_answer_evidence(answer, claims, evidence, evidence)
+    except ValueError as exc:
+        return {"outcome": "structure_rejected", "causes": [str(exc)], "cost": None}
+    claims, evidence = selected.claims, selected.evidence
+    payload = {
+        **payload,
+        "claims": [review_claim_view(c) for c in claims.values()],
+        "evidence": [review_evidence_view(e) for e in evidence.values()],
+    }
     result = await call_reviewer(system, payload)
     observed = {
         "metadata": result.metadata,
@@ -187,6 +199,11 @@ async def head_trial(attempt: dict[str, Any]) -> dict[str, Any]:
     payload = attempt.get("payload") or {}
     capabilities = payload.get("capabilities") or attempt.get("capabilities")
     question = payload.get("requested_question") or attempt.get("question", "")
+    try:
+        selected = select_answer_evidence(answer, claims, evidence, evidence)
+    except ValueError as exc:
+        return {"outcome": "structure_rejected", "causes": [str(exc)], "cost": None}
+    claims, evidence = selected.claims, selected.evidence
     issues = review_issues(
         answer,
         spans,

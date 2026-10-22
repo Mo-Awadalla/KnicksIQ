@@ -13,6 +13,7 @@ from app.services.analyst_fallback import (
     recovery_call,
 )
 from app.services.analyst_fallback import fallback_claims as select_fallback_claims
+from app.services.answer_evidence import select_answer_evidence
 from app.services.evidence_contracts import ClaimUse, ProposedAnswer, VerifiedClaim
 
 if TYPE_CHECKING:
@@ -71,11 +72,17 @@ def render(
     warning: str = "",
     refused: bool = False,
 ) -> dict[str, Any]:
-    claims = [loop.tools.claims[u.claim_id] for u in answer.claims]
+    selected = select_answer_evidence(
+        answer,
+        loop.sent_claims if llm else loop.tools.claims,
+        loop.sent_evidence if llm else loop.tools.evidence,
+        loop.tools.evidence,
+    )
+    claims = [selected.claims[u.claim_id] for u in answer.claims]
     citations = []
     for claim in claims:
         for ref in claim.supporting_evidence_ids[:3]:
-            e = loop.tools.evidence[ref]
+            e = selected.evidence[ref]
             citations.append(
                 {
                     "claim": claim.statement,
@@ -88,7 +95,7 @@ def render(
                 }
             )
     for ref in answer.evidence_ids:
-        e = loop.tools.evidence[ref]
+        e = selected.evidence[ref]
         citations.append(
             {
                 "claim": e.text,
@@ -130,12 +137,8 @@ def render(
     if players:
         state["scope"]["player_ids"] = players
         state["scope_origin"] = "delivered_subject"
-    references = {ref for c in claims for ref in c.supporting_evidence_ids}
-    references.update(answer.evidence_ids)
-    baseline_ids = {ref for c in claims for ref in c.baseline_claim_ids}
-    stored_claims = list(
-        {c.claim_id: c for c in claims + [loop.tools.claims[ref] for ref in baseline_ids]}.values()
-    )
+    references = set(selected.evidence)
+    stored_claims = list(selected.claims.values())
     references.update(ref for c in stored_claims for ref in c.supporting_evidence_ids)
     references.update(
         source
