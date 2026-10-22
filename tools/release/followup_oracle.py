@@ -38,7 +38,7 @@ MONTHS = {
     "november": 11,
     "december": 12,
 }
-RECORD_PAIR = re.compile(r"(?<![\w.])(\d{1,3})\s*-\s*(\d{1,3})(?![\w.])")
+RECORD_PAIR = re.compile(r"(?<![\w.-])(\d{1,3})\s*-\s*(\d{1,3})(?![\w-]|\.\w)")
 WINS = re.compile(r"\b(\d{1,3})\s+wins?\b", re.I)
 LOSSES = re.compile(r"\b(\d{1,3})\s+loss(?:es)?\b", re.I)
 FALLBACK_WINS = re.compile(r"\bwins:\s*(\d{1,3})\s+over\b", re.I)
