@@ -102,3 +102,7 @@ docs/release-evidence/llm-primary-20261021/reviewer/gate-recorded-attempts.json 
 docs/release-evidence/llm-primary-20261021/correctness/overall_followup_session*.json linguist-generated=true
 docs/release-evidence/llm-primary-20261021/w3-routing/*.json linguist-generated=true
 docs/release-evidence/llm-primary-20261021/w3-routing/*.jsonl linguist-generated=true
+
+# Reviewer false-acceptance measurement output from tools/release/reviewer_false_acceptance.py.
+docs/release-evidence/llm-primary-20261021/w3-revmeasure/*.json linguist-generated=true
+docs/release-evidence/llm-primary-20261021/w3-revmeasure/summary.md linguist-generated=true
