@@ -88,3 +88,7 @@ to omit reasoning fields. The wording pin was removed, empty selector lists no l
 the bounded prompt, and Go-specific effort remains separate from ordinary compatible hosts.
 All 79 targeted compatibility cases pass after those corrections. The final hosted CI result
 is the publication gate.
+
+The final local suite passes 1,318 tests after all corrections. Ruff, formatting and Pyright
+pass on the reconciled source. Publication is through PR #36. PR #35 remains unchanged as the
+old integration archive. Hosted CI status is attached to the exact head commit on PR #36.
