@@ -19,7 +19,6 @@ import asyncio
 import copy
 import json
 import time
-import uuid
 from collections import Counter
 from dataclasses import dataclass
 from decimal import Decimal
@@ -78,10 +77,7 @@ async def call_reviewer(
     adapter.timeout_seconds = 30
     if hasattr(adapter, "response_schema"):
         adapter.response_schema = None
-    if hasattr(adapter, "session_id"):
-        # OpenCode Go rejects calls without x-opencode-session. Production sends the
-        # analyst loop's random per-conversation id; a measurement call has no conversation.
-        adapter.session_id = uuid.uuid4().hex
+    # The adapter starts with a random x-opencode-session id (report_llm), which Go requires.
     requested_model = getattr(adapter, "model", None)
     # Do not let a failed call expose the previous call's metadata.
     adapter.last_metadata = {}
