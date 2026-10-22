@@ -1,0 +1,3767 @@
+{
+  "frozen_sha": "51f184a23645f1d43f930a520a1cc053397a315b",
+  "mode": "live_llm_primary",
+  "source": "live in-process API",
+  "adapter": "tools/release/heldout_followup_bench.py",
+  "trials": 1,
+  "sessions": {
+    "heldout2-follow_ups-001": [
+      {
+        "id": "heldout2-follow_ups-001",
+        "category": "follow_ups",
+        "turns": [
+          {
+            "turn": 1,
+            "question": "How did the Bockers do against Brooklyn on November 9?",
+            "status": 200,
+            "answer": "Knicks regular season wins: 1 over 1 archived games against Nets (134-98 vs Nets on 2025-11-09). Knicks regular season losses: 0 over 1 archived games against Nets (134-98 vs Nets on 2025-11-09).",
+            "cause": "pipeline:degraded",
+            "honest_ok": false,
+            "expected_ok": true,
+            "failures": [
+              "not_validated"
+            ],
+            "checks": {
+              "validated": false,
+              "decline_signal": "field:degraded",
+              "decline_signals": [
+                "field:degraded",
+                "field:unvalidated"
+              ],
+              "declined": false,
+              "clarification": false,
+              "substantive": true,
+              "evidence_mode": "claims",
+              "claim_citations": 2,
+              "archive_receipts": 0,
+              "numbers_total": 8,
+              "unbacked_numbers": [],
+              "detected_entities": [
+                "Knicks",
+                "Nets"
+              ],
+              "unbacked_entities": [],
+              "required_facts": [
+                "final score 134-98"
+              ],
+              "required_facts_ok": true,
+              "required_entities_ok": null,
+              "required_phrases_ok": null,
+              "echo_question": false,
+              "hedged_causal": false,
+              "missing_turning_detail": false
+            },
+            "expected_scope": {
+              "season_type": "regular",
+              "all_phases": false,
+              "game_count": 1,
+              "game_ids": [
+                9
+              ],
+              "player_ids": [],
+              "metric": null,
+              "home_away": null,
+              "opponent_id": null,
+              "relative_game_count": null,
+              "date_start": null,
+              "date_end": null
+            },
+            "actual_scope": {
+              "intent": "analyst",
+              "player_ids": [],
+              "team_ids": [
+                "BKN"
+              ],
+              "opponent_id": "BKN",
+              "game_ids": [
+                9
+              ],
+              "date_start": "2025-11-09",
+              "date_end": "2025-11-09",
+              "relative_game_count": null,
+              "relative_from_start": false,
+              "periods": [],
+              "season_type": null,
+              "all_phases": false,
+              "home_away": null,
+              "game_result": null,
+              "metric": null,
+              "requires_clarification": false,
+              "clarification_reason": null,
+              "clarification_options": [],
+              "data_version": "2025-26.20260928.1"
+            },
+            "scope_issues": [
+              "season_type=None want regular",
+              "opponent_id=BKN want None",
+              "date_start=2025-11-09 want None",
+              "date_end=2025-11-09 want None"
+            ],
+            "stages": [
+              {
+                "stage": "prepare",
+                "tool": "query_resolution",
+                "latency_ms": 60
+              },
+              {
+                "stage": "orchestrate",
+                "tool": "llm_orchestrate",
+                "action": "call_tools",
+                "model": "deepseek-v4.1-flash",
+                "served_model": "deepseek-v4.1-flash",
+                "protocol": "chat",
+                "latency_ms": 1813
+              },
+              {
+                "stage": "tool",
+                "tool": "get_game_flow",
+                "latency_ms": 169
+              },
+              {
+                "stage": "orchestrate",
+                "tool": "llm_orchestrate",
+                "action": "answer_from_available_evidence",
+                "model": "deepseek-v4.1-flash",
+                "served_model": "deepseek-v4.1-flash",
+                "protocol": "chat",
+                "latency_ms": 5151
+              },
+              {
+                "stage": "review",
+                "tool": "llm_review",
+                "model": "gpt-6-luna",
+                "served_model": "gpt-6-luna",
+                "protocol": "responses",
+                "review_accepted": false,
+                "latency_ms": 9625
+              }
+            ],
+            "citations": [
+              {
+                "metric": "wins",
+                "value": 1,
+                "season_type": "regular",
+                "games": 1
+              },
+              {
+                "metric": "losses",
+                "value": 0,
+                "season_type": "regular",
+                "games": 1
+              }
+            ],
+            "warnings": [
+              "Proposed wording did not pass evidence review."
+            ],
+            "llm_validated": false,
+            "refused": false,
+            "degraded": true,
+            "revision": 1,
+            "expected_revision": 0,
+            "revision_ok": true,
+            "state_committed": true,
+            "session_token_returned": true
+          },
+          {
+            "turn": 2,
+            "question": "How big was the margin?",
+            "status": 200,
+            "answer": "Knicks regular season margin: 519 over 82 archived games.",
+            "cause": "pipeline:degraded",
+            "honest_ok": false,
+            "expected_ok": false,
+            "failures": [
+              "not_validated",
+              "required_facts"
+            ],
+            "checks": {
+              "validated": false,
+              "decline_signal": "field:degraded",
+              "decline_signals": [
+                "field:degraded",
+                "field:unvalidated"
+              ],
+              "declined": false,
+              "clarification": false,
+              "substantive": true,
+              "evidence_mode": "claims",
+              "claim_citations": 1,
+              "archive_receipts": 0,
+              "numbers_total": 2,
+              "unbacked_numbers": [],
+              "detected_entities": [
+                "Knicks"
+              ],
+              "unbacked_entities": [],
+              "required_facts": [
+                "margin 36"
+              ],
+              "required_facts_ok": false,
+              "required_entities_ok": true,
+              "required_phrases_ok": null,
+              "echo_question": false,
+              "hedged_causal": false,
+              "missing_turning_detail": false
+            },
+            "expected_scope": {
+              "season_type": "regular",
+              "all_phases": false,
+              "game_count": 1,
+              "game_ids": [
+                9
+              ],
+              "player_ids": [],
+              "metric": "margin",
+              "home_away": null,
+              "opponent_id": null,
+              "relative_game_count": null,
+              "date_start": null,
+              "date_end": null
+            },
+            "actual_scope": {
+              "intent": "analyst",
+              "player_ids": [],
+              "team_ids": [],
+              "opponent_id": null,
+              "game_ids": [],
+              "date_start": null,
+              "date_end": null,
+              "relative_game_count": null,
+              "relative_from_start": false,
+              "periods": [],
+              "season_type": "regular",
+              "all_phases": false,
+              "home_away": null,
+              "game_result": null,
+              "metric": "margin",
+              "requires_clarification": false,
+              "clarification_reason": null,
+              "clarification_options": [],
+              "data_version": "2025-26.20260928.1"
+            },
+            "scope_issues": [
+              "game_count=82 want 1",
+              "game_ids differ (got [], want [9])"
+            ],
+            "stages": [
+              {
+                "stage": "prepare",
+                "tool": "query_resolution",
+                "latency_ms": 54
+              },
+              {
+                "stage": "tool",
+                "tool": "discover_facts",
+                "latency_ms": 108
+              },
+              {
+                "stage": "orchestrate",
+                "tool": "llm_orchestrate",
+                "action": "answer_from_available_evidence",
+                "model": "deepseek-v4.1-flash",
+                "served_model": "deepseek-v4.1-flash",
+                "protocol": "chat",
+                "latency_ms": 1659
+              },
+              {
+                "stage": "revise",
+                "tool": "llm_orchestrate",
+                "model": "deepseek-v4.1-flash",
+                "served_model": "deepseek-v4.1-flash",
+                "protocol": "chat",
+                "latency_ms": 1324
+              }
+            ],
+            "citations": [
+              {
+                "metric": "margin",
+                "value": 519,
+                "season_type": "regular",
+                "games": 82
+              }
+            ],
+            "warnings": [
+              "Proposed wording did not pass evidence review."
+            ],
+            "llm_validated": false,
+            "refused": false,
+            "degraded": true,
+            "revision": 2,
+            "expected_revision": 1,
+            "revision_ok": true,
+            "state_committed": true,
+            "session_token_returned": true
+          }
+        ],
+        "integrity": {
+          "single_token": true,
+          "revisions": [
+            1,
+            2
+          ],
+          "consecutive": true,
+          "turns_committed": 2,
+          "turns": 2,
+          "all_200_settled": true
+        },
+        "pass": false,
+        "trial": 1
+      }
+    ],
+    "heldout2-follow_ups-002": [
+      {
+        "id": "heldout2-follow_ups-002",
+        "category": "follow_ups",
+        "turns": [
+          {
+            "turn": 1,
+            "question": "What happened in Orlando on November 22?",
+            "status": 200,
+            "answer": "On November 22 in Orlando, the Knicks lost to the Magic 121-133 in the regular season. New York built a 10-point lead early (15-5 at Q1 08:08), but Orlando answered with a 14-0 run to go up 19-15. The lead changed 17 times. Orlando took the lead for good at Q3 00:32 on a Bane step-back three that made it 93-96, and Orlando's largest lead reached 18 (104-122 at Q4 06:18). The Knicks' biggest run was 8-0 in the second quarter, briefly putting them ahead 61-54.",
+            "cause": "ok",
+            "honest_ok": true,
+            "expected_ok": true,
+            "failures": [],
+            "checks": {
+              "validated": true,
+              "decline_signal": null,
+              "decline_signals": [],
+              "declined": false,
+              "clarification": false,
+              "substantive": true,
+              "evidence_mode": "claims",
+              "claim_citations": 10,
+              "archive_receipts": 10,
+              "numbers_total": 20,
+              "unbacked_numbers": [],
+              "detected_entities": [
+                "Desmond Bane",
+                "Knicks",
+                "Magic"
+              ],
+              "unbacked_entities": [],
+              "required_facts": [
+                "final score 121-133"
+              ],
+              "required_facts_ok": true,
+              "required_entities_ok": null,
+              "required_phrases_ok": null,
+              "echo_question": false,
+              "hedged_causal": false,
+              "missing_turning_detail": false
+            },
+            "expected_scope": {
+              "season_type": "regular",
+              "all_phases": false,
+              "game_count": 1,
+              "game_ids": [
+                15
+              ],
+              "player_ids": [],
+              "metric": null,
+              "home_away": null,
+              "opponent_id": null,
+              "relative_game_count": null,
+              "date_start": null,
+              "date_end": null
+            },
+            "actual_scope": {
+              "intent": "analyst",
+              "player_ids": [
+                321
+              ],
+              "team_ids": [
+                "ORL"
+              ],
+              "opponent_id": "ORL",
+              "game_ids": [
+                15
+              ],
+              "date_start": "2025-11-22",
+              "date_end": "2025-11-22",
+              "relative_game_count": null,
+              "relative_from_start": false,
+              "periods": [],
+              "season_type": null,
+              "all_phases": false,
+              "home_away": null,
+              "game_result": null,
+              "metric": null,
+              "requires_clarification": false,
+              "clarification_reason": null,
+              "clarification_options": [],
+              "data_version": "2025-26.20260928.1"
+            },
+            "scope_issues": [
+              "season_type=None want regular",
+              "opponent_id=ORL want None",
+              "player_ids=[321] want []",
+              "date_start=2025-11-22 want None",
+              "date_end=2025-11-22 want None"
+            ],
+            "stages": [
+              {
+                "stage": "prepare",
+                "tool": "query_resolution",
+                "latency_ms": 68
+              },
+              {
+                "stage": "orchestrate",
+                "tool": "llm_orchestrate",
+                "action": "call_tools",
+                "model": "deepseek-v4.1-flash",
+                "served_model": "deepseek-v4.1-flash",
+                "protocol": "chat",
+                "latency_ms": 1744
+              },
+              {
+                "stage": "tool",
+                "tool": "get_game_flow",
+                "latency_ms": 85
+              },
+              {
+                "stage": "orchestrate",
+                "tool": "llm_orchestrate",
+                "action": "answer_from_available_evidence",
+                "model": "deepseek-v4.1-flash",
+                "served_model": "deepseek-v4.1-flash",
+                "protocol": "chat",
+                "latency_ms": 5137
+              },
+              {
+                "stage": "review",
+                "tool": "llm_review",
+                "model": "gpt-6-luna",
+                "served_model": "gpt-6-luna",
+                "protocol": "responses",
+                "review_accepted": true,
+                "latency_ms": 12583
+              }
+            ],
+            "citations": [
+              {
+                "metric": "final_score",
+                "value": "121-133",
+                "season_type": "regular",
+                "games": 1
+              },
+              {
+                "metric": "largest_lead",
+                "value": 10,
+                "season_type": "regular",
+                "games": 1
+              },
+              {
+                "metric": "go_ahead_margin",
+                "value": 3,
+                "season_type": "regular",
+                "games": 1
+              },
+              {
+                "metric": "largest_lead",
+                "value": 18,
+                "season_type": "regular",
+                "games": 1
+              },
+              {
+                "metric": "biggest_run",
+                "value": 8,
+                "season_type": "regular",
+                "games": 1
+              },
+              {
+                "metric": "biggest_run",
+                "value": 8,
+                "season_type": "regular",
+                "games": 1
+              },
+              {
+                "metric": "biggest_run",
+                "value": 14,
+                "season_type": "regular",
+                "games": 1
+              },
+              {
+                "metric": "biggest_run",
+                "value": 14,
+                "season_type": "regular",
+                "games": 1
+              },
+              {
+                "metric": "lead_changes",
+                "value": 17,
+                "season_type": "regular",
+                "games": 1
+              },
+              {
+                "metric": "lead_changes",
+                "value": 17,
+                "season_type": "regular",
+                "games": 1
+              },
+              {
+                "metric": null,
+                "value": null,
+                "season_type": null,
+                "games": 0
+              },
+              {
+                "metric": null,
+                "value": null,
+                "season_type": null,
+                "games": 0
+              },
+              {
+                "metric": null,
+                "value": null,
+                "season_type": null,
+                "games": 0
+              },
+              {
+                "metric": null,
+                "value": null,
+                "season_type": null,
+                "games": 0
+              },
+              {
+                "metric": null,
+                "value": null,
+                "season_type": null,
+                "games": 0
+              },
+              {
+                "metric": null,
+                "value": null,
+                "season_type": null,
+                "games": 0
+              },
+              {
+                "metric": null,
+                "value": null,
+                "season_type": null,
+                "games": 0
+              },
+              {
+                "metric": null,
+                "value": null,
+                "season_type": null,
+                "games": 0
+              },
+              {
+                "metric": null,
+                "value": null,
+                "season_type": null,
+                "games": 0
+              },
+              {
+                "metric": null,
+                "value": null,
+                "season_type": null,
+                "games": 0
+              }
+            ],
+            "warnings": [],
+            "llm_validated": true,
+            "refused": false,
+            "degraded": false,
+            "revision": 1,
+            "expected_revision": 0,
+            "revision_ok": true,
+            "state_committed": true,
+            "session_token_returned": true
+          },
+          {
+            "turn": 2,
+            "question": "What was the fourth-quarter score?",
+            "status": 200,
+            "answer": "Across the 82 regular-season games in the archive, the Knicks scored 2,316 fourth-quarter points (28.24 per game) while opponents scored 2,078 (25.34 per game), a +238 differential. The fourth-quarter record in those games was 50-5-27. This is the season aggregate, not a single-game score; a specific game's Q4 can be checked from the game's period box score.",
+            "cause": "scope",
+            "honest_ok": false,
+            "expected_ok": false,
+            "failures": [
+              "required_facts",
+              "required_phrases"
+            ],
+            "checks": {
+              "validated": true,
+              "decline_signal": null,
+              "decline_signals": [],
+              "declined": false,
+              "clarification": false,
+              "substantive": true,
+              "evidence_mode": "claims",
+              "claim_citations": 1,
+              "archive_receipts": 6,
+              "numbers_total": 8,
+              "unbacked_numbers": [],
+              "detected_entities": [
+                "Knicks"
+              ],
+              "unbacked_entities": [],
+              "required_facts": [
+                "fourth quarter 28-35"
+              ],
+              "required_facts_ok": false,
+              "required_entities_ok": true,
+              "required_phrases_ok": false,
+              "echo_question": false,
+              "hedged_causal": false,
+              "missing_turning_detail": false
+            },
+            "expected_scope": {
+              "season_type": "regular",
+              "all_phases": false,
+              "game_count": 1,
+              "game_ids": [
+                15
+              ],
+              "player_ids": [],
+              "metric": null,
+              "home_away": null,
+              "opponent_id": null,
+              "relative_game_count": null,
+              "date_start": null,
+              "date_end": null
+            },
+            "actual_scope": {
+              "intent": "analyst",
+              "player_ids": [],
+              "team_ids": [],
+              "opponent_id": null,
+              "game_ids": [],
+              "date_start": null,
+              "date_end": null,
+              "relative_game_count": null,
+              "relative_from_start": false,
+              "periods": [
+                4
+              ],
+              "season_type": "regular",
+              "all_phases": false,
+              "home_away": null,
+              "game_result": null,
+              "metric": null,
+              "requires_clarification": false,
+              "clarification_reason": null,
+              "clarification_options": [],
+              "data_version": "2025-26.20260928.1"
+            },
+            "scope_issues": [
+              "game_count=82 want 1",
+              "game_ids differ (got [], want [15])"
+            ],
+            "stages": [
+              {
+                "stage": "prepare",
+                "tool": "query_resolution",
+                "latency_ms": 50
+              },
+              {
+                "stage": "tool",
+                "tool": "get_period_scoring",
+                "latency_ms": 71
+              },
+              {
+                "stage": "orchestrate",
+                "tool": "llm_orchestrate",
+                "action": "answer_from_available_evidence",
+                "model": "deepseek-v4.1-flash",
+                "served_model": "deepseek-v4.1-flash",
+                "protocol": "chat",
+                "latency_ms": 3298
+              },
+              {
+                "stage": "review",
+                "tool": "llm_review",
+                "model": "gpt-6-luna",
+                "served_model": "gpt-6-luna",
+                "protocol": "responses",
+                "review_accepted": true,
+                "latency_ms": 7591
+              }
+            ],
+            "citations": [
+              {
+                "metric": "period_report",
+                "value": "Regular season, 82 of 82 games. reg Q4: 2316 pts (28.24/g), opp 2078 (25.34), diff +238, 50-5-27.",
+                "season_type": "regular",
+                "games": 82
+              },
+              {
+                "metric": null,
+                "value": null,
+                "season_type": null,
+                "games": 0
+              },
+              {
+                "metric": null,
+                "value": null,
+                "season_type": null,
+                "games": 0
+              },
+              {
+                "metric": null,
+                "value": null,
+                "season_type": null,
+                "games": 0
+              },
+              {
+                "metric": null,
+                "value": null,
+                "season_type": null,
+                "games": 0
+              },
+              {
+                "metric": null,
+                "value": null,
+                "season_type": null,
+                "games": 0
+              },
+              {
+                "metric": null,
+                "value": null,
+                "season_type": null,
+                "games": 0
+              }
+            ],
+            "warnings": [],
+            "llm_validated": true,
+            "refused": false,
+            "degraded": false,
+            "revision": 2,
+            "expected_revision": 1,
+            "revision_ok": true,
+            "state_committed": true,
+            "session_token_returned": true
+          }
+        ],
+        "integrity": {
+          "single_token": true,
+          "revisions": [
+            1,
+            2
+          ],
+          "consecutive": true,
+          "turns_committed": 2,
+          "turns": 2,
+          "all_200_settled": true
+        },
+        "pass": false,
+        "trial": 1
+      }
+    ],
+    "heldout2-follow_ups-003": [
+      {
+        "id": "heldout2-follow_ups-003",
+        "category": "follow_ups",
+        "turns": [
+          {
+            "turn": 1,
+            "question": "How did the Jazz game go on December 5?",
+            "status": 200,
+            "answer": "On December 5, 2025, the Knicks beat the Jazz 146-112 at home in a regular-season game, a 34-point margin.",
+            "cause": "ok",
+            "honest_ok": true,
+            "expected_ok": true,
+            "failures": [],
+            "checks": {
+              "validated": true,
+              "decline_signal": null,
+              "decline_signals": [],
+              "declined": false,
+              "clarification": false,
+              "substantive": true,
+              "evidence_mode": "claims",
+              "claim_citations": 4,
+              "archive_receipts": 1,
+              "numbers_total": 3,
+              "unbacked_numbers": [],
+              "detected_entities": [
+                "Jazz",
+                "Knicks"
+              ],
+              "unbacked_entities": [],
+              "required_facts": [
+                "final score 146-112"
+              ],
+              "required_facts_ok": true,
+              "required_entities_ok": null,
+              "required_phrases_ok": null,
+              "echo_question": false,
+              "hedged_causal": false,
+              "missing_turning_detail": false
+            },
+            "expected_scope": {
+              "season_type": "regular",
+              "all_phases": false,
+              "game_count": 1,
+              "game_ids": [
+                22
+              ],
+              "player_ids": [],
+              "metric": null,
+              "home_away": null,
+              "opponent_id": null,
+              "relative_game_count": null,
+              "date_start": null,
+              "date_end": null
+            },
+            "actual_scope": {
+              "intent": "analyst",
+              "player_ids": [],
+              "team_ids": [
+                "UTA"
+              ],
+              "opponent_id": "UTA",
+              "game_ids": [
+                22
+              ],
+              "date_start": "2025-12-05",
+              "date_end": "2025-12-05",
+              "relative_game_count": null,
+              "relative_from_start": false,
+              "periods": [],
+              "season_type": null,
+              "all_phases": false,
+              "home_away": null,
+              "game_result": null,
+              "metric": null,
+              "requires_clarification": false,
+              "clarification_reason": null,
+              "clarification_options": [],
+              "data_version": "2025-26.20260928.1"
+            },
+            "scope_issues": [
+              "season_type=None want regular",
+              "opponent_id=UTA want None",
+              "date_start=2025-12-05 want None",
+              "date_end=2025-12-05 want None"
+            ],
+            "stages": [
+              {
+                "stage": "prepare",
+                "tool": "query_resolution",
+                "latency_ms": 54
+              },
+              {
+                "stage": "tool",
+                "tool": "discover_facts",
+                "latency_ms": 58
+              },
+              {
+                "stage": "orchestrate",
+                "tool": "llm_orchestrate",
+                "action": "answer_from_available_evidence",
+                "model": "deepseek-v4.1-flash",
+                "served_model": "deepseek-v4.1-flash",
+                "protocol": "chat",
+                "latency_ms": 3183
+              },
+              {
+                "stage": "review",
+                "tool": "llm_review",
+                "model": "gpt-6-luna",
+                "served_model": "gpt-6-luna",
+                "protocol": "responses",
+                "review_accepted": true,
+                "latency_ms": 4795
+              }
+            ],
+            "citations": [
+              {
+                "metric": "wins",
+                "value": 1,
+                "season_type": "regular",
+                "games": 1
+              },
+              {
+                "metric": "losses",
+                "value": 0,
+                "season_type": "regular",
+                "games": 1
+              },
+              {
+                "metric": "points_per_game",
+                "value": 146.0,
+                "season_type": "regular",
+                "games": 1
+              },
+              {
+                "metric": "margin_per_game",
+                "value": 34.0,
+                "season_type": "regular",
+                "games": 1
+              },
+              {
+                "metric": null,
+                "value": null,
+                "season_type": null,
+                "games": 0
+              }
+            ],
+            "warnings": [],
+            "llm_validated": true,
+            "refused": false,
+            "degraded": false,
+            "revision": 1,
+            "expected_revision": 0,
+            "revision_ok": true,
+            "state_committed": true,
+            "session_token_returned": true
+          },
+          {
+            "turn": 2,
+            "question": "How many threes did they hit?",
+            "status": 200,
+            "answer": "I can't answer that: verified archive facts are unavailable on this turn.",
+            "cause": "pipeline:degraded",
+            "honest_ok": false,
+            "expected_ok": false,
+            "failures": [
+              "declined:field:degraded",
+              "not_substantive",
+              "required_facts",
+              "required_entities",
+              "no_cited_claims"
+            ],
+            "checks": {
+              "validated": false,
+              "decline_signal": "field:degraded",
+              "decline_signals": [
+                "field:degraded",
+                "field:unvalidated",
+                "phrase:decline"
+              ],
+              "declined": true,
+              "clarification": false,
+              "substantive": false,
+              "evidence_mode": "archive_index_scoped",
+              "claim_citations": 0,
+              "archive_receipts": 0,
+              "numbers_total": 0,
+              "unbacked_numbers": [],
+              "detected_entities": [],
+              "unbacked_entities": [],
+              "required_facts": [
+                "team three-pointers made 21"
+              ],
+              "required_facts_ok": false,
+              "required_entities_ok": false,
+              "required_phrases_ok": null,
+              "echo_question": false,
+              "hedged_causal": false,
+              "missing_turning_detail": false
+            },
+            "expected_scope": {
+              "season_type": "regular",
+              "all_phases": false,
+              "game_count": 1,
+              "game_ids": [
+                22
+              ],
+              "player_ids": [],
+              "metric": "three_pointers_made",
+              "home_away": null,
+              "opponent_id": null,
+              "relative_game_count": null,
+              "date_start": null,
+              "date_end": null
+            },
+            "actual_scope": {
+              "intent": "analyst",
+              "player_ids": [],
+              "team_ids": [],
+              "opponent_id": null,
+              "game_ids": [],
+              "date_start": null,
+              "date_end": null,
+              "relative_game_count": null,
+              "relative_from_start": false,
+              "periods": [],
+              "season_type": "regular",
+              "all_phases": false,
+              "home_away": null,
+              "game_result": null,
+              "metric": "three_pointers_made",
+              "requires_clarification": false,
+              "clarification_reason": null,
+              "clarification_options": [],
+              "data_version": "2025-26.20260928.1"
+            },
+            "scope_issues": [
+              "game_count=82 want 1",
+              "game_ids differ (got [], want [22])"
+            ],
+            "stages": [
+              {
+                "stage": "prepare",
+                "tool": "query_resolution",
+                "latency_ms": 64
+              },
+              {
+                "stage": "tool",
+                "tool": "discover_facts",
+                "latency_ms": 110
+              },
+              {
+                "stage": "orchestrate",
+                "tool": "llm_orchestrate",
+                "action": "answer_from_available_evidence",
+                "model": "deepseek-v4.1-flash",
+                "served_model": "deepseek-v4.1-flash",
+                "protocol": "chat",
+                "latency_ms": 1920
+              },
+              {
+                "stage": "revise",
+                "tool": "llm_orchestrate",
+                "model": "deepseek-v4.1-flash",
+                "served_model": "deepseek-v4.1-flash",
+                "protocol": "chat",
+                "latency_ms": 2058
+              }
+            ],
+            "citations": [],
+            "warnings": [
+              "Proposed wording did not pass evidence review."
+            ],
+            "llm_validated": false,
+            "refused": false,
+            "degraded": true,
+            "revision": 2,
+            "expected_revision": 1,
+            "revision_ok": true,
+            "state_committed": true,
+            "session_token_returned": true
+          }
+        ],
+        "integrity": {
+          "single_token": true,
+          "revisions": [
+            1,
+            2
+          ],
+          "consecutive": true,
+          "turns_committed": 2,
+          "turns": 2,
+          "all_200_settled": true
+        },
+        "pass": false,
+        "trial": 1
+      }
+    ],
+    "heldout2-follow_ups-004": [
+      {
+        "id": "heldout2-follow_ups-004",
+        "category": "follow_ups",
+        "turns": [
+          {
+            "turn": 1,
+            "question": "What was the result in Minnesota on December 23?",
+            "status": 200,
+            "answer": "On December 23, 2025 in Minnesota, the Knicks lost to the Timberwolves 104-115.",
+            "cause": "ok",
+            "honest_ok": true,
+            "expected_ok": true,
+            "failures": [],
+            "checks": {
+              "validated": true,
+              "decline_signal": null,
+              "decline_signals": [],
+              "declined": false,
+              "clarification": false,
+              "substantive": true,
+              "evidence_mode": "claims",
+              "claim_citations": 4,
+              "archive_receipts": 1,
+              "numbers_total": 3,
+              "unbacked_numbers": [],
+              "detected_entities": [
+                "Knicks",
+                "Timberwolves"
+              ],
+              "unbacked_entities": [],
+              "required_facts": [
+                "final score 104-115"
+              ],
+              "required_facts_ok": true,
+              "required_entities_ok": null,
+              "required_phrases_ok": null,
+              "echo_question": false,
+              "hedged_causal": false,
+              "missing_turning_detail": false
+            },
+            "expected_scope": {
+              "season_type": "regular",
+              "all_phases": false,
+              "game_count": 1,
+              "game_ids": [
+                29
+              ],
+              "player_ids": [],
+              "metric": null,
+              "home_away": null,
+              "opponent_id": null,
+              "relative_game_count": null,
+              "date_start": null,
+              "date_end": null
+            },
+            "actual_scope": {
+              "intent": "analyst",
+              "player_ids": [],
+              "team_ids": [
+                "MIN"
+              ],
+              "opponent_id": "MIN",
+              "game_ids": [
+                29
+              ],
+              "date_start": "2025-12-23",
+              "date_end": "2025-12-23",
+              "relative_game_count": null,
+              "relative_from_start": false,
+              "periods": [],
+              "season_type": null,
+              "all_phases": false,
+              "home_away": null,
+              "game_result": null,
+              "metric": null,
+              "requires_clarification": false,
+              "clarification_reason": null,
+              "clarification_options": [],
+              "data_version": "2025-26.20260928.1"
+            },
+            "scope_issues": [
+              "season_type=None want regular",
+              "opponent_id=MIN want None",
+              "date_start=2025-12-23 want None",
+              "date_end=2025-12-23 want None"
+            ],
+            "stages": [
+              {
+                "stage": "prepare",
+                "tool": "query_resolution",
+                "latency_ms": 55
+              },
+              {
+                "stage": "tool",
+                "tool": "discover_facts",
+                "latency_ms": 60
+              },
+              {
+                "stage": "orchestrate",
+                "tool": "llm_orchestrate",
+                "action": "answer_from_available_evidence",
+                "model": "deepseek-v4.1-flash",
+                "served_model": "deepseek-v4.1-flash",
+                "protocol": "chat",
+                "latency_ms": 2035
+              },
+              {
+                "stage": "review",
+                "tool": "llm_review",
+                "model": "gpt-6-luna",
+                "served_model": "gpt-6-luna",
+                "protocol": "responses",
+                "review_accepted": true,
+                "latency_ms": 3210
+              }
+            ],
+            "citations": [
+              {
+                "metric": "wins",
+                "value": 0,
+                "season_type": "regular",
+                "games": 1
+              },
+              {
+                "metric": "losses",
+                "value": 1,
+                "season_type": "regular",
+                "games": 1
+              },
+              {
+                "metric": "points_per_game",
+                "value": 104.0,
+                "season_type": "regular",
+                "games": 1
+              },
+              {
+                "metric": "margin_per_game",
+                "value": -11.0,
+                "season_type": "regular",
+                "games": 1
+              },
+              {
+                "metric": null,
+                "value": null,
+                "season_type": null,
+                "games": 0
+              }
+            ],
+            "warnings": [],
+            "llm_validated": true,
+            "refused": false,
+            "degraded": false,
+            "revision": 1,
+            "expected_revision": 0,
+            "revision_ok": true,
+            "state_committed": true,
+            "session_token_returned": true
+          },
+          {
+            "turn": 2,
+            "question": "How many rebounds did they pull down?",
+            "status": 200,
+            "answer": "I can't answer that: verified archive facts are unavailable on this turn.",
+            "cause": "pipeline:degraded",
+            "honest_ok": false,
+            "expected_ok": false,
+            "failures": [
+              "declined:field:degraded",
+              "not_substantive",
+              "required_facts",
+              "required_entities",
+              "no_cited_claims"
+            ],
+            "checks": {
+              "validated": false,
+              "decline_signal": "field:degraded",
+              "decline_signals": [
+                "field:degraded",
+                "field:unvalidated",
+                "phrase:decline"
+              ],
+              "declined": true,
+              "clarification": false,
+              "substantive": false,
+              "evidence_mode": "archive_index_scoped",
+              "claim_citations": 0,
+              "archive_receipts": 0,
+              "numbers_total": 0,
+              "unbacked_numbers": [],
+              "detected_entities": [],
+              "unbacked_entities": [],
+              "required_facts": [
+                "team rebounds 55"
+              ],
+              "required_facts_ok": false,
+              "required_entities_ok": false,
+              "required_phrases_ok": null,
+              "echo_question": false,
+              "hedged_causal": false,
+              "missing_turning_detail": false
+            },
+            "expected_scope": {
+              "season_type": "regular",
+              "all_phases": false,
+              "game_count": 1,
+              "game_ids": [
+                29
+              ],
+              "player_ids": [],
+              "metric": "rebounds",
+              "home_away": null,
+              "opponent_id": null,
+              "relative_game_count": null,
+              "date_start": null,
+              "date_end": null
+            },
+            "actual_scope": {
+              "intent": "analyst",
+              "player_ids": [],
+              "team_ids": [],
+              "opponent_id": null,
+              "game_ids": [],
+              "date_start": null,
+              "date_end": null,
+              "relative_game_count": null,
+              "relative_from_start": false,
+              "periods": [],
+              "season_type": "regular",
+              "all_phases": false,
+              "home_away": null,
+              "game_result": null,
+              "metric": "rebounds",
+              "requires_clarification": false,
+              "clarification_reason": null,
+              "clarification_options": [],
+              "data_version": "2025-26.20260928.1"
+            },
+            "scope_issues": [
+              "game_count=82 want 1",
+              "game_ids differ (got [], want [29])"
+            ],
+            "stages": [
+              {
+                "stage": "prepare",
+                "tool": "query_resolution",
+                "latency_ms": 99
+              },
+              {
+                "stage": "tool",
+                "tool": "discover_facts",
+                "latency_ms": 119
+              },
+              {
+                "stage": "orchestrate",
+                "tool": "llm_orchestrate",
+                "action": "answer_from_available_evidence",
+                "model": "deepseek-v4.1-flash",
+                "served_model": "deepseek-v4.1-flash",
+                "protocol": "chat",
+                "latency_ms": 2785
+              },
+              {
+                "stage": "revise",
+                "tool": "llm_orchestrate",
+                "model": "deepseek-v4.1-flash",
+                "served_model": "deepseek-v4.1-flash",
+                "protocol": "chat",
+                "latency_ms": 3167
+              }
+            ],
+            "citations": [],
+            "warnings": [
+              "Proposed wording did not pass evidence review."
+            ],
+            "llm_validated": false,
+            "refused": false,
+            "degraded": true,
+            "revision": 2,
+            "expected_revision": 1,
+            "revision_ok": true,
+            "state_committed": true,
+            "session_token_returned": true
+          }
+        ],
+        "integrity": {
+          "single_token": true,
+          "revisions": [
+            1,
+            2
+          ],
+          "consecutive": true,
+          "turns_committed": 2,
+          "turns": 2,
+          "all_200_settled": true
+        },
+        "pass": false,
+        "trial": 1
+      }
+    ],
+    "heldout2-follow_ups-005": [
+      {
+        "id": "heldout2-follow_ups-005",
+        "category": "follow_ups",
+        "turns": [
+          {
+            "turn": 1,
+            "question": "What happened in New Orleans on December 29?",
+            "status": 200,
+            "answer": "On December 29, 2025, the Knicks beat the Pelicans 130-125 in New Orleans. It was a regular-season game, with New York winning by 5.",
+            "cause": "ok",
+            "honest_ok": true,
+            "expected_ok": true,
+            "failures": [],
+            "checks": {
+              "validated": true,
+              "decline_signal": null,
+              "decline_signals": [],
+              "declined": false,
+              "clarification": false,
+              "substantive": true,
+              "evidence_mode": "claims",
+              "claim_citations": 4,
+              "archive_receipts": 1,
+              "numbers_total": 3,
+              "unbacked_numbers": [],
+              "detected_entities": [
+                "Knicks",
+                "Pelicans"
+              ],
+              "unbacked_entities": [],
+              "required_facts": [
+                "final score 130-125"
+              ],
+              "required_facts_ok": true,
+              "required_entities_ok": null,
+              "required_phrases_ok": null,
+              "echo_question": false,
+              "hedged_causal": false,
+              "missing_turning_detail": false
+            },
+            "expected_scope": {
+              "season_type": "regular",
+              "all_phases": false,
+              "game_count": 1,
+              "game_ids": [
+                32
+              ],
+              "player_ids": [],
+              "metric": null,
+              "home_away": null,
+              "opponent_id": null,
+              "relative_game_count": null,
+              "date_start": null,
+              "date_end": null
+            },
+            "actual_scope": {
+              "intent": "analyst",
+              "player_ids": [],
+              "team_ids": [
+                "NOP"
+              ],
+              "opponent_id": "NOP",
+              "game_ids": [
+                32
+              ],
+              "date_start": "2025-12-29",
+              "date_end": "2025-12-29",
+              "relative_game_count": null,
+              "relative_from_start": false,
+              "periods": [],
+              "season_type": null,
+              "all_phases": false,
+              "home_away": null,
+              "game_result": null,
+              "metric": null,
+              "requires_clarification": false,
+              "clarification_reason": null,
+              "clarification_options": [],
+              "data_version": "2025-26.20260928.1"
+            },
+            "scope_issues": [
+              "season_type=None want regular",
+              "opponent_id=NOP want None",
+              "date_start=2025-12-29 want None",
+              "date_end=2025-12-29 want None"
+            ],
+            "stages": [
+              {
+                "stage": "prepare",
+                "tool": "query_resolution",
+                "latency_ms": 57
+              },
+              {
+                "stage": "tool",
+                "tool": "get_team_stats",
+                "latency_ms": 59
+              },
+              {
+                "stage": "orchestrate",
+                "tool": "llm_orchestrate",
+                "action": "answer_from_available_evidence",
+                "model": "deepseek-v4.1-flash",
+                "served_model": "deepseek-v4.1-flash",
+                "protocol": "chat",
+                "latency_ms": 3044
+              },
+              {
+                "stage": "review",
+                "tool": "llm_review",
+                "model": "gpt-6-luna",
+                "served_model": "gpt-6-luna",
+                "protocol": "responses",
+                "review_accepted": true,
+                "latency_ms": 5954
+              }
+            ],
+            "citations": [
+              {
+                "metric": "wins",
+                "value": 1,
+                "season_type": "regular",
+                "games": 1
+              },
+              {
+                "metric": "losses",
+                "value": 0,
+                "season_type": "regular",
+                "games": 1
+              },
+              {
+                "metric": "points",
+                "value": 130,
+                "season_type": "regular",
+                "games": 1
+              },
+              {
+                "metric": "margin",
+                "value": 5,
+                "season_type": "regular",
+                "games": 1
+              },
+              {
+                "metric": null,
+                "value": null,
+                "season_type": null,
+                "games": 0
+              }
+            ],
+            "warnings": [],
+            "llm_validated": true,
+            "refused": false,
+            "degraded": false,
+            "revision": 1,
+            "expected_revision": 0,
+            "revision_ok": true,
+            "state_committed": true,
+            "session_token_returned": true
+          },
+          {
+            "turn": 2,
+            "question": "Which quarter hurt them most?",
+            "status": 200,
+            "answer": "By point differential, Q3 was the Knicks' weakest quarter in the 2025-26 regular season. Across 82 games they were +68 in Q3 (2375 for, 2307 against, 37-5-40), the smallest positive period margin besides overtime. The other quarters: Q1 +71 (35-3-44), Q2 +138 (49-0-33), and Q4 +238 (50-5-27). So Q3 produced their smallest regular-season margin of the four standard quarters and their most period losses (40).",
+            "cause": "scope",
+            "honest_ok": false,
+            "expected_ok": false,
+            "failures": [
+              "required_facts",
+              "required_phrases"
+            ],
+            "checks": {
+              "validated": true,
+              "decline_signal": null,
+              "decline_signals": [],
+              "declined": false,
+              "clarification": false,
+              "substantive": true,
+              "evidence_mode": "claims",
+              "claim_citations": 1,
+              "archive_receipts": 1,
+              "numbers_total": 16,
+              "unbacked_numbers": [],
+              "detected_entities": [
+                "Knicks"
+              ],
+              "unbacked_entities": [],
+              "required_facts": [
+                "third quarter 24-28"
+              ],
+              "required_facts_ok": false,
+              "required_entities_ok": true,
+              "required_phrases_ok": false,
+              "echo_question": false,
+              "hedged_causal": false,
+              "missing_turning_detail": false
+            },
+            "expected_scope": {
+              "season_type": "regular",
+              "all_phases": false,
+              "game_count": 1,
+              "game_ids": [
+                32
+              ],
+              "player_ids": [],
+              "metric": null,
+              "home_away": null,
+              "opponent_id": null,
+              "relative_game_count": null,
+              "date_start": null,
+              "date_end": null
+            },
+            "actual_scope": {
+              "intent": "analyst",
+              "player_ids": [],
+              "team_ids": [],
+              "opponent_id": null,
+              "game_ids": [],
+              "date_start": null,
+              "date_end": null,
+              "relative_game_count": null,
+              "relative_from_start": false,
+              "periods": [],
+              "season_type": "regular",
+              "all_phases": false,
+              "home_away": null,
+              "game_result": null,
+              "metric": null,
+              "requires_clarification": false,
+              "clarification_reason": null,
+              "clarification_options": [],
+              "data_version": "2025-26.20260928.1"
+            },
+            "scope_issues": [
+              "game_count=82 want 1",
+              "game_ids differ (got [], want [32])"
+            ],
+            "stages": [
+              {
+                "stage": "prepare",
+                "tool": "query_resolution",
+                "latency_ms": 56
+              },
+              {
+                "stage": "tool",
+                "tool": "get_period_scoring",
+                "latency_ms": 99
+              },
+              {
+                "stage": "orchestrate",
+                "tool": "llm_orchestrate",
+                "action": "answer_from_available_evidence",
+                "model": "deepseek-v4.1-flash",
+                "served_model": "deepseek-v4.1-flash",
+                "protocol": "chat",
+                "latency_ms": 4850
+              },
+              {
+                "stage": "revise",
+                "tool": "llm_orchestrate",
+                "model": "deepseek-v4.1-flash",
+                "served_model": "deepseek-v4.1-flash",
+                "protocol": "chat",
+                "latency_ms": 5710
+              },
+              {
+                "stage": "review",
+                "tool": "llm_review",
+                "model": "gpt-6-luna",
+                "served_model": "gpt-6-luna",
+                "protocol": "responses",
+                "review_accepted": true,
+                "latency_ms": 7832
+              }
+            ],
+            "citations": [
+              {
+                "metric": "period_report",
+                "value": "Regular season, 82 of 82 games. reg Q1: 2424 pts (29.56/g), opp 2353 (28.7), diff +71, 35-3-44. Best 48-30 vs Memphis 2026-04-01; worst 14-22 at Brooklyn 2026-03-20. reg Q2: 2398 pts (29.24/g), opp 2260 (27.56), diff +138, 49-0-33. Best 46-33 vs Miami 2025-11-14; worst 16-25 at Sacramento 2026-01-27. reg Q3: 2375 pts (28.96/g), opp 2307 (28.13), diff +68, 37-5-40. Best 47-30 vs Utah 2025-12-05; worst 11-23 at Cleveland 2026-02-24. reg Q4: 2316 pts (28.24/g), opp 2078 (25.34), diff +238, 50-5-27. Best 43-28 vs Minnesota 2025-11-05; worst 18-27 at Brooklyn 2026-03-20. reg OT: 21 pts (10.5/g), opp 24 (12.0), diff -3, 0-1-1. Best 11-11 vs Denver 2026-02-04; worst 10-13 at Indiana 2026-02-10. reg 2OT: 15 pts (15.0/g), opp 8 (8.0), diff +7, 1-0-0. Best 15-8 vs Denver 2026-02-04; worst 15-8 at Denver 2026-02-04. reg best diff: 42-14 (+28) home vs Boston 2025-10-24 (Q2). reg worst diff: 25-44 (-19) home vs Dallas 2026-01-19 (Q2).",
+                "season_type": "regular",
+                "games": 82
+              },
+              {
+                "metric": null,
+                "value": null,
+                "season_type": null,
+                "games": 0
+              }
+            ],
+            "warnings": [],
+            "llm_validated": true,
+            "refused": false,
+            "degraded": false,
+            "revision": 2,
+            "expected_revision": 1,
+            "revision_ok": true,
+            "state_committed": true,
+            "session_token_returned": true
+          }
+        ],
+        "integrity": {
+          "single_token": true,
+          "revisions": [
+            1,
+            2
+          ],
+          "consecutive": true,
+          "turns_committed": 2,
+          "turns": 2,
+          "all_200_settled": true
+        },
+        "pass": false,
+        "trial": 1
+      }
+    ],
+    "heldout2-follow_ups-006": [
+      {
+        "id": "heldout2-follow_ups-006",
+        "category": "follow_ups",
+        "turns": [
+          {
+            "turn": 1,
+            "question": "How did the Clippers game go on January 7?",
+            "status": 200,
+            "answer": "On January 7, 2026, the Knicks beat the Clippers 123-111 at home in a regular-season game, a 12-point margin.",
+            "cause": "ok",
+            "honest_ok": true,
+            "expected_ok": true,
+            "failures": [],
+            "checks": {
+              "validated": true,
+              "decline_signal": null,
+              "decline_signals": [],
+              "declined": false,
+              "clarification": false,
+              "substantive": true,
+              "evidence_mode": "claims",
+              "claim_citations": 4,
+              "archive_receipts": 1,
+              "numbers_total": 3,
+              "unbacked_numbers": [],
+              "detected_entities": [
+                "Clippers",
+                "Knicks"
+              ],
+              "unbacked_entities": [],
+              "required_facts": [
+                "final score 123-111"
+              ],
+              "required_facts_ok": true,
+              "required_entities_ok": null,
+              "required_phrases_ok": null,
+              "echo_question": false,
+              "hedged_causal": false,
+              "missing_turning_detail": false
+            },
+            "expected_scope": {
+              "season_type": "regular",
+              "all_phases": false,
+              "game_count": 1,
+              "game_ids": [
+                37
+              ],
+              "player_ids": [],
+              "metric": null,
+              "home_away": null,
+              "opponent_id": null,
+              "relative_game_count": null,
+              "date_start": null,
+              "date_end": null
+            },
+            "actual_scope": {
+              "intent": "analyst",
+              "player_ids": [],
+              "team_ids": [
+                "LAC"
+              ],
+              "opponent_id": "LAC",
+              "game_ids": [
+                37
+              ],
+              "date_start": "2026-01-07",
+              "date_end": "2026-01-07",
+              "relative_game_count": null,
+              "relative_from_start": false,
+              "periods": [],
+              "season_type": null,
+              "all_phases": false,
+              "home_away": null,
+              "game_result": null,
+              "metric": null,
+              "requires_clarification": false,
+              "clarification_reason": null,
+              "clarification_options": [],
+              "data_version": "2025-26.20260928.1"
+            },
+            "scope_issues": [
+              "season_type=None want regular",
+              "opponent_id=LAC want None",
+              "date_start=2026-01-07 want None",
+              "date_end=2026-01-07 want None"
+            ],
+            "stages": [
+              {
+                "stage": "prepare",
+                "tool": "query_resolution",
+                "latency_ms": 57
+              },
+              {
+                "stage": "tool",
+                "tool": "discover_facts",
+                "latency_ms": 56
+              },
+              {
+                "stage": "orchestrate",
+                "tool": "llm_orchestrate",
+                "action": "answer_from_available_evidence",
+                "model": "deepseek-v4.1-flash",
+                "served_model": "deepseek-v4.1-flash",
+                "protocol": "chat",
+                "latency_ms": 2076
+              },
+              {
+                "stage": "review",
+                "tool": "llm_review",
+                "model": "gpt-6-luna",
+                "served_model": "gpt-6-luna",
+                "protocol": "responses",
+                "review_accepted": true,
+                "latency_ms": 4731
+              }
+            ],
+            "citations": [
+              {
+                "metric": "wins",
+                "value": 1,
+                "season_type": "regular",
+                "games": 1
+              },
+              {
+                "metric": "losses",
+                "value": 0,
+                "season_type": "regular",
+                "games": 1
+              },
+              {
+                "metric": "points_per_game",
+                "value": 123.0,
+                "season_type": "regular",
+                "games": 1
+              },
+              {
+                "metric": "margin_per_game",
+                "value": 12.0,
+                "season_type": "regular",
+                "games": 1
+              },
+              {
+                "metric": null,
+                "value": null,
+                "season_type": null,
+                "games": 0
+              }
+            ],
+            "warnings": [],
+            "llm_validated": true,
+            "refused": false,
+            "degraded": false,
+            "revision": 1,
+            "expected_revision": 0,
+            "revision_ok": true,
+            "state_committed": true,
+            "session_token_returned": true
+          },
+          {
+            "turn": 2,
+            "question": "How many dimes did Kolek have?",
+            "status": 200,
+            "answer": "Tyler Kolek's assist totals varied across the archived 2025-26 regular-season games. His highest assist game in these samples was 11 assists (Dec 18 vs IND). Other outings: 10 assists (Jan 28 vs TOR), 9 assists (Dec 25 vs CLE), 8 assists (Dec 23 vs MIN), 7 assists (Apr 1 vs MEM), 5 assists (Jan 14 vs SAC), and 4 assists (Jan 30 vs POR). So a single \"how many dimes\" doesn't have one answer\u2014it depends on the game you mean.",
+            "cause": "scope",
+            "honest_ok": false,
+            "expected_ok": false,
+            "failures": [
+              "declined:phrase:decline",
+              "required_facts"
+            ],
+            "checks": {
+              "validated": true,
+              "decline_signal": "phrase:decline",
+              "decline_signals": [
+                "phrase:decline"
+              ],
+              "declined": true,
+              "clarification": false,
+              "substantive": true,
+              "evidence_mode": "claims",
+              "claim_citations": 7,
+              "archive_receipts": 7,
+              "numbers_total": 14,
+              "unbacked_numbers": [],
+              "detected_entities": [
+                "Cavaliers",
+                "Grizzlies",
+                "Kings",
+                "Pacers",
+                "Raptors",
+                "Timberwolves",
+                "Trail Blazers",
+                "Tyler Kolek"
+              ],
+              "unbacked_entities": [],
+              "required_facts": [
+                "Tyler Kolek 5 assists"
+              ],
+              "required_facts_ok": false,
+              "required_entities_ok": true,
+              "required_phrases_ok": null,
+              "echo_question": false,
+              "hedged_causal": false,
+              "missing_turning_detail": false
+            },
+            "expected_scope": {
+              "season_type": "regular",
+              "all_phases": false,
+              "game_count": 1,
+              "game_ids": [
+                37
+              ],
+              "player_ids": [
+                456
+              ],
+              "metric": "assists",
+              "home_away": null,
+              "opponent_id": null,
+              "relative_game_count": null,
+              "date_start": null,
+              "date_end": null
+            },
+            "actual_scope": {
+              "intent": "analyst",
+              "player_ids": [
+                456
+              ],
+              "team_ids": [],
+              "opponent_id": null,
+              "game_ids": [],
+              "date_start": null,
+              "date_end": null,
+              "relative_game_count": null,
+              "relative_from_start": false,
+              "periods": [],
+              "season_type": "regular",
+              "all_phases": false,
+              "home_away": null,
+              "game_result": null,
+              "metric": null,
+              "requires_clarification": false,
+              "clarification_reason": null,
+              "clarification_options": [],
+              "data_version": "2025-26.20260928.1"
+            },
+            "scope_issues": [
+              "metric=None want assists",
+              "game_count=82 want 1",
+              "game_ids differ (got [], want [37])"
+            ],
+            "stages": [
+              {
+                "stage": "prepare",
+                "tool": "query_resolution",
+                "latency_ms": 36
+              },
+              {
+                "stage": "tool",
+                "tool": "discover_facts",
+                "latency_ms": 59
+              },
+              {
+                "stage": "orchestrate",
+                "tool": "llm_orchestrate",
+                "action": "answer_from_available_evidence",
+                "model": "deepseek-v4.1-flash",
+                "served_model": "deepseek-v4.1-flash",
+                "protocol": "chat",
+                "latency_ms": 5981
+              },
+              {
+                "stage": "review",
+                "tool": "llm_review",
+                "model": "gpt-6-luna",
+                "served_model": "gpt-6-luna",
+                "protocol": "responses",
+                "review_accepted": true,
+                "latency_ms": 18475
+              }
+            ],
+            "citations": [
+              {
+                "metric": "box_score",
+                "value": {
+                  "points": 16,
+                  "rebounds": 6,
+                  "assists": 11,
+                  "turnovers": 2
+                },
+                "season_type": "regular",
+                "games": 1
+              },
+              {
+                "metric": "box_score",
+                "value": {
+                  "points": 5,
+                  "rebounds": 1,
+                  "assists": 10,
+                  "turnovers": 3
+                },
+                "season_type": "regular",
+                "games": 1
+              },
+              {
+                "metric": "box_score",
+                "value": {
+                  "points": 16,
+                  "rebounds": 3,
+                  "assists": 9,
+                  "turnovers": 2
+                },
+                "season_type": "regular",
+                "games": 1
+              },
+              {
+                "metric": "box_score",
+                "value": {
+                  "points": 20,
+                  "rebounds": 11,
+                  "assists": 8,
+                  "turnovers": 2
+                },
+                "season_type": "regular",
+                "games": 1
+              },
+              {
+                "metric": "box_score",
+                "value": {
+                  "points": 9,
+                  "rebounds": 3,
+                  "assists": 7,
+                  "turnovers": 0
+                },
+                "season_type": "regular",
+                "games": 1
+              },
+              {
+                "metric": "box_score",
+                "value": {
+                  "points": 7,
+                  "rebounds": 5,
+                  "assists": 5,
+                  "turnovers": 0
+                },
+                "season_type": "regular",
+                "games": 1
+              },
+              {
+                "metric": "box_score",
+                "value": {
+                  "points": 13,
+                  "rebounds": 2,
+                  "assists": 4,
+                  "turnovers": 2
+                },
+                "season_type": "regular",
+                "games": 1
+              },
+              {
+                "metric": null,
+                "value": null,
+                "season_type": null,
+                "games": 0
+              },
+              {
+                "metric": null,
+                "value": null,
+                "season_type": null,
+                "games": 0
+              },
+              {
+                "metric": null,
+                "value": null,
+                "season_type": null,
+                "games": 0
+              },
+              {
+                "metric": null,
+                "value": null,
+                "season_type": null,
+                "games": 0
+              },
+              {
+                "metric": null,
+                "value": null,
+                "season_type": null,
+                "games": 0
+              },
+              {
+                "metric": null,
+                "value": null,
+                "season_type": null,
+                "games": 0
+              },
+              {
+                "metric": null,
+                "value": null,
+                "season_type": null,
+                "games": 0
+              }
+            ],
+            "warnings": [],
+            "llm_validated": true,
+            "refused": false,
+            "degraded": false,
+            "revision": 2,
+            "expected_revision": 1,
+            "revision_ok": true,
+            "state_committed": true,
+            "session_token_returned": true
+          }
+        ],
+        "integrity": {
+          "single_token": true,
+          "revisions": [
+            1,
+            2
+          ],
+          "consecutive": true,
+          "turns_committed": 2,
+          "turns": 2,
+          "all_200_settled": true
+        },
+        "pass": false,
+        "trial": 1
+      }
+    ],
+    "heldout2-follow_ups-007": [
+      {
+        "id": "heldout2-follow_ups-007",
+        "category": "follow_ups",
+        "turns": [
+          {
+            "turn": 1,
+            "question": "What happened in Sacramento on January 14?",
+            "status": 200,
+            "answer": "On January 14, 2026 in Sacramento, the Kings beat the Knicks 112-101 in a regular-season game. New York scored 101 points and lost by 11.",
+            "cause": "ok",
+            "honest_ok": true,
+            "expected_ok": true,
+            "failures": [],
+            "checks": {
+              "validated": true,
+              "decline_signal": null,
+              "decline_signals": [],
+              "declined": false,
+              "clarification": false,
+              "substantive": true,
+              "evidence_mode": "claims",
+              "claim_citations": 3,
+              "archive_receipts": 1,
+              "numbers_total": 4,
+              "unbacked_numbers": [],
+              "detected_entities": [
+                "Kings",
+                "Knicks"
+              ],
+              "unbacked_entities": [],
+              "required_facts": [
+                "final score 101-112"
+              ],
+              "required_facts_ok": true,
+              "required_entities_ok": null,
+              "required_phrases_ok": null,
+              "echo_question": false,
+              "hedged_causal": false,
+              "missing_turning_detail": false
+            },
+            "expected_scope": {
+              "season_type": "regular",
+              "all_phases": false,
+              "game_count": 1,
+              "game_ids": [
+                40
+              ],
+              "player_ids": [],
+              "metric": null,
+              "home_away": null,
+              "opponent_id": null,
+              "relative_game_count": null,
+              "date_start": null,
+              "date_end": null
+            },
+            "actual_scope": {
+              "intent": "analyst",
+              "player_ids": [],
+              "team_ids": [
+                "SAC"
+              ],
+              "opponent_id": "SAC",
+              "game_ids": [
+                40
+              ],
+              "date_start": "2026-01-14",
+              "date_end": "2026-01-14",
+              "relative_game_count": null,
+              "relative_from_start": false,
+              "periods": [],
+              "season_type": null,
+              "all_phases": false,
+              "home_away": null,
+              "game_result": null,
+              "metric": null,
+              "requires_clarification": false,
+              "clarification_reason": null,
+              "clarification_options": [],
+              "data_version": "2025-26.20260928.1"
+            },
+            "scope_issues": [
+              "season_type=None want regular",
+              "opponent_id=SAC want None",
+              "date_start=2026-01-14 want None",
+              "date_end=2026-01-14 want None"
+            ],
+            "stages": [
+              {
+                "stage": "prepare",
+                "tool": "query_resolution",
+                "latency_ms": 78
+              },
+              {
+                "stage": "tool",
+                "tool": "get_team_stats",
+                "latency_ms": 52
+              },
+              {
+                "stage": "orchestrate",
+                "tool": "llm_orchestrate",
+                "action": "answer_from_available_evidence",
+                "model": "deepseek-v4.1-flash",
+                "served_model": "deepseek-v4.1-flash",
+                "protocol": "chat",
+                "latency_ms": 1969
+              },
+              {
+                "stage": "review",
+                "tool": "llm_review",
+                "model": "gpt-6-luna",
+                "served_model": "gpt-6-luna",
+                "protocol": "responses",
+                "review_accepted": true,
+                "latency_ms": 6169
+              }
+            ],
+            "citations": [
+              {
+                "metric": "points",
+                "value": 101,
+                "season_type": "regular",
+                "games": 1
+              },
+              {
+                "metric": "margin",
+                "value": -11,
+                "season_type": "regular",
+                "games": 1
+              },
+              {
+                "metric": "losses",
+                "value": 1,
+                "season_type": "regular",
+                "games": 1
+              },
+              {
+                "metric": null,
+                "value": null,
+                "season_type": null,
+                "games": 0
+              }
+            ],
+            "warnings": [],
+            "llm_validated": true,
+            "refused": false,
+            "degraded": false,
+            "revision": 1,
+            "expected_revision": 0,
+            "revision_ok": true,
+            "state_committed": true,
+            "session_token_returned": true
+          },
+          {
+            "turn": 2,
+            "question": "How many boards did Yabu grab?",
+            "status": 200,
+            "answer": "In the 2025-26 regular season, Guerschon Yabusele averaged 2.1 rebounds across 41 observed appearances in the available archive.",
+            "cause": "scope",
+            "honest_ok": false,
+            "expected_ok": false,
+            "failures": [
+              "required_facts"
+            ],
+            "checks": {
+              "validated": true,
+              "decline_signal": null,
+              "decline_signals": [],
+              "declined": false,
+              "clarification": false,
+              "substantive": true,
+              "evidence_mode": "claims",
+              "claim_citations": 1,
+              "archive_receipts": 5,
+              "numbers_total": 2,
+              "unbacked_numbers": [],
+              "detected_entities": [
+                "Guerschon Yabusele"
+              ],
+              "unbacked_entities": [],
+              "required_facts": [
+                "Guerschon Yabusele 3 rebounds"
+              ],
+              "required_facts_ok": false,
+              "required_entities_ok": true,
+              "required_phrases_ok": null,
+              "echo_question": false,
+              "hedged_causal": false,
+              "missing_turning_detail": false
+            },
+            "expected_scope": {
+              "season_type": "regular",
+              "all_phases": false,
+              "game_count": 1,
+              "game_ids": [
+                40
+              ],
+              "player_ids": [
+                98
+              ],
+              "metric": "rebounds",
+              "home_away": null,
+              "opponent_id": null,
+              "relative_game_count": null,
+              "date_start": null,
+              "date_end": null
+            },
+            "actual_scope": {
+              "intent": "analyst",
+              "player_ids": [
+                98
+              ],
+              "team_ids": [],
+              "opponent_id": null,
+              "game_ids": [],
+              "date_start": null,
+              "date_end": null,
+              "relative_game_count": null,
+              "relative_from_start": false,
+              "periods": [],
+              "season_type": "regular",
+              "all_phases": false,
+              "home_away": null,
+              "game_result": null,
+              "metric": null,
+              "requires_clarification": false,
+              "clarification_reason": null,
+              "clarification_options": [],
+              "data_version": "2025-26.20260928.1"
+            },
+            "scope_issues": [
+              "metric=None want rebounds",
+              "game_count=82 want 1",
+              "game_ids differ (got [], want [40])"
+            ],
+            "stages": [
+              {
+                "stage": "prepare",
+                "tool": "query_resolution",
+                "latency_ms": 62
+              },
+              {
+                "stage": "orchestrate",
+                "tool": "llm_orchestrate",
+                "action": "call_tools",
+                "model": "deepseek-v4.1-flash",
+                "served_model": "deepseek-v4.1-flash",
+                "protocol": "chat",
+                "latency_ms": 1720
+              },
+              {
+                "stage": "tool",
+                "tool": "get_player_stats",
+                "latency_ms": 125
+              },
+              {
+                "stage": "orchestrate",
+                "tool": "llm_orchestrate",
+                "action": "call_tools",
+                "model": "deepseek-v4.1-flash",
+                "served_model": "deepseek-v4.1-flash",
+                "protocol": "chat",
+                "latency_ms": 1594
+              },
+              {
+                "stage": "tool",
+                "tool": "get_player_stats",
+                "latency_ms": 56
+              },
+              {
+                "stage": "orchestrate",
+                "tool": "llm_orchestrate",
+                "action": "answer_from_available_evidence",
+                "model": "deepseek-v4.1-flash",
+                "served_model": "deepseek-v4.1-flash",
+                "protocol": "chat",
+                "latency_ms": 2090
+              },
+              {
+                "stage": "review",
+                "tool": "llm_review",
+                "model": "gpt-6-luna",
+                "served_model": "gpt-6-luna",
+                "protocol": "responses",
+                "review_accepted": true,
+                "latency_ms": 2688
+              }
+            ],
+            "citations": [
+              {
+                "metric": "rebounds:average",
+                "value": 2.1219512195121952,
+                "season_type": "regular",
+                "games": 41
+              },
+              {
+                "metric": null,
+                "value": null,
+                "season_type": null,
+                "games": 0
+              },
+              {
+                "metric": null,
+                "value": null,
+                "season_type": null,
+                "games": 0
+              },
+              {
+                "metric": null,
+                "value": null,
+                "season_type": null,
+                "games": 0
+              },
+              {
+                "metric": null,
+                "value": null,
+                "season_type": null,
+                "games": 0
+              },
+              {
+                "metric": null,
+                "value": null,
+                "season_type": null,
+                "games": 0
+              }
+            ],
+            "warnings": [],
+            "llm_validated": true,
+            "refused": false,
+            "degraded": false,
+            "revision": 2,
+            "expected_revision": 1,
+            "revision_ok": true,
+            "state_committed": true,
+            "session_token_returned": true
+          }
+        ],
+        "integrity": {
+          "single_token": true,
+          "revisions": [
+            1,
+            2
+          ],
+          "consecutive": true,
+          "turns_committed": 2,
+          "turns": 2,
+          "all_200_settled": true
+        },
+        "pass": false,
+        "trial": 1
+      }
+    ],
+    "heldout2-follow_ups-008": [
+      {
+        "id": "heldout2-follow_ups-008",
+        "category": "follow_ups",
+        "turns": [
+          {
+            "turn": 1,
+            "question": "How did they beat Brooklyn on January 21?",
+            "status": 200,
+            "answer": "On January 21, 2026, the Knicks beat Brooklyn 120-66 at home in the regular season, a 54-point margin. The supplied evidence shows the final score and margin, which is the extent of what these claims cover.",
+            "cause": "ok",
+            "honest_ok": true,
+            "expected_ok": true,
+            "failures": [],
+            "checks": {
+              "validated": true,
+              "decline_signal": null,
+              "decline_signals": [],
+              "declined": false,
+              "clarification": false,
+              "substantive": true,
+              "evidence_mode": "claims",
+              "claim_citations": 4,
+              "archive_receipts": 1,
+              "numbers_total": 3,
+              "unbacked_numbers": [],
+              "detected_entities": [
+                "Knicks",
+                "Nets"
+              ],
+              "unbacked_entities": [],
+              "required_facts": [
+                "final score 120-66"
+              ],
+              "required_facts_ok": true,
+              "required_entities_ok": null,
+              "required_phrases_ok": null,
+              "echo_question": false,
+              "hedged_causal": false,
+              "missing_turning_detail": false
+            },
+            "expected_scope": {
+              "season_type": "regular",
+              "all_phases": false,
+              "game_count": 1,
+              "game_ids": [
+                44
+              ],
+              "player_ids": [],
+              "metric": null,
+              "home_away": null,
+              "opponent_id": null,
+              "relative_game_count": null,
+              "date_start": null,
+              "date_end": null
+            },
+            "actual_scope": {
+              "intent": "analyst",
+              "player_ids": [],
+              "team_ids": [
+                "BKN"
+              ],
+              "opponent_id": "BKN",
+              "game_ids": [
+                44
+              ],
+              "date_start": "2026-01-21",
+              "date_end": "2026-01-21",
+              "relative_game_count": null,
+              "relative_from_start": false,
+              "periods": [],
+              "season_type": null,
+              "all_phases": false,
+              "home_away": null,
+              "game_result": null,
+              "metric": null,
+              "requires_clarification": false,
+              "clarification_reason": null,
+              "clarification_options": [],
+              "data_version": "2025-26.20260928.1"
+            },
+            "scope_issues": [
+              "season_type=None want regular",
+              "opponent_id=BKN want None",
+              "date_start=2026-01-21 want None",
+              "date_end=2026-01-21 want None"
+            ],
+            "stages": [
+              {
+                "stage": "prepare",
+                "tool": "query_resolution",
+                "latency_ms": 61
+              },
+              {
+                "stage": "tool",
+                "tool": "discover_facts",
+                "latency_ms": 63
+              },
+              {
+                "stage": "orchestrate",
+                "tool": "llm_orchestrate",
+                "action": "answer_from_available_evidence",
+                "model": "deepseek-v4.1-flash",
+                "served_model": "deepseek-v4.1-flash",
+                "protocol": "chat",
+                "latency_ms": 2543
+              },
+              {
+                "stage": "review",
+                "tool": "llm_review",
+                "model": "gpt-6-luna",
+                "served_model": "gpt-6-luna",
+                "protocol": "responses",
+                "review_accepted": false,
+                "latency_ms": 6255
+              },
+              {
+                "stage": "revise",
+                "tool": "llm_orchestrate",
+                "model": "deepseek-v4.1-flash",
+                "served_model": "deepseek-v4.1-flash",
+                "protocol": "chat",
+                "latency_ms": 2143
+              },
+              {
+                "stage": "review",
+                "tool": "llm_review",
+                "model": "gpt-6-luna",
+                "served_model": "gpt-6-luna",
+                "protocol": "responses",
+                "review_accepted": true,
+                "latency_ms": 5555
+              }
+            ],
+            "citations": [
+              {
+                "metric": "wins",
+                "value": 1,
+                "season_type": "regular",
+                "games": 1
+              },
+              {
+                "metric": "losses",
+                "value": 0,
+                "season_type": "regular",
+                "games": 1
+              },
+              {
+                "metric": "points_per_game",
+                "value": 120.0,
+                "season_type": "regular",
+                "games": 1
+              },
+              {
+                "metric": "margin_per_game",
+                "value": 54.0,
+                "season_type": "regular",
+                "games": 1
+              },
+              {
+                "metric": null,
+                "value": null,
+                "season_type": null,
+                "games": 0
+              }
+            ],
+            "warnings": [],
+            "llm_validated": true,
+            "refused": false,
+            "degraded": false,
+            "revision": 1,
+            "expected_revision": 0,
+            "revision_ok": true,
+            "state_committed": true,
+            "session_token_returned": true
+          },
+          {
+            "turn": 2,
+            "question": "What was their biggest quarter?",
+            "status": 200,
+            "answer": "Regular season, 82 of 82 games. reg Q1: 2424 pts (29.56/g), opp 2353 (28.7), diff +71, 35-3-44. Best 48-30 vs Memphis 2026-04-01; worst 14-22 at Brooklyn 2026-03-20. reg Q2: 2398 pts (29.24/g), opp 2260 (27.56), diff +138, 49-0-33. Best 46-33 vs Miami 2025-11-14; worst 16-25 at Sacramento 2026-01-27. reg Q3: 2375 pts (28.96/g), opp 2307 (28.13), diff +68, 37-5-40. Best 47-30 vs Utah 2025-12-05; worst 11-23 at Cleveland 2026-02-24. reg Q4: 2316 pts (28.24/g), opp 2078 (25.34), diff +238, 50-5-27. Best 43-28 vs Minnesota 2025-11-05; worst 18-27 at Brooklyn 2026-03-20. reg OT: 21 pts (10.5/g), opp 24 (12.0), diff -3, 0-1-1. Best 11-11 vs Denver 2026-02-04; worst 10-13 at Indiana 2026-02-10. reg 2OT: 15 pts (15.0/g), opp 8 (8.0), diff +7, 1-0-0. Best 15-8 vs Denver 2026-02-04; worst 15-8 at Denver 2026-02-04. reg best diff: 42-14 (+28) home vs Boston 2025-10-24 (Q2). reg worst diff: 25-44 (-19) home vs Dallas 2026-01-19 (Q2).",
+            "cause": "pipeline:degraded",
+            "honest_ok": false,
+            "expected_ok": false,
+            "failures": [
+              "not_validated",
+              "unbacked_entities",
+              "required_facts",
+              "required_entities",
+              "required_phrases"
+            ],
+            "checks": {
+              "validated": false,
+              "decline_signal": "field:degraded",
+              "decline_signals": [
+                "field:degraded",
+                "field:unvalidated"
+              ],
+              "declined": false,
+              "clarification": false,
+              "substantive": true,
+              "evidence_mode": "claims",
+              "claim_citations": 1,
+              "archive_receipts": 0,
+              "numbers_total": 74,
+              "unbacked_numbers": [],
+              "detected_entities": [
+                "Cavaliers",
+                "Celtics",
+                "Grizzlies",
+                "Heat",
+                "Jazz",
+                "Kings",
+                "Mavericks",
+                "Nets",
+                "Nuggets",
+                "Pacers",
+                "Timberwolves"
+              ],
+              "unbacked_entities": [
+                "Cavaliers",
+                "Celtics",
+                "Grizzlies",
+                "Heat",
+                "Jazz",
+                "Kings",
+                "Mavericks",
+                "Nets",
+                "Nuggets",
+                "Pacers",
+                "Timberwolves"
+              ],
+              "required_facts": [
+                "fourth quarter 32-10"
+              ],
+              "required_facts_ok": false,
+              "required_entities_ok": false,
+              "required_phrases_ok": false,
+              "echo_question": false,
+              "hedged_causal": false,
+              "missing_turning_detail": false
+            },
+            "expected_scope": {
+              "season_type": "regular",
+              "all_phases": false,
+              "game_count": 1,
+              "game_ids": [
+                44
+              ],
+              "player_ids": [],
+              "metric": null,
+              "home_away": null,
+              "opponent_id": null,
+              "relative_game_count": null,
+              "date_start": null,
+              "date_end": null
+            },
+            "actual_scope": {
+              "intent": "analyst",
+              "player_ids": [],
+              "team_ids": [],
+              "opponent_id": null,
+              "game_ids": [],
+              "date_start": null,
+              "date_end": null,
+              "relative_game_count": null,
+              "relative_from_start": false,
+              "periods": [],
+              "season_type": "regular",
+              "all_phases": false,
+              "home_away": null,
+              "game_result": null,
+              "metric": null,
+              "requires_clarification": false,
+              "clarification_reason": null,
+              "clarification_options": [],
+              "data_version": "2025-26.20260928.1"
+            },
+            "scope_issues": [
+              "game_count=82 want 1",
+              "game_ids differ (got [], want [44])"
+            ],
+            "stages": [
+              {
+                "stage": "prepare",
+                "tool": "query_resolution",
+                "latency_ms": 92
+              },
+              {
+                "stage": "tool",
+                "tool": "get_period_scoring",
+                "latency_ms": 64
+              },
+              {
+                "stage": "orchestrate",
+                "tool": "llm_orchestrate",
+                "action": "answer_from_available_evidence",
+                "model": "deepseek-v4.1-flash",
+                "served_model": "deepseek-v4.1-flash",
+                "protocol": "chat",
+                "latency_ms": 4730
+              },
+              {
+                "stage": "revise",
+                "tool": "llm_orchestrate",
+                "model": "deepseek-v4.1-flash",
+                "served_model": "deepseek-v4.1-flash",
+                "protocol": "chat",
+                "latency_ms": 4135
+              }
+            ],
+            "citations": [
+              {
+                "metric": "period_report",
+                "value": "Regular season, 82 of 82 games. reg Q1: 2424 pts (29.56/g), opp 2353 (28.7), diff +71, 35-3-44. Best 48-30 vs Memphis 2026-04-01; worst 14-22 at Brooklyn 2026-03-20. reg Q2: 2398 pts (29.24/g), opp 2260 (27.56), diff +138, 49-0-33. Best 46-33 vs Miami 2025-11-14; worst 16-25 at Sacramento 2026-01-27. reg Q3: 2375 pts (28.96/g), opp 2307 (28.13), diff +68, 37-5-40. Best 47-30 vs Utah 2025-12-05; worst 11-23 at Cleveland 2026-02-24. reg Q4: 2316 pts (28.24/g), opp 2078 (25.34), diff +238, 50-5-27. Best 43-28 vs Minnesota 2025-11-05; worst 18-27 at Brooklyn 2026-03-20. reg OT: 21 pts (10.5/g), opp 24 (12.0), diff -3, 0-1-1. Best 11-11 vs Denver 2026-02-04; worst 10-13 at Indiana 2026-02-10. reg 2OT: 15 pts (15.0/g), opp 8 (8.0), diff +7, 1-0-0. Best 15-8 vs Denver 2026-02-04; worst 15-8 at Denver 2026-02-04. reg best diff: 42-14 (+28) home vs Boston 2025-10-24 (Q2). reg worst diff: 25-44 (-19) home vs Dallas 2026-01-19 (Q2).",
+                "season_type": "regular",
+                "games": 82
+              }
+            ],
+            "warnings": [
+              "Proposed wording did not pass evidence review."
+            ],
+            "llm_validated": false,
+            "refused": false,
+            "degraded": true,
+            "revision": 2,
+            "expected_revision": 1,
+            "revision_ok": true,
+            "state_committed": true,
+            "session_token_returned": true
+          }
+        ],
+        "integrity": {
+          "single_token": true,
+          "revisions": [
+            1,
+            2
+          ],
+          "consecutive": true,
+          "turns_committed": 2,
+          "turns": 2,
+          "all_200_settled": true
+        },
+        "pass": false,
+        "trial": 1
+      }
+    ],
+    "heldout2-follow_ups-009": [
+      {
+        "id": "heldout2-follow_ups-009",
+        "category": "follow_ups",
+        "turns": [
+          {
+            "turn": 1,
+            "question": "How did the Houston game go on February 21?",
+            "status": 200,
+            "answer": "On February 21, 2026, the Knicks beat the Rockets 108-106 at home in a regular-season game. New York scored 108 points and won by 2.",
+            "cause": "ok",
+            "honest_ok": true,
+            "expected_ok": true,
+            "failures": [],
+            "checks": {
+              "validated": true,
+              "decline_signal": null,
+              "decline_signals": [],
+              "declined": false,
+              "clarification": false,
+              "substantive": true,
+              "evidence_mode": "claims",
+              "claim_citations": 3,
+              "archive_receipts": 1,
+              "numbers_total": 4,
+              "unbacked_numbers": [],
+              "detected_entities": [
+                "Knicks",
+                "Rockets"
+              ],
+              "unbacked_entities": [],
+              "required_facts": [
+                "final score 108-106"
+              ],
+              "required_facts_ok": true,
+              "required_entities_ok": null,
+              "required_phrases_ok": null,
+              "echo_question": false,
+              "hedged_causal": false,
+              "missing_turning_detail": false
+            },
+            "expected_scope": {
+              "season_type": "regular",
+              "all_phases": false,
+              "game_count": 1,
+              "game_ids": [
+                57
+              ],
+              "player_ids": [],
+              "metric": null,
+              "home_away": null,
+              "opponent_id": null,
+              "relative_game_count": null,
+              "date_start": null,
+              "date_end": null
+            },
+            "actual_scope": {
+              "intent": "analyst",
+              "player_ids": [],
+              "team_ids": [
+                "HOU"
+              ],
+              "opponent_id": "HOU",
+              "game_ids": [
+                57
+              ],
+              "date_start": "2026-02-21",
+              "date_end": "2026-02-21",
+              "relative_game_count": null,
+              "relative_from_start": false,
+              "periods": [],
+              "season_type": null,
+              "all_phases": false,
+              "home_away": null,
+              "game_result": null,
+              "metric": null,
+              "requires_clarification": false,
+              "clarification_reason": null,
+              "clarification_options": [],
+              "data_version": "2025-26.20260928.1"
+            },
+            "scope_issues": [
+              "season_type=None want regular",
+              "opponent_id=HOU want None",
+              "date_start=2026-02-21 want None",
+              "date_end=2026-02-21 want None"
+            ],
+            "stages": [
+              {
+                "stage": "prepare",
+                "tool": "query_resolution",
+                "latency_ms": 53
+              },
+              {
+                "stage": "tool",
+                "tool": "discover_facts",
+                "latency_ms": 58
+              },
+              {
+                "stage": "orchestrate",
+                "tool": "llm_orchestrate",
+                "action": "answer_from_available_evidence",
+                "model": "deepseek-v4.1-flash",
+                "served_model": "deepseek-v4.1-flash",
+                "protocol": "chat",
+                "latency_ms": 2643
+              },
+              {
+                "stage": "review",
+                "tool": "llm_review",
+                "model": "gpt-6-luna",
+                "served_model": "gpt-6-luna",
+                "protocol": "responses",
+                "review_accepted": true,
+                "latency_ms": 6044
+              }
+            ],
+            "citations": [
+              {
+                "metric": "wins",
+                "value": 1,
+                "season_type": "regular",
+                "games": 1
+              },
+              {
+                "metric": "points_per_game",
+                "value": 108.0,
+                "season_type": "regular",
+                "games": 1
+              },
+              {
+                "metric": "margin_per_game",
+                "value": 2.0,
+                "season_type": "regular",
+                "games": 1
+              },
+              {
+                "metric": null,
+                "value": null,
+                "season_type": null,
+                "games": 0
+              }
+            ],
+            "warnings": [],
+            "llm_validated": true,
+            "refused": false,
+            "degraded": false,
+            "revision": 1,
+            "expected_revision": 0,
+            "revision_ok": true,
+            "state_committed": true,
+            "session_token_returned": true
+          },
+          {
+            "turn": 2,
+            "question": "How many points did Alvarado score?",
+            "status": 200,
+            "answer": "Alvarado's scoring varied by game in the archive. His highest observed total was 26 points (Feb 11, 2026 vs. PHI). He also posted 16 points twice (Mar 17 vs. IND and Apr 12 vs. CHA), 15 points on Apr 1 vs. MEM, and 12 points in several games (Feb 8 vs. BOS, Mar 31 vs. HOU, Apr 10 vs. TOR). If you meant a specific game, let me know which.",
+            "cause": "scope",
+            "honest_ok": false,
+            "expected_ok": false,
+            "failures": [
+              "required_facts"
+            ],
+            "checks": {
+              "validated": true,
+              "decline_signal": null,
+              "decline_signals": [],
+              "declined": false,
+              "clarification": false,
+              "substantive": true,
+              "evidence_mode": "claims",
+              "claim_citations": 7,
+              "archive_receipts": 7,
+              "numbers_total": 11,
+              "unbacked_numbers": [],
+              "detected_entities": [
+                "76ers",
+                "Celtics",
+                "Grizzlies",
+                "Hornets",
+                "Jose Alvarado",
+                "Pacers",
+                "Raptors",
+                "Rockets"
+              ],
+              "unbacked_entities": [],
+              "required_facts": [
+                "Jose Alvarado 8 points"
+              ],
+              "required_facts_ok": false,
+              "required_entities_ok": true,
+              "required_phrases_ok": null,
+              "echo_question": false,
+              "hedged_causal": false,
+              "missing_turning_detail": false
+            },
+            "expected_scope": {
+              "season_type": "regular",
+              "all_phases": false,
+              "game_count": 1,
+              "game_ids": [
+                57
+              ],
+              "player_ids": [
+                287
+              ],
+              "metric": "points",
+              "home_away": null,
+              "opponent_id": null,
+              "relative_game_count": null,
+              "date_start": null,
+              "date_end": null
+            },
+            "actual_scope": {
+              "intent": "analyst",
+              "player_ids": [
+                287
+              ],
+              "team_ids": [],
+              "opponent_id": null,
+              "game_ids": [],
+              "date_start": null,
+              "date_end": null,
+              "relative_game_count": null,
+              "relative_from_start": false,
+              "periods": [],
+              "season_type": "regular",
+              "all_phases": false,
+              "home_away": null,
+              "game_result": null,
+              "metric": "points",
+              "requires_clarification": false,
+              "clarification_reason": null,
+              "clarification_options": [],
+              "data_version": "2025-26.20260928.1"
+            },
+            "scope_issues": [
+              "game_count=82 want 1",
+              "game_ids differ (got [], want [57])"
+            ],
+            "stages": [
+              {
+                "stage": "prepare",
+                "tool": "query_resolution",
+                "latency_ms": 39
+              },
+              {
+                "stage": "tool",
+                "tool": "discover_facts",
+                "latency_ms": 57
+              },
+              {
+                "stage": "orchestrate",
+                "tool": "llm_orchestrate",
+                "action": "answer_from_available_evidence",
+                "model": "deepseek-v4.1-flash",
+                "served_model": "deepseek-v4.1-flash",
+                "protocol": "chat",
+                "latency_ms": 4496
+              },
+              {
+                "stage": "review",
+                "tool": "llm_review",
+                "model": "gpt-6-luna",
+                "served_model": "gpt-6-luna",
+                "protocol": "responses",
+                "review_accepted": true,
+                "latency_ms": 18557
+              }
+            ],
+            "citations": [
+              {
+                "metric": "points",
+                "value": 26,
+                "season_type": "regular",
+                "games": 1
+              },
+              {
+                "metric": "points",
+                "value": 16,
+                "season_type": "regular",
+                "games": 1
+              },
+              {
+                "metric": "points",
+                "value": 16,
+                "season_type": "regular",
+                "games": 1
+              },
+              {
+                "metric": "points",
+                "value": 15,
+                "season_type": "regular",
+                "games": 1
+              },
+              {
+                "metric": "points",
+                "value": 12,
+                "season_type": "regular",
+                "games": 1
+              },
+              {
+                "metric": "points",
+                "value": 12,
+                "season_type": "regular",
+                "games": 1
+              },
+              {
+                "metric": "points",
+                "value": 12,
+                "season_type": "regular",
+                "games": 1
+              },
+              {
+                "metric": null,
+                "value": null,
+                "season_type": null,
+                "games": 0
+              },
+              {
+                "metric": null,
+                "value": null,
+                "season_type": null,
+                "games": 0
+              },
+              {
+                "metric": null,
+                "value": null,
+                "season_type": null,
+                "games": 0
+              },
+              {
+                "metric": null,
+                "value": null,
+                "season_type": null,
+                "games": 0
+              },
+              {
+                "metric": null,
+                "value": null,
+                "season_type": null,
+                "games": 0
+              },
+              {
+                "metric": null,
+                "value": null,
+                "season_type": null,
+                "games": 0
+              },
+              {
+                "metric": null,
+                "value": null,
+                "season_type": null,
+                "games": 0
+              }
+            ],
+            "warnings": [],
+            "llm_validated": true,
+            "refused": false,
+            "degraded": false,
+            "revision": 2,
+            "expected_revision": 1,
+            "revision_ok": true,
+            "state_committed": true,
+            "session_token_returned": true
+          }
+        ],
+        "integrity": {
+          "single_token": true,
+          "revisions": [
+            1,
+            2
+          ],
+          "consecutive": true,
+          "turns_committed": 2,
+          "turns": 2,
+          "all_200_settled": true
+        },
+        "pass": false,
+        "trial": 1
+      }
+    ],
+    "heldout2-follow_ups-010": [
+      {
+        "id": "heldout2-follow_ups-010",
+        "category": "follow_ups",
+        "turns": [
+          {
+            "turn": 1,
+            "question": "What happened in Memphis on April 1?",
+            "status": 200,
+            "answer": "On April 1, 2026 in Memphis, the Knicks beat the Grizzlies 130-119 in a regular-season game. It was New York's only archived meeting with Memphis this season.",
+            "cause": "ok",
+            "honest_ok": true,
+            "expected_ok": true,
+            "failures": [],
+            "checks": {
+              "validated": true,
+              "decline_signal": null,
+              "decline_signals": [],
+              "declined": false,
+              "clarification": false,
+              "substantive": true,
+              "evidence_mode": "claims",
+              "claim_citations": 3,
+              "archive_receipts": 1,
+              "numbers_total": 2,
+              "unbacked_numbers": [],
+              "detected_entities": [
+                "Grizzlies",
+                "Knicks"
+              ],
+              "unbacked_entities": [],
+              "required_facts": [
+                "final score 130-119"
+              ],
+              "required_facts_ok": true,
+              "required_entities_ok": null,
+              "required_phrases_ok": null,
+              "echo_question": false,
+              "hedged_causal": false,
+              "missing_turning_detail": false
+            },
+            "expected_scope": {
+              "season_type": "regular",
+              "all_phases": false,
+              "game_count": 1,
+              "game_ids": [
+                77
+              ],
+              "player_ids": [],
+              "metric": null,
+              "home_away": null,
+              "opponent_id": null,
+              "relative_game_count": null,
+              "date_start": null,
+              "date_end": null
+            },
+            "actual_scope": {
+              "intent": "analyst",
+              "player_ids": [],
+              "team_ids": [
+                "MEM"
+              ],
+              "opponent_id": "MEM",
+              "game_ids": [
+                77
+              ],
+              "date_start": "2026-04-01",
+              "date_end": "2026-04-01",
+              "relative_game_count": null,
+              "relative_from_start": false,
+              "periods": [],
+              "season_type": null,
+              "all_phases": false,
+              "home_away": null,
+              "game_result": null,
+              "metric": null,
+              "requires_clarification": false,
+              "clarification_reason": null,
+              "clarification_options": [],
+              "data_version": "2025-26.20260928.1"
+            },
+            "scope_issues": [
+              "season_type=None want regular",
+              "opponent_id=MEM want None",
+              "date_start=2026-04-01 want None",
+              "date_end=2026-04-01 want None"
+            ],
+            "stages": [
+              {
+                "stage": "prepare",
+                "tool": "query_resolution",
+                "latency_ms": 84
+              },
+              {
+                "stage": "tool",
+                "tool": "get_team_stats",
+                "latency_ms": 55
+              },
+              {
+                "stage": "orchestrate",
+                "tool": "llm_orchestrate",
+                "action": "answer_from_available_evidence",
+                "model": "deepseek-v4.1-flash",
+                "served_model": "deepseek-v4.1-flash",
+                "protocol": "chat",
+                "latency_ms": 2740
+              },
+              {
+                "stage": "review",
+                "tool": "llm_review",
+                "model": "gpt-6-luna",
+                "served_model": "gpt-6-luna",
+                "protocol": "responses",
+                "review_accepted": true,
+                "latency_ms": 5577
+              }
+            ],
+            "citations": [
+              {
+                "metric": "points",
+                "value": 130,
+                "season_type": "regular",
+                "games": 1
+              },
+              {
+                "metric": "margin",
+                "value": 11,
+                "season_type": "regular",
+                "games": 1
+              },
+              {
+                "metric": "wins",
+                "value": 1,
+                "season_type": "regular",
+                "games": 1
+              },
+              {
+                "metric": null,
+                "value": null,
+                "season_type": null,
+                "games": 0
+              }
+            ],
+            "warnings": [],
+            "llm_validated": true,
+            "refused": false,
+            "degraded": false,
+            "revision": 1,
+            "expected_revision": 0,
+            "revision_ok": true,
+            "state_committed": true,
+            "session_token_returned": true
+          },
+          {
+            "turn": 2,
+            "question": "How many did they score in the third?",
+            "status": 200,
+            "answer": "Knicks regular season points: 9549 over 82 archived games.",
+            "cause": "pipeline:degraded",
+            "honest_ok": false,
+            "expected_ok": false,
+            "failures": [
+              "not_validated",
+              "required_facts",
+              "required_phrases"
+            ],
+            "checks": {
+              "validated": false,
+              "decline_signal": "field:degraded",
+              "decline_signals": [
+                "field:degraded",
+                "field:unvalidated"
+              ],
+              "declined": false,
+              "clarification": false,
+              "substantive": true,
+              "evidence_mode": "claims",
+              "claim_citations": 1,
+              "archive_receipts": 0,
+              "numbers_total": 2,
+              "unbacked_numbers": [],
+              "detected_entities": [
+                "Knicks"
+              ],
+              "unbacked_entities": [],
+              "required_facts": [
+                "third quarter 20-28"
+              ],
+              "required_facts_ok": false,
+              "required_entities_ok": true,
+              "required_phrases_ok": false,
+              "echo_question": false,
+              "hedged_causal": false,
+              "missing_turning_detail": false
+            },
+            "expected_scope": {
+              "season_type": "regular",
+              "all_phases": false,
+              "game_count": 1,
+              "game_ids": [
+                77
+              ],
+              "player_ids": [],
+              "metric": null,
+              "home_away": null,
+              "opponent_id": null,
+              "relative_game_count": null,
+              "date_start": null,
+              "date_end": null
+            },
+            "actual_scope": {
+              "intent": "analyst",
+              "player_ids": [],
+              "team_ids": [],
+              "opponent_id": null,
+              "game_ids": [],
+              "date_start": null,
+              "date_end": null,
+              "relative_game_count": null,
+              "relative_from_start": false,
+              "periods": [],
+              "season_type": "regular",
+              "all_phases": false,
+              "home_away": null,
+              "game_result": null,
+              "metric": null,
+              "requires_clarification": false,
+              "clarification_reason": null,
+              "clarification_options": [],
+              "data_version": "2025-26.20260928.1"
+            },
+            "scope_issues": [
+              "game_count=82 want 1",
+              "game_ids differ (got [], want [77])"
+            ],
+            "stages": [
+              {
+                "stage": "prepare",
+                "tool": "query_resolution",
+                "latency_ms": 63
+              },
+              {
+                "stage": "orchestrate",
+                "tool": "llm_orchestrate",
+                "action": "call_tools",
+                "model": "deepseek-v4.1-flash",
+                "served_model": "deepseek-v4.1-flash",
+                "protocol": "chat",
+                "latency_ms": 1660
+              },
+              {
+                "stage": "tool",
+                "tool": "get_period_scoring",
+                "latency_ms": 87
+              },
+              {
+                "stage": "orchestrate",
+                "tool": "llm_orchestrate",
+                "action": "answer_from_available_evidence",
+                "model": "deepseek-v4.1-flash",
+                "served_model": "deepseek-v4.1-flash",
+                "protocol": "chat",
+                "latency_ms": 1853
+              },
+              {
+                "stage": "revise",
+                "tool": "llm_orchestrate",
+                "model": "deepseek-v4.1-flash",
+                "served_model": "deepseek-v4.1-flash",
+                "protocol": "chat",
+                "latency_ms": 1882
+              }
+            ],
+            "citations": [
+              {
+                "metric": "points",
+                "value": 9549,
+                "season_type": "regular",
+                "games": 82
+              }
+            ],
+            "warnings": [
+              "Proposed wording did not pass evidence review."
+            ],
+            "llm_validated": false,
+            "refused": false,
+            "degraded": true,
+            "revision": 2,
+            "expected_revision": 1,
+            "revision_ok": true,
+            "state_committed": true,
+            "session_token_returned": true
+          }
+        ],
+        "integrity": {
+          "single_token": true,
+          "revisions": [
+            1,
+            2
+          ],
+          "consecutive": true,
+          "turns_committed": 2,
+          "turns": 2,
+          "all_200_settled": true
+        },
+        "pass": false,
+        "trial": 1
+      }
+    ]
+  },
+  "summary": {
+    "heldout2-follow_ups-001": {
+      "passes": 0,
+      "trials": 1,
+      "turn_passes": [
+        0
+      ],
+      "turns": [
+        2
+      ]
+    },
+    "heldout2-follow_ups-002": {
+      "passes": 0,
+      "trials": 1,
+      "turn_passes": [
+        1
+      ],
+      "turns": [
+        2
+      ]
+    },
+    "heldout2-follow_ups-003": {
+      "passes": 0,
+      "trials": 1,
+      "turn_passes": [
+        1
+      ],
+      "turns": [
+        2
+      ]
+    },
+    "heldout2-follow_ups-004": {
+      "passes": 0,
+      "trials": 1,
+      "turn_passes": [
+        1
+      ],
+      "turns": [
+        2
+      ]
+    },
+    "heldout2-follow_ups-005": {
+      "passes": 0,
+      "trials": 1,
+      "turn_passes": [
+        1
+      ],
+      "turns": [
+        2
+      ]
+    },
+    "heldout2-follow_ups-006": {
+      "passes": 0,
+      "trials": 1,
+      "turn_passes": [
+        1
+      ],
+      "turns": [
+        2
+      ]
+    },
+    "heldout2-follow_ups-007": {
+      "passes": 0,
+      "trials": 1,
+      "turn_passes": [
+        1
+      ],
+      "turns": [
+        2
+      ]
+    },
+    "heldout2-follow_ups-008": {
+      "passes": 0,
+      "trials": 1,
+      "turn_passes": [
+        1
+      ],
+      "turns": [
+        2
+      ]
+    },
+    "heldout2-follow_ups-009": {
+      "passes": 0,
+      "trials": 1,
+      "turn_passes": [
+        1
+      ],
+      "turns": [
+        2
+      ]
+    },
+    "heldout2-follow_ups-010": {
+      "passes": 0,
+      "trials": 1,
+      "turn_passes": [
+        1
+      ],
+      "turns": [
+        2
+      ]
+    }
+  },
+  "causes": {
+    "pipeline:degraded": [
+      {
+        "session": "heldout2-follow_ups-001",
+        "trial": 1,
+        "turn": 1,
+        "question": "How did the Bockers do against Brooklyn on November 9?",
+        "failures": [
+          "not_validated"
+        ],
+        "scope_issues": [
+          "season_type=None want regular",
+          "opponent_id=BKN want None",
+          "date_start=2025-11-09 want None",
+          "date_end=2025-11-09 want None"
+        ]
+      },
+      {
+        "session": "heldout2-follow_ups-001",
+        "trial": 1,
+        "turn": 2,
+        "question": "How big was the margin?",
+        "failures": [
+          "not_validated",
+          "required_facts"
+        ],
+        "scope_issues": [
+          "game_count=82 want 1",
+          "game_ids differ (got [], want [9])"
+        ]
+      },
+      {
+        "session": "heldout2-follow_ups-003",
+        "trial": 1,
+        "turn": 2,
+        "question": "How many threes did they hit?",
+        "failures": [
+          "declined:field:degraded",
+          "not_substantive",
+          "required_facts",
+          "required_entities",
+          "no_cited_claims"
+        ],
+        "scope_issues": [
+          "game_count=82 want 1",
+          "game_ids differ (got [], want [22])"
+        ]
+      },
+      {
+        "session": "heldout2-follow_ups-004",
+        "trial": 1,
+        "turn": 2,
+        "question": "How many rebounds did they pull down?",
+        "failures": [
+          "declined:field:degraded",
+          "not_substantive",
+          "required_facts",
+          "required_entities",
+          "no_cited_claims"
+        ],
+        "scope_issues": [
+          "game_count=82 want 1",
+          "game_ids differ (got [], want [29])"
+        ]
+      },
+      {
+        "session": "heldout2-follow_ups-008",
+        "trial": 1,
+        "turn": 2,
+        "question": "What was their biggest quarter?",
+        "failures": [
+          "not_validated",
+          "unbacked_entities",
+          "required_facts",
+          "required_entities",
+          "required_phrases"
+        ],
+        "scope_issues": [
+          "game_count=82 want 1",
+          "game_ids differ (got [], want [44])"
+        ]
+      },
+      {
+        "session": "heldout2-follow_ups-010",
+        "trial": 1,
+        "turn": 2,
+        "question": "How many did they score in the third?",
+        "failures": [
+          "not_validated",
+          "required_facts",
+          "required_phrases"
+        ],
+        "scope_issues": [
+          "game_count=82 want 1",
+          "game_ids differ (got [], want [77])"
+        ]
+      }
+    ],
+    "scope": [
+      {
+        "session": "heldout2-follow_ups-002",
+        "trial": 1,
+        "turn": 2,
+        "question": "What was the fourth-quarter score?",
+        "failures": [
+          "required_facts",
+          "required_phrases"
+        ],
+        "scope_issues": [
+          "game_count=82 want 1",
+          "game_ids differ (got [], want [15])"
+        ]
+      },
+      {
+        "session": "heldout2-follow_ups-005",
+        "trial": 1,
+        "turn": 2,
+        "question": "Which quarter hurt them most?",
+        "failures": [
+          "required_facts",
+          "required_phrases"
+        ],
+        "scope_issues": [
+          "game_count=82 want 1",
+          "game_ids differ (got [], want [32])"
+        ]
+      },
+      {
+        "session": "heldout2-follow_ups-006",
+        "trial": 1,
+        "turn": 2,
+        "question": "How many dimes did Kolek have?",
+        "failures": [
+          "declined:phrase:decline",
+          "required_facts"
+        ],
+        "scope_issues": [
+          "metric=None want assists",
+          "game_count=82 want 1",
+          "game_ids differ (got [], want [37])"
+        ]
+      },
+      {
+        "session": "heldout2-follow_ups-007",
+        "trial": 1,
+        "turn": 2,
+        "question": "How many boards did Yabu grab?",
+        "failures": [
+          "required_facts"
+        ],
+        "scope_issues": [
+          "metric=None want rebounds",
+          "game_count=82 want 1",
+          "game_ids differ (got [], want [40])"
+        ]
+      },
+      {
+        "session": "heldout2-follow_ups-009",
+        "trial": 1,
+        "turn": 2,
+        "question": "How many points did Alvarado score?",
+        "failures": [
+          "required_facts"
+        ],
+        "scope_issues": [
+          "game_count=82 want 1",
+          "game_ids differ (got [], want [57])"
+        ]
+      }
+    ]
+  },
+  "totals": {
+    "turns": 20,
+    "turn_passes": 9,
+    "session_passes": 0,
+    "session_runs": 10
+  }
+}
