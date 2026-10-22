@@ -1,0 +1,152 @@
+[
+  {
+    "id": "exact_statistics-001",
+    "category": "exact_statistics",
+    "why": "first-3"
+  },
+  {
+    "id": "exact_statistics-002",
+    "category": "exact_statistics",
+    "why": "first-3"
+  },
+  {
+    "id": "exact_statistics-003",
+    "category": "exact_statistics",
+    "why": "first-3"
+  },
+  {
+    "id": "date_range_last_n-001",
+    "category": "date_range_last_n",
+    "why": "first-3"
+  },
+  {
+    "id": "date_range_last_n-002",
+    "category": "date_range_last_n",
+    "why": "first-3"
+  },
+  {
+    "id": "date_range_last_n-003",
+    "category": "date_range_last_n",
+    "why": "first-3"
+  },
+  {
+    "id": "comparisons-001",
+    "category": "comparisons",
+    "why": "first-3+failed-trial1:failed:revise:ValidationError"
+  },
+  {
+    "id": "comparisons-002",
+    "category": "comparisons",
+    "why": "first-3+failed-trial1:failed:revise:ValidationError"
+  },
+  {
+    "id": "comparisons-003",
+    "category": "comparisons",
+    "why": "first-3"
+  },
+  {
+    "id": "single_game_narrative-001",
+    "category": "single_game_narrative",
+    "why": "first-3"
+  },
+  {
+    "id": "single_game_narrative-002",
+    "category": "single_game_narrative",
+    "why": "first-3"
+  },
+  {
+    "id": "single_game_narrative-003",
+    "category": "single_game_narrative",
+    "why": "first-3"
+  },
+  {
+    "id": "turning_points-001",
+    "category": "turning_points",
+    "why": "first-3"
+  },
+  {
+    "id": "turning_points-002",
+    "category": "turning_points",
+    "why": "first-3+failed-trial1:failed:revise:ValidationError"
+  },
+  {
+    "id": "turning_points-003",
+    "category": "turning_points",
+    "why": "first-3+failed-trial1:failed:revise:ValidationError"
+  },
+  {
+    "id": "aliases_typos-001",
+    "category": "aliases_typos",
+    "why": "first-3"
+  },
+  {
+    "id": "aliases_typos-002",
+    "category": "aliases_typos",
+    "why": "first-3"
+  },
+  {
+    "id": "aliases_typos-003",
+    "category": "aliases_typos",
+    "why": "first-3+failed-trial1:failed:revise:ValidationError"
+  },
+  {
+    "id": "unsupported-001",
+    "category": "unsupported",
+    "why": "first-3"
+  },
+  {
+    "id": "unsupported-002",
+    "category": "unsupported",
+    "why": "first-3"
+  },
+  {
+    "id": "unsupported-003",
+    "category": "unsupported",
+    "why": "first-3"
+  },
+  {
+    "id": "date_range_last_n-005",
+    "category": "date_range_last_n",
+    "why": "failed:revise:ValidationError"
+  },
+  {
+    "id": "date_range_last_n-008",
+    "category": "date_range_last_n",
+    "why": "failed:revise:ValidationError"
+  },
+  {
+    "id": "comparisons-006",
+    "category": "comparisons",
+    "why": "failed:revise:ValidationError"
+  },
+  {
+    "id": "comparisons-007",
+    "category": "comparisons",
+    "why": "failed:revise:ValidationError"
+  },
+  {
+    "id": "comparisons-010",
+    "category": "comparisons",
+    "why": "failed:revise:ValidationError"
+  },
+  {
+    "id": "single_game_narrative-006",
+    "category": "single_game_narrative",
+    "why": "failed:revise:ValidationError"
+  },
+  {
+    "id": "single_game_narrative-009",
+    "category": "single_game_narrative",
+    "why": "failed:revise:ValidationError"
+  },
+  {
+    "id": "unsupported-004",
+    "category": "unsupported",
+    "why": "failed:revise:ValidationError"
+  },
+  {
+    "id": "unsupported-006",
+    "category": "unsupported",
+    "why": "failed:revise:ValidationError"
+  }
+]

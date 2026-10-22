@@ -1,0 +1,42 @@
+{
+  "scope": "meets_expectation now requires: not declined or clarification, validated delivery, substantive content, no unbacked number or entity, required facts present, no echo, and no unbacked causal hedge. claim_backed additionally requires cited claim values.",
+  "mode": "live",
+  "dataset": "/Users/mohamedawadalla/.local/share/knicksiq/worktrees/w4-thinking/apps/api/app/evaluation/questions.jsonl",
+  "questions": 2,
+  "old_meets_expectation": 0,
+  "meets_expectation": 0,
+  "claim_backed_meets_expectation": 0,
+  "delta": 0,
+  "by_answerable": {
+    "answerable": {
+      "questions": 2,
+      "old": 0,
+      "new": 0
+    },
+    "unsupported": {
+      "questions": 0,
+      "old": 0,
+      "new": 0
+    }
+  },
+  "survived": [],
+  "lost": [],
+  "gained": [],
+  "failure_counts": {
+    "not_validated": 2
+  },
+  "by_category": {
+    "comparisons": {
+      "questions": 1,
+      "old": 0,
+      "new": 0,
+      "claim_backed": 0
+    },
+    "exact_statistics": {
+      "questions": 1,
+      "old": 0,
+      "new": 0,
+      "claim_backed": 0
+    }
+  }
+}

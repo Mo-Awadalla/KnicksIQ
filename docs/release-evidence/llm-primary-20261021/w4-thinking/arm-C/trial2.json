@@ -1,0 +1,108 @@
+{
+  "scope": "meets_expectation now requires: not declined or clarification, validated delivery, substantive content, no unbacked number or entity, required facts present, no echo, and no unbacked causal hedge. claim_backed additionally requires cited claim values.",
+  "mode": "live",
+  "dataset": "/Users/mohamedawadalla/.local/share/knicksiq/worktrees/w4-thinking/apps/api/app/evaluation/questions.jsonl",
+  "questions": 30,
+  "old_meets_expectation": 8,
+  "meets_expectation": 10,
+  "claim_backed_meets_expectation": 10,
+  "delta": -2,
+  "by_answerable": {
+    "answerable": {
+      "questions": 25,
+      "old": 6,
+      "new": 5
+    },
+    "unsupported": {
+      "questions": 5,
+      "old": 2,
+      "new": 5
+    }
+  },
+  "survived": [
+    "exact_statistics-001",
+    "exact_statistics-002",
+    "date_range_last_n-001",
+    "date_range_last_n-002",
+    "unsupported-001",
+    "date_range_last_n-005",
+    "unsupported-006"
+  ],
+  "lost": [
+    {
+      "id": "single_game_narrative-009",
+      "category": "single_game_narrative",
+      "failures": [
+        "clarification",
+        "no_cited_claims"
+      ],
+      "reason": "skipped_work_clarification",
+      "answer": "More than one Knicks\u2013Hawks game is in the archive: several regular-season meetings plus a playoff series. Which one do you mean? Give me the date (or say \"the playoff series\" and which game), and I'll walk through how the Knicks closed it out."
+    }
+  ],
+  "gained": [
+    {
+      "id": "unsupported-002",
+      "failures": []
+    },
+    {
+      "id": "unsupported-003",
+      "failures": []
+    },
+    {
+      "id": "unsupported-004",
+      "failures": []
+    }
+  ],
+  "failure_counts": {
+    "not_validated": 16,
+    "no_cited_claims": 7,
+    "not_substantive": 4,
+    "declined": 3,
+    "clarification": 3
+  },
+  "by_category": {
+    "aliases_typos": {
+      "questions": 3,
+      "old": 0,
+      "new": 0,
+      "claim_backed": 0
+    },
+    "comparisons": {
+      "questions": 6,
+      "old": 0,
+      "new": 0,
+      "claim_backed": 0
+    },
+    "date_range_last_n": {
+      "questions": 5,
+      "old": 3,
+      "new": 3,
+      "claim_backed": 3
+    },
+    "exact_statistics": {
+      "questions": 3,
+      "old": 2,
+      "new": 2,
+      "claim_backed": 2
+    },
+    "single_game_narrative": {
+      "questions": 5,
+      "old": 1,
+      "new": 0,
+      "claim_backed": 0
+    },
+    "turning_points": {
+      "questions": 3,
+      "old": 0,
+      "new": 0,
+      "claim_backed": 0
+    },
+    "unsupported": {
+      "questions": 5,
+      "old": 2,
+      "new": 5,
+      "claim_backed": 5
+    }
+  }
+}
