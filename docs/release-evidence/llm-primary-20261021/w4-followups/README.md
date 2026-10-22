@@ -79,7 +79,7 @@ Full per-turn detail (question, stages, warnings, failures, scope issues, answer
 
 | Class | Turns | What happened |
 | --- | --- | --- |
-| Reviewer rejection | 10 | A review ran (`review` stage), rejected the proposal, and the turn fell back. |
+| Reviewer rejection | 10 | A review ran (`review` stage) and did not accept; the turn fell back. Captured logs show `analyst_review_rejected` with unsupported spans. |
 | Fallback: validation or budget | 10 | No review stage: deterministic evidence checks or the repair call failed; fallback. |
 | State after refusal | 3 | A refusal/fallback answer that cited facts became the new last topic; the next follow-up lost the prior scope/topic. |
 | Model wording | 4 | Delivered model answers: one missed aggregation change, two declined an answerable turn, one stated an uncited date. |
@@ -121,7 +121,7 @@ All commands run in the worktree after `uv sync --all-packages --all-extras --de
 `docker exec kiq-integrate-redis-1 redis-cli -n 3 flushdb`.
 
 1. **Fallback on 17.2% of turns; the repair path raises instead of repairing.** 22 turns
-   fall back: 10 after reviewer rejection and 12 without a review verdict (10 deterministic or
+   fall back: 10 after a review that did not accept and 12 without a review verdict (10 deterministic or
    repair-path failures and 2 after the state loss in defect 2; one of the 12 logged a
    TimeoutError at `revise`). One
    further turn committed no state although its LLM answer was correct (defect 5).
