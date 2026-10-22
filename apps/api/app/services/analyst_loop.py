@@ -1380,7 +1380,7 @@ class AnalystLoop:
             for claim in self.fallback_claims()
             if self.tools.scope
             and self.tools.scope.player_ids
-            and self.tools.scope.metric is None
+            and not (self.tools.scope.metric or self.tools.scope.requested_metrics)
             and self.tools.player_profile_requested()
         }
         for claim in claims:
@@ -1632,7 +1632,7 @@ class AnalystLoop:
             return "get_player_stats"
         if scope.player_ids:
             opponent_profile = bool(
-                scope.metric is None
+                not (scope.metric or scope.requested_metrics)
                 and opponent_filter
                 and re.search(
                     r"^\s*(?:tell me about\b|how did\b|did\b.*\bplay well\b)", question, re.I
@@ -1699,7 +1699,7 @@ class AnalystLoop:
         if (
             scope is not None
             and scope.player_ids
-            and scope.metric is None
+            and not (scope.metric or scope.requested_metrics)
             and self.tools.player_profile_requested()
         ):
             requirements["profile"] = [{claim.claim_id} for claim in self.fallback_claims()]
