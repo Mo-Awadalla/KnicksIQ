@@ -1,7 +1,8 @@
 # Live multi-turn follow-up benchmark (w4-followups)
 
 Status: VERIFIED. The two live trials ran to completion on OpenCode Go. Measured base
-`536d12e` on `codex/llmp-integration`; branch `codex/llmp-w4-followups`. Integration HEAD
+`536d12e` on `codex/llmp-integration`; branch `codex/llmp-w4-followups`, evidence commit
+`9e95686` (later commits touch only this report). Integration HEAD
 (`cacf474`) was not merged during measurement: `b000e5a` only changes non-analyst adapters
 (the analyst loop already sent `x-opencode-session`, and no MissingSessionID row appears),
 and `cacf474` adds a record-order gate. No delivered answer in this run stated a reversed
