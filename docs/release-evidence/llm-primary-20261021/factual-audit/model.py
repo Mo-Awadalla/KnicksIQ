@@ -37,6 +37,7 @@ BARE_CLOCK = re.compile(r"\b(\d{1,2}:\d{2})\b")
 GAME_NO = re.compile(r"\bgame\s+(\d+)\b(?!\s*[-–])", re.I)
 PERIOD_TOKEN = re.compile(r"\bQ([1-4])\b|\b([1-4])Q\b")
 PAIR = re.compile(r"([+-]?\d+(?:,\d{3})*(?:\.\d+)?)\s*[–-]\s*([+-]?\d+(?:,\d{3})*(?:\.\d+)?)")
+SIGN_WORD = re.compile(r"\b(plus|minus)\s*-\s*(\d+(?:,\d{3})*(?:\.\d+)?)", re.I)
 PERCENT = re.compile(r"([+-]?\d+(?:,\d{3})*(?:\.\d+)?)\s*%")
 NUMBER = re.compile(r"([+-]?\d+(?:,\d{3})*(?:\.\d+)?)")
 
@@ -236,6 +237,11 @@ def tokenize(text: str) -> list[Atom]:
     for m in PAIR.finditer(text):
         if free(m.start(), m.end()):
             add(m.start(), m.end(), "pair", (m.group(1), m.group(2)))
+    # "plus-9.1" / "minus-2.9": the hyphen belongs to the sign word, not the value.
+    for m in SIGN_WORD.finditer(text):
+        if free(m.start(2), m.end(2)):
+            sign = "-" if m.group(1).lower() == "minus" else "+"
+            add(m.start(2), m.end(2), "number", (sign + m.group(2),))
     for m in PERCENT.finditer(text):
         if free(m.start(), m.end()):
             add(m.start(), m.end(), "percent", (m.group(1),))

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import re
+from dataclasses import replace
 
 from model import Session, number
 from verify_common import scope_for, scalar_atom
@@ -82,9 +83,24 @@ def verify_periods(s: Session) -> None:
             _mark(s, m, group, stats["diff"], f"Q{period} differential {scope.filters()}", stats["sql"], scope)
     for m in re.finditer(r"(\d+)\s+of\s+(\d+)\s+games", text, re.I):
         scope = scope_for(s, m.start())
-        stats = period_stats(s, scope, 3)
+        stats = s.oracle.team_scope(**scope.filters())
         for group, expected in (("1", stats["games"]), ("2", stats["games"])):
-            _mark(s, m, group, expected, f"games with period scores {scope.filters()}", stats["sql"], scope)
+            _mark(s, m, group, expected, f"games {scope.filters()}", stats["sql"], scope)
+    # "Phases: 3 reg, 6 playoffs" / "(3 regular season, 6 playoffs)".
+    for m in re.finditer(
+        r"(?:Phases?:\s*)?\(?(?<![\d-])(\d{1,3})\s+(?:reg(?:ular season)?|regular-season)"
+        r"[,;]?\s+(?<![\d-])(\d{1,3})\s+playoffs?",
+        text, re.I,
+    ):
+        scope = scope_for(s, m.start())
+        for group, phase in ((1, "regular"), (2, "playoffs")):
+            local = replace(scope, season_type=phase)
+            stats = s.oracle.team_scope(**local.filters())
+            atom = scalar_atom(s, m, group)
+            if atom is None or not s.free(atom) or atom.kind != "number":
+                continue
+            s.mark(atom, int(m.group(group)), stats["games"],
+                   f"{phase} games {local.filters()}", stats["sql"])
     for m in re.finditer(r"\(?\s*(\d+)\s+games,\s+(\d+)\s+Q4 scoring plays\s*\)?", text, re.I):
         scope = scope_for(s, m.start())
         games = s.oracle.games_for(

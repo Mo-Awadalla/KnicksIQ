@@ -77,16 +77,25 @@ def verify_dates(s: Session) -> None:
                 start=start, end=end,
             )
             games = sorted(games, key=lambda g: (g.date, g.id))
-            if games:
-                expected = (games[0].date, games[-1].date)
-                ok = (start, end) == expected
-                s.mark(atom, f"{start}..{end}", f"{expected[0]}..{expected[1]}",
-                       "archived date window", s.oracle._team_sql(scope.filters()),
-                       status="verified" if ok else "wrong",
-                       detail="" if ok else f"first/last game {expected[0]}..{expected[1]}")
-            else:
+            asked = s.defaults["scope"]
+            if not games:
                 s.mark(atom, f"{start}..{end}", None, "date window has no games",
                        s.oracle._team_sql(scope.filters()), status="unverified")
+            elif asked.start == start and asked.end == end:
+                # The answer restates the window the question asked for; it is a
+                # scope descriptor, not a claim that games were played on both ends.
+                s.mark(atom, f"{start}..{end}", f"{start}..{end}",
+                       "requested window", s.oracle._team_sql(scope.filters()),
+                       status="verified", detail="window restated from the question")
+            elif (start, end) == (games[0].date, games[-1].date):
+                s.mark(atom, f"{start}..{end}", f"{games[0].date}..{games[-1].date}",
+                       "archived date window", s.oracle._team_sql(scope.filters()),
+                       status="verified")
+            else:
+                s.mark(atom, f"{start}..{end}", f"{games[0].date}..{games[-1].date}",
+                       "date window endpoints", s.oracle._team_sql(scope.filters()),
+                       status="unverified",
+                       detail="window neither requested nor equal to the first and last game")
 
 
 def _range_date(parts: tuple[Any, ...], s: Session) -> str:

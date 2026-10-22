@@ -170,6 +170,23 @@ class Oracle:
         self.by_date: dict[str, list[Game]] = {}
         for g in self.games:
             self.by_date.setdefault(g.date, []).append(g)
+        self.asb_start = self._asb_start()
+
+    def _asb_start(self) -> str | None:
+        """First regular-season game after the archive's longest mid-season gap.
+
+        The archive is a regular season plus playoffs, so the only multi-day
+        break in the regular-season calendar is the All-Star break.
+        """
+        from datetime import date as _date
+
+        regular = sorted({g.date for g in self.games if g.season_type == "regular"})
+        best_gap, best_date = 0, None
+        for before, after in zip(regular, regular[1:]):
+            gap = (_date.fromisoformat(after) - _date.fromisoformat(before)).days
+            if gap > best_gap:
+                best_gap, best_date = gap, after
+        return best_date
 
     def _load_periods(self) -> None:
         rows = query(
@@ -311,6 +328,7 @@ class Oracle:
             "opp_points": opp_points,
             "margin": margin,
             "avg_points": (points / count) if count else None,
+            "avg_opp": (opp_points / count) if count else None,
             "avg_margin": (margin / count) if count else None,
             "rows": [
                 {"id": g.id, "date": g.date, "opp": g.opp, "loc": g.loc,
