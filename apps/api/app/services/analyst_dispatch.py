@@ -75,6 +75,9 @@ async def execute_call(tools: AnalystTools, call: ToolCall) -> ToolResult:
         authoritative = getattr(tools.scope, key)
         if authoritative:
             update[key] = authoritative
+    if tools.scope.relative_game_count:
+        # Size and direction are one window; never take one from the model's rephrasing.
+        update["relative_from_start"] = tools.scope.relative_from_start
     if not tools.scope.game_ids and scope.season_type != tools.scope.season_type:
         # The call's game ids were selected inside a phase the user did not ask for.
         update["game_ids"] = []

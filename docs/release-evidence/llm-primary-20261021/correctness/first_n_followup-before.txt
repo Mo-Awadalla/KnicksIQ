@@ -1,0 +1,6 @@
+OK  'What was their record in the first 10 games?' 10 games ['2025-10-22'] ['2025-11-11']
+OK  'What was their record in their last 10 games?' 10 games ['2026-05-10'] ['2026-06-13']
+BAD 'What was their record in the first 10 games?' -> 'And their points?' 10 games ['2026-05-10'] ['2026-06-13']
+BAD 'What was their record in the first 10 games?' -> 'What about at home?' 10 games ['2026-04-12'] ['2026-06-10']
+OK  'What was their record in their last 10 games?' -> 'And their points?' 10 games ['2026-05-10'] ['2026-06-13']
+FAILURES 2

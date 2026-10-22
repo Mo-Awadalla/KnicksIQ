@@ -143,8 +143,7 @@ def fallback_claims(loop: AnalystLoop) -> list[VerifiedClaim]:
     games = tools.selected_games(scope)
     if family in {"record", "matchup", "extreme", "game"}:
         games = [g for g in games if g.status == "final" and g.home_score != g.away_score]
-    if scope.relative_game_count:
-        games = games[-scope.relative_game_count :]
+    games = scope.window(games)
     expected_games = {g.id for g in games}
     wanted = _metric_family(tools.topic)
     results = list(loop.results)

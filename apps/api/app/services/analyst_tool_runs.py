@@ -356,8 +356,7 @@ async def run(
     games: list[Game],
 ) -> ToolResult:
     assert scope is not None
-    if scope.relative_game_count:
-        games = games[-scope.relative_game_count :]
+    games = scope.window(games)
     flows, missing = await _flow_for_games(tools, scope, games)
     if not flows:
         return ToolResult(

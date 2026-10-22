@@ -71,8 +71,8 @@ def _extreme_kind(question: str) -> str | None:
 def player(
     tools: AnalystTools, scope: ResolvedQuery, games: list[Game], metric: str, aggregation: str
 ) -> ToolResult:
-    if scope.relative_game_count and "appearance" not in tools.question.lower():
-        games = games[-scope.relative_game_count :]
+    if "appearance" not in tools.question.lower():
+        games = scope.window(games)
     game_map = {g.id: g for g in games}
     claims, evidence = [], []
     missing = False
@@ -87,8 +87,7 @@ def player(
         unknown = [game_id for game_id in absent if game_id not in team_row_games]
         did_not_appear = [game_id for game_id in absent if game_id in team_row_games]
         rows = [(s, p) for s, p in all_rows if s.minutes > 0]
-        if scope.relative_game_count:
-            rows = rows[-scope.relative_game_count :]
+        rows = scope.window(rows)
         if not rows:
             if unknown:
                 missing = True
@@ -207,8 +206,7 @@ def team(
             evidence=[receipt],
             scope=scope.model_dump(mode="json"),
         )
-    if scope.relative_game_count:
-        games = games[-scope.relative_game_count :]
+    games = scope.window(games)
     asks_average = bool(
         re.search(r"\b(?:average|averaged|averaging|per game|ppg)\b", tools.question, re.I)
     )
