@@ -118,3 +118,6 @@ docs/release-evidence/llm-primary-20261021/revids/*.json linguist-generated=true
 # Generated measurement artifacts for this evidence directory.
 docs/release-evidence/llm-primary-20261021/w3-declines/*.json linguist-generated=true
 docs/release-evidence/llm-primary-20261021/w3-declines/*.jsonl linguist-generated=true
+
+# Resolution sweep machine output.
+docs/release-evidence/llm-primary-20261021/w3-resolve/*.json linguist-generated=true
