@@ -100,6 +100,11 @@ every turn's committed scope to match.
 | reverse_switch_topic | 2 | .F | 1/2 | no |
 | decline_then_overall | 3 | ..F | 2/3 | yes |
 
+The phase-change sessions (1 to 6, `opponent_phase_switch`, `phase_after_player`,
+`topic_overall_after_player`) also cover the one-phase claim carry rule. The audit carried no
+regular-season claim into an all-phase or playoff turn; the observed `carried_claims` arrays are
+empty there, so that earlier fix still holds on `5b585e6`.
+
 ## Ranked follow-up defects with minimal reproductions
 
 Reproduction numbers refer to `followup_scope_repros.py`; all 12 cases print REPRODUCED on
