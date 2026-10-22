@@ -1,0 +1,88 @@
+## Response artifacts: honest passes per category (before -> after)
+
+### heldout-60
+| Category | Questions | Before | After |
+| --- | ---: | ---: | ---: |
+| exact_statistics | 9 | 1 | 1 |
+| date_range_last_n | 9 | 1 | 1 |
+| comparisons | 8 | 0 | 0 |
+| single_game_narrative | 8 | 1 | 1 |
+| turning_points | 8 | 0 | 0 |
+| aliases_typos | 8 | 0 | 0 |
+| unsupported | 10 | 1 | 1 |
+| **Total** | **60** | **4** | **4** |
+
+### budget-16000-trial1
+| Category | Questions | Before | After |
+| --- | ---: | ---: | ---: |
+| exact_statistics | 10 | 9 | 10 |
+| date_range_last_n | 10 | 6 | 6 |
+| comparisons | 10 | 5 | 5 |
+| single_game_narrative | 10 | 3 | 3 |
+| turning_points | 10 | 4 | 4 |
+| aliases_typos | 10 | 4 | 4 |
+| unsupported | 10 | 4 | 4 |
+| **Total** | **70** | **35** | **36** |
+
+### budget-16000-trial2
+| Category | Questions | Before | After |
+| --- | ---: | ---: | ---: |
+| exact_statistics | 10 | 8 | 10 |
+| date_range_last_n | 10 | 6 | 6 |
+| comparisons | 10 | 5 | 6 |
+| single_game_narrative | 10 | 2 | 2 |
+| turning_points | 10 | 4 | 4 |
+| aliases_typos | 10 | 5 | 5 |
+| unsupported | 10 | 5 | 5 |
+| **Total** | **70** | **35** | **38** |
+
+### w4-bench-trial1
+| Category | Questions | Before | After |
+| --- | ---: | ---: | ---: |
+| exact_statistics | 10 | 6 | 8 |
+| date_range_last_n | 10 | 6 | 6 |
+| comparisons | 10 | 3 | 3 |
+| single_game_narrative | 10 | 1 | 1 |
+| turning_points | 10 | 5 | 5 |
+| aliases_typos | 10 | 8 | 8 |
+| unsupported | 10 | 7 | 7 |
+| **Total** | **70** | **36** | **38** |
+
+### w4-bench-trial2
+| Category | Questions | Before | After |
+| --- | ---: | ---: | ---: |
+| exact_statistics | 10 | 7 | 9 |
+| date_range_last_n | 10 | 8 | 8 |
+| comparisons | 10 | 2 | 2 |
+| single_game_narrative | 10 | 2 | 2 |
+| turning_points | 10 | 4 | 4 |
+| aliases_typos | 10 | 5 | 5 |
+| unsupported | 10 | 7 | 7 |
+| **Total** | **70** | **35** | **37** |
+
+## Follow-up artifact
+turns 90/128 -> 100/128; sessions 24/54 -> 31/54
+
+## Changed rows
+- final/budget-16000.trial1 exact_statistics-004 [exact_statistics]: False -> True: 6.33 is 6.329268292682927 rounded to 2dp
+- final/budget-16000.trial2 exact_statistics-003 [exact_statistics]: False -> True: +6.33 is 6.329268292682927 rounded to 2dp
+- final/budget-16000.trial2 exact_statistics-004 [exact_statistics]: False -> True: +6.33 is 6.329268292682927 rounded to 2dp
+- final/budget-16000.trial2 comparisons-010 [comparisons]: False -> True: +16.25 is 16.245283018867923 rounded to 2dp
+- w4-bench/trial1 exact_statistics-003 [exact_statistics]: False -> True: 116.5 is 116.45121951219512 rounded to 1dp; +6.3 is 6.329268292682927 rounded to 1dp
+- w4-bench/trial1 exact_statistics-004 [exact_statistics]: False -> True: +6.33 is 6.329268292682927 rounded to 2dp; 116.5 is 116.45121951219512 rounded to 1dp
+- w4-bench/trial2 exact_statistics-003 [exact_statistics]: False -> True: +6.33 is 6.329268292682927 rounded to 2dp
+- w4-bench/trial2 exact_statistics-004 [exact_statistics]: False -> True: +6.33 is 6.329268292682927 rounded to 2dp
+- w4-followups phase_all_then_regular trial 2 turn 1 [phase_change]: answer:value -> ok: record 69-32 over 101 accepted sentence-final
+- w4-followups team_ppg_home_away_playoffs trial 1 turn 2 [home_road]: answer:value -> ok: +2.8 is 2.8095238095238093 rounded to 1dp
+- w4-followups team_ppg_home_away_playoffs trial 2 turn 2 [home_road]: answer:value -> ok: +2.8 is 2.8095238095238093 rounded to 1dp
+- w4-followups team_month_switch trial 1 turn 2 [window_change]: answer:value -> ok: +2.93 is 2.933333333333333 rounded to 2dp
+- w4-followups team_month_switch trial 2 turn 1 [window_change]: answer:value -> ok: +5.2 is 5.214285714285714 rounded to 1dp
+- w4-followups team_month_switch trial 2 turn 2 [window_change]: answer:value -> ok: +2.9 is 2.933333333333333 rounded to 1dp
+- w4-followups team_margin trial 1 turn 2 [metric_change]: answer:value -> ok: +5.2 is 5.214285714285714 rounded to 1dp
+- w4-followups team_margin trial 2 turn 2 [metric_change]: answer:value -> ok: +5.2 is 5.214285714285714 rounded to 1dp
+- w4-followups opponent_switch_team_stats trial 1 turn 2 [opponent_switch]: answer:value -> ok: 116.3 is 116.28571428571429 rounded to 1dp; +10.3 is 10.285714285714286 rounded to 1dp
+- w4-followups opponent_switch_team_stats trial 2 turn 2 [opponent_switch]: answer:value -> ok: 116.3 is 116.28571428571429 rounded to 1dp; +10.3 is 10.285714285714286 rounded to 1dp
+
+pass->fail changes: 0
+
+wrote /Users/mohamedawadalla/.local/share/knicksiq/worktrees/w4-scorer/docs/release-evidence/llm-primary-20261021/w4-scorer/comparison.json
