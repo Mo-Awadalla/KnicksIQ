@@ -402,6 +402,31 @@ def numeric_issues(
     return issues
 
 
+# A sentence-ending period may follow; a decimal or a date part may not.
+_RECORD = re.compile(r"(?<![\w.-])(\d{1,3})-(\d{1,3})(?![\w-]|\.\d)")
+
+
+def record_order_issues(spans: list[str], claims: Mapping[str, VerifiedClaim]) -> list[str]:
+    """A W-L record written in reverse. Both numbers are trusted values, so the value check
+    passes; only the pairing of a wins claim with a losses claim over the same games shows
+    which number comes first."""
+    by_games: dict[tuple, dict[str, Decimal]] = {}
+    for claim in claims.values():
+        if claim.metric_id in {"wins", "losses"} and isinstance(claim.value, (int, float)):
+            key = (claim.subject_id, tuple(sorted(claim.game_ids or [])))
+            by_games.setdefault(key, {})[claim.metric_id] = Decimal(str(claim.value))
+    pairs = {(p["wins"], p["losses"]) for p in by_games.values() if {"wins", "losses"} <= set(p)}
+    issues: list[str] = []
+    for index, span in enumerate(spans, start=1):
+        for match in _RECORD.finditer(span):
+            shown = (Decimal(match.group(1)), Decimal(match.group(2)))
+            if shown not in pairs and shown[::-1] in pairs and shown[0] != shown[1]:
+                issues.append(
+                    f"span {index} states the record {match.group()} with wins and losses reversed"
+                )
+    return issues
+
+
 def review_issues(
     answer: ProposedAnswer,
     spans: list[str],
@@ -413,4 +438,8 @@ def review_issues(
     issues = claim_value_issues(answer, dict(claims))
     if "".join(spans) != answer.text:
         issues.append("review spans do not reproduce the full answer")
-    return issues + numeric_issues(answer, spans, claims, evidence, capabilities, question)
+    return (
+        issues
+        + numeric_issues(answer, spans, claims, evidence, capabilities, question)
+        + record_order_issues(spans, claims)
+    )
