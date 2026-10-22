@@ -136,7 +136,7 @@ def covers_planned_shape(tools: AnalystTools, calls: list[ToolCall]) -> bool:
         return False
     expected = {game.id for game in scope.window(tools.selected_games(scope))}
     for call in calls:
-        aggregation = call.aggregation or "average"
+        aggregation = scope.aggregation or call.aggregation
         if call.name == "get_team_stats":
             wanted = (
                 {"points_per_game", "margin_per_game"}
@@ -146,7 +146,7 @@ def covers_planned_shape(tools: AnalystTools, calls: list[ToolCall]) -> bool:
             population = expected
             subjects = {"team:NYK"}
         elif call.name == "get_player_stats":
-            metric = call.metric or scope.metric or "points"
+            metric = scope.metric or call.metric or "points"
             wanted = {f"{metric}:{aggregation}"}
             subjects = {f"player:{player_id}" for player_id in scope.player_ids}
             population = {
@@ -204,14 +204,14 @@ def prefetch_calls(tools: AnalystTools) -> list[ToolCall]:
         # and never the topic's own phase or game_ids.
         aggregation: Literal["average", "total"] = (
             "average"
-            if tools.aggregation == "average"
-            or (tools.aggregation is None and _AVERAGE.search(tools.topic))
+            if scope.aggregation == "average"
+            or (scope.aggregation is None and _AVERAGE.search(tools.topic))
             else "total"
         )
         if scope.player_ids:
             # The topic was a player question and the follow-up only moved the window,
             # phase, opponent or site. The inherited metric still names the stat.
-            if len(scope.player_ids) == 1 and tools.aggregation in {"average", "total"}:
+            if len(scope.player_ids) == 1 and scope.aggregation in {"average", "total"}:
                 metric = scope.metric or next(
                     (name for name, pattern in _PLAYER_METRICS if pattern.search(tools.topic)),
                     None,
@@ -246,9 +246,9 @@ def prefetch_calls(tools: AnalystTools) -> list[ToolCall]:
         # The inherited aggregation keeps "what about Towns?" on the same average.
         player_aggregation: Literal["average", "total"] | None = (
             "average"
-            if tools.aggregation == "average" or _AVERAGE.search(question)
+            if scope.aggregation == "average" or _AVERAGE.search(question)
             else "total"
-            if tools.aggregation == "total"
+            if scope.aggregation == "total"
             else None
         )
         if len(scope.player_ids) == 1 and player_aggregation is not None:
@@ -275,7 +275,7 @@ def prefetch_calls(tools: AnalystTools) -> list[ToolCall]:
         # "What was the margin?" and "What was the final score?" are not aggregate-shaped
         # for the classifier, but one game's points, margin or score is a team fact.
         aggregation = (
-            "average" if tools.aggregation == "average" or _AVERAGE.search(question) else "total"
+            "average" if scope.aggregation == "average" or _AVERAGE.search(question) else "total"
         )
         return [ToolCall(name="get_team_stats", question=question, aggregation=aggregation)]
     if not classify_query(question).is_aggregative:
@@ -295,7 +295,7 @@ def prefetch_calls(tools: AnalystTools) -> list[ToolCall]:
     # Home/away and two-opponent comparisons need more than one population.
     if windowed and _TEAM_AGGREGATE.search(question) and not _COMPARATIVE.search(question):
         aggregation = (
-            "average" if tools.aggregation == "average" or _AVERAGE.search(question) else "total"
+            "average" if scope.aggregation == "average" or _AVERAGE.search(question) else "total"
         )
         return [ToolCall(name="get_team_stats", question=question, aggregation=aggregation)]
     return []

@@ -20,4 +20,4 @@ async def run(
     games: list[Game],
 ) -> ToolResult:
     assert scope is not None
-    return team(tools, scope, games, call.aggregation)
+    return team(tools, scope, games, scope.aggregation or call.aggregation)

@@ -32,6 +32,7 @@ from app.services.query_policy import (
 )
 from app.services.query_text import (
     METRIC_WORDS,
+    aggregation_of,
     is_explanation,
     is_record_request,
     metric_in_text,
@@ -65,6 +66,7 @@ class ResolvedQuery(BaseModel):
     home_away: Literal["home", "away"] | None = None
     game_result: Literal["W", "L"] | None = None
     metric: str | None = None
+    aggregation: Literal["average", "total"] | None = None
     requires_clarification: bool = False
     clarification_reason: str | None = None
     clarification_options: list[str] = Field(default_factory=list)
@@ -387,6 +389,7 @@ async def resolve_query(
         home_away=home_away,
         game_result=game_result,
         metric=metric,
+        aggregation=aggregation_of(question) or (inherit.aggregation if inherit else None),
         requires_clarification=clarification_reason is not None,
         clarification_reason=clarification_reason,
         clarification_options=clarification_options,

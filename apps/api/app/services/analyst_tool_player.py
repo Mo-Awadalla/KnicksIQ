@@ -20,5 +20,5 @@ async def run(
     games: list[Game],
 ) -> ToolResult:
     assert scope is not None
-    metric = call.metric or scope.metric or "points"
-    return player(tools, scope, games, metric, call.aggregation)
+    metric = scope.metric or call.metric or "points"
+    return player(tools, scope, games, metric, scope.aggregation or call.aggregation)

@@ -92,10 +92,9 @@ class InheritedScope(BaseModel):
     """Everything a follow-up turn keeps from the previous accepted turn.
 
     One structure and one rule: a field the new question names replaces the inherited
-    value; every other field is inherited. ``topic`` is the question that gives the turn
-    its subject and metric when the follow-up itself only moves phase, window, site,
-    opponent or game reference. ``aggregation`` is not part of a resolved scope, so it
-    travels with the topic question instead of being re-derived per key.
+    value; every other field is inherited. ``topic`` supplies the subject and metric when
+    the follow-up only changes its population. Aggregation travels with the resolved
+    scope, so a later turn does not infer it again from the topic wording.
     """
 
     model_config = ConfigDict(extra="forbid")
