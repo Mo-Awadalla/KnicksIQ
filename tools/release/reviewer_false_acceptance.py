@@ -194,7 +194,8 @@ def mutation_row(
     answer, claims, evidence, _candidates = load_models(attempt)
     mutated, payload, spans = mutate(attempt, case)
     issues = gate_issues(mutated, spans, claims, evidence, payload)
-    assert issues == [], f"{case.case_id} failed the gate: {issues}"
+    # The deterministic gate improves over time; a case it now rejects never reaches the
+    # reviewer, so it is recorded as gate_rejected and excluded from the reviewer rate.
     row = {
         "case_id": case.case_id,
         "class": case.class_name,
@@ -242,6 +243,9 @@ async def measure(units: list[tuple[str, str, dict[str, Any], str]], trials: int
         if case.unit_id not in by_record:
             raise SystemExit(f"missing recorded unit {case.unit_id}")
         row, answer, claims, evidence, spans, payload = mutation_row(case, by_record[case.unit_id])
+        if row["gate_issues"]:
+            mutations.append(row)
+            continue
         for trial in range(trials):
             outcome = await run_trial(system, payload, answer, claims, evidence, spans)
             outcome["trial"] = trial
