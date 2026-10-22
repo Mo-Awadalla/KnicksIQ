@@ -1,0 +1,39 @@
+{
+  "analyst_doc": {
+    "answer_mode_assertions": [
+      "llm_primary"
+    ],
+    "links_authoritative_section": true,
+    "tools_named": [
+      "get_player_stats",
+      "get_team_stats",
+      "compare_windows",
+      "discover_facts",
+      "search_archive",
+      "get_evidence",
+      "get_game_flow",
+      "get_team_splits",
+      "get_period_scoring"
+    ]
+  },
+  "mismatches": [],
+  "release_checklist": {
+    "AI_CHAT_MODEL": "deepseek-v4.1-flash",
+    "AI_PROVIDER": "opencode-go",
+    "ANALYSIS_ANSWER_MODE": "llm_primary",
+    "ANALYSIS_SHADOW_SAMPLE_RATE": "0.1",
+    "ANALYST_EVIDENCE_LOOP_ENABLED": "true",
+    "ANALYST_REVIEW_MODEL": "gpt-6-luna",
+    "OPENROUTER_MONTHLY_CUTOFF_USD": "2"
+  },
+  "render_yaml": {
+    "AI_CHAT_MODEL": "deepseek-v4.1-flash",
+    "AI_PROVIDER": "opencode-go",
+    "ANALYSIS_ANSWER_MODE": "llm_primary",
+    "ANALYSIS_SHADOW_SAMPLE_RATE": "0.1",
+    "ANALYST_EVIDENCE_LOOP_ENABLED": "true",
+    "ANALYST_REVIEW_MODEL": "gpt-6-luna",
+    "OPENROUTER_MONTHLY_CUTOFF_USD": "2"
+  },
+  "status": "pass"
+}
