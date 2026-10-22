@@ -5,7 +5,11 @@ because the OpenRouter account behind `OPENROUTER_API_KEY` returns HTTP 402 (usa
 35 USD). Zero live questions were spent; no 402 response was scored or stored. The live harness
 is committed and reruns with one command once credits are restored.
 
-Base: `codex/llm-integration` at `5b585e6` (branch `codex/llm-w3-followups`).
+Base: `codex/llm-integration` at `5b585e6` (branch `codex/llm-w3-followups`). The follow-up
+redesign (`codex/llmp-w3-followfix`, merged on `codex/llm-integration` at `8130eec`) removes
+all 12 reproductions: offline audit 27/27 sessions, 64/64 turns, 64/64 scope clean, cause
+counts empty, audit sha256 `6f4ded92a21a8362e0f9536e2412606f810338339a6370b8de7fafbe7811a532`
+on two identical runs. The base snapshot follows in `## Offline results` and the defect list.
 
 ## Files
 
@@ -106,10 +110,11 @@ The phase-change sessions (1 to 6, `opponent_phase_switch`, `phase_after_player`
 regular-season claim into an all-phase or playoff turn; the observed `carried_claims` arrays are
 empty there, so that earlier fix still holds on `5b585e6`.
 
-## Ranked follow-up defects with minimal reproductions
+## Ranked follow-up defects with minimal reproductions (base `5b585e6`)
 
 Reproduction numbers refer to `followup_scope_repros.py`; all 12 cases print REPRODUCED on
-`5b585e6`.
+`5b585e6`. On `codex/llmp-w3-followfix` all 12 print NOT REPRODUCED and the audit is 27/27
+sessions and 64/64 turns; the list is kept as the failing baseline.
 
 1. Inherited scope omits metric, relative window, date window and game ids. 22 turns resolve a
    different population than the follow-up implies. `analyst_tools.py:142` copies only
@@ -176,15 +181,18 @@ DB_URL=postgresql+asyncpg://knicksiq:knicksiq@localhost:55500/knicksiq \
 DB_URL=postgresql+asyncpg://knicksiq:knicksiq@localhost:55500/knicksiq \
   uv run --package knicksiq-api python tools/release/followup_scope_repros.py
 ```
-Exit 0; `REPRODUCED 12 of 12`. Transcript in `repro.txt`.
+Exit 0 on the base (`REPRODUCED 12 of 12`). On `codex/llmp-w3-followfix` it prints
+`REPRODUCED 0 of 12` and exits 1, because the script exits non-zero unless every case
+reproduces. Transcript in `repro.txt` (fixed run).
 
 ## Backend gate on this branch
 
-`TEST_MODE=true uv run pytest apps packages tools/report_audit -q`: 439 passed in 36.69s.
+After merging `codex/llm-integration` at `8130eec`:
+`TEST_MODE=true uv run pytest apps packages tools/report_audit -q`: 439 passed in 25.51s.
 `uv run ruff check apps packages migrations`: all checks passed.
-`uv run ruff format --check apps packages migrations`: 246 files already formatted.
-`uv run pyright apps packages migrations`: 0 errors, 0 warnings. The four new files also pass
-`ruff check` and `ruff format --check`.
+`uv run ruff format --check apps packages migrations`: 248 files already formatted.
+`uv run pyright apps packages migrations`: 0 errors, 0 warnings. The new
+`query_text.py` and `query_game_scope.py` also pass `ruff check` and `ruff format --check`.
 
 ## Pending live runs (blocked on provider credits)
 
