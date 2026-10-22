@@ -8,6 +8,7 @@ from typing import TYPE_CHECKING, Any
 from app.services.analyst_fallback import (
     decline_text,
     fallback_text,
+    future_requested,
     re_search_live,
     recovery_call,
 )
@@ -23,7 +24,13 @@ def fallback_claims(loop: AnalystLoop) -> list[VerifiedClaim]:
 
 
 async def fallback(loop: AnalystLoop, reason: str) -> dict[str, Any]:
-    if not loop.fallback_claims() and not loop.recovery_ran and loop.remaining() > 0.5:
+    if (
+        not loop.fallback_claims()
+        and not loop.recovery_ran
+        and not future_requested(loop.tools.question)
+        and not future_requested(loop.tools.topic)
+        and loop.remaining() > 0.5
+    ):
         loop.recovery_ran = True
         try:
             async with asyncio.timeout(max(0.001, loop.remaining() - 0.5)):
@@ -47,7 +54,12 @@ def render_fallback(loop: AnalystLoop, reason: str) -> dict[str, Any]:
     # The fallback appends the live statement only for live/current questions, so the
     # flag tracks what the delivered text actually says without parsing its wording.
     return loop.render(
-        answer, llm=False, warning=reason, refused=re_search_live(loop.tools.question)
+        answer,
+        llm=False,
+        warning=reason,
+        refused=re_search_live(loop.tools.question)
+        or future_requested(loop.tools.question)
+        or future_requested(loop.tools.topic),
     )
 
 

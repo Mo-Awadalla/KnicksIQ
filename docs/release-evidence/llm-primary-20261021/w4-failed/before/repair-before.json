@@ -1,0 +1,234 @@
+{
+  "questions": 21,
+  "trials": 1,
+  "outcomes": {
+    "failed:revise:ValidationError": 8,
+    "fallback:review_rejected": 6,
+    "validated": 7
+  },
+  "repair_calls": 16,
+  "repair_validation_failures": 8,
+  "repair_failure_rate": 0.5,
+  "other_validation_failures": [],
+  "rows": [
+    {
+      "trial": 0,
+      "id": "date_range_last_n-005",
+      "outcome": "validated",
+      "latency_ms": 7578,
+      "validation_errors": []
+    },
+    {
+      "trial": 0,
+      "id": "date_range_last_n-008",
+      "outcome": "fallback:review_rejected",
+      "latency_ms": 15363,
+      "validation_errors": []
+    },
+    {
+      "trial": 0,
+      "id": "comparisons-001",
+      "outcome": "failed:revise:ValidationError",
+      "latency_ms": 7945,
+      "validation_errors": [
+        {
+          "stage": "revise",
+          "schema": "ProposedAnswer",
+          "error": "1 validation error for ProposedAnswer\ntype\n  Extra inputs are not permitted [type=extra_forbidden, input_value='json_object', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden",
+          "raw_bytes": 1125,
+          "finish_reason": "stop",
+          "completion_tokens": 403
+        }
+      ]
+    },
+    {
+      "trial": 0,
+      "id": "comparisons-002",
+      "outcome": "validated",
+      "latency_ms": 13455,
+      "validation_errors": []
+    },
+    {
+      "trial": 0,
+      "id": "comparisons-005",
+      "outcome": "failed:revise:ValidationError",
+      "latency_ms": 13536,
+      "validation_errors": [
+        {
+          "stage": "revise",
+          "schema": "ProposedAnswer",
+          "error": "1 validation error for ProposedAnswer\ntype\n  Extra inputs are not permitted [type=extra_forbidden, input_value='json_object', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden",
+          "raw_bytes": 1147,
+          "finish_reason": "stop",
+          "completion_tokens": 394
+        }
+      ]
+    },
+    {
+      "trial": 0,
+      "id": "comparisons-006",
+      "outcome": "failed:revise:ValidationError",
+      "latency_ms": 15756,
+      "validation_errors": [
+        {
+          "stage": "revise",
+          "schema": "ProposedAnswer",
+          "error": "1 validation error for ProposedAnswer\ntype\n  Extra inputs are not permitted [type=extra_forbidden, input_value='json_object', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden",
+          "raw_bytes": 1120,
+          "finish_reason": "stop",
+          "completion_tokens": 396
+        }
+      ]
+    },
+    {
+      "trial": 0,
+      "id": "comparisons-007",
+      "outcome": "fallback:review_rejected",
+      "latency_ms": 16944,
+      "validation_errors": []
+    },
+    {
+      "trial": 0,
+      "id": "comparisons-008",
+      "outcome": "validated",
+      "latency_ms": 10518,
+      "validation_errors": []
+    },
+    {
+      "trial": 0,
+      "id": "comparisons-009",
+      "outcome": "failed:revise:ValidationError",
+      "latency_ms": 6923,
+      "validation_errors": [
+        {
+          "stage": "revise",
+          "schema": "ProposedAnswer",
+          "error": "1 validation error for ProposedAnswer\ntype\n  Extra inputs are not permitted [type=extra_forbidden, input_value='json_object', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden",
+          "raw_bytes": 987,
+          "finish_reason": "stop",
+          "completion_tokens": 336
+        }
+      ]
+    },
+    {
+      "trial": 0,
+      "id": "comparisons-010",
+      "outcome": "fallback:review_rejected",
+      "latency_ms": 12788,
+      "validation_errors": []
+    },
+    {
+      "trial": 0,
+      "id": "single_game_narrative-004",
+      "outcome": "fallback:review_rejected",
+      "latency_ms": 3606,
+      "validation_errors": []
+    },
+    {
+      "trial": 0,
+      "id": "single_game_narrative-006",
+      "outcome": "fallback:review_rejected",
+      "latency_ms": 21963,
+      "validation_errors": []
+    },
+    {
+      "trial": 0,
+      "id": "single_game_narrative-009",
+      "outcome": "validated",
+      "latency_ms": 8634,
+      "validation_errors": []
+    },
+    {
+      "trial": 0,
+      "id": "turning_points-002",
+      "outcome": "failed:revise:ValidationError",
+      "latency_ms": 4582,
+      "validation_errors": [
+        {
+          "stage": "revise",
+          "schema": "ProposedAnswer",
+          "error": "1 validation error for ProposedAnswer\ntype\n  Extra inputs are not permitted [type=extra_forbidden, input_value='json_object', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden",
+          "raw_bytes": 293,
+          "finish_reason": "stop",
+          "completion_tokens": 93
+        }
+      ]
+    },
+    {
+      "trial": 0,
+      "id": "turning_points-003",
+      "outcome": "validated",
+      "latency_ms": 9374,
+      "validation_errors": []
+    },
+    {
+      "trial": 0,
+      "id": "turning_points-007",
+      "outcome": "validated",
+      "latency_ms": 11057,
+      "validation_errors": []
+    },
+    {
+      "trial": 0,
+      "id": "aliases_typos-003",
+      "outcome": "failed:revise:ValidationError",
+      "latency_ms": 14116,
+      "validation_errors": [
+        {
+          "stage": "revise",
+          "schema": "ProposedAnswer",
+          "error": "1 validation error for ProposedAnswer\ntype\n  Extra inputs are not permitted [type=extra_forbidden, input_value='json_object', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden",
+          "raw_bytes": 1475,
+          "finish_reason": "stop",
+          "completion_tokens": 538
+        }
+      ]
+    },
+    {
+      "trial": 0,
+      "id": "unsupported-004",
+      "outcome": "fallback:review_rejected",
+      "latency_ms": 8875,
+      "validation_errors": []
+    },
+    {
+      "trial": 0,
+      "id": "unsupported-006",
+      "outcome": "validated",
+      "latency_ms": 11316,
+      "validation_errors": []
+    },
+    {
+      "trial": 0,
+      "id": "unsupported-008",
+      "outcome": "failed:revise:ValidationError",
+      "latency_ms": 6038,
+      "validation_errors": [
+        {
+          "stage": "revise",
+          "schema": "ProposedAnswer",
+          "error": "1 validation error for ProposedAnswer\nfollow_up_questions\n  List should have at most 2 items after validation, not 3 [type=too_long, input_value=[\"What were Jalen Brunson...ins and losses?\", ']}}'], input_type=list]\n    For further information visit https://errors.pydantic.dev/2.13/v/too_long",
+          "raw_bytes": 419,
+          "finish_reason": "stop",
+          "completion_tokens": 113
+        }
+      ]
+    },
+    {
+      "trial": 0,
+      "id": "unsupported-009",
+      "outcome": "failed:revise:ValidationError",
+      "latency_ms": 5291,
+      "validation_errors": [
+        {
+          "stage": "revise",
+          "schema": "ProposedAnswer",
+          "error": "1 validation error for ProposedAnswer\ntype\n  Extra inputs are not permitted [type=extra_forbidden, input_value='json_object', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden",
+          "raw_bytes": 368,
+          "finish_reason": "stop",
+          "completion_tokens": 100
+        }
+      ]
+    }
+  ]
+}

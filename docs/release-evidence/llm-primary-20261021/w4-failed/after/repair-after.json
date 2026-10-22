@@ -1,0 +1,388 @@
+{
+  "questions": 21,
+  "trials": 2,
+  "outcomes": {
+    "failed:orchestrate:TimeoutError": 1,
+    "fallback:review_rejected": 20,
+    "validated": 16,
+    "validated_declined": 5
+  },
+  "repair_calls": 38,
+  "repair_validation_failures": 5,
+  "repair_failure_rate": 0.1316,
+  "repair_format_echoes": 17,
+  "per_trial": {
+    "1": {
+      "turns": 21,
+      "failed_repair_validation": 0,
+      "repair_calls": 19,
+      "repair_validation_failures": 2,
+      "format_echoes": 10
+    },
+    "2": {
+      "turns": 21,
+      "failed_repair_validation": 0,
+      "repair_calls": 19,
+      "repair_validation_failures": 3,
+      "format_echoes": 7
+    }
+  },
+  "other_validation_failures": [
+    {
+      "question": "Compare the two Knicks games against Boston.",
+      "stage": "orchestrate",
+      "schema": "Action",
+      "error": "1 validation error for Action\n  Invalid JSON: EOF while parsing a value at line 1 column 161 [type=json_invalid, input_value='                        ...                       ', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.13/v/json_invalid"
+    }
+  ],
+  "rows": [
+    {
+      "trial": 0,
+      "id": "date_range_last_n-005",
+      "outcome": "validated",
+      "latency_ms": 9226,
+      "validation_errors": []
+    },
+    {
+      "trial": 0,
+      "id": "date_range_last_n-008",
+      "outcome": "fallback:review_rejected",
+      "latency_ms": 10511,
+      "validation_errors": []
+    },
+    {
+      "trial": 0,
+      "id": "comparisons-001",
+      "outcome": "validated",
+      "latency_ms": 17784,
+      "validation_errors": [
+        {
+          "stage": "revise",
+          "schema": "ProposedAnswer",
+          "error": "1 validation error for ProposedAnswer\ntype\n  Extra inputs are not permitted [type=extra_forbidden, input_value='answer', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden",
+          "raw_bytes": 1191,
+          "finish_reason": "stop",
+          "completion_tokens": 420
+        }
+      ]
+    },
+    {
+      "trial": 0,
+      "id": "comparisons-002",
+      "outcome": "validated",
+      "latency_ms": 11270,
+      "validation_errors": []
+    },
+    {
+      "trial": 0,
+      "id": "comparisons-005",
+      "outcome": "fallback:review_rejected",
+      "latency_ms": 13193,
+      "validation_errors": []
+    },
+    {
+      "trial": 0,
+      "id": "comparisons-006",
+      "outcome": "validated_declined",
+      "latency_ms": 17558,
+      "validation_errors": [
+        {
+          "stage": "revise",
+          "schema": "ProposedAnswer",
+          "error": "1 validation error for ProposedAnswer\ntype\n  Extra inputs are not permitted [type=extra_forbidden, input_value='answer_from_available_evidence', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden",
+          "raw_bytes": 1163,
+          "finish_reason": "stop",
+          "completion_tokens": 406
+        }
+      ]
+    },
+    {
+      "trial": 0,
+      "id": "comparisons-007",
+      "outcome": "fallback:review_rejected",
+      "latency_ms": 9138,
+      "validation_errors": [
+        {
+          "stage": "orchestrate",
+          "schema": "Action",
+          "error": "1 validation error for Action\n  Invalid JSON: EOF while parsing a value at line 1 column 161 [type=json_invalid, input_value='                        ...                       ', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.13/v/json_invalid",
+          "raw_bytes": 161,
+          "finish_reason": "stop",
+          "completion_tokens": 161
+        }
+      ]
+    },
+    {
+      "trial": 0,
+      "id": "comparisons-008",
+      "outcome": "validated",
+      "latency_ms": 8377,
+      "validation_errors": []
+    },
+    {
+      "trial": 0,
+      "id": "comparisons-009",
+      "outcome": "fallback:review_rejected",
+      "latency_ms": 5814,
+      "validation_errors": []
+    },
+    {
+      "trial": 0,
+      "id": "comparisons-010",
+      "outcome": "fallback:review_rejected",
+      "latency_ms": 18333,
+      "validation_errors": []
+    },
+    {
+      "trial": 0,
+      "id": "single_game_narrative-004",
+      "outcome": "validated",
+      "latency_ms": 6549,
+      "validation_errors": []
+    },
+    {
+      "trial": 0,
+      "id": "single_game_narrative-006",
+      "outcome": "fallback:review_rejected",
+      "latency_ms": 16784,
+      "validation_errors": []
+    },
+    {
+      "trial": 0,
+      "id": "single_game_narrative-009",
+      "outcome": "fallback:review_rejected",
+      "latency_ms": 8648,
+      "validation_errors": []
+    },
+    {
+      "trial": 0,
+      "id": "turning_points-002",
+      "outcome": "fallback:review_rejected",
+      "latency_ms": 8856,
+      "validation_errors": []
+    },
+    {
+      "trial": 0,
+      "id": "turning_points-003",
+      "outcome": "validated",
+      "latency_ms": 11380,
+      "validation_errors": []
+    },
+    {
+      "trial": 0,
+      "id": "turning_points-007",
+      "outcome": "validated",
+      "latency_ms": 12036,
+      "validation_errors": []
+    },
+    {
+      "trial": 0,
+      "id": "aliases_typos-003",
+      "outcome": "validated",
+      "latency_ms": 16831,
+      "validation_errors": []
+    },
+    {
+      "trial": 0,
+      "id": "unsupported-004",
+      "outcome": "fallback:review_rejected",
+      "latency_ms": 8997,
+      "validation_errors": []
+    },
+    {
+      "trial": 0,
+      "id": "unsupported-006",
+      "outcome": "fallback:review_rejected",
+      "latency_ms": 12773,
+      "validation_errors": []
+    },
+    {
+      "trial": 0,
+      "id": "unsupported-008",
+      "outcome": "validated_declined",
+      "latency_ms": 12247,
+      "validation_errors": []
+    },
+    {
+      "trial": 0,
+      "id": "unsupported-009",
+      "outcome": "validated",
+      "latency_ms": 6689,
+      "validation_errors": []
+    },
+    {
+      "trial": 1,
+      "id": "date_range_last_n-005",
+      "outcome": "fallback:review_rejected",
+      "latency_ms": 4342,
+      "validation_errors": []
+    },
+    {
+      "trial": 1,
+      "id": "date_range_last_n-008",
+      "outcome": "fallback:review_rejected",
+      "latency_ms": 13314,
+      "validation_errors": []
+    },
+    {
+      "trial": 1,
+      "id": "comparisons-001",
+      "outcome": "fallback:review_rejected",
+      "latency_ms": 5294,
+      "validation_errors": []
+    },
+    {
+      "trial": 1,
+      "id": "comparisons-002",
+      "outcome": "validated",
+      "latency_ms": 12127,
+      "validation_errors": [
+        {
+          "stage": "revise",
+          "schema": "ProposedAnswer",
+          "error": "2 validation errors for ProposedAnswer\ntype\n  Extra inputs are not permitted [type=extra_forbidden, input_value='json_object', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden\ntext\n  Field required [type=missing, input_value={'type': 'json_object'}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.13/v/missing",
+          "raw_bytes": 22,
+          "finish_reason": "stop",
+          "completion_tokens": 6
+        }
+      ]
+    },
+    {
+      "trial": 1,
+      "id": "comparisons-005",
+      "outcome": "validated_declined",
+      "latency_ms": 9991,
+      "validation_errors": []
+    },
+    {
+      "trial": 1,
+      "id": "comparisons-006",
+      "outcome": "fallback:review_rejected",
+      "latency_ms": 9615,
+      "validation_errors": []
+    },
+    {
+      "trial": 1,
+      "id": "comparisons-007",
+      "outcome": "validated",
+      "latency_ms": 14952,
+      "validation_errors": []
+    },
+    {
+      "trial": 1,
+      "id": "comparisons-008",
+      "outcome": "validated",
+      "latency_ms": 10474,
+      "validation_errors": []
+    },
+    {
+      "trial": 1,
+      "id": "comparisons-009",
+      "outcome": "fallback:review_rejected",
+      "latency_ms": 12561,
+      "validation_errors": [
+        {
+          "stage": "revise",
+          "schema": "ProposedAnswer",
+          "error": "2 validation errors for ProposedAnswer\nproposed_answer\n  Extra inputs are not permitted [type=extra_forbidden, input_value={'text': 'In the 2025-26 ...argin for the Knicks?']}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden\ntext\n  Field required [type=missing, input_value={'proposed_answer': {'tex...rgin for the Knicks?']}}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.13/v/missing",
+          "raw_bytes": 1096,
+          "finish_reason": "stop",
+          "completion_tokens": 402
+        }
+      ]
+    },
+    {
+      "trial": 1,
+      "id": "comparisons-010",
+      "outcome": "validated_declined",
+      "latency_ms": 11220,
+      "validation_errors": []
+    },
+    {
+      "trial": 1,
+      "id": "single_game_narrative-004",
+      "outcome": "fallback:review_rejected",
+      "latency_ms": 3592,
+      "validation_errors": []
+    },
+    {
+      "trial": 1,
+      "id": "single_game_narrative-006",
+      "outcome": "failed:orchestrate:TimeoutError",
+      "latency_ms": 7694,
+      "validation_errors": []
+    },
+    {
+      "trial": 1,
+      "id": "single_game_narrative-009",
+      "outcome": "validated",
+      "latency_ms": 9233,
+      "validation_errors": [
+        {
+          "stage": "revise",
+          "schema": "ProposedAnswer",
+          "error": "2 validation errors for ProposedAnswer\nanswer\n  Extra inputs are not permitted [type=extra_forbidden, input_value={'text': \"Which Knicks\u2013...pecific Atlanta game?']}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden\ntext\n  Field required [type=missing, input_value={'answer': {'text': \"Whic...ecific Atlanta game?']}}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.13/v/missing",
+          "raw_bytes": 415,
+          "finish_reason": "stop",
+          "completion_tokens": 104
+        }
+      ]
+    },
+    {
+      "trial": 1,
+      "id": "turning_points-002",
+      "outcome": "fallback:review_rejected",
+      "latency_ms": 5202,
+      "validation_errors": []
+    },
+    {
+      "trial": 1,
+      "id": "turning_points-003",
+      "outcome": "validated",
+      "latency_ms": 11868,
+      "validation_errors": []
+    },
+    {
+      "trial": 1,
+      "id": "turning_points-007",
+      "outcome": "validated",
+      "latency_ms": 8461,
+      "validation_errors": []
+    },
+    {
+      "trial": 1,
+      "id": "aliases_typos-003",
+      "outcome": "validated",
+      "latency_ms": 16433,
+      "validation_errors": []
+    },
+    {
+      "trial": 1,
+      "id": "unsupported-004",
+      "outcome": "fallback:review_rejected",
+      "latency_ms": 5509,
+      "validation_errors": []
+    },
+    {
+      "trial": 1,
+      "id": "unsupported-006",
+      "outcome": "validated_declined",
+      "latency_ms": 6693,
+      "validation_errors": []
+    },
+    {
+      "trial": 1,
+      "id": "unsupported-008",
+      "outcome": "fallback:review_rejected",
+      "latency_ms": 9655,
+      "validation_errors": []
+    },
+    {
+      "trial": 1,
+      "id": "unsupported-009",
+      "outcome": "fallback:review_rejected",
+      "latency_ms": 6376,
+      "validation_errors": []
+    }
+  ]
+}
