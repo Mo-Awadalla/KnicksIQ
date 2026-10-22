@@ -39,7 +39,12 @@ async def execute_call(tools: AnalystTools, call: ToolCall) -> ToolResult:
         )
     # Resolve model suggestions locally, but they may only narrow the user's scope.
     scope = await resolve_query(
-        tools.db, call.question, intent=call.name, data_version=tools.release.version
+        tools.db,
+        call.question,
+        intent=call.name,
+        data_version=tools.release.version,
+        default_season_type=tools.scope.season_type,
+        default_all_phases=tools.scope.all_phases,
     )
     if scope.requires_clarification:
         return ToolResult(
@@ -47,10 +52,17 @@ async def execute_call(tools: AnalystTools, call: ToolCall) -> ToolResult:
             message="Ambiguous entity.",
             choices=scope.clarification_options,
         )
+    # The turn's resolved scope is authoritative: a call may add a subject the turn left
+    # unnamed, but it may not change the phase, window, site or game reference the turn
+    # resolved. Any-phase and all-phase turns are authoritative states too, so a call
+    # phrase that defaults to the regular season cannot leak in.
+    update: dict[str, object] = {
+        "season_type": tools.scope.season_type,
+        "all_phases": tools.scope.all_phases,
+    }
     for key in (
         "player_ids",
         "game_ids",
-        "season_type",
         "opponent_id",
         "home_away",
         "game_result",
@@ -58,17 +70,15 @@ async def execute_call(tools: AnalystTools, call: ToolCall) -> ToolResult:
         "date_end",
         "periods",
         "relative_game_count",
+        "metric",
     ):
         authoritative = getattr(tools.scope, key)
         if authoritative:
-            scope = scope.model_copy(update={key: authoritative})
-    if tools.scope.all_phases:
-        # The call text may name or default to one phase; its game_ids were selected inside
-        # that phase, so only the user's own game_ids (applied above) may survive.
-        update: dict[str, object] = {"season_type": None, "all_phases": True}
-        if scope.season_type is not None and not tools.scope.game_ids:
-            update["game_ids"] = []
-        scope = scope.model_copy(update=update)
+            update[key] = authoritative
+    if not tools.scope.game_ids and scope.season_type != tools.scope.season_type:
+        # The call's game ids were selected inside a phase the user did not ask for.
+        update["game_ids"] = []
+    scope = scope.model_copy(update=update)
     if scope.periods and not spec.supports_periods:
         capable = [name for name in period_tool_names() if name != call.name]
         message = "This calculation does not support period-level scope."

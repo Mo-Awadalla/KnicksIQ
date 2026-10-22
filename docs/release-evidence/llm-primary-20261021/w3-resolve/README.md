@@ -78,6 +78,16 @@ already in the tree.
    population; `last N games` keeps slicing from the end; both work with a month or an
    opponent scope.
 
-## After
+## After (pre-compound-name correction)
 
-Regenerated at the branch head; see the table below and `*-after.json`.
+On the 11edf42 integration merge, before the final compound-name token guard:
+
+| sweep | cases | wrong player | wrong ambiguity | silent ambiguity | wrong date |
+|---|---|---|---|---|---|
+| players | 5394 | 1 | 0 | 0 | - |
+| dates | 27 | - | - | - | 0 |
+
+The remaining player row is `typo_substitute Robinson-Earl`: input `robinson earz`
+resolved to Mitchell Robinson because its exact `Robinson` surname token preempted
+the closer compound-surname typo. This failing row is preserved in
+`players-after.json` before that correction.

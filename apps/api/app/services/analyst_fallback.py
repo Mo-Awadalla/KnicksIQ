@@ -12,7 +12,7 @@ from typing import TYPE_CHECKING
 from app.services.analyst_prefetch import flow_requested, period_requested, split_requested
 from app.services.analyst_tool_registry import recovery_tool
 from app.services.evidence_contracts import ToolCall, ToolResult, VerifiedClaim
-from app.services.query_resolution import is_record_request
+from app.services.query_text import is_record_request
 
 if TYPE_CHECKING:
     from app.services.analyst_loop import AnalystLoop
@@ -22,7 +22,7 @@ _EXTREME = re.compile(
     r"|\bcollapse\b|\bcomeback\b|\bdeficit\b|\bblown\b",
     re.I,
 )
-_RECORD = re.compile(r"\bhow many\b[^?.]*\b(?:wins?|losses?|games?)\b", re.I)
+_RECORD = re.compile(r"\bhow many\s+(?:total\s+)?(?:wins?|losses?|games?)\b", re.I)
 _FLOW_CLAIM_METRICS = frozenset(
     {
         "biggest_run",
@@ -76,6 +76,13 @@ def _family(tools) -> str:
             return "splits"
         if period_requested(text, scope):
             return "periods"
+    if (
+        len(scope.game_ids or []) == 1
+        and not scope.player_ids
+        and re.search(r"^\s*(?:why|explain)\b|\bexplain\b", question, re.I)
+    ):
+        # An explanation of one archived game is answered by that game's result.
+        return "game"
     if re_search_discovery(question):
         return "discovery"
     if _EXTREME.search(question):
@@ -88,7 +95,10 @@ def _family(tools) -> str:
         or re.search(r"\brecord\b", question, re.I)
     ):
         return "record"
-    if scope.opponent_id:
+    if scope.opponent_id and not re.search(
+        r"\b(?:points?|scor(?:e|ed|ing)|margin|total|average|avg|per game)\b", question, re.I
+    ):
+        # A matchup asks wins and losses only when no countable stat was named.
         return "matchup"
     if re.search(r"\bmargin\b", question, re.I):
         return "margin"
@@ -131,15 +141,15 @@ def fallback_claims(loop: AnalystLoop) -> list[VerifiedClaim]:
         # No archived fact answers a live/current-date question.
         return []
     games = tools.selected_games(scope)
-    if family in {"record", "matchup", "extreme"}:
+    if family in {"record", "matchup", "extreme", "game"}:
         games = [g for g in games if g.status == "final" and g.home_score != g.away_score]
     if scope.relative_game_count:
         games = games[-scope.relative_game_count :]
     expected_games = {g.id for g in games}
     wanted = _metric_family(tools.topic)
     results = list(loop.results)
-    if family in {"record", "matchup"} and not scope.player_ids:
-        # Revalidated prior record totals are reusable only for the exact population.
+    if family in {"record", "matchup", "game"} and not scope.player_ids:
+        # Revalidated prior totals are reusable only for the exact population.
         results.append(ToolResult(status="ok", message="", claims=list(tools.claims.values())))
     claims: list[VerifiedClaim] = []
     for result in results:
@@ -188,6 +198,12 @@ def fallback_claims(loop: AnalystLoop) -> list[VerifiedClaim]:
                 relevant = claim.metric_id.startswith("team_splits:")
             elif family == "periods":
                 relevant = claim.metric_id == "period_report"
+            elif family == "game":
+                relevant = (
+                    claim.subject_id == "team:NYK"
+                    and claim.metric_id in {"points", "margin"}
+                    and claim_games == expected_games
+                )
             elif family == "player":
                 subject = {f"player:{pid}" for pid in scope.player_ids}
                 population = {
