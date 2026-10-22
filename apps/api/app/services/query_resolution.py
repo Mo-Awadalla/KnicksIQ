@@ -3,9 +3,7 @@
 from __future__ import annotations
 
 import re
-from collections import defaultdict
 from datetime import date
-from difflib import SequenceMatcher
 from typing import Literal
 
 from app.models.box_score import PlayerGameStat
@@ -13,6 +11,12 @@ from app.models.dataset_release import DatasetRelease
 from app.models.game import Game
 from app.models.game_event import GameEvent
 from app.models.player import Player
+from app.services.query_names import (
+    resolve_player_mentions as _resolve_player_mentions,
+)
+from app.services.query_names import (
+    unique_given_names,
+)
 from app.services.query_policy import SeasonType, is_outcome_subset, resolve_phase
 from app.services.query_text import normalize as _normalize
 from app.services.team_aliases import team_ids_in_text
@@ -20,13 +24,6 @@ from pydantic import BaseModel, ConfigDict, Field
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-_CURATED_PLAYER_ALIASES = {
-    "jb": "Jalen Brunson",
-    "brunson": "Jalen Brunson",
-    "kat": "Karl-Anthony Towns",
-    "karl towns": "Karl-Anthony Towns",
-    "og": "OG Anunoby",
-}
 _MONTHS = {
     "january": 1,
     "february": 2,
@@ -58,27 +55,6 @@ _METRICS = {
     "plus minus": "plus_minus",
     "three": "three_pointers_made",
     "threes": "three_pointers_made",
-}
-_NAME_STOPWORDS = {
-    "against",
-    "average",
-    "before",
-    "compare",
-    "game",
-    "games",
-    "home",
-    "knicks",
-    "last",
-    "losses",
-    "month",
-    "points",
-    "previous",
-    "road",
-    "season",
-    "since",
-    "the",
-    "this",
-    "wins",
 }
 
 
@@ -143,120 +119,6 @@ def is_record_request(question: str) -> bool:
         re.search(r"\brecord\b", q)
         or (re.search(r"\bwins?\b", q) and re.search(r"\bloss(?:es)?\b", q))
     )
-
-
-def _player_aliases(player: Player) -> set[str]:
-    normalized = _normalize(player.full_name)
-    parts = normalized.split()
-    aliases = {normalized, parts[-1]}
-    if len(parts) > 1:
-        aliases.add(f"{parts[0][0]} {parts[-1]}")
-    aliases.update(
-        alias for alias, target in _CURATED_PLAYER_ALIASES.items() if target == player.full_name
-    )
-    return aliases
-
-
-def _name_candidates(question: str) -> list[str]:
-    candidates: list[str] = []
-    for raw in re.findall(r"\b[A-Za-z][A-Za-z'-]{2,}(?:\s+[A-Za-z][A-Za-z'-]{2,})?\b", question):
-        normalized = _normalize(raw)
-        words = normalized.split()
-        if words and not all(word in _NAME_STOPWORDS for word in words):
-            candidates.append(normalized)
-            if len(words) == 2:
-                candidates.extend(word for word in words if word not in _NAME_STOPWORDS)
-    return list(dict.fromkeys(candidates))
-
-
-def _typo_alias_allowed(candidate: str, alias: str) -> bool:
-    """A misspelling corrupts a name; it is not a truncation or an inflection of one.
-
-    Without this, the common word "well" becomes "Wells" and "mikal" becomes a
-    prefix of "Mikal Bridges"; both were observed as wrong subjects.
-    """
-    candidate_key = candidate.replace(" ", "")
-    alias_key = alias.replace(" ", "")
-    if len(candidate_key) < 4 or not alias_key or candidate[0] != alias[0]:
-        return False
-    if alias.startswith(candidate):
-        return False
-    if len(alias.split()) == 2 and len(alias.split()[0]) == 1:
-        return False
-    return abs(len(candidate_key) - len(alias_key)) <= 2
-
-
-def _resolve_player_mentions(
-    question: str,
-    players: list[Player],
-    *,
-    typo_threshold: float,
-    allow_fuzzy: bool = True,
-) -> tuple[list[int], list[str]]:
-    normalized_question = f" {_normalize(question)} "
-    aliases: dict[str, list[Player]] = defaultdict(list)
-    for player in players:
-        for alias in _player_aliases(player):
-            aliases[alias].append(player)
-
-    resolved: dict[int, Player] = {}
-    ambiguous: dict[int, Player] = {}
-    remaining = normalized_question
-    # Full names and curated aliases are authoritative and consume their spans
-    # before ambiguous surname matching.
-    for player in sorted(players, key=lambda item: -len(_normalize(item.full_name))):
-        full_name = _normalize(player.full_name)
-        if re.search(rf"\b{re.escape(full_name)}\b", remaining):
-            resolved[player.id] = player
-            remaining = re.sub(rf"\b{re.escape(full_name)}\b", " ", remaining)
-    for alias, target in sorted(
-        _CURATED_PLAYER_ALIASES.items(),
-        key=lambda item: -len(item[0]),
-    ):
-        if re.search(rf"\b{re.escape(alias)}\b", remaining):
-            matches = [player for player in players if player.full_name == target]
-            resolved.update({player.id: player for player in matches})
-            remaining = re.sub(rf"\b{re.escape(alias)}\b", " ", remaining)
-
-    for alias in sorted(aliases, key=len, reverse=True):
-        if alias in _CURATED_PLAYER_ALIASES:
-            continue
-        if re.search(rf"\b{re.escape(alias)}\b", remaining):
-            curated_target = _CURATED_PLAYER_ALIASES.get(alias)
-            matches = (
-                [player for player in aliases[alias] if player.full_name == curated_target]
-                if curated_target
-                else aliases[alias]
-            )
-            knicks_matches = [player for player in matches if player.team_id == "NYK"]
-            if len(matches) > 1 and len(knicks_matches) == 1:
-                matches = knicks_matches
-            if len(matches) == 1:
-                resolved[matches[0].id] = matches[0]
-            else:
-                ambiguous.update({player.id: player for player in matches})
-            remaining = re.sub(rf"\b{re.escape(alias)}\b", " ", remaining)
-
-    if allow_fuzzy and not resolved and not ambiguous:
-        for candidate in _name_candidates(question):
-            scores: list[tuple[float, Player]] = []
-            for player in players:
-                best = 0.0
-                for alias in _player_aliases(player):
-                    if _typo_alias_allowed(candidate, alias):
-                        best = max(best, SequenceMatcher(None, candidate, alias).ratio())
-                scores.append((best, player))
-            scores.sort(key=lambda item: (-item[0], item[1].id))
-            if not scores or scores[0][0] < typo_threshold:
-                continue
-            best_score = scores[0][0]
-            close = [player for score, player in scores if best_score - score < 0.06]
-            if len(close) == 1:
-                resolved[close[0].id] = close[0]
-            else:
-                ambiguous.update({player.id: player for player in close})
-            break
-    return sorted(resolved), sorted(player.full_name for player in ambiguous.values())
 
 
 def _periods(question: str) -> list[int]:
@@ -334,6 +196,7 @@ async def resolve_query(
         question,
         players,
         typo_threshold=typo_threshold,
+        unique_givens=unique_given_names(players),
     )
 
     q = _normalize(question)
