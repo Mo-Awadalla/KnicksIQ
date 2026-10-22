@@ -39,9 +39,11 @@ def re_search_live(question: str) -> bool:
 
 def _family(tools) -> str:
     """What kind of answer this question needs, or "" when the archive cannot answer it."""
-    question = tools.question
+    # "And in the playoffs?" asks the previous topic in a new scope; the scope is already
+    # resolved, so the topic decides what kind of fact answers it.
+    question = tools.topic
     scope = tools.scope
-    if re_search_live(question):
+    if re_search_live(tools.question) or re_search_live(question):
         return "live"
     if re_search_discovery(question):
         return "discovery"
@@ -100,7 +102,7 @@ def fallback_claims(loop: AnalystLoop) -> list[VerifiedClaim]:
     if scope.relative_game_count:
         games = games[-scope.relative_game_count :]
     expected_games = {g.id for g in games}
-    wanted = _metric_family(tools.question)
+    wanted = _metric_family(tools.topic)
     results = list(loop.results)
     if family in {"record", "matchup"} and not scope.player_ids:
         # Revalidated prior record totals are reusable only for the exact population.
