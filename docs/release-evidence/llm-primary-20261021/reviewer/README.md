@@ -176,3 +176,8 @@ $0.057 for the rate run plus the mutation run; the provider ledger is db 11.
 - The no-reasoning diagnostic is retained as evidence of an environment defect; a
   smoke harness that omits `AI_REASONING_EFFORT=none` will look like a reviewer
   failure.
+
+Correction, 2026-10-22: `analyst_review_replay.call_reviewer` defaulted to 1,200 output tokens
+while the deployed reviewer uses `analyst_review_max_tokens` (3,000). The replay rates above
+(false rejects 5/42 to 0/42) were therefore measured on a reviewer capped at 1,200 tokens.
+The default now follows the production setting (`80a6d1b`); rerun the replay to restate them.
