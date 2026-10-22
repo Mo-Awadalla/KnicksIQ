@@ -1,0 +1,12 @@
+{
+  "frozen_sha": "51f184a23645f1d43f930a520a1cc053397a315b",
+  "branch": "codex/llmp-w4-heldout-final",
+  "main_run_commit": "b91982d8b638107deaf80df564aa467aef399371",
+  "followup_run_commit": "10b3636ab7f90f82d28c2fce9da94e7a27d7085e",
+  "files": {
+    "main.responses.jsonl": "fe17f2f000140b817802726c501a5d068ed08236c2b030225c310c42826a4994",
+    "main.scored.jsonl": "d791592c273513ded267b6b2cea4f6f1749f064c7c08bbcda99af6f0747ce07c",
+    "audit-main/rows.jsonl": "5a46205a269ee53aa519a454da78860543772ba1ddd9f52c183066ca255fe407"
+  },
+  "note": "The JSONL streams remain parseable; file-level frozen SHA and content digests are in sidecars. Other JSON and Markdown report artifacts include frozen_sha directly."
+}
