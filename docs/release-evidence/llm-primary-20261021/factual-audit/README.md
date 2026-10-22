@@ -30,13 +30,33 @@ and one detail record per atom with its claimed value, expected value, fact and
 SQL. Wrong values are listed with SQL in `summary.md`; the machine-readable
 ledger is `rows.jsonl`.
 
+Binding rules added for the wave-4 answers (all exercised by
+`flag-verdicts.md`):
+
+- Sentences are split on sentence-ending punctuation only, so `26.0` and
+  `113.67` no longer cut the phase label off the sentence.
+- An atom's scope comes from its clause prefix; a phase named later in the same
+  sentence fills a prefix that names none; two phase clauses ("regular season
+  2-1; playoffs 4-2") take the later clause; "regular season and playoffs" means
+  both phases.
+- A bare `home,`/`road,` label is a location; the nearest team mention to the
+  atom wins over an earlier one.
+- "After the All-Star break" is a window derived from the longest gap in the
+  regular-season calendar (2026-02-19 here).
+- `plus-9.1` and `minus-2.9` keep the sign of the word, not the hyphen.
+- A run's team comes from its start/end score snapshots, not the nearest prose.
+- A date range that restates the requested window is a scope descriptor, not a
+  claim that games were played on both endpoints.
+
 ## Result
 
 | Set | Responses | Found | Verified | Wrong | Unverified | Checked coverage |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
 | 16,000 trial 1 | 70 | 523 | 515 | 8 | 0 | 100% |
-| 16,000 trial 2 | 70 | 465 | 413 | 9 | 43 | 90.8% |
-| correctness acceptance | 36 | 124 | 108 | 0 | 16 | 87.1% |
+| 16,000 trial 2 | 70 | 465 | 424 | 9 | 32 | 93.1% |
+| correctness acceptance | 36 | 124 | 124 | 0 | 0 | 100% |
+| w4-bench trial 1 | 70 | 597 | 384 | 0 | 213 | 64.3% |
+| w4-bench trial 2 | 70 | 644 | 477 | 0 | 167 | 74.1% |
 
 Checked coverage counts verified plus wrong over found. Unverified atoms are
 listed per response in each `summary.md`.
@@ -60,18 +80,22 @@ claims and never the 10-6 or 53-29 record it reproduced.
 
 Nine wrong atoms. The eight date-range wrongs are the same two fallback
 responses as trial 1. The ninth is `comparisons-002`: it calls 39 Towns' maximum
-single-game output, but the archive maximum is 40. Forty-three atoms are
+single-game output, but the archive maximum is 40. Thirty-two atoms are
 unverified because trial 2 phrases several player lines and score lists in
-forms this audit does not bind (`single_game_narrative-003`,
-`turning_points-001`, and `aliases_typos-002` are the largest groups). They are
-reported as unverified, not as passes.
+forms this audit does not bind (`single_game_narrative-003` is the largest
+group). They are reported as unverified, not as passes. Eleven atoms that were
+unverified before now bind: `exact_statistics-005` (10 home losses),
+`exact_statistics-007` (29 losses), `date_range_last_n-004` (15 games),
+`comparisons-001` (30-10 and 23-19), and three Q4 score/clock pairs in
+`single_game_narrative-003`.
 
 ### Correctness acceptance
 
-Zero wrong numbers. Sixteen atoms are unverified: fallback answers for
-`exact_statistics-008/009` that name an extreme without a recognizable subject
-form, and player lines whose answer omits the opponent or the per-game subject
-needed to choose one SQL scope. They are not counted as passes.
+Zero wrong numbers and zero unverified atoms. The sixteen atoms that were
+unverified now bind: the `exact_statistics-008/009` extremes (54 and 120-66;
+38 and 80-118), the 9-game Atlanta total, both phase records for
+`aliases_typos-006`, Brunson's 47-point game, and Towns' 17.4 points per
+appearance against Toronto.
 
 ## Diff against the old audit
 
@@ -83,6 +107,17 @@ wrong fallback responses above. Old `CORRECT` and decline verdicts that this
 audit downgrades to `INCORRECT` or `UNVERIFIED` are labelled
 `old pass downgraded`.
 
+## w4-bench trials
+
+The 2026-10-21 live benchmark's 140 answers produced 597 and 644 atoms. The
+first audit run marked 21 and 15 wrong and bound only 57% and 69%. Every one of
+those 36 atoms recomputes from the raw tables under the scope its sentence
+states; `flag-verdicts.md` records the per-flag verdict, SQL and mis-binding,
+and proves the three disputed start clocks from `game_events`. Both trials now
+have zero wrong numbers; 213 and 167 atoms are still unverified (fallback
+period dumps and per-game lists this audit does not bind) and are not counted as
+passes.
+
 ## Rerun
 
 ```sh
@@ -90,16 +125,17 @@ audit downgrades to `INCORRECT` or `UNVERIFIED` are labelled
 ```
 
 `run.sh` rebuilds old-audit verdicts from commit `5b585e6` in a temporary
-directory, reruns all three response sets, and rewrites `trial1/`, `trial2/`
-and `acceptance/`. It needs the local restore container
-`kiq-integrate-postgres-1`; override with `KIQ_PSQL` if the container name
-differs.
+directory, reruns all five response sets, and rewrites `trial1/`, `trial2/`,
+`acceptance/`, `w4-trial1/` and `w4-trial2/`. It needs the local restore
+container `kiq-integrate-postgres-1`; override with `KIQ_PSQL` if the container
+name differs.
 
 ## Limitations
 
 - The audit binds a number only when its sentence states enough subject, phase,
-  window and type to choose one SQL scope. Trial 2 and the acceptance fallback
-  rows show where that fails; those atoms stay unverified.
+  window and type to choose one SQL scope. The w4-bench fallback period dumps
+  (`single_game_narrative-003/005`, `aliases_typos-007`) show where that fails;
+  those atoms stay unverified.
 - `comparisons-002` is flagged wrong on a semantic maximum claim (39 against the
   actual maximum 40). The value 39 exists as a Towns game, but the sentence
   calls it the maximum.

@@ -74,3 +74,33 @@ The replacement audit extracts every numeric atom from each answer, assigns a
 subject, phase, window, location, opponent and type from the sentence, recomputes
 the expected value from raw tables with its own SQL, and records one of
 `verified`, `wrong` or `unverified` per atom. Unverified is never a pass.
+
+## Wave 4 addendum: binding failure modes found on the w4-bench answers
+
+The 36 atoms the audit first called wrong there were all binding artifacts. Each
+mode below is now covered by a regression in `flag-verdicts.md`.
+
+21. **Phase after the number.** "The Knicks scored 9,549 points across 82
+    archived regular-season games" was parsed from the prefix only, so the phase
+    that follows the number was lost and the whole 101-game archive was used.
+22. **Decimal point ends the sentence.** `26.0` and `113.67` split the sentence,
+    so the rest of it, including "in the 2025-26 regular season", was never
+    read for the scope.
+23. **Coordinated phase phrase.** "Regular season and playoffs, 9 of 9 games"
+    was bound to the later label (playoffs) instead of both phases.
+24. **Bare location label.** "Knicks home, regular season:" did not count as a
+    home marker, so the question's "on the road" leaked into the home clause.
+25. **Signed margin as a word.** "plus-9.1" and "plus-2.9" were tokenised as
+    negative numbers because the hyphen followed "plus".
+26. **Run team from nearby prose.** An 8-0 or 7-0 run was attributed to the
+    opponent named earlier in the paragraph; the start/end score snapshots, not
+    the prose, identify the scoring team.
+27. **Date leaks across sentences.** A sentence naming two games left its last
+    date as the scope for "in those games", so a correct Q4 snapshot was checked
+    against the other game.
+28. **Date range treated as a game date.** "Jan 1-31" restates the window the
+    question asked for; comparing it to the first and last game date marks a
+    correct window wrong.
+29. **All-Star-break window not modeled.** "After the All-Star break" fell back
+    to the full season. The boundary is derived from the longest gap in the
+    regular-season calendar in the archive (2026-02-19 here).
