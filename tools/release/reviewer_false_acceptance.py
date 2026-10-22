@@ -42,6 +42,7 @@ from analyst_review_replay import head_review_once, load_models, load_units
 from app.core.config import get_settings
 from app.services.analyst_provider import reviewer_system_prompt
 from app.services.analyst_review_checks import review_issues
+from app.services.answer_evidence import select_answer_evidence
 from app.services.evidence_contracts import split_review_spans
 from reviewer_false_acceptance_cases import CASES, CLASSES, Case
 from reviewer_false_acceptance_report import (
@@ -96,11 +97,15 @@ def gate_issues(
     evidence: dict[str, Any],
     payload: dict[str, Any],
 ) -> list[str]:
+    try:
+        selected = select_answer_evidence(answer, claims, evidence, evidence)
+    except ValueError as exc:
+        return [str(exc)]
     return review_issues(
         answer,
         spans,
-        claims,
-        evidence,
+        selected.claims,
+        selected.evidence,
         payload.get("capabilities"),
         payload.get("requested_question", ""),
     )

@@ -17,8 +17,8 @@ from app.services.evidence_contracts import (
     ToolCall,
     split_review_spans,
 )
-from app.tests.support.analyst_protocol import make_tools
 from app.tests.support.analyst_protocol import local_redis as local_redis
+from app.tests.support.analyst_protocol import make_tools
 from app.tests.support.player_archive import _seed_release_stats
 
 

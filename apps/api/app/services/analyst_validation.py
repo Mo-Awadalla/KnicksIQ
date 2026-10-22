@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING
 
 from app.services.analyst_provider import encoded
 from app.services.analyst_review_checks import review_issues
+from app.services.answer_evidence import select_answer_evidence
 from app.services.evidence_contracts import (
     AnswerReview,
     ProposedAnswer,
@@ -42,18 +43,17 @@ async def validate_answer(
             "the claim's `value` field exactly, not the whole claim object."
         )
     spans = split_review_spans(answer.text)
-    # A reviewer sees each claim's supporting_evidence_ids, so those backend-issued
-    # receipts are legitimate citations even when the payload omitted their details.
-    reviewable = dict(loop.sent_evidence)
-    for claim in loop.sent_claims.values():
-        for ref in claim.supporting_evidence_ids:
-            if ref in loop.tools.evidence:
-                reviewable.setdefault(ref, loop.tools.evidence[ref])
+    try:
+        selected = select_answer_evidence(
+            answer, loop.sent_claims, loop.sent_evidence, loop.tools.evidence
+        )
+    except ValueError as exc:
+        return False, str(exc)
     issues = review_issues(
         answer,
         spans,
-        loop.sent_claims,
-        reviewable,
+        selected.claims,
+        selected.evidence,
         loop.tools.manifest(),
         loop.tools.question,
     )
@@ -64,7 +64,7 @@ async def validate_answer(
     if review is None:
         return False, "Reviewer failed or returned malformed output."
     empty, attachable = citation_gaps(loop, review, answer, spans)
-    accepted = validate_review(review, answer, loop.sent_claims, reviewable, spans=spans)
+    accepted = validate_review(review, answer, selected.claims, selected.evidence, spans=spans)
     metadata = loop.trace[-1] if loop.trace else {}
     # The API returns this trace, so the next live occurrence carries the provider and
     # the citation shape that the 15/21 run did not record.
@@ -121,7 +121,9 @@ async def validate_answer(
             },
         )
         return False, encoded(review.model_dump())
-    loop.accepted_suggestions = accepted_follow_ups(review, answer, loop.sent_claims, reviewable)
+    loop.accepted_suggestions = accepted_follow_ups(
+        review, answer, selected.claims, selected.evidence
+    )
     return True, ""
 
 
