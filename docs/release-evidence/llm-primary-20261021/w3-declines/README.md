@@ -33,8 +33,8 @@ for home/road, opponent, first-N and All-Star-break questions, or called
 
 `reproduce_declines.py` exercises the real local release `2025-26.20260928.1` (101
 games) through `AnalystTools`, `prefetch_calls`, `fallback_claims` and
-`render_fallback`. It writes `repro-base.json` (before: 11 of 71 checks pass) and
-`repro-head.json` (after: 71 of 71). Checks cover routing, exact claim values, fallback
+`render_fallback`. It writes `repro-base.json` (before: 11 of 73 checks pass) and
+`repro-head.json` (after: 73 of 73). Checks cover routing, exact claim values, fallback
 text, unchanged single-population routes, the metric gate, and the prompt contract.
 
 Head behavior on the 19 addressable questions:

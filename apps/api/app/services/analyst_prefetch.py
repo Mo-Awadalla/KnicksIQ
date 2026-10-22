@@ -15,16 +15,16 @@ if TYPE_CHECKING:
 # Questions whose answer depends on live, future or non-archive state are refused by the
 # model; prefetching archive evidence would only add a call and could invite an answer.
 _LIVE = re.compile(
-    r"\b(will|would|tonight|today|tomorrow|live|injur\w*|trade[sd]?|next game|upcoming|"
-    r"future|currently|right now|20[3-9]\d)\b",
+    r"\b(will|would|tonight|today|tomorrow|yesterday|current|live|injur\w*|trade[sd]?|"
+    r"next game|upcoming|future|currently|right now|20[3-9]\d)\b",
     re.I,
 )
 # "What happened" questions are narrative by default, but a period, flow or split shape
 # can still name a tool the backend can choose deterministically. Those routes run before
 # this skip; every other "what happened" question stays with the model.
 _SKIP = re.compile(
-    r"\b(will|would|tonight|today|tomorrow|live|injur\w*|trade[sd]?|next game|upcoming|"
-    r"future|currently|right now|what happened|20[3-9]\d)\b",
+    r"\b(will|would|tonight|today|tomorrow|yesterday|current|live|injur\w*|trade[sd]?|"
+    r"next game|upcoming|future|currently|right now|what happened|20[3-9]\d)\b",
     re.I,
 )
 _TEAM_AGGREGATE = re.compile(
