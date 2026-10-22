@@ -158,3 +158,6 @@ docs/release-evidence/llm-primary-20261021/heldout-final/**/*.json linguist-gene
 # Full factual-audit summary and diff are generated from the recorded response rows.
 docs/release-evidence/llm-primary-20261021/heldout-final/audit-main/summary.md linguist-generated=true
 docs/release-evidence/llm-primary-20261021/heldout-final/audit-main/diff.md linguist-generated=true
+
+# Generated benchmark and audit output.
+docs/release-evidence/llm-primary-20261021/w4-gamefollow/*.json linguist-generated=true

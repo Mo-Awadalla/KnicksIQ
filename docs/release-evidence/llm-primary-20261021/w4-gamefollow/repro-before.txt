@@ -1,0 +1,132 @@
+session                                  turn 2 question                                game  want  scope
+margin_hawks_jan2                        What was the margin?                             82     1  LOST
+    topic frame: turn1=games=1 ids=1 date=2026-01-02..2026-01-02 opp=ATL phase=None metric=points
+    turn2: followup=False topic='What was the margin?' games=82 ids=0 date=None..None opp=None phase=regular metric=margin
+    - season_type=regular want None
+    - opponent_id=None want ATL
+    - date_start=None want 2026-01-02
+    - date_end=None want 2026-01-02
+    - game_count=82 want 1
+    - game_ids differ (got [], want [34])
+margin_celtics_feb8                      How big was the final margin?                    82     1  LOST
+    topic frame: turn1=games=1 ids=1 date=2026-02-08..2026-02-08 opp=BOS phase=None metric=points
+    turn2: followup=False topic='How big was the final margin?' games=82 ids=0 date=None..None opp=None phase=regular metric=margin
+    - season_type=regular want None
+    - opponent_id=None want BOS
+    - date_start=None want 2026-02-08
+    - date_end=None want 2026-02-08
+    - game_count=82 want 1
+    - game_ids differ (got [], want [53])
+margin_heat_dec21                        What was the margin of victory?                  82     1  LOST
+    topic frame: turn1=games=1 ids=1 date=2025-12-21..2025-12-21 opp=MIA phase=None metric=points
+    turn2: followup=False topic='What was the margin of victory?' games=82 ids=0 date=None..None opp=None phase=regular metric=margin
+    - season_type=regular want None
+    - opponent_id=None want MIA
+    - date_start=None want 2025-12-21
+    - date_end=None want 2025-12-21
+    - game_count=82 want 1
+    - game_ids differ (got [], want [28])
+team_nets_jan21                          How many points did they put up?                 82     1  LOST
+    topic frame: turn1=games=1 ids=1 date=2026-01-21..2026-01-21 opp=BKN phase=None metric=points
+    turn2: followup=False topic='How many points did they put up?' games=82 ids=0 date=None..None opp=None phase=regular metric=points
+    - season_type=regular want None
+    - opponent_id=None want BKN
+    - date_start=None want 2026-01-21
+    - date_end=None want 2026-01-21
+    - game_count=82 want 1
+    - game_ids differ (got [], want [44])
+team_bulls_apr3                          What was the final score?                        82     1  LOST
+    topic frame: turn1=games=1 ids=1 date=2026-04-03..2026-04-03 opp=CHI phase=None metric=points
+    turn2: followup=False topic='What was the final score?' games=82 ids=0 date=None..None opp=None phase=regular metric=None
+    - season_type=regular want None
+    - opponent_id=None want CHI
+    - metric=None want points
+    - date_start=None want 2026-04-03
+    - date_end=None want 2026-04-03
+    - game_count=82 want 1
+    - game_ids differ (got [], want [78])
+team_raptors_jan28                       What was their final point total?                82     1  LOST
+    topic frame: turn1=games=1 ids=1 date=2026-01-28..2026-01-28 opp=TOR phase=None metric=points
+    turn2: followup=False topic='What was their final point total?' games=82 ids=0 date=None..None opp=None phase=regular metric=points
+    - season_type=regular want None
+    - opponent_id=None want TOR
+    - date_start=None want 2026-01-28
+    - date_end=None want 2026-01-28
+    - game_count=82 want 1
+    - game_ids differ (got [], want [47])
+quarter_hawks_jan2_q3                    What was the third-quarter score?                82     1  LOST
+    topic frame: turn1=games=1 ids=1 date=2026-01-02..2026-01-02 opp=ATL phase=None metric=points
+    turn2: followup=False topic='What was the third-quarter score?' games=82 ids=0 date=None..None opp=None phase=regular metric=None
+    - season_type=regular want None
+    - opponent_id=None want ATL
+    - metric=None want points
+    - date_start=None want 2026-01-02
+    - date_end=None want 2026-01-02
+    - game_count=82 want 1
+    - game_ids differ (got [], want [34])
+quarter_raptors_jan28_half               What was the halftime score?                     82     1  LOST
+    topic frame: turn1=games=1 ids=1 date=2026-01-28..2026-01-28 opp=TOR phase=None metric=points
+    turn2: followup=False topic='What was the halftime score?' games=82 ids=0 date=None..None opp=None phase=regular metric=None
+    - season_type=regular want None
+    - opponent_id=None want TOR
+    - metric=None want points
+    - date_start=None want 2026-01-28
+    - date_end=None want 2026-01-28
+    - game_count=82 want 1
+    - game_ids differ (got [], want [47])
+quarter_bulls_apr3_q4                    How many points did they score in the fourth     82     1  LOST
+    topic frame: turn1=games=1 ids=1 date=2026-04-03..2026-04-03 opp=CHI phase=None metric=points
+    turn2: followup=False topic='How many points did they score in the fourth quarter?' games=82 ids=0 date=None..None opp=None phase=regular metric=points
+    - season_type=regular want None
+    - opponent_id=None want CHI
+    - date_start=None want 2026-04-03
+    - date_end=None want 2026-04-03
+    - game_count=82 want 1
+    - game_ids differ (got [], want [78])
+player_heat_dec21_brunson_points         How many points did Brunson score?               82     1  LOST
+    topic frame: turn1=games=1 ids=1 date=2025-12-21..2025-12-21 opp=MIA phase=None metric=points
+    turn2: followup=False topic='How many points did Brunson score?' games=82 ids=0 date=None..None opp=None phase=regular metric=points
+    - season_type=regular want None
+    - opponent_id=None want MIA
+    - date_start=None want 2025-12-21
+    - date_end=None want 2025-12-21
+    - game_count=82 want 1
+    - game_ids differ (got [], want [28])
+player_spurs_dec31_brunson_assists       How many assists did Brunson have?               82     1  LOST
+    topic frame: turn1=games=1 ids=1 date=2025-12-31..2025-12-31 opp=SAS phase=None metric=points
+    turn2: followup=False topic='How many assists did Brunson have?' games=82 ids=0 date=None..None opp=None phase=regular metric=assists
+    - season_type=regular want None
+    - opponent_id=None want SAS
+    - date_start=None want 2025-12-31
+    - date_end=None want 2025-12-31
+    - game_count=82 want 1
+    - game_ids differ (got [], want [33])
+player_sixers_jan24_towns_rebounds       How many rebounds did Towns grab?                82     1  LOST
+    topic frame: turn1=games=1 ids=1 date=2026-01-24..2026-01-24 opp=PHI phase=None metric=points
+    turn2: followup=False topic='How many rebounds did Towns grab?' games=82 ids=0 date=None..None opp=None phase=regular metric=rebounds
+    - season_type=regular want None
+    - opponent_id=None want PHI
+    - date_start=None want 2026-01-24
+    - date_end=None want 2026-01-24
+    - game_count=82 want 1
+    - game_ids differ (got [], want [45])
+that_game_hawks_jan2_brunson             How many points did Brunson score in that ga      1     1  ok
+    topic frame: turn1=games=1 ids=1 date=2026-01-02..2026-01-02 opp=ATL phase=None metric=points
+    turn2: followup=True topic='How many points did Brunson score in that game?' games=1 ids=1 date=2026-01-02..2026-01-02 opp=ATL phase=None metric=points
+that_game_last_margin                    What was the margin in that game?                 1     1  ok
+    topic frame: turn1=games=1 ids=1 date=None..None opp=None phase=None metric=points
+    turn2: followup=True topic='What was the margin in that game?' games=1 ids=1 date=2026-06-13..2026-06-13 opp=None phase=None metric=margin
+season_widen_jan2                        And for the season?                               1    82  LOST
+    topic frame: turn1=games=1 ids=1 date=2026-01-02..2026-01-02 opp=None phase=None metric=points
+    turn2: followup=True topic='How many points did the Knicks score in the game on January ' games=1 ids=1 date=2026-01-02..2026-01-02 opp=None phase=None metric=points
+    - season_type=None want regular
+    - date_start=2026-01-02 want None
+    - date_end=2026-01-02 want None
+    - game_count=1 want 82
+probe_game_id_window                     What was the margin?                             82     1  LOST
+    turn1: games=1 ids=1 date=None..None opp=ATL phase=None metric=None ids=[88]
+    turn2: ids=[]
+probe_degraded_turn                      What was the margin?                             82     1  LOST
+    degraded declined=True last=games=? ids=0 date=None..None opp=None phase=regular metric=None
+WINDOW LOST 15 of 17 checks
+DISPATCH WIDENED 0 of 15 sessions

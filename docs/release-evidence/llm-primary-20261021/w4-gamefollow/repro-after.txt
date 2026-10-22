@@ -1,0 +1,53 @@
+session                                  turn 2 question                                game  want  scope
+margin_hawks_jan2                        What was the margin?                              1     1  ok
+    topic frame: turn1=games=1 ids=1 date=2026-01-02..2026-01-02 opp=ATL phase=None metric=points
+    turn2: followup=True topic='What was the margin?' games=1 ids=1 date=2026-01-02..2026-01-02 opp=ATL phase=None metric=margin
+margin_celtics_feb8                      How big was the final margin?                     1     1  ok
+    topic frame: turn1=games=1 ids=1 date=2026-02-08..2026-02-08 opp=BOS phase=None metric=points
+    turn2: followup=True topic='How big was the final margin?' games=1 ids=1 date=2026-02-08..2026-02-08 opp=BOS phase=None metric=margin
+margin_heat_dec21                        What was the margin of victory?                   1     1  ok
+    topic frame: turn1=games=1 ids=1 date=2025-12-21..2025-12-21 opp=MIA phase=None metric=points
+    turn2: followup=True topic='What was the margin of victory?' games=1 ids=1 date=2025-12-21..2025-12-21 opp=MIA phase=None metric=margin
+team_nets_jan21                          How many points did they put up?                  1     1  ok
+    topic frame: turn1=games=1 ids=1 date=2026-01-21..2026-01-21 opp=BKN phase=None metric=points
+    turn2: followup=True topic='How many points did they put up?' games=1 ids=1 date=2026-01-21..2026-01-21 opp=BKN phase=None metric=points
+team_bulls_apr3                          What was the final score?                         1     1  ok
+    topic frame: turn1=games=1 ids=1 date=2026-04-03..2026-04-03 opp=CHI phase=None metric=points
+    turn2: followup=True topic='How many points did the Knicks score versus the Bulls on Apr' games=1 ids=1 date=2026-04-03..2026-04-03 opp=CHI phase=None metric=points
+team_raptors_jan28                       What was their final point total?                 1     1  ok
+    topic frame: turn1=games=1 ids=1 date=2026-01-28..2026-01-28 opp=TOR phase=None metric=points
+    turn2: followup=True topic='What was their final point total?' games=1 ids=1 date=2026-01-28..2026-01-28 opp=TOR phase=None metric=points
+quarter_hawks_jan2_q3                    What was the third-quarter score?                 1     1  ok
+    topic frame: turn1=games=1 ids=1 date=2026-01-02..2026-01-02 opp=ATL phase=None metric=points
+    turn2: followup=True topic='How many points did the Knicks score against the Hawks on Ja' games=1 ids=1 date=2026-01-02..2026-01-02 opp=ATL phase=None metric=points
+quarter_raptors_jan28_half               What was the halftime score?                      1     1  ok
+    topic frame: turn1=games=1 ids=1 date=2026-01-28..2026-01-28 opp=TOR phase=None metric=points
+    turn2: followup=True topic='How many points did the Knicks score against the Raptors on ' games=1 ids=1 date=2026-01-28..2026-01-28 opp=TOR phase=None metric=points
+quarter_bulls_apr3_q4                    How many points did they score in the fourth      1     1  ok
+    topic frame: turn1=games=1 ids=1 date=2026-04-03..2026-04-03 opp=CHI phase=None metric=points
+    turn2: followup=True topic='How many points did they score in the fourth quarter?' games=1 ids=1 date=2026-04-03..2026-04-03 opp=CHI phase=None metric=points
+player_heat_dec21_brunson_points         How many points did Brunson score?                1     1  ok
+    topic frame: turn1=games=1 ids=1 date=2025-12-21..2025-12-21 opp=MIA phase=None metric=points
+    turn2: followup=True topic='How many points did Brunson score?' games=1 ids=1 date=2025-12-21..2025-12-21 opp=MIA phase=None metric=points
+player_spurs_dec31_brunson_assists       How many assists did Brunson have?                1     1  ok
+    topic frame: turn1=games=1 ids=1 date=2025-12-31..2025-12-31 opp=SAS phase=None metric=points
+    turn2: followup=True topic='How many assists did Brunson have?' games=1 ids=1 date=2025-12-31..2025-12-31 opp=SAS phase=None metric=assists
+player_sixers_jan24_towns_rebounds       How many rebounds did Towns grab?                 1     1  ok
+    topic frame: turn1=games=1 ids=1 date=2026-01-24..2026-01-24 opp=PHI phase=None metric=points
+    turn2: followup=True topic='How many rebounds did Towns grab?' games=1 ids=1 date=2026-01-24..2026-01-24 opp=PHI phase=None metric=rebounds
+that_game_hawks_jan2_brunson             How many points did Brunson score in that ga      1     1  ok
+    topic frame: turn1=games=1 ids=1 date=2026-01-02..2026-01-02 opp=ATL phase=None metric=points
+    turn2: followup=True topic='How many points did Brunson score in that game?' games=1 ids=1 date=2026-01-02..2026-01-02 opp=ATL phase=None metric=points
+that_game_last_margin                    What was the margin in that game?                 1     1  ok
+    topic frame: turn1=games=1 ids=1 date=None..None opp=None phase=None metric=points
+    turn2: followup=True topic='What was the margin in that game?' games=1 ids=1 date=2026-06-13..2026-06-13 opp=None phase=None metric=margin
+season_widen_jan2                        And for the season?                              82    82  ok
+    topic frame: turn1=games=1 ids=1 date=2026-01-02..2026-01-02 opp=None phase=None metric=points
+    turn2: followup=True topic='How many points did the Knicks score in the game on January ' games=82 ids=82 date=None..None opp=None phase=regular metric=points
+probe_game_id_window                     What was the margin?                              1     1  ok
+    turn1: games=1 ids=1 date=None..None opp=ATL phase=None metric=None ids=[88]
+    turn2: ids=[88]
+probe_degraded_turn                      What was the margin?                              1     1  ok
+    degraded declined=True last=games=? ids=1 date=2026-01-02..2026-01-02 opp=ATL phase=None metric=points
+WINDOW LOST 0 of 17 checks
+DISPATCH WIDENED 0 of 15 sessions
