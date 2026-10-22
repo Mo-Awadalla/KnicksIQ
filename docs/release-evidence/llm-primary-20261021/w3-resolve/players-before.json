@@ -2,16 +2,16 @@
  "summary": {
   "release": "2025-26.20260928.1",
   "players": 499,
-  "cases": 5394,
+  "cases": 5395,
   "status": {
    "ok": 3152,
    "silent_ambiguity": 122,
    "skipped_collision": 2,
-   "spurious_ambiguity": 158,
+   "spurious_ambiguity": 157,
    "typo_unresolved": 832,
    "unresolved": 476,
-   "wrong_ambiguity": 162,
-   "wrong_player": 490
+   "wrong_ambiguity": 167,
+   "wrong_player": 487
   },
   "wrong_player": [
    {
@@ -8073,57 +8073,6 @@
     "status": "wrong_player"
    },
    {
-    "kind": "last",
-    "player": "Williams Jr.",
-    "team": "MEM",
-    "token": "Jr",
-    "question": "Jr",
-    "expected": "unique",
-    "resolved_ids": [
-     403
-    ],
-    "resolved_names": [
-     "Kevin McCullar Jr."
-    ],
-    "clarification": false,
-    "options": [],
-    "status": "wrong_player"
-   },
-   {
-    "kind": "last_template",
-    "player": "Williams Jr.",
-    "team": "MEM",
-    "token": "Jr",
-    "question": "Did Jr play well against Toronto?",
-    "expected": "unique",
-    "resolved_ids": [
-     403
-    ],
-    "resolved_names": [
-     "Kevin McCullar Jr."
-    ],
-    "clarification": false,
-    "options": [],
-    "status": "wrong_player"
-   },
-   {
-    "kind": "last_points",
-    "player": "Williams Jr.",
-    "team": "MEM",
-    "token": "Jr",
-    "question": "How many points did Jr score?",
-    "expected": "unique",
-    "resolved_ids": [
-     403
-    ],
-    "resolved_names": [
-     "Kevin McCullar Jr."
-    ],
-    "clarification": false,
-    "options": [],
-    "status": "wrong_player"
-   },
-   {
     "kind": "first_template",
     "player": "Xavier Tillman",
     "team": "CHA",
@@ -11260,7 +11209,7 @@
     "status": "wrong_ambiguity"
    },
    {
-    "kind": "first",
+    "kind": "last",
     "player": "Williams Jr.",
     "team": "MEM",
     "token": "Williams",
@@ -11285,7 +11234,7 @@
     "status": "wrong_ambiguity"
    },
    {
-    "kind": "first_template",
+    "kind": "last_template",
     "player": "Williams Jr.",
     "team": "MEM",
     "token": "Williams",
@@ -11306,6 +11255,109 @@
      "Nate Williams",
      "Patrick Williams",
      "Ziaire Williams"
+    ],
+    "status": "wrong_ambiguity"
+   },
+   {
+    "kind": "last_points",
+    "player": "Williams Jr.",
+    "team": "MEM",
+    "token": "Williams",
+    "question": "How many points did Williams score?",
+    "expected": "ambiguous",
+    "resolved_ids": [],
+    "resolved_names": [],
+    "clarification": true,
+    "options": [
+     "Amari Williams",
+     "Brandon Williams",
+     "Cody Williams",
+     "Grant Williams",
+     "Jalen Williams",
+     "Jaylin Williams",
+     "Kenrich Williams",
+     "Mark Williams",
+     "Nate Williams",
+     "Patrick Williams",
+     "Ziaire Williams"
+    ],
+    "status": "wrong_ambiguity"
+   },
+   {
+    "kind": "initial",
+    "player": "Williams Jr.",
+    "team": "MEM",
+    "token": "W Williams",
+    "question": "W Williams",
+    "expected": "unique",
+    "resolved_ids": [],
+    "resolved_names": [],
+    "clarification": true,
+    "options": [
+     "Amari Williams",
+     "Brandon Williams",
+     "Cody Williams",
+     "Grant Williams",
+     "Jalen Williams",
+     "Jaylin Williams",
+     "Kenrich Williams",
+     "Mark Williams",
+     "Nate Williams",
+     "Patrick Williams",
+     "Ziaire Williams"
+    ],
+    "status": "wrong_ambiguity"
+   },
+   {
+    "kind": "typo_delete",
+    "player": "Williams Jr.",
+    "team": "MEM",
+    "token": "willams",
+    "question": "willams",
+    "expected": "typo",
+    "resolved_ids": [],
+    "resolved_names": [],
+    "clarification": true,
+    "options": [
+     "Brandon Williams",
+     "Grant Williams",
+     "Kenrich Williams",
+     "Patrick Williams"
+    ],
+    "status": "wrong_ambiguity"
+   },
+   {
+    "kind": "typo_transpose",
+    "player": "Williams Jr.",
+    "team": "MEM",
+    "token": "wliliams",
+    "question": "wliliams",
+    "expected": "typo",
+    "resolved_ids": [],
+    "resolved_names": [],
+    "clarification": true,
+    "options": [
+     "Brandon Williams",
+     "Grant Williams",
+     "Kenrich Williams",
+     "Patrick Williams"
+    ],
+    "status": "wrong_ambiguity"
+   },
+   {
+    "kind": "typo_substitute",
+    "player": "Williams Jr.",
+    "team": "MEM",
+    "token": "williamz",
+    "question": "williamz",
+    "expected": "typo",
+    "resolved_ids": [],
+    "resolved_names": [],
+    "clarification": true,
+    "options": [
+     "Grant Williams",
+     "Kenrich Williams",
+     "Patrick Williams"
     ],
     "status": "wrong_ambiguity"
    },
@@ -16057,24 +16109,6 @@
     "options": [
      "Shai Gilgeous-Alexander",
      "Trey Alexander"
-    ],
-    "status": "spurious_ambiguity"
-   },
-   {
-    "kind": "initial",
-    "player": "Williams Jr.",
-    "team": "MEM",
-    "token": "W Jr",
-    "question": "W Jr",
-    "expected": "unique",
-    "resolved_ids": [],
-    "resolved_names": [],
-    "clarification": true,
-    "options": [
-     "Walter Clayton Jr.",
-     "Wendell Carter Jr.",
-     "Wendell Moore Jr.",
-     "Williams Jr."
     ],
     "status": "spurious_ambiguity"
    },
@@ -111283,7 +111317,7 @@
    "status": "ok"
   },
   {
-   "kind": "first",
+   "kind": "last",
    "player": "Williams Jr.",
    "team": "MEM",
    "token": "Williams",
@@ -111308,7 +111342,7 @@
    "status": "wrong_ambiguity"
   },
   {
-   "kind": "first_template",
+   "kind": "last_template",
    "player": "Williams Jr.",
    "team": "MEM",
    "token": "Williams",
@@ -111333,73 +111367,107 @@
    "status": "wrong_ambiguity"
   },
   {
-   "kind": "last",
-   "player": "Williams Jr.",
-   "team": "MEM",
-   "token": "Jr",
-   "question": "Jr",
-   "expected": "unique",
-   "resolved_ids": [
-    403
-   ],
-   "resolved_names": [
-    "Kevin McCullar Jr."
-   ],
-   "clarification": false,
-   "options": [],
-   "status": "wrong_player"
-  },
-  {
-   "kind": "last_template",
-   "player": "Williams Jr.",
-   "team": "MEM",
-   "token": "Jr",
-   "question": "Did Jr play well against Toronto?",
-   "expected": "unique",
-   "resolved_ids": [
-    403
-   ],
-   "resolved_names": [
-    "Kevin McCullar Jr."
-   ],
-   "clarification": false,
-   "options": [],
-   "status": "wrong_player"
-  },
-  {
    "kind": "last_points",
    "player": "Williams Jr.",
    "team": "MEM",
-   "token": "Jr",
-   "question": "How many points did Jr score?",
-   "expected": "unique",
-   "resolved_ids": [
-    403
+   "token": "Williams",
+   "question": "How many points did Williams score?",
+   "expected": "ambiguous",
+   "resolved_ids": [],
+   "resolved_names": [],
+   "clarification": true,
+   "options": [
+    "Amari Williams",
+    "Brandon Williams",
+    "Cody Williams",
+    "Grant Williams",
+    "Jalen Williams",
+    "Jaylin Williams",
+    "Kenrich Williams",
+    "Mark Williams",
+    "Nate Williams",
+    "Patrick Williams",
+    "Ziaire Williams"
    ],
-   "resolved_names": [
-    "Kevin McCullar Jr."
-   ],
-   "clarification": false,
-   "options": [],
-   "status": "wrong_player"
+   "status": "wrong_ambiguity"
   },
   {
    "kind": "initial",
    "player": "Williams Jr.",
    "team": "MEM",
-   "token": "W Jr",
-   "question": "W Jr",
+   "token": "W Williams",
+   "question": "W Williams",
    "expected": "unique",
    "resolved_ids": [],
    "resolved_names": [],
    "clarification": true,
    "options": [
-    "Walter Clayton Jr.",
-    "Wendell Carter Jr.",
-    "Wendell Moore Jr.",
-    "Williams Jr."
+    "Amari Williams",
+    "Brandon Williams",
+    "Cody Williams",
+    "Grant Williams",
+    "Jalen Williams",
+    "Jaylin Williams",
+    "Kenrich Williams",
+    "Mark Williams",
+    "Nate Williams",
+    "Patrick Williams",
+    "Ziaire Williams"
    ],
-   "status": "spurious_ambiguity"
+   "status": "wrong_ambiguity"
+  },
+  {
+   "kind": "typo_delete",
+   "player": "Williams Jr.",
+   "team": "MEM",
+   "token": "willams",
+   "question": "willams",
+   "expected": "typo",
+   "resolved_ids": [],
+   "resolved_names": [],
+   "clarification": true,
+   "options": [
+    "Brandon Williams",
+    "Grant Williams",
+    "Kenrich Williams",
+    "Patrick Williams"
+   ],
+   "status": "wrong_ambiguity"
+  },
+  {
+   "kind": "typo_transpose",
+   "player": "Williams Jr.",
+   "team": "MEM",
+   "token": "wliliams",
+   "question": "wliliams",
+   "expected": "typo",
+   "resolved_ids": [],
+   "resolved_names": [],
+   "clarification": true,
+   "options": [
+    "Brandon Williams",
+    "Grant Williams",
+    "Kenrich Williams",
+    "Patrick Williams"
+   ],
+   "status": "wrong_ambiguity"
+  },
+  {
+   "kind": "typo_substitute",
+   "player": "Williams Jr.",
+   "team": "MEM",
+   "token": "williamz",
+   "question": "williamz",
+   "expected": "typo",
+   "resolved_ids": [],
+   "resolved_names": [],
+   "clarification": true,
+   "options": [
+    "Grant Williams",
+    "Kenrich Williams",
+    "Patrick Williams"
+   ],
+   "status": "wrong_ambiguity"
   },
   {
    "kind": "full",

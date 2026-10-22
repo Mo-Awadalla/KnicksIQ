@@ -24,7 +24,12 @@ from app.core.db import AsyncSessionLocal
 from app.models.box_score import PlayerGameStat
 from app.models.dataset_release import DatasetRelease
 from app.models.player import Player
-from app.services.query_resolution import _normalize, resolve_query
+from app.services.query_resolution import resolve_query
+
+try:
+    from app.services.query_text import normalize as _normalize
+except ImportError:
+    from app.services.query_resolution import _normalize
 from sqlalchemy import select
 
 SUFFIXES = {"jr", "sr", "ii", "iii", "iv", "v"}
@@ -66,7 +71,7 @@ def _parts(full_name: str) -> tuple[list[str], str, str]:
         return parts, "", " ".join(parts)
     if len(parts) == 1:
         return parts, "", parts[0]
-    surname_index = len(parts) - 2 if parts[-1] in SUFFIXES and len(parts) > 2 else len(parts) - 1
+    surname_index = len(parts) - 2 if parts[-1] in SUFFIXES and len(parts) > 1 else len(parts) - 1
     return parts, " ".join(parts[:surname_index]), parts[surname_index]
 
 
