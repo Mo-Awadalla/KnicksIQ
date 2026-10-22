@@ -246,12 +246,24 @@ def _extract(text: str) -> list[Token]:
 
 
 def _same_number(left: float, right: float, left_raw: str = "", right_raw: str = "") -> bool:
+    """Compare a written value with a claim value at the least precise written form.
+
+    A written 116.3 may back a 116.28571428571429 claim, but 116.4 may not. A written
+    integer gets no tolerance: integers are also counts and unit conversions, so a derived
+    54 must not ride on 53.6 or on a hundredth of 54 matching 1.0. With no written form at
+    all (date parts, pair values) only an exact match counts.
+    """
     if math.isclose(left, right, rel_tol=0, abs_tol=1e-9):
         return True
-    left_places = len(left_raw.split(".")[1]) if "." in left_raw else 0
-    right_places = len(right_raw.split(".")[1]) if "." in right_raw else 0
-    places = min(left_places, right_places) if left_places or right_places else 0
-    tolerance = 0.5 * 10 ** (-places) if places else 0.0
+    written = [
+        len(raw.split(".", 1)[1]) if "." in raw else 0 for raw in (left_raw, right_raw) if raw
+    ]
+    if not written:
+        return False
+    places = min(written)
+    if places == 0:
+        return False
+    tolerance = 0.5 * 10 ** (-places)
     return abs(left - right) <= tolerance + 1e-9
 
 
@@ -286,8 +298,8 @@ def _backed(token: Token, corpus: Corpus) -> bool:
         return True
     candidates = [token.value]
     if token.kind == "percent":
-        candidates.append(token.value / 100)
-    else:
+        # A percent token stores 45 for "45%"; its fraction form is 0.45. A plain number
+        # has no such second form: 45 must not match a 0.45 rate by dividing itself.
         candidates.append(token.value / 100)
     return any(
         _same_number(candidate, item, token.raw.rstrip("%"), "")

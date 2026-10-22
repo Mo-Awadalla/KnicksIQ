@@ -1,0 +1,196 @@
+{
+  "scope": "meets_expectation now requires: not declined or clarification, validated delivery, substantive content, no unbacked number or entity, required facts present, no echo, and no unbacked causal hedge. claim_backed additionally requires cited claim values.",
+  "mode": "offline",
+  "dataset": "/Users/mohamedawadalla/.local/share/knicksiq/worktrees/w4-scorer/apps/api/app/evaluation/questions.jsonl",
+  "questions": 70,
+  "old_meets_expectation": 38,
+  "meets_expectation": 35,
+  "claim_backed_meets_expectation": 35,
+  "delta": 3,
+  "by_answerable": {
+    "answerable": {
+      "questions": 62,
+      "old": 35,
+      "new": 28
+    },
+    "unsupported": {
+      "questions": 8,
+      "old": 3,
+      "new": 7
+    }
+  },
+  "survived": [
+    "exact_statistics-001",
+    "exact_statistics-002",
+    "exact_statistics-005",
+    "exact_statistics-006",
+    "exact_statistics-007",
+    "exact_statistics-009",
+    "exact_statistics-010",
+    "date_range_last_n-001",
+    "date_range_last_n-002",
+    "date_range_last_n-003",
+    "date_range_last_n-005",
+    "date_range_last_n-006",
+    "date_range_last_n-007",
+    "date_range_last_n-009",
+    "date_range_last_n-010",
+    "comparisons-003",
+    "comparisons-004",
+    "single_game_narrative-003",
+    "single_game_narrative-010",
+    "turning_points-001",
+    "turning_points-003",
+    "turning_points-005",
+    "turning_points-009",
+    "aliases_typos-001",
+    "aliases_typos-002",
+    "aliases_typos-005",
+    "aliases_typos-006",
+    "aliases_typos-007",
+    "unsupported-001",
+    "unsupported-003",
+    "unsupported-007"
+  ],
+  "lost": [
+    {
+      "id": "exact_statistics-003",
+      "category": "exact_statistics",
+      "failures": [
+        "unbacked_numbers"
+      ],
+      "reason": "unbacked_number",
+      "answer": "In the 2025-26 regular season archive, the Knicks averaged 116.45 points per game across 82 games (53-29 record), with an average margin of +6.33 points per game."
+    },
+    {
+      "id": "exact_statistics-004",
+      "category": "exact_statistics",
+      "failures": [
+        "unbacked_numbers"
+      ],
+      "reason": "unbacked_number",
+      "answer": "Over the 82 archived 2025-26 regular-season Knicks games, New York's average margin was about +6.33 points per game."
+    },
+    {
+      "id": "exact_statistics-008",
+      "category": "exact_statistics",
+      "failures": [
+        "unbacked_numbers"
+      ],
+      "reason": "unbacked_number",
+      "answer": "In the archived regular-season game against Brooklyn on 2026-01-21, the Knicks won 120-66 \u2014 a 54-point margin. Their largest lead reached 59 points (120-61 at Q4 01:09). New York took the lead for good at Q1 09:05 and never trailed after that point, and Brooklyn's largest lead was just 2 points."
+    },
+    {
+      "id": "turning_points-004",
+      "category": "turning_points",
+      "failures": [
+        "clarification",
+        "no_cited_claims"
+      ],
+      "reason": "skipped_work_clarification",
+      "answer": "The archive includes four Knicks\u2013Bulls matchups, so I need to know which one you mean before I can pull the game flow and identify the run that broke it open."
+    },
+    {
+      "id": "turning_points-010",
+      "category": "turning_points",
+      "failures": [
+        "clarification",
+        "missing_turning_detail",
+        "no_cited_claims"
+      ],
+      "reason": "skipped_work_clarification",
+      "answer": "There are eight archived Knicks\u2013Hawks games. Which one do you mean?"
+    },
+    {
+      "id": "aliases_typos-003",
+      "category": "aliases_typos",
+      "failures": [
+        "clarification"
+      ],
+      "reason": "skipped_work_clarification",
+      "answer": "Which game do you mean? The archive shows several notable Jalen Brunson games, including 47 points, 3 rebounds, 8 assists and 0 turnovers vs MIA on 2025-12-21; 42 points, 8 rebounds, 9 assists and 5 turnovers vs DEN on 2026-02-04; and 40 points, 5 rebounds, 8 assists and 1 turnover vs IND on 2026-02-10."
+    },
+    {
+      "id": "unsupported-010",
+      "category": "unsupported",
+      "failures": [
+        "no_cited_claims"
+      ],
+      "reason": "other",
+      "answer": "The archive has four Knicks\u2013Celtics games this season, listed in the clarification options: BOS at NYK, NYK at BOS, NYK at BOS, and BOS at NYK. Tell me which of those games you mean and I can pull the details."
+    }
+  ],
+  "gained": [
+    {
+      "id": "unsupported-002",
+      "failures": []
+    },
+    {
+      "id": "unsupported-004",
+      "failures": []
+    },
+    {
+      "id": "unsupported-005",
+      "failures": []
+    },
+    {
+      "id": "unsupported-006",
+      "failures": []
+    }
+  ],
+  "failure_counts": {
+    "not_validated": 22,
+    "no_cited_claims": 16,
+    "clarification": 10,
+    "not_substantive": 6,
+    "declined": 5,
+    "unbacked_numbers": 3,
+    "missing_turning_detail": 1,
+    "not_declined": 1
+  },
+  "by_category": {
+    "aliases_typos": {
+      "questions": 10,
+      "old": 6,
+      "new": 5,
+      "claim_backed": 5
+    },
+    "comparisons": {
+      "questions": 10,
+      "old": 2,
+      "new": 2,
+      "claim_backed": 2
+    },
+    "date_range_last_n": {
+      "questions": 10,
+      "old": 8,
+      "new": 8,
+      "claim_backed": 8
+    },
+    "exact_statistics": {
+      "questions": 10,
+      "old": 10,
+      "new": 7,
+      "claim_backed": 7
+    },
+    "single_game_narrative": {
+      "questions": 10,
+      "old": 2,
+      "new": 2,
+      "claim_backed": 2
+    },
+    "turning_points": {
+      "questions": 10,
+      "old": 6,
+      "new": 4,
+      "claim_backed": 4
+    },
+    "unsupported": {
+      "questions": 10,
+      "old": 4,
+      "new": 7,
+      "claim_backed": 7
+    }
+  },
+  "source": "docs/release-evidence/llm-primary-20261021/w4-bench/trial2.responses.jsonl"
+}

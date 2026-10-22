@@ -130,3 +130,7 @@ docs/release-evidence/llm-primary-20261021/w4-reviewer/*.json* linguist-generate
 # Live multi-turn follow-up benchmark output (w4, OpenCode Go).
 docs/release-evidence/llm-primary-20261021/w4-followups/*.json linguist-generated=true
 docs/release-evidence/llm-primary-20261021/w4-followups/*.txt linguist-generated=true
+# Scorer false-negative rescore output (w4).
+docs/release-evidence/llm-primary-20261021/w4-scorer/**/*.json linguist-generated=true
+docs/release-evidence/llm-primary-20261021/w4-scorer/**/*.jsonl linguist-generated=true
+docs/release-evidence/llm-primary-20261021/w4-scorer/**/*.txt linguist-generated=true

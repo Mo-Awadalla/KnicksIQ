@@ -43,9 +43,48 @@ from followup_oracle import (  # noqa: E402
     oracle,
     scoped,
 )
+from followup_rescore import classify, run_offline  # noqa: E402
 
 SESSIONS = ROOT / "apps/api/app/evaluation/followup_sessions.jsonl"
 OUT = ROOT / "docs/release-evidence/llm-primary-20261021/w3-followups/followup_sessions.json"
+
+
+def summarize(sessions: list[dict], results: dict[str, list[dict]]) -> tuple[dict, dict, dict]:
+    summary = {}
+    for session in sessions:
+        runs = results[session["id"]]
+        summary[session["id"]] = {
+            "passes": sum(run["pass"] for run in runs),
+            "trials": len(runs),
+            "turn_passes": [sum(turn["cause"] == "ok" for turn in run["turns"]) for run in runs],
+            "turns": [len(run["turns"]) for run in runs],
+        }
+    causes: dict[str, list[dict]] = {}
+    for session in sessions:
+        for run in results[session["id"]]:
+            for turn in run["turns"]:
+                if turn["cause"] != "ok":
+                    causes.setdefault(turn["cause"], []).append(
+                        {
+                            "session": session["id"],
+                            "trial": run.get("trial"),
+                            "turn": turn["turn"],
+                            "question": turn["question"],
+                            "issues": turn.get("scope_issues") or turn.get("failures"),
+                        }
+                    )
+    totals = {
+        "turns": sum(len(run["turns"]) for runs in results.values() for run in runs),
+        "turn_passes": sum(
+            turn["cause"] == "ok"
+            for runs in results.values()
+            for run in runs
+            for turn in run["turns"]
+        ),
+        "session_passes": sum(run["pass"] for runs in results.values() for run in runs),
+        "session_runs": sum(len(runs) for runs in results.values()),
+    }
+    return summary, causes, totals
 
 
 def require_live_env() -> None:
@@ -74,34 +113,6 @@ def require_live_env() -> None:
         problems.append("AI_API_KEY (or OPENROUTER_API_KEY) is required")
     if problems:
         raise SystemExit("; ".join(problems))
-
-
-def classify(
-    status: int,
-    body: dict,
-    honest_ok: bool,
-    expected_ok: bool,
-    scope_issues: list[str],
-    revision_ok: bool,
-) -> str:
-    if status != 200:
-        return f"pipeline:http_{status}"
-    if body.get("degraded"):
-        return "pipeline:degraded"
-    if not revision_ok:
-        return "session:revision"
-    if scope_issues and not (honest_ok and expected_ok):
-        if body.get("refused"):
-            return "scope+decline"
-        return "scope"
-    if honest_ok and expected_ok:
-        return "ok"
-    failures = (body.get("_score") or {}).get("failures") or []
-    if "declined:phrase:decline" in failures or "declined:field:refused" in failures:
-        return "answer:declined"
-    if "not_validated" in failures:
-        return "answer:not_validated"
-    return "answer:value"
 
 
 async def read_state(redis, token: str | None) -> dict[str, Any]:
@@ -325,85 +336,71 @@ async def main() -> None:
     parser.add_argument("--out", type=Path, default=OUT)
     parser.add_argument("--session", action="append", default=[])
     parser.add_argument("--flush-redis", action="store_true")
+    parser.add_argument(
+        "--responses",
+        type=Path,
+        help="offline mode: rescore this recorded follow-up session artifact",
+    )
     args = parser.parse_args()
-    require_live_env()
-    if args.flush_redis:
-        from redis.asyncio import Redis
-
-        redis = Redis.from_url(os.environ["REDIS_URL"])
-        await redis.flushdb()
-        await redis.aclose()
-    from app.main import create_app
-    from httpx import ASGITransport, AsyncClient
-    from redis.asyncio import Redis
 
     sessions = load_sessions(args.sessions)
     if args.session:
         wanted = set(args.session)
         sessions = [session for session in sessions if session["id"] in wanted]
+    if not args.responses:
+        require_live_env()
     values, ids, teams = await oracle()
-    app = create_app()
-    results: dict[str, list[dict]] = {session["id"]: [] for session in sessions}
-    async with app.router.lifespan_context(app):
-        async with AsyncClient(
-            transport=ASGITransport(app=app), base_url="http://test", timeout=120
-        ) as client:
-            redis = Redis.from_url(os.environ["REDIS_URL"], decode_responses=True)
-            for trial in range(1, args.trials + 1):
-                for session in sessions:
-                    run = await run_session(
-                        client, redis, session, values.archive, ids, teams, values
-                    )
-                    run["trial"] = trial
-                    results[session["id"]].append(run)
-                    print(
-                        session["id"],
-                        trial,
-                        " ".join(turn["cause"] for turn in run["turns"]),
-                        run["pass"],
-                    )
+
+    if args.responses:
+        recorded = json.loads(args.responses.read_text())
+        results = run_offline(sessions, recorded, values.archive, ids, teams, values)
+        mode = "offline_rescore"
+        trials = recorded.get("trials")
+    else:
+        if args.flush_redis:
+            from redis.asyncio import Redis
+
+            redis = Redis.from_url(os.environ["REDIS_URL"])
+            await redis.flushdb()
             await redis.aclose()
-    summary = {}
-    for session in sessions:
-        runs = results[session["id"]]
-        summary[session["id"]] = {
-            "passes": sum(run["pass"] for run in runs),
-            "trials": len(runs),
-            "turn_passes": [sum(turn["cause"] == "ok" for turn in run["turns"]) for run in runs],
-            "turns": [len(run["turns"]) for run in runs],
-        }
-    causes: dict[str, list[dict]] = {}
-    for session in sessions:
-        for run in results[session["id"]]:
-            for turn in run["turns"]:
-                if turn["cause"] != "ok":
-                    causes.setdefault(turn["cause"], []).append(
-                        {
-                            "session": session["id"],
-                            "trial": run["trial"],
-                            "turn": turn["turn"],
-                            "question": turn["question"],
-                            "issues": turn.get("scope_issues") or turn.get("failures"),
-                        }
-                    )
+        from app.main import create_app
+        from httpx import ASGITransport, AsyncClient
+        from redis.asyncio import Redis
+
+        app = create_app()
+        results = {session["id"]: [] for session in sessions}
+        async with app.router.lifespan_context(app):
+            async with AsyncClient(
+                transport=ASGITransport(app=app), base_url="http://test", timeout=120
+            ) as client:
+                redis = Redis.from_url(os.environ["REDIS_URL"], decode_responses=True)
+                for trial in range(1, args.trials + 1):
+                    for session in sessions:
+                        run = await run_session(
+                            client, redis, session, values.archive, ids, teams, values
+                        )
+                        run["trial"] = trial
+                        results[session["id"]].append(run)
+                        print(
+                            session["id"],
+                            trial,
+                            " ".join(turn["cause"] for turn in run["turns"]),
+                            run["pass"],
+                        )
+                await redis.aclose()
+        mode = "live_llm_primary"
+        trials = args.trials
+
+    summary, causes, totals = summarize(sessions, results)
     out = {
-        "mode": "live_llm_primary",
+        "mode": mode,
         "base": os.environ.get("BENCH_BASE", "5b585e6"),
-        "trials": args.trials,
+        "source": str(args.responses) if args.responses else "live in-process API",
+        "trials": trials,
         "sessions": results,
         "summary": summary,
         "causes": causes,
-        "totals": {
-            "turns": sum(len(run["turns"]) for runs in results.values() for run in runs),
-            "turn_passes": sum(
-                turn["cause"] == "ok"
-                for runs in results.values()
-                for run in runs
-                for turn in run["turns"]
-            ),
-            "session_passes": sum(run["pass"] for runs in results.values() for run in runs),
-            "session_runs": sum(len(runs) for runs in results.values()),
-        },
+        "totals": totals,
     }
     args.out.parent.mkdir(parents=True, exist_ok=True)
     args.out.write_text(json.dumps(out, indent=2) + "\n")
