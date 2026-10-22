@@ -263,6 +263,21 @@ def prefetch_calls(tools: AnalystTools) -> list[ToolCall]:
         return [ToolCall(name="discover_facts", question=question)]
     if _BENCH.search(question):
         return [ToolCall(name="discover_facts", question=question)]
+    if (
+        len(scope.game_ids) == 1
+        and not scope.player_ids
+        and (
+            scope.metric in {"points", "margin"}
+            or re.search(r"\b(?:score|scored)\b", question, re.I)
+        )
+        and _TEAM_AGGREGATE.search(question)
+    ):
+        # "What was the margin?" and "What was the final score?" are not aggregate-shaped
+        # for the classifier, but one game's points, margin or score is a team fact.
+        aggregation = (
+            "average" if tools.aggregation == "average" or _AVERAGE.search(question) else "total"
+        )
+        return [ToolCall(name="get_team_stats", question=question, aggregation=aggregation)]
     if not classify_query(question).is_aggregative:
         return [ToolCall(name="discover_facts", question=question)]
     if scope.metric in _PLAYER_ONLY_METRICS:
