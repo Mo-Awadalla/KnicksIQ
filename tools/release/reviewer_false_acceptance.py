@@ -31,7 +31,6 @@ import argparse
 import asyncio
 import copy
 import json
-import math
 import time
 from collections import Counter
 from datetime import UTC, datetime
@@ -40,20 +39,12 @@ from typing import Any
 
 import analyst_review_replay as replay
 from analyst_review_replay import head_review_once, load_models, load_units
+from app.core.config import get_settings
 from app.services.analyst_provider import reviewer_system_prompt
 from app.services.analyst_review_checks import review_issues
 from app.services.evidence_contracts import split_review_spans
-from reviewer_false_acceptance_cases import CASES, CLASS_RANK, CLASSES, Case
-
-
-def wilson(successes: int, observations: int, z: float = 1.96) -> list[float] | None:
-    if observations == 0:
-        return None
-    p = successes / observations
-    denominator = 1 + z * z / observations
-    centre = (p + z * z / (2 * observations)) / denominator
-    half = z * math.sqrt(p * (1 - p) / observations + z * z / (4 * observations**2)) / denominator
-    return [round(max(0.0, centre - half), 4), round(min(1.0, centre + half), 4)]
+from reviewer_false_acceptance_cases import CASES, CLASSES, Case
+from reviewer_false_acceptance_report import build_summary, summarize_group, worst_accepted
 
 
 def call_metadata(adapter: Any) -> dict[str, Any]:
@@ -118,10 +109,17 @@ def _recording_factory(*args: Any, **kwargs: Any) -> Any:
     return adapter
 
 
+def review_max_tokens() -> int:
+    """The deployed reviewer output cap. The legacy replay helper defaults to 1,200, which
+    would truncate reviews the production path (3,000) completes."""
+    return get_settings().analyst_review_max_tokens
+
+
 async def _recording_call_reviewer(
-    system: str, payload: dict[str, Any], max_tokens: int = 1200
+    system: str, payload: dict[str, Any], max_tokens: int | None = None
 ) -> Any:
-    result = await _original_call_reviewer(system, payload, max_tokens)
+    del max_tokens
+    result = await _original_call_reviewer(system, payload, review_max_tokens())
     review = result.review.model_dump(mode="json") if result.review is not None else None
     _reviews.append(review)
     return result
@@ -265,105 +263,6 @@ async def measure(units: list[tuple[str, str, dict[str, Any], str]], trials: int
     return {"controls": controls, "mutations": mutations}
 
 
-def summarize_group(rows: list[dict[str, Any]], trials: int) -> dict[str, Any]:
-    observations = [obs for row in rows for obs in row["observations"]]
-    accepted = sum(1 for obs in observations if obs["accepted"])
-    calls = [call for obs in observations for call in obs["calls"]]
-    cost = sum(call.get("cost_usd") or 0 for call in calls)
-    return {
-        "cases": len(rows),
-        "trials_per_case": trials,
-        "observations": len(observations),
-        "accepted": accepted,
-        "accept_rate": round(accepted / len(observations), 4) if observations else None,
-        "wilson_95": wilson(accepted, len(observations)),
-        "cost_usd": round(cost, 6),
-        "reviewer_calls": len(calls),
-        "providers": dict(Counter(call.get("provider") for call in calls)),
-        "models": dict(Counter(call.get("model") for call in calls)),
-    }
-
-
-def worst_accepted(rows: list[dict[str, Any]], limit: int = 8) -> list[dict[str, Any]]:
-    examples = []
-    for row in rows:
-        for obs in row["observations"]:
-            if not obs["accepted"]:
-                continue
-            assertions = [
-                {
-                    "text": item.get("text"),
-                    "type": item.get("assertion_type"),
-                    "verdict": item.get("verdict"),
-                    "reason": item.get("reason"),
-                }
-                for item in (obs.get("review") or {}).get("assertions", [])
-            ]
-            examples.append(
-                {
-                    "case_id": row["case_id"],
-                    "class": row["class"],
-                    "unit": row["unit"],
-                    "answer": row["mutated"],
-                    "edit": row["edits"],
-                    "append": row["append"],
-                    "trial": obs["trial"],
-                    "provider": (obs["calls"] or [{}])[-1].get("provider"),
-                    "review_assertions": assertions,
-                }
-            )
-            break
-    examples.sort(key=lambda item: CLASS_RANK.get(item["class"], 99))
-    return examples[:limit]
-
-
-def build_summary(artifact: dict[str, Any]) -> str:
-    controls = artifact["controls_summary"]
-    lines = [
-        "# Reviewer false acceptance, live",
-        "",
-        f"Measured {artifact['measured_at']} against the real provider, model "
-        f"`{artifact['model']}`, {artifact['trials_per_case']} trials per case. "
-        f"Reviewer calls: {artifact['reviewer_calls']}; cost: ${artifact['cost_usd']:.4f}.",
-        "",
-        "## Per class",
-        "",
-        "| class | cases | trials | accepted | accept rate | Wilson 95% | cost USD | providers |",
-        "| --- | ---: | ---: | ---: | ---: | --- | ---: | --- |",
-    ]
-    for name, row in artifact["by_class"].items():
-        low, high = row["wilson_95"]
-        providers = ", ".join(f"{key}:{value}" for key, value in row["providers"].items())
-        lines.append(
-            f"| {name} | {row['cases']} | {row['observations']} | {row['accepted']} | "
-            f"{row['accept_rate']:.3f} | [{low:.3f}, {high:.3f}] | "
-            f"{row['cost_usd']:.4f} | {providers} |"
-        )
-    low, high = controls["wilson_95"]
-    lines.extend(
-        [
-            "",
-            f"Controls (unmutated correct answers): {controls['accepted']}/"
-            f"{controls['observations']} accepted, rate {controls['accept_rate']:.3f}, "
-            f"Wilson [{low:.3f}, {high:.3f}], cost ${controls['cost_usd']:.4f}.",
-            "",
-            "All cases passed the deterministic gate with zero issues; the recorded "
-            "`gate_issues` arrays are empty.",
-            "",
-            "## Worst accepted examples",
-            "",
-        ]
-    )
-    if not artifact["worst_accepted"]:
-        lines.append("None.")
-    for item in artifact["worst_accepted"]:
-        lines.append(
-            f"- `{item['case_id']}` ({item['class']}, {item['provider']}): {item['answer']}"
-        )
-    lines.append("")
-    return "\n".join(lines)
-
-
 def dry_run(
     units: list[tuple[str, str, dict[str, Any], str]], args: argparse.Namespace
 ) -> dict[str, Any]:
@@ -447,6 +346,7 @@ def main() -> None:
         "records": [str(path) for path in args.records],
         "labels": str(args.labels),
         "trials_per_case": trials,
+        "reviewer_max_tokens": review_max_tokens(),
         "classes": CLASSES,
         "gate_proof": {
             "all_passed": all(

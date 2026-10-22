@@ -96,3 +96,15 @@ uv run --package knicksiq-api python tools/release/reviewer_false_acceptance.py 
 The script was exercised end to end with a fake adapter (70 acceptance observations,
 provider metadata captured, Wilson and summary written) without any provider call. The live
 run is the only missing step.
+
+## Pre-flight before spending credits (2026-10-22)
+
+`offline_report_check.py` runs the full runner with a fake reviewer (no network). Before the
+fix (`offline-report-before.txt`) it crashed rendering the report: the `coincident_percent`
+class is now fully rejected by the unit-aware gate, so it has zero observations and no Wilson
+interval. It also showed every reviewer call capped at the legacy replay's 1,200 output tokens
+instead of the deployed `analyst_review_max_tokens` (3,000). After the fix
+(`offline-report-after.txt`) gate-blocked classes render as N/A, the summary states how many
+cases the gate rejected instead of claiming all passed, every call uses the production cap, and
+the artifact records it as `reviewer_max_tokens`. The fake reviewer's acceptance numbers in that
+file mean nothing; only the report path and the cap are being checked.
