@@ -106,3 +106,7 @@ docs/release-evidence/llm-primary-20261021/w3-routing/*.jsonl linguist-generated
 # Reviewer false-acceptance measurement output from tools/release/reviewer_false_acceptance.py.
 docs/release-evidence/llm-primary-20261021/w3-revmeasure/*.json linguist-generated=true
 docs/release-evidence/llm-primary-20261021/w3-revmeasure/summary.md linguist-generated=true
+
+# Follow-up session benchmark machine output.
+docs/release-evidence/llm-primary-20261021/w3-followups/*.json linguist-generated=true
+docs/release-evidence/llm-primary-20261021/w3-followups/*.txt linguist-generated=true
