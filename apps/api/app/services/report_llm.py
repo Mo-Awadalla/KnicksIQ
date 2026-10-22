@@ -151,7 +151,9 @@ class OpenAICompatibleLLMAdapter(LLMAdapter):
                 payload_body["reasoning"] = {"enabled": False}
             elif self.reasoning_effort is not None:
                 payload_body["reasoning"] = {"effort": self.reasoning_effort}
-        elif self.reasoning_effort is not None:
+        elif self.reasoning_effort is not None and (
+            self.model_protocols or "opencode.ai" in self.base_url
+        ):
             payload_body["reasoning_effort"] = self.reasoning_effort
         if self.response_schema is not None:
             payload_body["response_format"] = {

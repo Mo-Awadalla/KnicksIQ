@@ -1,6 +1,6 @@
 # KnicksIQ production runbook
 
-Production serves one immutable 2025–26 archive release. The API never migrates, seeds, ingests, generates reports, or mutates basketball data at startup. Qdrant, Redis, and OpenRouter are required for the LLM-primary path but remain optional for availability; Postgres and one validated active release are the only dependencies required for deterministic answers.
+Production serves one immutable 2025–26 archive release. The API never migrates, seeds, ingests, generates reports, or mutates basketball data at startup. Qdrant, Redis, and the configured model provider support the LLM-primary path. Postgres and one validated active release are the only dependencies required for deterministic answers.
 
 ## Failed deployment and rollback
 
@@ -25,8 +25,12 @@ Production serves one immutable 2025–26 archive release. The API never migrate
   A restarted free Key Value instance can lose its monthly ledger and reservations;
   model calls remain blocked until accounting is conservatively reconciled.
   Never reset the ledger to zero.
-- OpenRouter or budget exhaustion: deterministic phrasing remains available.
+- Model provider or budget exhaustion: deterministic phrasing remains available.
   Do not raise the $2 monthly application cutoff without owner approval.
+  The intended blueprint uses OpenCode Go with DeepSeek writing and GPT 6 Luna
+  reviewing. Set its subscription credential through `AI_API_KEY`. Do not reuse
+  the OpenRouter-bound original120 collector as proof for this configuration.
+  `AI_MODEL_PRICES` estimates subscription usage from tokens, not provider billing.
   Verification must enforce its approved cumulative request and cost caps;
   ordinary reservations are not provider-enforced per-call price ceilings.
 - Sentry: application availability is unaffected. Use Render logs and synthetic checks until restored.

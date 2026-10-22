@@ -1208,7 +1208,9 @@ class AnalystLoop:
     ) -> dict[str, Any]:
         capabilities = self.tools.manifest()
         capabilities["scope"] = {
-            key: value for key, value in capabilities["scope"].items() if value is not None
+            key: value
+            for key, value in capabilities["scope"].items()
+            if value is not None and value != []
         }
         if self.settings.analyst_provider_format == "json_schema":
             # The external ToolCall schema already enumerates these same metrics.
