@@ -68,6 +68,53 @@ is not deterministic here. The one garbage-tail failure is also stochastic.
   requests are not future scopes, so the benign archive corpus keeps its facts.
   `render_fallback` marks those turns refused and skips the recovery lookup.
 
-## After the fixes
+## Repair validation failure rate, same 21 questions
 
-See `after/` and the table in the final report. (Updated after the live measurement.)
+"Before" is the recorded two-trial benchmark restricted to the 21 ids
+(`../w4-bench/calls.jsonl` and `trial{1,2}.responses.jsonl`); the fresh pre-fix
+reproduction is one trial (`before/repair-before.json`). "After" is two fresh trials on
+the fixed head (`after/repair-after.json`). A repair call is one repair request; a turn
+fails when that request raises and the fallback runs.
+
+| Run | Repair calls | ValidationErrors | Per-call rate | Turns with a schema failure |
+| --- | ---: | ---: | ---: | ---: |
+| Bench trial 1 (before) | 19 | 15 | 78.9% | 15/21 |
+| Bench trial 2 (before) | 15 | 12 | 80.0% | 12/21 |
+| Bench both (before) | 34 | 27 | 79.4% | 27/42 |
+| Fresh pre-fix, 1 trial | 16 | 8 | 50.0% | 8/21 |
+| After, trial 1 | 19 | 2 | 10.5% | 0/21 |
+| After, trial 2 | 19 | 3 | 15.8% | 0/21 |
+| After, both | 38 | 5 | 13.2% | 0/42 |
+
+Seventeen of the 38 after repair calls carried the top-level `"type":"json_object"`
+echo and were parsed after removal (`provider_format_echo` in the trace); pre-fix those
+would have raised `extra_forbidden`. The five remaining first-attempt failures are the
+other stochastic shapes: `{"type":"answer",...}`, `{"type":"answer_from_available_evidence",
+...}`, an answer wrapped under `proposed_answer`/`answer`, and one reply containing only
+`{"type":"json_object"}`. Each was retried successfully, so no after turn failed a repair.
+The rollout does not invent a better answer: after turns are 21 validated/declined and
+20 review-rejected fallbacks, versus 4 validated/declined and 27 schema failures before.
+
+## Future-question fallback
+
+`after/fallback-after.json` replays the same forced-failure harness. The future cases now
+decline (`I can't answer questions about future games or seasons. The archive's most recent
+game is 2026-06-13.`) with zero claims; the ten benign `will you`/`will I` archive requests
+produce byte-identical answers to the pre-fix run (seven with facts, three with the
+pre-existing generic decline). The live head run also declined `unsupported-008` through
+the model path in one trial (`validated_declined`) and through the fallback in another.
+
+## Factual audit of new head responses
+
+Eight questions whose answers changed from schema failure to validated were re-run on the
+fixed head; `after/head-responses.responses.jsonl` is that set (5 validated, 3 fallbacks)
+and `after/audit/` is the full SQL audit. The audit reports 4 wrong atoms out of 62 checked;
+all four are scope false positives, verified against the raw tables:
+
+| Atom | Audit expectation | SQL |
+| --- | --- | --- |
+| `27` and `113.26` in `date_range_last_n-005` | full 82-game season | post-All-Star games 56-82: 27 games, 18-9, 113.26 for, 106.59 against, +6.67 |
+| `75` in `comparisons-008` | 82 team games | Towns appeared in 75 regular-season games; 11.853 rebounds/appearance rounds to 11.9 |
+| `15-0` in `turning_points-007` | no matching run | game 42: PHX scored 15 unanswered (68-69-72-74-77-79-80-82) from Q3 03:57 to Q4 11:39, 77-67 to 77-82 |
+
+The remaining 32 atoms were unverified (the audit could not bind them), not wrong.
