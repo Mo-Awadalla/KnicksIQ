@@ -50,7 +50,7 @@ def _opponent(tools: AnalystTools, game: Game) -> str:
 def _game_line(tools: AnalystTools, game: Game) -> str:
     nyk, opp = tools.score(game)
     venue = "vs" if game.home_team_id == "NYK" else "at"
-    return f"{nyk}-{opp} {venue} {_opponent(tools, game)} on {game.game_date}"
+    return f"{nyk}-{opp} {venue} {tools.team_label(_opponent(tools, game))} on {game.game_date}"
 
 
 def _extreme_kind(question: str) -> str | None:
@@ -227,7 +227,10 @@ def team(
         points = sum(tools.score(g)[0] for g in group)
         margin = sum(tools.score(g)[0] - tools.score(g)[1] for g in group)
         phase = _phase_label(group)
-        opponent = f" against {scope.opponent_id}" if scope.opponent_id else ""
+        opponent = f" against {tools.team_label(scope.opponent_id)}" if scope.opponent_id else ""
+        # A one-game population is a result, so name the opponent and score rather than
+        # leaving an unqualified aggregate that cannot answer an explanation follow-up.
+        game_line = f" ({_game_line(tools, group[0])})" if len(group) == 1 else ""
         values: dict[str, float | int] = {"wins": wins, "losses": len(group) - wins}
         if index == 0:
             if aggregation == "average" or asks_average:
@@ -261,7 +264,7 @@ def team(
                     eligibility={"game": "archived Knicks game"},
                     statement=(
                         f"{prefix} {label}: {value} over {len(group)} archived games"
-                        f"{opponent}{breakdown}."
+                        f"{opponent}{breakdown}{game_line}."
                     ),
                 )
             )

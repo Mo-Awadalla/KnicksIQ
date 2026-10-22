@@ -106,6 +106,9 @@ def render(
         )
     # Only the route's atomic commit makes these proposed state changes authoritative.
     state = loop.tools.state.copy()
+    # A turn that delivered no verified claim (and no archive evidence) declined; the next
+    # follow-up must keep the last accepted topic and scope instead of the decline text.
+    state["declined"] = not claims and not answer.evidence_ids
     candidates = [loop.tools.candidates[ref] for ref in answer.fact_ids]
     used = {c.claim_id for c in claims}
     # Deterministic facts also count as delivered when they make it into a committed response.
