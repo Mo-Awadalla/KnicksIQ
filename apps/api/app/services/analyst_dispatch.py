@@ -71,6 +71,7 @@ async def execute_call(tools: AnalystTools, call: ToolCall) -> ToolResult:
         "periods",
         "relative_game_count",
         "metric",
+        "aggregation",
     ):
         authoritative = getattr(tools.scope, key)
         if authoritative:

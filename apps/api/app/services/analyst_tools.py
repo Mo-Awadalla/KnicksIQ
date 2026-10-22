@@ -45,7 +45,6 @@ class AnalystTools:
         self.games: list[Game] = []
         self.rows: list[tuple[PlayerGameStat, Player]] = []
         self.scope: ResolvedQuery | None = None
-        self.aggregation: str | None = None
         self.team_names: dict[str, str] = {}
         self.different = bool(re.search(r"\bdifferent player\b", question, re.I))
         self.topic = question
@@ -123,7 +122,7 @@ class AnalystTools:
                 topic=prior_topic,
                 player_ids=prior_scope.get("player_ids") or [],
                 metric=prior_scope.get("metric"),
-                aggregation=aggregation_of(prior_topic),
+                aggregation=prior_scope.get("aggregation") or aggregation_of(prior_topic),
                 season_type=prior_scope.get("season_type"),
                 all_phases=bool(prior_scope.get("all_phases")),
                 home_away=prior_scope.get("home_away"),
@@ -138,9 +137,6 @@ class AnalystTools:
             )
             if followup and (prior_topic or prior_scope)
             else None
-        )
-        self.aggregation = aggregation_of(self.question) or (
-            inherited.aggregation if inherited else None
         )
         resolve_started = time.monotonic()
         # Resolving with the inherited scope as the default, rather than patching keys

@@ -209,7 +209,7 @@ async def test_individual_absence_is_not_coverage_but_a_whole_game_is(db_session
 
 
 async def test_team_average_aggregation_yields_per_game_claims(db_session):
-    tools, _ = await make_tools(db_session, "What was the Knicks average margin?")
+    tools, _ = await make_tools(db_session, "What were the Knicks points and margin?")
     totals = await tools.execute(
         ToolCall(name="get_team_stats", question=tools.question, aggregation="total")
     )

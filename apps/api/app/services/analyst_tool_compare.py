@@ -40,9 +40,10 @@ async def run(
     # A baseline may intentionally use a different phase/window, never another release.
     baseline_scope = baseline_scope.model_copy(update={"player_ids": scope.player_ids})
     baseline_games = tools.selected_games(baseline_scope)
-    metric = call.metric or scope.metric or "points"
-    first = player(tools, scope, games, metric, call.aggregation)
-    second = player(tools, baseline_scope, baseline_games, metric, call.aggregation)
+    metric = scope.metric or call.metric or "points"
+    aggregation = scope.aggregation or call.aggregation
+    first = player(tools, scope, games, metric, aggregation)
+    second = player(tools, baseline_scope, baseline_games, metric, aggregation)
     if not first.claims or not second.claims:
         return ToolResult(
             status="incomplete_coverage",
