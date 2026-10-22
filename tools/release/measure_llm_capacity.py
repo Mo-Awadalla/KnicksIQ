@@ -1,9 +1,9 @@
 """Measure live llm_primary provider cost, tokens, calls and latency per question.
 
-Runs a deterministic round-robin sample through the in-process FastAPI app with the real
-OpenRouter provider, one question at a time, and records the charged monthly-ledger delta for each
-question. The ledger delta is authoritative because reserve() and settle() are what the cutoff
-enforces; the provider's reported usage is recorded beside it as a cross-check.
+Runs a deterministic round-robin sample through the in-process FastAPI app with the real provider
+configured by `AI_PROVIDER`, one question at a time, and records the charged monthly-ledger delta
+for each question. The ledger delta is authoritative because reserve() and settle() are what the
+cutoff enforces; the provider's reported usage is recorded beside it as a cross-check.
 
     uv run --package knicksiq-api python tools/release/measure_llm_capacity.py \
         --questions 40 --out capacity.json
@@ -250,8 +250,10 @@ async def run(limit: int, production_cutoff: float) -> tuple[dict[str, Any], lis
 
     meta = {
         "generated_at": datetime.now(UTC).isoformat(),
-        "scope": "In-process ASGI app, real OpenRouter provider, restored active release, "
-        "Qdrant disabled, sequential single client.",
+        "scope": (
+            f"In-process ASGI app, real {settings.ai_provider} provider, "
+            "restored active release, Qdrant disabled, sequential single client."
+        ),
         "provider": settings.ai_provider,
         "base_url_host": settings.ai_base_url.split("/")[2]
         if "://" in settings.ai_base_url

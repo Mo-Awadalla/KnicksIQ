@@ -17,10 +17,16 @@ here instead of restating the mode.
 
 The launch serves `ANALYSIS_ANSWER_MODE=llm_primary` with `ANALYST_EVIDENCE_LOOP_ENABLED=true`,
 `ANALYSIS_SHADOW_SAMPLE_RATE=0.1` retained only for explicit shadow drills (primary turns are
-never sampled), `OPENROUTER_MONTHLY_CUTOFF_USD=2`, an allowlist containing only the configured
-model, and a configured Sentry DSN. Users receive validated evidence-loop answers. Any provider,
-budget, validation or optional-dependency failure degrades to deterministic cited facts. These are
-the values declared by `render.yaml` and asserted by `test_render_blueprint_enables_the_grounded_ai_configuration`.
+never sampled), `OPENROUTER_MONTHLY_CUTOFF_USD=2`, and a configured Sentry DSN. Models run on the
+owner's OpenCode Go subscription: `AI_PROVIDER=opencode-go`, `AI_CHAT_MODEL=deepseek-v4.1-flash`
+writes over Chat Completions, and `ANALYST_REVIEW_MODEL=gpt-6-luna` reviews over the Responses API
+(`AI_MODEL_PROTOCOLS={"gpt-6-luna":"responses"}`). `AI_MODEL_PRICES` prices each call because Go
+reports no per-call cost, and `OPENROUTER_ALLOWED_MODELS` contains exactly the writer and the
+reviewer. Users receive validated evidence-loop answers. Any provider, budget, validation or
+optional-dependency failure degrades to deterministic cited facts, and a suspended Go account
+needs no action. Switching back to OpenRouter is the configuration change in
+[the runbook](production-runbook.md#switch-back-to-openrouter). These are the values declared by
+`render.yaml` and asserted by `test_render_blueprint_enables_the_grounded_ai_configuration`.
 
 ### Analyst behavior at launch
 
@@ -32,10 +38,11 @@ phase; the overall record appears only when asked. Typed pre-model refusals cove
 override, wagering and out-of-archive dates. Other unsupported wording reaches the analyst, which
 declines or explains coverage through the `refused` flag. Prompt v4 and validator v2 run the
 deterministic number gate. Reasoning effort is `none` by default, token caps are enforced and
-deterministic prefetch is enabled. The $2 cutoff supports about 1,009 questions per month on the
-70-question mix and about 750 on the held-out rate, at mean costs of $0.001981 and $0.002668
-per question, respectively. The measured p95 latency is 7,640 ms on 140 questions at the
-16,000-byte input budget. The four second gate is not met. Capacity is route dependent. Full
+deterministic prefetch is enabled. Measured on OpenRouter, the $2 cutoff supports about 1,009
+questions per month on the 70-question mix and about 750 on the held-out rate, at mean costs of
+$0.001981 and $0.002668 per question, respectively. The measured p95 latency on OpenRouter is
+7,640 ms on 140 questions at the 16,000-byte input budget. The four second gate is not met.
+Capacity was route dependent. OpenCode Go latency and capacity are not yet measured. Full
 behavior is in [the analyst implementation](analyst-evidence-loop.md). Evidence is in the
 [final measurement](release-evidence/llm-primary-20261021/final/README.md).
 

@@ -79,7 +79,7 @@ inventing data. Rate-limit failures return 429.
 
 The public schema is identical in `deterministic`, `shadow` and `llm_primary`.
 In shadow mode the user receives the deterministic response. In primary mode,
-failure of Qdrant, OpenRouter, Redis-backed AI budgeting or claim validation
+failure of Qdrant, the model host, Redis-backed AI budgeting or claim validation
 returns that same deterministic response with `degraded=true`.
 
 ## Development-only mutation routes

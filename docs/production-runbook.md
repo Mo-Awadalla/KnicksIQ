@@ -1,6 +1,6 @@
 # KnicksIQ production runbook
 
-Production serves one immutable 2025-26 archive release. The API never migrates, seeds, ingests, generates reports, or mutates basketball data at startup. Qdrant, Redis, and OpenRouter are required for the LLM-primary path but remain optional for availability; Postgres and one validated active release are the only dependencies required for deterministic answers.
+Production serves one immutable 2025-26 archive release. The API never migrates, seeds, ingests, generates reports, or mutates basketball data at startup. Qdrant, Redis, and the OpenCode Go model host are required for the LLM-primary path but remain optional for availability; Postgres and one validated active release are the only dependencies required for deterministic answers.
 
 ## Failed deployment and rollback
 
@@ -21,7 +21,10 @@ Production serves one immutable 2025-26 archive release. The API never migrates,
 
 - Qdrant: leave the API up; responses fall back to deterministic Postgres answers with `degraded=true`. Rebuild or resume the cluster, validate counts and Recall@5, then switch aliases.
 - Redis: AI synthesis and shared caching are disabled during the outage. In-process limits protect one instance and deterministic facts remain available. A restarted free Key Value instance loses only reconstructible rate-limit, cache, and AI budget state.
-- OpenRouter or budget exhaustion: deterministic phrasing remains available. Do not raise the configured application cutoff (currently $2 in `render.yaml`) without owner approval.
+- OpenCode Go or budget exhaustion: deterministic phrasing remains available. A suspended or
+  failed Go account degrades every turn to cited deterministic facts; it needs no setting change,
+  and switching back to OpenRouter is the configuration change below. Do not raise the configured
+  application cutoff (currently $2 in `render.yaml`) without owner approval.
 - Sentry: application availability is unaffected. Use Render logs and synthetic checks until restored.
 
 ### Analyst reports “Model or budget unavailable”
@@ -44,6 +47,43 @@ hash was empty. The missing ledger was restored at $0.07, covering lifetime usag
 plus a conservative six-call allowance. The cutoff in force at that time was $8;
 the current blueprint sets $2. Subsequent model validation/time-limit failures are
 separate from this repaired budget block.
+
+## Model host
+
+Production calls models through the owner's OpenCode Go subscription at
+`https://opencode.ai/inference/go/openai/v1`. `deepseek-v4.1-flash` writes over Chat Completions
+and `gpt-6-luna` reviews over the Responses API, so the reviewer is a different model family from
+the writer. `ANALYST_REVIEW_MODEL` selects the reviewer. `AI_MODEL_PROTOCOLS` names the wire
+protocol per model (`{"gpt-6-luna":"responses"}`); a model it does not name uses Chat Completions.
+A reviewer outside `OPENROUTER_ALLOWED_MODELS` fails the review closed, and preflight reports it.
+
+Go reports no per-call cost, so `AI_MODEL_PRICES` lists USD per million input/output tokens and
+the ledger prices each call from its token usage. Without it the ledger would settle only the flat
+reservation. DeepSeek is priced at Go's peak rate, so the ledger never undercounts. Each analyst
+turn sends a random session id in `x-opencode-session`, never the user's session token, plus
+`AI_USER_AGENT` (`knicksiq/1.0`).
+
+The owner accepted the terms risk on 2026-10-22; the wording, the probe results and the switch
+back are in [the OpenCode Go decision](release-evidence/llm-primary-20261021/opencode-go/README.md).
+
+### Switch back to OpenRouter
+
+This is the rollback when Go is suspended or its terms stop fitting. It is a configuration
+change, not a code change, and it needs a funded OpenRouter key; the account was out of credits
+on 2026-10-22.
+
+1. Set `AI_PROVIDER=openrouter` and `AI_BASE_URL=https://openrouter.ai/api/v1`.
+2. Use the prefixed ids in `AI_CHAT_MODEL` (`deepseek/deepseek-v4.1-flash`),
+   `ANALYST_REVIEW_MODEL` (`openai/gpt-6-luna`) and `OPENROUTER_SUMMARY_MODEL`
+   (`deepseek/deepseek-v4.1-flash`), and list them in `OPENROUTER_ALLOWED_MODELS`.
+3. Clear `AI_MODEL_PROTOCOLS` and `AI_MODEL_PRICES`: OpenRouter reports per-call cost, and its
+   request body differs (a `reasoning` block and the `provider` routing block replace the
+   top-level `reasoning_effort`).
+4. Set the OpenRouter key as `AI_API_KEY`, redeploy the same image, and confirm one validated
+   turn, the ledger delta and `/health/ready`.
+
+Until those settings change, a suspended Go account needs no action: every answer is the cited
+deterministic fallback.
 
 ## Elevated errors
 
@@ -78,20 +118,23 @@ The authoritative launch configuration is
 
 ## Capacity, cost and latency
 
-At the $2 cutoff, the 16,000-byte measurement supports about 1,009 questions per month on the
-70-question mix and about 750 on the held-out rate. Mean cost is $0.001981 per question on the
-70-question mix and $0.002668 at the held-out rate. Capacity is route dependent because OpenRouter
-routing is unpinned and the adapter does not pin a provider today. See the
+The cost and latency figures below were measured on OpenRouter, before the 2026-10-22 move to
+OpenCode Go; they are not Go measurements. At the $2 cutoff, the 16,000-byte measurement supports
+about 1,009 questions per month on the 70-question mix and about 750 on the held-out rate. Mean
+cost is $0.001981 per question on the 70-question mix and $0.002668 at the held-out rate. Capacity
+was route dependent because OpenRouter routing is unpinned and the adapter does not pin a provider
+today; Go has one upstream and no per-upstream routing. See the
 [final measurement](release-evidence/llm-primary-20261021/final/README.md).
 
 Billed provider failures settle at the provider's reported cost. A call with no HTTP response
 keeps the flat reservation. Every measured run reconciles the ledger delta to settled cost plus
 the open reservation delta. Check the ledger and provider usage separately after an incident.
 
-Measured latency on 140 questions (70 questions in two trials) at the 16,000-byte input budget is
-p50 3,312 ms and p95 7,640 ms, with 2.74 provider calls per question. The release gate is p95 below
-four seconds and is not met. Treat a p95 rise above the recorded baseline as a regression. Evidence
-is in the [final measurement](release-evidence/llm-primary-20261021/final/README.md).
+Measured latency on OpenRouter was p50 3,312 ms and p95 7,640 ms on 140 questions (70 questions in
+two trials) at the 16,000-byte input budget, with 2.74 provider calls per question. The release
+gate is p95 below four seconds and is not met. Treat a p95 rise above the recorded baseline as a
+regression. Go latency is not yet measured. Evidence is in the
+[final measurement](release-evidence/llm-primary-20261021/final/README.md).
 
 ## Rollback drill: llm_primary to deterministic or shadow
 
@@ -125,8 +168,8 @@ Before changing anything, record the live API deployment ID and commit, `/health
    losses with `regular season` stated in the answer. Re-send the same question with `overall`
    added and expect 69 wins and 32 losses. A 200 alone is not proof; check these fields. If the
    phase or either record differs, stop.
-4. Confirm model spend stopped: the OpenRouter usage counter stays flat and the ledger total is
-   unchanged after the three requests. This check is operator-side, not public.
+4. Confirm model spend stopped: the OpenCode Go subscription usage stays flat and the ledger total
+   is unchanged after the three requests. This check is operator-side, not public.
 5. If any assertion fails, do not continue. Restore `ANALYSIS_ANSWER_MODE=llm_primary` with
    **Save and deploy**, re-verify, and alert the owner.
 
@@ -161,7 +204,7 @@ https://render.com/docs/configure-environment-variables.
 
 ## Secret rotation
 
-Rotate one secret at a time: database, Redis, Qdrant, OpenRouter, Sentry, Formspree, then the IP-HMAC secret. The HMAC secret intentionally invalidates rate/cache keys. Redeploy the same immutable image, run smoke checks, and revoke the old secret.
+Rotate one secret at a time: database, Redis, Qdrant, the AI provider key (`AI_API_KEY`), Sentry, Formspree, then the IP-HMAC secret. The HMAC secret intentionally invalidates rate/cache keys. Redeploy the same immutable image, run smoke checks, and revoke the old secret.
 
 ## Backups and monitoring
 
