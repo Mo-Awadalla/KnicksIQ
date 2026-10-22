@@ -33,10 +33,11 @@ Capabilities are derived: a tool with `supports_periods` adds period scores and 
 events to the model-facing data list. Quarter, period, play-by-play and split questions are
 answerable. Dispatch names the period tools when a full-game tool cannot serve a period scope.
 
-`ResolvedQuery` owns the requested metric and aggregation as well as the game population.
-Dispatch applies that scope before execution. Player, comparison and team handlers prefer the
-resolved metric and aggregation over model-supplied alternatives. An unspecified field remains
-available for the model to select. Aggregation is saved with session scope for follow-up turns.
+`ResolvedQuery` owns the requested statistics and game population. `requested_metrics` and
+`requested_aggregations` preserve compound requests. The scalar `metric` and `aggregation`
+identify an unambiguous selection, not an arbitrary first member. Dispatch keeps single
+selections authoritative and restricts compound tool calls to a requested member. Session
+scope retains both sets for follow-ups. Unspecified fields remain model-selectable.
 
 ## Claims, prompt and reviewer
 
@@ -55,6 +56,10 @@ source windows. Committed responses alone advance novelty state.
 receipts, plus explicitly cited receipts. Validation, reviewer input and delivery use that
 selection. A factual statement cannot borrow a different, undeclared claim to pass the numeric
 check. Unknown or unsupplied references fail before review.
+
+Player coverage text describes non-appearances and missing data without internal game ids.
+The reviewer receives those coverage limitations with the selected claim. Numeric validation
+does not whitelist identifiers or arbitrary numbers from coverage prose.
 
 The reviewer receives a fresh context with the proposed answer, selected evidence, capabilities
 and interpretation policy. The backend owns the sentence spans and requires one verdict per span
@@ -93,13 +98,15 @@ fails before calling the reviewer. It removes server-only source-id lists from c
 receipts, not their statements or sample sizes. The separate evidence ceiling stays at 6,000
 UTF-8 bytes. Enlarging the total input limit does not enlarge that ceiling.
 
-`ANALYST_PREFETCH_ENABLED` defaults to true. Deterministic prefetch runs the one tool a clear
-question already requires before the first model call: `discover_facts` for narrative, turning
-point and single-player questions, `get_team_stats` for resolved team record or window questions,
-and `get_player_stats` for a single-player average with a resolved window. It skips
+`ANALYST_PREFETCH_ENABLED` defaults to true. Deterministic prefetch runs the tools a clear
+question requires before the first model call. Simple single-player compound requests fetch
+each requested metric and aggregation within the existing six-tool limit. Fallback retains
+all requested statistics already fetched, rather than treating a compound metric as points.
+Other routes use `discover_facts` for narrative and single-player facts, `get_team_stats` for
+team records and `get_player_stats` for single-player aggregates. Prefetch skips
 clarifications, live, future, injury and trade questions, multi-player comparisons,
 player-versus-opponent questions, comparative metric questions and two-population comparisons.
-Prefetch passes only a question and aggregation; the backend applies the resolved scope.
+Prefetch passes the current question and selected metric and aggregation. Dispatch applies scope.
 Prefetched tools count toward the tool and model call bounds.
 
 Measured on OpenRouter, on 140 questions (70 questions in two trials) at the 16,000-byte input
