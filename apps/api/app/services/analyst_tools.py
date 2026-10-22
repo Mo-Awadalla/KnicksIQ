@@ -16,7 +16,11 @@ from app.services.analyst_calculations import METRICS
 from app.services.analyst_dispatch import execute_call
 from app.services.analyst_tool_registry import capability_data_types
 from app.services.evidence_contracts import Candidate, Evidence, ToolCall, ToolResult, VerifiedClaim
-from app.services.query_game_scope import InheritedScope, is_elliptical_follow_up
+from app.services.query_game_scope import (
+    InheritedScope,
+    is_elliptical_follow_up,
+    needs_many_games,
+)
 from app.services.query_resolution import ResolvedQuery, phrase_names_scope, resolve_query
 from app.services.query_text import aggregation_of
 from sqlalchemy import select
@@ -107,6 +111,12 @@ class AnalystTools:
         prior_scope = (
             entry_scope if entry_scope and not declined else (self.state.get("last_scope") or {})
         )
+        single_game = len(prior_scope.get("game_ids") or []) == 1 or bool(
+            prior_scope.get("date_start")
+            and prior_scope.get("date_start") == prior_scope.get("date_end")
+        )
+        if single_game and needs_many_games(self.question):
+            self.followup = False
         followup = self.followup and bool(prior_topic or prior_scope)
         inherited = (
             InheritedScope(

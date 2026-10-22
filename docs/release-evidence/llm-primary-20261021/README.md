@@ -49,3 +49,5 @@ record-scope negative cases are `ops/preflight-record-policy-fail.json` and
 totals embedded in `replay.json`. Its head 0/64 counts deterministic and structure rejections of
 preselected mutations; the model reviewer was never called on them, so the reviewer's
 false-acceptance rate is unmeasured. `gate-mutations.md` has the unselected gate result.
+
+The decision trail is `decisions.tsv`, continued in `decisions-2.tsv` (split at the 20 KB file limit).
