@@ -98,6 +98,10 @@
     "followup_run_usd": null,
     "followup_cost_note": "Not recoverable from the committed live artifact: the adapter retained model/protocol/latency but not prompt/completion token usage. No rerun was made."
   },
+  "backend_gate": {
+    "command": "env -i HOME=$HOME PATH=$PATH TEST_MODE=true uv run pytest apps packages tools/report_audit",
+    "result": "439 passed in 32.72s"
+  },
   "done_predicate": {
     "held_out_at_least_80_percent": "NOT VERIFIED"
   }

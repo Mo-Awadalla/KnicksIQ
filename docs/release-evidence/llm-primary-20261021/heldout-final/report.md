@@ -89,6 +89,16 @@ Measured main-run token cost, using the configured price table:
 
 The follow-up run's recorded trace latency was p50 **8,627 ms** / p95 **23,219 ms** per turn and p50 **22,802 ms** / p95 **31,733 ms** per two-turn session; follow-up wall time was 226.03 s. Its adapter retained model/protocol/latency but not prompt/completion token counts, so its cost cannot be recovered from the saved artifact. No second run was made to recover it. `metrics.json` contains machine-readable results and this limitation.
 
+## Backend gate
+
+Required clean-environment command:
+
+```sh
+env -i HOME=$HOME PATH=$PATH TEST_MODE=true uv run pytest apps packages tools/report_audit
+```
+
+Result: **439 passed in 32.72 s**.
+
 ## Artifacts
 
 - `main.json`, `main.scored.jsonl`, `main.responses.jsonl`: honest main score and one raw response per held-out question; JSONL file-level frozen SHA/content hashes are in the `.meta.json` sidecars.
