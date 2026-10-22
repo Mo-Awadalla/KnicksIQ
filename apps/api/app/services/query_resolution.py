@@ -12,7 +12,11 @@ from app.models.game import Game
 from app.models.game_event import GameEvent
 from app.models.player import Player
 from app.services.query_dates import MONTH_WORDS, date_window
-from app.services.query_game_scope import InheritedScope, referenced_game
+from app.services.query_game_scope import (
+    InheritedScope,
+    names_season_scope,
+    referenced_game,
+)
 from app.services.query_names import (
     resolve_player_mentions as _resolve_player_mentions,
 )
@@ -179,8 +183,11 @@ async def resolve_query(
         if re.search(r"\b(?:road|away)\b", q)
         else None
     )
+    # A follow-up that names the season asks for the season population: the inherited
+    # game/date window is replaced while the topic's subject and metric survive.
+    season_scope = inherit is not None and not named_phase and names_season_scope(question)
     reference = referenced_game(question, inherit, games)
-    named_window = bool(window.explicit or reference)
+    named_window = bool(window.explicit or reference or season_scope)
     # Game ids are the prior window's output, not an input: they may bound an elliptical
     # turn only when it names no opponent, site or outcome of its own.
     inherited_games: list[int] = []
@@ -188,6 +195,10 @@ async def resolve_query(
         # A deictic game reference names the whole window, not only one filter.
         date_start = date_end = reference.game_date
         relative_count = None
+    elif season_scope:
+        date_start = date_end = None
+        relative_count = None
+        relative_from_start = False
     elif inherit is not None and not named_window and not named_phase:
         relative_count = inherit.relative_game_count
         relative_from_start = inherit.relative_from_start
@@ -196,7 +207,13 @@ async def resolve_query(
         if not team_ids and named_site is None and not is_outcome_subset(question):
             inherited_games = inherit.game_ids
     season_level = not (opponent_id or explicit_dates or relative_count or date_start or date_end)
-    if inherit is not None and not named_phase:
+    if season_scope:
+        phase = Phase(
+            named=True,
+            season_type=(inherit.season_type if inherit is not None else None) or "regular",
+            all_phases=False,
+        )
+    elif inherit is not None and not named_phase:
         phase = Phase(named=False, season_type=inherit.season_type, all_phases=inherit.all_phases)
     else:
         phase = resolve_phase(
