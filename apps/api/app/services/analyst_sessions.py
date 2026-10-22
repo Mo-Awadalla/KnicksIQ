@@ -2,16 +2,38 @@
 
 from __future__ import annotations
 
+import asyncio
 import hashlib
 import hmac
 import json
+import logging
 import secrets
 from typing import Any
 
 from app.core.config import get_settings
-from app.services.runtime_store import _redis
 
 TTL = 86_400
+# Session authority is correctness-critical, unlike the fail-fast rate-limit and cache
+# calls: a 0.2 s socket timeout turned a busy Redis into a lost commit. The commit also
+# retries once, and the script is idempotent by turn digest, so a lost reply is not a
+# lost answer.
+SOCKET_SECONDS = 2.0
+logger = logging.getLogger(__name__)
+
+
+async def _session_redis():
+    settings = get_settings()
+    if not settings.redis_url:
+        return None
+    from redis.asyncio import Redis
+
+    return Redis.from_url(
+        settings.redis_url,
+        socket_connect_timeout=SOCKET_SECONDS,
+        socket_timeout=SOCKET_SECONDS,
+    )
+
+
 _BEGIN = """
 if redis.call('EXISTS', KEYS[1]) == 0 and ARGV[6] == '1' then
   return {'conflict', 'session_expired'}
@@ -31,7 +53,14 @@ end
 return {'execute', redis.call('HGET', KEYS[1], 'state') or '{}'}
 """
 _COMMIT = """
-if redis.call('GET', KEYS[2]) ~= ARGV[1] then return 0 end
+local old = redis.call('HGET', KEYS[1], 'turn:' .. ARGV[4])
+if old then
+  local t = cjson.decode(old)
+  if t.digest == ARGV[7] then return 1 end
+  return 0
+end
+local owner = redis.call('GET', KEYS[2])
+if owner and owner ~= ARGV[1] then return 0 end
 local revision = tonumber(redis.call('HGET', KEYS[1], 'revision') or '0')
 if revision ~= tonumber(ARGV[2]) then return 0 end
 redis.call('HSET', KEYS[1], 'revision', revision + 1, 'state', ARGV[3],
@@ -81,7 +110,7 @@ class SessionTurn:
             json.dumps(request, sort_keys=True, separators=(",", ":")).encode()
         ).hexdigest()
         turn = cls(token, turn_id, revision, digest)
-        redis = await _redis()
+        redis = await _session_redis()
         if redis is None:
             raise SessionUnavailable()
         try:
@@ -113,32 +142,45 @@ class SessionTurn:
             await redis.aclose()
 
     async def commit(self, response: dict[str, Any], state: dict[str, Any]) -> bool:
-        redis = await _redis()
-        if redis is None:
-            return False
-        try:
-            record = json.dumps({"digest": self.digest, "response": json.dumps(response)})
-            return bool(
-                await redis.eval(
-                    _COMMIT,
-                    2,
-                    self.key,
-                    self.key + ":lease",
-                    self.owner,
-                    self.revision,
-                    json.dumps(state),
-                    self.turn_id,
-                    record,
-                    TTL,
+        record = json.dumps({"digest": self.digest, "response": json.dumps(response)})
+        for attempt in range(2):
+            redis = await _session_redis()
+            if redis is None:
+                return False
+            try:
+                return bool(
+                    await redis.eval(
+                        _COMMIT,
+                        2,
+                        self.key,
+                        self.key + ":lease",
+                        self.owner,
+                        self.revision,
+                        json.dumps(state),
+                        self.turn_id,
+                        record,
+                        TTL,
+                        self.digest,
+                    )
                 )
-            )
-        except Exception:
-            return False
-        finally:
-            await redis.aclose()
+            except Exception as exc:
+                # A dropped reply is not a failed commit: the script is idempotent by
+                # digest, so the retry reports the stored turn instead of losing it.
+                if attempt:
+                    logger.warning(
+                        "analyst_session_commit_failed request_id=%s error_type=%s",
+                        self.turn_id,
+                        type(exc).__name__,
+                        extra={"request_id": self.turn_id, "error_type": type(exc).__name__},
+                    )
+                    return False
+                await asyncio.sleep(0.05)
+            finally:
+                await redis.aclose()
+        return False
 
     async def abort(self) -> None:
-        redis = await _redis()
+        redis = await _session_redis()
         if redis is None:
             return
         try:

@@ -134,3 +134,6 @@ docs/release-evidence/llm-primary-20261021/w4-followups/*.txt linguist-generated
 docs/release-evidence/llm-primary-20261021/w4-scorer/**/*.json linguist-generated=true
 docs/release-evidence/llm-primary-20261021/w4-scorer/**/*.jsonl linguist-generated=true
 docs/release-evidence/llm-primary-20261021/w4-scorer/**/*.txt linguist-generated=true
+# Follow-up state/topic fixes: live session output and offline transcripts.
+docs/release-evidence/llm-primary-20261021/w4-state/*.json linguist-generated=true
+docs/release-evidence/llm-primary-20261021/w4-state/*.txt linguist-generated=true

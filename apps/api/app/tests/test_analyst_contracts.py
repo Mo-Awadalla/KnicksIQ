@@ -43,12 +43,24 @@ async def test_session_race_replay_conflict_and_atomic_commit(local_redis):
         await SessionTurn.begin(first.token, "new-turn-identity", 0, {"question": "stat"})
     next_turn = await SessionTurn.begin(first.token, "new-turn-identity", 1, {"question": "stat"})
     assert next_turn.state["delivered_fact_ids"] == ["fact:1"]
+    # The lease serializes turns, not commits: one that expired while the turn was still
+    # working must not discard the completed answer. The revision this turn read is still
+    # current, so the commit wins atomically.
     await local_redis.delete(next_turn.key + ":lease")
-    assert not await next_turn.commit({"answer": "Lost lease"}, {"delivered_fact_ids": ["bad"]})
+    assert await next_turn.commit({"answer": "Finished late"}, {"delivered_fact_ids": ["fact:2"]})
+    # A reply lost after the commit must not report the same turn as uncommitted.
+    assert await next_turn.commit({"answer": "Finished late"}, {"delivered_fact_ids": ["fact:2"]})
     assert json.loads(await local_redis.hget(first.key, "state"))["delivered_fact_ids"] == [
-        "fact:1"
+        "fact:2"
     ]
     assert 86000 < await local_redis.ttl(first.key) <= 86400
+    # A different owner holding the lease is a competing turn; its commit stands alone.
+    held = await SessionTurn.begin(first.token, "held-turn", 2, {"question": "stat"})
+    await local_redis.set(held.key + ":lease", "another-owner", ex=35)
+    assert not await held.commit({"answer": "Raced"}, {"delivered_fact_ids": ["bad"]})
+    assert json.loads(await local_redis.hget(first.key, "state"))["delivered_fact_ids"] == [
+        "fact:2"
+    ]
     await local_redis.delete(first.key)
     with pytest.raises(SessionConflict) as expired:
         await SessionTurn.begin(first.token, "expired-turn-identity", 1, {"question": "stat"})
