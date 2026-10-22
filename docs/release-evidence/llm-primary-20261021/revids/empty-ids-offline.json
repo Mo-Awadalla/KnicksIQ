@@ -1,0 +1,3395 @@
+{
+  "source_units": "/Users/mohamedawadalla/.local/share/knicksiq/worktrees/w3-revids/docs/release-evidence/llm-primary-20261021/reviewer/head-units.jsonl",
+  "source_labels": "/Users/mohamedawadalla/.local/share/knicksiq/worktrees/w3-revids/docs/release-evidence/llm-primary-20261021/reviewer/labels.json",
+  "summary": {
+    "recorded": {
+      "correct": {
+        "units": 14,
+        "old_as_recorded": 14,
+        "new_as_recorded": 14,
+        "old_blank": 1,
+        "new_blank": 13,
+        "recovered": 12,
+        "recovered_units": [
+          "exact_statistics-001#0",
+          "exact_statistics-002#0",
+          "exact_statistics-003#0",
+          "exact_statistics-004#0",
+          "exact_statistics-005#0",
+          "exact_statistics-006#0",
+          "exact_statistics-007#0",
+          "exact_statistics-008#0",
+          "date_range_last_n-001#0",
+          "date_range_last_n-002#0",
+          "date_range_last_n-003#0",
+          "comparisons-002#0"
+        ],
+        "still_rejected": [
+          "date_range_last_n-004#0"
+        ]
+      },
+      "wrong": {
+        "units": 3,
+        "old_as_recorded": 2,
+        "new_as_recorded": 2,
+        "old_blank": 0,
+        "new_blank": 1,
+        "recovered": 1,
+        "recovered_units": [
+          "date_range_last_n-006#0"
+        ],
+        "still_rejected": [
+          "exact_statistics-010#0",
+          "date_range_last_n-008#0"
+        ]
+      }
+    },
+    "mutations": {
+      "wrong_total": 288,
+      "gate_accepted": 1,
+      "old_blank_accepted": 0,
+      "new_blank_accepted": 0,
+      "controls": 13,
+      "controls_new_blank_accepted": 0,
+      "new_blank_accepted_rows": []
+    }
+  },
+  "units": [
+    {
+      "unit": "exact_statistics-001#0",
+      "id": "exact_statistics-001",
+      "label": "correct",
+      "spans": 1,
+      "factual": 1,
+      "as_recorded": {
+        "old": true,
+        "new": true
+      },
+      "blank_ids": {
+        "old": false,
+        "new": true
+      },
+      "new_blank_attachable": 1
+    },
+    {
+      "unit": "exact_statistics-002#0",
+      "id": "exact_statistics-002",
+      "label": "correct",
+      "spans": 1,
+      "factual": 1,
+      "as_recorded": {
+        "old": true,
+        "new": true
+      },
+      "blank_ids": {
+        "old": false,
+        "new": true
+      },
+      "new_blank_attachable": 1
+    },
+    {
+      "unit": "exact_statistics-003#0",
+      "id": "exact_statistics-003",
+      "label": "correct",
+      "spans": 1,
+      "factual": 1,
+      "as_recorded": {
+        "old": true,
+        "new": true
+      },
+      "blank_ids": {
+        "old": false,
+        "new": true
+      },
+      "new_blank_attachable": 1
+    },
+    {
+      "unit": "exact_statistics-004#0",
+      "id": "exact_statistics-004",
+      "label": "correct",
+      "spans": 1,
+      "factual": 1,
+      "as_recorded": {
+        "old": true,
+        "new": true
+      },
+      "blank_ids": {
+        "old": false,
+        "new": true
+      },
+      "new_blank_attachable": 1
+    },
+    {
+      "unit": "exact_statistics-005#0",
+      "id": "exact_statistics-005",
+      "label": "correct",
+      "spans": 1,
+      "factual": 1,
+      "as_recorded": {
+        "old": true,
+        "new": true
+      },
+      "blank_ids": {
+        "old": false,
+        "new": true
+      },
+      "new_blank_attachable": 1
+    },
+    {
+      "unit": "exact_statistics-006#0",
+      "id": "exact_statistics-006",
+      "label": "correct",
+      "spans": 1,
+      "factual": 1,
+      "as_recorded": {
+        "old": true,
+        "new": true
+      },
+      "blank_ids": {
+        "old": false,
+        "new": true
+      },
+      "new_blank_attachable": 1
+    },
+    {
+      "unit": "exact_statistics-007#0",
+      "id": "exact_statistics-007",
+      "label": "correct",
+      "spans": 1,
+      "factual": 1,
+      "as_recorded": {
+        "old": true,
+        "new": true
+      },
+      "blank_ids": {
+        "old": false,
+        "new": true
+      },
+      "new_blank_attachable": 1
+    },
+    {
+      "unit": "exact_statistics-008#0",
+      "id": "exact_statistics-008",
+      "label": "correct",
+      "spans": 1,
+      "factual": 1,
+      "as_recorded": {
+        "old": true,
+        "new": true
+      },
+      "blank_ids": {
+        "old": false,
+        "new": true
+      },
+      "new_blank_attachable": 1
+    },
+    {
+      "unit": "exact_statistics-010#0",
+      "id": "exact_statistics-010",
+      "label": "wrong",
+      "spans": 3,
+      "factual": 3,
+      "as_recorded": {
+        "old": true,
+        "new": true
+      },
+      "blank_ids": {
+        "old": false,
+        "new": false
+      },
+      "new_blank_attachable": 2
+    },
+    {
+      "unit": "date_range_last_n-001#0",
+      "id": "date_range_last_n-001",
+      "label": "correct",
+      "spans": 1,
+      "factual": 1,
+      "as_recorded": {
+        "old": true,
+        "new": true
+      },
+      "blank_ids": {
+        "old": false,
+        "new": true
+      },
+      "new_blank_attachable": 1
+    },
+    {
+      "unit": "date_range_last_n-002#0",
+      "id": "date_range_last_n-002",
+      "label": "correct",
+      "spans": 1,
+      "factual": 1,
+      "as_recorded": {
+        "old": true,
+        "new": true
+      },
+      "blank_ids": {
+        "old": false,
+        "new": true
+      },
+      "new_blank_attachable": 1
+    },
+    {
+      "unit": "date_range_last_n-003#0",
+      "id": "date_range_last_n-003",
+      "label": "correct",
+      "spans": 1,
+      "factual": 1,
+      "as_recorded": {
+        "old": true,
+        "new": true
+      },
+      "blank_ids": {
+        "old": false,
+        "new": true
+      },
+      "new_blank_attachable": 1
+    },
+    {
+      "unit": "date_range_last_n-004#0",
+      "id": "date_range_last_n-004",
+      "label": "correct",
+      "spans": 1,
+      "factual": 1,
+      "as_recorded": {
+        "old": true,
+        "new": true
+      },
+      "blank_ids": {
+        "old": false,
+        "new": false
+      },
+      "new_blank_attachable": 0
+    },
+    {
+      "unit": "date_range_last_n-006#0",
+      "id": "date_range_last_n-006",
+      "label": "wrong",
+      "spans": 1,
+      "factual": 1,
+      "as_recorded": {
+        "old": true,
+        "new": true
+      },
+      "blank_ids": {
+        "old": false,
+        "new": true
+      },
+      "new_blank_attachable": 1
+    },
+    {
+      "unit": "date_range_last_n-008#0",
+      "id": "date_range_last_n-008",
+      "label": "wrong",
+      "spans": 2,
+      "factual": 2,
+      "as_recorded": {
+        "old": false,
+        "new": false
+      },
+      "blank_ids": {
+        "old": false,
+        "new": false
+      },
+      "new_blank_attachable": 0
+    },
+    {
+      "unit": "comparisons-002#0",
+      "id": "comparisons-002",
+      "label": "correct",
+      "spans": 2,
+      "factual": 1,
+      "as_recorded": {
+        "old": true,
+        "new": true
+      },
+      "blank_ids": {
+        "old": false,
+        "new": true
+      },
+      "new_blank_attachable": 1
+    },
+    {
+      "unit": "comparisons-004#0",
+      "id": "comparisons-004",
+      "label": "correct",
+      "spans": 2,
+      "factual": 0,
+      "as_recorded": {
+        "old": true,
+        "new": true
+      },
+      "blank_ids": {
+        "old": true,
+        "new": true
+      },
+      "new_blank_attachable": 0
+    }
+  ],
+  "mutation_rows": [
+    {
+      "unit": "exact_statistics-001#0",
+      "id": "exact_statistics-001",
+      "kind": "text_number_swap",
+      "original": "2025",
+      "replacement": "2026",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-001#0",
+      "id": "exact_statistics-001",
+      "kind": "text_number_swap",
+      "original": "2025",
+      "replacement": "2027",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-001#0",
+      "id": "exact_statistics-001",
+      "kind": "text_number_swap",
+      "original": "2025",
+      "replacement": "2028",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-001#0",
+      "id": "exact_statistics-001",
+      "kind": "text_number_swap",
+      "original": "2025",
+      "replacement": "2032",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-001#0",
+      "id": "exact_statistics-001",
+      "kind": "text_number_swap",
+      "original": "2025",
+      "replacement": "2038",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-001#0",
+      "id": "exact_statistics-001",
+      "kind": "text_number_swap",
+      "original": "26",
+      "replacement": "27",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-001#0",
+      "id": "exact_statistics-001",
+      "kind": "text_number_swap",
+      "original": "26",
+      "replacement": "28",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-001#0",
+      "id": "exact_statistics-001",
+      "kind": "text_number_swap",
+      "original": "26",
+      "replacement": "29",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-001#0",
+      "id": "exact_statistics-001",
+      "kind": "text_number_swap",
+      "original": "26",
+      "replacement": "33",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-001#0",
+      "id": "exact_statistics-001",
+      "kind": "text_number_swap",
+      "original": "26",
+      "replacement": "39",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-001#0",
+      "id": "exact_statistics-001",
+      "kind": "text_number_swap",
+      "original": "69",
+      "replacement": "70",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-001#0",
+      "id": "exact_statistics-001",
+      "kind": "text_number_swap",
+      "original": "69",
+      "replacement": "71",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-001#0",
+      "id": "exact_statistics-001",
+      "kind": "text_number_swap",
+      "original": "69",
+      "replacement": "72",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-001#0",
+      "id": "exact_statistics-001",
+      "kind": "text_number_swap",
+      "original": "69",
+      "replacement": "76",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-001#0",
+      "id": "exact_statistics-001",
+      "kind": "text_number_swap",
+      "original": "69",
+      "replacement": "82",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-001#0",
+      "id": "exact_statistics-001",
+      "kind": "text_number_swap",
+      "original": "32",
+      "replacement": "33",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-001#0",
+      "id": "exact_statistics-001",
+      "kind": "text_number_swap",
+      "original": "32",
+      "replacement": "34",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-001#0",
+      "id": "exact_statistics-001",
+      "kind": "text_number_swap",
+      "original": "32",
+      "replacement": "35",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-001#0",
+      "id": "exact_statistics-001",
+      "kind": "text_number_swap",
+      "original": "32",
+      "replacement": "39",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-001#0",
+      "id": "exact_statistics-001",
+      "kind": "text_number_swap",
+      "original": "32",
+      "replacement": "45",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-001#0",
+      "id": "exact_statistics-001",
+      "kind": "text_number_swap",
+      "original": "101",
+      "replacement": "102",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-001#0",
+      "id": "exact_statistics-001",
+      "kind": "text_number_swap",
+      "original": "101",
+      "replacement": "103",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-001#0",
+      "id": "exact_statistics-001",
+      "kind": "text_number_swap",
+      "original": "101",
+      "replacement": "104",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-001#0",
+      "id": "exact_statistics-001",
+      "kind": "text_number_swap",
+      "original": "101",
+      "replacement": "108",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-001#0",
+      "id": "exact_statistics-001",
+      "kind": "text_number_swap",
+      "original": "101",
+      "replacement": "114",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-001#0",
+      "id": "exact_statistics-001",
+      "kind": "percent_of_ratio",
+      "case": "control",
+      "ratio": "0.10",
+      "stated": "10%",
+      "gate_accepts": true,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-001#0",
+      "id": "exact_statistics-001",
+      "kind": "percent_of_ratio",
+      "case": "+1",
+      "ratio": "0.10",
+      "stated": "11%",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-001#0",
+      "id": "exact_statistics-001",
+      "kind": "percent_of_ratio",
+      "case": "+5",
+      "ratio": "0.10",
+      "stated": "15%",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-001#0",
+      "id": "exact_statistics-001",
+      "kind": "percent_of_ratio",
+      "case": "+40",
+      "ratio": "0.10",
+      "stated": "50%",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-002#0",
+      "id": "exact_statistics-002",
+      "kind": "text_number_swap",
+      "original": "11,750",
+      "replacement": "11751",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-002#0",
+      "id": "exact_statistics-002",
+      "kind": "text_number_swap",
+      "original": "11,750",
+      "replacement": "11752",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-002#0",
+      "id": "exact_statistics-002",
+      "kind": "text_number_swap",
+      "original": "11,750",
+      "replacement": "11753",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-002#0",
+      "id": "exact_statistics-002",
+      "kind": "text_number_swap",
+      "original": "11,750",
+      "replacement": "11757",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-002#0",
+      "id": "exact_statistics-002",
+      "kind": "text_number_swap",
+      "original": "11,750",
+      "replacement": "11763",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-002#0",
+      "id": "exact_statistics-002",
+      "kind": "text_number_swap",
+      "original": "101",
+      "replacement": "102",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-002#0",
+      "id": "exact_statistics-002",
+      "kind": "text_number_swap",
+      "original": "101",
+      "replacement": "103",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-002#0",
+      "id": "exact_statistics-002",
+      "kind": "text_number_swap",
+      "original": "101",
+      "replacement": "104",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-002#0",
+      "id": "exact_statistics-002",
+      "kind": "text_number_swap",
+      "original": "101",
+      "replacement": "108",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-002#0",
+      "id": "exact_statistics-002",
+      "kind": "text_number_swap",
+      "original": "101",
+      "replacement": "114",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-002#0",
+      "id": "exact_statistics-002",
+      "kind": "text_number_swap",
+      "original": "2025",
+      "replacement": "2026",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-002#0",
+      "id": "exact_statistics-002",
+      "kind": "text_number_swap",
+      "original": "2025",
+      "replacement": "2027",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-002#0",
+      "id": "exact_statistics-002",
+      "kind": "text_number_swap",
+      "original": "2025",
+      "replacement": "2028",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-002#0",
+      "id": "exact_statistics-002",
+      "kind": "text_number_swap",
+      "original": "2025",
+      "replacement": "2032",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-002#0",
+      "id": "exact_statistics-002",
+      "kind": "text_number_swap",
+      "original": "2025",
+      "replacement": "2038",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-002#0",
+      "id": "exact_statistics-002",
+      "kind": "text_number_swap",
+      "original": "26",
+      "replacement": "27",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-002#0",
+      "id": "exact_statistics-002",
+      "kind": "text_number_swap",
+      "original": "26",
+      "replacement": "28",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-002#0",
+      "id": "exact_statistics-002",
+      "kind": "text_number_swap",
+      "original": "26",
+      "replacement": "29",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-002#0",
+      "id": "exact_statistics-002",
+      "kind": "text_number_swap",
+      "original": "26",
+      "replacement": "33",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-002#0",
+      "id": "exact_statistics-002",
+      "kind": "text_number_swap",
+      "original": "26",
+      "replacement": "39",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-002#0",
+      "id": "exact_statistics-002",
+      "kind": "percent_of_ratio",
+      "case": "control",
+      "ratio": "0.10",
+      "stated": "10%",
+      "gate_accepts": true,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-002#0",
+      "id": "exact_statistics-002",
+      "kind": "percent_of_ratio",
+      "case": "+1",
+      "ratio": "0.10",
+      "stated": "11%",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-002#0",
+      "id": "exact_statistics-002",
+      "kind": "percent_of_ratio",
+      "case": "+5",
+      "ratio": "0.10",
+      "stated": "15%",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-002#0",
+      "id": "exact_statistics-002",
+      "kind": "percent_of_ratio",
+      "case": "+40",
+      "ratio": "0.10",
+      "stated": "50%",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-003#0",
+      "id": "exact_statistics-003",
+      "kind": "text_number_swap",
+      "original": "116.34",
+      "replacement": "116.35",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-003#0",
+      "id": "exact_statistics-003",
+      "kind": "text_number_swap",
+      "original": "116.34",
+      "replacement": "116.36",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-003#0",
+      "id": "exact_statistics-003",
+      "kind": "text_number_swap",
+      "original": "116.34",
+      "replacement": "116.37",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-003#0",
+      "id": "exact_statistics-003",
+      "kind": "text_number_swap",
+      "original": "116.34",
+      "replacement": "116.41",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-003#0",
+      "id": "exact_statistics-003",
+      "kind": "text_number_swap",
+      "original": "116.34",
+      "replacement": "116.47",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-003#0",
+      "id": "exact_statistics-003",
+      "kind": "text_number_swap",
+      "original": "101",
+      "replacement": "102",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-003#0",
+      "id": "exact_statistics-003",
+      "kind": "text_number_swap",
+      "original": "101",
+      "replacement": "103",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-003#0",
+      "id": "exact_statistics-003",
+      "kind": "text_number_swap",
+      "original": "101",
+      "replacement": "104",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-003#0",
+      "id": "exact_statistics-003",
+      "kind": "text_number_swap",
+      "original": "101",
+      "replacement": "108",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-003#0",
+      "id": "exact_statistics-003",
+      "kind": "text_number_swap",
+      "original": "101",
+      "replacement": "114",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-003#0",
+      "id": "exact_statistics-003",
+      "kind": "text_number_swap",
+      "original": "2025",
+      "replacement": "2026",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-003#0",
+      "id": "exact_statistics-003",
+      "kind": "text_number_swap",
+      "original": "2025",
+      "replacement": "2027",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-003#0",
+      "id": "exact_statistics-003",
+      "kind": "text_number_swap",
+      "original": "2025",
+      "replacement": "2028",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-003#0",
+      "id": "exact_statistics-003",
+      "kind": "text_number_swap",
+      "original": "2025",
+      "replacement": "2032",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-003#0",
+      "id": "exact_statistics-003",
+      "kind": "text_number_swap",
+      "original": "2025",
+      "replacement": "2038",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-003#0",
+      "id": "exact_statistics-003",
+      "kind": "text_number_swap",
+      "original": "26",
+      "replacement": "27",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-003#0",
+      "id": "exact_statistics-003",
+      "kind": "text_number_swap",
+      "original": "26",
+      "replacement": "28",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-003#0",
+      "id": "exact_statistics-003",
+      "kind": "text_number_swap",
+      "original": "26",
+      "replacement": "29",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-003#0",
+      "id": "exact_statistics-003",
+      "kind": "text_number_swap",
+      "original": "26",
+      "replacement": "33",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-003#0",
+      "id": "exact_statistics-003",
+      "kind": "text_number_swap",
+      "original": "26",
+      "replacement": "39",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-003#0",
+      "id": "exact_statistics-003",
+      "kind": "percent_of_ratio",
+      "case": "control",
+      "ratio": "0.10",
+      "stated": "10%",
+      "gate_accepts": true,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-003#0",
+      "id": "exact_statistics-003",
+      "kind": "percent_of_ratio",
+      "case": "+1",
+      "ratio": "0.10",
+      "stated": "11%",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-003#0",
+      "id": "exact_statistics-003",
+      "kind": "percent_of_ratio",
+      "case": "+5",
+      "ratio": "0.10",
+      "stated": "15%",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-003#0",
+      "id": "exact_statistics-003",
+      "kind": "percent_of_ratio",
+      "case": "+40",
+      "ratio": "0.10",
+      "stated": "50%",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-004#0",
+      "id": "exact_statistics-004",
+      "kind": "text_number_swap",
+      "original": "7.94",
+      "replacement": "7.95",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-004#0",
+      "id": "exact_statistics-004",
+      "kind": "text_number_swap",
+      "original": "7.94",
+      "replacement": "7.96",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-004#0",
+      "id": "exact_statistics-004",
+      "kind": "text_number_swap",
+      "original": "7.94",
+      "replacement": "7.97",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-004#0",
+      "id": "exact_statistics-004",
+      "kind": "text_number_swap",
+      "original": "7.94",
+      "replacement": "8.01",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-004#0",
+      "id": "exact_statistics-004",
+      "kind": "text_number_swap",
+      "original": "7.94",
+      "replacement": "8.07",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-004#0",
+      "id": "exact_statistics-004",
+      "kind": "text_number_swap",
+      "original": "101",
+      "replacement": "102",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-004#0",
+      "id": "exact_statistics-004",
+      "kind": "text_number_swap",
+      "original": "101",
+      "replacement": "103",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-004#0",
+      "id": "exact_statistics-004",
+      "kind": "text_number_swap",
+      "original": "101",
+      "replacement": "104",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-004#0",
+      "id": "exact_statistics-004",
+      "kind": "text_number_swap",
+      "original": "101",
+      "replacement": "108",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-004#0",
+      "id": "exact_statistics-004",
+      "kind": "text_number_swap",
+      "original": "101",
+      "replacement": "114",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-004#0",
+      "id": "exact_statistics-004",
+      "kind": "text_number_swap",
+      "original": "2025",
+      "replacement": "2026",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-004#0",
+      "id": "exact_statistics-004",
+      "kind": "text_number_swap",
+      "original": "2025",
+      "replacement": "2027",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-004#0",
+      "id": "exact_statistics-004",
+      "kind": "text_number_swap",
+      "original": "2025",
+      "replacement": "2028",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-004#0",
+      "id": "exact_statistics-004",
+      "kind": "text_number_swap",
+      "original": "2025",
+      "replacement": "2032",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-004#0",
+      "id": "exact_statistics-004",
+      "kind": "text_number_swap",
+      "original": "2025",
+      "replacement": "2038",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-004#0",
+      "id": "exact_statistics-004",
+      "kind": "text_number_swap",
+      "original": "26",
+      "replacement": "27",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-004#0",
+      "id": "exact_statistics-004",
+      "kind": "text_number_swap",
+      "original": "26",
+      "replacement": "28",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-004#0",
+      "id": "exact_statistics-004",
+      "kind": "text_number_swap",
+      "original": "26",
+      "replacement": "29",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-004#0",
+      "id": "exact_statistics-004",
+      "kind": "text_number_swap",
+      "original": "26",
+      "replacement": "33",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-004#0",
+      "id": "exact_statistics-004",
+      "kind": "text_number_swap",
+      "original": "26",
+      "replacement": "39",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-004#0",
+      "id": "exact_statistics-004",
+      "kind": "percent_of_ratio",
+      "case": "control",
+      "ratio": "0.10",
+      "stated": "10%",
+      "gate_accepts": true,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-004#0",
+      "id": "exact_statistics-004",
+      "kind": "percent_of_ratio",
+      "case": "+1",
+      "ratio": "0.10",
+      "stated": "11%",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-004#0",
+      "id": "exact_statistics-004",
+      "kind": "percent_of_ratio",
+      "case": "+5",
+      "ratio": "0.10",
+      "stated": "15%",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-004#0",
+      "id": "exact_statistics-004",
+      "kind": "percent_of_ratio",
+      "case": "+40",
+      "ratio": "0.10",
+      "stated": "50%",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-005#0",
+      "id": "exact_statistics-005",
+      "kind": "text_number_swap",
+      "original": "37",
+      "replacement": "38",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-005#0",
+      "id": "exact_statistics-005",
+      "kind": "text_number_swap",
+      "original": "37",
+      "replacement": "39",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-005#0",
+      "id": "exact_statistics-005",
+      "kind": "text_number_swap",
+      "original": "37",
+      "replacement": "40",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-005#0",
+      "id": "exact_statistics-005",
+      "kind": "text_number_swap",
+      "original": "37",
+      "replacement": "44",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-005#0",
+      "id": "exact_statistics-005",
+      "kind": "text_number_swap",
+      "original": "37",
+      "replacement": "50",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-005#0",
+      "id": "exact_statistics-005",
+      "kind": "text_number_swap",
+      "original": "2025",
+      "replacement": "2026",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-005#0",
+      "id": "exact_statistics-005",
+      "kind": "text_number_swap",
+      "original": "2025",
+      "replacement": "2027",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-005#0",
+      "id": "exact_statistics-005",
+      "kind": "text_number_swap",
+      "original": "2025",
+      "replacement": "2028",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-005#0",
+      "id": "exact_statistics-005",
+      "kind": "text_number_swap",
+      "original": "2025",
+      "replacement": "2032",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-005#0",
+      "id": "exact_statistics-005",
+      "kind": "text_number_swap",
+      "original": "2025",
+      "replacement": "2038",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-005#0",
+      "id": "exact_statistics-005",
+      "kind": "text_number_swap",
+      "original": "26",
+      "replacement": "27",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-005#0",
+      "id": "exact_statistics-005",
+      "kind": "text_number_swap",
+      "original": "26",
+      "replacement": "28",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-005#0",
+      "id": "exact_statistics-005",
+      "kind": "text_number_swap",
+      "original": "26",
+      "replacement": "29",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-005#0",
+      "id": "exact_statistics-005",
+      "kind": "text_number_swap",
+      "original": "26",
+      "replacement": "33",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-005#0",
+      "id": "exact_statistics-005",
+      "kind": "text_number_swap",
+      "original": "26",
+      "replacement": "39",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-005#0",
+      "id": "exact_statistics-005",
+      "kind": "percent_of_ratio",
+      "case": "control",
+      "ratio": "0.10",
+      "stated": "10%",
+      "gate_accepts": true,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-005#0",
+      "id": "exact_statistics-005",
+      "kind": "percent_of_ratio",
+      "case": "+1",
+      "ratio": "0.10",
+      "stated": "11%",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-005#0",
+      "id": "exact_statistics-005",
+      "kind": "percent_of_ratio",
+      "case": "+5",
+      "ratio": "0.10",
+      "stated": "15%",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-005#0",
+      "id": "exact_statistics-005",
+      "kind": "percent_of_ratio",
+      "case": "+40",
+      "ratio": "0.10",
+      "stated": "50%",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-006#0",
+      "id": "exact_statistics-006",
+      "kind": "text_number_swap",
+      "original": "32",
+      "replacement": "33",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-006#0",
+      "id": "exact_statistics-006",
+      "kind": "text_number_swap",
+      "original": "32",
+      "replacement": "34",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-006#0",
+      "id": "exact_statistics-006",
+      "kind": "text_number_swap",
+      "original": "32",
+      "replacement": "35",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-006#0",
+      "id": "exact_statistics-006",
+      "kind": "text_number_swap",
+      "original": "32",
+      "replacement": "39",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-006#0",
+      "id": "exact_statistics-006",
+      "kind": "text_number_swap",
+      "original": "32",
+      "replacement": "45",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-006#0",
+      "id": "exact_statistics-006",
+      "kind": "text_number_swap",
+      "original": "2025",
+      "replacement": "2026",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-006#0",
+      "id": "exact_statistics-006",
+      "kind": "text_number_swap",
+      "original": "2025",
+      "replacement": "2027",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-006#0",
+      "id": "exact_statistics-006",
+      "kind": "text_number_swap",
+      "original": "2025",
+      "replacement": "2028",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-006#0",
+      "id": "exact_statistics-006",
+      "kind": "text_number_swap",
+      "original": "2025",
+      "replacement": "2032",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-006#0",
+      "id": "exact_statistics-006",
+      "kind": "text_number_swap",
+      "original": "2025",
+      "replacement": "2038",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-006#0",
+      "id": "exact_statistics-006",
+      "kind": "text_number_swap",
+      "original": "26",
+      "replacement": "27",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-006#0",
+      "id": "exact_statistics-006",
+      "kind": "text_number_swap",
+      "original": "26",
+      "replacement": "28",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-006#0",
+      "id": "exact_statistics-006",
+      "kind": "text_number_swap",
+      "original": "26",
+      "replacement": "29",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-006#0",
+      "id": "exact_statistics-006",
+      "kind": "text_number_swap",
+      "original": "26",
+      "replacement": "33",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-006#0",
+      "id": "exact_statistics-006",
+      "kind": "text_number_swap",
+      "original": "26",
+      "replacement": "39",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-006#0",
+      "id": "exact_statistics-006",
+      "kind": "percent_of_ratio",
+      "case": "control",
+      "ratio": "0.10",
+      "stated": "10%",
+      "gate_accepts": true,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-006#0",
+      "id": "exact_statistics-006",
+      "kind": "percent_of_ratio",
+      "case": "+1",
+      "ratio": "0.10",
+      "stated": "11%",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-006#0",
+      "id": "exact_statistics-006",
+      "kind": "percent_of_ratio",
+      "case": "+5",
+      "ratio": "0.10",
+      "stated": "15%",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-006#0",
+      "id": "exact_statistics-006",
+      "kind": "percent_of_ratio",
+      "case": "+40",
+      "ratio": "0.10",
+      "stated": "50%",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-007#0",
+      "id": "exact_statistics-007",
+      "kind": "text_number_swap",
+      "original": "32",
+      "replacement": "33",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-007#0",
+      "id": "exact_statistics-007",
+      "kind": "text_number_swap",
+      "original": "32",
+      "replacement": "34",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-007#0",
+      "id": "exact_statistics-007",
+      "kind": "text_number_swap",
+      "original": "32",
+      "replacement": "35",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-007#0",
+      "id": "exact_statistics-007",
+      "kind": "text_number_swap",
+      "original": "32",
+      "replacement": "39",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-007#0",
+      "id": "exact_statistics-007",
+      "kind": "text_number_swap",
+      "original": "32",
+      "replacement": "45",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-007#0",
+      "id": "exact_statistics-007",
+      "kind": "text_number_swap",
+      "original": "101",
+      "replacement": "102",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-007#0",
+      "id": "exact_statistics-007",
+      "kind": "text_number_swap",
+      "original": "101",
+      "replacement": "103",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-007#0",
+      "id": "exact_statistics-007",
+      "kind": "text_number_swap",
+      "original": "101",
+      "replacement": "104",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-007#0",
+      "id": "exact_statistics-007",
+      "kind": "text_number_swap",
+      "original": "101",
+      "replacement": "108",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-007#0",
+      "id": "exact_statistics-007",
+      "kind": "text_number_swap",
+      "original": "101",
+      "replacement": "114",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-007#0",
+      "id": "exact_statistics-007",
+      "kind": "percent_of_ratio",
+      "case": "control",
+      "ratio": "0.10",
+      "stated": "10%",
+      "gate_accepts": true,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-007#0",
+      "id": "exact_statistics-007",
+      "kind": "percent_of_ratio",
+      "case": "+1",
+      "ratio": "0.10",
+      "stated": "11%",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-007#0",
+      "id": "exact_statistics-007",
+      "kind": "percent_of_ratio",
+      "case": "+5",
+      "ratio": "0.10",
+      "stated": "15%",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-007#0",
+      "id": "exact_statistics-007",
+      "kind": "percent_of_ratio",
+      "case": "+40",
+      "ratio": "0.10",
+      "stated": "50%",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-008#0",
+      "id": "exact_statistics-008",
+      "kind": "text_number_swap",
+      "original": "2025",
+      "replacement": "2027",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-008#0",
+      "id": "exact_statistics-008",
+      "kind": "text_number_swap",
+      "original": "2025",
+      "replacement": "2028",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-008#0",
+      "id": "exact_statistics-008",
+      "kind": "text_number_swap",
+      "original": "2025",
+      "replacement": "2032",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-008#0",
+      "id": "exact_statistics-008",
+      "kind": "text_number_swap",
+      "original": "2025",
+      "replacement": "2038",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-008#0",
+      "id": "exact_statistics-008",
+      "kind": "text_number_swap",
+      "original": "26",
+      "replacement": "27",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-008#0",
+      "id": "exact_statistics-008",
+      "kind": "text_number_swap",
+      "original": "26",
+      "replacement": "28",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-008#0",
+      "id": "exact_statistics-008",
+      "kind": "text_number_swap",
+      "original": "26",
+      "replacement": "29",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-008#0",
+      "id": "exact_statistics-008",
+      "kind": "text_number_swap",
+      "original": "26",
+      "replacement": "33",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-008#0",
+      "id": "exact_statistics-008",
+      "kind": "text_number_swap",
+      "original": "26",
+      "replacement": "39",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-008#0",
+      "id": "exact_statistics-008",
+      "kind": "text_number_swap",
+      "original": "54",
+      "replacement": "55",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-008#0",
+      "id": "exact_statistics-008",
+      "kind": "text_number_swap",
+      "original": "54",
+      "replacement": "56",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-008#0",
+      "id": "exact_statistics-008",
+      "kind": "text_number_swap",
+      "original": "54",
+      "replacement": "57",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-008#0",
+      "id": "exact_statistics-008",
+      "kind": "text_number_swap",
+      "original": "54",
+      "replacement": "61",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-008#0",
+      "id": "exact_statistics-008",
+      "kind": "text_number_swap",
+      "original": "54",
+      "replacement": "67",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-008#0",
+      "id": "exact_statistics-008",
+      "kind": "text_number_swap",
+      "original": "120",
+      "replacement": "121",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-008#0",
+      "id": "exact_statistics-008",
+      "kind": "text_number_swap",
+      "original": "120",
+      "replacement": "122",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-008#0",
+      "id": "exact_statistics-008",
+      "kind": "text_number_swap",
+      "original": "120",
+      "replacement": "123",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-008#0",
+      "id": "exact_statistics-008",
+      "kind": "text_number_swap",
+      "original": "120",
+      "replacement": "127",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-008#0",
+      "id": "exact_statistics-008",
+      "kind": "text_number_swap",
+      "original": "120",
+      "replacement": "133",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-008#0",
+      "id": "exact_statistics-008",
+      "kind": "percent_of_ratio",
+      "case": "control",
+      "ratio": "0.10",
+      "stated": "10%",
+      "gate_accepts": true,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-008#0",
+      "id": "exact_statistics-008",
+      "kind": "percent_of_ratio",
+      "case": "+1",
+      "ratio": "0.10",
+      "stated": "11%",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-008#0",
+      "id": "exact_statistics-008",
+      "kind": "percent_of_ratio",
+      "case": "+5",
+      "ratio": "0.10",
+      "stated": "15%",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "exact_statistics-008#0",
+      "id": "exact_statistics-008",
+      "kind": "percent_of_ratio",
+      "case": "+40",
+      "ratio": "0.10",
+      "stated": "50%",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "date_range_last_n-001#0",
+      "id": "date_range_last_n-001",
+      "kind": "text_number_swap",
+      "original": "5",
+      "replacement": "6",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "date_range_last_n-001#0",
+      "id": "date_range_last_n-001",
+      "kind": "text_number_swap",
+      "original": "5",
+      "replacement": "7",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "date_range_last_n-001#0",
+      "id": "date_range_last_n-001",
+      "kind": "text_number_swap",
+      "original": "5",
+      "replacement": "8",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "date_range_last_n-001#0",
+      "id": "date_range_last_n-001",
+      "kind": "text_number_swap",
+      "original": "5",
+      "replacement": "18",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "date_range_last_n-001#0",
+      "id": "date_range_last_n-001",
+      "kind": "text_number_swap",
+      "original": "4",
+      "replacement": "6",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "date_range_last_n-001#0",
+      "id": "date_range_last_n-001",
+      "kind": "text_number_swap",
+      "original": "4",
+      "replacement": "7",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "date_range_last_n-001#0",
+      "id": "date_range_last_n-001",
+      "kind": "text_number_swap",
+      "original": "4",
+      "replacement": "11",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "date_range_last_n-001#0",
+      "id": "date_range_last_n-001",
+      "kind": "text_number_swap",
+      "original": "4",
+      "replacement": "17",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "date_range_last_n-001#0",
+      "id": "date_range_last_n-001",
+      "kind": "percent_of_ratio",
+      "case": "control",
+      "ratio": "0.10",
+      "stated": "10%",
+      "gate_accepts": true,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "date_range_last_n-001#0",
+      "id": "date_range_last_n-001",
+      "kind": "percent_of_ratio",
+      "case": "+1",
+      "ratio": "0.10",
+      "stated": "11%",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "date_range_last_n-001#0",
+      "id": "date_range_last_n-001",
+      "kind": "percent_of_ratio",
+      "case": "+5",
+      "ratio": "0.10",
+      "stated": "15%",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "date_range_last_n-001#0",
+      "id": "date_range_last_n-001",
+      "kind": "percent_of_ratio",
+      "case": "+40",
+      "ratio": "0.10",
+      "stated": "50%",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "date_range_last_n-002#0",
+      "id": "date_range_last_n-002",
+      "kind": "text_number_swap",
+      "original": "10",
+      "replacement": "11",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "date_range_last_n-002#0",
+      "id": "date_range_last_n-002",
+      "kind": "text_number_swap",
+      "original": "10",
+      "replacement": "12",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "date_range_last_n-002#0",
+      "id": "date_range_last_n-002",
+      "kind": "text_number_swap",
+      "original": "10",
+      "replacement": "13",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "date_range_last_n-002#0",
+      "id": "date_range_last_n-002",
+      "kind": "text_number_swap",
+      "original": "10",
+      "replacement": "17",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "date_range_last_n-002#0",
+      "id": "date_range_last_n-002",
+      "kind": "text_number_swap",
+      "original": "10",
+      "replacement": "23",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "date_range_last_n-002#0",
+      "id": "date_range_last_n-002",
+      "kind": "text_number_swap",
+      "original": "114.1",
+      "replacement": "114.2",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "date_range_last_n-002#0",
+      "id": "date_range_last_n-002",
+      "kind": "text_number_swap",
+      "original": "114.1",
+      "replacement": "114.3",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "date_range_last_n-002#0",
+      "id": "date_range_last_n-002",
+      "kind": "text_number_swap",
+      "original": "114.1",
+      "replacement": "114.4",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "date_range_last_n-002#0",
+      "id": "date_range_last_n-002",
+      "kind": "text_number_swap",
+      "original": "114.1",
+      "replacement": "114.8",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "date_range_last_n-002#0",
+      "id": "date_range_last_n-002",
+      "kind": "text_number_swap",
+      "original": "114.1",
+      "replacement": "115.4",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "date_range_last_n-002#0",
+      "id": "date_range_last_n-002",
+      "kind": "text_number_swap",
+      "original": "9",
+      "replacement": "11",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "date_range_last_n-002#0",
+      "id": "date_range_last_n-002",
+      "kind": "text_number_swap",
+      "original": "9",
+      "replacement": "12",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "date_range_last_n-002#0",
+      "id": "date_range_last_n-002",
+      "kind": "text_number_swap",
+      "original": "9",
+      "replacement": "16",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "date_range_last_n-002#0",
+      "id": "date_range_last_n-002",
+      "kind": "text_number_swap",
+      "original": "9",
+      "replacement": "22",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "date_range_last_n-002#0",
+      "id": "date_range_last_n-002",
+      "kind": "percent_of_ratio",
+      "case": "control",
+      "ratio": "0.10",
+      "stated": "10%",
+      "gate_accepts": true,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "date_range_last_n-002#0",
+      "id": "date_range_last_n-002",
+      "kind": "percent_of_ratio",
+      "case": "+1",
+      "ratio": "0.10",
+      "stated": "11%",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "date_range_last_n-002#0",
+      "id": "date_range_last_n-002",
+      "kind": "percent_of_ratio",
+      "case": "+5",
+      "ratio": "0.10",
+      "stated": "15%",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "date_range_last_n-002#0",
+      "id": "date_range_last_n-002",
+      "kind": "percent_of_ratio",
+      "case": "+40",
+      "ratio": "0.10",
+      "stated": "50%",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "date_range_last_n-003#0",
+      "id": "date_range_last_n-003",
+      "kind": "text_number_swap",
+      "original": "32.6",
+      "replacement": "32.7",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "date_range_last_n-003#0",
+      "id": "date_range_last_n-003",
+      "kind": "text_number_swap",
+      "original": "32.6",
+      "replacement": "32.8",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "date_range_last_n-003#0",
+      "id": "date_range_last_n-003",
+      "kind": "text_number_swap",
+      "original": "32.6",
+      "replacement": "32.9",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "date_range_last_n-003#0",
+      "id": "date_range_last_n-003",
+      "kind": "text_number_swap",
+      "original": "32.6",
+      "replacement": "33.3",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "date_range_last_n-003#0",
+      "id": "date_range_last_n-003",
+      "kind": "text_number_swap",
+      "original": "32.6",
+      "replacement": "33.9",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "date_range_last_n-003#0",
+      "id": "date_range_last_n-003",
+      "kind": "text_number_swap",
+      "original": "5",
+      "replacement": "7",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "date_range_last_n-003#0",
+      "id": "date_range_last_n-003",
+      "kind": "text_number_swap",
+      "original": "5",
+      "replacement": "8",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "date_range_last_n-003#0",
+      "id": "date_range_last_n-003",
+      "kind": "text_number_swap",
+      "original": "5",
+      "replacement": "12",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "date_range_last_n-003#0",
+      "id": "date_range_last_n-003",
+      "kind": "text_number_swap",
+      "original": "5",
+      "replacement": "18",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "date_range_last_n-003#0",
+      "id": "date_range_last_n-003",
+      "kind": "text_number_swap",
+      "original": "2025",
+      "replacement": "2027",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "date_range_last_n-003#0",
+      "id": "date_range_last_n-003",
+      "kind": "text_number_swap",
+      "original": "2025",
+      "replacement": "2028",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "date_range_last_n-003#0",
+      "id": "date_range_last_n-003",
+      "kind": "text_number_swap",
+      "original": "2025",
+      "replacement": "2032",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "date_range_last_n-003#0",
+      "id": "date_range_last_n-003",
+      "kind": "text_number_swap",
+      "original": "2025",
+      "replacement": "2038",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "date_range_last_n-003#0",
+      "id": "date_range_last_n-003",
+      "kind": "text_number_swap",
+      "original": "26",
+      "replacement": "27",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "date_range_last_n-003#0",
+      "id": "date_range_last_n-003",
+      "kind": "text_number_swap",
+      "original": "26",
+      "replacement": "28",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "date_range_last_n-003#0",
+      "id": "date_range_last_n-003",
+      "kind": "text_number_swap",
+      "original": "26",
+      "replacement": "29",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "date_range_last_n-003#0",
+      "id": "date_range_last_n-003",
+      "kind": "text_number_swap",
+      "original": "26",
+      "replacement": "39",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "date_range_last_n-003#0",
+      "id": "date_range_last_n-003",
+      "kind": "text_number_swap",
+      "original": "3",
+      "replacement": "10",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "date_range_last_n-003#0",
+      "id": "date_range_last_n-003",
+      "kind": "text_number_swap",
+      "original": "3",
+      "replacement": "16",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "date_range_last_n-003#0",
+      "id": "date_range_last_n-003",
+      "kind": "text_number_swap",
+      "original": "13",
+      "replacement": "14",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "date_range_last_n-003#0",
+      "id": "date_range_last_n-003",
+      "kind": "text_number_swap",
+      "original": "13",
+      "replacement": "15",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "date_range_last_n-003#0",
+      "id": "date_range_last_n-003",
+      "kind": "text_number_swap",
+      "original": "13",
+      "replacement": "16",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "date_range_last_n-003#0",
+      "id": "date_range_last_n-003",
+      "kind": "text_number_swap",
+      "original": "13",
+      "replacement": "20",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "date_range_last_n-003#0",
+      "id": "date_range_last_n-003",
+      "kind": "text_number_swap",
+      "original": "2026",
+      "replacement": "2027",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "date_range_last_n-003#0",
+      "id": "date_range_last_n-003",
+      "kind": "text_number_swap",
+      "original": "2026",
+      "replacement": "2028",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "date_range_last_n-003#0",
+      "id": "date_range_last_n-003",
+      "kind": "text_number_swap",
+      "original": "2026",
+      "replacement": "2029",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "date_range_last_n-003#0",
+      "id": "date_range_last_n-003",
+      "kind": "text_number_swap",
+      "original": "2026",
+      "replacement": "2033",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "date_range_last_n-003#0",
+      "id": "date_range_last_n-003",
+      "kind": "text_number_swap",
+      "original": "2026",
+      "replacement": "2039",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "date_range_last_n-003#0",
+      "id": "date_range_last_n-003",
+      "kind": "percent_of_ratio",
+      "case": "control",
+      "ratio": "0.10",
+      "stated": "10%",
+      "gate_accepts": true,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "date_range_last_n-003#0",
+      "id": "date_range_last_n-003",
+      "kind": "percent_of_ratio",
+      "case": "+1",
+      "ratio": "0.10",
+      "stated": "11%",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "date_range_last_n-003#0",
+      "id": "date_range_last_n-003",
+      "kind": "percent_of_ratio",
+      "case": "+5",
+      "ratio": "0.10",
+      "stated": "15%",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "date_range_last_n-003#0",
+      "id": "date_range_last_n-003",
+      "kind": "percent_of_ratio",
+      "case": "+40",
+      "ratio": "0.10",
+      "stated": "50%",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "date_range_last_n-004#0",
+      "id": "date_range_last_n-004",
+      "kind": "text_number_swap",
+      "original": "31",
+      "replacement": "32",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "date_range_last_n-004#0",
+      "id": "date_range_last_n-004",
+      "kind": "text_number_swap",
+      "original": "31",
+      "replacement": "33",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "date_range_last_n-004#0",
+      "id": "date_range_last_n-004",
+      "kind": "text_number_swap",
+      "original": "31",
+      "replacement": "34",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "date_range_last_n-004#0",
+      "id": "date_range_last_n-004",
+      "kind": "text_number_swap",
+      "original": "31",
+      "replacement": "38",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "date_range_last_n-004#0",
+      "id": "date_range_last_n-004",
+      "kind": "text_number_swap",
+      "original": "31",
+      "replacement": "44",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "date_range_last_n-004#0",
+      "id": "date_range_last_n-004",
+      "kind": "text_number_swap",
+      "original": "7",
+      "replacement": "9",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "date_range_last_n-004#0",
+      "id": "date_range_last_n-004",
+      "kind": "text_number_swap",
+      "original": "7",
+      "replacement": "10",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "date_range_last_n-004#0",
+      "id": "date_range_last_n-004",
+      "kind": "text_number_swap",
+      "original": "7",
+      "replacement": "14",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "date_range_last_n-004#0",
+      "id": "date_range_last_n-004",
+      "kind": "text_number_swap",
+      "original": "7",
+      "replacement": "20",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "date_range_last_n-004#0",
+      "id": "date_range_last_n-004",
+      "kind": "text_number_swap",
+      "original": "8",
+      "replacement": "9",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "date_range_last_n-004#0",
+      "id": "date_range_last_n-004",
+      "kind": "text_number_swap",
+      "original": "8",
+      "replacement": "10",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "date_range_last_n-004#0",
+      "id": "date_range_last_n-004",
+      "kind": "text_number_swap",
+      "original": "8",
+      "replacement": "11",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "date_range_last_n-004#0",
+      "id": "date_range_last_n-004",
+      "kind": "text_number_swap",
+      "original": "8",
+      "replacement": "21",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "date_range_last_n-004#0",
+      "id": "date_range_last_n-004",
+      "kind": "text_number_swap",
+      "original": "15",
+      "replacement": "16",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "date_range_last_n-004#0",
+      "id": "date_range_last_n-004",
+      "kind": "text_number_swap",
+      "original": "15",
+      "replacement": "17",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "date_range_last_n-004#0",
+      "id": "date_range_last_n-004",
+      "kind": "text_number_swap",
+      "original": "15",
+      "replacement": "18",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "date_range_last_n-004#0",
+      "id": "date_range_last_n-004",
+      "kind": "text_number_swap",
+      "original": "15",
+      "replacement": "22",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "date_range_last_n-004#0",
+      "id": "date_range_last_n-004",
+      "kind": "text_number_swap",
+      "original": "15",
+      "replacement": "28",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "date_range_last_n-004#0",
+      "id": "date_range_last_n-004",
+      "kind": "text_number_swap",
+      "original": "1,652",
+      "replacement": "1653",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "date_range_last_n-004#0",
+      "id": "date_range_last_n-004",
+      "kind": "text_number_swap",
+      "original": "1,652",
+      "replacement": "1654",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "date_range_last_n-004#0",
+      "id": "date_range_last_n-004",
+      "kind": "text_number_swap",
+      "original": "1,652",
+      "replacement": "1655",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "date_range_last_n-004#0",
+      "id": "date_range_last_n-004",
+      "kind": "text_number_swap",
+      "original": "1,652",
+      "replacement": "1659",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "date_range_last_n-004#0",
+      "id": "date_range_last_n-004",
+      "kind": "text_number_swap",
+      "original": "1,652",
+      "replacement": "1665",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "date_range_last_n-004#0",
+      "id": "date_range_last_n-004",
+      "kind": "percent_of_ratio",
+      "case": "control",
+      "ratio": "0.10",
+      "stated": "10%",
+      "gate_accepts": true,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "date_range_last_n-004#0",
+      "id": "date_range_last_n-004",
+      "kind": "percent_of_ratio",
+      "case": "+1",
+      "ratio": "0.10",
+      "stated": "11%",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "date_range_last_n-004#0",
+      "id": "date_range_last_n-004",
+      "kind": "percent_of_ratio",
+      "case": "+5",
+      "ratio": "0.10",
+      "stated": "15%",
+      "gate_accepts": true,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "date_range_last_n-004#0",
+      "id": "date_range_last_n-004",
+      "kind": "percent_of_ratio",
+      "case": "+40",
+      "ratio": "0.10",
+      "stated": "50%",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "comparisons-002#0",
+      "id": "comparisons-002",
+      "kind": "text_number_swap",
+      "original": "2025",
+      "replacement": "2027",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "comparisons-002#0",
+      "id": "comparisons-002",
+      "kind": "text_number_swap",
+      "original": "2025",
+      "replacement": "2028",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "comparisons-002#0",
+      "id": "comparisons-002",
+      "kind": "text_number_swap",
+      "original": "2025",
+      "replacement": "2032",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "comparisons-002#0",
+      "id": "comparisons-002",
+      "kind": "text_number_swap",
+      "original": "2025",
+      "replacement": "2038",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "comparisons-002#0",
+      "id": "comparisons-002",
+      "kind": "text_number_swap",
+      "original": "26",
+      "replacement": "28",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "comparisons-002#0",
+      "id": "comparisons-002",
+      "kind": "text_number_swap",
+      "original": "26",
+      "replacement": "29",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "comparisons-002#0",
+      "id": "comparisons-002",
+      "kind": "text_number_swap",
+      "original": "26",
+      "replacement": "33",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "comparisons-002#0",
+      "id": "comparisons-002",
+      "kind": "text_number_swap",
+      "original": "26",
+      "replacement": "39",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "comparisons-002#0",
+      "id": "comparisons-002",
+      "kind": "text_number_swap",
+      "original": "26.5",
+      "replacement": "26.6",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "comparisons-002#0",
+      "id": "comparisons-002",
+      "kind": "text_number_swap",
+      "original": "26.5",
+      "replacement": "26.7",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "comparisons-002#0",
+      "id": "comparisons-002",
+      "kind": "text_number_swap",
+      "original": "26.5",
+      "replacement": "26.8",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "comparisons-002#0",
+      "id": "comparisons-002",
+      "kind": "text_number_swap",
+      "original": "26.5",
+      "replacement": "27.2",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "comparisons-002#0",
+      "id": "comparisons-002",
+      "kind": "text_number_swap",
+      "original": "26.5",
+      "replacement": "27.8",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "comparisons-002#0",
+      "id": "comparisons-002",
+      "kind": "text_number_swap",
+      "original": "93",
+      "replacement": "95",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "comparisons-002#0",
+      "id": "comparisons-002",
+      "kind": "text_number_swap",
+      "original": "93",
+      "replacement": "96",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "comparisons-002#0",
+      "id": "comparisons-002",
+      "kind": "text_number_swap",
+      "original": "93",
+      "replacement": "100",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "comparisons-002#0",
+      "id": "comparisons-002",
+      "kind": "text_number_swap",
+      "original": "93",
+      "replacement": "106",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "comparisons-002#0",
+      "id": "comparisons-002",
+      "kind": "text_number_swap",
+      "original": "19.2",
+      "replacement": "19.3",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "comparisons-002#0",
+      "id": "comparisons-002",
+      "kind": "text_number_swap",
+      "original": "19.2",
+      "replacement": "19.4",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "comparisons-002#0",
+      "id": "comparisons-002",
+      "kind": "text_number_swap",
+      "original": "19.2",
+      "replacement": "19.5",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "comparisons-002#0",
+      "id": "comparisons-002",
+      "kind": "text_number_swap",
+      "original": "19.2",
+      "replacement": "19.9",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "comparisons-002#0",
+      "id": "comparisons-002",
+      "kind": "text_number_swap",
+      "original": "19.2",
+      "replacement": "20.5",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "comparisons-002#0",
+      "id": "comparisons-002",
+      "kind": "percent_of_ratio",
+      "case": "control",
+      "ratio": "0.10",
+      "stated": "10%",
+      "gate_accepts": true,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "comparisons-002#0",
+      "id": "comparisons-002",
+      "kind": "percent_of_ratio",
+      "case": "+1",
+      "ratio": "0.10",
+      "stated": "11%",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "comparisons-002#0",
+      "id": "comparisons-002",
+      "kind": "percent_of_ratio",
+      "case": "+5",
+      "ratio": "0.10",
+      "stated": "15%",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "comparisons-002#0",
+      "id": "comparisons-002",
+      "kind": "percent_of_ratio",
+      "case": "+40",
+      "ratio": "0.10",
+      "stated": "50%",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "comparisons-004#0",
+      "id": "comparisons-004",
+      "kind": "text_number_swap",
+      "original": "10",
+      "replacement": "11",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "comparisons-004#0",
+      "id": "comparisons-004",
+      "kind": "text_number_swap",
+      "original": "10",
+      "replacement": "12",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "comparisons-004#0",
+      "id": "comparisons-004",
+      "kind": "text_number_swap",
+      "original": "10",
+      "replacement": "13",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "comparisons-004#0",
+      "id": "comparisons-004",
+      "kind": "text_number_swap",
+      "original": "10",
+      "replacement": "17",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "comparisons-004#0",
+      "id": "comparisons-004",
+      "kind": "text_number_swap",
+      "original": "10",
+      "replacement": "23",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "comparisons-004#0",
+      "id": "comparisons-004",
+      "kind": "text_number_swap",
+      "original": "10",
+      "replacement": "11",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "comparisons-004#0",
+      "id": "comparisons-004",
+      "kind": "text_number_swap",
+      "original": "10",
+      "replacement": "12",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "comparisons-004#0",
+      "id": "comparisons-004",
+      "kind": "text_number_swap",
+      "original": "10",
+      "replacement": "13",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "comparisons-004#0",
+      "id": "comparisons-004",
+      "kind": "text_number_swap",
+      "original": "10",
+      "replacement": "17",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    },
+    {
+      "unit": "comparisons-004#0",
+      "id": "comparisons-004",
+      "kind": "text_number_swap",
+      "original": "10",
+      "replacement": "23",
+      "gate_accepts": false,
+      "old_blank_accepted": false,
+      "new_blank_accepted": false
+    }
+  ]
+}

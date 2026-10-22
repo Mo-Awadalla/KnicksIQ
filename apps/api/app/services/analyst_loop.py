@@ -30,6 +30,7 @@ from app.services.evidence_contracts import (
     ToolResult,
     VerifiedClaim,
     accepted_follow_ups,
+    deterministic_claim_ids,
     split_review_spans,
     validate_review,
     validate_structure,
@@ -41,6 +42,7 @@ logger = logging.getLogger(__name__)
 # The model declares why it is not answering from archive facts. These actions are
 # refusals for API consumers even when related archive facts are included.
 REFUSAL_ACTIONS = frozenset({"decline", "explain_coverage"})
+FACTUAL_REVIEW_TYPES = frozenset({"factual", "interpretation"})
 
 
 class AnalystLoop:
@@ -325,12 +327,85 @@ class AnalystLoop:
         review = await self.review(answer, timeout_seconds=timeout_seconds)
         if review is None:
             return False, "Reviewer failed or returned malformed output."
-        if not validate_review(review, answer, self.sent_claims, reviewable, spans=spans):
+        empty, attachable = self._citation_gaps(review, answer, spans)
+        accepted = validate_review(review, answer, self.sent_claims, reviewable, spans=spans)
+        metadata = self.trace[-1] if self.trace else {}
+        # The API returns this trace, so the next live occurrence carries the provider and
+        # the citation shape that the 15/21 run did not record.
+        metadata.update(
+            {
+                "review_spans": len(review.assertions),
+                "review_empty_id_spans": len(empty),
+                "review_attachable_spans": len(attachable),
+                "review_accepted": accepted,
+            }
+        )
+        if attachable:
+            # Production measurement of the dropped-citation repair: spans the reviewer
+            # supported without ids and the backend could attribute deterministically.
+            logger.info(
+                "analyst_review_citation_gaps request_id=%s provider=%s accepted=%s "
+                "spans=%d empty_id_spans=%d attachable_spans=%d",
+                self.request_id,
+                metadata.get("provider"),
+                accepted,
+                len(review.assertions),
+                len(empty),
+                len(attachable),
+                extra={
+                    "request_id": self.request_id,
+                    "provider": metadata.get("provider"),
+                    "finish_reason": metadata.get("finish_reason"),
+                    "accepted": accepted,
+                    "spans": len(review.assertions),
+                    "empty_id_spans": len(empty),
+                    "attachable_spans": len(attachable),
+                },
+            )
+        if not accepted:
+            unsupported = sum(1 for item in review.assertions if item.verdict != "supported")
+            logger.warning(
+                "analyst_review_rejected request_id=%s provider=%s finish_reason=%s "
+                "spans=%d empty_id_spans=%d attachable_spans=%d unsupported_spans=%d",
+                self.request_id,
+                metadata.get("provider"),
+                metadata.get("finish_reason"),
+                len(review.assertions),
+                len(empty),
+                len(attachable),
+                unsupported,
+                extra={
+                    "request_id": self.request_id,
+                    "provider": metadata.get("provider"),
+                    "finish_reason": metadata.get("finish_reason"),
+                    "spans": len(review.assertions),
+                    "empty_id_spans": len(empty),
+                    "attachable_spans": len(attachable),
+                    "unsupported_spans": unsupported,
+                },
+            )
             return False, encoded(review.model_dump())
         self.accepted_suggestions = accepted_follow_ups(
             review, answer, self.sent_claims, reviewable
         )
         return True, ""
+
+    def _citation_gaps(
+        self, review: AnswerReview, answer: ProposedAnswer, spans: list[str]
+    ) -> tuple[list[int], list[int]]:
+        """Supported factual spans with no ids, and how many the backend could attribute."""
+        empty: list[int] = []
+        attachable: list[int] = []
+        for index, item in enumerate(review.assertions):
+            if item.assertion_type not in FACTUAL_REVIEW_TYPES:
+                continue
+            if item.supporting_claim_ids or item.supporting_evidence_ids:
+                continue
+            empty.append(index)
+            span = spans[index] if index < len(spans) else item.text
+            if deterministic_claim_ids(span, answer, self.sent_claims):
+                attachable.append(index)
+        return empty, attachable
 
     async def review(
         self, answer: ProposedAnswer, *, timeout_seconds: float | None = None
