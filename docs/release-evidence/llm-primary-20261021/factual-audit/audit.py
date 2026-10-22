@@ -28,6 +28,8 @@ import verify_basic  # noqa: E402
 import verify_flow  # noqa: E402
 import verify_period  # noqa: E402
 import verify_player  # noqa: E402
+import verify_player_lines  # noqa: E402
+import verify_rates  # noqa: E402
 import verify_scores  # noqa: E402
 import verify_team  # noqa: E402
 
@@ -42,12 +44,12 @@ VERIFIERS = [
     verify_team.verify_record_lines,
     verify_team.verify_points_lines,
     verify_team.verify_games_counts,
-    verify_team.verify_team_rates,
-    verify_team.verify_extremes,
+    verify_rates.verify_team_rates,
+    verify_rates.verify_extremes,
     verify_basic.verify_month_years,
     verify_period.verify_periods,
     verify_player.verify_player_aggregates,
-    verify_player.verify_player_lines,
+    verify_player_lines.verify_player_lines,
     verify_flow.verify_flow,
 ]
 
