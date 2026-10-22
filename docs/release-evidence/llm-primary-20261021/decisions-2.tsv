@@ -1,0 +1,4 @@
+ts	phase	decision	why	evidence	result
+2026-10-22T17:32:53Z	start	continues decisions.tsv, which reached the 20 KB authored-file limit; same run	the log stays append-only, so it continues in a second file	decisions.tsv	continued
+2026-10-22T17:32:46Z	fix	merged SingleGameFollowup: elliptical follow-ups keep the one game the previous turn named	all 10 held-out follow-up failures shared this cause; fixed on fresh sessions, not the held-out set	w4-gamefollow/README.md	lead reran: window lost 15 to 0 of 17, 15/15 sessions offline, 27/27 in-house, 439 passed; live turn 2 scope clean 15/15, 9/15 honest (reviewer fallbacks)
+2026-10-22T17:32:46Z	fix	after a single-game turn, averages, per-game rates and best/worst-game questions leave that game	lead probe: the merged fix scoped 'How many points did Brunson average?' and 'best scoring game' to the one game	w4-gamefollow/population_after_game-*.txt	3 failures to 0; game-level stats still stay on the game

@@ -47,6 +47,21 @@ def names_season_scope(question: str) -> bool:
     return bool(_SEASON_SCOPE.search(normalize(question)))
 
 
+# Asks for many games: an average, a per-game rate, or the best/worst game or win. Over a
+# single game these are meaningless, so they cannot continue a one-game turn.
+_NEEDS_GAMES = re.compile(
+    r"\b(?:average|averaged|averaging|avg|per game|ppg|rpg|apg)\b"
+    r"|\b(?:best|worst|most|fewest|highest|lowest|biggest|largest|closest)\b[^?.]{0,30}"
+    r"\b(?:games?|wins?|loss(?:es)?|nights?)\b",
+    re.I,
+)
+_THIS_GAME = re.compile(r"\b(?:that|this|the same) game\b", re.I)
+
+
+def needs_many_games(question: str) -> bool:
+    return bool(_NEEDS_GAMES.search(question)) and not _THIS_GAME.search(question)
+
+
 def is_elliptical_follow_up(question: str, games: list[Game]) -> bool:
     """True when the question cannot pick its own population without the prior turn.
 
