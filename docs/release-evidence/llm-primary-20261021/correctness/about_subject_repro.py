@@ -13,8 +13,14 @@ from app.models.dataset_release import DatasetRelease
 from app.services.analyst_tools import AnalystTools
 from sqlalchemy import select
 
-# (follow-up, must ask which subject)
+# (follow-up, must ask which subject); every case follows a team record turn, and the
+# period cases also follow a team points turn below.
 CASES = [
+    ("What about the second quarter?", False),
+    ("What about the second half?", False),
+    ("What about Q4?", False),
+    ("What about the 3rd quarter?", False),
+    ("What about Nobody McFake in the second quarter?", True),
     ("What about at home?", False),
     ("What about on the road?", False),
     ("What about in March?", False),
@@ -33,8 +39,9 @@ async def main() -> None:
     bad = 0
     async with AsyncSessionLocal() as db:
         release = (await db.execute(select(DatasetRelease).limit(1))).scalar_one()
-        for question, want_ask in CASES:
-            first = AnalystTools(db, release, "What was their record?", "2025-26", {})
+        priors = ("What was their record?", "How many points did they score per game?")
+        for prior, (question, want_ask) in ((p, c) for p in priors for c in CASES):
+            first = AnalystTools(db, release, prior, "2025-26", {})
             await first.prepare()
             tools = AnalystTools(db, release, question, "2025-26", first.state)
             await tools.prepare()
@@ -42,7 +49,10 @@ async def main() -> None:
             asked = tools.scope.requires_clarification
             ok = asked == want_ask
             bad += not ok
-            print("OK " if ok else "BAD", f"{question!r} asks={asked} (want {want_ask})")
+            print(
+                "OK " if ok else "BAD",
+                f"after {prior!r}: {question!r} asks={asked} (want {want_ask})",
+            )
     print("FAILURES", bad)
 
 

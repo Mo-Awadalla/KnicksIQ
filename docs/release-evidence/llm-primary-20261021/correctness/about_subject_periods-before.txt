@@ -1,0 +1,7 @@
+BAD after 'What was their record?': 'What about the second quarter?' asks=True (want False)
+BAD after 'What was their record?': 'What about the second half?' asks=True (want False)
+BAD after 'What was their record?': 'What about Q4?' asks=True (want False)
+BAD after 'How many points did they score per game?': 'What about the second quarter?' asks=True (want False)
+BAD after 'How many points did they score per game?': 'What about the second half?' asks=True (want False)
+BAD after 'How many points did they score per game?': 'What about Q4?' asks=True (want False)
+FAILURES 6
