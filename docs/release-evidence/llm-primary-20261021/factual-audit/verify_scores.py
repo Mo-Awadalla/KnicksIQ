@@ -18,7 +18,7 @@ FINAL_PATTERNS = [
 
 
 def _final_game(s: Session, pos: int, scope: Scope, first: int, second: int) -> Any:
-    tail = s.text[pos:pos + 32]
+    tail = s.text[pos:pos + 48]
     dm = re.search(r"\((?:[A-Z][a-z]{2,8}\.?\s+\d{1,2}(?:,\s+20\d{2})?|20\d{2}-\d{2}-\d{2})\)", tail)
     if dm:
         inner = dm.group(0).strip("()")
@@ -32,6 +32,11 @@ def _final_game(s: Session, pos: int, scope: Scope, first: int, second: int) -> 
                 month = parse_month(md.group(1))
                 year = 2025 if month >= 8 else 2026
                 scope.start = scope.end = f"{year:04d}-{month:02d}-{int(md.group(2)):02d}"
+    else:
+        # "96-110 loss on 2026-04-12" names the game after the score.
+        om = re.search(r"\b(?:on|in)\s+(20\d{2}-\d{2}-\d{2})\b", tail)
+        if om:
+            scope.start = scope.end = om.group(1)
     candidates = s.oracle.games_for(
         season_type=scope.season_type, opp=scope.opp, loc=scope.loc,
         start=scope.start, end=scope.end, last_n=scope.last_n,
@@ -95,6 +100,31 @@ def verify_final_scores(s: Session) -> None:
             s.mark(atom, atom.raw, game.score_text, f"final score {game.date} vs {game.opp}",
                    "select home_score, away_score from games where id=" + str(game.id),
                    status="verified" if game.score_text == atom.raw else "wrong")
+    # "120-66 vs BKN on 2026-01-21": score against a named opponent on a date.
+    for m in re.finditer(
+        r"\b(\d{1,3})\s*-\s*(\d{1,3})\s+(?:vs\.?|at|against)\s+([A-Z]{2,3})\s+on\s+(20\d{2}-\d{2}-\d{2})",
+        s.text,
+    ):
+        atom = pair_atom(s, m, 1, 2)
+        if atom is None or not s.free(atom):
+            continue
+        opp = _abbr(s, m.group(3))
+        if not opp:
+            continue
+        scope = scope_for(s, m.start())
+        scope.opp = opp
+        scope.start = scope.end = m.group(4)
+        games = s.oracle.games_for(**scope.filters())
+        if len(games) != 1:
+            continue
+        game = games[0]
+        first, second = int(m.group(1)), int(m.group(2))
+        exact = (first, second) == (game.nyk_score, game.opp_score)
+        swapped = (second, first) == (game.nyk_score, game.opp_score)
+        s.mark(atom, atom.raw, game.score_text, f"final score {game.date} vs {game.opp}",
+               "select home_score, away_score from games where id=" + str(game.id),
+               status="verified" if exact or swapped else "wrong",
+               detail="" if exact else "orientation not asserted; score pair matches the game")
 
 
 
