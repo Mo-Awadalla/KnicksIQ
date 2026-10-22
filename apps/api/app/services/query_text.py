@@ -66,6 +66,9 @@ def is_record_request(question: str) -> bool:
     )
 
 
+METRIC_WORDS = frozenset(word for phrase in _METRICS for word in phrase.split())
+
+
 def metric_in_text(question: str) -> str | None:
     q = normalize(question)
     return next(
