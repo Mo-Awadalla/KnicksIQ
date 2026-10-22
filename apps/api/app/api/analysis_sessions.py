@@ -121,7 +121,11 @@ async def _query_evidence_analyst(
             response.session_expires_at = datetime.now(UTC) + timedelta(seconds=86_400)
             response.revision = turn.revision + 1
             response.state_committed = True
-            if not await turn.commit(response.model_dump(mode="json"), state):
+            outcome = await turn.commit(response.model_dump(mode="json"), state)
+            if outcome.response is not None:
+                # Another execution of this same turn committed first; its answer is canonical.
+                return AnalysisQueryResponse.model_validate(outcome.response)
+            if not outcome.committed:
                 response.session_token = None
                 response.session_expires_at = None
                 response.revision = None

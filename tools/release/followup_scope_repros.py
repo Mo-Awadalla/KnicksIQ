@@ -312,8 +312,8 @@ async def main() -> None:
         assert redis is not None
         await redis.delete(turn.key + ":lease")
         await redis.aclose()
-        committed = await turn.commit({"answer": "probe"}, {"answer": "probe"})
-        repeated = await turn.commit({"answer": "probe"}, {"answer": "probe"})
+        committed = (await turn.commit({"answer": "probe"}, {"answer": "probe"})).committed
+        repeated = (await turn.commit({"answer": "probe"}, {"answer": "probe"})).committed
         outcomes.append(
             show(
                 "an expired lease discards a completed turn and misreports a replay",

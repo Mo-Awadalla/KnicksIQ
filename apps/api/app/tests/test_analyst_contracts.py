@@ -34,7 +34,9 @@ async def test_session_race_replay_conflict_and_atomic_commit(local_redis):
     first = await SessionTurn.begin(None, turn_id, 0, {"question": "stat"})
     with pytest.raises(SessionConflict):
         await SessionTurn.begin(first.token, "second-turn-identity", 0, {"question": "stat"})
-    assert await first.commit({"answer": "Committed"}, {"delivered_fact_ids": ["fact:1"]})
+    assert (
+        await first.commit({"answer": "Committed"}, {"delivered_fact_ids": ["fact:1"]})
+    ).committed
     replay = await SessionTurn.begin(None, turn_id, 0, {"question": "stat"})
     assert replay.replay == {"answer": "Committed"}
     with pytest.raises(SessionConflict):
@@ -47,9 +49,13 @@ async def test_session_race_replay_conflict_and_atomic_commit(local_redis):
     # working must not discard the completed answer. The revision this turn read is still
     # current, so the commit wins atomically.
     await local_redis.delete(next_turn.key + ":lease")
-    assert await next_turn.commit({"answer": "Finished late"}, {"delivered_fact_ids": ["fact:2"]})
+    assert (
+        await next_turn.commit({"answer": "Finished late"}, {"delivered_fact_ids": ["fact:2"]})
+    ).committed
     # A reply lost after the commit must not report the same turn as uncommitted.
-    assert await next_turn.commit({"answer": "Finished late"}, {"delivered_fact_ids": ["fact:2"]})
+    assert (
+        await next_turn.commit({"answer": "Finished late"}, {"delivered_fact_ids": ["fact:2"]})
+    ).committed
     assert json.loads(await local_redis.hget(first.key, "state"))["delivered_fact_ids"] == [
         "fact:2"
     ]
@@ -57,7 +63,7 @@ async def test_session_race_replay_conflict_and_atomic_commit(local_redis):
     # A different owner holding the lease is a competing turn; its commit stands alone.
     held = await SessionTurn.begin(first.token, "held-turn", 2, {"question": "stat"})
     await local_redis.set(held.key + ":lease", "another-owner", ex=35)
-    assert not await held.commit({"answer": "Raced"}, {"delivered_fact_ids": ["bad"]})
+    assert not (await held.commit({"answer": "Raced"}, {"delivered_fact_ids": ["bad"]})).committed
     assert json.loads(await local_redis.hget(first.key, "state"))["delivered_fact_ids"] == [
         "fact:2"
     ]
