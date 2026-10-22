@@ -154,3 +154,7 @@ apps/api/app/evaluation/heldout_v2/*.json linguist-generated=true
 # Held-out final live run machine output (w4).
 docs/release-evidence/llm-primary-20261021/heldout-final/**/*.jsonl linguist-generated=true
 docs/release-evidence/llm-primary-20261021/heldout-final/**/*.json linguist-generated=true
+
+# Full factual-audit summary and diff are generated from the recorded response rows.
+docs/release-evidence/llm-primary-20261021/heldout-final/audit-main/summary.md linguist-generated=true
+docs/release-evidence/llm-primary-20261021/heldout-final/audit-main/diff.md linguist-generated=true
