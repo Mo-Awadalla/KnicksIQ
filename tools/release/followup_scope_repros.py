@@ -7,22 +7,30 @@ Each case states the condition that makes it a reproduction, so a fixed defect p
 NOT REPRODUCED instead of a stale transcript. The script exits 0 while every case reproduces.
 
     DB_URL=postgresql+asyncpg://knicksiq:knicksiq@localhost:55500/knicksiq \
+    REDIS_URL=redis://localhost:56500/6 \
       uv run --package knicksiq-api python tools/release/followup_scope_repros.py
+
+The lease case uses ANALYST_SESSION_LEASE_SECONDS (default 35) so the wait stays short.
 """
 
 from __future__ import annotations
 
 import asyncio
 import json
+import uuid
 from typing import Any
 
 from app.core.db import AsyncSessionLocal
 from app.models.dataset_release import DatasetRelease
 from app.services.analyst_fallback import decline_text, fallback_claims, re_search_discovery
+from app.services.analyst_loop import AnalystLoop
 from app.services.analyst_prefetch import prefetch_calls
+from app.services.analyst_sessions import SessionTurn
 from app.services.analyst_tool_registry import recovery_tool
 from app.services.analyst_tools import AnalystTools
-from app.services.evidence_contracts import ToolCall
+from app.services.evidence_contracts import ClaimUse, ProposedAnswer, ToolCall
+from app.services.runtime_store import _redis
+from pydantic import ValidationError
 from sqlalchemy import select
 
 
@@ -44,7 +52,7 @@ async def prepare(db, release, question: str, state: dict) -> AnalystTools:
     return tools
 
 
-def next_state(tools: AnalystTools, claims: list | None = None) -> dict:
+def next_state(tools: AnalystTools, claims: list | None = None, evidence: list | None = None) -> dict:
     # The session store commits the whole state dict prepare produced, not only the
     # fields it names; keep last_topic/last_scope so a later decline can fall back.
     state = clone(tools.state)
@@ -53,11 +61,21 @@ def next_state(tools: AnalystTools, claims: list | None = None) -> dict:
             "scope": tools.scope.model_dump(mode="json") if tools.scope else {},
             "intent": tools.topic,
             "claims": [claim.model_dump(mode="json") for claim in (claims or [])],
-            "evidence": [],
+            "evidence": [item.model_dump(mode="json") for item in (evidence or [])],
             "release": tools.release.version,
         }
     )
     return state
+
+
+async def claim_state(tools: AnalystTools) -> dict:
+    """State after a turn that ran the backend plan and committed its claims."""
+    calls = prefetch_calls(tools)
+    results = [await tools.execute(call) for call in calls]
+    claims = [claim for result in results for claim in result.claims]
+    # Delivery commits every receipt a used claim references, including a calculation
+    # receipt's source evidence; the follow-up revalidates the same set.
+    return next_state(tools, claims, list(tools.evidence.values()))
 
 
 async def fallback_result(db, release, question: str, state: dict) -> dict:
@@ -299,6 +317,100 @@ async def main() -> None:
                 "game_ids=[99], 1 game, answer mentions Spurs",
                 f"game_ids={scope['game_ids']}, games={games}, text={result['text'][:90]!r}",
                 scope["game_ids"] != [99] or "Spurs" not in result["text"],
+            )
+        )
+
+        # 13. A refusal that cites facts becomes the topic and scope of the next turn.
+        prior = await prepare(
+            db, release, "How many points did Brunson average in December?", {}
+        )
+        state = await claim_state(prior)
+        refusal = await prepare(db, release, "Is Brunson's hamstring healthy?", state)
+        cited = next(iter(refusal.claims.values()))
+        loop = AnalystLoop(refusal, [])
+        rendered = loop.render(
+            ProposedAnswer(
+                text=f"Brunson averaged {cited.value:.1f} points in December.",
+                claims=[ClaimUse(claim_id=cited.claim_id, displayed_value=cited.value)],
+            ),
+            llm=True,
+            refused=True,
+        )
+        followup = await prepare(db, release, "And his assists?", rendered["state"])
+        scope = followup.scope.model_dump(mode="json")
+        outcomes.append(
+            show(
+                "refusal that cites facts overwrites the prior topic and month",
+                "declined=True, date_start=2025-12-02, 14 games",
+                f"declined={rendered['state'].get('declined')}, "
+                f"date_start={scope['date_start']}, "
+                f"games={len(followup.selected_games(followup.scope))}",
+                rendered["state"].get("declined") is not True
+                or str(scope["date_start"]) != "2025-12-02"
+                or len(followup.selected_games(followup.scope)) != 14,
+            )
+        )
+
+        # 14. "And per game?" after a committed total: the carried total suppresses the
+        #     backend average lookup, so the model only ever sees the total claim.
+        prior = await prepare(
+            db, release, "How many total points did the Knicks score in December?", {}
+        )
+        tools = await prepare(db, release, "And per game?", await claim_state(prior))
+        loop = AnalystLoop(tools, [])
+        await loop.prefetch()
+        metrics = [claim.metric_id for result in loop.results for claim in result.claims]
+        scope = tools.scope.model_dump(mode="json")
+        outcomes.append(
+            show(
+                "per game after a total never runs the average lookup",
+                "prefetched points_per_game, date_start=2025-12-02, 14 games",
+                f"prefetch={metrics}, date_start={scope['date_start']}, "
+                f"games={len(tools.selected_games(tools.scope))}",
+                "points_per_game" not in metrics
+                or str(scope["date_start"]) != "2025-12-02",
+            )
+        )
+
+        # 15. A malformed repair call is reported to the user as a budget problem.
+        tools = await prepare(db, release, "What was the Knicks' record?", {})
+        loop = AnalystLoop(tools, [])
+
+        async def malformed_repair() -> dict:
+            raise ValidationError.from_exception_data(
+                "Action", [{"type": "missing", "loc": ("action",), "input": {}}]
+            )
+
+        async def reserved(_calls: int) -> bool:
+            return True
+
+        loop.investigate = malformed_repair  # type: ignore[method-assign]
+        loop.reserve = reserved  # type: ignore[method-assign]
+        rendered = await loop.run()
+        warning = (rendered.get("warnings") or [""])[0]
+        outcomes.append(
+            show(
+                "a failed repair call claims the model or budget was unavailable",
+                "a warning that names neither model nor budget",
+                f"warning={warning!r}",
+                "budget" in warning.lower() or "model" in warning.lower(),
+            )
+        )
+
+        # 16. A turn that outlives its lease loses an answer it already produced.
+        turn = await SessionTurn.begin(None, uuid.uuid4().hex, 0, {"question": "lease probe"})
+        redis = await _redis()
+        assert redis is not None
+        await redis.delete(turn.key + ":lease")
+        await redis.aclose()
+        committed = await turn.commit({"answer": "probe"}, {"answer": "probe"})
+        repeated = await turn.commit({"answer": "probe"}, {"answer": "probe"})
+        outcomes.append(
+            show(
+                "an expired lease discards a completed turn and misreports a replay",
+                "commit=True after lease expiry, repeat commit=True",
+                f"commit={committed}, repeat={repeated}",
+                not committed or not repeated,
             )
         )
     print("REPRODUCED", sum(outcomes), "of", len(outcomes))
