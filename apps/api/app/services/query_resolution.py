@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import re
-import unicodedata
 from collections import defaultdict
 from datetime import date
 from difflib import SequenceMatcher
@@ -15,9 +14,10 @@ from app.models.game import Game
 from app.models.game_event import GameEvent
 from app.models.player import Player
 from app.services.query_policy import SeasonType, is_outcome_subset, resolve_phase
+from app.services.query_text import normalize as _normalize
 from app.services.team_aliases import team_ids_in_text
 from pydantic import BaseModel, ConfigDict, Field
-from sqlalchemy import func, select
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 _CURATED_PLAYER_ALIASES = {
@@ -134,11 +134,6 @@ class ResolvedQuery(BaseModel):
         }
 
 
-def _normalize(value: str) -> str:
-    ascii_value = unicodedata.normalize("NFKD", value).encode("ascii", "ignore").decode()
-    return re.sub(r"[^a-z0-9]+", " ", ascii_value.lower()).strip()
-
-
 def is_record_request(question: str) -> bool:
     """A record spans both outcomes; explicit subsets still take precedence."""
     q = _normalize(question.replace("–", "-").replace("—", "-"))
@@ -172,6 +167,23 @@ def _name_candidates(question: str) -> list[str]:
             if len(words) == 2:
                 candidates.extend(word for word in words if word not in _NAME_STOPWORDS)
     return list(dict.fromkeys(candidates))
+
+
+def _typo_alias_allowed(candidate: str, alias: str) -> bool:
+    """A misspelling corrupts a name; it is not a truncation or an inflection of one.
+
+    Without this, the common word "well" becomes "Wells" and "mikal" becomes a
+    prefix of "Mikal Bridges"; both were observed as wrong subjects.
+    """
+    candidate_key = candidate.replace(" ", "")
+    alias_key = alias.replace(" ", "")
+    if len(candidate_key) < 4 or not alias_key or candidate[0] != alias[0]:
+        return False
+    if alias.startswith(candidate):
+        return False
+    if len(alias.split()) == 2 and len(alias.split()[0]) == 1:
+        return False
+    return abs(len(candidate_key) - len(alias_key)) <= 2
 
 
 def _resolve_player_mentions(
@@ -227,16 +239,13 @@ def _resolve_player_mentions(
 
     if allow_fuzzy and not resolved and not ambiguous:
         for candidate in _name_candidates(question):
-            scores = [
-                (
-                    max(
-                        SequenceMatcher(None, candidate, alias).ratio()
-                        for alias in _player_aliases(player)
-                    ),
-                    player,
-                )
-                for player in players
-            ]
+            scores: list[tuple[float, Player]] = []
+            for player in players:
+                best = 0.0
+                for alias in _player_aliases(player):
+                    if _typo_alias_allowed(candidate, alias):
+                        best = max(best, SequenceMatcher(None, candidate, alias).ratio())
+                scores.append((best, player))
             scores.sort(key=lambda item: (-item[0], item[1].id))
             if not scores or scores[0][0] < typo_threshold:
                 continue
@@ -321,34 +330,11 @@ async def resolve_query(
             .distinct()
         )
     players = list((await db.execute(player_stmt)).scalars().all())
-    postgres = bool(db.bind and db.bind.dialect.name == "postgresql")
     player_ids, ambiguous_players = _resolve_player_mentions(
         question,
         players,
         typo_threshold=typo_threshold,
-        allow_fuzzy=not postgres,
     )
-    if not player_ids and not ambiguous_players and postgres:
-        # pg_trgm proposes a deliberately small candidate set; the stricter
-        # deterministic similarity/margin checks above still decide whether
-        # automatic typo resolution is safe.
-        proposed: dict[int, Player] = {}
-        for candidate in _name_candidates(question):
-            similarity = func.word_similarity(candidate, func.lower(Player.full_name))
-            proposal_stmt = (
-                select(Player)
-                .where(similarity >= 0.3)
-                .order_by(similarity.desc(), Player.id)
-                .limit(5)
-            )
-            for player in (await db.execute(proposal_stmt)).scalars():
-                proposed[player.id] = player
-        if proposed:
-            player_ids, ambiguous_players = _resolve_player_mentions(
-                question,
-                list(proposed.values()),
-                typo_threshold=typo_threshold,
-            )
 
     q = _normalize(question)
     team_ids = sorted(team_ids_in_text(question) - {"NYK"})
