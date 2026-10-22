@@ -36,7 +36,6 @@ sys.path.insert(0, str(ROOT / "tools" / "release"))
 import analyst_live_e2e as e2e  # noqa: E402
 import app.services.analyst_loop as loop_module  # noqa: E402
 import app.services.analyst_provider as provider_module  # noqa: E402
-import app.services.report_llm as report_llm  # noqa: E402
 from app.main import create_app  # noqa: E402
 from httpx import ASGITransport, AsyncClient  # noqa: E402
 
@@ -91,13 +90,23 @@ class RecordingAdapter:
             raw = await self.inner.generate(system=system, user=user)
         except Exception as exc:
             LAST.update(
-                {"raw": None, "error": repr(exc), "meta": self.inner.last_metadata,
-                 "system": system, "user": user}
+                {
+                    "raw": None,
+                    "error": repr(exc),
+                    "meta": self.inner.last_metadata,
+                    "system": system,
+                    "user": user,
+                }
             )
             raise
         LAST.update(
-            {"raw": raw, "error": None, "meta": dict(self.inner.last_metadata),
-             "system": system, "user": user}
+            {
+                "raw": raw,
+                "error": None,
+                "meta": dict(self.inner.last_metadata),
+                "system": system,
+                "user": user,
+            }
         )
         return raw
 
@@ -106,7 +115,9 @@ _ORIGINAL = loop_module.request_model
 
 
 async def recorded_request_model(loop: Any, schema: type, **kwargs: Any) -> Any:
-    stage = "review" if kwargs.get("review") else "revise" if kwargs.get("repair") else "orchestrate"
+    stage = (
+        "review" if kwargs.get("review") else "revise" if kwargs.get("repair") else "orchestrate"
+    )
     started = time.monotonic()
     try:
         value = await _ORIGINAL(loop, schema, **kwargs)
@@ -206,9 +217,7 @@ def write_raw(raw_dir: Path) -> None:
             item.pop("system", None)
             item.pop("user", None)
             handle.write(json.dumps(item) + "\n")
-    (raw_dir / "calls.jsonl").write_text(
-        "".join(json.dumps(entry) + "\n" for entry in CALLS)
-    )
+    (raw_dir / "calls.jsonl").write_text("".join(json.dumps(entry) + "\n" for entry in CALLS))
 
 
 async def main() -> None:
@@ -223,7 +232,6 @@ async def main() -> None:
     cases = {row["id"]: row for row in e2e.load_cases(e2e.QUESTIONS)}
     wanted = [item for item in args.ids.split(",") if item] or list(FAILING_IDS)
     picked = [cases[question_id] for question_id in wanted]
-    archive = await e2e.build_archive()
     app = create_app()
     rows: list[dict[str, Any]] = []
     async with app.router.lifespan_context(app):
@@ -298,11 +306,7 @@ async def main() -> None:
     per_trial = {}
     for trial in range(args.trials):
         trial_rows = [row for row in rows if row["trial"] == trial]
-        repairs = [
-            call
-            for call in CALLS
-            if call["trial"] == trial and call["stage"] == "revise"
-        ]
+        repairs = [call for call in CALLS if call["trial"] == trial and call["stage"] == "revise"]
         per_trial[str(trial + 1)] = {
             "turns": len(trial_rows),
             "failed_repair_validation": sum(
@@ -342,10 +346,23 @@ async def main() -> None:
     responses = args.out.with_suffix(".responses.jsonl")
     responses.write_text(
         "".join(
-            json.dumps({key: row[key] for key in (
-                "trial", "id", "category", "question", "outcome", "answer", "citations",
-                "refused", "warnings", "llm_validated",
-            )})
+            json.dumps(
+                {
+                    key: row[key]
+                    for key in (
+                        "trial",
+                        "id",
+                        "category",
+                        "question",
+                        "outcome",
+                        "answer",
+                        "citations",
+                        "refused",
+                        "warnings",
+                        "llm_validated",
+                    )
+                }
+            )
             + "\n"
             for row in rows
         )
