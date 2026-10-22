@@ -1,0 +1,184 @@
+{
+  "scope": "meets_expectation now requires: not declined or clarification, validated delivery, substantive content, no unbacked number or entity, required facts present, no echo, and no unbacked causal hedge. claim_backed additionally requires cited claim values.",
+  "mode": "live",
+  "dataset": "/Users/mohamedawadalla/.local/share/knicksiq/worktrees/final2/apps/api/app/evaluation/questions.jsonl",
+  "questions": 70,
+  "old_meets_expectation": 43,
+  "meets_expectation": 42,
+  "claim_backed_meets_expectation": 42,
+  "delta": 1,
+  "by_answerable": {
+    "answerable": {
+      "questions": 62,
+      "old": 39,
+      "new": 34
+    },
+    "unsupported": {
+      "questions": 8,
+      "old": 4,
+      "new": 8
+    }
+  },
+  "survived": [
+    "exact_statistics-001",
+    "exact_statistics-002",
+    "exact_statistics-003",
+    "exact_statistics-004",
+    "exact_statistics-005",
+    "exact_statistics-006",
+    "exact_statistics-007",
+    "exact_statistics-008",
+    "exact_statistics-009",
+    "exact_statistics-010",
+    "date_range_last_n-001",
+    "date_range_last_n-002",
+    "date_range_last_n-003",
+    "date_range_last_n-005",
+    "date_range_last_n-006",
+    "date_range_last_n-007",
+    "date_range_last_n-010",
+    "comparisons-002",
+    "comparisons-004",
+    "comparisons-008",
+    "single_game_narrative-001",
+    "single_game_narrative-010",
+    "turning_points-001",
+    "turning_points-003",
+    "turning_points-005",
+    "turning_points-008",
+    "aliases_typos-001",
+    "aliases_typos-002",
+    "aliases_typos-004",
+    "aliases_typos-005",
+    "aliases_typos-006",
+    "aliases_typos-007",
+    "aliases_typos-008",
+    "aliases_typos-010",
+    "unsupported-001",
+    "unsupported-002",
+    "unsupported-003",
+    "unsupported-007"
+  ],
+  "lost": [
+    {
+      "id": "date_range_last_n-004",
+      "category": "date_range_last_n",
+      "failures": [
+        "unbacked_numbers"
+      ],
+      "reason": "unbacked_number",
+      "answer": "In January (Jan 1\u201331, 2026), the Knicks went 7-8 across 15 archived regular-season games, scoring 1,652 total points with a combined +44 point differential over that span."
+    },
+    {
+      "id": "date_range_last_n-009",
+      "category": "date_range_last_n",
+      "failures": [
+        "unbacked_numbers"
+      ],
+      "reason": "unbacked_number",
+      "answer": "The Knicks went 6-3 across 9 archived regular-season games in that window, according to the team totals for March 1\u201315, 2026."
+    },
+    {
+      "id": "turning_points-006",
+      "category": "turning_points",
+      "failures": [
+        "clarification",
+        "missing_turning_detail",
+        "no_cited_claims"
+      ],
+      "reason": "skipped_work_clarification",
+      "answer": "The Knicks\u2013Celtics matchup is ambiguous: the archive has four meetings between the teams this season. Please specify which game you want analyzed for scoring droughts and lost leads."
+    },
+    {
+      "id": "turning_points-010",
+      "category": "turning_points",
+      "failures": [
+        "missing_turning_detail",
+        "no_cited_claims"
+      ],
+      "reason": "missing_turning_detail",
+      "answer": "The Atlanta matchup is ambiguous: the archive lists eight Hawks\u2013Knicks games, so I need you to pick one before I can review its late-game possessions."
+    },
+    {
+      "id": "unsupported-009",
+      "category": "unsupported",
+      "failures": [
+        "clarification",
+        "no_cited_claims"
+      ],
+      "reason": "skipped_work_clarification",
+      "answer": "There are two archived Knicks\u2013Lakers games in the data: the Knicks' road game at the Lakers, and the Lakers' visit to New York. Which of those two games do you mean?"
+    }
+  ],
+  "gained": [
+    {
+      "id": "unsupported-004",
+      "failures": []
+    },
+    {
+      "id": "unsupported-005",
+      "failures": []
+    },
+    {
+      "id": "unsupported-006",
+      "failures": []
+    },
+    {
+      "id": "unsupported-008",
+      "failures": []
+    }
+  ],
+  "failure_counts": {
+    "not_validated": 19,
+    "no_cited_claims": 14,
+    "clarification": 9,
+    "declined": 4,
+    "not_substantive": 3,
+    "unbacked_numbers": 2,
+    "missing_turning_detail": 2
+  },
+  "by_category": {
+    "aliases_typos": {
+      "questions": 10,
+      "old": 8,
+      "new": 8,
+      "claim_backed": 8
+    },
+    "comparisons": {
+      "questions": 10,
+      "old": 3,
+      "new": 3,
+      "claim_backed": 3
+    },
+    "date_range_last_n": {
+      "questions": 10,
+      "old": 9,
+      "new": 7,
+      "claim_backed": 7
+    },
+    "exact_statistics": {
+      "questions": 10,
+      "old": 10,
+      "new": 10,
+      "claim_backed": 10
+    },
+    "single_game_narrative": {
+      "questions": 10,
+      "old": 2,
+      "new": 2,
+      "claim_backed": 2
+    },
+    "turning_points": {
+      "questions": 10,
+      "old": 6,
+      "new": 4,
+      "claim_backed": 4
+    },
+    "unsupported": {
+      "questions": 10,
+      "old": 5,
+      "new": 8,
+      "claim_backed": 8
+    }
+  }
+}
