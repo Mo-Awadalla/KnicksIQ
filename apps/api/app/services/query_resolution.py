@@ -14,7 +14,7 @@ from app.models.dataset_release import DatasetRelease
 from app.models.game import Game
 from app.models.game_event import GameEvent
 from app.models.player import Player
-from app.services.query_policy import is_outcome_subset
+from app.services.query_policy import is_outcome_subset, resolve_phase
 from app.services.team_aliases import team_ids_in_text
 from pydantic import BaseModel, ConfigDict, Field
 from sqlalchemy import func, select
@@ -378,22 +378,8 @@ async def resolve_query(
         date_start = games[0].game_date if games else None
         date_end = explicit_dates[0]
 
-    named_phase = bool(re.search(r"\bplayoff|\bpostseason|\bplay in\b|\bregular season\b", q))
-    season_type = (
-        "playoffs"
-        if "playoff" in q or "postseason" in q
-        else "play_in"
-        if "play in" in q
-        else "regular"
-        if "regular season" in q
-        else None
-    )
-    # Season-level stats are regular season; matchups span every phase.
     season_level = not (opponent_id or explicit_dates or relative_count or date_start or date_end)
-    if "overall" in q or "including playoffs" in q or "all phases" in q:
-        season_type = None
-    elif season_type is None and season_level:
-        season_type = "regular"
+    named_phase, season_type = resolve_phase(question, season_level=season_level)
     home_away = (
         "home"
         if re.search(r"\bhome\b", q)

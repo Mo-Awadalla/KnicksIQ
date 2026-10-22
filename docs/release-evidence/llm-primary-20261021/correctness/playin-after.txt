@@ -1,0 +1,8 @@
+OK  How did they play in November? None False
+OK  How did the Knicks play in the fourth quarter against Boston? None False
+OK  How did they play in wins at home? regular False
+OK  How did they do in the play-in? play_in True
+OK  What was their record in the play in tournament? play_in True
+OK  Did they win the play in game? play_in True
+OK  How did they play in the playoffs? playoffs True
+FAILURES 0
