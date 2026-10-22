@@ -62,6 +62,13 @@ class Settings(BaseSettings):
 
     openrouter_api_key: str | None = None
     openrouter_summary_model: str = "deepseek/deepseek-v4.1-flash"
+    # OpenRouter routes one model across upstreams with a wide price and latency spread.
+    # The owner decision for llm_primary is recorded in
+    # docs/release-evidence/llm-primary-20261021/w3-routing/README.md. An empty order keeps
+    # the router's own choice; a non-empty order is tried first when fallbacks are allowed.
+    openrouter_provider_order: list[str] = Field(default_factory=list)
+    openrouter_provider_sort: Literal["latency", "throughput", "price", "none"] = "latency"
+    openrouter_provider_allow_fallbacks: bool = True
     qdrant_url: str | None = None
     qdrant_api_key: str | None = None
     qdrant_host: str = "localhost"
