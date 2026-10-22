@@ -44,7 +44,12 @@ from app.services.analyst_provider import reviewer_system_prompt
 from app.services.analyst_review_checks import review_issues
 from app.services.evidence_contracts import split_review_spans
 from reviewer_false_acceptance_cases import CASES, CLASSES, Case
-from reviewer_false_acceptance_report import build_summary, summarize_group, worst_accepted
+from reviewer_false_acceptance_report import (
+    build_summary,
+    percentile,
+    summarize_group,
+    worst_accepted,
+)
 
 
 def call_metadata(adapter: Any) -> dict[str, Any]:
@@ -52,11 +57,18 @@ def call_metadata(adapter: Any) -> dict[str, Any]:
     usage = metadata.get("usage") or {}
     return {
         "provider": metadata.get("provider"),
+        # `model` is the model the host reports serving; `requested_model` is what we sent.
         "model": metadata.get("model"),
+        "served_model": metadata.get("model"),
+        "requested_model": getattr(adapter, "model", None),
+        "protocol": metadata.get("protocol"),
+        "max_tokens": metadata.get("max_tokens"),
         "cost_usd": usage.get("cost"),
         "prompt_tokens": usage.get("prompt_tokens"),
         "completion_tokens": usage.get("completion_tokens"),
         "finish_reason": metadata.get("finish_reason"),
+        "latency_ms": metadata.get("http_elapsed_ms"),
+        "ttfb_ms": metadata.get("http_ttfb_ms"),
     }
 
 
@@ -339,6 +351,12 @@ def main() -> None:
         by_class[name] = summarize_group(rows, trials)
     all_calls = [call for obs in _calls_used for call in obs]
     models = Counter(call.get("model") for call in all_calls)
+    call_latencies = [call["latency_ms"] for call in all_calls if call.get("latency_ms")]
+    outcomes = Counter(
+        obs["outcome"]
+        for row in measured["controls"] + measured["mutations"]
+        for obs in row["observations"]
+    )
     artifact: dict[str, Any] = {
         "measured_at": datetime.now(UTC).isoformat(timespec="seconds"),
         "model": models.most_common(1)[0][0] if models else None,
@@ -346,6 +364,34 @@ def main() -> None:
         "labels": str(args.labels),
         "trials_per_case": trials,
         "reviewer_max_tokens": review_max_tokens(),
+        "reviewer": {
+            "model_requested": get_settings().analyst_review_model,
+            "max_tokens": review_max_tokens(),
+            "observed_max_tokens": dict(Counter(call.get("max_tokens") for call in all_calls)),
+            "requested_models": dict(Counter(call.get("requested_model") for call in all_calls)),
+            "served_models": dict(Counter(call.get("served_model") for call in all_calls)),
+            "providers": dict(Counter(call.get("provider") for call in all_calls)),
+            "protocols": dict(Counter(call.get("protocol") for call in all_calls)),
+            "calls": len(all_calls),
+            "cost_usd": round(sum(call.get("cost_usd") or 0 for call in all_calls), 6),
+            "cost_per_call": round(
+                sum(call.get("cost_usd") or 0 for call in all_calls) / len(all_calls), 6
+            )
+            if all_calls
+            else None,
+            "call_latency_ms": {
+                "p50": percentile(call_latencies, 0.50),
+                "p95": percentile(call_latencies, 0.95),
+                "samples": len(call_latencies),
+            },
+            "outcomes": dict(outcomes),
+            "retried_trials": sum(
+                1
+                for row in measured["controls"] + measured["mutations"]
+                for obs in row["observations"]
+                if obs.get("retried")
+            ),
+        },
         "classes": CLASSES,
         "gate_proof": {
             "all_passed": all(

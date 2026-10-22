@@ -19,6 +19,7 @@ import asyncio
 import copy
 import json
 import time
+import uuid
 from collections import Counter
 from dataclasses import dataclass
 from decimal import Decimal
@@ -52,6 +53,7 @@ from app.services.evidence_contracts import (
     validate_structure,
 )
 from pydantic import ValidationError
+from review_measurement_stats import reviewer_stats
 
 
 @dataclass
@@ -60,6 +62,9 @@ class CallResult:
     raw: str | None
     error: str | None
     cost: float | None
+    metadata: dict[str, Any] | None = None
+    latency_ms: float | None = None
+    requested_model: str | None = None
 
 
 async def call_reviewer(
@@ -73,21 +78,44 @@ async def call_reviewer(
     adapter.timeout_seconds = 30
     if hasattr(adapter, "response_schema"):
         adapter.response_schema = None
+    if hasattr(adapter, "session_id"):
+        # OpenCode Go rejects calls without x-opencode-session. Production sends the
+        # analyst loop's random per-conversation id; a measurement call has no conversation.
+        adapter.session_id = uuid.uuid4().hex
+    requested_model = getattr(adapter, "model", None)
+    # Do not let a failed call expose the previous call's metadata.
+    adapter.last_metadata = {}
     started = time.monotonic()
+
+    def elapsed() -> float:
+        return round((time.monotonic() - started) * 1000, 1)
+
+    def metadata() -> dict[str, Any]:
+        return dict(getattr(adapter, "last_metadata", {}) or {})
+
     try:
         raw = await asyncio.wait_for(
             adapter.generate(system=system, user=encoded(payload)), timeout=30
         )
     except Exception as exc:
         text = f"{type(exc).__name__}: {exc}"
-        return CallResult(None, None, text, None)
-    cost = (getattr(adapter, "last_metadata", {}) or {}).get("usage", {}).get("cost")
+        return CallResult(None, None, text, None, metadata(), elapsed(), requested_model)
+    observed = metadata()
+    cost = (observed.get("usage") or {}).get("cost")
     try:
-        return CallResult(AnswerReview.model_validate_json(raw), raw, None, cost)
+        return CallResult(
+            AnswerReview.model_validate_json(raw),
+            raw,
+            None,
+            cost,
+            observed,
+            elapsed(),
+            requested_model,
+        )
     except ValidationError as exc:
-        return CallResult(None, raw, f"ValidationError: {exc}", cost)
-    finally:
-        _ = time.monotonic() - started
+        return CallResult(
+            None, raw, f"ValidationError: {exc}", cost, observed, elapsed(), requested_model
+        )
 
 
 async def base_trial(attempt: dict[str, Any]) -> dict[str, Any]:
@@ -122,11 +150,22 @@ async def head_review_once(
     spans: list[str],
 ) -> dict[str, Any]:
     result = await call_reviewer(system, payload)
+    observed = {
+        "metadata": result.metadata,
+        "latency_ms": result.latency_ms,
+        "requested_model": result.requested_model,
+    }
     if result.review is None:
         kind = failure_kind(result.error)
-        return {"outcome": kind, "causes": [], "cost": result.cost, "error": result.error}
+        return {
+            "outcome": kind,
+            "causes": [],
+            "cost": result.cost,
+            "error": result.error,
+            **observed,
+        }
     if validate_review(result.review, answer, claims, evidence, spans=spans):
-        return {"outcome": "accepted", "causes": [], "cost": result.cost}
+        return {"outcome": "accepted", "causes": [], "cost": result.cost, **observed}
     causes = reject_causes(
         result.review, answer, claims, evidence, spans, spans_are_positional=True
     )
@@ -135,6 +174,7 @@ async def head_review_once(
         "causes": causes,
         "cost": result.cost,
         "review": result.review.model_dump(mode="json"),
+        **observed,
     }
 
 
@@ -168,7 +208,13 @@ async def head_trial(attempt: dict[str, Any]) -> dict[str, Any]:
     if outcome["outcome"] == "malformed_review_json":
         retry = await head_review_once(system, payload, answer, claims, evidence, spans)
         retry["retried"] = True
+        retry["first_attempt"] = {
+            key: outcome.get(key) for key in ("outcome", "metadata", "latency_ms")
+        }
         retry["cost"] = (retry.get("cost") or 0) + (outcome.get("cost") or 0)
+        retry["latency_ms"] = round(
+            (retry.get("latency_ms") or 0) + (outcome.get("latency_ms") or 0), 1
+        )
         return retry
     return outcome
 
@@ -436,10 +482,14 @@ def main() -> None:
         print(json.dumps(artifact["mutations"], indent=2))
         return
     replay = asyncio.run(run_trials(units, args.trials, modes))
+    stats = reviewer_stats(replay, get_settings())
     artifact: dict[str, Any] = {
         "units": len(units),
         "trials": args.trials,
         "modes": sorted(modes),
+        "reviewer_model": stats["reviewer_model_requested"],
+        "reviewer_max_tokens": stats["reviewer_max_tokens"],
+        "reviewer": stats,
         "replay": replay,
         "rates": summarize(units, replay, args.trials),
     }

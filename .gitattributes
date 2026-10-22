@@ -125,3 +125,5 @@ docs/release-evidence/llm-primary-20261021/opencode-go/*.json* linguist-generate
 
 # OpenCode Go documentation pass machine output.
 docs/release-evidence/llm-primary-20261021/w4-docs/*.json linguist-generated=true
+# Reviewer model decision machine output.
+docs/release-evidence/llm-primary-20261021/w4-reviewer/*.json* linguist-generated=true
