@@ -127,11 +127,13 @@ def verify_runs(s: Session) -> None:
         comeback_context = bool(re.search(r"outscor|stretch|comeback|tying|tied", before[-70:].lower() + after[:60].lower()))
         for game in games:
             plays = flow.plays_for(s.oracle, game, periods_of(scope))
+            # A run paired with its start/end score identifies its team: only one
+            # side's score moved, so the snapshot decides who scored.
             candidate_runs = [
                 run for run in flow.runs(plays, bool(periods_of(scope)))
-                if run.team == team and run.points == value
+                if run.points == value and (score_before is not None or run.team == team)
             ]
-            if not candidate_runs:
+            if not candidate_runs and score_before is None:
                 cb = flow.comeback(plays, bool(periods_of(scope)))
                 if cb and cb["opp_points"] == 0 and cb["nyk_points"] == value and team == "NYK":
                     candidate_runs = [flow.Run("NYK", value, cb["low"], cb["end"])]
@@ -160,7 +162,7 @@ def verify_runs(s: Session) -> None:
         if matches:
             game, run = matches[0]
             expected = f"{run.points}-0 Q{run.start.period} {run.start.clock} to Q{run.end.period} {run.end.clock}"
-            s.mark(atom, atom.raw, expected, f"{team} run {game.date} vs {game.opp}",
+            s.mark(atom, atom.raw, expected, f"{run.team} run {game.date} vs {game.opp}",
                    "select sequence, period, clock, home_score, away_score from game_events where game_id=" + str(game.id),
                    status="verified")
             _mark_clocks(s, m.end(), m.end() + len(clause),
@@ -179,15 +181,20 @@ def verify_runs(s: Session) -> None:
 
 
 def _run_team(s: Session, pos: int, before: str, after: str = "") -> str:
+    head = after[:40]
+    tail_nyk = re.search(r"\b(?:knicks|nyk|new york)\b", head, re.I)
+    tail_opps = team_mentions(head, s.oracle.team_aliases)
+    # "a 7-0 Knicks burst": the team named right after the run wins.
+    if tail_nyk and (not tail_opps or tail_nyk.start() <= tail_opps[0][0]):
+        return "NYK"
+    if tail_opps and re.search(r"\brun\b|\bby\b", head[:30].lower()):
+        return tail_opps[0][1]
     low = before.lower()
     if re.search(r"outscor", low[-50:]):
         return "NYK"
-    head = after[:70]
-    opps_after = team_mentions(head, s.oracle.team_aliases)
-    if opps_after and re.search(r"\brun\b|\bby\b", head[:30].lower()):
-        return opps_after[0][1]
-    nyk = list(re.finditer(r"\b(?:knicks|nyk|new york)\b", low))
-    opps = team_mentions(before, s.oracle.team_aliases)
+    recent = before[-80:]
+    nyk = list(re.finditer(r"\b(?:knicks|nyk|new york)\b", recent, re.I))
+    opps = team_mentions(recent, s.oracle.team_aliases)
     if opps and (not nyk or opps[-1][0] > nyk[-1].start()):
         return opps[-1][1]
     return "NYK"

@@ -24,6 +24,7 @@ class Scope:
     result: str | None = None
     period: list[int] | None = None
     player: str | None = None
+    asb: bool = False
 
     def filters(self) -> dict[str, Any]:
         return {
@@ -38,14 +39,20 @@ class Scope:
         }
 
 
-SENTENCE = re.compile(r"[^.!?\n]+[.!?]?")
+SENTENCE_END = re.compile(r"(?:[.!?](?=\s+[A-Z(])|[.!?]\s*$|\n)")
 
 
 def sentences(text: str) -> list[tuple[int, int, str]]:
-    out = []
-    for m in SENTENCE.finditer(text):
-        if m.group(0).strip():
-            out.append((m.start(), m.end(), m.group(0)))
+    """Sentence spans, without splitting decimals like 26.0 or "vs. 3-1"."""
+    out: list[tuple[int, int, str]] = []
+    start = 0
+    for m in SENTENCE_END.finditer(text):
+        end = m.end()
+        if text[start:end].strip():
+            out.append((start, end, text[start:end]))
+        start = end
+    if start < len(text) and text[start:].strip():
+        out.append((start, len(text), text[start:]))
     return out
 
 
@@ -77,19 +84,40 @@ def parse_scope(text: str, base: Scope, aliases: dict[str, str], pos: int = 0, f
     regular_at = lower.rfind("regular")
     playoff_at = lower.rfind("playoff")
     if regular_at >= 0 and playoff_at >= 0:
-        scope.season_type = None if final else ("playoffs" if playoff_at > regular_at else "regular")
-    elif playoff_at >= 0:
+        # "regular season and playoffs" means both phases; two separate phase
+        # clauses ("regular season 2-1; playoffs 4-2") take the later one.
+        span = lower[min(regular_at, playoff_at):max(regular_at, playoff_at)]
+        if len(span) <= 40 and re.search(r"\b(?:and|or)\b", span):
+            scope.season_type = None
+        else:
+            scope.season_type = "playoffs" if playoff_at > regular_at else "regular"
+    elif playoff_at >= 0 or "postseason" in lower:
         scope.season_type = "playoffs"
     elif regular_at >= 0:
         scope.season_type = "regular"
     if "preseason" in lower:
         scope.season_type = "preseason"
+    if re.search(r"\b(?:after|since|post)[- ]?(?:the\s+)?all[- ]?star(?:\s+break)?\b", lower):
+        scope.asb = True
 
     opp = nearest_team(text, pos, aliases, window=160)
     if opp:
         scope.opp = opp
-    home_markers = [m.start() for m in re.finditer(r"\b(?:at home|home games?|home record|home win|home loss|home margin|home offense|home split)\b", lower)]
-    away_markers = [m.start() for m in re.finditer(r"\b(?:on the road|road games?|road win|road loss|away games?|away win|road margin|road offense|road split|away offense)\b", lower)]
+    home_markers = [
+        m.start() for m in re.finditer(
+            r"\b(?:at home|home games?|home record|home win|home loss|home margin|"
+            r"home offense|home split|home court|home(?=\s*[,:;]))\b",
+            lower,
+        )
+    ]
+    away_markers = [
+        m.start() for m in re.finditer(
+            r"\b(?:on the road|road games?|road win|road loss|away games?|away win|"
+            r"road margin|road offense|road split|away offense|"
+            r"(?:road|away)(?=\s*[,:;]))\b",
+            lower,
+        )
+    ]
     if home_markers or away_markers:
         last_home = max(home_markers, default=-1)
         last_away = max(away_markers, default=-1)
@@ -143,12 +171,17 @@ def parse_scope(text: str, base: Scope, aliases: dict[str, str], pos: int = 0, f
         scope.start = scope.end = None
         scope.result = None
         scope.loc = None
-    if re.search(r"\bfull\b[^.]{0,40}\bregular season\b|\bteam totals\b|\bin those \d+ wins\b", lower):
+    if re.search(
+        r"\bfull\b[^.]{0,40}\bregular[- ]season\b|\bteam totals\b|\bin those \d+ wins\b",
+        lower,
+    ):
         if not re.search(r"\bagainst\b|\bvs\.?\b|\bversus\b", lower):
             scope.opp = None
         scope.start = scope.end = None
         scope.result = "W" if "in those" in lower else None
         scope.loc = None
+        # "full regular-season record ... over 82 games" is not post-break.
+        scope.asb = False
     if re.search(r"\bthe (?:four|three|five|\d+) archived\b[^.]{0,30}\bmeetings\b", lower):
         scope.start = scope.end = None
     for m in MONTH_DATE.finditer(text):
@@ -195,6 +228,10 @@ def parse_scope(text: str, base: Scope, aliases: dict[str, str], pos: int = 0, f
         scope.period = [3]
     elif re.search(r"\bfourth quarter\b", lower):
         scope.period = [4]
+    # A sentence that names two different dated games does not scope later
+    # sentences ("in those games") to one of them.
+    if final and len({m.group(0) for m in ISO_DATE.finditer(text)}) >= 2:
+        scope.start = scope.end = None
     return scope
 
 

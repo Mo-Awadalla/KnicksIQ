@@ -14,7 +14,8 @@ from verify_runs import _mark_clock
 
 def verify_comebacks(s: Session) -> None:
     for m in re.finditer(
-        r"(?:largest\s+)?deficit(?:\s+erased)?(?:\s+in\s+(?:a|the)\s+(?:\w+\s+)?(?:win|loss))?"
+        r"(?:largest\s+)?deficit(?:\s+(?:erased|overcome))?"
+        r"(?:\s+in\s+(?:a|the)\s+(?:\w+\s+)?(?:win|loss))?"
         r"(?:\s+was|\s+of|\s+reached)?\s*(\d{1,3})(?:\s+points?)?",
         s.text, re.I,
     ):
@@ -77,8 +78,8 @@ def verify_comebacks(s: Session) -> None:
         if matches:
             s.mark(atom, int(m.group(1)), int(m.group(1)), f"largest deficit {matches[0].date}",
                    "select ... game_events", status="verified")
-    # "trailed by N at Qp clock (A-B)"
-    for m in re.finditer(r"trailed by\s+(\d{1,3})\s+at\s+Q([1-4])\s+(\d{1,2}:\d{2})\s*\((\d{1,3})\s*-\s*(\d{1,3})\)", s.text, re.I):
+    # "trailed by N at Qp clock (A-B)" / "trailed by N points at Qp clock (A-B)"
+    for m in re.finditer(r"trailed by\s+(\d{1,3})(?:\s+points?)?\s+at\s+Q([1-4])\s+(\d{1,2}:\d{2})\s*\((\d{1,3})\s*-\s*(\d{1,3})\)", s.text, re.I):
         value = int(m.group(1))
         games, scope = candidates(s, m.start())
         for game in games:
@@ -111,6 +112,35 @@ def verify_comebacks(s: Session) -> None:
             s.mark(atom, atom.raw, None, "comeback scoring", "select ... game_events", status="unverified")
 
 
+def verify_leads(s: Session) -> None:
+    for m in re.finditer(
+        r"(?:largest|biggest)\s+lead(?:\s+was|\s+of)?\s+(\d{1,3})\s+points?", s.text, re.I,
+    ):
+        atom = scalar_atom(s, m, 1)
+        if atom is None or not s.free(atom) or atom.kind != "number":
+            continue
+        games, scope = candidates(s, m.start())
+        if not games:
+            continue
+        values = []
+        for game in games:
+            plays = flow.plays_for(s.oracle, game, periods_of(scope))
+            values.append((max((p.margin_after for p in plays), default=0), game))
+        claimed = int(m.group(1))
+        exact = [game for value, game in values if value == claimed]
+        if exact:
+            s.mark(atom, claimed, claimed, f"largest lead {exact[0].date} vs {exact[0].opp}",
+                   "select ... game_events", status="verified")
+        elif len(games) == 1:
+            value, game = values[0]
+            s.mark(atom, claimed, value, f"largest lead {game.date} vs {game.opp}",
+                   "select ... game_events", status="wrong",
+                   detail=f"largest lead {value}")
+        else:
+            s.mark(atom, claimed, None, "ambiguous largest lead", "select ... game_events",
+                   status="unverified")
+
+
 def verify_lost_leads(s: Session) -> None:
     patterns = [
         r"(?:largest\s+)?lead(?:\s+lost)?(?:\s+was|\s+lost)?\s+(\d{1,3})\s+points?",
@@ -120,6 +150,11 @@ def verify_lost_leads(s: Session) -> None:
     ]
     for pattern in patterns:
         for m in re.finditer(pattern, s.text, re.I):
+            phrase = m.group(0)
+            if re.search(r"(?:largest|biggest)\s+lead", phrase, re.I) and not re.search(
+                r"lost|surrendered", phrase, re.I
+            ):
+                continue
             atom = scalar_atom(s, m, 1)
             if atom is None or not s.free(atom) or atom.kind != "number":
                 continue
@@ -241,6 +276,7 @@ def verify_flow(s: Session) -> None:
     verify_runs.verify_snapshots(s)
     verify_runs.verify_runs(s)
     verify_comebacks(s)
+    verify_leads(s)
     verify_lost_leads(s)
     verify_go_ahead(s)
     verify_ties(s)
