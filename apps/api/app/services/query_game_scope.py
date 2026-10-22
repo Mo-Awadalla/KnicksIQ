@@ -6,12 +6,71 @@ import re
 from datetime import date
 from typing import TYPE_CHECKING, Literal
 
-from app.services.query_text import is_explanation, is_record_request, metric_in_text, normalize
+from app.services.query_dates import date_window
+from app.services.query_policy import names_phase
+from app.services.query_text import (
+    is_explanation,
+    is_record_request,
+    metric_in_text,
+    normalize,
+    periods_in_text,
+)
+from app.services.team_aliases import team_ids_in_text
 from pydantic import BaseModel, ConfigDict, Field
 
 if TYPE_CHECKING:
     from app.models.game import Game
     from app.services.query_resolution import ResolvedQuery
+
+# A pronoun or a leading connective marks a turn that moves the prior topic, not a new one.
+_FOLLOW_UP_MARKER = re.compile(
+    r"\b(?:he|him|his|that|another|different player)\b|^\s*(?:why|now|and|what about)\b",
+    re.I,
+)
+# The season as a population; a date window or a named phase is handled elsewhere.
+_SEASON_SCOPE = re.compile(
+    r"\b(?:this|the|whole|entire|all|rest of the|for the|of the|over the)\s+"
+    r"(?:20\d{2}[-–]\d{2}\s+)?season\b|\bseason[- ]long\b",
+    re.I,
+)
+_SITE = re.compile(r"\b(?:home|road|away)\b", re.I)
+# A stat or a period is what an elliptical turn asks about; without one it is not a
+# continuation of the prior population (an injury question stays a new, unanswerable turn).
+_PERIOD = re.compile(
+    r"\b(?:quarters?|q[1-4]|[1-4]q|halves|half|halftime|periods?|overtimes?|ot)\b", re.I
+)
+_SCORE = re.compile(r"\b(?:score|scored|scoring)\b", re.I)
+
+
+def names_season_scope(question: str) -> bool:
+    """True when the question names the season, not a game, window or phase."""
+    return bool(_SEASON_SCOPE.search(normalize(question)))
+
+
+def is_elliptical_follow_up(question: str, games: list[Game]) -> bool:
+    """True when the question cannot pick its own population without the prior turn.
+
+    A question with its own team or opponent, date window, phase, site or season phrase
+    stands on its own. A pronoun or connective continues the topic. Beyond those, only a
+    stat, score or period question with no population is elliptical: a bare metric, a
+    quarter or a player stat needs the previous game or window to mean anything, while a
+    question about health or context is a new turn whatever its scope resolves to.
+    """
+    if _FOLLOW_UP_MARKER.search(question):
+        return True
+    if team_ids_in_text(question):
+        return False
+    latest = games[-1].game_date if games else None
+    if date_window(question, games, latest).explicit:
+        return False
+    if names_phase(question) or _SITE.search(question) or names_season_scope(question):
+        return False
+    return bool(
+        metric_in_text(question)
+        or periods_in_text(question)
+        or _PERIOD.search(question)
+        or _SCORE.search(question)
+    )
 
 
 class InheritedScope(BaseModel):

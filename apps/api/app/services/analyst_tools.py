@@ -16,7 +16,7 @@ from app.services.analyst_calculations import METRICS
 from app.services.analyst_dispatch import execute_call
 from app.services.analyst_tool_registry import capability_data_types
 from app.services.evidence_contracts import Candidate, Evidence, ToolCall, ToolResult, VerifiedClaim
-from app.services.query_game_scope import InheritedScope
+from app.services.query_game_scope import InheritedScope, is_elliptical_follow_up
 from app.services.query_resolution import ResolvedQuery, phrase_names_scope, resolve_query
 from app.services.query_text import aggregation_of
 from sqlalchemy import select
@@ -45,13 +45,8 @@ class AnalystTools:
         self.team_names: dict[str, str] = {}
         self.different = bool(re.search(r"\bdifferent player\b", question, re.I))
         self.topic = question
-        self.followup = bool(
-            re.search(
-                r"\b(he|him|his|that|another|different player)\b|^\s*(why|now|and|what about)",
-                question,
-                re.I,
-            )
-        )
+        # Resolved once the archive games are loaded: the question's own population decides.
+        self.followup = False
         self.timings: list[dict[str, Any]] = []
 
     async def prepare(self) -> None:
@@ -98,6 +93,9 @@ class AnalystTools:
         )
         entry_topic = str(self.state.get("intent") or "")
         entry_scope = self.state.get("scope") or {}
+        # A question that names its own population starts a new topic; one that only names a
+        # metric, period or player continues the population already under discussion.
+        self.followup = is_elliptical_follow_up(self.question, self.games)
         # A declined turn keeps the last accepted topic and scope for the next follow-up.
         declined = bool(self.state.get("declined", False))
         if entry_topic and not declined:
@@ -109,7 +107,7 @@ class AnalystTools:
         prior_scope = (
             entry_scope if entry_scope and not declined else (self.state.get("last_scope") or {})
         )
-        followup = self.followup
+        followup = self.followup and bool(prior_topic or prior_scope)
         inherited = (
             InheritedScope(
                 topic=prior_topic,
