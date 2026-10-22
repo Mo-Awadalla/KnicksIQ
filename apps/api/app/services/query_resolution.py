@@ -11,6 +11,7 @@ from app.models.dataset_release import DatasetRelease
 from app.models.game import Game
 from app.models.game_event import GameEvent
 from app.models.player import Player
+from app.services.query_dates import date_window
 from app.services.query_names import (
     resolve_player_mentions as _resolve_player_mentions,
 )
@@ -24,20 +25,6 @@ from pydantic import BaseModel, ConfigDict, Field
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-_MONTHS = {
-    "january": 1,
-    "february": 2,
-    "march": 3,
-    "april": 4,
-    "may": 5,
-    "june": 6,
-    "july": 7,
-    "august": 8,
-    "september": 9,
-    "october": 10,
-    "november": 11,
-    "december": 12,
-}
 _METRICS = {
     "point": "points",
     "points": "points",
@@ -202,34 +189,11 @@ async def resolve_query(
     q = _normalize(question)
     team_ids = sorted(team_ids_in_text(question) - {"NYK"})
     opponent_id = team_ids[0] if len(team_ids) == 1 else None
-    explicit_dates = [
-        date.fromisoformat(value) for value in re.findall(r"\b20\d{2}-\d{2}-\d{2}\b", question)
-    ]
-    date_start = explicit_dates[0] if explicit_dates else None
-    date_end = explicit_dates[-1] if explicit_dates else None
     latest_date = games[-1].game_date if games else None
-    relative_count: int | None = None
-    count_match = re.search(r"\blast\s+(\d+)\s+games?\b", q)
-    if count_match:
-        relative_count = max(1, min(int(count_match.group(1)), 82))
-    elif re.search(r"\b(?:last|previous)\s+game\b", q):
-        relative_count = 1
-
-    if latest_date and "this month" in q:
-        date_start = latest_date.replace(day=1)
-        date_end = latest_date
-    else:
-        named_month = next((month for name, month in _MONTHS.items() if name in q), None)
-        if named_month and games:
-            month_dates = [game.game_date for game in games if game.game_date.month == named_month]
-            if month_dates:
-                date_start, date_end = min(month_dates), max(month_dates)
-    if explicit_dates and "since" in q:
-        date_end = latest_date
-    elif explicit_dates and "before" in q:
-        date_start = games[0].game_date if games else None
-        date_end = explicit_dates[0]
-
+    window = date_window(question, games, latest_date)
+    date_start, date_end = window.start, window.end
+    explicit_dates = window.dates
+    relative_count = window.relative_count
     season_level = not (opponent_id or explicit_dates or relative_count or date_start or date_end)
     phase = resolve_phase(question, season_level=season_level, default=default_season_type)
     named_phase, season_type = phase.named, phase.season_type
