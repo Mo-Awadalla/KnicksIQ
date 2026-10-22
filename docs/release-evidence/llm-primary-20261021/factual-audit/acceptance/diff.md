@@ -5,12 +5,12 @@ Old verdicts are the claim-list audit at commit 5b585e6. Its numeric check count
 | id | trial | old verdict | new verdict | found | wrong | unverified | change |
 | --- | ---: | --- | --- | ---: | ---: | ---: | --- |
 | aliases_typos-004 | 1 | CORRECT | CORRECT | 3 | 0 | 0 | same |
-| aliases_typos-004 | 2 | CORRECT | UNVERIFIED | 4 | 0 | 1 | old pass downgraded |
-| aliases_typos-006 | 1 | CORRECT | UNVERIFIED | 6 | 0 | 2 | old pass downgraded |
-| aliases_typos-006 | 2 | CORRECT | UNVERIFIED | 5 | 0 | 2 | old pass downgraded |
+| aliases_typos-004 | 2 | CORRECT | CORRECT | 4 | 0 | 0 | same |
+| aliases_typos-006 | 1 | CORRECT | CORRECT | 6 | 0 | 0 | same |
+| aliases_typos-006 | 2 | CORRECT | CORRECT | 5 | 0 | 0 | same |
 | aliases_typos-009 | 1 | CORRECT | CORRECT | 3 | 0 | 0 | same |
 | aliases_typos-009 | 2 | CORRECT | CORRECT | 3 | 0 | 0 | same |
-| aliases_typos-010 | 1 | DECLINE_MISSED_ANSWER | UNVERIFIED | 3 | 0 | 1 | old pass downgraded |
+| aliases_typos-010 | 1 | DECLINE_MISSED_ANSWER | CORRECT | 3 | 0 | 0 | changed |
 | aliases_typos-010 | 2 | DECLINE_MISSED_ANSWER | CORRECT | 6 | 0 | 0 | changed |
 | date_range_last_n-006 | 1 | CORRECT | CORRECT | 5 | 0 | 0 | same |
 | date_range_last_n-006 | 2 | CORRECT | CORRECT | 5 | 0 | 0 | same |
@@ -28,17 +28,17 @@ Old verdicts are the claim-list audit at commit 5b585e6. Its numeric check count
 | exact_statistics-006 | 2 | CORRECT | CORRECT | 4 | 0 | 0 | same |
 | exact_statistics-007 | 1 | CORRECT | CORRECT | 3 | 0 | 0 | same |
 | exact_statistics-007 | 2 | CORRECT | CORRECT | 4 | 0 | 0 | same |
-| exact_statistics-008 | 1 | CORRECT | UNVERIFIED | 3 | 0 | 2 | old pass downgraded |
-| exact_statistics-008 | 2 | CORRECT | UNVERIFIED | 3 | 0 | 2 | old pass downgraded |
-| exact_statistics-009 | 1 | CORRECT | UNVERIFIED | 3 | 0 | 2 | old pass downgraded |
-| exact_statistics-009 | 2 | CORRECT | UNVERIFIED | 3 | 0 | 2 | old pass downgraded |
+| exact_statistics-008 | 1 | CORRECT | CORRECT | 3 | 0 | 0 | same |
+| exact_statistics-008 | 2 | CORRECT | CORRECT | 3 | 0 | 0 | same |
+| exact_statistics-009 | 1 | CORRECT | CORRECT | 3 | 0 | 0 | same |
+| exact_statistics-009 | 2 | CORRECT | CORRECT | 3 | 0 | 0 | same |
 | exact_statistics-010 | 1 | CORRECT | CORRECT | 4 | 0 | 0 | same |
 | exact_statistics-010 | 2 | CORRECT | CORRECT | 4 | 0 | 0 | same |
-| turning_points-003 | 1 | DECLINE_MISSED_ANSWER | UNVERIFIED | 3 | 0 | 1 | old pass downgraded |
-| turning_points-003 | 2 | DECLINE_MISSED_ANSWER | UNVERIFIED | 3 | 0 | 1 | old pass downgraded |
+| turning_points-003 | 1 | DECLINE_MISSED_ANSWER | CORRECT | 3 | 0 | 0 | changed |
+| turning_points-003 | 2 | DECLINE_MISSED_ANSWER | CORRECT | 3 | 0 | 0 | changed |
 | unsupported-006 | 1 | DECLINE_APPROPRIATE | CORRECT | 1 | 0 | 0 | changed |
 | unsupported-006 | 2 | DECLINE_APPROPRIATE | CORRECT | 5 | 0 | 0 | changed |
 | unsupported-007 | 1 | DECLINE_APPROPRIATE | CORRECT | 1 | 0 | 0 | changed |
 | unsupported-007 | 2 | DECLINE_APPROPRIATE | CORRECT | 1 | 0 | 0 | changed |
 
-Verdict changes: 10. A downgrade means the old audit reported a pass for a response with numbers it did not check, or checked them against a constant. An old fail cleared means every number now recomputes.
+Verdict changes: 0. A downgrade means the old audit reported a pass for a response with numbers it did not check, or checked them against a constant. An old fail cleared means every number now recomputes.

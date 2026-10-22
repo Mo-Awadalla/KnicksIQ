@@ -1,6 +1,6 @@
 # Replacement factual audit: 16000 trial 2
 
-Responses: 70. Numeric atoms found: 465. Checked: 422 (90.75% coverage). Verified: 413. Wrong: 9. Unverified: 43.
+Responses: 70. Numeric atoms found: 465. Checked: 433 (93.12% coverage). Verified: 424. Wrong: 9. Unverified: 32.
 
 Every numeric atom is extracted from the answer text, assigned a subject, phase, window, location, opponent and type from the surrounding sentence, and recomputed from raw restore tables by this audit's own SQL. An atom that no verifier can bind is UNVERIFIED and cannot pass.
 
@@ -18,7 +18,7 @@ Every numeric atom is extracted from the answer text, assigned a subject, phase,
 | aliases_typos-008 |  | 0 | 0 | 0 | 0 | n/a | NO_NUMBERS | DECLINE_MISSED_ANSWER |
 | aliases_typos-009 |  | 3 | 3 | 0 | 0 | 100% | CORRECT | CORRECT |
 | aliases_typos-010 |  | 5 | 5 | 0 | 0 | 100% | CORRECT | INCORRECT |
-| comparisons-001 |  | 11 | 9 | 0 | 2 | 82% | UNVERIFIED | DECLINE_MISSED_ANSWER |
+| comparisons-001 |  | 11 | 11 | 0 | 0 | 100% | CORRECT | DECLINE_MISSED_ANSWER |
 | comparisons-002 |  | 17 | 16 | 1 | 0 | 100% | INCORRECT | CORRECT |
 | comparisons-003 |  | 9 | 7 | 0 | 2 | 78% | UNVERIFIED | DECLINE_MISSED_ANSWER |
 | comparisons-004 |  | 2 | 2 | 0 | 0 | 100% | CORRECT | DECLINE_MISSED_ANSWER |
@@ -31,7 +31,7 @@ Every numeric atom is extracted from the answer text, assigned a subject, phase,
 | date_range_last_n-001 |  | 6 | 6 | 0 | 0 | 100% | CORRECT | CORRECT |
 | date_range_last_n-002 |  | 5 | 5 | 0 | 0 | 100% | CORRECT | CORRECT |
 | date_range_last_n-003 |  | 9 | 9 | 0 | 0 | 100% | CORRECT | CORRECT |
-| date_range_last_n-004 |  | 6 | 5 | 0 | 1 | 83% | UNVERIFIED | CORRECT |
+| date_range_last_n-004 |  | 6 | 6 | 0 | 0 | 100% | CORRECT | CORRECT |
 | date_range_last_n-005 |  | 4 | 4 | 0 | 0 | 100% | CORRECT | DECLINE_MISSED_ANSWER |
 | date_range_last_n-006 |  | 3 | 3 | 0 | 0 | 100% | CORRECT | CORRECT |
 | date_range_last_n-007 |  | 5 | 5 | 0 | 0 | 100% | CORRECT | DECLINE_MISSED_ANSWER |
@@ -42,15 +42,15 @@ Every numeric atom is extracted from the answer text, assigned a subject, phase,
 | exact_statistics-002 |  | 3 | 3 | 0 | 0 | 100% | CORRECT | CORRECT |
 | exact_statistics-003 |  | 5 | 5 | 0 | 0 | 100% | CORRECT | CORRECT |
 | exact_statistics-004 |  | 3 | 3 | 0 | 0 | 100% | CORRECT | CORRECT |
-| exact_statistics-005 |  | 4 | 3 | 0 | 1 | 75% | UNVERIFIED | CORRECT |
+| exact_statistics-005 |  | 4 | 4 | 0 | 0 | 100% | CORRECT | CORRECT |
 | exact_statistics-006 |  | 4 | 4 | 0 | 0 | 100% | CORRECT | CORRECT |
-| exact_statistics-007 |  | 4 | 3 | 0 | 1 | 75% | UNVERIFIED | CORRECT |
+| exact_statistics-007 |  | 4 | 4 | 0 | 0 | 100% | CORRECT | CORRECT |
 | exact_statistics-008 |  | 4 | 4 | 0 | 0 | 100% | CORRECT | CORRECT |
 | exact_statistics-009 |  | 4 | 4 | 0 | 0 | 100% | CORRECT | CORRECT |
 | exact_statistics-010 |  | 3 | 3 | 0 | 0 | 100% | CORRECT | CORRECT |
 | single_game_narrative-001 |  | 11 | 9 | 0 | 2 | 82% | UNVERIFIED | DECLINE_MISSED_ANSWER |
 | single_game_narrative-002 |  | 0 | 0 | 0 | 0 | n/a | NO_NUMBERS | CORRECT |
-| single_game_narrative-003 |  | 41 | 32 | 0 | 9 | 78% | UNVERIFIED | DECLINE_MISSED_ANSWER |
+| single_game_narrative-003 |  | 41 | 38 | 0 | 3 | 93% | UNVERIFIED | DECLINE_MISSED_ANSWER |
 | single_game_narrative-004 |  | 0 | 0 | 0 | 0 | n/a | NO_NUMBERS | INSUFFICIENT |
 | single_game_narrative-005 |  | 5 | 5 | 0 | 0 | 100% | CORRECT | DECLINE_MISSED_ANSWER |
 | single_game_narrative-006 |  | 10 | 10 | 0 | 0 | 100% | CORRECT | DECLINE_MISSED_ANSWER |
@@ -84,10 +84,10 @@ Every numeric atom is extracted from the answer text, assigned a subject, phase,
 | category | responses | found | verified | wrong | unverified | coverage |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
 | aliases_typos | 10 | 70 | 66 | 0 | 4 | 94% |
-| comparisons | 10 | 115 | 109 | 1 | 5 | 96% |
-| date_range_last_n | 10 | 48 | 39 | 8 | 1 | 98% |
-| exact_statistics | 10 | 37 | 35 | 0 | 2 | 95% |
-| single_game_narrative | 10 | 89 | 74 | 0 | 15 | 83% |
+| comparisons | 10 | 115 | 111 | 1 | 3 | 97% |
+| date_range_last_n | 10 | 48 | 40 | 8 | 0 | 100% |
+| exact_statistics | 10 | 37 | 37 | 0 | 0 | 100% |
+| single_game_narrative | 10 | 89 | 80 | 0 | 9 | 90% |
 | turning_points | 10 | 84 | 72 | 0 | 12 | 86% |
 | unsupported | 10 | 22 | 18 | 0 | 4 | 82% |
 
@@ -154,17 +154,13 @@ Every numeric atom is extracted from the answer text, assigned a subject, phase,
   ```
 
 
-## Unverified numbers (43)
+## Unverified numbers (32)
 
 - aliases_typos-002: 4 unverified: `123`, `117`, `112`, `106`
-- comparisons-001: 2 unverified: `30-10`, `23-19`
 - comparisons-003: 2 unverified: `105`, `95`
 - comparisons-007: 1 unverified: `3:26`
-- date_range_last_n-004: 1 unverified: `15`
-- exact_statistics-005: 1 unverified: `10`
-- exact_statistics-007: 1 unverified: `29`
 - single_game_narrative-001: 2 unverified: `37-23`, `Q2 11:07`
-- single_game_narrative-003: 9 unverified: `5`, `Q4 06:51`, `85-90`, `10`, `Q4 11:09`, `91-81`, `22`, `Q4 11:46`, `72-94`
+- single_game_narrative-003: 3 unverified: `5`, `10`, `22`
 - single_game_narrative-008: 1 unverified: `19.6`
 - single_game_narrative-010: 3 unverified: `125-135`, `125`, `105`
 - turning_points-001: 6 unverified: `17-0`, `Q2 07:29`, `Q2 03:49`, `33-36`, `50-36`, `12-0`
