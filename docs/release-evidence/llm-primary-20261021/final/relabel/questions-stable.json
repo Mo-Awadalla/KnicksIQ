@@ -1,0 +1,19 @@
+{
+  "old_source": "5ddfddc:apps/api/app/evaluation/heldout_questions.jsonl",
+  "old_sha256": "40a6f78a1d66a1be92f8081d2d084a0929155bdb21db054be0c7f5f87c32692d",
+  "new_source": "apps/api/app/evaluation/heldout_questions.jsonl",
+  "new_sha256": "7717914cbb7d786ad87f8d084a4a9b12a7abe1bbf72df55789a16e69bbc29a85",
+  "count": 60,
+  "ids_identical": true,
+  "questions_identical": true,
+  "id_question_pairs_sha256": "b4a48ea7c363a88807d8ea5454a38bdd1e7cb9cff5fad47c8bb90a1bfb48b193",
+  "id_question_pairs_diff": "",
+  "categories_unchanged": true,
+  "expected_routes_unchanged": true,
+  "answerable_unchanged": true,
+  "required_entities_unchanged": true,
+  "required_phrases_unchanged": true,
+  "fields_changed": [
+    "required_facts on 14 rows (20 facts)"
+  ]
+}

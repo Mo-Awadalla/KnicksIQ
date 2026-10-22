@@ -1,0 +1,3 @@
+# Per-row scorer output from tools/release/analyst_live_e2e.py; regenerate with the commands
+# in README.md. The summaries and verdict-changes.json stay subject to the size limit.
+*.scored.jsonl linguist-generated=true
