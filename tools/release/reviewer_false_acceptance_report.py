@@ -19,11 +19,23 @@ def wilson(successes: int, observations: int, z: float = 1.96) -> list[float] | 
     return [round(max(0.0, centre - half), 4), round(min(1.0, centre + half), 4)]
 
 
+def percentile(values: list[float], p: float) -> float | None:
+    """Nearest-rank percentile; every reported value is an observed measurement."""
+    if not values:
+        return None
+    ordered = sorted(values)
+    index = max(0, math.ceil(p * len(ordered)) - 1)
+    return round(ordered[index], 1)
+
+
 def summarize_group(rows: list[dict[str, Any]], trials: int) -> dict[str, Any]:
     observations = [obs for row in rows for obs in row["observations"]]
     accepted = sum(1 for obs in observations if obs["accepted"])
     calls = [call for obs in observations for call in obs["calls"]]
-    cost = sum(call.get("cost_usd") or 0 for call in calls)
+    priced = [call.get("cost_usd") or 0 for call in calls]
+    cost = sum(priced)
+    latencies = [obs["latency_ms"] for obs in observations if obs.get("latency_ms") is not None]
+    call_latencies = [call["latency_ms"] for call in calls if call.get("latency_ms") is not None]
     return {
         "cases": len(rows),
         "gate_rejected": sum(1 for row in rows if row.get("gate_issues")),
@@ -33,7 +45,21 @@ def summarize_group(rows: list[dict[str, Any]], trials: int) -> dict[str, Any]:
         "accept_rate": round(accepted / len(observations), 4) if observations else None,
         "wilson_95": wilson(accepted, len(observations)),
         "cost_usd": round(cost, 6),
+        "cost_per_call": round(cost / len(calls), 6) if calls else None,
         "reviewer_calls": len(calls),
+        "latency_ms": {
+            "p50": percentile(latencies, 0.50),
+            "p95": percentile(latencies, 0.95),
+            "samples": len(latencies),
+        },
+        "call_latency_ms": {
+            "p50": percentile(call_latencies, 0.50),
+            "p95": percentile(call_latencies, 0.95),
+            "samples": len(call_latencies),
+        },
+        "max_tokens": dict(Counter(call.get("max_tokens") for call in calls)),
+        "protocols": dict(Counter(call.get("protocol") for call in calls)),
+        "requested_models": dict(Counter(call.get("requested_model") for call in calls)),
         "providers": dict(Counter(call.get("provider") for call in calls)),
         "models": dict(Counter(call.get("model") for call in calls)),
     }

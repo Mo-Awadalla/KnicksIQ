@@ -1,0 +1,2606 @@
+{
+  "units": 17,
+  "trials": 3,
+  "modes": [
+    "head"
+  ],
+  "reviewer_model": "deepseek-v4.1-flash",
+  "reviewer_max_tokens": 3000,
+  "reviewer": {
+    "reviewer_model_requested": "deepseek-v4.1-flash",
+    "reviewer_max_tokens": 3000,
+    "requested_models": {
+      "deepseek-v4.1-flash": 51
+    },
+    "served_models": {
+      "deepseek-v4.1-flash": 51
+    },
+    "protocols": {
+      "chat": 51
+    },
+    "providers": {
+      "null": 51
+    },
+    "observed_max_tokens": {
+      "3000": 51
+    },
+    "provider_calls": 51,
+    "malformed_reviews": 0,
+    "retried_trials": 0,
+    "cost_usd": 0.047735,
+    "cost_per_review": 0.000936,
+    "latency_ms": {
+      "p50": 2652.2,
+      "p95": 4165.7,
+      "samples": 51
+    },
+    "outcomes": {
+      "accepted": 49,
+      "verdict_rejected": 2
+    }
+  },
+  "replay": {
+    "results": {
+      "exact_statistics-001#0": {
+        "base": [],
+        "head": [
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.0008502,
+            "metadata": {
+              "id": "021792680850428c41b39946b92a3163d51611244fc4a0db8ea09",
+              "model": "deepseek-v4.1-flash",
+              "provider": null,
+              "protocol": "chat",
+              "usage": {
+                "prompt_tokens": 1870,
+                "completion_tokens": 241,
+                "total_tokens": 2111,
+                "prompt_tokens_details": {
+                  "cached_tokens": 1792
+                },
+                "completion_tokens_details": {
+                  "reasoning_tokens": 0
+                },
+                "cost": 0.0008502
+              },
+              "finish_reason": "stop",
+              "content_kind": "string",
+              "reasoning_chars": null,
+              "message_keys": [
+                "content",
+                "role"
+              ],
+              "native_finish_reason": null,
+              "choice_keys": [
+                "finish_reason",
+                "index",
+                "logprobs",
+                "message"
+              ],
+              "request_bytes": 7718,
+              "response_bytes": 1249,
+              "http_ttfb_ms": 2626.1,
+              "http_elapsed_ms": 2626.3,
+              "max_tokens": 3000
+            },
+            "latency_ms": 2628.1,
+            "requested_model": "deepseek-v4.1-flash"
+          },
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.000969,
+            "metadata": {
+              "id": "0217926808531485d6d8f07cf2a752c74db4b42ef6a643ec44c9c",
+              "model": "deepseek-v4.1-flash",
+              "provider": null,
+              "protocol": "chat",
+              "usage": {
+                "prompt_tokens": 1870,
+                "completion_tokens": 340,
+                "total_tokens": 2210,
+                "prompt_tokens_details": {
+                  "cached_tokens": 1792
+                },
+                "completion_tokens_details": {
+                  "reasoning_tokens": 0
+                },
+                "cost": 0.000969
+              },
+              "finish_reason": "stop",
+              "content_kind": "string",
+              "reasoning_chars": null,
+              "message_keys": [
+                "content",
+                "role"
+              ],
+              "native_finish_reason": null,
+              "choice_keys": [
+                "finish_reason",
+                "index",
+                "logprobs",
+                "message"
+              ],
+              "request_bytes": 7718,
+              "response_bytes": 1506,
+              "http_ttfb_ms": 3329.1,
+              "http_elapsed_ms": 3329.3,
+              "max_tokens": 3000
+            },
+            "latency_ms": 3329.7,
+            "requested_model": "deepseek-v4.1-flash"
+          },
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.0009738,
+            "metadata": {
+              "id": "021792680856485dc50f194675e1cbc6bc0c2210aaea0b070ff82",
+              "model": "deepseek-v4.1-flash",
+              "provider": null,
+              "protocol": "chat",
+              "usage": {
+                "prompt_tokens": 1870,
+                "completion_tokens": 344,
+                "total_tokens": 2214,
+                "prompt_tokens_details": {
+                  "cached_tokens": 1792
+                },
+                "completion_tokens_details": {
+                  "reasoning_tokens": 0
+                },
+                "cost": 0.0009738
+              },
+              "finish_reason": "stop",
+              "content_kind": "string",
+              "reasoning_chars": null,
+              "message_keys": [
+                "content",
+                "role"
+              ],
+              "native_finish_reason": null,
+              "choice_keys": [
+                "finish_reason",
+                "index",
+                "logprobs",
+                "message"
+              ],
+              "request_bytes": 7718,
+              "response_bytes": 1517,
+              "http_ttfb_ms": 2899.6,
+              "http_elapsed_ms": 2899.8,
+              "max_tokens": 3000
+            },
+            "latency_ms": 2900.1,
+            "requested_model": "deepseek-v4.1-flash"
+          }
+        ]
+      },
+      "exact_statistics-002#0": {
+        "base": [],
+        "head": [
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.0008853,
+            "metadata": {
+              "id": "021792680859218ba082e75ad6045f729531cc716e805ec99cb36",
+              "model": "deepseek-v4.1-flash",
+              "provider": null,
+              "protocol": "chat",
+              "usage": {
+                "prompt_tokens": 1631,
+                "completion_tokens": 330,
+                "total_tokens": 1961,
+                "prompt_tokens_details": {
+                  "cached_tokens": 1536
+                },
+                "completion_tokens_details": {
+                  "reasoning_tokens": 0
+                },
+                "cost": 0.0008853
+              },
+              "finish_reason": "stop",
+              "content_kind": "string",
+              "reasoning_chars": null,
+              "message_keys": [
+                "content",
+                "role"
+              ],
+              "native_finish_reason": null,
+              "choice_keys": [
+                "finish_reason",
+                "index",
+                "logprobs",
+                "message"
+              ],
+              "request_bytes": 6979,
+              "response_bytes": 1467,
+              "http_ttfb_ms": 3418.1,
+              "http_elapsed_ms": 3418.3,
+              "max_tokens": 3000
+            },
+            "latency_ms": 3418.6,
+            "requested_model": "deepseek-v4.1-flash"
+          },
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.0008349,
+            "metadata": {
+              "id": "0217926808626519953a9193bc3926b190298875f636f3e446ed9",
+              "model": "deepseek-v4.1-flash",
+              "provider": null,
+              "protocol": "chat",
+              "usage": {
+                "prompt_tokens": 1631,
+                "completion_tokens": 288,
+                "total_tokens": 1919,
+                "prompt_tokens_details": {
+                  "cached_tokens": 1536
+                },
+                "completion_tokens_details": {
+                  "reasoning_tokens": 0
+                },
+                "cost": 0.0008349
+              },
+              "finish_reason": "stop",
+              "content_kind": "string",
+              "reasoning_chars": null,
+              "message_keys": [
+                "content",
+                "role"
+              ],
+              "native_finish_reason": null,
+              "choice_keys": [
+                "finish_reason",
+                "index",
+                "logprobs",
+                "message"
+              ],
+              "request_bytes": 6979,
+              "response_bytes": 1368,
+              "http_ttfb_ms": 2505.2,
+              "http_elapsed_ms": 2505.5,
+              "max_tokens": 3000
+            },
+            "latency_ms": 2505.8,
+            "requested_model": "deepseek-v4.1-flash"
+          },
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.0008829,
+            "metadata": {
+              "id": "chatcmpl-f4670e3bb12e403eaf4b83a522e823bb",
+              "model": "deepseek-v4.1-flash",
+              "provider": null,
+              "protocol": "chat",
+              "usage": {
+                "prompt_tokens": 1631,
+                "completion_tokens": 328,
+                "total_tokens": 1959,
+                "prompt_tokens_details": {
+                  "cached_tokens": 768
+                },
+                "cost": 0.0008829
+              },
+              "finish_reason": "stop",
+              "content_kind": "string",
+              "reasoning_chars": null,
+              "message_keys": [
+                "content",
+                "role"
+              ],
+              "native_finish_reason": null,
+              "choice_keys": [
+                "finish_reason",
+                "index",
+                "logprobs",
+                "message"
+              ],
+              "request_bytes": 6979,
+              "response_bytes": 1384,
+              "http_ttfb_ms": 2149.1,
+              "http_elapsed_ms": 2149.3,
+              "max_tokens": 3000
+            },
+            "latency_ms": 2149.8,
+            "requested_model": "deepseek-v4.1-flash"
+          }
+        ]
+      },
+      "exact_statistics-003#0": {
+        "base": [],
+        "head": [
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.0007866,
+            "metadata": {
+              "id": "chatcmpl-d021f4e5e25845a9b43ec08274cce606",
+              "model": "deepseek-v4.1-flash",
+              "provider": null,
+              "protocol": "chat",
+              "usage": {
+                "prompt_tokens": 1638,
+                "completion_tokens": 246,
+                "total_tokens": 1884,
+                "prompt_tokens_details": {
+                  "cached_tokens": 1408
+                },
+                "cost": 0.0007866
+              },
+              "finish_reason": "stop",
+              "content_kind": "string",
+              "reasoning_chars": null,
+              "message_keys": [
+                "content",
+                "role"
+              ],
+              "native_finish_reason": null,
+              "choice_keys": [
+                "finish_reason",
+                "index",
+                "logprobs",
+                "message"
+              ],
+              "request_bytes": 7050,
+              "response_bytes": 1239,
+              "http_ttfb_ms": 2305.0,
+              "http_elapsed_ms": 2305.4,
+              "max_tokens": 3000
+            },
+            "latency_ms": 2306.0,
+            "requested_model": "deepseek-v4.1-flash"
+          },
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.0008154,
+            "metadata": {
+              "id": "021792680869621346b8af97ccb99950d11a02fa7c7314765798f",
+              "model": "deepseek-v4.1-flash",
+              "provider": null,
+              "protocol": "chat",
+              "usage": {
+                "prompt_tokens": 1638,
+                "completion_tokens": 270,
+                "total_tokens": 1908,
+                "prompt_tokens_details": {
+                  "cached_tokens": 1536
+                },
+                "completion_tokens_details": {
+                  "reasoning_tokens": 0
+                },
+                "cost": 0.0008154
+              },
+              "finish_reason": "stop",
+              "content_kind": "string",
+              "reasoning_chars": null,
+              "message_keys": [
+                "content",
+                "role"
+              ],
+              "native_finish_reason": null,
+              "choice_keys": [
+                "finish_reason",
+                "index",
+                "logprobs",
+                "message"
+              ],
+              "request_bytes": 7050,
+              "response_bytes": 1369,
+              "http_ttfb_ms": 2617.6,
+              "http_elapsed_ms": 2618.0,
+              "max_tokens": 3000
+            },
+            "latency_ms": 2618.4,
+            "requested_model": "deepseek-v4.1-flash"
+          },
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.0008202,
+            "metadata": {
+              "id": "02179268087237277dd13f2098096eba9569e39b59e750c1bf9e6",
+              "model": "deepseek-v4.1-flash",
+              "provider": null,
+              "protocol": "chat",
+              "usage": {
+                "prompt_tokens": 1638,
+                "completion_tokens": 274,
+                "total_tokens": 1912,
+                "prompt_tokens_details": {
+                  "cached_tokens": 1536
+                },
+                "completion_tokens_details": {
+                  "reasoning_tokens": 0
+                },
+                "cost": 0.0008202
+              },
+              "finish_reason": "stop",
+              "content_kind": "string",
+              "reasoning_chars": null,
+              "message_keys": [
+                "content",
+                "role"
+              ],
+              "native_finish_reason": null,
+              "choice_keys": [
+                "finish_reason",
+                "index",
+                "logprobs",
+                "message"
+              ],
+              "request_bytes": 7050,
+              "response_bytes": 1385,
+              "http_ttfb_ms": 2802.0,
+              "http_elapsed_ms": 2802.2,
+              "max_tokens": 3000
+            },
+            "latency_ms": 2802.6,
+            "requested_model": "deepseek-v4.1-flash"
+          }
+        ]
+      },
+      "exact_statistics-004#0": {
+        "base": [],
+        "head": [
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.0007344,
+            "metadata": {
+              "id": "0217926808750003cb8a93f7287826a4278aac7f0d089f99b1d35",
+              "model": "deepseek-v4.1-flash",
+              "provider": null,
+              "protocol": "chat",
+              "usage": {
+                "prompt_tokens": 1620,
+                "completion_tokens": 207,
+                "total_tokens": 1827,
+                "prompt_tokens_details": {
+                  "cached_tokens": 1536
+                },
+                "completion_tokens_details": {
+                  "reasoning_tokens": 0
+                },
+                "cost": 0.0007344
+              },
+              "finish_reason": "stop",
+              "content_kind": "string",
+              "reasoning_chars": null,
+              "message_keys": [
+                "content",
+                "role"
+              ],
+              "native_finish_reason": null,
+              "choice_keys": [
+                "finish_reason",
+                "index",
+                "logprobs",
+                "message"
+              ],
+              "request_bytes": 7010,
+              "response_bytes": 1187,
+              "http_ttfb_ms": 2455.3,
+              "http_elapsed_ms": 2455.7,
+              "max_tokens": 3000
+            },
+            "latency_ms": 2456.0,
+            "requested_model": "deepseek-v4.1-flash"
+          },
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.0007824,
+            "metadata": {
+              "id": "chatcmpl-5da00826b3464570b5215b5732066cc7",
+              "model": "deepseek-v4.1-flash",
+              "provider": null,
+              "protocol": "chat",
+              "usage": {
+                "prompt_tokens": 1620,
+                "completion_tokens": 247,
+                "total_tokens": 1867,
+                "prompt_tokens_details": {
+                  "cached_tokens": 768
+                },
+                "cost": 0.0007824
+              },
+              "finish_reason": "stop",
+              "content_kind": "string",
+              "reasoning_chars": null,
+              "message_keys": [
+                "content",
+                "role"
+              ],
+              "native_finish_reason": null,
+              "choice_keys": [
+                "finish_reason",
+                "index",
+                "logprobs",
+                "message"
+              ],
+              "request_bytes": 7010,
+              "response_bytes": 1273,
+              "http_ttfb_ms": 1790.5,
+              "http_elapsed_ms": 1790.6,
+              "max_tokens": 3000
+            },
+            "latency_ms": 1790.9,
+            "requested_model": "deepseek-v4.1-flash"
+          },
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.0007776,
+            "metadata": {
+              "id": "0217926808793302b8720b6d986e81ce95e9b006de0a2cb57c5e1",
+              "model": "deepseek-v4.1-flash",
+              "provider": null,
+              "protocol": "chat",
+              "usage": {
+                "prompt_tokens": 1620,
+                "completion_tokens": 243,
+                "total_tokens": 1863,
+                "prompt_tokens_details": {
+                  "cached_tokens": 1536
+                },
+                "completion_tokens_details": {
+                  "reasoning_tokens": 0
+                },
+                "cost": 0.0007776
+              },
+              "finish_reason": "stop",
+              "content_kind": "string",
+              "reasoning_chars": null,
+              "message_keys": [
+                "content",
+                "role"
+              ],
+              "native_finish_reason": null,
+              "choice_keys": [
+                "finish_reason",
+                "index",
+                "logprobs",
+                "message"
+              ],
+              "request_bytes": 7010,
+              "response_bytes": 1317,
+              "http_ttfb_ms": 2290.7,
+              "http_elapsed_ms": 2290.9,
+              "max_tokens": 3000
+            },
+            "latency_ms": 2291.2,
+            "requested_model": "deepseek-v4.1-flash"
+          }
+        ]
+      },
+      "exact_statistics-005#0": {
+        "base": [],
+        "head": [
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.0008403,
+            "metadata": {
+              "id": "0217926808815731f48ceb9aa55112abbdf6fec19339eb3a92c45",
+              "model": "deepseek-v4.1-flash",
+              "provider": null,
+              "protocol": "chat",
+              "usage": {
+                "prompt_tokens": 1693,
+                "completion_tokens": 277,
+                "total_tokens": 1970,
+                "prompt_tokens_details": {
+                  "cached_tokens": 1664
+                },
+                "completion_tokens_details": {
+                  "reasoning_tokens": 0
+                },
+                "cost": 0.0008403
+              },
+              "finish_reason": "stop",
+              "content_kind": "string",
+              "reasoning_chars": null,
+              "message_keys": [
+                "content",
+                "role"
+              ],
+              "native_finish_reason": null,
+              "choice_keys": [
+                "finish_reason",
+                "index",
+                "logprobs",
+                "message"
+              ],
+              "request_bytes": 7053,
+              "response_bytes": 1352,
+              "http_ttfb_ms": 2689.5,
+              "http_elapsed_ms": 2689.7,
+              "max_tokens": 3000
+            },
+            "latency_ms": 2690.0,
+            "requested_model": "deepseek-v4.1-flash"
+          },
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.0007527,
+            "metadata": {
+              "id": "021792680884257682bfa727eaa8ae907bb4f408e14b63d32c2c8",
+              "model": "deepseek-v4.1-flash",
+              "provider": null,
+              "protocol": "chat",
+              "usage": {
+                "prompt_tokens": 1693,
+                "completion_tokens": 204,
+                "total_tokens": 1897,
+                "prompt_tokens_details": {
+                  "cached_tokens": 1664
+                },
+                "completion_tokens_details": {
+                  "reasoning_tokens": 0
+                },
+                "cost": 0.0007527
+              },
+              "finish_reason": "stop",
+              "content_kind": "string",
+              "reasoning_chars": null,
+              "message_keys": [
+                "content",
+                "role"
+              ],
+              "native_finish_reason": null,
+              "choice_keys": [
+                "finish_reason",
+                "index",
+                "logprobs",
+                "message"
+              ],
+              "request_bytes": 7053,
+              "response_bytes": 1165,
+              "http_ttfb_ms": 2190.8,
+              "http_elapsed_ms": 2191.0,
+              "max_tokens": 3000
+            },
+            "latency_ms": 2191.3,
+            "requested_model": "deepseek-v4.1-flash"
+          },
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.0007923,
+            "metadata": {
+              "id": "021792680886417600f73c29fbe2d8b6aeb9e23538767e74098c8",
+              "model": "deepseek-v4.1-flash",
+              "provider": null,
+              "protocol": "chat",
+              "usage": {
+                "prompt_tokens": 1693,
+                "completion_tokens": 237,
+                "total_tokens": 1930,
+                "prompt_tokens_details": {
+                  "cached_tokens": 1664
+                },
+                "completion_tokens_details": {
+                  "reasoning_tokens": 0
+                },
+                "cost": 0.0007923
+              },
+              "finish_reason": "stop",
+              "content_kind": "string",
+              "reasoning_chars": null,
+              "message_keys": [
+                "content",
+                "role"
+              ],
+              "native_finish_reason": null,
+              "choice_keys": [
+                "finish_reason",
+                "index",
+                "logprobs",
+                "message"
+              ],
+              "request_bytes": 7053,
+              "response_bytes": 1218,
+              "http_ttfb_ms": 2651.7,
+              "http_elapsed_ms": 2651.9,
+              "max_tokens": 3000
+            },
+            "latency_ms": 2652.2,
+            "requested_model": "deepseek-v4.1-flash"
+          }
+        ]
+      },
+      "exact_statistics-006#0": {
+        "base": [],
+        "head": [
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.0008205,
+            "metadata": {
+              "id": "chatcmpl-58ddaef77be24a07b944a7835cba238e",
+              "model": "deepseek-v4.1-flash",
+              "provider": null,
+              "protocol": "chat",
+              "usage": {
+                "prompt_tokens": 1675,
+                "completion_tokens": 265,
+                "total_tokens": 1940,
+                "prompt_tokens_details": {
+                  "cached_tokens": 0
+                },
+                "cost": 0.0008205
+              },
+              "finish_reason": "stop",
+              "content_kind": "string",
+              "reasoning_chars": null,
+              "message_keys": [
+                "content",
+                "role"
+              ],
+              "native_finish_reason": null,
+              "choice_keys": [
+                "finish_reason",
+                "index",
+                "logprobs",
+                "message"
+              ],
+              "request_bytes": 7030,
+              "response_bytes": 1279,
+              "http_ttfb_ms": 2041.1,
+              "http_elapsed_ms": 2041.2,
+              "max_tokens": 3000
+            },
+            "latency_ms": 2041.5,
+            "requested_model": "deepseek-v4.1-flash"
+          },
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.0008145,
+            "metadata": {
+              "id": "021792680891302337dd80e214c02e2e5c4590cd6b9313cc43075",
+              "model": "deepseek-v4.1-flash",
+              "provider": null,
+              "protocol": "chat",
+              "usage": {
+                "prompt_tokens": 1675,
+                "completion_tokens": 260,
+                "total_tokens": 1935,
+                "prompt_tokens_details": {
+                  "cached_tokens": 1664
+                },
+                "completion_tokens_details": {
+                  "reasoning_tokens": 0
+                },
+                "cost": 0.0008145
+              },
+              "finish_reason": "stop",
+              "content_kind": "string",
+              "reasoning_chars": null,
+              "message_keys": [
+                "content",
+                "role"
+              ],
+              "native_finish_reason": null,
+              "choice_keys": [
+                "finish_reason",
+                "index",
+                "logprobs",
+                "message"
+              ],
+              "request_bytes": 7030,
+              "response_bytes": 1316,
+              "http_ttfb_ms": 3217.2,
+              "http_elapsed_ms": 3217.4,
+              "max_tokens": 3000
+            },
+            "latency_ms": 3217.6,
+            "requested_model": "deepseek-v4.1-flash"
+          },
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.0007833,
+            "metadata": {
+              "id": "021792680894599d3ceb3d471ce278cd568773b7d71d6394e47b8",
+              "model": "deepseek-v4.1-flash",
+              "provider": null,
+              "protocol": "chat",
+              "usage": {
+                "prompt_tokens": 1675,
+                "completion_tokens": 234,
+                "total_tokens": 1909,
+                "prompt_tokens_details": {
+                  "cached_tokens": 1664
+                },
+                "completion_tokens_details": {
+                  "reasoning_tokens": 0
+                },
+                "cost": 0.0007833
+              },
+              "finish_reason": "stop",
+              "content_kind": "string",
+              "reasoning_chars": null,
+              "message_keys": [
+                "content",
+                "role"
+              ],
+              "native_finish_reason": null,
+              "choice_keys": [
+                "finish_reason",
+                "index",
+                "logprobs",
+                "message"
+              ],
+              "request_bytes": 7030,
+              "response_bytes": 1263,
+              "http_ttfb_ms": 3029.1,
+              "http_elapsed_ms": 3029.2,
+              "max_tokens": 3000
+            },
+            "latency_ms": 3029.5,
+            "requested_model": "deepseek-v4.1-flash"
+          }
+        ]
+      },
+      "exact_statistics-007#0": {
+        "base": [],
+        "head": [
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.0007875,
+            "metadata": {
+              "id": "chatcmpl-413e12906c8c42d6bb8363068eb85bf3",
+              "model": "deepseek-v4.1-flash",
+              "provider": null,
+              "protocol": "chat",
+              "usage": {
+                "prompt_tokens": 1585,
+                "completion_tokens": 260,
+                "total_tokens": 1845,
+                "prompt_tokens_details": {
+                  "cached_tokens": 768
+                },
+                "cost": 0.0007875
+              },
+              "finish_reason": "stop",
+              "content_kind": "string",
+              "reasoning_chars": null,
+              "message_keys": [
+                "content",
+                "role"
+              ],
+              "native_finish_reason": null,
+              "choice_keys": [
+                "finish_reason",
+                "index",
+                "logprobs",
+                "message"
+              ],
+              "request_bytes": 6862,
+              "response_bytes": 1255,
+              "http_ttfb_ms": 1894.8,
+              "http_elapsed_ms": 1894.9,
+              "max_tokens": 3000
+            },
+            "latency_ms": 1895.2,
+            "requested_model": "deepseek-v4.1-flash"
+          },
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.0007491,
+            "metadata": {
+              "id": "021792680899373e9db803be2da2d1fb0370cddd09ba5d6ae6b00",
+              "model": "deepseek-v4.1-flash",
+              "provider": null,
+              "protocol": "chat",
+              "usage": {
+                "prompt_tokens": 1585,
+                "completion_tokens": 228,
+                "total_tokens": 1813,
+                "prompt_tokens_details": {
+                  "cached_tokens": 1536
+                },
+                "completion_tokens_details": {
+                  "reasoning_tokens": 0
+                },
+                "cost": 0.0007491
+              },
+              "finish_reason": "stop",
+              "content_kind": "string",
+              "reasoning_chars": null,
+              "message_keys": [
+                "content",
+                "role"
+              ],
+              "native_finish_reason": null,
+              "choice_keys": [
+                "finish_reason",
+                "index",
+                "logprobs",
+                "message"
+              ],
+              "request_bytes": 6862,
+              "response_bytes": 1211,
+              "http_ttfb_ms": 3389.9,
+              "http_elapsed_ms": 3390.0,
+              "max_tokens": 3000
+            },
+            "latency_ms": 3390.5,
+            "requested_model": "deepseek-v4.1-flash"
+          },
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.0007839,
+            "metadata": {
+              "id": "02179268090351815b33ccaa151d3ed7feaaa761bc71c3736d314",
+              "model": "deepseek-v4.1-flash",
+              "provider": null,
+              "protocol": "chat",
+              "usage": {
+                "prompt_tokens": 1585,
+                "completion_tokens": 257,
+                "total_tokens": 1842,
+                "prompt_tokens_details": {
+                  "cached_tokens": 1536
+                },
+                "completion_tokens_details": {
+                  "reasoning_tokens": 0
+                },
+                "cost": 0.0007839
+              },
+              "finish_reason": "stop",
+              "content_kind": "string",
+              "reasoning_chars": null,
+              "message_keys": [
+                "content",
+                "role"
+              ],
+              "native_finish_reason": null,
+              "choice_keys": [
+                "finish_reason",
+                "index",
+                "logprobs",
+                "message"
+              ],
+              "request_bytes": 6862,
+              "response_bytes": 1309,
+              "http_ttfb_ms": 3326.2,
+              "http_elapsed_ms": 3326.9,
+              "max_tokens": 3000
+            },
+            "latency_ms": 3329.0,
+            "requested_model": "deepseek-v4.1-flash"
+          }
+        ]
+      },
+      "exact_statistics-008#0": {
+        "base": [],
+        "head": [
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.0010827,
+            "metadata": {
+              "id": "chatcmpl-5b2f29cad15a4857876bac98385f84e5",
+              "model": "deepseek-v4.1-flash",
+              "provider": null,
+              "protocol": "chat",
+              "usage": {
+                "prompt_tokens": 2157,
+                "completion_tokens": 363,
+                "total_tokens": 2520,
+                "prompt_tokens_details": {
+                  "cached_tokens": 768
+                },
+                "cost": 0.0010827
+              },
+              "finish_reason": "stop",
+              "content_kind": "string",
+              "reasoning_chars": null,
+              "message_keys": [
+                "content",
+                "role"
+              ],
+              "native_finish_reason": null,
+              "choice_keys": [
+                "finish_reason",
+                "index",
+                "logprobs",
+                "message"
+              ],
+              "request_bytes": 8616,
+              "response_bytes": 1507,
+              "http_ttfb_ms": 3086.6,
+              "http_elapsed_ms": 3087.6,
+              "max_tokens": 3000
+            },
+            "latency_ms": 3089.3,
+            "requested_model": "deepseek-v4.1-flash"
+          },
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.0010131,
+            "metadata": {
+              "id": "chatcmpl-330496be908b45d9859964f7e126f21f",
+              "model": "deepseek-v4.1-flash",
+              "provider": null,
+              "protocol": "chat",
+              "usage": {
+                "prompt_tokens": 2157,
+                "completion_tokens": 305,
+                "total_tokens": 2462,
+                "prompt_tokens_details": {
+                  "cached_tokens": 1920
+                },
+                "cost": 0.0010131
+              },
+              "finish_reason": "stop",
+              "content_kind": "string",
+              "reasoning_chars": null,
+              "message_keys": [
+                "content",
+                "role"
+              ],
+              "native_finish_reason": null,
+              "choice_keys": [
+                "finish_reason",
+                "index",
+                "logprobs",
+                "message"
+              ],
+              "request_bytes": 8616,
+              "response_bytes": 1332,
+              "http_ttfb_ms": 2118.3,
+              "http_elapsed_ms": 2118.6,
+              "max_tokens": 3000
+            },
+            "latency_ms": 2119.7,
+            "requested_model": "deepseek-v4.1-flash"
+          },
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.0011307,
+            "metadata": {
+              "id": "021792680911421ca656762e712cf73397b7e77c0d7d1642b2ed9",
+              "model": "deepseek-v4.1-flash",
+              "provider": null,
+              "protocol": "chat",
+              "usage": {
+                "prompt_tokens": 2157,
+                "completion_tokens": 403,
+                "total_tokens": 2560,
+                "prompt_tokens_details": {
+                  "cached_tokens": 2048
+                },
+                "completion_tokens_details": {
+                  "reasoning_tokens": 0
+                },
+                "cost": 0.0011307
+              },
+              "finish_reason": "stop",
+              "content_kind": "string",
+              "reasoning_chars": null,
+              "message_keys": [
+                "content",
+                "role"
+              ],
+              "native_finish_reason": null,
+              "choice_keys": [
+                "finish_reason",
+                "index",
+                "logprobs",
+                "message"
+              ],
+              "request_bytes": 8616,
+              "response_bytes": 1643,
+              "http_ttfb_ms": 3437.8,
+              "http_elapsed_ms": 3438.2,
+              "max_tokens": 3000
+            },
+            "latency_ms": 3438.8,
+            "requested_model": "deepseek-v4.1-flash"
+          }
+        ]
+      },
+      "exact_statistics-010#0": {
+        "base": [],
+        "head": [
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.0011913,
+            "metadata": {
+              "id": "chatcmpl-4868001dac9d492c813d3cd31f338ce4",
+              "model": "deepseek-v4.1-flash",
+              "provider": null,
+              "protocol": "chat",
+              "usage": {
+                "prompt_tokens": 1995,
+                "completion_tokens": 494,
+                "total_tokens": 2489,
+                "prompt_tokens_details": {
+                  "cached_tokens": 768
+                },
+                "cost": 0.0011913
+              },
+              "finish_reason": "stop",
+              "content_kind": "string",
+              "reasoning_chars": null,
+              "message_keys": [
+                "content",
+                "role"
+              ],
+              "native_finish_reason": null,
+              "choice_keys": [
+                "finish_reason",
+                "index",
+                "logprobs",
+                "message"
+              ],
+              "request_bytes": 8397,
+              "response_bytes": 2118,
+              "http_ttfb_ms": 2724.0,
+              "http_elapsed_ms": 2724.4,
+              "max_tokens": 3000
+            },
+            "latency_ms": 2725.0,
+            "requested_model": "deepseek-v4.1-flash"
+          },
+          {
+            "outcome": "verdict_rejected",
+            "causes": [
+              "span2:verdict_unsupported"
+            ],
+            "cost": 0.0012225,
+            "review": {
+              "assertions": [
+                {
+                  "text": "The highest-scoring individual Knicks game in the available 2025-26 archive is Jalen Brunson's 47 points on 2025-12-21 against MIA (regular season). ",
+                  "assertion_type": "factual",
+                  "verdict": "supported",
+                  "offending_text": null,
+                  "supporting_claim_ids": [
+                    "claim:fe425ac40864f4bfa9e33368bf60428b801bad3c80ce3ca4b4515981d84cf1ef"
+                  ],
+                  "supporting_evidence_ids": [
+                    "2025-26.20260928.1:game:28:player:134"
+                  ],
+                  "reason": "Claim matches Brunson 47 points vs MIA on that date."
+                },
+                {
+                  "text": "The next-highest is his 45 points on 2026-06-13 against SAS in the playoffs. ",
+                  "assertion_type": "factual",
+                  "verdict": "unsupported",
+                  "offending_text": "The next-highest",
+                  "supporting_claim_ids": [
+                    "claim:f1e6e09d89101c516c09bdcb4a1b68b69b585194203f72667020c6449e954dfb"
+                  ],
+                  "supporting_evidence_ids": [
+                    "2025-26.20260928.1:game:101:player:134"
+                  ],
+                  "reason": "No evidence 45 is next-highest; archive ranking not established."
+                },
+                {
+                  "text": "Note: this reflects individual player scoring, not the team's total points in a game.",
+                  "assertion_type": "interpretation",
+                  "verdict": "supported",
+                  "offending_text": null,
+                  "supporting_claim_ids": [
+                    "claim:fe425ac40864f4bfa9e33368bf60428b801bad3c80ce3ca4b4515981d84cf1ef"
+                  ],
+                  "supporting_evidence_ids": [],
+                  "reason": "Claims are player points, not team totals."
+                }
+              ],
+              "follow_up_reviews": [
+                {
+                  "text": "What was the Knicks' highest team point total in a game?",
+                  "verdict": "supported",
+                  "supporting_claim_ids": [],
+                  "supporting_evidence_ids": [],
+                  "reason": "Team points metric available in archive scope."
+                },
+                {
+                  "text": "How many points did Jalen Brunson average in the 2025-26 regular season?",
+                  "verdict": "supported",
+                  "supporting_claim_ids": [],
+                  "supporting_evidence_ids": [],
+                  "reason": "Player points data available; averaging is derivable."
+                }
+              ]
+            },
+            "metadata": {
+              "id": "02179268092148882fba1344a9ed2fba97aa536d307b6cf437fe0",
+              "model": "deepseek-v4.1-flash",
+              "provider": null,
+              "protocol": "chat",
+              "usage": {
+                "prompt_tokens": 1995,
+                "completion_tokens": 520,
+                "total_tokens": 2515,
+                "prompt_tokens_details": {
+                  "cached_tokens": 896
+                },
+                "completion_tokens_details": {
+                  "reasoning_tokens": 0
+                },
+                "cost": 0.0012225
+              },
+              "finish_reason": "stop",
+              "content_kind": "string",
+              "reasoning_chars": null,
+              "message_keys": [
+                "content",
+                "role"
+              ],
+              "native_finish_reason": null,
+              "choice_keys": [
+                "finish_reason",
+                "index",
+                "logprobs",
+                "message"
+              ],
+              "request_bytes": 8397,
+              "response_bytes": 2237,
+              "http_ttfb_ms": 8305.1,
+              "http_elapsed_ms": 8305.6,
+              "max_tokens": 3000
+            },
+            "latency_ms": 8306.2,
+            "requested_model": "deepseek-v4.1-flash"
+          },
+          {
+            "outcome": "verdict_rejected",
+            "causes": [
+              "span2:verdict_insufficient_evidence"
+            ],
+            "cost": 0.0011757,
+            "review": {
+              "assertions": [
+                {
+                  "text": "The highest-scoring individual Knicks game in the available 2025-26 archive is Jalen Brunson's 47 points on 2025-12-21 against MIA (regular season). ",
+                  "assertion_type": "factual",
+                  "verdict": "supported",
+                  "offending_text": null,
+                  "supporting_claim_ids": [
+                    "claim:fe425ac40864f4bfa9e33368bf60428b801bad3c80ce3ca4b4515981d84cf1ef"
+                  ],
+                  "supporting_evidence_ids": [],
+                  "reason": "Claim states Brunson 47 points vs MIA on that date."
+                },
+                {
+                  "text": "The next-highest is his 45 points on 2026-06-13 against SAS in the playoffs. ",
+                  "assertion_type": "interpretation",
+                  "verdict": "insufficient_evidence",
+                  "offending_text": "The next-highest",
+                  "supporting_claim_ids": [
+                    "claim:f1e6e09d89101c516c09bdcb4a1b68b69b585194203f72667020c6449e954dfb"
+                  ],
+                  "supporting_evidence_ids": [],
+                  "reason": "Claims list two highs but no ranking of all games."
+                },
+                {
+                  "text": "Note: this reflects individual player scoring, not the team's total points in a game.",
+                  "assertion_type": "interpretation",
+                  "verdict": "supported",
+                  "offending_text": null,
+                  "supporting_claim_ids": [
+                    "claim:fe425ac40864f4bfa9e33368bf60428b801bad3c80ce3ca4b4515981d84cf1ef"
+                  ],
+                  "supporting_evidence_ids": [],
+                  "reason": "Claims are player-level points, correctly scoped as individual."
+                }
+              ],
+              "follow_up_reviews": [
+                {
+                  "text": "What was the Knicks' highest team point total in a game?",
+                  "verdict": "supported",
+                  "supporting_claim_ids": [],
+                  "supporting_evidence_ids": [],
+                  "reason": "Team points metric available in capabilities."
+                },
+                {
+                  "text": "How many points did Jalen Brunson average in the 2025-26 regular season?",
+                  "verdict": "supported",
+                  "supporting_claim_ids": [],
+                  "supporting_evidence_ids": [],
+                  "reason": "Player box scores and regular season data available."
+                }
+              ]
+            },
+            "metadata": {
+              "id": "02179268092580215b33ccaa151d3ed7feaaa761bc71c3766f443",
+              "model": "deepseek-v4.1-flash",
+              "provider": null,
+              "protocol": "chat",
+              "usage": {
+                "prompt_tokens": 1995,
+                "completion_tokens": 481,
+                "total_tokens": 2476,
+                "prompt_tokens_details": {
+                  "cached_tokens": 1920
+                },
+                "completion_tokens_details": {
+                  "reasoning_tokens": 0
+                },
+                "cost": 0.0011757
+              },
+              "finish_reason": "stop",
+              "content_kind": "string",
+              "reasoning_chars": null,
+              "message_keys": [
+                "content",
+                "role"
+              ],
+              "native_finish_reason": null,
+              "choice_keys": [
+                "finish_reason",
+                "index",
+                "logprobs",
+                "message"
+              ],
+              "request_bytes": 8397,
+              "response_bytes": 2176,
+              "http_ttfb_ms": 3972.8,
+              "http_elapsed_ms": 3974.7,
+              "max_tokens": 3000
+            },
+            "latency_ms": 3975.4,
+            "requested_model": "deepseek-v4.1-flash"
+          }
+        ]
+      },
+      "date_range_last_n-001#0": {
+        "base": [],
+        "head": [
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.0009744,
+            "metadata": {
+              "id": "02179268092984507b4b942199433a510c68da6d01b36ec26a457",
+              "model": "deepseek-v4.1-flash",
+              "provider": null,
+              "protocol": "chat",
+              "usage": {
+                "prompt_tokens": 1880,
+                "completion_tokens": 342,
+                "total_tokens": 2222,
+                "prompt_tokens_details": {
+                  "cached_tokens": 1792
+                },
+                "completion_tokens_details": {
+                  "reasoning_tokens": 0
+                },
+                "cost": 0.0009744
+              },
+              "finish_reason": "stop",
+              "content_kind": "string",
+              "reasoning_chars": null,
+              "message_keys": [
+                "content",
+                "role"
+              ],
+              "native_finish_reason": null,
+              "choice_keys": [
+                "finish_reason",
+                "index",
+                "logprobs",
+                "message"
+              ],
+              "request_bytes": 7761,
+              "response_bytes": 1516,
+              "http_ttfb_ms": 3153.3,
+              "http_elapsed_ms": 3153.8,
+              "max_tokens": 3000
+            },
+            "latency_ms": 3154.5,
+            "requested_model": "deepseek-v4.1-flash"
+          },
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.0009324,
+            "metadata": {
+              "id": "021792680932981938a0312c1a8c2e332f47e263cd7c43e615de5",
+              "model": "deepseek-v4.1-flash",
+              "provider": null,
+              "protocol": "chat",
+              "usage": {
+                "prompt_tokens": 1880,
+                "completion_tokens": 307,
+                "total_tokens": 2187,
+                "prompt_tokens_details": {
+                  "cached_tokens": 1792
+                },
+                "completion_tokens_details": {
+                  "reasoning_tokens": 0
+                },
+                "cost": 0.0009324
+              },
+              "finish_reason": "stop",
+              "content_kind": "string",
+              "reasoning_chars": null,
+              "message_keys": [
+                "content",
+                "role"
+              ],
+              "native_finish_reason": null,
+              "choice_keys": [
+                "finish_reason",
+                "index",
+                "logprobs",
+                "message"
+              ],
+              "request_bytes": 7761,
+              "response_bytes": 1388,
+              "http_ttfb_ms": 3318.4,
+              "http_elapsed_ms": 3318.6,
+              "max_tokens": 3000
+            },
+            "latency_ms": 3319.0,
+            "requested_model": "deepseek-v4.1-flash"
+          },
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.0008796,
+            "metadata": {
+              "id": "021792680936400fdccfc102ca12157f94275e78054dc3bc02046",
+              "model": "deepseek-v4.1-flash",
+              "provider": null,
+              "protocol": "chat",
+              "usage": {
+                "prompt_tokens": 1880,
+                "completion_tokens": 263,
+                "total_tokens": 2143,
+                "prompt_tokens_details": {
+                  "cached_tokens": 1792
+                },
+                "completion_tokens_details": {
+                  "reasoning_tokens": 0
+                },
+                "cost": 0.0008796
+              },
+              "finish_reason": "stop",
+              "content_kind": "string",
+              "reasoning_chars": null,
+              "message_keys": [
+                "content",
+                "role"
+              ],
+              "native_finish_reason": null,
+              "choice_keys": [
+                "finish_reason",
+                "index",
+                "logprobs",
+                "message"
+              ],
+              "request_bytes": 7761,
+              "response_bytes": 1338,
+              "http_ttfb_ms": 2754.2,
+              "http_elapsed_ms": 2754.6,
+              "max_tokens": 3000
+            },
+            "latency_ms": 2755.1,
+            "requested_model": "deepseek-v4.1-flash"
+          }
+        ]
+      },
+      "date_range_last_n-002#0": {
+        "base": [],
+        "head": [
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.0011982,
+            "metadata": {
+              "id": "021792680938950d5288a603f9a5ec332174783e04745d2a9fb4b",
+              "model": "deepseek-v4.1-flash",
+              "provider": null,
+              "protocol": "chat",
+              "usage": {
+                "prompt_tokens": 2234,
+                "completion_tokens": 440,
+                "total_tokens": 2674,
+                "prompt_tokens_details": {
+                  "cached_tokens": 2176
+                },
+                "completion_tokens_details": {
+                  "reasoning_tokens": 0
+                },
+                "cost": 0.0011982
+              },
+              "finish_reason": "stop",
+              "content_kind": "string",
+              "reasoning_chars": null,
+              "message_keys": [
+                "content",
+                "role"
+              ],
+              "native_finish_reason": null,
+              "choice_keys": [
+                "finish_reason",
+                "index",
+                "logprobs",
+                "message"
+              ],
+              "request_bytes": 8754,
+              "response_bytes": 1713,
+              "http_ttfb_ms": 3718.0,
+              "http_elapsed_ms": 3718.4,
+              "max_tokens": 3000
+            },
+            "latency_ms": 3719.0,
+            "requested_model": "deepseek-v4.1-flash"
+          },
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.0010662,
+            "metadata": {
+              "id": "021792680942701008f00307548aaad250a55687bd5a742a289ca",
+              "model": "deepseek-v4.1-flash",
+              "provider": null,
+              "protocol": "chat",
+              "usage": {
+                "prompt_tokens": 2234,
+                "completion_tokens": 330,
+                "total_tokens": 2564,
+                "prompt_tokens_details": {
+                  "cached_tokens": 2176
+                },
+                "completion_tokens_details": {
+                  "reasoning_tokens": 0
+                },
+                "cost": 0.0010662
+              },
+              "finish_reason": "stop",
+              "content_kind": "string",
+              "reasoning_chars": null,
+              "message_keys": [
+                "content",
+                "role"
+              ],
+              "native_finish_reason": null,
+              "choice_keys": [
+                "finish_reason",
+                "index",
+                "logprobs",
+                "message"
+              ],
+              "request_bytes": 8754,
+              "response_bytes": 1486,
+              "http_ttfb_ms": 3307.4,
+              "http_elapsed_ms": 3307.8,
+              "max_tokens": 3000
+            },
+            "latency_ms": 3308.4,
+            "requested_model": "deepseek-v4.1-flash"
+          },
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.0012126,
+            "metadata": {
+              "id": "ffa6b2e7-25bb-4bb2-a65b-65e8386ade92",
+              "model": "deepseek-v4.1-flash",
+              "provider": null,
+              "protocol": "chat",
+              "usage": {
+                "prompt_tokens": 2234,
+                "completion_tokens": 452,
+                "total_tokens": 2686,
+                "prompt_cache_hit_tokens": 768,
+                "prompt_cache_miss_tokens": 1466,
+                "prompt_tokens_details": {
+                  "cached_tokens": 768
+                },
+                "cost": 0.0012126
+              },
+              "finish_reason": "stop",
+              "content_kind": "string",
+              "reasoning_chars": null,
+              "message_keys": [
+                "content",
+                "role"
+              ],
+              "native_finish_reason": null,
+              "choice_keys": [
+                "finish_reason",
+                "index",
+                "logprobs",
+                "message"
+              ],
+              "request_bytes": 8754,
+              "response_bytes": 1733,
+              "http_ttfb_ms": 2512.4,
+              "http_elapsed_ms": 2512.6,
+              "max_tokens": 3000
+            },
+            "latency_ms": 2513.2,
+            "requested_model": "deepseek-v4.1-flash"
+          }
+        ]
+      },
+      "date_range_last_n-003#0": {
+        "base": [],
+        "head": [
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.000903,
+            "metadata": {
+              "id": "5f52422c-767a-46bd-b328-74dc0e7fd239",
+              "model": "deepseek-v4.1-flash",
+              "provider": null,
+              "protocol": "chat",
+              "usage": {
+                "prompt_tokens": 1998,
+                "completion_tokens": 253,
+                "total_tokens": 2251,
+                "prompt_cache_hit_tokens": 1536,
+                "prompt_cache_miss_tokens": 462,
+                "prompt_tokens_details": {
+                  "cached_tokens": 1536
+                },
+                "cost": 0.000903
+              },
+              "finish_reason": "stop",
+              "content_kind": "string",
+              "reasoning_chars": null,
+              "message_keys": [
+                "content",
+                "role"
+              ],
+              "native_finish_reason": null,
+              "choice_keys": [
+                "finish_reason",
+                "index",
+                "logprobs",
+                "message"
+              ],
+              "request_bytes": 8330,
+              "response_bytes": 1351,
+              "http_ttfb_ms": 2235.1,
+              "http_elapsed_ms": 2235.4,
+              "max_tokens": 3000
+            },
+            "latency_ms": 2235.8,
+            "requested_model": "deepseek-v4.1-flash"
+          },
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.0008778,
+            "metadata": {
+              "id": "92c2ca55-63a4-4941-859b-b7c742b117ab",
+              "model": "deepseek-v4.1-flash",
+              "provider": null,
+              "protocol": "chat",
+              "usage": {
+                "prompt_tokens": 1998,
+                "completion_tokens": 232,
+                "total_tokens": 2230,
+                "prompt_cache_hit_tokens": 1792,
+                "prompt_cache_miss_tokens": 206,
+                "prompt_tokens_details": {
+                  "cached_tokens": 1792
+                },
+                "cost": 0.0008778
+              },
+              "finish_reason": "stop",
+              "content_kind": "string",
+              "reasoning_chars": null,
+              "message_keys": [
+                "content",
+                "role"
+              ],
+              "native_finish_reason": null,
+              "choice_keys": [
+                "finish_reason",
+                "index",
+                "logprobs",
+                "message"
+              ],
+              "request_bytes": 8330,
+              "response_bytes": 1287,
+              "http_ttfb_ms": 1651.9,
+              "http_elapsed_ms": 1652.3,
+              "max_tokens": 3000
+            },
+            "latency_ms": 1653.0,
+            "requested_model": "deepseek-v4.1-flash"
+          },
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.000945,
+            "metadata": {
+              "id": "021792680952327ba082e75ad6045f729531cc716e805ecb291c7",
+              "model": "deepseek-v4.1-flash",
+              "provider": null,
+              "protocol": "chat",
+              "usage": {
+                "prompt_tokens": 1998,
+                "completion_tokens": 288,
+                "total_tokens": 2286,
+                "prompt_tokens_details": {
+                  "cached_tokens": 1920
+                },
+                "completion_tokens_details": {
+                  "reasoning_tokens": 0
+                },
+                "cost": 0.000945
+              },
+              "finish_reason": "stop",
+              "content_kind": "string",
+              "reasoning_chars": null,
+              "message_keys": [
+                "content",
+                "role"
+              ],
+              "native_finish_reason": null,
+              "choice_keys": [
+                "finish_reason",
+                "index",
+                "logprobs",
+                "message"
+              ],
+              "request_bytes": 8330,
+              "response_bytes": 1467,
+              "http_ttfb_ms": 2708.6,
+              "http_elapsed_ms": 2709.0,
+              "max_tokens": 3000
+            },
+            "latency_ms": 2709.6,
+            "requested_model": "deepseek-v4.1-flash"
+          }
+        ]
+      },
+      "date_range_last_n-004#0": {
+        "base": [],
+        "head": [
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.0011136,
+            "metadata": {
+              "id": "021792680955099dbab82a5e050003614ff9828ffe9bef2a840b3",
+              "model": "deepseek-v4.1-flash",
+              "provider": null,
+              "protocol": "chat",
+              "usage": {
+                "prompt_tokens": 2184,
+                "completion_tokens": 382,
+                "total_tokens": 2566,
+                "prompt_tokens_details": {
+                  "cached_tokens": 2176
+                },
+                "completion_tokens_details": {
+                  "reasoning_tokens": 0
+                },
+                "cost": 0.0011136
+              },
+              "finish_reason": "stop",
+              "content_kind": "string",
+              "reasoning_chars": null,
+              "message_keys": [
+                "content",
+                "role"
+              ],
+              "native_finish_reason": null,
+              "choice_keys": [
+                "finish_reason",
+                "index",
+                "logprobs",
+                "message"
+              ],
+              "request_bytes": 8676,
+              "response_bytes": 1606,
+              "http_ttfb_ms": 3210.1,
+              "http_elapsed_ms": 3210.3,
+              "max_tokens": 3000
+            },
+            "latency_ms": 3210.8,
+            "requested_model": "deepseek-v4.1-flash"
+          },
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.0011268,
+            "metadata": {
+              "id": "c697a5b8-4704-484d-86c7-11978ea1e3a1",
+              "model": "deepseek-v4.1-flash",
+              "provider": null,
+              "protocol": "chat",
+              "usage": {
+                "prompt_tokens": 2184,
+                "completion_tokens": 393,
+                "total_tokens": 2577,
+                "prompt_cache_hit_tokens": 768,
+                "prompt_cache_miss_tokens": 1416,
+                "prompt_tokens_details": {
+                  "cached_tokens": 768
+                },
+                "cost": 0.0011268
+              },
+              "finish_reason": "stop",
+              "content_kind": "string",
+              "reasoning_chars": null,
+              "message_keys": [
+                "content",
+                "role"
+              ],
+              "native_finish_reason": null,
+              "choice_keys": [
+                "finish_reason",
+                "index",
+                "logprobs",
+                "message"
+              ],
+              "request_bytes": 8676,
+              "response_bytes": 1629,
+              "http_ttfb_ms": 2404.0,
+              "http_elapsed_ms": 2404.4,
+              "max_tokens": 3000
+            },
+            "latency_ms": 2405.0,
+            "requested_model": "deepseek-v4.1-flash"
+          },
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.0010416,
+            "metadata": {
+              "id": "chatcmpl-70434eecc6c3452a8a780070d290a681",
+              "model": "deepseek-v4.1-flash",
+              "provider": null,
+              "protocol": "chat",
+              "usage": {
+                "prompt_tokens": 2184,
+                "completion_tokens": 322,
+                "total_tokens": 2506,
+                "prompt_tokens_details": {
+                  "cached_tokens": 1664
+                },
+                "cost": 0.0010416
+              },
+              "finish_reason": "stop",
+              "content_kind": "string",
+              "reasoning_chars": null,
+              "message_keys": [
+                "content",
+                "role"
+              ],
+              "native_finish_reason": null,
+              "choice_keys": [
+                "finish_reason",
+                "index",
+                "logprobs",
+                "message"
+              ],
+              "request_bytes": 8676,
+              "response_bytes": 1372,
+              "http_ttfb_ms": 2035.8,
+              "http_elapsed_ms": 2036.2,
+              "max_tokens": 3000
+            },
+            "latency_ms": 2036.8,
+            "requested_model": "deepseek-v4.1-flash"
+          }
+        ]
+      },
+      "date_range_last_n-006#0": {
+        "base": [],
+        "head": [
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.0008883,
+            "metadata": {
+              "id": "849066a7-33ea-4afe-8d2d-28cfd548e579",
+              "model": "deepseek-v4.1-flash",
+              "provider": null,
+              "protocol": "chat",
+              "usage": {
+                "prompt_tokens": 1973,
+                "completion_tokens": 247,
+                "total_tokens": 2220,
+                "prompt_cache_hit_tokens": 768,
+                "prompt_cache_miss_tokens": 1205,
+                "prompt_tokens_details": {
+                  "cached_tokens": 768
+                },
+                "cost": 0.0008883
+              },
+              "finish_reason": "stop",
+              "content_kind": "string",
+              "reasoning_chars": null,
+              "message_keys": [
+                "content",
+                "role"
+              ],
+              "native_finish_reason": null,
+              "choice_keys": [
+                "finish_reason",
+                "index",
+                "logprobs",
+                "message"
+              ],
+              "request_bytes": 7995,
+              "response_bytes": 1266,
+              "http_ttfb_ms": 2238.9,
+              "http_elapsed_ms": 2239.4,
+              "max_tokens": 3000
+            },
+            "latency_ms": 2240.3,
+            "requested_model": "deepseek-v4.1-flash"
+          },
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.0011475,
+            "metadata": {
+              "id": "0217926809652055b3fa2cdc51ddff2be86c78e2baff5d7718b38",
+              "model": "deepseek-v4.1-flash",
+              "provider": null,
+              "protocol": "chat",
+              "usage": {
+                "prompt_tokens": 1973,
+                "completion_tokens": 463,
+                "total_tokens": 2436,
+                "prompt_tokens_details": {
+                  "cached_tokens": 896
+                },
+                "completion_tokens_details": {
+                  "reasoning_tokens": 0
+                },
+                "cost": 0.0011475
+              },
+              "finish_reason": "stop",
+              "content_kind": "string",
+              "reasoning_chars": null,
+              "message_keys": [
+                "content",
+                "role"
+              ],
+              "native_finish_reason": null,
+              "choice_keys": [
+                "finish_reason",
+                "index",
+                "logprobs",
+                "message"
+              ],
+              "request_bytes": 7995,
+              "response_bytes": 1731,
+              "http_ttfb_ms": 3675.4,
+              "http_elapsed_ms": 3675.6,
+              "max_tokens": 3000
+            },
+            "latency_ms": 3676.1,
+            "requested_model": "deepseek-v4.1-flash"
+          },
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.0010335,
+            "metadata": {
+              "id": "be6b97f1-06f2-4a41-8a25-ca024a14a3b4",
+              "model": "deepseek-v4.1-flash",
+              "provider": null,
+              "protocol": "chat",
+              "usage": {
+                "prompt_tokens": 1973,
+                "completion_tokens": 368,
+                "total_tokens": 2341,
+                "prompt_cache_hit_tokens": 1792,
+                "prompt_cache_miss_tokens": 181,
+                "prompt_tokens_details": {
+                  "cached_tokens": 1792
+                },
+                "cost": 0.0010335
+              },
+              "finish_reason": "stop",
+              "content_kind": "string",
+              "reasoning_chars": null,
+              "message_keys": [
+                "content",
+                "role"
+              ],
+              "native_finish_reason": null,
+              "choice_keys": [
+                "finish_reason",
+                "index",
+                "logprobs",
+                "message"
+              ],
+              "request_bytes": 7995,
+              "response_bytes": 1551,
+              "http_ttfb_ms": 2029.7,
+              "http_elapsed_ms": 2030.2,
+              "max_tokens": 3000
+            },
+            "latency_ms": 2030.8,
+            "requested_model": "deepseek-v4.1-flash"
+          }
+        ]
+      },
+      "date_range_last_n-008#0": {
+        "base": [],
+        "head": [
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.0009939,
+            "metadata": {
+              "id": "021792680970651c8c5a5589555159fe1f6a4222aeb4c2bd6ad5f",
+              "model": "deepseek-v4.1-flash",
+              "provider": null,
+              "protocol": "chat",
+              "usage": {
+                "prompt_tokens": 1741,
+                "completion_tokens": 393,
+                "total_tokens": 2134,
+                "prompt_tokens_details": {
+                  "cached_tokens": 0
+                },
+                "completion_tokens_details": {
+                  "reasoning_tokens": 0
+                },
+                "cost": 0.0009939
+              },
+              "finish_reason": "stop",
+              "content_kind": "string",
+              "reasoning_chars": null,
+              "message_keys": [
+                "content",
+                "role"
+              ],
+              "native_finish_reason": null,
+              "choice_keys": [
+                "finish_reason",
+                "index",
+                "logprobs",
+                "message"
+              ],
+              "request_bytes": 7604,
+              "response_bytes": 1857,
+              "http_ttfb_ms": 3549.5,
+              "http_elapsed_ms": 3549.9,
+              "max_tokens": 3000
+            },
+            "latency_ms": 3550.5,
+            "requested_model": "deepseek-v4.1-flash"
+          },
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.0011115,
+            "metadata": {
+              "id": "chatcmpl-91ab6fc4116d4cdf815e2af08e9637f8",
+              "model": "deepseek-v4.1-flash",
+              "provider": null,
+              "protocol": "chat",
+              "usage": {
+                "prompt_tokens": 1741,
+                "completion_tokens": 491,
+                "total_tokens": 2232,
+                "prompt_tokens_details": {
+                  "cached_tokens": 768
+                },
+                "cost": 0.0011115
+              },
+              "finish_reason": "stop",
+              "content_kind": "string",
+              "reasoning_chars": null,
+              "message_keys": [
+                "content",
+                "role"
+              ],
+              "native_finish_reason": null,
+              "choice_keys": [
+                "finish_reason",
+                "index",
+                "logprobs",
+                "message"
+              ],
+              "request_bytes": 7604,
+              "response_bytes": 2028,
+              "http_ttfb_ms": 2586.7,
+              "http_elapsed_ms": 2587.1,
+              "max_tokens": 3000
+            },
+            "latency_ms": 2587.8,
+            "requested_model": "deepseek-v4.1-flash"
+          },
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.0009879,
+            "metadata": {
+              "id": "0217926809773908fef509893d762bd38fa7b39384b54671d1785",
+              "model": "deepseek-v4.1-flash",
+              "provider": null,
+              "protocol": "chat",
+              "usage": {
+                "prompt_tokens": 1741,
+                "completion_tokens": 388,
+                "total_tokens": 2129,
+                "prompt_tokens_details": {
+                  "cached_tokens": 1664
+                },
+                "completion_tokens_details": {
+                  "reasoning_tokens": 0
+                },
+                "cost": 0.0009879
+              },
+              "finish_reason": "stop",
+              "content_kind": "string",
+              "reasoning_chars": null,
+              "message_keys": [
+                "content",
+                "role"
+              ],
+              "native_finish_reason": null,
+              "choice_keys": [
+                "finish_reason",
+                "index",
+                "logprobs",
+                "message"
+              ],
+              "request_bytes": 7604,
+              "response_bytes": 1816,
+              "http_ttfb_ms": 4298.2,
+              "http_elapsed_ms": 4298.4,
+              "max_tokens": 3000
+            },
+            "latency_ms": 4298.9,
+            "requested_model": "deepseek-v4.1-flash"
+          }
+        ]
+      },
+      "comparisons-002#0": {
+        "base": [],
+        "head": [
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.001152,
+            "metadata": {
+              "id": "f02ed1fd-22f4-4dcb-b72e-5765b7e078cc",
+              "model": "deepseek-v4.1-flash",
+              "provider": null,
+              "protocol": "chat",
+              "usage": {
+                "prompt_tokens": 2064,
+                "completion_tokens": 444,
+                "total_tokens": 2508,
+                "prompt_cache_hit_tokens": 1536,
+                "prompt_cache_miss_tokens": 528,
+                "prompt_tokens_details": {
+                  "cached_tokens": 1536
+                },
+                "cost": 0.001152
+              },
+              "finish_reason": "stop",
+              "content_kind": "string",
+              "reasoning_chars": null,
+              "message_keys": [
+                "content",
+                "role"
+              ],
+              "native_finish_reason": null,
+              "choice_keys": [
+                "finish_reason",
+                "index",
+                "logprobs",
+                "message"
+              ],
+              "request_bytes": 8602,
+              "response_bytes": 1994,
+              "http_ttfb_ms": 2463.0,
+              "http_elapsed_ms": 2463.2,
+              "max_tokens": 3000
+            },
+            "latency_ms": 2463.5,
+            "requested_model": "deepseek-v4.1-flash"
+          },
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.0012516,
+            "metadata": {
+              "id": "021792680983572cceb5af4e027c6aad3bf6ae2fce15c1ac16663",
+              "model": "deepseek-v4.1-flash",
+              "provider": null,
+              "protocol": "chat",
+              "usage": {
+                "prompt_tokens": 2064,
+                "completion_tokens": 527,
+                "total_tokens": 2591,
+                "prompt_tokens_details": {
+                  "cached_tokens": 2048
+                },
+                "completion_tokens_details": {
+                  "reasoning_tokens": 0
+                },
+                "cost": 0.0012516
+              },
+              "finish_reason": "stop",
+              "content_kind": "string",
+              "reasoning_chars": null,
+              "message_keys": [
+                "content",
+                "role"
+              ],
+              "native_finish_reason": null,
+              "choice_keys": [
+                "finish_reason",
+                "index",
+                "logprobs",
+                "message"
+              ],
+              "request_bytes": 8602,
+              "response_bytes": 2152,
+              "http_ttfb_ms": 4165.2,
+              "http_elapsed_ms": 4165.4,
+              "max_tokens": 3000
+            },
+            "latency_ms": 4165.7,
+            "requested_model": "deepseek-v4.1-flash"
+          },
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.0011184,
+            "metadata": {
+              "id": "61d14300-1b08-489e-932f-23f941ba80a6",
+              "model": "deepseek-v4.1-flash",
+              "provider": null,
+              "protocol": "chat",
+              "usage": {
+                "prompt_tokens": 2064,
+                "completion_tokens": 416,
+                "total_tokens": 2480,
+                "prompt_cache_hit_tokens": 1920,
+                "prompt_cache_miss_tokens": 144,
+                "prompt_tokens_details": {
+                  "cached_tokens": 1920
+                },
+                "cost": 0.0011184
+              },
+              "finish_reason": "stop",
+              "content_kind": "string",
+              "reasoning_chars": null,
+              "message_keys": [
+                "content",
+                "role"
+              ],
+              "native_finish_reason": null,
+              "choice_keys": [
+                "finish_reason",
+                "index",
+                "logprobs",
+                "message"
+              ],
+              "request_bytes": 8602,
+              "response_bytes": 1892,
+              "http_ttfb_ms": 2553.2,
+              "http_elapsed_ms": 2553.5,
+              "max_tokens": 3000
+            },
+            "latency_ms": 2554.0,
+            "requested_model": "deepseek-v4.1-flash"
+          }
+        ]
+      },
+      "comparisons-004#0": {
+        "base": [],
+        "head": [
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.0005766,
+            "metadata": {
+              "id": "9feefc5c-2bf1-4215-8807-6553c9ea6481",
+              "model": "deepseek-v4.1-flash",
+              "provider": null,
+              "protocol": "chat",
+              "usage": {
+                "prompt_tokens": 1322,
+                "completion_tokens": 150,
+                "total_tokens": 1472,
+                "prompt_cache_hit_tokens": 1152,
+                "prompt_cache_miss_tokens": 170,
+                "prompt_tokens_details": {
+                  "cached_tokens": 1152
+                },
+                "cost": 0.0005766
+              },
+              "finish_reason": "stop",
+              "content_kind": "string",
+              "reasoning_chars": null,
+              "message_keys": [
+                "content",
+                "role"
+              ],
+              "native_finish_reason": null,
+              "choice_keys": [
+                "finish_reason",
+                "index",
+                "logprobs",
+                "message"
+              ],
+              "request_bytes": 6076,
+              "response_bytes": 1082,
+              "http_ttfb_ms": 1704.5,
+              "http_elapsed_ms": 1704.6,
+              "max_tokens": 3000
+            },
+            "latency_ms": 1705.4,
+            "requested_model": "deepseek-v4.1-flash"
+          },
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.000579,
+            "metadata": {
+              "id": "b7531fe1-b8d6-4249-9a65-5ca64a58cc93",
+              "model": "deepseek-v4.1-flash",
+              "provider": null,
+              "protocol": "chat",
+              "usage": {
+                "prompt_tokens": 1322,
+                "completion_tokens": 152,
+                "total_tokens": 1474,
+                "prompt_cache_hit_tokens": 1152,
+                "prompt_cache_miss_tokens": 170,
+                "prompt_tokens_details": {
+                  "cached_tokens": 1152
+                },
+                "cost": 0.000579
+              },
+              "finish_reason": "stop",
+              "content_kind": "string",
+              "reasoning_chars": null,
+              "message_keys": [
+                "content",
+                "role"
+              ],
+              "native_finish_reason": null,
+              "choice_keys": [
+                "finish_reason",
+                "index",
+                "logprobs",
+                "message"
+              ],
+              "request_bytes": 6076,
+              "response_bytes": 1088,
+              "http_ttfb_ms": 1633.0,
+              "http_elapsed_ms": 1633.2,
+              "max_tokens": 3000
+            },
+            "latency_ms": 1633.4,
+            "requested_model": "deepseek-v4.1-flash"
+          },
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.0005706,
+            "metadata": {
+              "id": "36f8c9e4-f7da-4389-a538-f49c6aaedca0",
+              "model": "deepseek-v4.1-flash",
+              "provider": null,
+              "protocol": "chat",
+              "usage": {
+                "prompt_tokens": 1322,
+                "completion_tokens": 145,
+                "total_tokens": 1467,
+                "prompt_cache_hit_tokens": 1152,
+                "prompt_cache_miss_tokens": 170,
+                "prompt_tokens_details": {
+                  "cached_tokens": 1152
+                },
+                "cost": 0.0005706
+              },
+              "finish_reason": "stop",
+              "content_kind": "string",
+              "reasoning_chars": null,
+              "message_keys": [
+                "content",
+                "role"
+              ],
+              "native_finish_reason": null,
+              "choice_keys": [
+                "finish_reason",
+                "index",
+                "logprobs",
+                "message"
+              ],
+              "request_bytes": 6076,
+              "response_bytes": 1033,
+              "http_ttfb_ms": 1728.0,
+              "http_elapsed_ms": 1728.2,
+              "max_tokens": 3000
+            },
+            "latency_ms": 1728.7,
+            "requested_model": "deepseek-v4.1-flash"
+          }
+        ]
+      }
+    },
+    "cost_usd": 0.047735
+  },
+  "rates": {
+    "correct": {
+      "base": {
+        "answers": 14,
+        "trials": 3,
+        "rejected": 0,
+        "observations": 42,
+        "reject_rate": 0.0,
+        "outcomes": {},
+        "per_answer": {
+          "exact_statistics-001#0": [],
+          "exact_statistics-002#0": [],
+          "exact_statistics-003#0": [],
+          "exact_statistics-004#0": [],
+          "exact_statistics-005#0": [],
+          "exact_statistics-006#0": [],
+          "exact_statistics-007#0": [],
+          "exact_statistics-008#0": [],
+          "date_range_last_n-001#0": [],
+          "date_range_last_n-002#0": [],
+          "date_range_last_n-003#0": [],
+          "date_range_last_n-004#0": [],
+          "comparisons-002#0": [],
+          "comparisons-004#0": []
+        }
+      },
+      "head": {
+        "answers": 14,
+        "trials": 3,
+        "rejected": 0,
+        "observations": 42,
+        "reject_rate": 0.0,
+        "outcomes": {
+          "accepted": 42
+        },
+        "per_answer": {
+          "exact_statistics-001#0": [
+            "accepted",
+            "accepted",
+            "accepted"
+          ],
+          "exact_statistics-002#0": [
+            "accepted",
+            "accepted",
+            "accepted"
+          ],
+          "exact_statistics-003#0": [
+            "accepted",
+            "accepted",
+            "accepted"
+          ],
+          "exact_statistics-004#0": [
+            "accepted",
+            "accepted",
+            "accepted"
+          ],
+          "exact_statistics-005#0": [
+            "accepted",
+            "accepted",
+            "accepted"
+          ],
+          "exact_statistics-006#0": [
+            "accepted",
+            "accepted",
+            "accepted"
+          ],
+          "exact_statistics-007#0": [
+            "accepted",
+            "accepted",
+            "accepted"
+          ],
+          "exact_statistics-008#0": [
+            "accepted",
+            "accepted",
+            "accepted"
+          ],
+          "date_range_last_n-001#0": [
+            "accepted",
+            "accepted",
+            "accepted"
+          ],
+          "date_range_last_n-002#0": [
+            "accepted",
+            "accepted",
+            "accepted"
+          ],
+          "date_range_last_n-003#0": [
+            "accepted",
+            "accepted",
+            "accepted"
+          ],
+          "date_range_last_n-004#0": [
+            "accepted",
+            "accepted",
+            "accepted"
+          ],
+          "comparisons-002#0": [
+            "accepted",
+            "accepted",
+            "accepted"
+          ],
+          "comparisons-004#0": [
+            "accepted",
+            "accepted",
+            "accepted"
+          ]
+        }
+      }
+    },
+    "wrong": {
+      "base": {
+        "answers": 3,
+        "trials": 3,
+        "rejected": 0,
+        "observations": 9,
+        "reject_rate": 0.0,
+        "outcomes": {},
+        "per_answer": {
+          "exact_statistics-010#0": [],
+          "date_range_last_n-006#0": [],
+          "date_range_last_n-008#0": []
+        }
+      },
+      "head": {
+        "answers": 3,
+        "trials": 3,
+        "rejected": 2,
+        "observations": 9,
+        "reject_rate": 0.222,
+        "outcomes": {
+          "accepted": 7,
+          "verdict_rejected": 2
+        },
+        "per_answer": {
+          "exact_statistics-010#0": [
+            "accepted",
+            "verdict_rejected",
+            "verdict_rejected"
+          ],
+          "date_range_last_n-006#0": [
+            "accepted",
+            "accepted",
+            "accepted"
+          ],
+          "date_range_last_n-008#0": [
+            "accepted",
+            "accepted",
+            "accepted"
+          ]
+        }
+      }
+    },
+    "causes": {
+      "head:span2:verdict_unsupported": 1,
+      "head:span2:verdict_insufficient_evidence": 1
+    }
+  }
+}

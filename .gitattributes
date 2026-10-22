@@ -122,3 +122,6 @@ docs/release-evidence/llm-primary-20261021/w3-declines/*.jsonl linguist-generate
 # Resolution sweep machine output.
 docs/release-evidence/llm-primary-20261021/w3-resolve/*.json linguist-generated=true
 docs/release-evidence/llm-primary-20261021/opencode-go/*.json* linguist-generated=true
+
+# Reviewer model decision machine output.
+docs/release-evidence/llm-primary-20261021/w4-reviewer/*.json* linguist-generated=true

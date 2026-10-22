@@ -1,0 +1,2656 @@
+{
+  "units": 17,
+  "trials": 3,
+  "modes": [
+    "head"
+  ],
+  "reviewer_model": "gpt-6-luna",
+  "reviewer_max_tokens": 3000,
+  "reviewer": {
+    "reviewer_model_requested": "gpt-6-luna",
+    "reviewer_max_tokens": 3000,
+    "requested_models": {
+      "gpt-6-luna": 51
+    },
+    "served_models": {
+      "gpt-6-luna": 51
+    },
+    "protocols": {
+      "responses": 51
+    },
+    "providers": {
+      "null": 51
+    },
+    "observed_max_tokens": {
+      "3000": 51
+    },
+    "provider_calls": 51,
+    "malformed_reviews": 0,
+    "retried_trials": 0,
+    "cost_usd": 0.01613,
+    "cost_per_review": 0.000316,
+    "latency_ms": {
+      "p50": 2818.8,
+      "p95": 4438.1,
+      "samples": 51
+    },
+    "outcomes": {
+      "accepted": 43,
+      "verdict_rejected": 8
+    }
+  },
+  "replay": {
+    "results": {
+      "exact_statistics-001#0": {
+        "base": [],
+        "head": [
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.0003074,
+            "metadata": {
+              "id": "resp_0cfc11ddba9b6771006ada223a9aa887d2a4bddf8969094a74",
+              "model": "gpt-6-luna",
+              "provider": null,
+              "protocol": "responses",
+              "usage": {
+                "prompt_tokens": 1759,
+                "completion_tokens": 263,
+                "total_tokens": 2022,
+                "completion_tokens_details": {
+                  "reasoning_tokens": 0
+                },
+                "cost": 0.0003074
+              },
+              "finish_reason": "stop",
+              "content_kind": "string",
+              "reasoning_chars": null,
+              "message_keys": [
+                "content",
+                "id",
+                "phase",
+                "role",
+                "status",
+                "type"
+              ],
+              "status": "completed",
+              "request_bytes": 7701,
+              "response_bytes": 1997,
+              "http_ttfb_ms": 3099.0,
+              "http_elapsed_ms": 3100.0,
+              "max_tokens": 3000
+            },
+            "latency_ms": 3103.6,
+            "requested_model": "gpt-6-luna"
+          },
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.0003039,
+            "metadata": {
+              "id": "resp_0cc6b779fbd85d6c006ada223dc90487d2b29fa5ef22d65599",
+              "model": "gpt-6-luna",
+              "provider": null,
+              "protocol": "responses",
+              "usage": {
+                "prompt_tokens": 1759,
+                "completion_tokens": 256,
+                "total_tokens": 2015,
+                "completion_tokens_details": {
+                  "reasoning_tokens": 0
+                },
+                "cost": 0.0003039
+              },
+              "finish_reason": "stop",
+              "content_kind": "string",
+              "reasoning_chars": null,
+              "message_keys": [
+                "content",
+                "id",
+                "phase",
+                "role",
+                "status",
+                "type"
+              ],
+              "status": "completed",
+              "request_bytes": 7701,
+              "response_bytes": 1957,
+              "http_ttfb_ms": 2816.2,
+              "http_elapsed_ms": 2816.8,
+              "max_tokens": 3000
+            },
+            "latency_ms": 2818.8,
+            "requested_model": "gpt-6-luna"
+          },
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.0003104,
+            "metadata": {
+              "id": "resp_09f176ef93e93102006ada224089f487d2ab3353e5c05efa57",
+              "model": "gpt-6-luna",
+              "provider": null,
+              "protocol": "responses",
+              "usage": {
+                "prompt_tokens": 1759,
+                "completion_tokens": 269,
+                "total_tokens": 2028,
+                "completion_tokens_details": {
+                  "reasoning_tokens": 0
+                },
+                "cost": 0.0003104
+              },
+              "finish_reason": "stop",
+              "content_kind": "string",
+              "reasoning_chars": null,
+              "message_keys": [
+                "content",
+                "id",
+                "phase",
+                "role",
+                "status",
+                "type"
+              ],
+              "status": "completed",
+              "request_bytes": 7701,
+              "response_bytes": 2031,
+              "http_ttfb_ms": 2817.1,
+              "http_elapsed_ms": 2817.4,
+              "max_tokens": 3000
+            },
+            "latency_ms": 2818.8,
+            "requested_model": "gpt-6-luna"
+          }
+        ]
+      },
+      "exact_statistics-002#0": {
+        "base": [],
+        "head": [
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.0002605,
+            "metadata": {
+              "id": "resp_0f1b44665a3ed173006ada2243667087d28d28c5c77e62044b",
+              "model": "gpt-6-luna",
+              "provider": null,
+              "protocol": "responses",
+              "usage": {
+                "prompt_tokens": 1525,
+                "completion_tokens": 216,
+                "total_tokens": 1741,
+                "completion_tokens_details": {
+                  "reasoning_tokens": 0
+                },
+                "cost": 0.0002605
+              },
+              "finish_reason": "stop",
+              "content_kind": "string",
+              "reasoning_chars": null,
+              "message_keys": [
+                "content",
+                "id",
+                "phase",
+                "role",
+                "status",
+                "type"
+              ],
+              "status": "completed",
+              "request_bytes": 6962,
+              "response_bytes": 1925,
+              "http_ttfb_ms": 2496.4,
+              "http_elapsed_ms": 2496.9,
+              "max_tokens": 3000
+            },
+            "latency_ms": 2498.1,
+            "requested_model": "gpt-6-luna"
+          },
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.00026,
+            "metadata": {
+              "id": "resp_07dcbcc9ba3a34d8006ada2245d35087d29ebb7174e8cda821",
+              "model": "gpt-6-luna",
+              "provider": null,
+              "protocol": "responses",
+              "usage": {
+                "prompt_tokens": 1525,
+                "completion_tokens": 215,
+                "total_tokens": 1740,
+                "completion_tokens_details": {
+                  "reasoning_tokens": 0
+                },
+                "cost": 0.00026
+              },
+              "finish_reason": "stop",
+              "content_kind": "string",
+              "reasoning_chars": null,
+              "message_keys": [
+                "content",
+                "id",
+                "phase",
+                "role",
+                "status",
+                "type"
+              ],
+              "status": "completed",
+              "request_bytes": 6962,
+              "response_bytes": 1915,
+              "http_ttfb_ms": 2344.6,
+              "http_elapsed_ms": 2348.0,
+              "max_tokens": 3000
+            },
+            "latency_ms": 2348.6,
+            "requested_model": "gpt-6-luna"
+          },
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.000261,
+            "metadata": {
+              "id": "resp_0411b5a7d95b0eb2006ada2248569487d2ac28467e03676e8f",
+              "model": "gpt-6-luna",
+              "provider": null,
+              "protocol": "responses",
+              "usage": {
+                "prompt_tokens": 1525,
+                "completion_tokens": 217,
+                "total_tokens": 1742,
+                "completion_tokens_details": {
+                  "reasoning_tokens": 0
+                },
+                "cost": 0.000261
+              },
+              "finish_reason": "stop",
+              "content_kind": "string",
+              "reasoning_chars": null,
+              "message_keys": [
+                "content",
+                "id",
+                "phase",
+                "role",
+                "status",
+                "type"
+              ],
+              "status": "completed",
+              "request_bytes": 6962,
+              "response_bytes": 1911,
+              "http_ttfb_ms": 2816.6,
+              "http_elapsed_ms": 2817.0,
+              "max_tokens": 3000
+            },
+            "latency_ms": 2818.0,
+            "requested_model": "gpt-6-luna"
+          }
+        ]
+      },
+      "exact_statistics-003#0": {
+        "base": [],
+        "head": [
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.0002545,
+            "metadata": {
+              "id": "resp_097fa34debb9b9da006ada224b024487d29068feca40c6e3a3",
+              "model": "gpt-6-luna",
+              "provider": null,
+              "protocol": "responses",
+              "usage": {
+                "prompt_tokens": 1535,
+                "completion_tokens": 202,
+                "total_tokens": 1737,
+                "completion_tokens_details": {
+                  "reasoning_tokens": 0
+                },
+                "cost": 0.0002545
+              },
+              "finish_reason": "stop",
+              "content_kind": "string",
+              "reasoning_chars": null,
+              "message_keys": [
+                "content",
+                "id",
+                "phase",
+                "role",
+                "status",
+                "type"
+              ],
+              "status": "completed",
+              "request_bytes": 7033,
+              "response_bytes": 1852,
+              "http_ttfb_ms": 2367.0,
+              "http_elapsed_ms": 2367.5,
+              "max_tokens": 3000
+            },
+            "latency_ms": 2368.2,
+            "requested_model": "gpt-6-luna"
+          },
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.0002715,
+            "metadata": {
+              "id": "resp_02141f4ec1f1792f006ada224d831c87d29a1c7eba39c98652",
+              "model": "gpt-6-luna",
+              "provider": null,
+              "protocol": "responses",
+              "usage": {
+                "prompt_tokens": 1535,
+                "completion_tokens": 236,
+                "total_tokens": 1771,
+                "completion_tokens_details": {
+                  "reasoning_tokens": 0
+                },
+                "cost": 0.0002715
+              },
+              "finish_reason": "stop",
+              "content_kind": "string",
+              "reasoning_chars": null,
+              "message_keys": [
+                "content",
+                "id",
+                "phase",
+                "role",
+                "status",
+                "type"
+              ],
+              "status": "completed",
+              "request_bytes": 7033,
+              "response_bytes": 2007,
+              "http_ttfb_ms": 2974.7,
+              "http_elapsed_ms": 2975.0,
+              "max_tokens": 3000
+            },
+            "latency_ms": 2975.4,
+            "requested_model": "gpt-6-luna"
+          },
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.000254,
+            "metadata": {
+              "id": "resp_0a547fc250859056006ada2250909487d29ec0da3e828c193b",
+              "model": "gpt-6-luna",
+              "provider": null,
+              "protocol": "responses",
+              "usage": {
+                "prompt_tokens": 1535,
+                "completion_tokens": 201,
+                "total_tokens": 1736,
+                "completion_tokens_details": {
+                  "reasoning_tokens": 0
+                },
+                "cost": 0.000254
+              },
+              "finish_reason": "stop",
+              "content_kind": "string",
+              "reasoning_chars": null,
+              "message_keys": [
+                "content",
+                "id",
+                "phase",
+                "role",
+                "status",
+                "type"
+              ],
+              "status": "completed",
+              "request_bytes": 7033,
+              "response_bytes": 1842,
+              "http_ttfb_ms": 2994.3,
+              "http_elapsed_ms": 2994.6,
+              "max_tokens": 3000
+            },
+            "latency_ms": 2994.9,
+            "requested_model": "gpt-6-luna"
+          }
+        ]
+      },
+      "exact_statistics-004#0": {
+        "base": [],
+        "head": [
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.0002536,
+            "metadata": {
+              "id": "resp_0dfa171b389f586e006ada2253634487d2acb9cee5e61ea06d",
+              "model": "gpt-6-luna",
+              "provider": null,
+              "protocol": "responses",
+              "usage": {
+                "prompt_tokens": 1516,
+                "completion_tokens": 204,
+                "total_tokens": 1720,
+                "completion_tokens_details": {
+                  "reasoning_tokens": 0
+                },
+                "cost": 0.0002536
+              },
+              "finish_reason": "stop",
+              "content_kind": "string",
+              "reasoning_chars": null,
+              "message_keys": [
+                "content",
+                "id",
+                "phase",
+                "role",
+                "status",
+                "type"
+              ],
+              "status": "completed",
+              "request_bytes": 6993,
+              "response_bytes": 1872,
+              "http_ttfb_ms": 2621.8,
+              "http_elapsed_ms": 2622.3,
+              "max_tokens": 3000
+            },
+            "latency_ms": 2623.4,
+            "requested_model": "gpt-6-luna"
+          },
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.0002616,
+            "metadata": {
+              "id": "resp_0f1cbef7772836c8006ada2255f37487d2b0b97a7073b0b6b5",
+              "model": "gpt-6-luna",
+              "provider": null,
+              "protocol": "responses",
+              "usage": {
+                "prompt_tokens": 1516,
+                "completion_tokens": 220,
+                "total_tokens": 1736,
+                "completion_tokens_details": {
+                  "reasoning_tokens": 0
+                },
+                "cost": 0.0002616
+              },
+              "finish_reason": "stop",
+              "content_kind": "string",
+              "reasoning_chars": null,
+              "message_keys": [
+                "content",
+                "id",
+                "phase",
+                "role",
+                "status",
+                "type"
+              ],
+              "status": "completed",
+              "request_bytes": 6993,
+              "response_bytes": 1934,
+              "http_ttfb_ms": 2413.8,
+              "http_elapsed_ms": 2414.2,
+              "max_tokens": 3000
+            },
+            "latency_ms": 2415.1,
+            "requested_model": "gpt-6-luna"
+          },
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.0002626,
+            "metadata": {
+              "id": "resp_0e16517b66127160006ada2258930c87d28e18cc2fc431476d",
+              "model": "gpt-6-luna",
+              "provider": null,
+              "protocol": "responses",
+              "usage": {
+                "prompt_tokens": 1516,
+                "completion_tokens": 222,
+                "total_tokens": 1738,
+                "completion_tokens_details": {
+                  "reasoning_tokens": 0
+                },
+                "cost": 0.0002626
+              },
+              "finish_reason": "stop",
+              "content_kind": "string",
+              "reasoning_chars": null,
+              "message_keys": [
+                "content",
+                "id",
+                "phase",
+                "role",
+                "status",
+                "type"
+              ],
+              "status": "completed",
+              "request_bytes": 6993,
+              "response_bytes": 1930,
+              "http_ttfb_ms": 2939.0,
+              "http_elapsed_ms": 2940.1,
+              "max_tokens": 3000
+            },
+            "latency_ms": 2941.4,
+            "requested_model": "gpt-6-luna"
+          }
+        ]
+      },
+      "exact_statistics-005#0": {
+        "base": [],
+        "head": [
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.0002604,
+            "metadata": {
+              "id": "resp_0785115f978cab7d006ada225b56f887d283634300ef24d308",
+              "model": "gpt-6-luna",
+              "provider": null,
+              "protocol": "responses",
+              "usage": {
+                "prompt_tokens": 1589,
+                "completion_tokens": 203,
+                "total_tokens": 1792,
+                "completion_tokens_details": {
+                  "reasoning_tokens": 0
+                },
+                "cost": 0.0002604
+              },
+              "finish_reason": "stop",
+              "content_kind": "string",
+              "reasoning_chars": null,
+              "message_keys": [
+                "content",
+                "id",
+                "phase",
+                "role",
+                "status",
+                "type"
+              ],
+              "status": "completed",
+              "request_bytes": 7036,
+              "response_bytes": 1868,
+              "http_ttfb_ms": 2630.7,
+              "http_elapsed_ms": 2631.3,
+              "max_tokens": 3000
+            },
+            "latency_ms": 2632.4,
+            "requested_model": "gpt-6-luna"
+          },
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.0002564,
+            "metadata": {
+              "id": "resp_07c0498027444138006ada225e204887d28793dd46b54b0911",
+              "model": "gpt-6-luna",
+              "provider": null,
+              "protocol": "responses",
+              "usage": {
+                "prompt_tokens": 1589,
+                "completion_tokens": 195,
+                "total_tokens": 1784,
+                "completion_tokens_details": {
+                  "reasoning_tokens": 0
+                },
+                "cost": 0.0002564
+              },
+              "finish_reason": "stop",
+              "content_kind": "string",
+              "reasoning_chars": null,
+              "message_keys": [
+                "content",
+                "id",
+                "phase",
+                "role",
+                "status",
+                "type"
+              ],
+              "status": "completed",
+              "request_bytes": 7036,
+              "response_bytes": 1814,
+              "http_ttfb_ms": 2565.8,
+              "http_elapsed_ms": 2566.0,
+              "max_tokens": 3000
+            },
+            "latency_ms": 2566.6,
+            "requested_model": "gpt-6-luna"
+          },
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.0002594,
+            "metadata": {
+              "id": "resp_02ae24146df16ac7006ada2260e03487d2ac5d3e77274bdcd2",
+              "model": "gpt-6-luna",
+              "provider": null,
+              "protocol": "responses",
+              "usage": {
+                "prompt_tokens": 1589,
+                "completion_tokens": 201,
+                "total_tokens": 1790,
+                "completion_tokens_details": {
+                  "reasoning_tokens": 0
+                },
+                "cost": 0.0002594
+              },
+              "finish_reason": "stop",
+              "content_kind": "string",
+              "reasoning_chars": null,
+              "message_keys": [
+                "content",
+                "id",
+                "phase",
+                "role",
+                "status",
+                "type"
+              ],
+              "status": "completed",
+              "request_bytes": 7036,
+              "response_bytes": 1855,
+              "http_ttfb_ms": 2584.9,
+              "http_elapsed_ms": 2587.1,
+              "max_tokens": 3000
+            },
+            "latency_ms": 2588.5,
+            "requested_model": "gpt-6-luna"
+          }
+        ]
+      },
+      "exact_statistics-006#0": {
+        "base": [],
+        "head": [
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.0002616,
+            "metadata": {
+              "id": "resp_0907090a7de05a69006ada2263867087d28ced580a576bcd95",
+              "model": "gpt-6-luna",
+              "provider": null,
+              "protocol": "responses",
+              "usage": {
+                "prompt_tokens": 1571,
+                "completion_tokens": 209,
+                "total_tokens": 1780,
+                "completion_tokens_details": {
+                  "reasoning_tokens": 0
+                },
+                "cost": 0.0002616
+              },
+              "finish_reason": "stop",
+              "content_kind": "string",
+              "reasoning_chars": null,
+              "message_keys": [
+                "content",
+                "id",
+                "phase",
+                "role",
+                "status",
+                "type"
+              ],
+              "status": "completed",
+              "request_bytes": 7013,
+              "response_bytes": 1864,
+              "http_ttfb_ms": 2933.5,
+              "http_elapsed_ms": 2938.1,
+              "max_tokens": 3000
+            },
+            "latency_ms": 2942.4,
+            "requested_model": "gpt-6-luna"
+          },
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.0002576,
+            "metadata": {
+              "id": "resp_0af2fa7cad9278e8006ada226611a887d29f505fc8b3ac434c",
+              "model": "gpt-6-luna",
+              "provider": null,
+              "protocol": "responses",
+              "usage": {
+                "prompt_tokens": 1571,
+                "completion_tokens": 201,
+                "total_tokens": 1772,
+                "completion_tokens_details": {
+                  "reasoning_tokens": 0
+                },
+                "cost": 0.0002576
+              },
+              "finish_reason": "stop",
+              "content_kind": "string",
+              "reasoning_chars": null,
+              "message_keys": [
+                "content",
+                "id",
+                "phase",
+                "role",
+                "status",
+                "type"
+              ],
+              "status": "completed",
+              "request_bytes": 7013,
+              "response_bytes": 1843,
+              "http_ttfb_ms": 2262.0,
+              "http_elapsed_ms": 2263.1,
+              "max_tokens": 3000
+            },
+            "latency_ms": 2263.7,
+            "requested_model": "gpt-6-luna"
+          },
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.0002601,
+            "metadata": {
+              "id": "resp_00421cf5833ec6f2006ada22685b6887d290547a238ce2135d",
+              "model": "gpt-6-luna",
+              "provider": null,
+              "protocol": "responses",
+              "usage": {
+                "prompt_tokens": 1571,
+                "completion_tokens": 206,
+                "total_tokens": 1777,
+                "completion_tokens_details": {
+                  "reasoning_tokens": 0
+                },
+                "cost": 0.0002601
+              },
+              "finish_reason": "stop",
+              "content_kind": "string",
+              "reasoning_chars": null,
+              "message_keys": [
+                "content",
+                "id",
+                "phase",
+                "role",
+                "status",
+                "type"
+              ],
+              "status": "completed",
+              "request_bytes": 7013,
+              "response_bytes": 1849,
+              "http_ttfb_ms": 2454.9,
+              "http_elapsed_ms": 2455.9,
+              "max_tokens": 3000
+            },
+            "latency_ms": 2457.4,
+            "requested_model": "gpt-6-luna"
+          }
+        ]
+      },
+      "exact_statistics-007#0": {
+        "base": [],
+        "head": [
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.0002418,
+            "metadata": {
+              "id": "resp_0797c4464cc6529c006ada226accb487d2802c09d9052176a8",
+              "model": "gpt-6-luna",
+              "provider": null,
+              "protocol": "responses",
+              "usage": {
+                "prompt_tokens": 1483,
+                "completion_tokens": 187,
+                "total_tokens": 1670,
+                "completion_tokens_details": {
+                  "reasoning_tokens": 0
+                },
+                "cost": 0.0002418
+              },
+              "finish_reason": "stop",
+              "content_kind": "string",
+              "reasoning_chars": null,
+              "message_keys": [
+                "content",
+                "id",
+                "phase",
+                "role",
+                "status",
+                "type"
+              ],
+              "status": "completed",
+              "request_bytes": 6845,
+              "response_bytes": 1819,
+              "http_ttfb_ms": 2211.8,
+              "http_elapsed_ms": 2212.0,
+              "max_tokens": 3000
+            },
+            "latency_ms": 2212.8,
+            "requested_model": "gpt-6-luna"
+          },
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.0002418,
+            "metadata": {
+              "id": "resp_0d5b8396b872038d006ada226d20d487d2a70fc6854a9fba77",
+              "model": "gpt-6-luna",
+              "provider": null,
+              "protocol": "responses",
+              "usage": {
+                "prompt_tokens": 1483,
+                "completion_tokens": 187,
+                "total_tokens": 1670,
+                "completion_tokens_details": {
+                  "reasoning_tokens": 0
+                },
+                "cost": 0.0002418
+              },
+              "finish_reason": "stop",
+              "content_kind": "string",
+              "reasoning_chars": null,
+              "message_keys": [
+                "content",
+                "id",
+                "phase",
+                "role",
+                "status",
+                "type"
+              ],
+              "status": "completed",
+              "request_bytes": 6845,
+              "response_bytes": 1818,
+              "http_ttfb_ms": 2571.3,
+              "http_elapsed_ms": 2571.8,
+              "max_tokens": 3000
+            },
+            "latency_ms": 2573.2,
+            "requested_model": "gpt-6-luna"
+          },
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.0002458,
+            "metadata": {
+              "id": "resp_047bb8c2898e59d5006ada226fa14887d291fa15722de952db",
+              "model": "gpt-6-luna",
+              "provider": null,
+              "protocol": "responses",
+              "usage": {
+                "prompt_tokens": 1483,
+                "completion_tokens": 195,
+                "total_tokens": 1678,
+                "completion_tokens_details": {
+                  "reasoning_tokens": 0
+                },
+                "cost": 0.0002458
+              },
+              "finish_reason": "stop",
+              "content_kind": "string",
+              "reasoning_chars": null,
+              "message_keys": [
+                "content",
+                "id",
+                "phase",
+                "role",
+                "status",
+                "type"
+              ],
+              "status": "completed",
+              "request_bytes": 6845,
+              "response_bytes": 1842,
+              "http_ttfb_ms": 2398.8,
+              "http_elapsed_ms": 2399.1,
+              "max_tokens": 3000
+            },
+            "latency_ms": 2399.8,
+            "requested_model": "gpt-6-luna"
+          }
+        ]
+      },
+      "exact_statistics-008#0": {
+        "base": [],
+        "head": [
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.0003785,
+            "metadata": {
+              "id": "resp_08274edfc9de009e006ada2271f51487d2b2cd8fc2ebee17db",
+              "model": "gpt-6-luna",
+              "provider": null,
+              "protocol": "responses",
+              "usage": {
+                "prompt_tokens": 2050,
+                "completion_tokens": 347,
+                "total_tokens": 2397,
+                "completion_tokens_details": {
+                  "reasoning_tokens": 0
+                },
+                "cost": 0.0003785
+              },
+              "finish_reason": "stop",
+              "content_kind": "string",
+              "reasoning_chars": null,
+              "message_keys": [
+                "content",
+                "id",
+                "phase",
+                "role",
+                "status",
+                "type"
+              ],
+              "status": "completed",
+              "request_bytes": 8599,
+              "response_bytes": 2161,
+              "http_ttfb_ms": 3321.8,
+              "http_elapsed_ms": 3322.6,
+              "max_tokens": 3000
+            },
+            "latency_ms": 3323.1,
+            "requested_model": "gpt-6-luna"
+          },
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.0003825,
+            "metadata": {
+              "id": "resp_0f0eea317949afa2006ada2275469c87d2a58478540d568a34",
+              "model": "gpt-6-luna",
+              "provider": null,
+              "protocol": "responses",
+              "usage": {
+                "prompt_tokens": 2050,
+                "completion_tokens": 355,
+                "total_tokens": 2405,
+                "completion_tokens_details": {
+                  "reasoning_tokens": 0
+                },
+                "cost": 0.0003825
+              },
+              "finish_reason": "stop",
+              "content_kind": "string",
+              "reasoning_chars": null,
+              "message_keys": [
+                "content",
+                "id",
+                "phase",
+                "role",
+                "status",
+                "type"
+              ],
+              "status": "completed",
+              "request_bytes": 8599,
+              "response_bytes": 2219,
+              "http_ttfb_ms": 3233.5,
+              "http_elapsed_ms": 3233.7,
+              "max_tokens": 3000
+            },
+            "latency_ms": 3234.0,
+            "requested_model": "gpt-6-luna"
+          },
+          {
+            "outcome": "verdict_rejected",
+            "causes": [
+              "span1:verdict_unsupported"
+            ],
+            "cost": 0.000384,
+            "review": {
+              "assertions": [
+                {
+                  "text": "In the available 2025-26 archive, the Knicks' biggest win by margin is a 54-point win (120 points scored, 0 losses in that filtered set).",
+                  "assertion_type": "interpretation",
+                  "verdict": "unsupported",
+                  "offending_text": "the Knicks' biggest win by margin",
+                  "supporting_claim_ids": [
+                    "claim:9c6bc3cf1f0903a822350f7d40a1d539d65ff5144e6a4fa92d78d55a21fe8a29",
+                    "claim:0c71e5955cc8971472e2e5b2577e320e15b0613d70939cb1913da57f69af1792",
+                    "claim:61dfc7ebb486d11f7cc4bf5372d9b075144c91bfa01830f5b3b20dc4a6eb0129",
+                    "claim:ef0e0d89e43e6acc322351898526ad6019e9a54a343122f8299a7a0baad59d36"
+                  ],
+                  "supporting_evidence_ids": [],
+                  "reason": "The archive shows one filtered win, which cannot establish it was the biggest across available games."
+                }
+              ],
+              "follow_up_reviews": [
+                {
+                  "text": "What was the Knicks' biggest loss by margin?",
+                  "verdict": "supported",
+                  "supporting_claim_ids": [],
+                  "supporting_evidence_ids": [],
+                  "reason": "The archive includes team margins and losses, so this is answerable if losses are present."
+                },
+                {
+                  "text": "How many points did the Knicks score in that game?",
+                  "verdict": "supported",
+                  "supporting_claim_ids": [],
+                  "supporting_evidence_ids": [],
+                  "reason": "The cited score claim provides the Knicks' points in the referenced game."
+                }
+              ]
+            },
+            "metadata": {
+              "id": "resp_0c8ecab9b011b521006ada22789c0c87d28025620c9851efc5",
+              "model": "gpt-6-luna",
+              "provider": null,
+              "protocol": "responses",
+              "usage": {
+                "prompt_tokens": 2050,
+                "completion_tokens": 358,
+                "total_tokens": 2408,
+                "completion_tokens_details": {
+                  "reasoning_tokens": 0
+                },
+                "cost": 0.000384
+              },
+              "finish_reason": "stop",
+              "content_kind": "string",
+              "reasoning_chars": null,
+              "message_keys": [
+                "content",
+                "id",
+                "phase",
+                "role",
+                "status",
+                "type"
+              ],
+              "status": "completed",
+              "request_bytes": 8599,
+              "response_bytes": 2237,
+              "http_ttfb_ms": 3708.4,
+              "http_elapsed_ms": 3708.7,
+              "max_tokens": 3000
+            },
+            "latency_ms": 3711.6,
+            "requested_model": "gpt-6-luna"
+          }
+        ]
+      },
+      "exact_statistics-010#0": {
+        "base": [],
+        "head": [
+          {
+            "outcome": "verdict_rejected",
+            "causes": [
+              "span1:verdict_insufficient_evidence",
+              "span2:verdict_insufficient_evidence"
+            ],
+            "cost": 0.0004232,
+            "review": {
+              "assertions": [
+                {
+                  "text": "The highest-scoring individual Knicks game in the available 2025-26 archive is Jalen Brunson's 47 points on 2025-12-21 against MIA (regular season). ",
+                  "assertion_type": "factual",
+                  "verdict": "insufficient_evidence",
+                  "offending_text": "The highest-scoring individual Knicks game in the available 2025-26 archive",
+                  "supporting_claim_ids": [
+                    "claim:fe425ac40864f4bfa9e33368bf60428b801bad3c80ce3ca4b4515981d84cf1ef"
+                  ],
+                  "supporting_evidence_ids": [],
+                  "reason": "The cited claim supports the scoring line, but not its ranking across Knicks games in the archive."
+                },
+                {
+                  "text": "The next-highest is his 45 points on 2026-06-13 against SAS in the playoffs. ",
+                  "assertion_type": "factual",
+                  "verdict": "insufficient_evidence",
+                  "offending_text": "The next-highest",
+                  "supporting_claim_ids": [
+                    "claim:f1e6e09d89101c516c09bdcb4a1b68b69b585194203f72667020c6449e954dfb"
+                  ],
+                  "supporting_evidence_ids": [],
+                  "reason": "The cited claim supports the scoring line, but not its ranking against all other games."
+                },
+                {
+                  "text": "Note: this reflects individual player scoring, not the team's total points in a game.",
+                  "assertion_type": "interpretation",
+                  "verdict": "supported",
+                  "offending_text": null,
+                  "supporting_claim_ids": [
+                    "claim:fe425ac40864f4bfa9e33368bf60428b801bad3c80ce3ca4b4515981d84cf1ef"
+                  ],
+                  "supporting_evidence_ids": [],
+                  "reason": "The cited claim measures a player's points, not team points."
+                }
+              ],
+              "follow_up_reviews": [
+                {
+                  "text": "What was the Knicks' highest team point total in a game?",
+                  "verdict": "supported",
+                  "supporting_claim_ids": [],
+                  "supporting_evidence_ids": [],
+                  "reason": "Team points are a supported metric in the archive."
+                },
+                {
+                  "text": "How many points did Jalen Brunson average in the 2025-26 regular season?",
+                  "verdict": "supported",
+                  "supporting_claim_ids": [],
+                  "supporting_evidence_ids": [],
+                  "reason": "Regular-season player points are supported by the archive."
+                }
+              ]
+            },
+            "metadata": {
+              "id": "resp_03abbfaa9344f8c0006ada227c43d087d2b1146ba530237095",
+              "model": "gpt-6-luna",
+              "provider": null,
+              "protocol": "responses",
+              "usage": {
+                "prompt_tokens": 1882,
+                "completion_tokens": 470,
+                "total_tokens": 2352,
+                "completion_tokens_details": {
+                  "reasoning_tokens": 0
+                },
+                "cost": 0.0004232
+              },
+              "finish_reason": "stop",
+              "content_kind": "string",
+              "reasoning_chars": null,
+              "message_keys": [
+                "content",
+                "id",
+                "phase",
+                "role",
+                "status",
+                "type"
+              ],
+              "status": "completed",
+              "request_bytes": 8380,
+              "response_bytes": 2881,
+              "http_ttfb_ms": 3723.4,
+              "http_elapsed_ms": 3724.6,
+              "max_tokens": 3000
+            },
+            "latency_ms": 3725.5,
+            "requested_model": "gpt-6-luna"
+          },
+          {
+            "outcome": "verdict_rejected",
+            "causes": [
+              "span1:verdict_insufficient_evidence",
+              "span2:verdict_insufficient_evidence"
+            ],
+            "cost": 0.0005002,
+            "review": {
+              "assertions": [
+                {
+                  "text": "The highest-scoring individual Knicks game in the available 2025-26 archive is Jalen Brunson's 47 points on 2025-12-21 against MIA (regular season). ",
+                  "assertion_type": "interpretation",
+                  "verdict": "insufficient_evidence",
+                  "offending_text": "The highest-scoring individual Knicks game in the available 2025-26 archive",
+                  "supporting_claim_ids": [
+                    "claim:fe425ac40864f4bfa9e33368bf60428b801bad3c80ce3ca4b4515981d84cf1ef"
+                  ],
+                  "supporting_evidence_ids": [],
+                  "reason": "The cited claim supports Brunson's game total, but not an archive-wide ranking."
+                },
+                {
+                  "text": "The next-highest is his 45 points on 2026-06-13 against SAS in the playoffs. ",
+                  "assertion_type": "interpretation",
+                  "verdict": "insufficient_evidence",
+                  "offending_text": "The next-highest",
+                  "supporting_claim_ids": [
+                    "claim:f1e6e09d89101c516c09bdcb4a1b68b69b585194203f72667020c6449e954dfb"
+                  ],
+                  "supporting_evidence_ids": [],
+                  "reason": "The cited claim supports Brunson's total, but not its rank among Knicks games."
+                },
+                {
+                  "text": "Note: this reflects individual player scoring, not the team's total points in a game.",
+                  "assertion_type": "interpretation",
+                  "verdict": "supported",
+                  "offending_text": null,
+                  "supporting_claim_ids": [
+                    "claim:fe425ac40864f4bfa9e33368bf60428b801bad3c80ce3ca4b4515981d84cf1ef",
+                    "claim:f1e6e09d89101c516c09bdcb4a1b68b69b585194203f72667020c6449e954dfb"
+                  ],
+                  "supporting_evidence_ids": [],
+                  "reason": "Both cited claims report an individual player's points, not team points."
+                }
+              ],
+              "follow_up_reviews": [
+                {
+                  "text": "What was the Knicks' highest team point total in a game?",
+                  "verdict": "supported",
+                  "supporting_claim_ids": [],
+                  "supporting_evidence_ids": [],
+                  "reason": "The archive includes team points and game scores, so this question is answerable."
+                },
+                {
+                  "text": "How many points did Jalen Brunson average in the 2025-26 regular season?",
+                  "verdict": "unsupported",
+                  "supporting_claim_ids": [],
+                  "supporting_evidence_ids": [],
+                  "reason": "The available claims provide single-game totals, not season averages."
+                }
+              ]
+            },
+            "metadata": {
+              "id": "resp_08832d5ab16d092e006ada228004a487d29b74e38894fd020e",
+              "model": "gpt-6-luna",
+              "provider": null,
+              "protocol": "responses",
+              "usage": {
+                "prompt_tokens": 1882,
+                "completion_tokens": 624,
+                "total_tokens": 2506,
+                "completion_tokens_details": {
+                  "reasoning_tokens": 0
+                },
+                "cost": 0.0005002
+              },
+              "finish_reason": "stop",
+              "content_kind": "string",
+              "reasoning_chars": null,
+              "message_keys": [
+                "content",
+                "id",
+                "phase",
+                "role",
+                "status",
+                "type"
+              ],
+              "status": "completed",
+              "request_bytes": 8380,
+              "response_bytes": 3385,
+              "http_ttfb_ms": 4958.1,
+              "http_elapsed_ms": 4961.2,
+              "max_tokens": 3000
+            },
+            "latency_ms": 4962.9,
+            "requested_model": "gpt-6-luna"
+          },
+          {
+            "outcome": "verdict_rejected",
+            "causes": [
+              "span1:verdict_insufficient_evidence",
+              "span2:verdict_insufficient_evidence"
+            ],
+            "cost": 0.0004802,
+            "review": {
+              "assertions": [
+                {
+                  "text": "The highest-scoring individual Knicks game in the available 2025-26 archive is Jalen Brunson's 47 points on 2025-12-21 against MIA (regular season). ",
+                  "assertion_type": "interpretation",
+                  "verdict": "insufficient_evidence",
+                  "offending_text": "The highest-scoring individual Knicks game in the available 2025-26 archive is Jalen Brunson's 47 points on 2025-12-21 against MIA (regular season). ",
+                  "supporting_claim_ids": [
+                    "claim:fe425ac40864f4bfa9e33368bf60428b801bad3c80ce3ca4b4515981d84cf1ef"
+                  ],
+                  "supporting_evidence_ids": [],
+                  "reason": "The claim supports Brunson's scoring line, but does not establish that it ranks highest in the archive."
+                },
+                {
+                  "text": "The next-highest is his 45 points on 2026-06-13 against SAS in the playoffs. ",
+                  "assertion_type": "interpretation",
+                  "verdict": "insufficient_evidence",
+                  "offending_text": "The next-highest is his 45 points on 2026-06-13 against SAS in the playoffs. ",
+                  "supporting_claim_ids": [
+                    "claim:f1e6e09d89101c516c09bdcb4a1b68b69b585194203f72667020c6449e954dfb"
+                  ],
+                  "supporting_evidence_ids": [],
+                  "reason": "The claim supports Brunson's scoring line, but not its ranking as the next-highest."
+                },
+                {
+                  "text": "Note: this reflects individual player scoring, not the team's total points in a game.",
+                  "assertion_type": "coverage",
+                  "verdict": "supported",
+                  "offending_text": null,
+                  "supporting_claim_ids": [],
+                  "supporting_evidence_ids": [],
+                  "reason": "The answer clearly distinguishes an individual scoring record from team points."
+                }
+              ],
+              "follow_up_reviews": [
+                {
+                  "text": "What was the Knicks' highest team point total in a game?",
+                  "verdict": "supported",
+                  "supporting_claim_ids": [],
+                  "supporting_evidence_ids": [],
+                  "reason": "Team points are within the archive's supported metrics."
+                },
+                {
+                  "text": "How many points did Jalen Brunson average in the 2025-26 regular season?",
+                  "verdict": "unsupported",
+                  "supporting_claim_ids": [],
+                  "supporting_evidence_ids": [],
+                  "reason": "The archive provides game-level box scores, not a season-average metric."
+                }
+              ]
+            },
+            "metadata": {
+              "id": "resp_008d2f6c5ce21589006ada22851fdc87d2866c051b763ed871",
+              "model": "gpt-6-luna",
+              "provider": null,
+              "protocol": "responses",
+              "usage": {
+                "prompt_tokens": 1882,
+                "completion_tokens": 584,
+                "total_tokens": 2466,
+                "completion_tokens_details": {
+                  "reasoning_tokens": 0
+                },
+                "cost": 0.0004802
+              },
+              "finish_reason": "stop",
+              "content_kind": "string",
+              "reasoning_chars": null,
+              "message_keys": [
+                "content",
+                "id",
+                "phase",
+                "role",
+                "status",
+                "type"
+              ],
+              "status": "completed",
+              "request_bytes": 8380,
+              "response_bytes": 3350,
+              "http_ttfb_ms": 4779.5,
+              "http_elapsed_ms": 4780.6,
+              "max_tokens": 3000
+            },
+            "latency_ms": 4781.9,
+            "requested_model": "gpt-6-luna"
+          }
+        ]
+      },
+      "date_range_last_n-001#0": {
+        "base": [],
+        "head": [
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.0002905,
+            "metadata": {
+              "id": "resp_002da6b1f0101af4006ada2289b94887d2af357ea69d2fb1df",
+              "model": "gpt-6-luna",
+              "provider": null,
+              "protocol": "responses",
+              "usage": {
+                "prompt_tokens": 1770,
+                "completion_tokens": 227,
+                "total_tokens": 1997,
+                "completion_tokens_details": {
+                  "reasoning_tokens": 0
+                },
+                "cost": 0.0002905
+              },
+              "finish_reason": "stop",
+              "content_kind": "string",
+              "reasoning_chars": null,
+              "message_keys": [
+                "content",
+                "id",
+                "phase",
+                "role",
+                "status",
+                "type"
+              ],
+              "status": "completed",
+              "request_bytes": 7744,
+              "response_bytes": 1908,
+              "http_ttfb_ms": 2356.5,
+              "http_elapsed_ms": 2356.7,
+              "max_tokens": 3000
+            },
+            "latency_ms": 2357.6,
+            "requested_model": "gpt-6-luna"
+          },
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.000297,
+            "metadata": {
+              "id": "resp_08634cefaff321d4006ada228c293c87d2aec96e7619a7ab28",
+              "model": "gpt-6-luna",
+              "provider": null,
+              "protocol": "responses",
+              "usage": {
+                "prompt_tokens": 1770,
+                "completion_tokens": 240,
+                "total_tokens": 2010,
+                "completion_tokens_details": {
+                  "reasoning_tokens": 0
+                },
+                "cost": 0.000297
+              },
+              "finish_reason": "stop",
+              "content_kind": "string",
+              "reasoning_chars": null,
+              "message_keys": [
+                "content",
+                "id",
+                "phase",
+                "role",
+                "status",
+                "type"
+              ],
+              "status": "completed",
+              "request_bytes": 7744,
+              "response_bytes": 1947,
+              "http_ttfb_ms": 2474.7,
+              "http_elapsed_ms": 2474.9,
+              "max_tokens": 3000
+            },
+            "latency_ms": 2475.2,
+            "requested_model": "gpt-6-luna"
+          },
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.000289,
+            "metadata": {
+              "id": "resp_0c87f6ba4455dada006ada228ea19087d2858deaf3da2084dd",
+              "model": "gpt-6-luna",
+              "provider": null,
+              "protocol": "responses",
+              "usage": {
+                "prompt_tokens": 1770,
+                "completion_tokens": 224,
+                "total_tokens": 1994,
+                "completion_tokens_details": {
+                  "reasoning_tokens": 0
+                },
+                "cost": 0.000289
+              },
+              "finish_reason": "stop",
+              "content_kind": "string",
+              "reasoning_chars": null,
+              "message_keys": [
+                "content",
+                "id",
+                "phase",
+                "role",
+                "status",
+                "type"
+              ],
+              "status": "completed",
+              "request_bytes": 7744,
+              "response_bytes": 1896,
+              "http_ttfb_ms": 2469.4,
+              "http_elapsed_ms": 2470.3,
+              "max_tokens": 3000
+            },
+            "latency_ms": 2471.1,
+            "requested_model": "gpt-6-luna"
+          }
+        ]
+      },
+      "date_range_last_n-002#0": {
+        "base": [],
+        "head": [
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.0003659,
+            "metadata": {
+              "id": "resp_0b3c72958763e3b1006ada2291169887d2b00b9a5be1074144",
+              "model": "gpt-6-luna",
+              "provider": null,
+              "protocol": "responses",
+              "usage": {
+                "prompt_tokens": 2119,
+                "completion_tokens": 308,
+                "total_tokens": 2427,
+                "completion_tokens_details": {
+                  "reasoning_tokens": 0
+                },
+                "cost": 0.0003659
+              },
+              "finish_reason": "stop",
+              "content_kind": "string",
+              "reasoning_chars": null,
+              "message_keys": [
+                "content",
+                "id",
+                "phase",
+                "role",
+                "status",
+                "type"
+              ],
+              "status": "completed",
+              "request_bytes": 8737,
+              "response_bytes": 2129,
+              "http_ttfb_ms": 3237.0,
+              "http_elapsed_ms": 3237.4,
+              "max_tokens": 3000
+            },
+            "latency_ms": 3238.3,
+            "requested_model": "gpt-6-luna"
+          },
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.0003624,
+            "metadata": {
+              "id": "resp_097deb4173b9db11006ada22946cb487d29f14a9e0f3e3ca09",
+              "model": "gpt-6-luna",
+              "provider": null,
+              "protocol": "responses",
+              "usage": {
+                "prompt_tokens": 2119,
+                "completion_tokens": 301,
+                "total_tokens": 2420,
+                "completion_tokens_details": {
+                  "reasoning_tokens": 0
+                },
+                "cost": 0.0003624
+              },
+              "finish_reason": "stop",
+              "content_kind": "string",
+              "reasoning_chars": null,
+              "message_keys": [
+                "content",
+                "id",
+                "phase",
+                "role",
+                "status",
+                "type"
+              ],
+              "status": "completed",
+              "request_bytes": 8737,
+              "response_bytes": 2114,
+              "http_ttfb_ms": 3084.9,
+              "http_elapsed_ms": 3085.3,
+              "max_tokens": 3000
+            },
+            "latency_ms": 3086.0,
+            "requested_model": "gpt-6-luna"
+          },
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.0003609,
+            "metadata": {
+              "id": "resp_06f9d8111f4d1ebe006ada2297656487d2a2bc8afe3f640f90",
+              "model": "gpt-6-luna",
+              "provider": null,
+              "protocol": "responses",
+              "usage": {
+                "prompt_tokens": 2119,
+                "completion_tokens": 298,
+                "total_tokens": 2417,
+                "completion_tokens_details": {
+                  "reasoning_tokens": 0
+                },
+                "cost": 0.0003609
+              },
+              "finish_reason": "stop",
+              "content_kind": "string",
+              "reasoning_chars": null,
+              "message_keys": [
+                "content",
+                "id",
+                "phase",
+                "role",
+                "status",
+                "type"
+              ],
+              "status": "completed",
+              "request_bytes": 8737,
+              "response_bytes": 2075,
+              "http_ttfb_ms": 2725.4,
+              "http_elapsed_ms": 2726.2,
+              "max_tokens": 3000
+            },
+            "latency_ms": 2726.9,
+            "requested_model": "gpt-6-luna"
+          }
+        ]
+      },
+      "date_range_last_n-003#0": {
+        "base": [],
+        "head": [
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.0003006,
+            "metadata": {
+              "id": "resp_08eb39b136209b14006ada229a31d087d28711c9644fe8098a",
+              "model": "gpt-6-luna",
+              "provider": null,
+              "protocol": "responses",
+              "usage": {
+                "prompt_tokens": 1911,
+                "completion_tokens": 219,
+                "total_tokens": 2130,
+                "completion_tokens_details": {
+                  "reasoning_tokens": 0
+                },
+                "cost": 0.0003006
+              },
+              "finish_reason": "stop",
+              "content_kind": "string",
+              "reasoning_chars": null,
+              "message_keys": [
+                "content",
+                "id",
+                "phase",
+                "role",
+                "status",
+                "type"
+              ],
+              "status": "completed",
+              "request_bytes": 8313,
+              "response_bytes": 1933,
+              "http_ttfb_ms": 2739.3,
+              "http_elapsed_ms": 2740.2,
+              "max_tokens": 3000
+            },
+            "latency_ms": 2741.4,
+            "requested_model": "gpt-6-luna"
+          },
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.0003021,
+            "metadata": {
+              "id": "resp_095afb467dfe0d85006ada229d13ec87d2932612e57730bd19",
+              "model": "gpt-6-luna",
+              "provider": null,
+              "protocol": "responses",
+              "usage": {
+                "prompt_tokens": 1911,
+                "completion_tokens": 222,
+                "total_tokens": 2133,
+                "completion_tokens_details": {
+                  "reasoning_tokens": 0
+                },
+                "cost": 0.0003021
+              },
+              "finish_reason": "stop",
+              "content_kind": "string",
+              "reasoning_chars": null,
+              "message_keys": [
+                "content",
+                "id",
+                "phase",
+                "role",
+                "status",
+                "type"
+              ],
+              "status": "completed",
+              "request_bytes": 8313,
+              "response_bytes": 1957,
+              "http_ttfb_ms": 2723.3,
+              "http_elapsed_ms": 2724.0,
+              "max_tokens": 3000
+            },
+            "latency_ms": 2725.0,
+            "requested_model": "gpt-6-luna"
+          },
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.0003011,
+            "metadata": {
+              "id": "resp_09c28bebc956f327006ada229f968887d2a1f5ec94bd23f5b3",
+              "model": "gpt-6-luna",
+              "provider": null,
+              "protocol": "responses",
+              "usage": {
+                "prompt_tokens": 1911,
+                "completion_tokens": 220,
+                "total_tokens": 2131,
+                "completion_tokens_details": {
+                  "reasoning_tokens": 0
+                },
+                "cost": 0.0003011
+              },
+              "finish_reason": "stop",
+              "content_kind": "string",
+              "reasoning_chars": null,
+              "message_keys": [
+                "content",
+                "id",
+                "phase",
+                "role",
+                "status",
+                "type"
+              ],
+              "status": "completed",
+              "request_bytes": 8313,
+              "response_bytes": 1939,
+              "http_ttfb_ms": 2569.1,
+              "http_elapsed_ms": 2569.4,
+              "max_tokens": 3000
+            },
+            "latency_ms": 2570.2,
+            "requested_model": "gpt-6-luna"
+          }
+        ]
+      },
+      "date_range_last_n-004#0": {
+        "base": [],
+        "head": [
+          {
+            "outcome": "verdict_rejected",
+            "causes": [
+              "span1:verdict_insufficient_evidence"
+            ],
+            "cost": 0.000386,
+            "review": {
+              "assertions": [
+                {
+                  "text": "From January 1 through January 31, the Knicks went 7-8 across 15 archived games, scoring 1,652 total points.",
+                  "assertion_type": "factual",
+                  "verdict": "insufficient_evidence",
+                  "offending_text": "From January 1 through January 31, the Knicks went 7-8 across 15 archived games, scoring 1,652 total points.",
+                  "supporting_claim_ids": [
+                    "claim:8ae74bc11c415f391b098b9199758b96c5778d5e71a89a647b7c9a362e28d51c",
+                    "claim:5a43adf99c2a0a2ea22a22a49a7b16d024226960dd2e360e8d413ef5ca6e2854",
+                    "claim:030ed374b46dcae45c14e8faba1d5506eea08bbfd39ce356d5a813708e51b852"
+                  ],
+                  "supporting_evidence_ids": [
+                    "2025-26.20260928.1:game:34"
+                  ],
+                  "reason": "The cited totals cover 15 archived games but do not establish that all fall within January 1\u201331."
+                }
+              ],
+              "follow_up_reviews": [
+                {
+                  "text": "What was the Knicks' average points per game in January?",
+                  "verdict": "supported",
+                  "supporting_claim_ids": [],
+                  "supporting_evidence_ids": [],
+                  "reason": "The archive provides January game totals and game count sufficient to calculate an average."
+                },
+                {
+                  "text": "How did the Knicks' January margin compare to another month?",
+                  "verdict": "insufficient_evidence",
+                  "supporting_claim_ids": [],
+                  "supporting_evidence_ids": [],
+                  "reason": "The archive provides no month-comparison margin claims for another month."
+                }
+              ]
+            },
+            "metadata": {
+              "id": "resp_0f27624c11b001c8006ada22a21e2887d2b6903f7e9130947f",
+              "model": "gpt-6-luna",
+              "provider": null,
+              "protocol": "responses",
+              "usage": {
+                "prompt_tokens": 2085,
+                "completion_tokens": 355,
+                "total_tokens": 2440,
+                "completion_tokens_details": {
+                  "reasoning_tokens": 0
+                },
+                "cost": 0.000386
+              },
+              "finish_reason": "stop",
+              "content_kind": "string",
+              "reasoning_chars": null,
+              "message_keys": [
+                "content",
+                "id",
+                "phase",
+                "role",
+                "status",
+                "type"
+              ],
+              "status": "completed",
+              "request_bytes": 8659,
+              "response_bytes": 2273,
+              "http_ttfb_ms": 3418.2,
+              "http_elapsed_ms": 3419.0,
+              "max_tokens": 3000
+            },
+            "latency_ms": 3420.4,
+            "requested_model": "gpt-6-luna"
+          },
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.0003955,
+            "metadata": {
+              "id": "resp_0b46f43571dbc7be006ada22a5c94087d2859fa30fbac650c3",
+              "model": "gpt-6-luna",
+              "provider": null,
+              "protocol": "responses",
+              "usage": {
+                "prompt_tokens": 2085,
+                "completion_tokens": 374,
+                "total_tokens": 2459,
+                "completion_tokens_details": {
+                  "reasoning_tokens": 0
+                },
+                "cost": 0.0003955
+              },
+              "finish_reason": "stop",
+              "content_kind": "string",
+              "reasoning_chars": null,
+              "message_keys": [
+                "content",
+                "id",
+                "phase",
+                "role",
+                "status",
+                "type"
+              ],
+              "status": "completed",
+              "request_bytes": 8659,
+              "response_bytes": 2344,
+              "http_ttfb_ms": 3765.0,
+              "http_elapsed_ms": 3766.0,
+              "max_tokens": 3000
+            },
+            "latency_ms": 3767.2,
+            "requested_model": "gpt-6-luna"
+          },
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.0003565,
+            "metadata": {
+              "id": "resp_0fa53d6a7cb327d2006ada22a94ff887d28f16e1d349324669",
+              "model": "gpt-6-luna",
+              "provider": null,
+              "protocol": "responses",
+              "usage": {
+                "prompt_tokens": 2085,
+                "completion_tokens": 296,
+                "total_tokens": 2381,
+                "completion_tokens_details": {
+                  "reasoning_tokens": 0
+                },
+                "cost": 0.0003565
+              },
+              "finish_reason": "stop",
+              "content_kind": "string",
+              "reasoning_chars": null,
+              "message_keys": [
+                "content",
+                "id",
+                "phase",
+                "role",
+                "status",
+                "type"
+              ],
+              "status": "completed",
+              "request_bytes": 8659,
+              "response_bytes": 2080,
+              "http_ttfb_ms": 2949.0,
+              "http_elapsed_ms": 2949.3,
+              "max_tokens": 3000
+            },
+            "latency_ms": 2949.8,
+            "requested_model": "gpt-6-luna"
+          }
+        ]
+      },
+      "date_range_last_n-006#0": {
+        "base": [],
+        "head": [
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.0003649,
+            "metadata": {
+              "id": "resp_0527f59f2a652102006ada22ac502087d2beff8c1dc6555ad5",
+              "model": "gpt-6-luna",
+              "provider": null,
+              "protocol": "responses",
+              "usage": {
+                "prompt_tokens": 1864,
+                "completion_tokens": 357,
+                "total_tokens": 2221,
+                "completion_tokens_details": {
+                  "reasoning_tokens": 0
+                },
+                "cost": 0.0003649
+              },
+              "finish_reason": "stop",
+              "content_kind": "string",
+              "reasoning_chars": null,
+              "message_keys": [
+                "content",
+                "id",
+                "phase",
+                "role",
+                "status",
+                "type"
+              ],
+              "status": "completed",
+              "request_bytes": 7978,
+              "response_bytes": 2202,
+              "http_ttfb_ms": 3679.0,
+              "http_elapsed_ms": 3679.5,
+              "max_tokens": 3000
+            },
+            "latency_ms": 3680.1,
+            "requested_model": "gpt-6-luna"
+          },
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.0003164,
+            "metadata": {
+              "id": "resp_027d297c7db9cb51006ada22b002c887d28a740efba54282ce",
+              "model": "gpt-6-luna",
+              "provider": null,
+              "protocol": "responses",
+              "usage": {
+                "prompt_tokens": 1864,
+                "completion_tokens": 260,
+                "total_tokens": 2124,
+                "completion_tokens_details": {
+                  "reasoning_tokens": 0
+                },
+                "cost": 0.0003164
+              },
+              "finish_reason": "stop",
+              "content_kind": "string",
+              "reasoning_chars": null,
+              "message_keys": [
+                "content",
+                "id",
+                "phase",
+                "role",
+                "status",
+                "type"
+              ],
+              "status": "completed",
+              "request_bytes": 7978,
+              "response_bytes": 2012,
+              "http_ttfb_ms": 2783.3,
+              "http_elapsed_ms": 2785.3,
+              "max_tokens": 3000
+            },
+            "latency_ms": 2786.0,
+            "requested_model": "gpt-6-luna"
+          },
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.0003444,
+            "metadata": {
+              "id": "resp_0e1c272c80f5d890006ada22b2ce7487d2a99b9087d9115446",
+              "model": "gpt-6-luna",
+              "provider": null,
+              "protocol": "responses",
+              "usage": {
+                "prompt_tokens": 1864,
+                "completion_tokens": 316,
+                "total_tokens": 2180,
+                "completion_tokens_details": {
+                  "reasoning_tokens": 0
+                },
+                "cost": 0.0003444
+              },
+              "finish_reason": "stop",
+              "content_kind": "string",
+              "reasoning_chars": null,
+              "message_keys": [
+                "content",
+                "id",
+                "phase",
+                "role",
+                "status",
+                "type"
+              ],
+              "status": "completed",
+              "request_bytes": 7978,
+              "response_bytes": 2157,
+              "http_ttfb_ms": 3120.0,
+              "http_elapsed_ms": 3122.8,
+              "max_tokens": 3000
+            },
+            "latency_ms": 3124.3,
+            "requested_model": "gpt-6-luna"
+          }
+        ]
+      },
+      "date_range_last_n-008#0": {
+        "base": [],
+        "head": [
+          {
+            "outcome": "verdict_rejected",
+            "causes": [
+              "span1:verdict_unsupported"
+            ],
+            "cost": 0.0003902,
+            "review": {
+              "assertions": [
+                {
+                  "text": "Jalen Brunson recorded 45 points on 2026-06-13 against SAS, the highest single-game scoring value in the available archive for the last 3 games. ",
+                  "assertion_type": "factual",
+                  "verdict": "unsupported",
+                  "offending_text": "the highest single-game scoring value in the available archive for the last 3 games.",
+                  "supporting_claim_ids": [
+                    "claim:f1e6e09d89101c516c09bdcb4a1b68b69b585194203f72667020c6449e954dfb"
+                  ],
+                  "supporting_evidence_ids": [],
+                  "reason": "The claim supports Brunson\u2019s game, but does not establish the highest value across the three games."
+                },
+                {
+                  "text": "This is a single-game observation, not a 3-game total or average, so it does not by itself establish who led the team in total or average scoring across all three games.",
+                  "assertion_type": "interpretation",
+                  "verdict": "supported",
+                  "offending_text": null,
+                  "supporting_claim_ids": [
+                    "claim:f1e6e09d89101c516c09bdcb4a1b68b69b585194203f72667020c6449e954dfb"
+                  ],
+                  "supporting_evidence_ids": [],
+                  "reason": "A one-game scoring claim cannot establish a three-game total or average leader."
+                }
+              ],
+              "follow_up_reviews": [
+                {
+                  "text": "What were Jalen Brunson's total points over the last 3 games?",
+                  "verdict": "supported",
+                  "supporting_claim_ids": [],
+                  "supporting_evidence_ids": [],
+                  "reason": "The archive includes player box scores and points, so this asks for supported data."
+                },
+                {
+                  "text": "Who had the most total points for the Knicks over the last 3 games?",
+                  "verdict": "supported",
+                  "supporting_claim_ids": [],
+                  "supporting_evidence_ids": [],
+                  "reason": "The archive includes player box scores and points, so this asks for supported data."
+                }
+              ]
+            },
+            "metadata": {
+              "id": "resp_003fd72600bd0fbd006ada22b5eb2c87d2959db25e68ea7325",
+              "model": "gpt-6-luna",
+              "provider": null,
+              "protocol": "responses",
+              "usage": {
+                "prompt_tokens": 1647,
+                "completion_tokens": 451,
+                "total_tokens": 2098,
+                "completion_tokens_details": {
+                  "reasoning_tokens": 0
+                },
+                "cost": 0.0003902
+              },
+              "finish_reason": "stop",
+              "content_kind": "string",
+              "reasoning_chars": null,
+              "message_keys": [
+                "content",
+                "id",
+                "phase",
+                "role",
+                "status",
+                "type"
+              ],
+              "status": "completed",
+              "request_bytes": 7587,
+              "response_bytes": 2850,
+              "http_ttfb_ms": 4004.1,
+              "http_elapsed_ms": 4005.6,
+              "max_tokens": 3000
+            },
+            "latency_ms": 4006.3,
+            "requested_model": "gpt-6-luna"
+          },
+          {
+            "outcome": "verdict_rejected",
+            "causes": [
+              "span1:verdict_unsupported"
+            ],
+            "cost": 0.0004082,
+            "review": {
+              "assertions": [
+                {
+                  "text": "Jalen Brunson recorded 45 points on 2026-06-13 against SAS, the highest single-game scoring value in the available archive for the last 3 games. ",
+                  "assertion_type": "factual",
+                  "verdict": "unsupported",
+                  "offending_text": "the highest single-game scoring value in the available archive for the last 3 games.",
+                  "supporting_claim_ids": [
+                    "claim:f1e6e09d89101c516c09bdcb4a1b68b69b585194203f72667020c6449e954dfb"
+                  ],
+                  "supporting_evidence_ids": [
+                    "2025-26.20260928.1:game:101:player:134"
+                  ],
+                  "reason": "The cited claim supports Brunson\u2019s game, but does not establish the highest value across all three games."
+                },
+                {
+                  "text": "This is a single-game observation, not a 3-game total or average, so it does not by itself establish who led the team in total or average scoring across all three games.",
+                  "assertion_type": "interpretation",
+                  "verdict": "supported",
+                  "offending_text": null,
+                  "supporting_claim_ids": [
+                    "claim:f1e6e09d89101c516c09bdcb4a1b68b69b585194203f72667020c6449e954dfb"
+                  ],
+                  "supporting_evidence_ids": [
+                    "2025-26.20260928.1:game:101:player:134"
+                  ],
+                  "reason": "The claim is a one-game observation and cannot establish three-game totals or averages."
+                }
+              ],
+              "follow_up_reviews": [
+                {
+                  "text": "What were Jalen Brunson's total points over the last 3 games?",
+                  "verdict": "supported",
+                  "supporting_claim_ids": [],
+                  "supporting_evidence_ids": [],
+                  "reason": "The archive includes player box scores and supports a three-game points total."
+                },
+                {
+                  "text": "Who had the most total points for the Knicks over the last 3 games?",
+                  "verdict": "supported",
+                  "supporting_claim_ids": [],
+                  "supporting_evidence_ids": [],
+                  "reason": "The archive includes player box scores and supports comparing three-game scoring totals."
+                }
+              ]
+            },
+            "metadata": {
+              "id": "resp_0a03f7eeca59cf19006ada22b9ef7487d2a98bd71e6e060cbb",
+              "model": "gpt-6-luna",
+              "provider": null,
+              "protocol": "responses",
+              "usage": {
+                "prompt_tokens": 1647,
+                "completion_tokens": 487,
+                "total_tokens": 2134,
+                "completion_tokens_details": {
+                  "reasoning_tokens": 0
+                },
+                "cost": 0.0004082
+              },
+              "finish_reason": "stop",
+              "content_kind": "string",
+              "reasoning_chars": null,
+              "message_keys": [
+                "content",
+                "id",
+                "phase",
+                "role",
+                "status",
+                "type"
+              ],
+              "status": "completed",
+              "request_bytes": 7587,
+              "response_bytes": 2948,
+              "http_ttfb_ms": 4109.9,
+              "http_elapsed_ms": 4110.8,
+              "max_tokens": 3000
+            },
+            "latency_ms": 4111.6,
+            "requested_model": "gpt-6-luna"
+          },
+          {
+            "outcome": "verdict_rejected",
+            "causes": [
+              "span1:verdict_insufficient_evidence"
+            ],
+            "cost": 0.0003547,
+            "review": {
+              "assertions": [
+                {
+                  "text": "Jalen Brunson recorded 45 points on 2026-06-13 against SAS, the highest single-game scoring value in the available archive for the last 3 games. ",
+                  "assertion_type": "factual",
+                  "verdict": "insufficient_evidence",
+                  "offending_text": "the highest single-game scoring value in the available archive for the last 3 games",
+                  "supporting_claim_ids": [
+                    "claim:f1e6e09d89101c516c09bdcb4a1b68b69b585194203f72667020c6449e954dfb"
+                  ],
+                  "supporting_evidence_ids": [],
+                  "reason": "The citation supports Brunson's game total, but not a comparison across the three-game window."
+                },
+                {
+                  "text": "This is a single-game observation, not a 3-game total or average, so it does not by itself establish who led the team in total or average scoring across all three games.",
+                  "assertion_type": "interpretation",
+                  "verdict": "supported",
+                  "offending_text": null,
+                  "supporting_claim_ids": [
+                    "claim:f1e6e09d89101c516c09bdcb4a1b68b69b585194203f72667020c6449e954dfb"
+                  ],
+                  "supporting_evidence_ids": [],
+                  "reason": "The claim is for one game, so it cannot establish a three-game total or average scoring leader."
+                }
+              ],
+              "follow_up_reviews": [
+                {
+                  "text": "What were Jalen Brunson's total points over the last 3 games?",
+                  "verdict": "supported",
+                  "supporting_claim_ids": [],
+                  "supporting_evidence_ids": [],
+                  "reason": "This asks for a three-game total within the requested archive scope."
+                },
+                {
+                  "text": "Who had the most total points for the Knicks over the last 3 games?",
+                  "verdict": "supported",
+                  "supporting_claim_ids": [],
+                  "supporting_evidence_ids": [],
+                  "reason": "This asks for a team scoring comparison within the requested archive scope."
+                }
+              ]
+            },
+            "metadata": {
+              "id": "resp_0dae6db0b50645dc006ada22be108887d2801fc1558f1012bc",
+              "model": "gpt-6-luna",
+              "provider": null,
+              "protocol": "responses",
+              "usage": {
+                "prompt_tokens": 1647,
+                "completion_tokens": 380,
+                "total_tokens": 2027,
+                "completion_tokens_details": {
+                  "reasoning_tokens": 0
+                },
+                "cost": 0.0003547
+              },
+              "finish_reason": "stop",
+              "content_kind": "string",
+              "reasoning_chars": null,
+              "message_keys": [
+                "content",
+                "id",
+                "phase",
+                "role",
+                "status",
+                "type"
+              ],
+              "status": "completed",
+              "request_bytes": 7587,
+              "response_bytes": 2597,
+              "http_ttfb_ms": 3995.4,
+              "http_elapsed_ms": 3995.6,
+              "max_tokens": 3000
+            },
+            "latency_ms": 3996.0,
+            "requested_model": "gpt-6-luna"
+          }
+        ]
+      },
+      "comparisons-002#0": {
+        "base": [],
+        "head": [
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.0004262,
+            "metadata": {
+              "id": "resp_0a15944626cd13a7006ada22c2208887d2bd306027d744583a",
+              "model": "gpt-6-luna",
+              "provider": null,
+              "protocol": "responses",
+              "usage": {
+                "prompt_tokens": 1977,
+                "completion_tokens": 457,
+                "total_tokens": 2434,
+                "completion_tokens_details": {
+                  "reasoning_tokens": 0
+                },
+                "cost": 0.0004262
+              },
+              "finish_reason": "stop",
+              "content_kind": "string",
+              "reasoning_chars": null,
+              "message_keys": [
+                "content",
+                "id",
+                "phase",
+                "role",
+                "status",
+                "type"
+              ],
+              "status": "completed",
+              "request_bytes": 8585,
+              "response_bytes": 2746,
+              "http_ttfb_ms": 3922.1,
+              "http_elapsed_ms": 3922.4,
+              "max_tokens": 3000
+            },
+            "latency_ms": 3923.0,
+            "requested_model": "gpt-6-luna"
+          },
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.0004172,
+            "metadata": {
+              "id": "resp_0ded0d1cceb3095d006ada22c6192487d2a0ff58a1471b59dd",
+              "model": "gpt-6-luna",
+              "provider": null,
+              "protocol": "responses",
+              "usage": {
+                "prompt_tokens": 1977,
+                "completion_tokens": 439,
+                "total_tokens": 2416,
+                "completion_tokens_details": {
+                  "reasoning_tokens": 0
+                },
+                "cost": 0.0004172
+              },
+              "finish_reason": "stop",
+              "content_kind": "string",
+              "reasoning_chars": null,
+              "message_keys": [
+                "content",
+                "id",
+                "phase",
+                "role",
+                "status",
+                "type"
+              ],
+              "status": "completed",
+              "request_bytes": 8585,
+              "response_bytes": 2793,
+              "http_ttfb_ms": 4147.1,
+              "http_elapsed_ms": 4147.8,
+              "max_tokens": 3000
+            },
+            "latency_ms": 4148.2,
+            "requested_model": "gpt-6-luna"
+          },
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.0004222,
+            "metadata": {
+              "id": "resp_092f1315c29848ba006ada22ca144487d29bcaa3e582c7f406",
+              "model": "gpt-6-luna",
+              "provider": null,
+              "protocol": "responses",
+              "usage": {
+                "prompt_tokens": 1977,
+                "completion_tokens": 449,
+                "total_tokens": 2426,
+                "completion_tokens_details": {
+                  "reasoning_tokens": 0
+                },
+                "cost": 0.0004222
+              },
+              "finish_reason": "stop",
+              "content_kind": "string",
+              "reasoning_chars": null,
+              "message_keys": [
+                "content",
+                "id",
+                "phase",
+                "role",
+                "status",
+                "type"
+              ],
+              "status": "completed",
+              "request_bytes": 8585,
+              "response_bytes": 2699,
+              "http_ttfb_ms": 4437.5,
+              "http_elapsed_ms": 4437.8,
+              "max_tokens": 3000
+            },
+            "latency_ms": 4438.1,
+            "requested_model": "gpt-6-luna"
+          }
+        ]
+      },
+      "comparisons-004#0": {
+        "base": [],
+        "head": [
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.0001938,
+            "metadata": {
+              "id": "resp_0f3ed8d18a1abfcb006ada22ce7e6c87d2955de85562d32149",
+              "model": "gpt-6-luna",
+              "provider": null,
+              "protocol": "responses",
+              "usage": {
+                "prompt_tokens": 1238,
+                "completion_tokens": 140,
+                "total_tokens": 1378,
+                "completion_tokens_details": {
+                  "reasoning_tokens": 0
+                },
+                "cost": 0.0001938
+              },
+              "finish_reason": "stop",
+              "content_kind": "string",
+              "reasoning_chars": null,
+              "message_keys": [
+                "content",
+                "id",
+                "phase",
+                "role",
+                "status",
+                "type"
+              ],
+              "status": "completed",
+              "request_bytes": 6059,
+              "response_bytes": 1689,
+              "http_ttfb_ms": 2049.7,
+              "http_elapsed_ms": 2049.9,
+              "max_tokens": 3000
+            },
+            "latency_ms": 2050.2,
+            "requested_model": "gpt-6-luna"
+          },
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.0001938,
+            "metadata": {
+              "id": "resp_0797a0ad576bba78006ada22d0956887d29f80b7ab87207cf2",
+              "model": "gpt-6-luna",
+              "provider": null,
+              "protocol": "responses",
+              "usage": {
+                "prompt_tokens": 1238,
+                "completion_tokens": 140,
+                "total_tokens": 1378,
+                "completion_tokens_details": {
+                  "reasoning_tokens": 0
+                },
+                "cost": 0.0001938
+              },
+              "finish_reason": "stop",
+              "content_kind": "string",
+              "reasoning_chars": null,
+              "message_keys": [
+                "content",
+                "id",
+                "phase",
+                "role",
+                "status",
+                "type"
+              ],
+              "status": "completed",
+              "request_bytes": 6059,
+              "response_bytes": 1700,
+              "http_ttfb_ms": 1901.4,
+              "http_elapsed_ms": 1901.6,
+              "max_tokens": 3000
+            },
+            "latency_ms": 1902.0,
+            "requested_model": "gpt-6-luna"
+          },
+          {
+            "outcome": "accepted",
+            "causes": [],
+            "cost": 0.0001963,
+            "metadata": {
+              "id": "resp_03f28a9345f8c169006ada22d2f18887d28d930e54cce9403e",
+              "model": "gpt-6-luna",
+              "provider": null,
+              "protocol": "responses",
+              "usage": {
+                "prompt_tokens": 1238,
+                "completion_tokens": 145,
+                "total_tokens": 1383,
+                "completion_tokens_details": {
+                  "reasoning_tokens": 0
+                },
+                "cost": 0.0001963
+              },
+              "finish_reason": "stop",
+              "content_kind": "string",
+              "reasoning_chars": null,
+              "message_keys": [
+                "content",
+                "id",
+                "phase",
+                "role",
+                "status",
+                "type"
+              ],
+              "status": "completed",
+              "request_bytes": 6059,
+              "response_bytes": 1733,
+              "http_ttfb_ms": 2568.8,
+              "http_elapsed_ms": 2569.0,
+              "max_tokens": 3000
+            },
+            "latency_ms": 2569.2,
+            "requested_model": "gpt-6-luna"
+          }
+        ]
+      }
+    },
+    "cost_usd": 0.01613
+  },
+  "rates": {
+    "correct": {
+      "base": {
+        "answers": 14,
+        "trials": 3,
+        "rejected": 0,
+        "observations": 42,
+        "reject_rate": 0.0,
+        "outcomes": {},
+        "per_answer": {
+          "exact_statistics-001#0": [],
+          "exact_statistics-002#0": [],
+          "exact_statistics-003#0": [],
+          "exact_statistics-004#0": [],
+          "exact_statistics-005#0": [],
+          "exact_statistics-006#0": [],
+          "exact_statistics-007#0": [],
+          "exact_statistics-008#0": [],
+          "date_range_last_n-001#0": [],
+          "date_range_last_n-002#0": [],
+          "date_range_last_n-003#0": [],
+          "date_range_last_n-004#0": [],
+          "comparisons-002#0": [],
+          "comparisons-004#0": []
+        }
+      },
+      "head": {
+        "answers": 14,
+        "trials": 3,
+        "rejected": 2,
+        "observations": 42,
+        "reject_rate": 0.048,
+        "outcomes": {
+          "accepted": 40,
+          "verdict_rejected": 2
+        },
+        "per_answer": {
+          "exact_statistics-001#0": [
+            "accepted",
+            "accepted",
+            "accepted"
+          ],
+          "exact_statistics-002#0": [
+            "accepted",
+            "accepted",
+            "accepted"
+          ],
+          "exact_statistics-003#0": [
+            "accepted",
+            "accepted",
+            "accepted"
+          ],
+          "exact_statistics-004#0": [
+            "accepted",
+            "accepted",
+            "accepted"
+          ],
+          "exact_statistics-005#0": [
+            "accepted",
+            "accepted",
+            "accepted"
+          ],
+          "exact_statistics-006#0": [
+            "accepted",
+            "accepted",
+            "accepted"
+          ],
+          "exact_statistics-007#0": [
+            "accepted",
+            "accepted",
+            "accepted"
+          ],
+          "exact_statistics-008#0": [
+            "accepted",
+            "accepted",
+            "verdict_rejected"
+          ],
+          "date_range_last_n-001#0": [
+            "accepted",
+            "accepted",
+            "accepted"
+          ],
+          "date_range_last_n-002#0": [
+            "accepted",
+            "accepted",
+            "accepted"
+          ],
+          "date_range_last_n-003#0": [
+            "accepted",
+            "accepted",
+            "accepted"
+          ],
+          "date_range_last_n-004#0": [
+            "verdict_rejected",
+            "accepted",
+            "accepted"
+          ],
+          "comparisons-002#0": [
+            "accepted",
+            "accepted",
+            "accepted"
+          ],
+          "comparisons-004#0": [
+            "accepted",
+            "accepted",
+            "accepted"
+          ]
+        }
+      }
+    },
+    "wrong": {
+      "base": {
+        "answers": 3,
+        "trials": 3,
+        "rejected": 0,
+        "observations": 9,
+        "reject_rate": 0.0,
+        "outcomes": {},
+        "per_answer": {
+          "exact_statistics-010#0": [],
+          "date_range_last_n-006#0": [],
+          "date_range_last_n-008#0": []
+        }
+      },
+      "head": {
+        "answers": 3,
+        "trials": 3,
+        "rejected": 6,
+        "observations": 9,
+        "reject_rate": 0.667,
+        "outcomes": {
+          "verdict_rejected": 6,
+          "accepted": 3
+        },
+        "per_answer": {
+          "exact_statistics-010#0": [
+            "verdict_rejected",
+            "verdict_rejected",
+            "verdict_rejected"
+          ],
+          "date_range_last_n-006#0": [
+            "accepted",
+            "accepted",
+            "accepted"
+          ],
+          "date_range_last_n-008#0": [
+            "verdict_rejected",
+            "verdict_rejected",
+            "verdict_rejected"
+          ]
+        }
+      }
+    },
+    "causes": {
+      "head:span1:verdict_unsupported": 3,
+      "head:span1:verdict_insufficient_evidence": 5,
+      "head:span2:verdict_insufficient_evidence": 3
+    }
+  }
+}
