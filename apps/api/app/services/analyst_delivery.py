@@ -106,6 +106,14 @@ def render(
     # a refusal whose answer failed validation must not become one through its fallback.
     # A turn that delivered no verified claim (and no archive evidence) declined too.
     state["declined"] = refused or loop.model_refused or (not claims and not answer.evidence_ids)
+    # A refusal is not an accepted topic. A turn that was degraded for any other reason
+    # did resolve the question the user asked, so its topic and scope stay available to
+    # the next elliptical turn instead of falling back to an older one.
+    if not (refused or loop.model_refused):
+        if state.get("intent"):
+            state["last_topic"] = state["intent"]
+        if state.get("scope"):
+            state["last_scope"] = state["scope"]
     candidates = [loop.tools.candidates[ref] for ref in answer.fact_ids]
     used = {c.claim_id for c in claims}
     # Deterministic facts also count as delivered when they make it into a committed response.
