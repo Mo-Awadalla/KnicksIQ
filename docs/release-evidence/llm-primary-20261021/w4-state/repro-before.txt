@@ -47,4 +47,7 @@ REPRODUCED a failed repair call claims the model or budget was unavailable
 REPRODUCED an expired lease discards a completed turn and misreports a replay
   want commit=True after lease expiry, repeat commit=True
   got  commit=False, repeat=False
-REPRODUCED 4 of 16
+REPRODUCED refused turn's factual fallback overwrites the prior month
+  want declined=True, date_start=2025-12-02, 14 games
+  got  declined=False, answer='Jalen Brunson: 26.0 points per appearance across 74 observed', date_start=None, games=82
+REPRODUCED 5 of 17
