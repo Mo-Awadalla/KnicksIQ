@@ -104,6 +104,11 @@ Base accepted `7.94 -> 7.95` twice (the true value 7.9406 is 0.0094 away, outsid
 before any reviewer call. `mutations.json` reports
 `zero_head_acceptances: true`.
 
+Correction, 2026-10-22: head 0/64 is a selection-biased deterministic regression result.
+Text swaps were chosen only when the gate rejects them, and claim-value changes fail the
+structure check, so no head observation reached the model reviewer. It is not a reviewer
+false-acceptance rate; that rate is unmeasured. See `gate-mutations.md`.
+
 ## Files changed
 
 - `apps/api/app/services/analyst_review_checks.py` (new): span coverage criteria,
