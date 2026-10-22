@@ -7,12 +7,12 @@ from typing import TYPE_CHECKING, Any
 
 from app.services.analyst_fallback import (
     decline_text,
-    re_search_discovery,
+    fallback_text,
     re_search_live,
+    recovery_call,
 )
 from app.services.analyst_fallback import fallback_claims as select_fallback_claims
-from app.services.analyst_tool_registry import recovery_tool
-from app.services.evidence_contracts import ClaimUse, ProposedAnswer, ToolCall, VerifiedClaim
+from app.services.evidence_contracts import ClaimUse, ProposedAnswer, VerifiedClaim
 
 if TYPE_CHECKING:
     from app.services.analyst_loop import AnalystLoop
@@ -25,25 +25,9 @@ def fallback_claims(loop: AnalystLoop) -> list[VerifiedClaim]:
 async def fallback(loop: AnalystLoop, reason: str) -> dict[str, Any]:
     if not loop.fallback_claims() and not loop.recovery_ran and loop.remaining() > 0.5:
         loop.recovery_ran = True
-        question = loop.tools.question
-        spec = recovery_tool(
-            "discovery"
-            if re_search_discovery(question)
-            else "player"
-            if loop.tools.scope and loop.tools.scope.player_ids
-            else "team"
-        )
         try:
             async with asyncio.timeout(max(0.001, loop.remaining() - 0.5)):
-                loop.results.append(
-                    await loop.tools.execute(
-                        ToolCall(
-                            name=spec.name,
-                            question=question,
-                            aggregation=spec.recovery_aggregation,
-                        )
-                    )
-                )
+                loop.results.append(await loop.tools.execute(recovery_call(loop.tools)))
         except Exception:
             # Cancellation is a BaseException and intentionally propagates.
             pass
@@ -53,7 +37,7 @@ async def fallback(loop: AnalystLoop, reason: str) -> dict[str, Any]:
 def render_fallback(loop: AnalystLoop, reason: str) -> dict[str, Any]:
     claims = fallback_claims(loop)
     claims = claims[:6]
-    text = " ".join(c.statement for c in claims)
+    text = " ".join(fallback_text(c) for c in claims)
     if not text:
         text = decline_text(loop)
     answer = ProposedAnswer(
