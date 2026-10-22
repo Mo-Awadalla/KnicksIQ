@@ -1,0 +1,1125 @@
+{
+  "causes": {
+    "audit_label_only": "The recorded answer declines nothing: the audit spec verdict is static or its decline regex matched a hedge inside a substantive answer. Honest scorer passes.",
+    "wrong_tool": "The model chose a tool that cannot compute the requested population or split, so the answer states the split is unavailable.",
+    "fallback_rejected": "The reviewer rejected the proposed wording; the fallback had no claim family for the question shape and delivered a decline.",
+    "clarification": "A tool returned ambiguous_entity for a multi-game scope and the model asked which game instead of using the set.",
+    "prompt_hedge": "The model declined because the archive does not record the evaluative label (worst, decisive), although a tool computed the relevant observed extreme.",
+    "capability_gap": "No registered tool computes the requested metric or leader from the archive tables.",
+    "scope_resolution": "The resolver selected a population that does not match the question (a date range became a whole month).",
+    "resolution_wrong_player": "The resolver mapped a player name to a different player, so every player tool returned no observed appearances.",
+    "packing_claim_drops": "Required claims were dropped from the writer payload; the writer then said the data was absent."
+  },
+  "head_actions": {
+    "audit_label_only": "no code change: already passes the honest scorer",
+    "wrong_tool": "fixed: prefetch routes split/flow questions (f0fd729)",
+    "fallback_rejected": "fixed: split/flow/period fallback families (e08a83c)",
+    "clarification": "fixed for period/flow sets: prefetch runs the set tool (f0fd729)",
+    "prompt_hedge": "fixed: prompt permits tool-computed observed extremes (a7bf808)",
+    "capability_gap": "not fixed: needs a new tool, outside this worktree",
+    "scope_resolution": "not fixed: query_resolution, outside this worktree",
+    "resolution_wrong_player": "not fixed: query_resolution, outside this worktree",
+    "packing_claim_drops": "reduced: one flow call replaces discovery plus two flow calls"
+  },
+  "counts": {
+    "budget-16000.trial1": {
+      "audit_label_only": 7,
+      "clarification": 2,
+      "capability_gap": 5,
+      "prompt_hedge": 2,
+      "fallback_rejected": 2,
+      "resolution_wrong_player": 1,
+      "wrong_tool": 6,
+      "scope_resolution": 1,
+      "packing_claim_drops": 1
+    },
+    "budget-16000.trial2": {
+      "audit_label_only": 6,
+      "clarification": 2,
+      "capability_gap": 5,
+      "prompt_hedge": 1,
+      "fallback_rejected": 3,
+      "resolution_wrong_player": 1,
+      "wrong_tool": 6,
+      "scope_resolution": 1,
+      "packing_claim_drops": 1
+    }
+  },
+  "honest": {
+    "budget-16000.trial1": {
+      "pass": 10,
+      "audit_label_only:pass": 7,
+      "fail": 17,
+      "clarification:fail": 2,
+      "capability_gap:fail": 5,
+      "prompt_hedge:pass": 1,
+      "fallback_rejected:fail": 2,
+      "resolution_wrong_player:fail": 1,
+      "prompt_hedge:fail": 1,
+      "wrong_tool:pass": 1,
+      "wrong_tool:fail": 5,
+      "scope_resolution:fail": 1,
+      "packing_claim_drops:pass": 1
+    },
+    "budget-16000.trial2": {
+      "pass": 9,
+      "audit_label_only:pass": 6,
+      "fail": 17,
+      "clarification:fail": 2,
+      "capability_gap:fail": 5,
+      "prompt_hedge:fail": 1,
+      "fallback_rejected:fail": 3,
+      "resolution_wrong_player:fail": 1,
+      "wrong_tool:pass": 2,
+      "wrong_tool:fail": 4,
+      "scope_resolution:fail": 1,
+      "packing_claim_drops:pass": 1
+    }
+  },
+  "rows": [
+    {
+      "trial": "budget-16000.trial1",
+      "id": "single_game_narrative-001",
+      "category": "single_game_narrative",
+      "cause": "audit_label_only",
+      "addressed_by_head": false,
+      "note": "Answer traces the 14-point lead lost; the spec verdict is static and the 'does not establish' hedge is not a decline.",
+      "outcome": "validated",
+      "tools": [
+        "discover_facts",
+        "get_game_flow"
+      ],
+      "writer_claims_dropped": 3,
+      "missing_required_terms": [],
+      "audit_verdict_static": true,
+      "honest_pass": true,
+      "honest_failures": []
+    },
+    {
+      "trial": "budget-16000.trial1",
+      "id": "single_game_narrative-003",
+      "category": "single_game_narrative",
+      "cause": "audit_label_only",
+      "addressed_by_head": false,
+      "note": "Answer walks the Q4 scoring sequences; the spec verdict is static.",
+      "outcome": "validated",
+      "tools": [
+        "discover_facts",
+        "get_game_flow"
+      ],
+      "writer_claims_dropped": 1,
+      "missing_required_terms": [],
+      "audit_verdict_static": true,
+      "honest_pass": true,
+      "honest_failures": []
+    },
+    {
+      "trial": "budget-16000.trial1",
+      "id": "single_game_narrative-005",
+      "category": "single_game_narrative",
+      "cause": "clarification",
+      "addressed_by_head": true,
+      "note": "get_period_scoring returned ambiguous_entity for four CHA games; the model asked which game. The set report answers all four.",
+      "outcome": "validated",
+      "tools": [
+        "discover_facts",
+        "get_period_scoring"
+      ],
+      "writer_claims_dropped": 0,
+      "missing_required_terms": [],
+      "audit_verdict_static": true,
+      "honest_pass": false,
+      "honest_failures": [
+        "clarification",
+        "no_cited_claims"
+      ]
+    },
+    {
+      "trial": "budget-16000.trial1",
+      "id": "single_game_narrative-006",
+      "category": "single_game_narrative",
+      "cause": "capability_gap",
+      "addressed_by_head": false,
+      "note": "No tool returns the single closest game; the fallback declined in trial 1 and the trial-2 answer carried unbacked entities. Fifteen claims were dropped on the way.",
+      "outcome": "fallback:review_rejected",
+      "tools": [
+        "discover_facts",
+        "get_game_flow",
+        "get_game_flow"
+      ],
+      "writer_claims_dropped": 35,
+      "missing_required_terms": [],
+      "audit_verdict_static": true,
+      "honest_pass": false,
+      "honest_failures": [
+        "declined:field:degraded",
+        "not_substantive",
+        "no_cited_claims"
+      ]
+    },
+    {
+      "trial": "budget-16000.trial1",
+      "id": "single_game_narrative-008",
+      "category": "single_game_narrative",
+      "cause": "prompt_hedge",
+      "addressed_by_head": true,
+      "note": "Model declined because 'decisive' is not a recorded field, then gave the computed run sequence. Trial 1 already passes the honest scorer.",
+      "outcome": "validated_declined",
+      "tools": [
+        "discover_facts"
+      ],
+      "writer_claims_dropped": 0,
+      "missing_required_terms": [],
+      "audit_verdict_static": true,
+      "honest_pass": true,
+      "honest_failures": []
+    },
+    {
+      "trial": "budget-16000.trial1",
+      "id": "aliases_typos-005",
+      "category": "aliases_typos",
+      "cause": "fallback_rejected",
+      "addressed_by_head": true,
+      "note": "discover_facts plus two get_game_flow calls; the reviewer rejected the wording and the fallback had no flow family. Ten claims were dropped.",
+      "outcome": "fallback:review_rejected",
+      "tools": [
+        "discover_facts",
+        "get_game_flow",
+        "get_game_flow"
+      ],
+      "writer_claims_dropped": 30,
+      "missing_required_terms": [],
+      "audit_verdict_static": true,
+      "honest_pass": false,
+      "honest_failures": [
+        "declined:field:degraded",
+        "not_substantive",
+        "no_cited_claims"
+      ]
+    },
+    {
+      "trial": "budget-16000.trial1",
+      "id": "aliases_typos-007",
+      "category": "aliases_typos",
+      "cause": "clarification",
+      "addressed_by_head": true,
+      "note": "get_team_stats then get_period_scoring hit ambiguous_entity; the model asked which CHI game. Trial 2 reached the same point through the fallback.",
+      "outcome": "validated",
+      "tools": [
+        "get_team_stats",
+        "get_period_scoring"
+      ],
+      "writer_claims_dropped": 0,
+      "missing_required_terms": [],
+      "audit_verdict_static": true,
+      "honest_pass": false,
+      "honest_failures": [
+        "clarification",
+        "no_cited_claims"
+      ]
+    },
+    {
+      "trial": "budget-16000.trial1",
+      "id": "aliases_typos-008",
+      "category": "aliases_typos",
+      "cause": "resolution_wrong_player",
+      "addressed_by_head": false,
+      "note": "Scope resolved 'Mikal' to player 476 (Jaylen Wells); player and discovery tools returned no observed appearances.",
+      "outcome": "fallback:review_rejected",
+      "tools": [
+        "discover_facts",
+        "get_player_stats"
+      ],
+      "writer_claims_dropped": 0,
+      "missing_required_terms": [],
+      "audit_verdict_static": true,
+      "honest_pass": false,
+      "honest_failures": [
+        "not_validated",
+        "not_substantive",
+        "no_cited_claims"
+      ]
+    },
+    {
+      "trial": "budget-16000.trial1",
+      "id": "aliases_typos-010",
+      "category": "aliases_typos",
+      "cause": "prompt_hedge",
+      "addressed_by_head": true,
+      "note": "Model declined to rank 'worst collapse' and listed unrelated box scores; the flow tool computes the 19-point lead lost.",
+      "outcome": "validated_declined",
+      "tools": [
+        "discover_facts",
+        "get_game_flow",
+        "get_game_flow"
+      ],
+      "writer_claims_dropped": 20,
+      "missing_required_terms": [
+        "19"
+      ],
+      "audit_verdict_static": false,
+      "honest_pass": false,
+      "honest_failures": [
+        "unbacked_entities"
+      ]
+    },
+    {
+      "trial": "budget-16000.trial1",
+      "id": "comparisons-001",
+      "category": "comparisons",
+      "cause": "wrong_tool",
+      "addressed_by_head": true,
+      "note": "get_team_stats ran twice with only the home scope; the answer says road data is unavailable. The honest scorer still passes it.",
+      "outcome": "validated",
+      "tools": [
+        "get_team_stats",
+        "get_team_stats"
+      ],
+      "writer_claims_dropped": 0,
+      "missing_required_terms": [],
+      "audit_verdict_static": true,
+      "honest_pass": true,
+      "honest_failures": []
+    },
+    {
+      "trial": "budget-16000.trial1",
+      "id": "comparisons-003",
+      "category": "comparisons",
+      "cause": "wrong_tool",
+      "addressed_by_head": true,
+      "note": "get_team_stats ran twice; the model asserted the archive has no opponent splits, though games and team_game_stats hold both series.",
+      "outcome": "validated_declined",
+      "tools": [
+        "get_team_stats",
+        "get_team_stats"
+      ],
+      "writer_claims_dropped": 0,
+      "missing_required_terms": [],
+      "audit_verdict_static": true,
+      "honest_pass": false,
+      "honest_failures": [
+        "declined:phrase:decline",
+        "unbacked_numbers",
+        "unbacked_entities"
+      ]
+    },
+    {
+      "trial": "budget-16000.trial1",
+      "id": "comparisons-004",
+      "category": "comparisons",
+      "cause": "wrong_tool",
+      "addressed_by_head": true,
+      "note": "compare_windows requires a player baseline, so the model asked 'Which Knicks player?'. Team first/last windows belong to get_team_splits.",
+      "outcome": "fallback:review_rejected",
+      "tools": [
+        "compare_windows",
+        "get_team_stats"
+      ],
+      "writer_claims_dropped": 0,
+      "missing_required_terms": [],
+      "audit_verdict_static": true,
+      "honest_pass": false,
+      "honest_failures": [
+        "not_validated",
+        "unbacked_entities",
+        "no_cited_claims"
+      ]
+    },
+    {
+      "trial": "budget-16000.trial1",
+      "id": "comparisons-005",
+      "category": "comparisons",
+      "cause": "capability_gap",
+      "addressed_by_head": false,
+      "note": "No tool computes turnovers by game result; get_team_stats only has points and margin.",
+      "outcome": "validated_declined",
+      "tools": [
+        "get_team_stats",
+        "get_team_stats"
+      ],
+      "writer_claims_dropped": 0,
+      "missing_required_terms": [],
+      "audit_verdict_static": true,
+      "honest_pass": false,
+      "honest_failures": [
+        "declined:phrase:decline",
+        "unbacked_numbers"
+      ]
+    },
+    {
+      "trial": "budget-16000.trial1",
+      "id": "comparisons-006",
+      "category": "comparisons",
+      "cause": "capability_gap",
+      "addressed_by_head": false,
+      "note": "No tool computes bench production; discovery returned team totals.",
+      "outcome": "validated_declined",
+      "tools": [
+        "discover_facts"
+      ],
+      "writer_claims_dropped": 3,
+      "missing_required_terms": [],
+      "audit_verdict_static": true,
+      "honest_pass": false,
+      "honest_failures": [
+        "declined:phrase:decline"
+      ]
+    },
+    {
+      "trial": "budget-16000.trial1",
+      "id": "comparisons-009",
+      "category": "comparisons",
+      "cause": "audit_label_only",
+      "addressed_by_head": false,
+      "note": "Answer gives regular-season Q3/Q4 (28.96/28.24) and passes; the audit right answer is all-phase 29.02/27.89, so the spec verdict is not evidence of a decline.",
+      "outcome": "validated",
+      "tools": [
+        "get_period_scoring"
+      ],
+      "writer_claims_dropped": 0,
+      "missing_required_terms": [],
+      "audit_verdict_static": true,
+      "honest_pass": true,
+      "honest_failures": []
+    },
+    {
+      "trial": "budget-16000.trial1",
+      "id": "comparisons-010",
+      "category": "comparisons",
+      "cause": "capability_gap",
+      "addressed_by_head": false,
+      "note": "No tool computes shooting percentage; get_team_stats only has points and margin.",
+      "outcome": "validated_declined",
+      "tools": [
+        "get_team_stats"
+      ],
+      "writer_claims_dropped": 0,
+      "missing_required_terms": [],
+      "audit_verdict_static": true,
+      "honest_pass": false,
+      "honest_failures": [
+        "declined:phrase:decline",
+        "unbacked_numbers"
+      ]
+    },
+    {
+      "trial": "budget-16000.trial1",
+      "id": "date_range_last_n-005",
+      "category": "date_range_last_n",
+      "cause": "wrong_tool",
+      "addressed_by_head": true,
+      "note": "No split route ran; get_team_stats returned the season and the model said the archive has no break date. get_team_splits computes 18-9 in 27.",
+      "outcome": "validated_declined",
+      "tools": [
+        "get_team_stats",
+        "get_team_stats"
+      ],
+      "writer_claims_dropped": 0,
+      "missing_required_terms": [],
+      "audit_verdict_static": true,
+      "honest_pass": false,
+      "honest_failures": [
+        "declined:phrase:decline"
+      ]
+    },
+    {
+      "trial": "budget-16000.trial1",
+      "id": "date_range_last_n-007",
+      "category": "date_range_last_n",
+      "cause": "audit_label_only",
+      "addressed_by_head": false,
+      "note": "Answer states the correct 9.75 margin and passes; the verdict is static from an earlier declined response.",
+      "outcome": "validated",
+      "tools": [
+        "get_team_stats"
+      ],
+      "writer_claims_dropped": 0,
+      "missing_required_terms": [],
+      "audit_verdict_static": true,
+      "honest_pass": true,
+      "honest_failures": []
+    },
+    {
+      "trial": "budget-16000.trial1",
+      "id": "date_range_last_n-008",
+      "category": "date_range_last_n",
+      "cause": "capability_gap",
+      "addressed_by_head": false,
+      "note": "No tool returns the team scoring leader over a window; the fallback delivered team points (312) instead.",
+      "outcome": "fallback:review_rejected",
+      "tools": [
+        "discover_facts"
+      ],
+      "writer_claims_dropped": 2,
+      "missing_required_terms": [],
+      "audit_verdict_static": true,
+      "honest_pass": false,
+      "honest_failures": [
+        "not_validated"
+      ]
+    },
+    {
+      "trial": "budget-16000.trial1",
+      "id": "date_range_last_n-009",
+      "category": "date_range_last_n",
+      "cause": "scope_resolution",
+      "addressed_by_head": false,
+      "note": "Resolver read 'between March 1 and March 15' as the whole of March; the fallback answered 10-6 over 16 games. The audit right answer is 9 games.",
+      "outcome": "fallback:review_rejected",
+      "tools": [
+        "get_team_stats"
+      ],
+      "writer_claims_dropped": 0,
+      "missing_required_terms": [],
+      "audit_verdict_static": true,
+      "honest_pass": false,
+      "honest_failures": [
+        "not_validated"
+      ]
+    },
+    {
+      "trial": "budget-16000.trial1",
+      "id": "date_range_last_n-010",
+      "category": "date_range_last_n",
+      "cause": "wrong_tool",
+      "addressed_by_head": true,
+      "note": "The first-10 window is not resolved; get_team_stats returned the full season and the fallback answered 53-29.",
+      "outcome": "fallback:review_rejected",
+      "tools": [
+        "get_team_stats"
+      ],
+      "writer_claims_dropped": 0,
+      "missing_required_terms": [],
+      "audit_verdict_static": true,
+      "honest_pass": false,
+      "honest_failures": [
+        "not_validated"
+      ]
+    },
+    {
+      "trial": "budget-16000.trial1",
+      "id": "turning_points-001",
+      "category": "turning_points",
+      "cause": "wrong_tool",
+      "addressed_by_head": true,
+      "note": "discover_facts then two get_game_flow calls hit ambiguous_entity; the model called the play-by-play ambiguous. Trial 2 already passes.",
+      "outcome": "validated_declined",
+      "tools": [
+        "discover_facts",
+        "get_game_flow",
+        "get_game_flow"
+      ],
+      "writer_claims_dropped": 0,
+      "missing_required_terms": [],
+      "audit_verdict_static": true,
+      "honest_pass": false,
+      "honest_failures": [
+        "declined:phrase:decline"
+      ]
+    },
+    {
+      "trial": "budget-16000.trial1",
+      "id": "turning_points-003",
+      "category": "turning_points",
+      "cause": "fallback_rejected",
+      "addressed_by_head": true,
+      "note": "Only discover_facts ran; the reviewer rejected the wording and the fallback had no flow family. Trial 2 asked a clarification instead.",
+      "outcome": "fallback:review_rejected",
+      "tools": [
+        "discover_facts"
+      ],
+      "writer_claims_dropped": 0,
+      "missing_required_terms": [
+        "14"
+      ],
+      "audit_verdict_static": false,
+      "honest_pass": false,
+      "honest_failures": [
+        "declined:field:degraded",
+        "not_substantive",
+        "missing_turning_detail",
+        "no_cited_claims"
+      ]
+    },
+    {
+      "trial": "budget-16000.trial1",
+      "id": "turning_points-005",
+      "category": "turning_points",
+      "cause": "packing_claim_drops",
+      "addressed_by_head": true,
+      "note": "Flow claims were in the payload but 13 were dropped; the writer said no deficit data. The honest scorer passes it by answer length.",
+      "outcome": "validated_declined",
+      "tools": [
+        "discover_facts",
+        "get_game_flow",
+        "get_game_flow"
+      ],
+      "writer_claims_dropped": 33,
+      "missing_required_terms": [],
+      "audit_verdict_static": true,
+      "honest_pass": true,
+      "honest_failures": []
+    },
+    {
+      "trial": "budget-16000.trial1",
+      "id": "turning_points-007",
+      "category": "turning_points",
+      "cause": "audit_label_only",
+      "addressed_by_head": false,
+      "note": "Answer gives the 15-0 PHX run in the loss and the 17-0 BKN run overall; the verdict is static.",
+      "outcome": "validated",
+      "tools": [
+        "get_game_flow"
+      ],
+      "writer_claims_dropped": 1,
+      "missing_required_terms": [],
+      "audit_verdict_static": true,
+      "honest_pass": true,
+      "honest_failures": []
+    },
+    {
+      "trial": "budget-16000.trial1",
+      "id": "turning_points-008",
+      "category": "turning_points",
+      "cause": "audit_label_only",
+      "addressed_by_head": false,
+      "note": "Answer locates both 21-point deficits and passes; the verdict is static.",
+      "outcome": "validated",
+      "tools": [
+        "discover_facts",
+        "get_game_flow"
+      ],
+      "writer_claims_dropped": 4,
+      "missing_required_terms": [],
+      "audit_verdict_static": true,
+      "honest_pass": true,
+      "honest_failures": []
+    },
+    {
+      "trial": "budget-16000.trial1",
+      "id": "turning_points-009",
+      "category": "turning_points",
+      "cause": "audit_label_only",
+      "addressed_by_head": false,
+      "note": "Answer gives the 12-point comeback sequence; the verdict is static.",
+      "outcome": "validated",
+      "tools": [
+        "discover_facts",
+        "get_game_flow"
+      ],
+      "writer_claims_dropped": 1,
+      "missing_required_terms": [],
+      "audit_verdict_static": true,
+      "honest_pass": true,
+      "honest_failures": []
+    },
+    {
+      "trial": "budget-16000.trial2",
+      "id": "single_game_narrative-001",
+      "category": "single_game_narrative",
+      "cause": "audit_label_only",
+      "addressed_by_head": false,
+      "note": "Answer traces the 14-point lead lost; the spec verdict is static and the 'does not establish' hedge is not a decline.",
+      "outcome": "validated",
+      "tools": [
+        "discover_facts",
+        "get_game_flow"
+      ],
+      "writer_claims_dropped": 3,
+      "missing_required_terms": [],
+      "audit_verdict_static": true,
+      "honest_pass": true,
+      "honest_failures": []
+    },
+    {
+      "trial": "budget-16000.trial2",
+      "id": "single_game_narrative-003",
+      "category": "single_game_narrative",
+      "cause": "audit_label_only",
+      "addressed_by_head": false,
+      "note": "Answer walks the Q4 scoring sequences; the spec verdict is static.",
+      "outcome": "validated",
+      "tools": [
+        "discover_facts",
+        "get_game_flow"
+      ],
+      "writer_claims_dropped": 1,
+      "missing_required_terms": [],
+      "audit_verdict_static": true,
+      "honest_pass": true,
+      "honest_failures": []
+    },
+    {
+      "trial": "budget-16000.trial2",
+      "id": "single_game_narrative-005",
+      "category": "single_game_narrative",
+      "cause": "clarification",
+      "addressed_by_head": true,
+      "note": "get_period_scoring returned ambiguous_entity for four CHA games; the model asked which game. The set report answers all four.",
+      "outcome": "validated",
+      "tools": [
+        "discover_facts",
+        "get_period_scoring"
+      ],
+      "writer_claims_dropped": 0,
+      "missing_required_terms": [],
+      "audit_verdict_static": true,
+      "honest_pass": false,
+      "honest_failures": [
+        "clarification",
+        "no_cited_claims"
+      ]
+    },
+    {
+      "trial": "budget-16000.trial2",
+      "id": "single_game_narrative-006",
+      "category": "single_game_narrative",
+      "cause": "capability_gap",
+      "addressed_by_head": false,
+      "note": "No tool returns the single closest game; the fallback declined in trial 1 and the trial-2 answer carried unbacked entities. Fifteen claims were dropped on the way.",
+      "outcome": "validated_declined",
+      "tools": [
+        "discover_facts",
+        "get_game_flow",
+        "get_game_flow"
+      ],
+      "writer_claims_dropped": 29,
+      "missing_required_terms": [],
+      "audit_verdict_static": true,
+      "honest_pass": false,
+      "honest_failures": [
+        "unbacked_entities"
+      ]
+    },
+    {
+      "trial": "budget-16000.trial2",
+      "id": "single_game_narrative-008",
+      "category": "single_game_narrative",
+      "cause": "prompt_hedge",
+      "addressed_by_head": true,
+      "note": "Model declined because 'decisive' is not a recorded field, then gave the computed run sequence. Trial 1 already passes the honest scorer.",
+      "outcome": "validated_declined",
+      "tools": [
+        "discover_facts"
+      ],
+      "writer_claims_dropped": 0,
+      "missing_required_terms": [],
+      "audit_verdict_static": true,
+      "honest_pass": false,
+      "honest_failures": [
+        "declined:phrase:decline"
+      ]
+    },
+    {
+      "trial": "budget-16000.trial2",
+      "id": "aliases_typos-005",
+      "category": "aliases_typos",
+      "cause": "fallback_rejected",
+      "addressed_by_head": true,
+      "note": "discover_facts plus two get_game_flow calls; the reviewer rejected the wording and the fallback had no flow family. Ten claims were dropped.",
+      "outcome": "fallback:review_rejected",
+      "tools": [
+        "discover_facts",
+        "get_game_flow",
+        "get_game_flow"
+      ],
+      "writer_claims_dropped": 29,
+      "missing_required_terms": [],
+      "audit_verdict_static": true,
+      "honest_pass": false,
+      "honest_failures": [
+        "declined:field:degraded",
+        "not_substantive",
+        "no_cited_claims"
+      ]
+    },
+    {
+      "trial": "budget-16000.trial2",
+      "id": "aliases_typos-007",
+      "category": "aliases_typos",
+      "cause": "clarification",
+      "addressed_by_head": true,
+      "note": "get_team_stats then get_period_scoring hit ambiguous_entity; the model asked which CHI game. Trial 2 reached the same point through the fallback.",
+      "outcome": "fallback:review_rejected",
+      "tools": [
+        "get_team_stats",
+        "get_game_flow",
+        "get_period_scoring"
+      ],
+      "writer_claims_dropped": 12,
+      "missing_required_terms": [],
+      "audit_verdict_static": true,
+      "honest_pass": false,
+      "honest_failures": [
+        "not_validated"
+      ]
+    },
+    {
+      "trial": "budget-16000.trial2",
+      "id": "aliases_typos-008",
+      "category": "aliases_typos",
+      "cause": "resolution_wrong_player",
+      "addressed_by_head": false,
+      "note": "Scope resolved 'Mikal' to player 476 (Jaylen Wells); player and discovery tools returned no observed appearances.",
+      "outcome": "validated_declined",
+      "tools": [
+        "discover_facts"
+      ],
+      "writer_claims_dropped": 0,
+      "missing_required_terms": [],
+      "audit_verdict_static": true,
+      "honest_pass": false,
+      "honest_failures": [
+        "declined:phrase:decline",
+        "no_cited_claims"
+      ]
+    },
+    {
+      "trial": "budget-16000.trial2",
+      "id": "comparisons-001",
+      "category": "comparisons",
+      "cause": "wrong_tool",
+      "addressed_by_head": true,
+      "note": "get_team_stats ran twice with only the home scope; the answer says road data is unavailable. The honest scorer still passes it.",
+      "outcome": "validated",
+      "tools": [
+        "get_team_stats",
+        "get_team_splits"
+      ],
+      "writer_claims_dropped": 0,
+      "missing_required_terms": [],
+      "audit_verdict_static": true,
+      "honest_pass": true,
+      "honest_failures": []
+    },
+    {
+      "trial": "budget-16000.trial2",
+      "id": "comparisons-003",
+      "category": "comparisons",
+      "cause": "wrong_tool",
+      "addressed_by_head": true,
+      "note": "get_team_stats ran twice; the model asserted the archive has no opponent splits, though games and team_game_stats hold both series.",
+      "outcome": "validated_declined",
+      "tools": [
+        "get_team_stats",
+        "get_team_stats"
+      ],
+      "writer_claims_dropped": 0,
+      "missing_required_terms": [],
+      "audit_verdict_static": true,
+      "honest_pass": false,
+      "honest_failures": [
+        "declined:phrase:decline",
+        "unbacked_numbers",
+        "unbacked_entities"
+      ]
+    },
+    {
+      "trial": "budget-16000.trial2",
+      "id": "comparisons-004",
+      "category": "comparisons",
+      "cause": "wrong_tool",
+      "addressed_by_head": true,
+      "note": "compare_windows requires a player baseline, so the model asked 'Which Knicks player?'. Team first/last windows belong to get_team_splits.",
+      "outcome": "validated",
+      "tools": [
+        "compare_windows"
+      ],
+      "writer_claims_dropped": 0,
+      "missing_required_terms": [],
+      "audit_verdict_static": true,
+      "honest_pass": false,
+      "honest_failures": [
+        "clarification",
+        "no_cited_claims"
+      ]
+    },
+    {
+      "trial": "budget-16000.trial2",
+      "id": "comparisons-005",
+      "category": "comparisons",
+      "cause": "capability_gap",
+      "addressed_by_head": false,
+      "note": "No tool computes turnovers by game result; get_team_stats only has points and margin.",
+      "outcome": "validated_declined",
+      "tools": [
+        "get_team_stats",
+        "get_team_stats"
+      ],
+      "writer_claims_dropped": 0,
+      "missing_required_terms": [],
+      "audit_verdict_static": true,
+      "honest_pass": false,
+      "honest_failures": [
+        "declined:phrase:decline"
+      ]
+    },
+    {
+      "trial": "budget-16000.trial2",
+      "id": "comparisons-006",
+      "category": "comparisons",
+      "cause": "capability_gap",
+      "addressed_by_head": false,
+      "note": "No tool computes bench production; discovery returned team totals.",
+      "outcome": "validated_declined",
+      "tools": [
+        "discover_facts"
+      ],
+      "writer_claims_dropped": 3,
+      "missing_required_terms": [],
+      "audit_verdict_static": true,
+      "honest_pass": false,
+      "honest_failures": [
+        "declined:phrase:decline"
+      ]
+    },
+    {
+      "trial": "budget-16000.trial2",
+      "id": "comparisons-009",
+      "category": "comparisons",
+      "cause": "audit_label_only",
+      "addressed_by_head": false,
+      "note": "Answer gives regular-season Q3/Q4 (28.96/28.24) and passes; the audit right answer is all-phase 29.02/27.89, so the spec verdict is not evidence of a decline.",
+      "outcome": "validated",
+      "tools": [
+        "get_period_scoring"
+      ],
+      "writer_claims_dropped": 0,
+      "missing_required_terms": [],
+      "audit_verdict_static": true,
+      "honest_pass": true,
+      "honest_failures": []
+    },
+    {
+      "trial": "budget-16000.trial2",
+      "id": "comparisons-010",
+      "category": "comparisons",
+      "cause": "capability_gap",
+      "addressed_by_head": false,
+      "note": "No tool computes shooting percentage; get_team_stats only has points and margin.",
+      "outcome": "validated",
+      "tools": [
+        "get_team_stats"
+      ],
+      "writer_claims_dropped": 0,
+      "missing_required_terms": [],
+      "audit_verdict_static": true,
+      "honest_pass": false,
+      "honest_failures": [
+        "unbacked_numbers"
+      ]
+    },
+    {
+      "trial": "budget-16000.trial2",
+      "id": "date_range_last_n-005",
+      "category": "date_range_last_n",
+      "cause": "wrong_tool",
+      "addressed_by_head": true,
+      "note": "No split route ran; get_team_stats returned the season and the model said the archive has no break date. get_team_splits computes 18-9 in 27.",
+      "outcome": "validated_declined",
+      "tools": [
+        "get_team_stats",
+        "get_team_stats"
+      ],
+      "writer_claims_dropped": 0,
+      "missing_required_terms": [],
+      "audit_verdict_static": true,
+      "honest_pass": false,
+      "honest_failures": [
+        "declined:phrase:decline"
+      ]
+    },
+    {
+      "trial": "budget-16000.trial2",
+      "id": "date_range_last_n-007",
+      "category": "date_range_last_n",
+      "cause": "audit_label_only",
+      "addressed_by_head": false,
+      "note": "Answer states the correct 9.75 margin and passes; the verdict is static from an earlier declined response.",
+      "outcome": "validated",
+      "tools": [
+        "get_team_stats"
+      ],
+      "writer_claims_dropped": 0,
+      "missing_required_terms": [],
+      "audit_verdict_static": true,
+      "honest_pass": true,
+      "honest_failures": []
+    },
+    {
+      "trial": "budget-16000.trial2",
+      "id": "date_range_last_n-008",
+      "category": "date_range_last_n",
+      "cause": "capability_gap",
+      "addressed_by_head": false,
+      "note": "No tool returns the team scoring leader over a window; the fallback delivered team points (312) instead.",
+      "outcome": "fallback:review_rejected",
+      "tools": [
+        "discover_facts"
+      ],
+      "writer_claims_dropped": 2,
+      "missing_required_terms": [],
+      "audit_verdict_static": true,
+      "honest_pass": false,
+      "honest_failures": [
+        "not_validated"
+      ]
+    },
+    {
+      "trial": "budget-16000.trial2",
+      "id": "date_range_last_n-009",
+      "category": "date_range_last_n",
+      "cause": "scope_resolution",
+      "addressed_by_head": false,
+      "note": "Resolver read 'between March 1 and March 15' as the whole of March; the fallback answered 10-6 over 16 games. The audit right answer is 9 games.",
+      "outcome": "fallback:review_rejected",
+      "tools": [
+        "get_team_stats"
+      ],
+      "writer_claims_dropped": 0,
+      "missing_required_terms": [],
+      "audit_verdict_static": true,
+      "honest_pass": false,
+      "honest_failures": [
+        "not_validated"
+      ]
+    },
+    {
+      "trial": "budget-16000.trial2",
+      "id": "date_range_last_n-010",
+      "category": "date_range_last_n",
+      "cause": "wrong_tool",
+      "addressed_by_head": true,
+      "note": "The first-10 window is not resolved; get_team_stats returned the full season and the fallback answered 53-29.",
+      "outcome": "fallback:review_rejected",
+      "tools": [
+        "get_team_stats",
+        "get_team_stats"
+      ],
+      "writer_claims_dropped": 0,
+      "missing_required_terms": [],
+      "audit_verdict_static": true,
+      "honest_pass": false,
+      "honest_failures": [
+        "not_validated"
+      ]
+    },
+    {
+      "trial": "budget-16000.trial2",
+      "id": "turning_points-001",
+      "category": "turning_points",
+      "cause": "wrong_tool",
+      "addressed_by_head": true,
+      "note": "discover_facts then two get_game_flow calls hit ambiguous_entity; the model called the play-by-play ambiguous. Trial 2 already passes.",
+      "outcome": "validated",
+      "tools": [
+        "discover_facts",
+        "get_game_flow",
+        "get_game_flow"
+      ],
+      "writer_claims_dropped": 3,
+      "missing_required_terms": [],
+      "audit_verdict_static": true,
+      "honest_pass": true,
+      "honest_failures": []
+    },
+    {
+      "trial": "budget-16000.trial2",
+      "id": "turning_points-003",
+      "category": "turning_points",
+      "cause": "fallback_rejected",
+      "addressed_by_head": true,
+      "note": "Only discover_facts ran; the reviewer rejected the wording and the fallback had no flow family. Trial 2 asked a clarification instead.",
+      "outcome": "validated_declined",
+      "tools": [
+        "discover_facts"
+      ],
+      "writer_claims_dropped": 0,
+      "missing_required_terms": [
+        "14"
+      ],
+      "audit_verdict_static": false,
+      "honest_pass": false,
+      "honest_failures": [
+        "declined:structure:clarification",
+        "clarification",
+        "unbacked_numbers"
+      ]
+    },
+    {
+      "trial": "budget-16000.trial2",
+      "id": "turning_points-005",
+      "category": "turning_points",
+      "cause": "packing_claim_drops",
+      "addressed_by_head": true,
+      "note": "Flow claims were in the payload but 13 were dropped; the writer said no deficit data. The honest scorer passes it by answer length.",
+      "outcome": "validated_declined",
+      "tools": [
+        "discover_facts",
+        "get_game_flow",
+        "get_game_flow"
+      ],
+      "writer_claims_dropped": 20,
+      "missing_required_terms": [],
+      "audit_verdict_static": true,
+      "honest_pass": true,
+      "honest_failures": []
+    },
+    {
+      "trial": "budget-16000.trial2",
+      "id": "turning_points-007",
+      "category": "turning_points",
+      "cause": "audit_label_only",
+      "addressed_by_head": false,
+      "note": "Answer gives the 15-0 PHX run in the loss and the 17-0 BKN run overall; the verdict is static.",
+      "outcome": "validated",
+      "tools": [
+        "get_game_flow"
+      ],
+      "writer_claims_dropped": 1,
+      "missing_required_terms": [],
+      "audit_verdict_static": true,
+      "honest_pass": true,
+      "honest_failures": []
+    },
+    {
+      "trial": "budget-16000.trial2",
+      "id": "turning_points-008",
+      "category": "turning_points",
+      "cause": "fallback_rejected",
+      "addressed_by_head": true,
+      "note": "Reviewer rejected the wording; the fallback had no flow family and declined.",
+      "outcome": "fallback:review_rejected",
+      "tools": [
+        "discover_facts",
+        "get_game_flow"
+      ],
+      "writer_claims_dropped": 9,
+      "missing_required_terms": [],
+      "audit_verdict_static": true,
+      "honest_pass": false,
+      "honest_failures": [
+        "not_validated",
+        "missing_turning_detail"
+      ]
+    },
+    {
+      "trial": "budget-16000.trial2",
+      "id": "turning_points-009",
+      "category": "turning_points",
+      "cause": "audit_label_only",
+      "addressed_by_head": false,
+      "note": "Answer gives the 12-point comeback sequence; the verdict is static.",
+      "outcome": "validated",
+      "tools": [
+        "discover_facts",
+        "get_game_flow"
+      ],
+      "writer_claims_dropped": 1,
+      "missing_required_terms": [],
+      "audit_verdict_static": true,
+      "honest_pass": true,
+      "honest_failures": []
+    }
+  ]
+}
