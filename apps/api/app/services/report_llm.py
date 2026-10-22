@@ -61,6 +61,9 @@ class OpenAICompatibleLLMAdapter(LLMAdapter):
         response_format_json: bool = True,
         max_tokens: int = 500,
         reasoning_effort: str | None = None,
+        provider_order: list[str] | None = None,
+        provider_sort: str | None = "latency",
+        provider_allow_fallbacks: bool = True,
     ) -> None:
         self.base_url = base_url.rstrip("/")
         self.api_key = api_key
@@ -69,6 +72,9 @@ class OpenAICompatibleLLMAdapter(LLMAdapter):
         self.response_format_json = response_format_json
         self.max_tokens = max_tokens
         self.reasoning_effort = reasoning_effort
+        self.provider_order = list(provider_order or [])
+        self.provider_sort = provider_sort
+        self.provider_allow_fallbacks = provider_allow_fallbacks
         self.response_schema: dict[str, Any] | None = None
         self.last_metadata: dict[str, Any] = {}
 
@@ -91,7 +97,12 @@ class OpenAICompatibleLLMAdapter(LLMAdapter):
             # The configured OpenRouter account is allowed to use providers that
             # collect data. Keep fallbacks enabled, while requiring parameter
             # support below whenever a structured response is requested.
-            payload_body["provider"] = {"allow_fallbacks": True, "sort": "latency"}
+            provider: dict[str, Any] = {"allow_fallbacks": self.provider_allow_fallbacks}
+            if self.provider_sort and self.provider_sort != "none":
+                provider["sort"] = self.provider_sort
+            if self.provider_order:
+                provider["order"] = self.provider_order
+            payload_body["provider"] = provider
             if self.reasoning_effort is not None:
                 payload_body["reasoning"] = {"effort": self.reasoning_effort}
         if self.response_schema is not None:
@@ -211,6 +222,9 @@ def get_llm_adapter(*, response_format_json: bool = True) -> LLMAdapter:
         response_format_json=response_format_json,
         max_tokens=getattr(settings, "rag_generation_max_output_tokens", 500),
         reasoning_effort=settings.ai_reasoning_effort,
+        provider_order=getattr(settings, "openrouter_provider_order", []),
+        provider_sort=getattr(settings, "openrouter_provider_sort", "latency"),
+        provider_allow_fallbacks=getattr(settings, "openrouter_provider_allow_fallbacks", True),
     )
 
 
