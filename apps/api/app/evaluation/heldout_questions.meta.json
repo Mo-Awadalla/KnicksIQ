@@ -13,5 +13,7 @@
   "generated_by": "app/evaluation/build_heldout_set.py",
   "computed_from": "2025-26.20260928.1",
   "label_source": "database",
-  "tuning_policy": "Held-out set. Do not tune prompts, tools, thresholds or labels against individual items. The only permitted use is the aggregate scorer report and its per-question check output."
+  "tuning_policy": "Held-out set. Do not tune prompts, tools, thresholds or labels against individual items. The only permitted use is the aggregate scorer report and its per-question check output.",
+  "question_order_sha256": "132b99959e58aaffe17cc9759df04a1ca91639a2c45a92863529ba09dcdbb697",
+  "phase_policy": "Resolved from the question text: a specific game is that game; overall/including playoffs/all phases means every phase; a question naming both regular season and playoffs reports both; an explicit phase wins; an opponent question spans every phase; a date window is the window; a relative window spans every phase; otherwise the season-level default is the regular season. Player averages count only appearances (minutes > 0)."
 }

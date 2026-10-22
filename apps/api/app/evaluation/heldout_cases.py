@@ -1,10 +1,13 @@
 """Held-out analyst questions and their database-computed fact builders.
 
 Every fact comes from the active release at generation time. Never edit a fact by hand.
+The season phase is resolved from the question text by the policy table below; a fact
+builder receives that phase and never sees a response.
 """
 
 from __future__ import annotations
 
+import hashlib
 from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import date
@@ -16,8 +19,18 @@ from app.evaluation.heldout_facts import (
     avg_points,
     record,
 )
+from app.evaluation.heldout_phase import Phase, phase_games, season_type_for
 
-FactBuilder = Callable[[Archive], tuple[list[str], list[str], list[str]]]
+FactBuilder = Callable[[Archive, Phase], tuple[list[str], list[str], list[str]]]
+
+# The order in this file determines the generated ids. The digest stops a question text or
+# an order change from silently producing a different set; updating it is a visible diff.
+QUESTION_ORDER_SHA256 = "132b99959e58aaffe17cc9759df04a1ca91639a2c45a92863529ba09dcdbb697"
+
+
+def question_order_digest(cases: list[Case]) -> str:
+    payload = "".join(f"{case.category}\x1f{case.question}\n" for case in cases)
+    return hashlib.sha256(payload.encode()).hexdigest()
 
 
 @dataclass(frozen=True)
@@ -35,12 +48,39 @@ def one(value: float, places: int = 1) -> str:
     return f"{value:.{places}f}"
 
 
-def player_avg(archive: Archive, player: str, metric: str, **kwargs) -> str:
-    return one(archive.player_avg(player, metric, **kwargs), 2)
+def player_avg(
+    archive: Archive,
+    player: str,
+    metric: str,
+    phase: Phase,
+    *,
+    places: int = 2,
+    opponent: str | None = None,
+    window: int | None = None,
+    season_type: str | None = None,
+) -> str:
+    """A phase-scoped player average over observed appearances, formatted for a fact."""
+    season = season_type if season_type is not None else season_type_for(phase)
+    games = None
+    if window is not None:
+        games = archive.last(window, season_type=season)
+    if opponent is not None:
+        games = archive.select(opponent=opponent, season_type=season)
+    return one(archive.player_avg(player, metric, season_type=season, games=games), places)
 
 
-def games_vs(archive: Archive, opponent: str, season_type: str | None = None) -> list:
-    return archive.select(opponent=opponent, season_type=season_type)
+def player_total(archive: Archive, player: str, metric: str, phase: Phase) -> int:
+    return archive.player_total(player, metric, season_type=season_type_for(phase))
+
+
+def opponent_points(archive: Archive, opponent: str, phase: Phase) -> str:
+    games = archive.select(opponent=opponent, season_type=season_type_for(phase))
+    return one(avg_points(games), 2)
+
+
+def january_road_wins(archive: Archive, phase: Phase) -> int:
+    games = phase_games(archive, phase, start=date(2026, 1, 1), end=date(2026, 1, 31), site="away")
+    return record(games)[0]
 
 
 def quarter_text(
@@ -80,7 +120,7 @@ CASES: list[Case] = [
         "What was the Knicks' regular-season record?",
         "table_rag",
         True,
-        lambda a: team_case(a, a.select(season_type="regular"), "regular-season"),
+        lambda a, phase: team_case(a, phase_games(a, phase), "regular-season"),
         {"season_type": "regular"},
     ),
     Case(
@@ -88,7 +128,11 @@ CASES: list[Case] = [
         "How many points per game did New York average for the full season?",
         "table_rag",
         True,
-        lambda a: ([f"points per game {one(avg_points(a.select()), 2)}"], ["Knicks"], []),
+        lambda a, phase: (
+            [f"points per game {one(avg_points(phase_games(a, phase)), 2)}"],
+            ["Knicks"],
+            [],
+        ),
         {"window": "season"},
     ),
     Case(
@@ -96,8 +140,8 @@ CASES: list[Case] = [
         "What was the Knicks' average margin in the regular season?",
         "table_rag",
         True,
-        lambda a: (
-            [f"average margin {one(avg_margin(a.select(season_type='regular')), 2)}"],
+        lambda a, phase: (
+            [f"average margin {one(avg_margin(phase_games(a, phase)), 2)}"],
             ["Knicks"],
             [],
         ),
@@ -108,7 +152,11 @@ CASES: list[Case] = [
         "How many home games did the Knicks lose?",
         "table_rag",
         True,
-        lambda a: ([f"home losses {record(a.select(site='home'))[1]}"], ["Knicks"], []),
+        lambda a, phase: (
+            [f"home losses {record(phase_games(a, phase, site='home'))[1]}"],
+            ["Knicks"],
+            [],
+        ),
         {"site": "home"},
     ),
     Case(
@@ -116,8 +164,11 @@ CASES: list[Case] = [
         "How many total rebounds did Mitchell Robinson grab?",
         "table_rag",
         True,
-        lambda a: (
-            [f"Mitchell Robinson total rebounds {a.player_total('Mitchell Robinson', 'rebounds')}"],
+        lambda a, phase: (
+            [
+                "Mitchell Robinson total rebounds "
+                f"{player_total(a, 'Mitchell Robinson', 'rebounds', phase)}"
+            ],
             ["Mitchell Robinson"],
             [],
         ),
@@ -128,8 +179,11 @@ CASES: list[Case] = [
         "What was Miles McBride's assists average?",
         "table_rag",
         True,
-        lambda a: (
-            [f"Miles McBride assists per game {one(a.player_avg('Miles McBride', 'assists'))}"],
+        lambda a, phase: (
+            [
+                "Miles McBride assists per game "
+                f"{player_avg(a, 'Miles McBride', 'assists', phase, places=1)}"
+            ],
             ["Miles McBride"],
             [],
         ),
@@ -140,10 +194,10 @@ CASES: list[Case] = [
         "How many three-pointers did Landry Shamet make this season?",
         "table_rag",
         True,
-        lambda a: (
+        lambda a, phase: (
             [
                 "Landry Shamet three-pointers made "
-                f"{a.player_total('Landry Shamet', 'three_pointers_made')}"
+                f"{player_total(a, 'Landry Shamet', 'three_pointers_made', phase)}"
             ],
             ["Landry Shamet"],
             [],
@@ -155,8 +209,11 @@ CASES: list[Case] = [
         "What was Jordan Clarkson's scoring average?",
         "table_rag",
         True,
-        lambda a: (
-            [f"Jordan Clarkson points per game {one(a.player_avg('Jordan Clarkson', 'points'))}"],
+        lambda a, phase: (
+            [
+                "Jordan Clarkson points per game "
+                f"{player_avg(a, 'Jordan Clarkson', 'points', phase, places=1)}"
+            ],
             ["Jordan Clarkson"],
             [],
         ),
@@ -167,8 +224,8 @@ CASES: list[Case] = [
         "How many games did the Knicks win by at least 20 points?",
         "table_rag",
         True,
-        lambda a: (
-            [f"wins by 20 or more {sum(1 for g in a.games if g.margin >= 20)}"],
+        lambda a, phase: (
+            [f"wins by 20 or more {sum(1 for g in phase_games(a, phase) if g.margin >= 20)}"],
             ["Knicks"],
             [],
         ),
@@ -180,7 +237,9 @@ CASES: list[Case] = [
         "What was the Knicks' record over their final 8 regular-season games?",
         "table_rag",
         True,
-        lambda a: team_case(a, a.last(8, season_type="regular"), "final 8 regular-season"),
+        lambda a, phase: team_case(
+            a, a.last(8, season_type=season_type_for(phase)), "final 8 regular-season"
+        ),
         {"window": "last8_regular"},
     ),
     Case(
@@ -188,11 +247,14 @@ CASES: list[Case] = [
         "How many points did the Knicks allow per game in February?",
         "table_rag",
         True,
-        lambda a: (
+        lambda a, phase: (
             [
                 "points allowed per game "
                 + one(
-                    avg_opponent_points(a.select(start=date(2026, 2, 1), end=date(2026, 2, 28))), 2
+                    avg_opponent_points(
+                        phase_games(a, phase, start=date(2026, 2, 1), end=date(2026, 2, 28))
+                    ),
+                    2,
                 )
             ],
             ["Knicks"],
@@ -205,7 +267,9 @@ CASES: list[Case] = [
         "What was the Knicks' record in March?",
         "table_rag",
         True,
-        lambda a: team_case(a, a.select(start=date(2026, 3, 1), end=date(2026, 3, 31)), "March"),
+        lambda a, phase: team_case(
+            a, phase_games(a, phase, start=date(2026, 3, 1), end=date(2026, 3, 31)), "March"
+        ),
         {"month": "2026-03"},
     ),
     Case(
@@ -213,11 +277,8 @@ CASES: list[Case] = [
         "How many road games did the Knicks win in January?",
         "table_rag",
         True,
-        lambda a: (
-            [
-                "January road wins "
-                f"{record(a.select(start=date(2026, 1, 1), end=date(2026, 1, 31), site='away'))[0]}"
-            ],
+        lambda a, phase: (
+            [f"January road wins {january_road_wins(a, phase)}"],
             ["Knicks"],
             [],
         ),
@@ -228,10 +289,10 @@ CASES: list[Case] = [
         "What was Mitchell Robinson's rebounding average over his last 6 appearances?",
         "table_rag",
         True,
-        lambda a: (
+        lambda a, phase: (
             [
                 "Mitchell Robinson rebounds per game "
-                f"{one(a.player_avg('Mitchell Robinson', 'rebounds', games=a.last(6)), 2)}"
+                f"{player_avg(a, 'Mitchell Robinson', 'rebounds', phase, window=6)}"
             ],
             ["Mitchell Robinson"],
             [],
@@ -243,10 +304,10 @@ CASES: list[Case] = [
         "What was Miles McBride's scoring average in the 2025-26 playoffs?",
         "table_rag",
         True,
-        lambda a: (
+        lambda a, phase: (
             [
                 "Miles McBride playoff points per game "
-                f"{one(a.player_avg('Miles McBride', 'points', season_type='playoffs'), 2)}"
+                f"{player_avg(a, 'Miles McBride', 'points', phase)}"
             ],
             ["Miles McBride"],
             [],
@@ -258,10 +319,10 @@ CASES: list[Case] = [
         "How many games did the Knicks play in November?",
         "table_rag",
         True,
-        lambda a: (
+        lambda a, phase: (
             [
                 "games played in November "
-                f"{len(a.select(start=date(2025, 11, 1), end=date(2025, 11, 30)))}"
+                f"{len(phase_games(a, phase, start=date(2025, 11, 1), end=date(2025, 11, 30)))}"
             ],
             ["Knicks"],
             [],
@@ -273,7 +334,7 @@ CASES: list[Case] = [
         "What was the Knicks' record over their first 15 games?",
         "table_rag",
         True,
-        lambda a: team_case(a, a.first(15, season_type="regular"), "first 15"),
+        lambda a, phase: team_case(a, a.first(15, season_type=season_type_for(phase)), "first 15"),
         {"window": "first15_regular"},
     ),
     Case(
@@ -281,8 +342,8 @@ CASES: list[Case] = [
         "What was the Knicks' average margin over their last 7 games?",
         "table_rag",
         True,
-        lambda a: (
-            [f"average margin {one(avg_margin(a.last(7)), 2)}"],
+        lambda a, phase: (
+            [f"average margin {one(avg_margin(a.last(7, season_type=season_type_for(phase))), 2)}"],
             ["Knicks"],
             [],
         ),
@@ -294,10 +355,10 @@ CASES: list[Case] = [
         "Who averaged more points per game this season, Miles McBride or Landry Shamet?",
         "table_rag",
         True,
-        lambda a: (
+        lambda a, phase: (
             [
-                f"Miles McBride points per game {one(a.player_avg('Miles McBride', 'points'), 2)}",
-                f"Landry Shamet points per game {one(a.player_avg('Landry Shamet', 'points'), 2)}",
+                f"Miles McBride points per game {player_avg(a, 'Miles McBride', 'points', phase)}",
+                f"Landry Shamet points per game {player_avg(a, 'Landry Shamet', 'points', phase)}",
             ],
             ["Miles McBride", "Landry Shamet"],
             [],
@@ -309,12 +370,12 @@ CASES: list[Case] = [
         "Compare Mitchell Robinson and Ariel Hukporti as rebounders this season.",
         "table_rag",
         True,
-        lambda a: (
+        lambda a, phase: (
             [
                 "Mitchell Robinson rebounds per game "
-                f"{one(a.player_avg('Mitchell Robinson', 'rebounds'), 2)}",
+                f"{player_avg(a, 'Mitchell Robinson', 'rebounds', phase)}",
                 "Ariel Hukporti rebounds per game "
-                f"{one(a.player_avg('Ariel Hukporti', 'rebounds'), 2)}",
+                f"{player_avg(a, 'Ariel Hukporti', 'rebounds', phase)}",
             ],
             ["Mitchell Robinson", "Ariel Hukporti"],
             [],
@@ -326,10 +387,10 @@ CASES: list[Case] = [
         "Did the Knicks score more points per game at home or on the road?",
         "table_rag",
         True,
-        lambda a: (
+        lambda a, phase: (
             [
-                f"home points per game {one(avg_points(a.select(site='home')), 2)}",
-                f"road points per game {one(avg_points(a.select(site='away')), 2)}",
+                f"home points per game {one(avg_points(phase_games(a, phase, site='home')), 2)}",
+                f"road points per game {one(avg_points(phase_games(a, phase, site='away')), 2)}",
             ],
             ["Knicks"],
             [],
@@ -341,7 +402,7 @@ CASES: list[Case] = [
         "Compare the Knicks' regular-season and playoff records.",
         "table_rag",
         True,
-        lambda a: (
+        lambda a, phase: (
             [
                 f"regular-season record {record(a.select(season_type='regular'))[0]}-"
                 f"{record(a.select(season_type='regular'))[1]}",
@@ -358,12 +419,12 @@ CASES: list[Case] = [
         "Who had the higher assists average, Miles McBride or Landry Shamet?",
         "table_rag",
         True,
-        lambda a: (
+        lambda a, phase: (
             [
                 "Miles McBride assists per game "
-                f"{one(a.player_avg('Miles McBride', 'assists'), 2)}",
+                f"{player_avg(a, 'Miles McBride', 'assists', phase)}",
                 "Landry Shamet assists per game "
-                f"{one(a.player_avg('Landry Shamet', 'assists'), 2)}",
+                f"{player_avg(a, 'Landry Shamet', 'assists', phase)}",
             ],
             ["Miles McBride", "Landry Shamet"],
             [],
@@ -375,12 +436,12 @@ CASES: list[Case] = [
         "Compare Jordan Clarkson's regular-season and playoff scoring averages.",
         "table_rag",
         True,
-        lambda a: (
+        lambda a, phase: (
             [
                 "Jordan Clarkson regular-season points per game "
-                f"{one(a.player_avg('Jordan Clarkson', 'points', season_type='regular'), 2)}",
+                f"{player_avg(a, 'Jordan Clarkson', 'points', phase, season_type='regular')}",
                 "Jordan Clarkson playoff points per game "
-                f"{one(a.player_avg('Jordan Clarkson', 'points', season_type='playoffs'), 2)}",
+                f"{player_avg(a, 'Jordan Clarkson', 'points', phase, season_type='playoffs')}",
             ],
             ["Jordan Clarkson"],
             [],
@@ -392,10 +453,10 @@ CASES: list[Case] = [
         "Compare the Knicks' average margin at home and on the road.",
         "table_rag",
         True,
-        lambda a: (
+        lambda a, phase: (
             [
-                f"home average margin {one(avg_margin(a.select(site='home')), 2)}",
-                f"road average margin {one(avg_margin(a.select(site='away')), 2)}",
+                f"home average margin {one(avg_margin(phase_games(a, phase, site='home')), 2)}",
+                f"road average margin {one(avg_margin(phase_games(a, phase, site='away')), 2)}",
             ],
             ["Knicks"],
             [],
@@ -407,10 +468,10 @@ CASES: list[Case] = [
         "Which opponent did the Knicks score more points per game against, Detroit or Cleveland?",
         "table_rag",
         True,
-        lambda a: (
+        lambda a, phase: (
             [
-                f"Detroit points per game {one(avg_points(a.select(opponent='DET')), 2)}",
-                f"Cleveland points per game {one(avg_points(a.select(opponent='CLE')), 2)}",
+                f"Detroit points per game {opponent_points(a, 'DET', phase)}",
+                f"Cleveland points per game {opponent_points(a, 'CLE', phase)}",
             ],
             ["Knicks", "Detroit", "Cleveland"],
             [],
@@ -439,7 +500,7 @@ def _narrative_cases() -> list[Case]:
                 question,
                 "retrieval_rag",
                 True,
-                lambda a, game_id=game_id: game_case(a, game_id),
+                lambda a, phase, game_id=game_id: game_case(a, game_id),
                 {"game_id": game_id},
             )
         )
@@ -461,7 +522,7 @@ def _turning_cases() -> list[Case]:
     for game_id, question in games:
 
         def facts(
-            archive: Archive, game_id: int = game_id
+            archive: Archive, phase: Phase, game_id: int = game_id
         ) -> tuple[list[str], list[str], list[str]]:
             fact, phrases, _ = quarter_text(archive, game_id, worst=game_id == 52)
             return [fact], ["Knicks"], phrases
@@ -477,89 +538,3 @@ def _turning_cases() -> list[Case]:
             )
         )
     return cases
-
-
-ALIASES = [
-    (
-        "What was the Knickerbockers' record against the Heat in the regular season?",
-        lambda a: team_case(a, a.select(opponent="MIA", season_type="regular"), "Heat"),
-        {"opponent": "MIA"},
-    ),
-    (
-        "How did NYK fare aginst Cleveland this season?",
-        lambda a: team_case(a, a.select(opponent="CLE"), "Cleveland"),
-        {"opponent": "CLE"},
-    ),
-    (
-        "What did Mitch Rob average on the glass versus the Sixers?",
-        lambda a: (
-            [
-                "Mitchell Robinson rebounds per game "
-                f"{player_avg(a, 'Mitchell Robinson', 'rebounds', games=games_vs(a, 'PHI'))}"
-            ],
-            ["Mitchell Robinson"],
-            [],
-        ),
-        {"player": "Mitchell Robinson", "opponent": "PHI"},
-    ),
-    (
-        "How did Shamet score against the Spurs in the playoffs?",
-        lambda a: (
-            [
-                "Landry Shamet points per game "
-                f"{player_avg(a, 'Landry Shamet', 'points', games=games_vs(a, 'SAS', 'playoffs'))}"
-            ],
-            ["Landry Shamet"],
-            [],
-        ),
-        {"player": "Landry Shamet", "opponent": "SAS"},
-    ),
-    (
-        "How many points did the Knicks score per game v PHI?",
-        lambda a: (
-            [f"points per game {one(avg_points(a.select(opponent='PHI')), 2)}"],
-            ["Knicks"],
-            [],
-        ),
-        {"opponent": "PHI"},
-    ),
-    (
-        "How did Mitch Rob play against Detroit on February 6?",
-        lambda a: (
-            [
-                f"Mitchell Robinson {a.line('Mitchell Robinson', 52).points} points",
-                f"Mitchell Robinson {a.line('Mitchell Robinson', 52).rebounds} rebounds",
-            ],
-            ["Mitchell Robinson"],
-            [],
-        ),
-        {"player": "Mitchell Robinson", "game_id": 52},
-    ),
-    (
-        "What was the Knicks' result versus the Cavs on February 24?",
-        lambda a: (
-            [f"final score {a.game(59).knicks_points}-{a.game(59).opponent_points}"],
-            ["Knicks"],
-            [],
-        ),
-        {"game_id": 59},
-    ),
-    (
-        "How did the Knicks do against the Thunder?",
-        lambda a: team_case(a, a.select(opponent="OKC"), "Oklahoma City"),
-        {"opponent": "OKC"},
-    ),
-]
-
-UNSUPPORTED = [
-    "What is the betting spread for the Knicks' next game?",
-    "Is Miles McBride playing tonight?",
-    "Will the Knicks repeat as champions next season?",
-    "What seed will the Knicks get in 2026-27?",
-    "Who won the Knicks game last night?",
-    "What are the current Eastern Conference standings?",
-    "Should the Knicks trade for another center?",
-    "What was the score of the 1994 NBA Finals?",
-    "How many points will Brunson score tomorrow?",
-    "What does today's injury report say about Landry Shamet?",
-]

@@ -1,0 +1,161 @@
+[
+  {
+    "run": "final-run",
+    "id": "heldout-exact_statistics-002",
+    "direction": "gained",
+    "old_failures": [
+      "required_facts"
+    ],
+    "new_failures": [],
+    "old_required_facts": [
+      "points per game 116.34"
+    ],
+    "new_required_facts": [
+      "points per game 116.45"
+    ],
+    "answer": "New York averaged 116.45 points per game in the 2025-26 regular season (82 archived games).",
+    "reason": "Old fact was the all-phase 101-game average (116.34). The policy default is the regular season; the run states 116.45 over 82 games."
+  },
+  {
+    "run": "final-run",
+    "id": "heldout-exact_statistics-004",
+    "direction": "gained",
+    "old_failures": [
+      "required_facts"
+    ],
+    "new_failures": [],
+    "old_required_facts": [
+      "home losses 12"
+    ],
+    "new_required_facts": [
+      "home losses 10"
+    ],
+    "answer": "In the 2025-26 regular season, the Knicks lost 10 home games, across 40 archived home games (30 wins, 10 losses).",
+    "reason": "Old fact counted all-phase home losses (12 over 49). The regular-season population is 10 over 40; the run states 10."
+  },
+  {
+    "run": "final-run",
+    "id": "heldout-exact_statistics-006",
+    "direction": "gained",
+    "old_failures": [
+      "required_facts"
+    ],
+    "new_failures": [],
+    "old_required_facts": [
+      "Miles McBride assists per game 2.1"
+    ],
+    "new_required_facts": [
+      "Miles McBride assists per game 2.6"
+    ],
+    "answer": "Miles McBride averaged 2.6 assists per appearance across 41 observed appearances in the 2025-26 regular season.",
+    "reason": "Old fact was all-phase over every player row (2.1). The regular-season observed-appearance average is 2.6; the run states 2.6."
+  },
+  {
+    "run": "final-run",
+    "id": "heldout-exact_statistics-008",
+    "direction": "gained",
+    "old_failures": [
+      "required_facts"
+    ],
+    "new_failures": [],
+    "old_required_facts": [
+      "Jordan Clarkson points per game 7.0"
+    ],
+    "new_required_facts": [
+      "Jordan Clarkson points per game 8.6"
+    ],
+    "answer": "Jordan Clarkson averaged 8.6 points per appearance across 72 observed appearances in the 2025-26 regular season.",
+    "reason": "Old fact was all-phase over every player row (7.0). The regular-season observed-appearance average is 8.6; the run states 8.6."
+  },
+  {
+    "run": "final-run",
+    "id": "heldout-comparisons-001",
+    "direction": "gained",
+    "old_failures": [
+      "required_facts"
+    ],
+    "new_failures": [],
+    "old_required_facts": [
+      "Miles McBride points per game 9.80",
+      "Landry Shamet points per game 8.41"
+    ],
+    "new_required_facts": [
+      "Miles McBride points per game 11.98",
+      "Landry Shamet points per game 9.31"
+    ],
+    "answer": "In the 2025-26 regular season, Miles McBride averaged more points per appearance than Landry Shamet: 12.0 to 9.3. McBride's mark came across 41 observed appearances, while Shamet's came across 51.",
+    "reason": "Old facts were all-phase over every player row (9.80/8.41). Regular-season observed averages are 11.98/9.31; the run states 12.0/9.3."
+  },
+  {
+    "run": "final-run",
+    "id": "heldout-comparisons-002",
+    "direction": "gained",
+    "old_failures": [
+      "required_facts"
+    ],
+    "new_failures": [],
+    "old_required_facts": [
+      "Mitchell Robinson rebounds per game 7.90",
+      "Ariel Hukporti rebounds per game 1.93"
+    ],
+    "new_required_facts": [
+      "Mitchell Robinson rebounds per game 8.75",
+      "Ariel Hukporti rebounds per game 2.94"
+    ],
+    "answer": "In the 2025-26 regular season, Mitchell Robinson averaged 8.8 rebounds per appearance across 60 observed appearances, while Ariel Hukporti averaged 2.9 rebounds per appearance across 54 observed appearances. Robinson's per-appearance rebounding rate was roughly three times Hukporti's in this archive.",
+    "reason": "Old facts were all-phase over every player row (7.90/1.93). Regular-season observed averages are 8.75/2.94; the run states 8.8/2.9."
+  },
+  {
+    "run": "final-run",
+    "id": "heldout-comparisons-005",
+    "direction": "gained",
+    "old_failures": [
+      "required_facts"
+    ],
+    "new_failures": [],
+    "old_required_facts": [
+      "Miles McBride assists per game 2.11",
+      "Landry Shamet assists per game 1.23"
+    ],
+    "new_required_facts": [
+      "Miles McBride assists per game 2.59",
+      "Landry Shamet assists per game 1.41"
+    ],
+    "answer": "Miles McBride had the higher assists average in the 2025-26 regular season: 2.6 assists per appearance across 41 observed appearances, compared with Landry Shamet's 1.4 assists per appearance across 51 observed appearances.",
+    "reason": "Old facts were all-phase over every player row (2.11/1.23). Regular-season observed averages are 2.59/1.41; the run states 2.6/1.4."
+  },
+  {
+    "run": "final-run",
+    "id": "heldout-aliases_typos-003",
+    "direction": "gained",
+    "old_failures": [
+      "required_facts"
+    ],
+    "new_failures": [],
+    "old_required_facts": [
+      "Mitchell Robinson rebounds per game 6.62"
+    ],
+    "new_required_facts": [
+      "Mitchell Robinson rebounds per game 7.57"
+    ],
+    "answer": "Mitchell Robinson averaged 7.6 rebounds per appearance across 7 observed appearances versus the Sixers in the 2025-26 regular season and playoffs.",
+    "reason": "Phase is every phase under the opponent rule and did not change. The old label divided by 8 rows including a zero-minute DNP; the observed average is 7.57 and the run states 7.6."
+  },
+  {
+    "run": "baseline",
+    "id": "heldout-exact_statistics-004",
+    "direction": "lost",
+    "old_failures": [],
+    "new_failures": [
+      "required_facts"
+    ],
+    "old_required_facts": [
+      "home losses 12"
+    ],
+    "new_required_facts": [
+      "home losses 10"
+    ],
+    "answer": "The Knicks lost 12 home games in the available archive (49 archived home games).",
+    "reason": "The baseline response says 12 home losses, which was right under the old all-phase label and is wrong under the policy; the baseline loses this row."
+  }
+]
