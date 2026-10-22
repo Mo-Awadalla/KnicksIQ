@@ -174,11 +174,18 @@ All commands run in the worktree after `uv sync --all-packages --all-extras --de
    precision tolerance to exact equality, so a correctly rounded 116.3 or +2.8 against a
    full-precision claim is "unbacked". `followup_oracle.RECORD_PAIR` rejects a record at the
    end of a sentence because its lookahead forbids `.`. Reproduce:
-   `uv run --package knicksiq-api python -c "import sys;sys.path.insert(0,'tools/release');
-   from analyst_checks import _same_number; from followup_oracle import matches_record;
-   print(_same_number(116.3,116.28571428571429,'116.3',''));
-   print(matches_record('New York went 69-32.',69,32,101))"` prints `False False`; the same
-   calls with `'116.28571428571429'` or `'69-32 and'` print `True`. Affected turns are listed
+   ```
+   uv run --package knicksiq-api python - <<'EOF'
+   import sys
+   sys.path.insert(0, "tools/release")
+   from analyst_checks import _same_number
+   from followup_oracle import matches_record
+
+   print(_same_number(116.3, 116.28571428571429, "116.3", ""))   # False
+   print(matches_record("New York went 69-32.", 69, 32, 101))     # False
+   EOF
+   ```
+   The same calls with `"116.28571428571429"` or `"69-32 and"` print `True`. Affected turns are listed
    above. With both fixed the honest turn pass would be 100/128; the remaining non-artifact
    failures are the fallback/review cluster, the state bug, the aggregation miss, the two
    declines, the uncited date and the commit failure.
