@@ -1,0 +1,534 @@
+{
+  "tables": {
+    "heldout-60": {
+      "exact_statistics": {
+        "questions": 9,
+        "old": 1,
+        "new": 1
+      },
+      "date_range_last_n": {
+        "questions": 9,
+        "old": 1,
+        "new": 1
+      },
+      "comparisons": {
+        "questions": 8,
+        "old": 0,
+        "new": 0
+      },
+      "single_game_narrative": {
+        "questions": 8,
+        "old": 1,
+        "new": 1
+      },
+      "turning_points": {
+        "questions": 8,
+        "old": 0,
+        "new": 0
+      },
+      "aliases_typos": {
+        "questions": 8,
+        "old": 0,
+        "new": 0
+      },
+      "unsupported": {
+        "questions": 10,
+        "old": 1,
+        "new": 1
+      }
+    },
+    "budget-16000-trial1": {
+      "exact_statistics": {
+        "questions": 10,
+        "old": 9,
+        "new": 10
+      },
+      "date_range_last_n": {
+        "questions": 10,
+        "old": 6,
+        "new": 6
+      },
+      "comparisons": {
+        "questions": 10,
+        "old": 5,
+        "new": 5
+      },
+      "single_game_narrative": {
+        "questions": 10,
+        "old": 3,
+        "new": 3
+      },
+      "turning_points": {
+        "questions": 10,
+        "old": 4,
+        "new": 4
+      },
+      "aliases_typos": {
+        "questions": 10,
+        "old": 4,
+        "new": 4
+      },
+      "unsupported": {
+        "questions": 10,
+        "old": 4,
+        "new": 4
+      }
+    },
+    "budget-16000-trial2": {
+      "exact_statistics": {
+        "questions": 10,
+        "old": 8,
+        "new": 10
+      },
+      "date_range_last_n": {
+        "questions": 10,
+        "old": 6,
+        "new": 6
+      },
+      "comparisons": {
+        "questions": 10,
+        "old": 5,
+        "new": 6
+      },
+      "single_game_narrative": {
+        "questions": 10,
+        "old": 2,
+        "new": 2
+      },
+      "turning_points": {
+        "questions": 10,
+        "old": 4,
+        "new": 4
+      },
+      "aliases_typos": {
+        "questions": 10,
+        "old": 5,
+        "new": 5
+      },
+      "unsupported": {
+        "questions": 10,
+        "old": 5,
+        "new": 5
+      }
+    },
+    "w4-bench-trial1": {
+      "exact_statistics": {
+        "questions": 10,
+        "old": 6,
+        "new": 8
+      },
+      "date_range_last_n": {
+        "questions": 10,
+        "old": 6,
+        "new": 6
+      },
+      "comparisons": {
+        "questions": 10,
+        "old": 3,
+        "new": 3
+      },
+      "single_game_narrative": {
+        "questions": 10,
+        "old": 1,
+        "new": 1
+      },
+      "turning_points": {
+        "questions": 10,
+        "old": 5,
+        "new": 5
+      },
+      "aliases_typos": {
+        "questions": 10,
+        "old": 8,
+        "new": 8
+      },
+      "unsupported": {
+        "questions": 10,
+        "old": 7,
+        "new": 7
+      }
+    },
+    "w4-bench-trial2": {
+      "exact_statistics": {
+        "questions": 10,
+        "old": 7,
+        "new": 9
+      },
+      "date_range_last_n": {
+        "questions": 10,
+        "old": 8,
+        "new": 8
+      },
+      "comparisons": {
+        "questions": 10,
+        "old": 2,
+        "new": 2
+      },
+      "single_game_narrative": {
+        "questions": 10,
+        "old": 2,
+        "new": 2
+      },
+      "turning_points": {
+        "questions": 10,
+        "old": 4,
+        "new": 4
+      },
+      "aliases_typos": {
+        "questions": 10,
+        "old": 5,
+        "new": 5
+      },
+      "unsupported": {
+        "questions": 10,
+        "old": 7,
+        "new": 7
+      }
+    }
+  },
+  "followups": {
+    "before": {
+      "turns": 128,
+      "turn_passes": 90,
+      "session_passes": 24,
+      "session_runs": 54
+    },
+    "after": {
+      "turns": 128,
+      "turn_passes": 100,
+      "session_passes": 31,
+      "session_runs": 54
+    }
+  },
+  "changes": [
+    {
+      "source": "final/budget-16000.trial1",
+      "id": "exact_statistics-004",
+      "category": "exact_statistics",
+      "old": false,
+      "new": true,
+      "old_failures": [
+        "unbacked_numbers"
+      ],
+      "new_failures": [],
+      "old_unbacked": [
+        "6.33"
+      ],
+      "new_unbacked": [],
+      "reason": "6.33 is 6.329268292682927 rounded to 2dp",
+      "answer": "In the 2025-26 regular season, the Knicks' average margin was 6.33 points per game across 82 archived games."
+    },
+    {
+      "source": "final/budget-16000.trial2",
+      "id": "exact_statistics-003",
+      "category": "exact_statistics",
+      "old": false,
+      "new": true,
+      "old_failures": [
+        "unbacked_numbers"
+      ],
+      "new_failures": [],
+      "old_unbacked": [
+        "+6.33"
+      ],
+      "new_unbacked": [],
+      "reason": "+6.33 is 6.329268292682927 rounded to 2dp",
+      "answer": "In the 2025-26 regular season, the Knicks averaged 116.45 points per game across 82 archived games. They went 53-29 with an average margin of +6.33 points per game."
+    },
+    {
+      "source": "final/budget-16000.trial2",
+      "id": "exact_statistics-004",
+      "category": "exact_statistics",
+      "old": false,
+      "new": true,
+      "old_failures": [
+        "unbacked_numbers"
+      ],
+      "new_failures": [],
+      "old_unbacked": [
+        "+6.33"
+      ],
+      "new_unbacked": [],
+      "reason": "+6.33 is 6.329268292682927 rounded to 2dp",
+      "answer": "In the 2025-26 regular season, the Knicks' average margin was +6.33 points per game across 82 archived games."
+    },
+    {
+      "source": "final/budget-16000.trial2",
+      "id": "comparisons-010",
+      "category": "comparisons",
+      "old": false,
+      "new": true,
+      "old_failures": [
+        "unbacked_numbers"
+      ],
+      "new_failures": [],
+      "old_unbacked": [
+        "+16.25"
+      ],
+      "new_unbacked": [],
+      "reason": "+16.25 is 16.245283018867923 rounded to 2dp",
+      "answer": "The archive for this release contains only Knicks wins in the regular season (53 games, 0 losses), so there is no loss sample to compare shooting against. In those 53 wins, the Knicks averaged 121.75 points per game with a +16.25 average margin. Because no losses are present in the available data, a wins-vs-losses shooting comparison cannot be made."
+    },
+    {
+      "source": "w4-bench/trial1",
+      "id": "exact_statistics-003",
+      "category": "exact_statistics",
+      "old": false,
+      "new": true,
+      "old_failures": [
+        "unbacked_numbers"
+      ],
+      "new_failures": [],
+      "old_unbacked": [
+        "116.5",
+        "+6.3"
+      ],
+      "new_unbacked": [],
+      "reason": "116.5 is 116.45121951219512 rounded to 1dp; +6.3 is 6.329268292682927 rounded to 1dp",
+      "answer": "In the 2025-26 regular season, the Knicks averaged about 116.5 points per game across 82 archived games, with a per-game point margin of about +6.3."
+    },
+    {
+      "source": "w4-bench/trial1",
+      "id": "exact_statistics-004",
+      "category": "exact_statistics",
+      "old": false,
+      "new": true,
+      "old_failures": [
+        "unbacked_numbers"
+      ],
+      "new_failures": [],
+      "old_unbacked": [
+        "+6.33",
+        "116.5"
+      ],
+      "new_unbacked": [],
+      "reason": "+6.33 is 6.329268292682927 rounded to 2dp; 116.5 is 116.45121951219512 rounded to 1dp",
+      "answer": "In the 2025-26 regular season (archived games), the Knicks' average margin was +6.33 points per game across 82 games. That corresponds to 53 wins and 29 losses while averaging 116.5 points per game."
+    },
+    {
+      "source": "w4-bench/trial2",
+      "id": "exact_statistics-003",
+      "category": "exact_statistics",
+      "old": false,
+      "new": true,
+      "old_failures": [
+        "unbacked_numbers"
+      ],
+      "new_failures": [],
+      "old_unbacked": [
+        "+6.33"
+      ],
+      "new_unbacked": [],
+      "reason": "+6.33 is 6.329268292682927 rounded to 2dp",
+      "answer": "In the 2025-26 regular season archive, the Knicks averaged 116.45 points per game across 82 games (53-29 record), with an average margin of +6.33 points per game."
+    },
+    {
+      "source": "w4-bench/trial2",
+      "id": "exact_statistics-004",
+      "category": "exact_statistics",
+      "old": false,
+      "new": true,
+      "old_failures": [
+        "unbacked_numbers"
+      ],
+      "new_failures": [],
+      "old_unbacked": [
+        "+6.33"
+      ],
+      "new_unbacked": [],
+      "reason": "+6.33 is 6.329268292682927 rounded to 2dp",
+      "answer": "Over the 82 archived 2025-26 regular-season Knicks games, New York's average margin was about +6.33 points per game."
+    },
+    {
+      "source": "w4-followups",
+      "session": "phase_all_then_regular",
+      "trial": 2,
+      "turn": 1,
+      "category": "phase_change",
+      "old": "answer:value",
+      "new": "ok",
+      "old_honest": true,
+      "new_honest": true,
+      "old_expected": false,
+      "new_expected": true,
+      "old_unbacked": [],
+      "new_unbacked": [],
+      "reason": "record 69-32 over 101 accepted sentence-final",
+      "answer": "Across all 101 archived Knicks games in the 2025-26 release (regular season and playoffs combined), New York went 69-32. That sample includes 11,750 points scored and a total point margin of +802."
+    },
+    {
+      "source": "w4-followups",
+      "session": "team_ppg_home_away_playoffs",
+      "trial": 1,
+      "turn": 2,
+      "category": "home_road",
+      "old": "answer:value",
+      "new": "ok",
+      "old_honest": false,
+      "new_honest": true,
+      "old_expected": true,
+      "new_expected": true,
+      "old_unbacked": [
+        "+2.8"
+      ],
+      "new_unbacked": [],
+      "reason": "+2.8 is 2.8095238095238093 rounded to 1dp",
+      "answer": "On the road in the 2025-26 regular season archive, the Knicks averaged 114.0 points per game across 42 away games, with a 23-19 record and a +2.8 average margin per game."
+    },
+    {
+      "source": "w4-followups",
+      "session": "team_ppg_home_away_playoffs",
+      "trial": 2,
+      "turn": 2,
+      "category": "home_road",
+      "old": "answer:value",
+      "new": "ok",
+      "old_honest": false,
+      "new_honest": true,
+      "old_expected": true,
+      "new_expected": true,
+      "old_unbacked": [
+        "+2.8"
+      ],
+      "new_unbacked": [],
+      "reason": "+2.8 is 2.8095238095238093 rounded to 1dp",
+      "answer": "On the road in the 2025-26 regular season, the Knicks averaged 114.0 points per game across 42 archived games, with a 23-19 record and a +2.8 margin per game."
+    },
+    {
+      "source": "w4-followups",
+      "session": "team_month_switch",
+      "trial": 1,
+      "turn": 2,
+      "category": "window_change",
+      "old": "answer:value",
+      "new": "ok",
+      "old_honest": false,
+      "new_honest": true,
+      "old_expected": true,
+      "new_expected": true,
+      "old_unbacked": [
+        "+2.93"
+      ],
+      "new_unbacked": [],
+      "reason": "+2.93 is 2.933333333333333 rounded to 2dp",
+      "answer": "In January (archived games from Jan 2\u201330, 2026), the Knicks went 7\u20138 over 15 regular-season games, averaging 110.13 points per game with a margin of +2.93 per game."
+    },
+    {
+      "source": "w4-followups",
+      "session": "team_month_switch",
+      "trial": 2,
+      "turn": 1,
+      "category": "window_change",
+      "old": "answer:value",
+      "new": "ok",
+      "old_honest": false,
+      "new_honest": true,
+      "old_expected": true,
+      "new_expected": true,
+      "old_unbacked": [
+        "+5.2"
+      ],
+      "new_unbacked": [],
+      "reason": "+5.2 is 5.214285714285714 rounded to 1dp",
+      "answer": "In December (14 archived games), the Knicks averaged 122.1 points per game, going 10-4 with a +5.2 average margin."
+    },
+    {
+      "source": "w4-followups",
+      "session": "team_month_switch",
+      "trial": 2,
+      "turn": 2,
+      "category": "window_change",
+      "old": "answer:value",
+      "new": "ok",
+      "old_honest": false,
+      "new_honest": true,
+      "old_expected": true,
+      "new_expected": true,
+      "old_unbacked": [
+        "+2.9"
+      ],
+      "new_unbacked": [],
+      "reason": "+2.9 is 2.933333333333333 rounded to 1dp",
+      "answer": "In January (15 archived games), the Knicks went 7-8, averaged 110.1 points per game, and had a +2.9 average margin."
+    },
+    {
+      "source": "w4-followups",
+      "session": "team_margin",
+      "trial": 1,
+      "turn": 2,
+      "category": "metric_change",
+      "old": "answer:value",
+      "new": "ok",
+      "old_honest": false,
+      "new_honest": true,
+      "old_expected": true,
+      "new_expected": true,
+      "old_unbacked": [
+        "+5.2"
+      ],
+      "new_unbacked": [],
+      "reason": "+5.2 is 5.214285714285714 rounded to 1dp",
+      "answer": "In the same December, regular-season sample (14 archived games), the Knicks' average margin was +5.2 points per game, alongside 122.1 points per game and a 10-4 record."
+    },
+    {
+      "source": "w4-followups",
+      "session": "team_margin",
+      "trial": 2,
+      "turn": 2,
+      "category": "metric_change",
+      "old": "answer:value",
+      "new": "ok",
+      "old_honest": false,
+      "new_honest": true,
+      "old_expected": true,
+      "new_expected": true,
+      "old_unbacked": [
+        "+5.2"
+      ],
+      "new_unbacked": [],
+      "reason": "+5.2 is 5.214285714285714 rounded to 1dp",
+      "answer": "In those same archived December regular-season games (Dec. 2\u201331, 2025), the Knicks' average margin was +5.2 points per game across 14 games (10-4)."
+    },
+    {
+      "source": "w4-followups",
+      "session": "opponent_switch_team_stats",
+      "trial": 1,
+      "turn": 2,
+      "category": "opponent_switch",
+      "old": "answer:value",
+      "new": "ok",
+      "old_honest": false,
+      "new_honest": true,
+      "old_expected": true,
+      "new_expected": true,
+      "old_unbacked": [
+        "116.3",
+        "+10.3"
+      ],
+      "new_unbacked": [],
+      "reason": "116.3 is 116.28571428571429 rounded to 1dp; +10.3 is 10.285714285714286 rounded to 1dp",
+      "answer": "Against Cleveland in 2025-26, the Knicks went 6-1 across all 7 archived games (regular season 2-1, playoffs 4-0), averaging 116.3 points per game with an average margin of +10.3."
+    },
+    {
+      "source": "w4-followups",
+      "session": "opponent_switch_team_stats",
+      "trial": 2,
+      "turn": 2,
+      "category": "opponent_switch",
+      "old": "answer:value",
+      "new": "ok",
+      "old_honest": false,
+      "new_honest": true,
+      "old_expected": true,
+      "new_expected": true,
+      "old_unbacked": [
+        "116.3",
+        "+10.3"
+      ],
+      "new_unbacked": [],
+      "reason": "116.3 is 116.28571428571429 rounded to 1dp; +10.3 is 10.285714285714286 rounded to 1dp",
+      "answer": "Against Cleveland across all archived 2025-26 phases, the Knicks went 6-1 in 7 games, averaging 116.3 points per game with an average margin of +10.3. By phase, they were 2-1 in the regular season (3 games) and 4-0 in the playoffs (4 games)."
+    }
+  ],
+  "pass_to_fail": []
+}
