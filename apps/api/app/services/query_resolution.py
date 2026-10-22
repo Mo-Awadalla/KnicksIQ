@@ -50,6 +50,8 @@ class ResolvedQuery(BaseModel):
     date_start: date | None = None
     date_end: date | None = None
     relative_game_count: int | None = None
+    # "First 10 games" counts from the start of the scope; "last 10" from the end.
+    relative_from_start: bool = False
     periods: list[int] = Field(default_factory=list)
     season_type: Literal["regular", "play_in", "playoffs"] | None = None
     # The user asked for every phase; distinguishes None from "unspecified" for merges.
@@ -61,6 +63,13 @@ class ResolvedQuery(BaseModel):
     clarification_reason: str | None = None
     clarification_options: list[str] = Field(default_factory=list)
     data_version: str
+
+    def window[T](self, ordered: list[T]) -> list[T]:
+        """Apply the relative game window to a chronologically ordered list."""
+        count = self.relative_game_count
+        if not count:
+            return ordered
+        return ordered[:count] if self.relative_from_start else ordered[-count:]
 
     def retrieval_filters(self) -> dict[str, object]:
         filters: dict[str, object] = {
@@ -159,6 +168,7 @@ async def resolve_query(
     date_start, date_end = window.start, window.end
     explicit_dates = window.dates
     relative_count = window.relative_count
+    relative_from_start = window.relative_from_start
 
     named_phase = names_phase(question)
     reference = referenced_game(question, inherit, games)
@@ -169,6 +179,7 @@ async def resolve_query(
         relative_count = None
     elif inherit is not None and not named_window and not named_phase:
         relative_count = inherit.relative_game_count
+        relative_from_start = inherit.relative_from_start
         date_start = inherit.date_start
         date_end = inherit.date_end
     season_level = not (opponent_id or explicit_dates or relative_count or date_start or date_end)
@@ -311,9 +322,7 @@ async def resolve_query(
         resolved_game_ids = [reference.id]
     elif relative_count:
         selected = (
-            candidates[:relative_count]
-            if window.relative_from_start
-            else candidates[-relative_count:]
+            candidates[:relative_count] if relative_from_start else candidates[-relative_count:]
         )
         resolved_game_ids = [game.id for game in selected]
     elif descriptive_reference:
@@ -342,6 +351,7 @@ async def resolve_query(
         date_start=date_start,
         date_end=date_end,
         relative_game_count=relative_count,
+        relative_from_start=bool(relative_count) and relative_from_start,
         periods=periods,
         season_type=season_type,
         all_phases=phase.all_phases,
@@ -352,4 +362,23 @@ async def resolve_query(
         clarification_reason=clarification_reason,
         clarification_options=clarification_options,
         data_version=resolved_version,
+    )
+
+
+async def phrase_names_scope(db: AsyncSession, phrase: str, data_version: str | None) -> bool:
+    """True when "what about <phrase>" names a scope (site, phase, window, opponent,
+    metric) rather than an unknown subject, as in "What about at home?"."""
+    if names_phase(phrase):
+        return True
+    named = await resolve_query(db, phrase, intent="analyst", data_version=data_version)
+    return bool(
+        named.player_ids
+        or named.opponent_id
+        or named.home_away
+        or named.game_result
+        or named.date_start
+        or named.relative_game_count
+        or named.periods
+        or named.metric
+        or named.all_phases
     )

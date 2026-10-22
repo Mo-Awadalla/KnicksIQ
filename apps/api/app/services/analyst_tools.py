@@ -2,13 +2,11 @@
 
 from __future__ import annotations
 
-import asyncio
 import json
 import re
 import time
 from typing import Any
 
-from app.core.config import get_settings
 from app.models.box_score import PlayerGameStat
 from app.models.dataset_release import DatasetRelease
 from app.models.game import Game
@@ -17,14 +15,9 @@ from app.models.team import Team
 from app.services.analyst_calculations import METRICS
 from app.services.analyst_dispatch import execute_call
 from app.services.analyst_tool_registry import capability_data_types
-from app.services.archive_retrieval import (
-    fuse_archive_evidence,
-    search_archive_lexical,
-    search_archive_vectors,
-)
 from app.services.evidence_contracts import Candidate, Evidence, ToolCall, ToolResult, VerifiedClaim
 from app.services.query_game_scope import InheritedScope
-from app.services.query_resolution import ResolvedQuery, resolve_query
+from app.services.query_resolution import ResolvedQuery, phrase_names_scope, resolve_query
 from app.services.query_text import aggregation_of
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -131,6 +124,7 @@ class AnalystTools:
                 date_start=prior_scope.get("date_start"),
                 date_end=prior_scope.get("date_end"),
                 relative_game_count=prior_scope.get("relative_game_count"),
+                relative_from_start=bool(prior_scope.get("relative_from_start")),
                 game_ids=prior_scope.get("game_ids") or [],
                 periods=prior_scope.get("periods") or [],
             )
@@ -187,6 +181,7 @@ class AnalystTools:
             and not re.search(
                 r"\b(knicks|nyk|season|archive|team|playoff|game)\b", unknown_subject[1], re.I
             )
+            and not await phrase_names_scope(self.db, unknown_subject[1], self.release.version)
         ):
             self.scope = self.scope.model_copy(
                 update={
@@ -425,53 +420,3 @@ class AnalystTools:
                 message=f"{call.name} unavailable",
                 scope={"error_type": type(exc).__name__},
             )
-
-    async def search(self, call: ToolCall, scope: ResolvedQuery, games: list[Game]) -> ToolResult:
-        filters = scope.planner_filters()
-        filters["game_ids"] = [g.id for g in games]
-        lexical = await search_archive_lexical(
-            self.db,
-            query=call.question,
-            collections=["games", "box_scores", "reports", "possessions"],
-            filters=filters,
-            data_version=self.release.version,
-            limit=20,
-        )
-        dense, failure = [], False
-        if get_settings().rag_qdrant_enabled:
-            try:
-                dense = await asyncio.to_thread(
-                    search_archive_vectors,
-                    queries=[call.question],
-                    collections=["games", "box_scores", "reports", "possessions"],
-                    filters=filters,
-                    data_version=self.release.version,
-                    limit=20,
-                    candidate_limit=20,
-                )
-            except Exception:
-                failure = True
-        found = fuse_archive_evidence(lexical, dense, limit=20)
-        evidence = [
-            Evidence(
-                evidence_id=f"{self.release.version}:{e.evidence_id}",
-                release_id=self.release.version,
-                text=e.text,
-                game_id=e.metadata.get("game_id"),
-                source_name=e.metadata.get("source_name"),
-                source_url=e.metadata.get("source_url"),
-                metadata=e.metadata,
-            )
-            for e in found
-            if e.metadata.get("data_version") == self.release.version
-            and e.metadata.get("game_id") in {g.id for g in games}
-        ]
-        return ToolResult(
-            status=("incomplete_coverage" if failure else "ok")
-            if evidence
-            else ("dependency_failure" if failure else "no_matching_results"),
-            message="Retrieved examples only, never a season denominator. "
-            + ("Vector retrieval unavailable." if failure else ""),
-            evidence=evidence,
-            scope={"release": self.release.version, **filters},
-        )
