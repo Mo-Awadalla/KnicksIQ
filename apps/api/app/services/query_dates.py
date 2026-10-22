@@ -40,6 +40,7 @@ _MONTH_ALIASES = {
     "nov": 11,
     "dec": 12,
 }
+MONTH_WORDS = frozenset(_MONTH_ALIASES)
 
 
 class DateWindow(NamedTuple):

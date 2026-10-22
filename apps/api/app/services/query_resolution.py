@@ -11,7 +11,7 @@ from app.models.dataset_release import DatasetRelease
 from app.models.game import Game
 from app.models.game_event import GameEvent
 from app.models.player import Player
-from app.services.query_dates import date_window
+from app.services.query_dates import MONTH_WORDS, date_window
 from app.services.query_game_scope import InheritedScope, referenced_game
 from app.services.query_names import (
     resolve_player_mentions as _resolve_player_mentions,
@@ -27,6 +27,7 @@ from app.services.query_policy import (
     resolve_phase,
 )
 from app.services.query_text import (
+    METRIC_WORDS,
     is_explanation,
     is_record_request,
     metric_in_text,
@@ -365,20 +366,33 @@ async def resolve_query(
     )
 
 
+# Words a scope-only phrase may contain besides metric words, months and numbers.
+_SCOPE_WORDS = frozenset(
+    "a an and at the their them they his her its s on in of for during vs versus against "
+    "home road away playoff playoffs postseason regular season overall all phases phase "
+    "including play first last opening final next previous recent games game stretch "
+    "wins win losses loss won lost record per average total quarter quarters half halves "
+    "overtime ot 1st 2nd 3rd 4th third fourth before after since between from through "
+    "to until star break christmas month week weeks".split()
+)
+
+
 async def phrase_names_scope(db: AsyncSession, phrase: str, data_version: str | None) -> bool:
-    """True when "what about <phrase>" names a scope (site, phase, window, opponent,
-    metric) rather than an unknown subject, as in "What about at home?"."""
-    if names_phase(phrase):
-        return True
+    """True when "what about <phrase>" names a known subject or only moves scope.
+
+    A phrase that names a resolved player or opponent is a known subject. Otherwise every
+    word must be scope vocabulary, so "Nobody McFake's points" still counts as an
+    unknown subject even though "points" is a recognised metric.
+    """
     named = await resolve_query(db, phrase, intent="analyst", data_version=data_version)
-    return bool(
-        named.player_ids
-        or named.opponent_id
-        or named.home_away
-        or named.game_result
-        or named.date_start
-        or named.relative_game_count
-        or named.periods
-        or named.metric
-        or named.all_phases
-    )
+    if named.player_ids or named.opponent_id:
+        return True
+    leftover = {
+        word
+        for word in normalize(phrase).split()
+        if not word.isdigit()
+        and word not in _SCOPE_WORDS
+        and word not in METRIC_WORDS
+        and word not in MONTH_WORDS
+    }
+    return not leftover
