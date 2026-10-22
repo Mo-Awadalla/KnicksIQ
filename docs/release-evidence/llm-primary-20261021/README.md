@@ -29,6 +29,12 @@ latency and capacity figures in `latency/` and `cost/`, which were measured with
 | [final/relabel](final/relabel/) | Offline rescore of both held-out runs under phase-policy labels: baseline 4/60, final 29/60. This is a rescore of observed responses, not a fresh run, and `date_range_last_n-007` later drove a code fix, so the held-out set is no longer untouched. |
 | [final/gate](final/gate/) | Saved backend and web suite output for the integration head. |
 
+| [w3-resolve](w3-resolve/) | Player and date resolution sweeps: wrong-player resolutions 487 to 0 and wrong date windows 18 to 0 over 5,395 name cases and 27 date forms. |
+| [w3-followups](w3-followups/) | Multi-turn benchmark (27 sessions, 64 turns, SQL-computed expectations) and its offline scope audit: 7/27 to 27/27 sessions after the follow-up redesign. Live trials pending. |
+| [w3-declines](w3-declines/) | Causes of declined answerable questions and routing fixes; deterministic repro 11/73 to 73/73. Live score pending. |
+| [revids](revids/) | Reviewer "supported with no claim ids" handling: deterministic id attachment only when every number maps to exactly one declared claim. Live rate pending. |
+| [w3-revmeasure](w3-revmeasure/) | Reviewer false-acceptance harness: 21 wrong-answer cases in 7 classes, 18 still pass the unit-aware gate. Live measurement pending. |
+| [w3-routing](w3-routing/) | Configurable OpenRouter routing and the recorded per-upstream table (Together fastest, best validated). Pinned-vs-unpinned live arms pending. |
 The recap workstream is excluded. Its live measurement showed no gain over the base tree (6/20
 base versus 6/20 and 4/20 head), and the analyst input budget is the binding constraint, so it was
 not merged and has no directory here.
