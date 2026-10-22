@@ -62,6 +62,9 @@ async def execute_call(tools: AnalystTools, call: ToolCall) -> ToolResult:
         authoritative = getattr(tools.scope, key)
         if authoritative:
             scope = scope.model_copy(update={key: authoritative})
+    if tools.scope.all_phases:
+        # The model's rephrased question would re-default to the regular season.
+        scope = scope.model_copy(update={"season_type": None, "all_phases": True})
     if scope.periods and not spec.supports_periods:
         capable = [name for name in period_tool_names() if name != call.name]
         message = "This calculation does not support period-level scope."
