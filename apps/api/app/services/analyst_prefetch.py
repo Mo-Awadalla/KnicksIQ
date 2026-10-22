@@ -111,12 +111,11 @@ def split_requested(question: str, scope: ResolvedQuery | None) -> bool:
     home = bool(re.search(r"\bhome\b", question, re.I))
     away = bool(re.search(r"\b(?:road|away)\b", question, re.I))
     two_opponents = len(scope.team_ids) > 1
-    wins = bool(re.search(r"\bwins?\b", question, re.I))
-    losses = bool(re.search(r"\bloss(?:es)?\b", question, re.I))
+    # "What were their wins and losses?" is a record request, not a split; the record
+    # fallback already answers it and the model can still choose a split tool.
     return (
         (home and away)
         or two_opponents
-        or (wins and losses)
         or bool(_FIRST_WINDOW.search(question))
         or bool(_BREAK.search(question))
     )
