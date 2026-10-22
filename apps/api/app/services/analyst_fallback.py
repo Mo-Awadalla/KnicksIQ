@@ -9,7 +9,9 @@ from __future__ import annotations
 import re
 from typing import TYPE_CHECKING
 
-from app.services.evidence_contracts import ToolResult, VerifiedClaim
+from app.services.analyst_prefetch import flow_requested, period_requested, split_requested
+from app.services.analyst_tool_registry import recovery_tool
+from app.services.evidence_contracts import ToolCall, ToolResult, VerifiedClaim
 from app.services.query_resolution import is_record_request
 
 if TYPE_CHECKING:
@@ -21,6 +23,25 @@ _EXTREME = re.compile(
     re.I,
 )
 _RECORD = re.compile(r"\bhow many\b[^?.]*\b(?:wins?|losses?|games?)\b", re.I)
+_FLOW_CLAIM_METRICS = frozenset(
+    {
+        "biggest_run",
+        "biggest_run_in_loss",
+        "largest_deficit_erased",
+        "largest_comeback_run",
+        "largest_deficit_in_loss",
+        "largest_lead_lost",
+        "final_score",
+        "largest_lead",
+        "lead_changes",
+        "ties",
+        "decisive_run",
+        "deficit_erased",
+        "comeback_scoring",
+        "comeback_run",
+        "lead_lost",
+    }
+)
 
 
 def re_search_discovery(question: str) -> bool:
@@ -45,6 +66,16 @@ def _family(tools) -> str:
     scope = tools.scope
     if re_search_live(tools.question) or re_search_live(question):
         return "live"
+    # The same question shape that chose a specialized tool in prefetch chooses its
+    # claim family here. Without this, a reviewer rejection discards valid split, flow
+    # or period claims and delivers a decline for an answerable question.
+    for text in (tools.question, question):
+        if flow_requested(text):
+            return "flow"
+        if split_requested(text, scope):
+            return "splits"
+        if period_requested(text, scope):
+            return "periods"
     if re_search_discovery(question):
         return "discovery"
     if _EXTREME.search(question):
@@ -81,10 +112,14 @@ def fallback_claims(loop: AnalystLoop) -> list[VerifiedClaim]:
     """Only release/scope-matched facts that answer this question can answer a failed turn."""
     tools = loop.tools
     scope = tools.scope
+    if scope is None:
+        return []
+    family = _family(tools)
+    # A period-scoped question is answerable by the period tool; every other tool reports
+    # that scope as unsupported, so its claims cannot answer a failed turn.
     if (
-        scope is None
-        or scope.requires_clarification
-        or scope.periods
+        scope.requires_clarification
+        or (scope.periods and family != "periods")
         or tools.season != tools.release.season
         or any(
             season != tools.release.season
@@ -92,7 +127,6 @@ def fallback_claims(loop: AnalystLoop) -> list[VerifiedClaim]:
         )
     ):
         return []
-    family = _family(tools)
     if not family or family == "live":
         # No archived fact answers a live/current-date question.
         return []
@@ -145,6 +179,15 @@ def fallback_claims(loop: AnalystLoop) -> list[VerifiedClaim]:
                     and claim.metric_id.endswith(":extreme")
                     and claim_games <= expected_games
                 )
+            elif family == "flow":
+                relevant = claim.metric_id in _FLOW_CLAIM_METRICS and claim_games <= expected_games
+            elif family == "splits":
+                # get_team_splits deliberately widens a split question past the resolved
+                # scope (home plus road, both opponents), so its buckets are not required
+                # to be subsets of the scope's games.
+                relevant = claim.metric_id.startswith("team_splits:")
+            elif family == "periods":
+                relevant = claim.metric_id == "period_report"
             elif family == "player":
                 subject = {f"player:{pid}" for pid in scope.player_ids}
                 population = {
@@ -178,6 +221,36 @@ def fallback_claims(loop: AnalystLoop) -> list[VerifiedClaim]:
         if {c.metric_id for c in claims} != {"wins", "losses"}:
             return []
     return list({c.claim_id: c for c in claims}.values())
+
+
+def recovery_call(tools) -> ToolCall:
+    """The one tool a failed turn runs: the same question shape that picks a tool up front."""
+    scope = tools.scope
+    if period_requested(tools.question, scope):
+        return ToolCall(name="get_period_scoring", question=tools.question)
+    if flow_requested(tools.question):
+        return ToolCall(name="get_game_flow", question=tools.question)
+    if split_requested(tools.question, scope):
+        return ToolCall(name="get_team_splits", question=tools.question)
+    spec = recovery_tool(
+        "discovery"
+        if re_search_discovery(tools.question)
+        else "player"
+        if scope and scope.player_ids
+        else "team"
+    )
+    return ToolCall(
+        name=spec.name,
+        question=tools.question,
+        aggregation=spec.recovery_aggregation,
+    )
+
+
+def fallback_text(claim: VerifiedClaim) -> str:
+    """The sentence a fallback states; a period report carries its text in the value."""
+    if claim.metric_id == "period_report":
+        return str(claim.value)
+    return claim.statement
 
 
 def decline_text(loop: AnalystLoop) -> str:
