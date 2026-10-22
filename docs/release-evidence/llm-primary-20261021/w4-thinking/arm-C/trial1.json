@@ -1,0 +1,100 @@
+{
+  "scope": "meets_expectation now requires: not declined or clarification, validated delivery, substantive content, no unbacked number or entity, required facts present, no echo, and no unbacked causal hedge. claim_backed additionally requires cited claim values.",
+  "mode": "live",
+  "dataset": "/Users/mohamedawadalla/.local/share/knicksiq/worktrees/w4-thinking/apps/api/app/evaluation/questions.jsonl",
+  "questions": 30,
+  "old_meets_expectation": 14,
+  "meets_expectation": 16,
+  "claim_backed_meets_expectation": 16,
+  "delta": -2,
+  "by_answerable": {
+    "answerable": {
+      "questions": 25,
+      "old": 11,
+      "new": 11
+    },
+    "unsupported": {
+      "questions": 5,
+      "old": 3,
+      "new": 5
+    }
+  },
+  "survived": [
+    "exact_statistics-001",
+    "exact_statistics-002",
+    "exact_statistics-003",
+    "date_range_last_n-001",
+    "date_range_last_n-002",
+    "comparisons-003",
+    "single_game_narrative-001",
+    "aliases_typos-001",
+    "aliases_typos-002",
+    "aliases_typos-003",
+    "unsupported-001",
+    "unsupported-003",
+    "date_range_last_n-005",
+    "unsupported-004"
+  ],
+  "lost": [],
+  "gained": [
+    {
+      "id": "unsupported-002",
+      "failures": []
+    },
+    {
+      "id": "unsupported-006",
+      "failures": []
+    }
+  ],
+  "failure_counts": {
+    "not_validated": 11,
+    "no_cited_claims": 7,
+    "not_substantive": 4,
+    "declined": 3,
+    "clarification": 3
+  },
+  "by_category": {
+    "aliases_typos": {
+      "questions": 3,
+      "old": 3,
+      "new": 3,
+      "claim_backed": 3
+    },
+    "comparisons": {
+      "questions": 6,
+      "old": 1,
+      "new": 1,
+      "claim_backed": 1
+    },
+    "date_range_last_n": {
+      "questions": 5,
+      "old": 3,
+      "new": 3,
+      "claim_backed": 3
+    },
+    "exact_statistics": {
+      "questions": 3,
+      "old": 3,
+      "new": 3,
+      "claim_backed": 3
+    },
+    "single_game_narrative": {
+      "questions": 5,
+      "old": 1,
+      "new": 1,
+      "claim_backed": 1
+    },
+    "turning_points": {
+      "questions": 3,
+      "old": 0,
+      "new": 0,
+      "claim_backed": 0
+    },
+    "unsupported": {
+      "questions": 5,
+      "old": 3,
+      "new": 5,
+      "claim_backed": 5
+    }
+  }
+}
