@@ -98,3 +98,4 @@ docs/release-evidence/llm-primary-20261021/final/*.jsonl linguist-generated=true
 docs/release-evidence/llm-primary-20261021/final/*.json linguist-generated=true
 docs/release-evidence/llm-primary-20261021/final/audit-*/verdicts/*.jsonl linguist-generated=true
 docs/release-evidence/llm-primary-20261021/reviewer/gate-mutations-*.json linguist-generated=true
+docs/release-evidence/llm-primary-20261021/correctness/overall_followup_session*.json linguist-generated=true
