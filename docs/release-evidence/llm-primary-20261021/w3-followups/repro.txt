@@ -1,0 +1,37 @@
+REPRODUCED player switch loses window and metric
+  want relative_game_count=5, metric=points, 5 games
+  got  relative_game_count=None, metric=None, games=82
+REPRODUCED pronoun metric change loses month
+  want date_start=2025-12-02, date_end=2025-12-31, 14 games
+  got  date_start=None, date_end=None, games=82
+REPRODUCED elliptical playoff follow-up loses metric
+  want player_ids=[134], metric=points, season_type=playoffs
+  got  player_ids=[134], metric=None, season_type=playoffs
+REPRODUCED And overall? after a player window loses topic and metric
+  want topic=How many points did Brunson average over the last 5 games?, metric=points
+  got  topic='And overall?', metric=None
+REPRODUCED that game loses game_ids and phase
+  want game_ids=[101], season_type=None, 1 game
+  got  game_ids=[], season_type=regular, games=82
+REPRODUCED matchup follow-up drops any-phase scope
+  want season_type=None, 4 games
+  got  season_type=regular, games=2
+REPRODUCED what about an opponent asks for a player
+  want requires_clarification=False, opponent_id=CLE
+  got  requires_clarification=True, opponent_id=CLE, choices=['Ariel Hukporti', 'Dillon Jones', 'Guerschon Yabusele']
+REPRODUCED per game against an opponent asks which game
+  want requires_clarification=False, opponent_id=BOS, 4 games
+  got  requires_clarification=True, choices=['2025-10-24: BOS at NYK', '2025-12-02: NYK at BOS'], games=4
+REPRODUCED fallback answers a points-per-game question with wins and losses
+  want claims include points_per_game
+  got  claims=['wins', 'losses'], text='Knicks regular season wins: 30 over 40 archived games. Knicks regular season losses: 10 over 40 arch'
+REPRODUCED overall after a decline loses the record topic
+  want claims include wins and losses
+  got  claims=[], text="I can't answer that: verified archive facts are unavailable on this turn."
+REPRODUCED per game after a total keeps total aggregation and loses the month
+  want date_start=2025-12-02, 14 games, average request
+  got  date_start=None, games=82, prefetch=[('get_team_stats', 'total', 'ok')], text='Knicks regular season points per game: 116.45121951219512 over 82 archived games'
+REPRODUCED why follow-up loses the game and answers with a season record
+  want game_ids=[99], 1 game, answer mentions Spurs
+  got  game_ids=[], games=82, text='Knicks regular season wins: 53 over 82 archived games. Knicks regular season losses: 29 ov'
+REPRODUCED 12 of 12
