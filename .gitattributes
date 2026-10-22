@@ -110,3 +110,7 @@ docs/release-evidence/llm-primary-20261021/w3-revmeasure/summary.md linguist-gen
 # Follow-up session benchmark machine output.
 docs/release-evidence/llm-primary-20261021/w3-followups/*.json linguist-generated=true
 docs/release-evidence/llm-primary-20261021/w3-followups/*.txt linguist-generated=true
+
+# Reviewer citation probe: live/replay records and offline evaluation output.
+docs/release-evidence/llm-primary-20261021/revids/*.jsonl linguist-generated=true
+docs/release-evidence/llm-primary-20261021/revids/*.json linguist-generated=true
