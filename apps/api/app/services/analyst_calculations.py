@@ -101,11 +101,13 @@ def player(
         limitations = ["Only observed appearances in the available archive."]
         if did_not_appear:
             limitations.append(
-                f"No player row for archived game IDs {did_not_appear}; the player did not appear."
+                "The player did not appear in some selected games; those games are excluded."
             )
         if unknown:
             missing = True
-            limitations.append(f"No player rows at all for archived game IDs {unknown}.")
+            limitations.append(
+                "Some selected games lack all Knicks player rows; coverage is incomplete."
+            )
         name = rows[0][1].full_name
         unit = f"{metric} per appearance" if aggregation == "average" else metric
         statement = (

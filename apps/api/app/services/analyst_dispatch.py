@@ -5,6 +5,7 @@ from __future__ import annotations
 import re
 from typing import TYPE_CHECKING
 
+from app.services.analyst_calculations import METRICS
 from app.services.analyst_tool_registry import TOOLS_BY_NAME, period_tool_names
 from app.services.evidence_contracts import ToolResult
 from app.services.query_resolution import resolve_query
@@ -72,10 +73,23 @@ async def execute_call(tools: AnalystTools, call: ToolCall) -> ToolResult:
         "relative_game_count",
         "metric",
         "aggregation",
+        "requested_metrics",
+        "requested_aggregations",
     ):
         authoritative = getattr(tools.scope, key)
         if authoritative:
             update[key] = authoritative
+    if spec.reads_metric and len(tools.scope.requested_metrics) > 1:
+        selected_metric = call.metric or scope.metric
+        if selected_metric not in tools.scope.requested_metrics:
+            return ToolResult(
+                status="unsupported_metric_or_scope",
+                message="Choose one of the requested player metrics for this calculation.",
+                scope=tools.scope.model_dump(mode="json"),
+            )
+        update["metric"] = selected_metric
+    if len(tools.scope.requested_aggregations) > 1:
+        update["aggregation"] = call.aggregation
     if tools.scope.relative_game_count:
         # Size and direction are one window; never take one from the model's rephrasing.
         update["relative_from_start"] = tools.scope.relative_from_start
@@ -83,6 +97,12 @@ async def execute_call(tools: AnalystTools, call: ToolCall) -> ToolResult:
         # The call's game ids were selected inside a phase the user did not ask for.
         update["game_ids"] = []
     scope = scope.model_copy(update=update)
+    if spec.reads_metric and scope.metric is not None and scope.metric not in METRICS:
+        return ToolResult(
+            status="unsupported_metric_or_scope",
+            message="The requested metric is not a player box-score calculation.",
+            scope=scope.model_dump(mode="json"),
+        )
     if scope.periods and not spec.supports_periods:
         capable = [name for name in period_tool_names() if name != call.name]
         message = "This calculation does not support period-level scope."

@@ -165,6 +165,10 @@ def fallback_claims(loop: AnalystLoop) -> list[VerifiedClaim]:
     games = scope.window(games)
     expected_games = {g.id for g in games}
     wanted = _metric_family(tools.topic)
+    requested_metrics = set(scope.requested_metrics) or {scope.metric or "points"}
+    requested_aggregations = set(scope.requested_aggregations) or (
+        {scope.aggregation} if scope.aggregation else set()
+    )
     results = list(loop.results)
     if family in {"record", "matchup", "game"} and not scope.player_ids:
         # Revalidated prior totals are reusable only for the exact population.
@@ -231,11 +235,12 @@ def fallback_claims(loop: AnalystLoop) -> list[VerifiedClaim]:
                     and stat.minutes > 0
                     and stat.game_id in expected_games
                 }
-                metric = claim.metric_id.split(":")[0]
+                metric, _, aggregation = claim.metric_id.partition(":")
                 relevant = (
                     claim.subject_id in subject
                     and claim_games == population
-                    and metric == (scope.metric or "points")
+                    and metric in requested_metrics
+                    and (not requested_aggregations or aggregation in requested_aggregations)
                 )
             else:
                 metric = claim.metric_id
