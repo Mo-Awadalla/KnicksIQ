@@ -1,0 +1,39 @@
+{
+  "split": "heldout_v2",
+  "version": 1,
+  "count": 80,
+  "categories": {
+    "aliases_typos": 11,
+    "comparisons": 11,
+    "date_range_last_n": 12,
+    "exact_statistics": 12,
+    "single_game_narrative": 11,
+    "turning_points": 11,
+    "unsupported": 12
+  },
+  "follow_up_sessions": 10,
+  "follow_up_turns": 20,
+  "generated_by": "app/evaluation/heldout_v2/build.py",
+  "computed_from": "2025-26.20260928.1",
+  "label_source": "database",
+  "answer_contract": "docs/api.md (ANALYSIS_ANSWER_MODE=llm_primary)",
+  "tuning_policy": "Held-out set. Nobody tunes prompts, tools, thresholds, labels or routing against individual items. The only permitted use is one release run and its aggregate scorer report, including per-question check output for audit. Do not select examples, prompts or fixes from this set.",
+  "phase_policy": "Season-level questions use the regular season. A question naming playoffs, overall or all phases uses that phase. A question naming an opponent spans every phase unless it also names a phase. A date window uses the named dates; a relative window spans every phase. A specific game is that game. Player averages count only appearances with minutes > 0. Follow-up turns inherit the game established in their session context. Team nicknames are canonicalised before the shared policy runs, without changing the policy rules.",
+  "question_order_sha256": "897c693f9c978cfe2f68a05136cda75d4d74e37c3640bd352c0196f76d3ed9bd",
+  "follow_up_order_sha256": "4d540490faec3944430871bb37024a5ef4f935205fe4f2b214a19df423601448",
+  "combined_order_sha256": "a5dff7e0b3ae3b042115b3b2a83481a3dc0d2ceaedbc2d958894bccc980142be",
+  "creation_commit": "c419fe3d751469beeff472a1cdb7343106334775",
+  "set_commit": "ad0d40e88f5212d2611f15203668da19b3f5d004",
+  "files": {
+    "questions": "questions.jsonl",
+    "follow_ups": "follow_ups.jsonl",
+    "overlap_report": "overlap_report.json"
+  },
+  "notes": [
+    "No model labels. Every fact is computed from the active local release.",
+    "No live provider call was made while building or checking this set.",
+    "Questions, players, opponents and game ids are disjoint from questions.jsonl and heldout_questions.jsonl; the overlap report is mechanical and contains no question text.",
+    "creation_commit is the first commit that added the set; set_commit is the commit whose questions.jsonl and follow_ups.jsonl bytes match this file.",
+    "Run once at release. Do not tune on it."
+  ]
+}
