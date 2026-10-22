@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Rerun the replacement factual audit on the three recorded response sets.
+# Rerun the replacement factual audit on all five recorded response sets.
 # Requires the local restore container kiq-integrate-postgres-1 and psql.
 # Usage: ./run.sh
 set -euo pipefail
@@ -21,3 +21,5 @@ python3 audit.py ../final/budget-16000.trial2.responses.jsonl --out trial2 \
   --old ../final/audit-16000-trial2/verdicts --label "16000 trial 2"
 python3 audit.py ../correctness/acceptance.responses.jsonl --out acceptance \
   --old "$LEGACY/verdicts" --label "correctness acceptance"
+python3 audit.py ../w4-bench/trial1.responses.jsonl --out w4-trial1 --label "w4-bench trial 1"
+python3 audit.py ../w4-bench/trial2.responses.jsonl --out w4-trial2 --label "w4-bench trial 2"
