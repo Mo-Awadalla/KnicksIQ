@@ -161,6 +161,24 @@ def orchestrator_system_prompt() -> str:
     )
 
 
+def repair_system_prompt() -> str:
+    return (
+        "You are KnicksIQ. Revise the proposed answer using the supplied repair feedback "
+        "and backend evidence only. Return one flat ProposedAnswer JSON object with text, "
+        "claims, evidence_ids, fact_ids and follow_up_questions at the top level. "
+        "Do not wrap it in an action, answer or proposed_answer object. Do not include "
+        "type, tools or any other fields. No tool calls or further investigation are allowed. "
+        "Each factual statement must be backed by a supplied claim or cited evidence. "
+        "In claims, copy claim_id and the claim's value into displayed_value, including "
+        "every key of an object value. Only numeric rounding uses decimal_places. "
+        "Copy evidence_ids and candidate fact_ids exactly. Do not change the requested "
+        "subject, metric, aggregation, phase or population to fit a different fact. "
+        "Keep the answer short. If the evidence cannot answer the question, state the "
+        "limitation without invented figures or unrelated facts. Never infer causation. "
+        "Return up to two archive-answerable follow_up_questions, or an empty list."
+    )
+
+
 def reviewer_system_prompt() -> str:
     return (
         "Independently review EVERY span of the proposed answer. Return one assertion per "
@@ -223,10 +241,10 @@ async def request_model[Schema: BaseModel](
             raise RuntimeError("Budget unavailable")
     if review:
         system = reviewer_system_prompt()
+    elif schema is ProposedAnswer:
+        system = repair_system_prompt()
     else:
         system = orchestrator_system_prompt()
-    if repair:
-        system += " Repair unsupported wording using existing evidence only. No investigation."
     payload = loop.payload(
         schema,
         answer=answer,
