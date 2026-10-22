@@ -5,6 +5,7 @@ from __future__ import annotations
 import hashlib
 import json
 import re
+from decimal import Decimal
 from typing import TYPE_CHECKING, Any, Literal
 
 from app.services.analyst_tool_registry import TOOL_NAMES, TOOLS
@@ -284,6 +285,73 @@ def validate_structure(
     )
 
 
+def deterministic_claim_ids(
+    span: str,
+    answer: ProposedAnswer,
+    claims: dict[str, VerifiedClaim],
+) -> list[str]:
+    """Claim ids for the values a span states, only when every value is unambiguous.
+
+    This repairs a supported verdict whose citation list the reviewer dropped. It does not
+    weaken the contract:
+
+    - every number in the span must already be a supplied claim value or claim field, using
+      the deterministic gate's rounding and percent tolerance; an unknown number, or one that
+      only a receipt or capability explains, blocks the repair;
+    - a numeric value matching two claims the answer declared is ambiguous and stays uncited;
+    - a span with no declared numeric value stays uncited and therefore still fails closed;
+    - an unsupported verdict is never repaired;
+    - every returned id is a real backend claim with its own receipt, so the reviewer's
+      supported verdict still needs subject, metric, unit and scope to be right.
+
+    The reviewer's job stays judgment; this only restores a citation the model failed to copy.
+    """
+    from app.services.analyst_review_checks import number_tokens, trusted_numbers
+
+    declared: list[tuple[str, Decimal]] = []
+    for use in answer.claims:
+        claim = claims.get(use.claim_id)
+        if claim is None or isinstance(claim.value, bool):
+            continue
+        if isinstance(claim.value, (int, float)):
+            declared.append((claim.claim_id, Decimal(str(claim.value))))
+    if not declared:
+        return []
+    trusted = trusted_numbers(claims, {})
+    claim_values = [
+        Decimal(str(claim.value))
+        for claim in claims.values()
+        if isinstance(claim.value, (int, float)) and not isinstance(claim.value, bool)
+    ]
+
+    def explained(token: Any) -> bool:
+        if token.value in trusted:
+            return True
+        for value in claim_values:
+            if abs(token.value - value) <= token.tolerance:
+                return True
+            if token.percent and abs(token.value - value * 100) <= token.tolerance:
+                return True
+        return False
+
+    ids: list[str] = []
+    for token in number_tokens(span):
+        if not explained(token):
+            return []
+        matches = [
+            claim_id
+            for claim_id, value in declared
+            if token.value == value
+            or abs(token.value - value) <= token.tolerance
+            or (token.percent and abs(token.value - value * 100) <= token.tolerance)
+        ]
+        if len(matches) > 1:
+            return []
+        if matches:
+            ids.append(matches[0])
+    return list(dict.fromkeys(ids))
+
+
 def validate_review(
     review: AnswerReview,
     answer: ProposedAnswer,
@@ -301,18 +369,22 @@ def validate_review(
             return False
     elif "".join(item.text for item in review.assertions) != answer.text:
         return False
-    for item in review.assertions:
+    for index, item in enumerate(review.assertions):
         if item.verdict != "supported":
             return False
+        claim_ids = item.supporting_claim_ids
         # A supported verdict with a stale offending_text field is contradictory formatting;
         # the verdict is authoritative and numbers have already been checked mechanically.
         if item.assertion_type in {"factual", "interpretation"} and not (
-            item.supporting_claim_ids or item.supporting_evidence_ids
+            claim_ids or item.supporting_evidence_ids
         ):
-            return False
+            span = spans[index] if spans is not None else item.text
+            claim_ids = deterministic_claim_ids(span, answer, claims)
+            if not claim_ids:
+                return False
         # Any backend-issued claim may support a statement, including a baseline claim the
         # writer did not repeat in answer.claims. Invented ids still fail closed.
-        if not set(item.supporting_claim_ids) <= claims.keys():
+        if not set(claim_ids) <= claims.keys():
             return False
         if not set(item.supporting_evidence_ids) <= evidence.keys():
             return False
