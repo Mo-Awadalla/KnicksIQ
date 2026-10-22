@@ -177,6 +177,14 @@ DB_URL=postgresql+asyncpg://knicksiq:knicksiq@localhost:55500/knicksiq \
 ```
 Exit 0; `REPRODUCED 12 of 12`. Transcript in `repro.txt`.
 
+## Backend gate on this branch
+
+`TEST_MODE=true uv run pytest apps packages tools/report_audit -q`: 439 passed in 36.69s.
+`uv run ruff check apps packages migrations`: all checks passed.
+`uv run ruff format --check apps packages migrations`: 246 files already formatted.
+`uv run pyright apps packages migrations`: 0 errors, 0 warnings. The four new files also pass
+`ruff check` and `ruff format --check`.
+
 ## Pending live runs (blocked on provider credits)
 
 128 questions are required (64 turns x 2 trials), inside the 150-question budget. Redis db 8.
