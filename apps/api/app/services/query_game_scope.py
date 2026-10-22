@@ -11,7 +11,7 @@ from app.services.query_policy import names_phase
 from app.services.query_text import (
     is_explanation,
     is_record_request,
-    metric_in_text,
+    metrics_in_text,
     normalize,
     periods_in_text,
 )
@@ -81,7 +81,7 @@ def is_elliptical_follow_up(question: str, games: list[Game]) -> bool:
     if names_phase(question) or _SITE.search(question) or names_season_scope(question):
         return False
     return bool(
-        metric_in_text(question)
+        metrics_in_text(question)
         or periods_in_text(question)
         or _PERIOD.search(question)
         or _SCORE.search(question)
@@ -103,6 +103,8 @@ class InheritedScope(BaseModel):
     player_ids: list[int] = Field(default_factory=list)
     metric: str | None = None
     aggregation: Literal["average", "total"] | None = None
+    requested_metrics: list[str] = Field(default_factory=list)
+    requested_aggregations: list[Literal["average", "total"]] = Field(default_factory=list)
     season_type: Literal["regular", "play_in", "playoffs"] | None = None
     all_phases: bool = False
     home_away: Literal["home", "away"] | None = None
@@ -123,7 +125,7 @@ class InheritedScope(BaseModel):
         """
         if is_record_request(question) or is_explanation(question):
             return False
-        if metric_in_text(question) is not None:
+        if metrics_in_text(question):
             return False
         return set(scope.player_ids) == set(self.player_ids)
 

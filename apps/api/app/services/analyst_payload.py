@@ -42,15 +42,9 @@ def claim_view(claim: VerifiedClaim) -> dict[str, Any]:
 
 
 def review_claim_view(claim: VerifiedClaim) -> dict[str, Any]:
-    """Reviewer view: semantic fields only.
-
-    Eligibility policy and generic coverage caveats are writer context. They are not needed
-    to judge support and can push a four-claim answer past the reviewer input budget, which
-    used to abort the turn before any review happened.
-    """
+    """Keep factual coverage context, but omit the generic eligibility policy."""
     view = claim_view(claim)
     view.pop("eligibility", None)
-    view.pop("coverage_limitations", None)
     return view
 
 

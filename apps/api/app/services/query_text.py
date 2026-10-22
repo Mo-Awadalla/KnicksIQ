@@ -33,6 +33,9 @@ _METRICS = {
     "three": "three_pointers_made",
     "threes": "three_pointers_made",
 }
+_METRIC_PHRASE = re.compile(
+    r"\b(?:" + "|".join(re.escape(p) for p in sorted(_METRICS, key=len, reverse=True)) + r")\b"
+)
 _EXPLANATION = re.compile(r"^\s*(?:why|explain)\b|\bexplain\b", re.I)
 _AVERAGE_WORDS = re.compile(r"\b(?:average|averaged|averaging|avg|per game|ppg)\b", re.I)
 MONTHS = {
@@ -70,16 +73,9 @@ def is_record_request(question: str) -> bool:
 METRIC_WORDS = frozenset(word for phrase in _METRICS for word in phrase.split())
 
 
-def metric_in_text(question: str) -> str | None:
-    q = normalize(question)
-    return next(
-        (
-            metric
-            for phrase, metric in sorted(_METRICS.items(), key=lambda item: -len(item[0]))
-            if re.search(rf"\b{re.escape(phrase)}\b", q)
-        ),
-        None,
-    )
+def metrics_in_text(question: str) -> set[str]:
+    """All named metrics. A longer phrase owns its overlapping words."""
+    return {_METRICS[match[0]] for match in _METRIC_PHRASE.finditer(normalize(question))}
 
 
 # Each period phrase and the periods it names. Scope checks reuse the same table, so a
@@ -118,9 +114,10 @@ def is_explanation(question: str) -> bool:
     return bool(_EXPLANATION.search(question))
 
 
-def aggregation_of(question: str) -> Literal["average", "total"] | None:
+def aggregations_in_text(question: str) -> set[Literal["average", "total"]]:
+    values: set[Literal["average", "total"]] = set()
     if _AVERAGE_WORDS.search(question):
-        return "average"
+        values.add("average")
     if re.search(r"\btotal\b", question, re.I):
-        return "total"
-    return None
+        values.add("total")
+    return values

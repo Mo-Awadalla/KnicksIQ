@@ -22,7 +22,7 @@ from app.services.query_game_scope import (
     needs_many_games,
 )
 from app.services.query_resolution import ResolvedQuery, phrase_names_scope, resolve_query
-from app.services.query_text import aggregation_of
+from app.services.query_text import aggregations_in_text
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -117,12 +117,16 @@ class AnalystTools:
         if single_game and needs_many_games(self.question):
             self.followup = False
         followup = self.followup and bool(prior_topic or prior_scope)
+        prior_aggregations = aggregations_in_text(prior_topic)
+        prior_aggregation = next(iter(prior_aggregations)) if len(prior_aggregations) == 1 else None
         inherited = (
             InheritedScope(
                 topic=prior_topic,
                 player_ids=prior_scope.get("player_ids") or [],
                 metric=prior_scope.get("metric"),
-                aggregation=prior_scope.get("aggregation") or aggregation_of(prior_topic),
+                aggregation=prior_scope.get("aggregation") or prior_aggregation,
+                requested_metrics=prior_scope.get("requested_metrics") or [],
+                requested_aggregations=prior_scope.get("requested_aggregations") or [],
                 season_type=prior_scope.get("season_type"),
                 all_phases=bool(prior_scope.get("all_phases")),
                 home_away=prior_scope.get("home_away"),

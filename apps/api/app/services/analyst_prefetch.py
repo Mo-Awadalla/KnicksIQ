@@ -5,6 +5,7 @@ from __future__ import annotations
 import re
 from typing import TYPE_CHECKING, Literal, cast
 
+from app.services.analyst_calculations import METRICS
 from app.services.evidence_contracts import ToolCall
 from app.services.query_classifier import classify_query
 
@@ -190,6 +191,27 @@ def prefetch_calls(tools: AnalystTools) -> list[ToolCall]:
         return [ToolCall(name="get_game_flow", question=question)]
     if split_requested(question, scope):
         return [ToolCall(name="get_team_splits", question=question)]
+    if len(scope.player_ids) == 1 and (
+        len(scope.requested_metrics) > 1 or len(scope.requested_aggregations) > 1
+    ):
+        metrics = scope.requested_metrics or [scope.metric or "points"]
+        aggregations = scope.requested_aggregations or [scope.aggregation or "average"]
+        if (
+            not set(metrics) <= set(METRICS)
+            or len(metrics) * len(aggregations) > 6
+            or _COMPARATIVE.search(question)
+        ):
+            return []
+        return [
+            ToolCall(
+                name="get_player_stats",
+                question=question,
+                metric=cast("PlayerMetric", metric),
+                aggregation=aggregation,
+            )
+            for metric in metrics
+            for aggregation in aggregations
+        ]
     if scope.team_ids and not scope.player_ids and re.search(r"\bwhat happened\b", question, re.I):
         return [ToolCall(name="get_team_stats", question=question, aggregation="total")]
     if _SKIP.search(question):

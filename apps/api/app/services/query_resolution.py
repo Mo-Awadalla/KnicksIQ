@@ -32,10 +32,10 @@ from app.services.query_policy import (
 )
 from app.services.query_text import (
     METRIC_WORDS,
-    aggregation_of,
+    aggregations_in_text,
     is_explanation,
     is_record_request,
-    metric_in_text,
+    metrics_in_text,
     normalize,
     periods_in_text,
     without_period_phrases,
@@ -67,6 +67,8 @@ class ResolvedQuery(BaseModel):
     game_result: Literal["W", "L"] | None = None
     metric: str | None = None
     aggregation: Literal["average", "total"] | None = None
+    requested_metrics: list[str] = Field(default_factory=list)
+    requested_aggregations: list[Literal["average", "total"]] = Field(default_factory=list)
     requires_clarification: bool = False
     clarification_reason: str | None = None
     clarification_options: list[str] = Field(default_factory=list)
@@ -249,11 +251,20 @@ async def resolve_query(
     periods = periods_in_text(question)
     if not periods and inherit is not None:
         periods = inherit.periods
-    metric = metric_in_text(question)
+    named_metrics = metrics_in_text(question)
     if is_record_request(question) or is_explanation(question):
-        metric = None
-    elif metric is None and inherit is not None:
-        metric = inherit.metric
+        named_metrics = set()
+    elif not named_metrics and inherit is not None:
+        named_metrics = set(inherit.requested_metrics) or (
+            {inherit.metric} if inherit.metric else set()
+        )
+    metric = next(iter(named_metrics)) if len(named_metrics) == 1 else None
+    named_aggregations = aggregations_in_text(question)
+    if not named_aggregations and inherit is not None:
+        named_aggregations = set(inherit.requested_aggregations) or (
+            {inherit.aggregation} if inherit.aggregation else set()
+        )
+    aggregation = next(iter(named_aggregations)) if len(named_aggregations) == 1 else None
 
     candidates = [reference] if reference else games
     if inherited_games:
@@ -389,7 +400,9 @@ async def resolve_query(
         home_away=home_away,
         game_result=game_result,
         metric=metric,
-        aggregation=aggregation_of(question) or (inherit.aggregation if inherit else None),
+        aggregation=aggregation,
+        requested_metrics=sorted(named_metrics),
+        requested_aggregations=sorted(named_aggregations),
         requires_clarification=clarification_reason is not None,
         clarification_reason=clarification_reason,
         clarification_options=clarification_options,
