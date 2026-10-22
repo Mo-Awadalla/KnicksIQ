@@ -1,0 +1,197 @@
+{"environment": "development", "test_mode": false, "event": "knicksiq.api.starting", "level": "info", "timestamp": "2026-10-22T16:49:47.026848Z"}
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T16:49:59.571684Z"}
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T16:50:12.296577Z"}
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T16:50:20.142530Z"}
+phase_regular_overall_playoffs 1 ok ok ok True
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T16:50:31.877590Z"}
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T16:50:42.271841Z"}
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T16:50:50.430816Z"}
+record_home_road 1 ok ok ok True
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T16:51:02.326400Z"}
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T16:51:11.210517Z"}
+phase_all_then_regular 1 ok ok True
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T16:51:19.725263Z"}
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T16:51:29.812079Z"}
+phase_playoffs_then_overall 1 ok ok True
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T16:51:40.122308Z"}
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T16:51:56.915108Z"}
+including_playoffs 1 ok ok True
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T16:52:06.618091Z"}
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T16:52:16.206442Z"}
+home_phase_change 1 ok ok True
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T16:52:26.940618Z"}
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T16:52:35.050555Z"}
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T16:52:45.667528Z"}
+team_ppg_home_away_playoffs 1 ok ok ok True
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T16:52:51.809140Z"}
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T16:53:03.938055Z"}
+opponent_switch_record 1 pipeline:degraded ok False
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T16:53:17.657031Z"}
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T16:53:30.799996Z"}
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T16:53:42.384743Z"}
+opponent_phase_switch 1 ok ok ok True
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T16:53:52.192392Z"}
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T16:54:00.611546Z"}
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T16:54:09.970164Z"}
+opponent_home_road 1 ok ok ok True
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T16:54:20.265086Z"}
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T16:54:28.153736Z"}
+player_switch 1 ok ok True
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T16:54:32.910562Z"}
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T16:54:38.691801Z"}
+player_pronoun_metric 1 ok ok True
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T16:54:44.519995Z"}
+analyst_review_rejected request_id=ce81f577d1e44d2faba68d0b19a99c7c provider=None finish_reason=stop spans=1 empty_id_spans=0 attachable_spans=0 unsupported_spans=1
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T16:55:03.874147Z"}
+player_phase_change 1 ok ok True
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T16:55:09.383446Z"}
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T16:55:13.904963Z"}
+player_month_switch 1 ok pipeline:degraded False
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T16:55:21.969501Z"}
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T16:55:27.038495Z"}
+player_last5_to_month 1 ok ok True
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T16:55:33.409484Z"}
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T16:55:38.750757Z"}
+team_total_average 1 ok ok True
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T16:55:44.148265Z"}
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T16:55:48.332432Z"}
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T16:55:53.874756Z"}
+game_reference_chain 1 ok ok ok True
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T16:55:58.308727Z"}
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T16:56:04.392111Z"}
+game_why 1 ok answer:declined False
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T16:56:13.253396Z"}
+analyst_review_rejected request_id=16d8fa0b1c9347c5a35b73c683d5860e provider=None finish_reason=stop spans=4 empty_id_spans=0 attachable_spans=0 unsupported_spans=2
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T16:56:27.133277Z"}
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T16:56:33.511278Z"}
+betting_decline 1 ok pipeline:degraded ok False
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T16:56:39.079273Z"}
+analyst_review_rejected request_id=3bc7a0725fce434eb0cf15e207a68c17 provider=None finish_reason=stop spans=2 empty_id_spans=1 attachable_spans=0 unsupported_spans=1
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T16:56:51.208770Z"}
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T16:56:56.955975Z"}
+injury_decline 1 ok ok ok True
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T16:57:03.094776Z"}
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T16:57:07.307693Z"}
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T16:57:14.974789Z"}
+phase_after_player 1 ok ok ok True
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T16:57:21.435646Z"}
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T16:57:28.717873Z"}
+topic_overall_after_player 1 ok ok True
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T16:57:44.759632Z"}
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T16:57:54.988064Z"}
+team_month_switch 1 ok ok True
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T16:58:03.758072Z"}
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T16:58:15.583138Z"}
+team_margin 1 ok answer:value False
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T16:58:22.154579Z"}
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T16:58:32.947473Z"}
+opponent_switch_team_stats 1 ok ok True
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T16:58:37.547210Z"}
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T16:58:45.522790Z"}
+reverse_switch_topic 1 ok ok True
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T16:58:53.945227Z"}
+analyst_review_rejected request_id=1bdaac25558d4526aac542aebdf3a73e provider=None finish_reason=stop spans=4 empty_id_spans=0 attachable_spans=0 unsupported_spans=2
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T16:59:04.903322Z"}
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T16:59:11.684734Z"}
+decline_then_overall 1 ok pipeline:degraded ok False
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T16:59:21.158852Z"}
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T16:59:30.813329Z"}
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T16:59:39.761650Z"}
+phase_regular_overall_playoffs 2 ok ok ok True
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T16:59:50.380849Z"}
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T16:59:59.823047Z"}
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T17:00:08.427041Z"}
+record_home_road 2 ok ok ok True
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T17:00:19.496353Z"}
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T17:00:28.608311Z"}
+phase_all_then_regular 2 ok ok True
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T17:00:37.390550Z"}
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T17:00:45.884870Z"}
+phase_playoffs_then_overall 2 ok ok True
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T17:00:54.557941Z"}
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T17:01:10.585080Z"}
+including_playoffs 2 ok ok True
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T17:01:19.451090Z"}
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T17:01:28.045761Z"}
+home_phase_change 2 ok ok True
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T17:01:46.867039Z"}
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T17:01:55.718605Z"}
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T17:02:04.961932Z"}
+team_ppg_home_away_playoffs 2 ok ok ok True
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T17:02:15.693123Z"}
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T17:02:26.495530Z"}
+opponent_switch_record 2 ok answer:value False
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T17:02:38.705560Z"}
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T17:02:46.606893Z"}
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T17:02:57.808291Z"}
+opponent_phase_switch 2 ok ok ok True
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T17:03:09.796292Z"}
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T17:03:24.924336Z"}
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T17:03:37.887256Z"}
+opponent_home_road 2 ok ok ok True
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T17:03:46.949053Z"}
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T17:03:53.941864Z"}
+player_switch 2 ok ok True
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T17:03:59.530636Z"}
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T17:04:04.956030Z"}
+player_pronoun_metric 2 ok ok True
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T17:04:10.495978Z"}
+analyst_review_rejected request_id=359ea01c906543678128c0fa643dcd97 provider=None finish_reason=stop spans=1 empty_id_spans=0 attachable_spans=0 unsupported_spans=1
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T17:04:20.341847Z"}
+player_phase_change 2 ok ok True
+analyst_review_rejected request_id=1fb1c004d9114475830fb75eb1563726 provider=None finish_reason=stop spans=2 empty_id_spans=1 attachable_spans=0 unsupported_spans=1
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T17:04:31.720773Z"}
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T17:04:35.809667Z"}
+player_month_switch 2 ok ok True
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T17:04:41.703945Z"}
+analyst_review_rejected request_id=d15d4a433fbe4652af053a0017804faa provider=None finish_reason=stop spans=2 empty_id_spans=1 attachable_spans=0 unsupported_spans=1
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T17:04:53.295212Z"}
+player_last5_to_month 2 ok ok True
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T17:04:58.459973Z"}
+analyst_review_rejected request_id=ba2f7c5affb74edcac8a41e0d3b50ade provider=None finish_reason=stop spans=1 empty_id_spans=0 attachable_spans=0 unsupported_spans=0
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T17:05:09.938726Z"}
+team_total_average 2 ok ok True
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T17:05:15.603406Z"}
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T17:05:19.802723Z"}
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T17:05:24.914918Z"}
+game_reference_chain 2 ok ok ok True
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T17:05:29.313174Z"}
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T17:05:34.121012Z"}
+game_why 2 ok answer:declined False
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T17:05:43.726499Z"}
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T17:05:53.323365Z"}
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T17:06:00.250519Z"}
+betting_decline 2 ok answer:value ok False
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T17:06:07.007186Z"}
+analyst_review_rejected request_id=7270756103494d76af9f5b289278e037 provider=None finish_reason=stop spans=3 empty_id_spans=0 attachable_spans=0 unsupported_spans=1
+analyst_review_rejected request_id=7270756103494d76af9f5b289278e037 provider=None finish_reason=stop spans=3 empty_id_spans=0 attachable_spans=0 unsupported_spans=1
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T17:06:19.575356Z"}
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T17:06:25.699638Z"}
+injury_decline 2 ok pipeline:degraded ok False
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T17:06:30.517892Z"}
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T17:06:37.048548Z"}
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T17:06:42.212368Z"}
+phase_after_player 2 ok ok ok True
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T17:06:52.891009Z"}
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T17:06:58.442634Z"}
+topic_overall_after_player 2 ok ok True
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T17:07:04.973229Z"}
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T17:07:15.077257Z"}
+team_month_switch 2 pipeline:degraded ok False
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T17:07:22.581448Z"}
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T17:07:28.347793Z"}
+team_margin 2 ok ok True
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T17:07:35.165493Z"}
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T17:07:44.588264Z"}
+opponent_switch_team_stats 2 ok ok True
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T17:07:50.421130Z"}
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T17:07:57.628374Z"}
+reverse_switch_topic 2 ok ok True
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T17:08:06.299523Z"}
+analyst_review_rejected request_id=b1b6f623d10c425c8d271e6d7ff07bda provider=None finish_reason=stop spans=4 empty_id_spans=0 attachable_spans=0 unsupported_spans=2
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T17:08:16.480838Z"}
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T17:08:27.312273Z"}
+decline_then_overall 2 ok pipeline:degraded ok False
+{"event": "knicksiq.api.stopping", "level": "info", "timestamp": "2026-10-22T17:08:27.361412Z"}
+{"turns": 128, "turn_passes": 116, "session_passes": 42, "session_runs": 54}
+{"pipeline:degraded": 7, "answer:value": 3, "answer:declined": 2}
