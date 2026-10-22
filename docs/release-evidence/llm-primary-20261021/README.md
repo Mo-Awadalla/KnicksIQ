@@ -34,5 +34,7 @@ not merged and has no directory here.
 
 The passing preflight on the integration head is `ops/preflight-1688ea8.json`. The two
 record-scope negative cases are `ops/preflight-record-policy-fail.json` and
-`ops/preflight-policy-broken-fail.json`. In `reviewer/`, `mutations.json` (0/64 wrong numbers
-accepted) supersedes the mutation totals embedded in `replay.json`.
+`ops/preflight-policy-broken-fail.json`. In `reviewer/`, `mutations.json` supersedes the mutation
+totals embedded in `replay.json`. Its head 0/64 counts deterministic and structure rejections of
+preselected mutations; the model reviewer was never called on them, so the reviewer's
+false-acceptance rate is unmeasured. `gate-mutations.md` has the unselected gate result.

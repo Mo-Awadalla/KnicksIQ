@@ -2,8 +2,14 @@
 
 `tools/release/analyst_gate_mutations.py` runs the gate alone, with no model calls, over the 13
 correct recorded units in `head-units.jsonl`. Unlike the live replay in `mutations.json`, it keeps
-every mutation the gate accepts. The live replay skipped those candidates, so its 0/64 measured
-the model reviewer behind the gate, not the gate itself.
+every mutation the gate accepts.
+
+The live replay's head 0/64 is a selection-biased deterministic regression result, not a reviewer
+false-acceptance rate. `mutation_candidates` keeps only text swaps the gate already rejects, and
+`head_trial` returns `deterministic_rejected` or `structure_rejected` before calling the reviewer
+(`tools/release/analyst_review_replay.py:133-152`). All 64 head observations ended there: 32
+`deterministic_rejected` text swaps and 32 `structure_rejected` claim-value changes. The model
+reviewer was never called on a wrong number, so its false-acceptance rate is unmeasured.
 
 The recorded units contain no ratio claims. Each unit therefore gets a sibling claim with value
 0.10, and the answer gains one sentence stating a percentage of it.
