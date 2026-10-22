@@ -1,5 +1,5 @@
 {
-  "measured_at": "2026-10-22T14:42:00+00:00",
+  "measured_at": "2026-10-22T15:04:41+00:00",
   "records": [
     "docs/release-evidence/llm-primary-20261021/reviewer/head-units.jsonl"
   ],
@@ -263,7 +263,9 @@
         ]
       ],
       "append": "",
-      "gate_issues": []
+      "gate_issues": [
+        "span 1 states the record 32-69 with wins and losses reversed"
+      ]
     },
     {
       "case_id": "record_swap_last_five",
@@ -279,7 +281,9 @@
         ]
       ],
       "append": "",
-      "gate_issues": []
+      "gate_issues": [
+        "span 1 states the record 1-4 with wins and losses reversed"
+      ]
     },
     {
       "case_id": "record_swap_january",
@@ -295,7 +299,9 @@
         ]
       ],
       "append": "",
-      "gate_issues": []
+      "gate_issues": [
+        "span 1 states the record 8-7 with wins and losses reversed"
+      ]
     },
     {
       "case_id": "unit_per_game_as_total",
