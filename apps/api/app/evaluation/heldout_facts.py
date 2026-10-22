@@ -166,7 +166,13 @@ class Archive:
         *,
         season_type: str | None = None,
         games: list[Game] | None = None,
+        include_dnp: bool = False,
     ) -> list[Line]:
+        """Player rows, by default only games the player actually appeared in.
+
+        A zero-minute row is a did-not-play record. Counting it in a per-game average
+        divides by games the player did not play; the app's metrics exclude it.
+        """
         allowed = {game.id for game in games} if games is not None else None
         type_by_id = {game.id: game.season_type for game in self.games}
         return [
@@ -175,6 +181,7 @@ class Archive:
             if line.player.casefold() == player.casefold()
             and (allowed is None or line.game_id in allowed)
             and (season_type is None or type_by_id[line.game_id] == season_type)
+            and (include_dnp or line.minutes > 0)
         ]
 
     def player_avg(

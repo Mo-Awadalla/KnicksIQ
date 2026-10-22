@@ -14,6 +14,8 @@ from analyst_checks import (
     CAUSAL,
     COVERAGE_SENTENCE,
     HEDGE,
+    NUMBER,
+    PAIR,
     SENTENCE,
     Corpus,
     _aliases_for,
@@ -25,12 +27,25 @@ from analyst_checks import (
     _extract,
     _has_phrase,
     _is_clarification,
-    _numbers_in,
     _primary,
     _same_number,
     _sentence_entities,
     claim_corpus,
 )
+
+
+def _fact_numbers(fact: str) -> list[tuple[float, str]]:
+    """Fact numbers with their written form, so the precision-aware comparison can run.
+
+    Parses the same NUMBER/PAIR shapes as analyst_checks._numbers_in, which drops the raw
+    text. Without the raw text a fact at two decimals can never match a correct answer at
+    one decimal even when both round to the same value.
+    """
+    cleaned = fact.replace(",", "")
+    found = [(float(match.group(1)), match.group(1)) for match in NUMBER.finditer(cleaned)]
+    for match in PAIR.finditer(fact):
+        found.extend((float(item), item) for item in match.groups())
+    return found
 
 
 def category_detail_required(case: dict[str, Any]) -> bool:
@@ -108,7 +123,7 @@ def score_response(
     )
 
     def fact_ok(fact: str) -> bool:
-        wanted = _numbers_in(fact)
+        wanted = _fact_numbers(fact)
         if not wanted:
             return _has_phrase(answer, fact)
         scoped_sentences = sentences
@@ -125,12 +140,15 @@ def score_response(
                     scoped_sentences = matching
                 break
         values = [
-            value
+            (value, token.raw)
             for sentence in scoped_sentences
             for token in _extract(sentence)
             for value in ([token.value] if token.value is not None else list(token.values))
         ]
-        return all(any(_same_number(value, item) for item in values) for value in wanted)
+        return all(
+            any(_same_number(value, item, raw, wanted_raw) for item, wanted_raw in values)
+            for value, raw in wanted
+        )
 
     facts_ok = all(fact_ok(str(fact)) for fact in case.get("required_facts") or [])
     phrases_ok = all(_has_phrase(answer, phrase) for phrase in case.get("required_phrases") or [])
