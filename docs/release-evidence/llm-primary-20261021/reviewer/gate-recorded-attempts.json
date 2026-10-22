@@ -1,0 +1,15 @@
+{
+  "attempts": 48,
+  "base_accepted": 48,
+  "head_accepted": 48,
+  "new_rejects": [],
+  "new_accepts": [],
+  "records": [
+    "head-fix-2b.jsonl",
+    "head-fix-4.jsonl",
+    "head-production-24.jsonl",
+    "head-units.jsonl"
+  ],
+  "gate_base": "codex/llmp-integration 5b585e6",
+  "gate_head": "codex/llmp-w3-gateunits"
+}

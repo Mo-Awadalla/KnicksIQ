@@ -39,16 +39,23 @@ class NumberToken:
     value: Decimal
     decimals: int
     percent: bool
+    # Offsets in the text passed to number_tokens; label blanks keep offsets stable.
+    start: int = 0
+    end: int = 0
 
     @property
     def tolerance(self) -> Decimal:
         return Decimal(1).scaleb(-self.decimals) / 2 + Decimal("1e-9")
 
 
+def _blank(match: re.Match[str]) -> str:
+    return " " * len(match.group())
+
+
 def number_tokens(text: str) -> list[NumberToken]:
     cleaned = text
     for pattern in _LABELS:
-        cleaned = pattern.sub(" ", cleaned)
+        cleaned = pattern.sub(_blank, cleaned)
     tokens: list[NumberToken] = []
     for match in _NUMBER.finditer(cleaned):
         raw = match.group().replace(",", "")
@@ -58,8 +65,78 @@ def number_tokens(text: str) -> list[NumberToken]:
             continue
         decimals = len(raw.partition(".")[2])
         following = cleaned[match.end() : match.end() + 2].lstrip()
-        tokens.append(NumberToken(match.group(), value, decimals, following.startswith("%")))
+        tokens.append(
+            NumberToken(
+                match.group(),
+                value,
+                decimals,
+                following.startswith("%"),
+                match.start(),
+                match.end(),
+            )
+        )
     return tokens
+
+
+# Unit words the gate understands. A token written next to one of these is matched
+# against sources carrying the same unit, so a coincidental trusted value of another
+# metric cannot explain it.
+_UNIT_WORDS = {
+    "point": "points",
+    "points": "points",
+    "game": "games",
+    "games": "games",
+    "win": "wins",
+    "wins": "wins",
+    "loss": "losses",
+    "losses": "losses",
+    "rebound": "rebounds",
+    "rebounds": "rebounds",
+    "assist": "assists",
+    "assists": "assists",
+}
+_UNIT_BRIDGES = (
+    "active",
+    "archived",
+    "home",
+    "playoff",
+    "playoffs",
+    "regular",
+    r"regular\-season",
+    "road",
+    "season",
+    "total",
+)
+_UNIT_AFTER = re.compile(
+    r"^\s*(?:-\s*)?(?:(?:" + "|".join(_UNIT_BRIDGES) + r")\s+)?([A-Za-z]+)",
+    re.IGNORECASE,
+)
+_UNIT_BEFORE = re.compile(r"\b([A-Za-z]+)\s*[:=]\s*$", re.IGNORECASE)
+_PER = re.compile(r"\bper\s+$", re.IGNORECASE)
+
+
+def token_unit(text: str, token: NumberToken) -> str | None:
+    """The unit word the token is written next to, if any.
+
+    Only immediate phrasing counts: one bridge adjective ("archived games"),
+    a hyphen ("54-point"), or a unit label before a colon ("wins: 69"). Wider
+    windows pick up the unit of a neighbouring number. The tail of a hyphenated
+    compound ("2025-26", "112-98") is part of that number, not a quantity the
+    following word labels.
+    """
+    if token.start and text[token.start - 1] == "-":
+        return None
+    after = _UNIT_AFTER.match(text[token.end :])
+    if after:
+        unit = _UNIT_WORDS.get(after.group(1).lower())
+        if unit:
+            return unit
+    before = _UNIT_BEFORE.search(text[: token.start])
+    if before:
+        unit = _UNIT_WORDS.get(before.group(1).lower())
+        if unit and not _PER.search(text[: before.start(1)]):
+            return unit
+    return None
 
 
 def _add_numbers(values: set[Decimal], item: Any) -> None:
@@ -133,15 +210,143 @@ def trusted_numbers(
     return values
 
 
-def _explained(token: NumberToken, exact: set[Decimal], claim_values: Iterable[Decimal]) -> bool:
-    if token.value in exact:
+@dataclass(frozen=True)
+class _Source:
+    value: Decimal
+    unit: str | None = None
+    percent: bool = False
+
+
+_PERCENT_UNIT = re.compile(r"\b(?:pct|percent|percentage)\b", re.IGNORECASE)
+_WORDS = re.compile(r"[a-z]+")
+
+
+def _unit_family(unit: str | None) -> str | None:
+    if not unit:
+        return None
+    words = _WORDS.findall(unit.lower())
+    if not words:
+        return None
+    head = words[0]
+    if head in _UNIT_WORDS:
+        return _UNIT_WORDS[head]
+    if head in {"margin", "net", "score"}:
+        return "points"
+    if head in {"appearance", "appearances"}:
+        return "games"
+    if "margin" in words or "net" in words or "score" in words:
+        return "points"
+    if "game" in words or "games" in words:
+        return "games"
+    return None
+
+
+def _compatible(unit: str, source_unit: str | None) -> bool:
+    family = _unit_family(source_unit)
+    if family is None:
+        return False
+    if family == unit:
         return True
-    for value in claim_values:
-        if abs(token.value - value) <= token.tolerance:
-            return True
-        # A percent sign over a ratio is a unit conversion of the same backend value. The
-        # tolerance is already in displayed units ("10%" allows 9.5 to 10.5).
-        if token.percent and abs(token.value - value * 100) <= token.tolerance:
+    # A win or a loss is one game, and "lost 32 games" is a losses value.
+    return unit == "games" and family in {"wins", "losses"}
+
+
+def _key_unit(key: str) -> str | None:
+    words = _WORDS.findall(key.lower())
+    for word in words:
+        family = _UNIT_WORDS.get(word)
+        if family:
+            return family
+    if "margin" in words or "net" in words or "score" in words:
+        return "points"
+    return None
+
+
+def _value_sources(value: Any, sources: list[_Source], unit: str | None = None) -> None:
+    if isinstance(value, bool):
+        return
+    if isinstance(value, (int, float)):
+        sources.append(_Source(Decimal(str(value)), unit))
+    elif isinstance(value, str):
+        for token in number_tokens(value):
+            sources.append(_Source(token.value, token_unit(value, token) or unit, token.percent))
+    elif isinstance(value, Mapping):
+        for key, item in value.items():
+            _value_sources(item, sources, unit or _key_unit(str(key)))
+    elif isinstance(value, Iterable) and not isinstance(value, (bytes, bytearray)):
+        for item in value:
+            _value_sources(item, sources, unit)
+
+
+def _claim_sources(claim: VerifiedClaim, sources: list[_Source]) -> None:
+    view = claim_view(claim)
+    for key, value in view.items():
+        if key not in _CLAIM_NUMBER_FIELDS:
+            continue
+        if key == "value" and isinstance(value, (int, float)) and not isinstance(value, bool):
+            number = Decimal(str(value))
+            sources.append(_Source(number, claim.unit))
+            # A ratio claim is the same backend value as its percentage; a percent unit
+            # already carries percentage display units.
+            if 0 < abs(number) < 1:
+                sources.append(_Source(number * 100, claim.unit, True))
+            if claim.unit and _PERCENT_UNIT.search(claim.unit):
+                sources.append(_Source(number, claim.unit, True))
+        elif key == "value" and isinstance(value, str):
+            # A composite value such as a final score is stated in the claim's unit.
+            _value_sources(value, sources, claim.unit)
+        else:
+            _value_sources(value, sources)
+    sample = view.get("sample_size")
+    if isinstance(sample, (int, float)) and not isinstance(sample, bool):
+        # A claim's sample is a count of games (team) or appearances (player).
+        sources.append(_Source(Decimal(str(sample)), "games"))
+    _value_sources(claim.filters, sources)
+
+
+def _metadata_sources(item: Evidence, sources: list[_Source]) -> None:
+    # Hashes and identifiers contain digit runs that are not facts.
+    metadata = {
+        key: value
+        for key, value in item.metadata.items()
+        if not key.endswith(("_id", "_ids")) and key != "release_id"
+    }
+    _value_sources(metadata, sources)
+
+
+def _number_sources(
+    claims: Mapping[str, VerifiedClaim],
+    evidence: Mapping[str, Evidence],
+    capabilities: Mapping[str, Any] | None = None,
+) -> list[_Source]:
+    sources: list[_Source] = []
+    for claim in claims.values():
+        _claim_sources(claim, sources)
+    for item in evidence.values():
+        _value_sources(item.text, sources)
+        _metadata_sources(item, sources)
+    if capabilities:
+        scope = capabilities.get("scope") or {}
+        if isinstance(scope, Mapping):
+            for key in ("date_start", "date_end", "periods"):
+                _value_sources(scope.get(key), sources)
+            _value_sources(scope.get("relative_game_count"), sources, "games")
+        for key in ("seasons", "release_id", "team_metrics", "metrics"):
+            _value_sources(capabilities.get(key), sources)
+        for key in ("games", "box_score_rows"):
+            _value_sources(capabilities.get(key), sources, "games")
+    return sources
+
+
+def _explained(token: NumberToken, unit: str | None, sources: Iterable[_Source]) -> bool:
+    for source in sources:
+        if source.percent != token.percent:
+            continue
+        if abs(token.value - source.value) > token.tolerance:
+            continue
+        # A percent is a unit conversion of a source value, or a value the source writes
+        # with a percent sign; a bare count of another unit is not a percentage.
+        if token.percent or unit is None or _compatible(unit, source.unit):
             return True
     return False
 
@@ -175,12 +380,7 @@ def numeric_issues(
     capabilities: Mapping[str, Any] | None = None,
     question: str = "",
 ) -> list[str]:
-    exact = trusted_numbers(claims, evidence, capabilities)
-    claim_values = [
-        Decimal(str(claim.value))
-        for claim in claims.values()
-        if isinstance(claim.value, (int, float)) and not isinstance(claim.value, bool)
-    ]
+    sources = _number_sources(claims, evidence, capabilities)
     question_numbers = {token.value for token in number_tokens(question)}
     issues: list[str] = []
     for index, span in enumerate(spans, start=1):
@@ -191,7 +391,7 @@ def numeric_issues(
             or "?" in span
         )
         for token in number_tokens(span):
-            if _explained(token, exact, claim_values):
+            if _explained(token, token_unit(span, token), sources):
                 continue
             if criterion and token.value in question_numbers:
                 continue
