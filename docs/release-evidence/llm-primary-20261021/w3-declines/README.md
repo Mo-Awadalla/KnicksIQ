@@ -168,6 +168,9 @@ the tool descriptions.
   number gate and reviewer are unchanged, so this must be confirmed by the head audit.
 - Prefetch now runs a heavier tool first on flow/period questions. That replaces a
   planning call for those questions but has not been latency-measured live.
+- The orchestrator prompt grew from 2,297 to 3,002 bytes, which is fixed cost inside the
+  16,000-byte input budget. Claim packing may drop a few more claims; the head run must
+  show whether that costs quality.
 - `comparisons-003` fallback can render four claims (all-phase plus regular for two
   opponents); the six-claim cap keeps them. The duplicate all-phase/regular buckets are
   correct but verbose.
