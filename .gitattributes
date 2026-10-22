@@ -146,3 +146,15 @@ docs/release-evidence/llm-primary-20261021/w4-failed/**/*.jsonl linguist-generat
 # Generated measurement artifacts (wave 4 latency).
 docs/release-evidence/llm-primary-20261021/w4-latency/**/*.jsonl linguist-generated=true
 docs/release-evidence/llm-primary-20261021/w4-latency/**/*.json linguist-generated=true
+
+# Held-out v2 generated evaluation artifacts.
+apps/api/app/evaluation/heldout_v2/*.jsonl linguist-generated=true
+apps/api/app/evaluation/heldout_v2/*.json linguist-generated=true
+
+# Held-out final live run machine output (w4).
+docs/release-evidence/llm-primary-20261021/heldout-final/**/*.jsonl linguist-generated=true
+docs/release-evidence/llm-primary-20261021/heldout-final/**/*.json linguist-generated=true
+
+# Full factual-audit summary and diff are generated from the recorded response rows.
+docs/release-evidence/llm-primary-20261021/heldout-final/audit-main/summary.md linguist-generated=true
+docs/release-evidence/llm-primary-20261021/heldout-final/audit-main/diff.md linguist-generated=true
