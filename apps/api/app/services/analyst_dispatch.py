@@ -63,8 +63,12 @@ async def execute_call(tools: AnalystTools, call: ToolCall) -> ToolResult:
         if authoritative:
             scope = scope.model_copy(update={key: authoritative})
     if tools.scope.all_phases:
-        # The model's rephrased question would re-default to the regular season.
-        scope = scope.model_copy(update={"season_type": None, "all_phases": True})
+        # The call text may name or default to one phase; its game_ids were selected inside
+        # that phase, so only the user's own game_ids (applied above) may survive.
+        update: dict[str, object] = {"season_type": None, "all_phases": True}
+        if scope.season_type is not None and not tools.scope.game_ids:
+            update["game_ids"] = []
+        scope = scope.model_copy(update=update)
     if scope.periods and not spec.supports_periods:
         capable = [name for name in period_tool_names() if name != call.name]
         message = "This calculation does not support period-level scope."

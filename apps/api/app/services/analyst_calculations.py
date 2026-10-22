@@ -236,7 +236,7 @@ def team(
             if aggregation == "total" or asks_total:
                 values["points"] = points
                 values["margin"] = margin
-        prefix = "Knicks" if phase == "all phases" else f"Knicks {phase}"
+        prefix = "Knicks (all phases)" if phase == "all phases" else f"Knicks {phase}"
         breakdown = ""
         if index == 0 and scope.opponent_id and len(groups) > 1:
             parts = []

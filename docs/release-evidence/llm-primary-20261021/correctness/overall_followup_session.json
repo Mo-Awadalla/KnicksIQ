@@ -1,339 +1,321 @@
 {
-  "check": "same API session: 'What was the Knicks' record?' then 'And overall?'; pass needs 53-29 then 69-32 and revision 1 -> 2",
-  "history_field": "context (earlier runs sent an ignored 'messages' field and are excluded)",
-  "before_topic_fix": {
-    "commit_state": "phase, game_ids and carried-claim fixes only",
-    "runs": [
-      {
-        "same_session": true,
-        "pass": false,
-        "turns": [
-          {
-            "question": "What was the Knicks' record?",
-            "status": 200,
-            "want": "53-29",
-            "records_in_answer": [
-              "53-29"
-            ],
-            "ok": true,
-            "llm_validated": true,
-            "revision": 1,
-            "answer": "In the 2025-26 regular season, the Knicks went 53-29 over 82 archived games. They scored 9,549 total points with a cumulative margin of +519."
-          },
-          {
-            "question": "And overall?",
-            "status": 200,
-            "want": "69-32",
-            "records_in_answer": [],
-            "ok": false,
-            "llm_validated": false,
-            "revision": 2,
-            "answer": "I can't answer that: verified archive facts are unavailable on this turn."
-          }
-        ]
-      },
-      {
-        "same_session": true,
-        "pass": false,
-        "turns": [
-          {
-            "question": "What was the Knicks' record?",
-            "status": 200,
-            "want": "53-29",
-            "records_in_answer": [
-              "53-29"
-            ],
-            "ok": true,
-            "llm_validated": true,
-            "revision": 1,
-            "answer": "In the 2025-26 regular season, the Knicks went 53-29 over 82 archived games. They scored 9,549 total points with a cumulative margin of +519."
-          },
-          {
-            "question": "And overall?",
-            "status": 200,
-            "want": "69-32",
-            "records_in_answer": [],
-            "ok": false,
-            "llm_validated": false,
-            "revision": 2,
-            "answer": "I can't answer that: verified archive facts are unavailable on this turn."
-          }
-        ]
-      },
-      {
-        "same_session": true,
-        "pass": false,
-        "turns": [
-          {
-            "question": "What was the Knicks' record?",
-            "status": 200,
-            "want": "53-29",
-            "records_in_answer": [
-              "53-29"
-            ],
-            "ok": true,
-            "llm_validated": true,
-            "revision": 1,
-            "answer": "In the 2025-26 regular season, the Knicks went 53-29 over 82 archived games. They scored 9,549 total points with a cumulative margin of +519."
-          },
-          {
-            "question": "And overall?",
-            "status": 200,
-            "want": "69-32",
-            "records_in_answer": [],
-            "ok": false,
-            "llm_validated": false,
-            "revision": 2,
-            "answer": "I can't answer that: verified archive facts are unavailable on this turn."
-          }
-        ]
-      },
-      {
-        "same_session": true,
-        "pass": false,
-        "turns": [
-          {
-            "question": "What was the Knicks' record?",
-            "status": 200,
-            "want": "53-29",
-            "records_in_answer": [
-              "53-29"
-            ],
-            "ok": true,
-            "llm_validated": true,
-            "revision": 1,
-            "answer": "In the 2025-26 regular season, the Knicks went 53-29 over 82 archived games. They scored 9,549 total points with a cumulative margin of +519."
-          },
-          {
-            "question": "And overall?",
-            "status": 200,
-            "want": "69-32",
-            "records_in_answer": [],
-            "ok": false,
-            "llm_validated": false,
-            "revision": 2,
-            "answer": "I can't answer that: verified archive facts are unavailable on this turn."
-          }
-        ]
-      },
-      {
-        "same_session": true,
-        "pass": true,
-        "turns": [
-          {
-            "question": "What was the Knicks' record?",
-            "status": 200,
-            "want": "53-29",
-            "records_in_answer": [
-              "53-29"
-            ],
-            "ok": true,
-            "llm_validated": true,
-            "revision": 1,
-            "answer": "In the 2025-26 regular season, the Knicks went 53-29 over 82 archived games. They scored 9,549 total points with a cumulative margin of +519."
-          },
-          {
-            "question": "And overall?",
-            "status": 200,
-            "want": "69-32",
-            "records_in_answer": [
-              "69-32"
-            ],
-            "ok": true,
-            "llm_validated": true,
-            "revision": 2,
-            "answer": "Across all 101 archived games in the 2025-26 release (regular season and playoffs combined), the Knicks went 69-32. They scored 11,750 total points with a cumulative margin of +802."
-          }
-        ]
-      },
-      {
-        "same_session": true,
-        "pass": false,
-        "turns": [
-          {
-            "question": "What was the Knicks' record?",
-            "status": 200,
-            "want": "53-29",
-            "records_in_answer": [
-              "53-29"
-            ],
-            "ok": true,
-            "llm_validated": true,
-            "revision": 1,
-            "answer": "In the 2025-26 regular season, the Knicks went 53-29 over 82 archived games. They scored 9,549 total points with a cumulative margin of +519."
-          },
-          {
-            "question": "And overall?",
-            "status": 200,
-            "want": "69-32",
-            "records_in_answer": [],
-            "ok": false,
-            "llm_validated": true,
-            "revision": 2,
-            "answer": "I don't have a supplied overall record or season-total figure in the current evidence set, so I can't state the Knicks' overall record or point totals. The available evidence here is a set of individual 2025-26 regular-season game scores, not an aggregated season summary."
-          }
-        ]
-      }
-    ]
-  },
-  "after": {
-    "runs": [
-      {
-        "same_session": true,
-        "pass": true,
-        "turns": [
-          {
-            "question": "What was the Knicks' record?",
-            "status": 200,
-            "want": "53-29",
-            "records_in_answer": [
-              "53-29"
-            ],
-            "ok": true,
-            "llm_validated": true,
-            "revision": 1,
-            "answer": "In the 2025-26 regular season, the Knicks went 53-29 over 82 archived games. They scored 9,549 total points with a cumulative margin of +519."
-          },
-          {
-            "question": "And overall?",
-            "status": 200,
-            "want": "69-32",
-            "records_in_answer": [
-              "69-32"
-            ],
-            "ok": true,
-            "llm_validated": true,
-            "revision": 2,
-            "answer": "Across all archived phases (regular season and playoffs), the Knicks went 69-32 over 101 games. They scored 11,750 total points with a cumulative margin of +802."
-          }
-        ]
-      },
-      {
-        "same_session": true,
-        "pass": true,
-        "turns": [
-          {
-            "question": "What was the Knicks' record?",
-            "status": 200,
-            "want": "53-29",
-            "records_in_answer": [
-              "53-29"
-            ],
-            "ok": true,
-            "llm_validated": true,
-            "revision": 1,
-            "answer": "In the 2025-26 regular season, the Knicks went 53-29 over 82 archived games. They scored 9,549 total points with a cumulative margin of +519."
-          },
-          {
-            "question": "And overall?",
-            "status": 200,
-            "want": "69-32",
-            "records_in_answer": [
-              "69-32"
-            ],
-            "ok": true,
-            "llm_validated": true,
-            "revision": 2,
-            "answer": "Across all 101 archived 2025-26 games (regular season and playoffs combined), the Knicks went 69-32. They scored 11,750 total points with a cumulative margin of +802."
-          }
-        ]
-      },
-      {
-        "same_session": true,
-        "pass": true,
-        "turns": [
-          {
-            "question": "What was the Knicks' record?",
-            "status": 200,
-            "want": "53-29",
-            "records_in_answer": [
-              "53-29"
-            ],
-            "ok": true,
-            "llm_validated": true,
-            "revision": 1,
-            "answer": "In the 2025-26 regular season, the Knicks went 53-29 over 82 archived games. They scored 9,549 total points with a cumulative margin of +519."
-          },
-          {
-            "question": "And overall?",
-            "status": 200,
-            "want": "69-32",
-            "records_in_answer": [
-              "69-32"
-            ],
-            "ok": true,
-            "llm_validated": true,
-            "revision": 2,
-            "answer": "Across all 101 archived 2025-26 games (regular season and playoffs combined), the Knicks went 69-32. They scored 11,750 total points with a cumulative margin of +802."
-          }
-        ]
-      },
-      {
-        "same_session": true,
-        "pass": true,
-        "turns": [
-          {
-            "question": "What was the Knicks' record?",
-            "status": 200,
-            "want": "53-29",
-            "records_in_answer": [
-              "53-29"
-            ],
-            "ok": true,
-            "llm_validated": true,
-            "revision": 1,
-            "answer": "In the 2025-26 regular season, the Knicks went 53-29 over 82 archived games. They scored 9,549 total points with a cumulative margin of +519."
-          },
-          {
-            "question": "And overall?",
-            "status": 200,
-            "want": "69-32",
-            "records_in_answer": [
-              "69-32"
-            ],
-            "ok": true,
-            "llm_validated": true,
-            "revision": 2,
-            "answer": "Across all 101 archived games in the 2025-26 release (regular season and playoffs combined), the Knicks went 69-32. They scored 11,750 total points with a cumulative margin of +802."
-          }
-        ]
-      },
-      {
-        "same_session": true,
-        "pass": true,
-        "turns": [
-          {
-            "question": "What was the Knicks' record?",
-            "status": 200,
-            "want": "53-29",
-            "records_in_answer": [
-              "53-29"
-            ],
-            "ok": true,
-            "llm_validated": true,
-            "revision": 1,
-            "answer": "In the 2025-26 regular season, the Knicks went 53-29 over 82 archived games. They scored 9,549 total points with a cumulative margin of +519."
-          },
-          {
-            "question": "And overall?",
-            "status": 200,
-            "want": "69-32",
-            "records_in_answer": [
-              "69-32"
-            ],
-            "ok": true,
-            "llm_validated": true,
-            "revision": 2,
-            "answer": "Across all 101 archived 2025-26 games (regular season and playoffs combined), the Knicks went 69-32. They scored 11,750 total points with a cumulative margin of +802."
-          }
-        ]
-      }
-    ]
-  },
   "summary": {
-    "before_pass": 1,
-    "before_runs": 6,
-    "after_pass": 5,
-    "after_runs": 5
+    "implicit_then_overall": "3/3",
+    "explicit_then_overall": "3/3",
+    "overall_then_playoffs": "3/3"
+  },
+  "sessions": {
+    "implicit_then_overall": [
+      {
+        "same_session": true,
+        "pass": true,
+        "turns": [
+          {
+            "question": "What was the Knicks' record?",
+            "status": 200,
+            "want": "53-29",
+            "records_in_answer": [
+              "53-29"
+            ],
+            "ok": true,
+            "llm_validated": true,
+            "revision": 1,
+            "answer": "In the 2025-26 regular season, the Knicks went 53-29 over 82 archived games. They scored 9,549 total points with a cumulative margin of +519."
+          },
+          {
+            "question": "And overall?",
+            "status": 200,
+            "want": "69-32",
+            "records_in_answer": [
+              "69-32"
+            ],
+            "ok": true,
+            "llm_validated": true,
+            "revision": 2,
+            "answer": "Across all phases in the 2025-26 archive (regular season plus playoffs), the Knicks went 69-32 over 101 games. They scored 11,750 total points with a cumulative margin of +802."
+          }
+        ]
+      },
+      {
+        "same_session": true,
+        "pass": true,
+        "turns": [
+          {
+            "question": "What was the Knicks' record?",
+            "status": 200,
+            "want": "53-29",
+            "records_in_answer": [
+              "53-29"
+            ],
+            "ok": true,
+            "llm_validated": false,
+            "revision": 1,
+            "answer": "Knicks regular season wins: 53 over 82 archived games. Knicks regular season losses: 29 over 82 archived games."
+          },
+          {
+            "question": "And overall?",
+            "status": 200,
+            "want": "69-32",
+            "records_in_answer": [
+              "69-32"
+            ],
+            "ok": true,
+            "llm_validated": false,
+            "revision": 2,
+            "answer": "Knicks (all phases) wins: 69 over 101 archived games. Knicks (all phases) losses: 32 over 101 archived games."
+          }
+        ]
+      },
+      {
+        "same_session": true,
+        "pass": true,
+        "turns": [
+          {
+            "question": "What was the Knicks' record?",
+            "status": 200,
+            "want": "53-29",
+            "records_in_answer": [
+              "53-29"
+            ],
+            "ok": true,
+            "llm_validated": false,
+            "revision": 1,
+            "answer": "Knicks regular season wins: 53 over 82 archived games. Knicks regular season losses: 29 over 82 archived games."
+          },
+          {
+            "question": "And overall?",
+            "status": 200,
+            "want": "69-32",
+            "records_in_answer": [
+              "69-32"
+            ],
+            "ok": true,
+            "llm_validated": false,
+            "revision": 2,
+            "answer": "Knicks (all phases) wins: 69 over 101 archived games. Knicks (all phases) losses: 32 over 101 archived games."
+          }
+        ]
+      }
+    ],
+    "explicit_then_overall": [
+      {
+        "same_session": true,
+        "pass": true,
+        "turns": [
+          {
+            "question": "What was their regular-season record?",
+            "status": 200,
+            "want": "53-29",
+            "records_in_answer": [
+              "53-29"
+            ],
+            "ok": true,
+            "llm_validated": true,
+            "revision": 1,
+            "answer": "In the 2025-26 regular season, the Knicks went 53-29 over 82 archived games."
+          },
+          {
+            "question": "And overall?",
+            "status": 200,
+            "want": "69-32",
+            "records_in_answer": [
+              "69-32"
+            ],
+            "ok": true,
+            "llm_validated": true,
+            "revision": 2,
+            "answer": "Across all phases in the 2025-26 archive, the Knicks went 69-32 over 101 games, scoring 11,750 points with a +802 margin."
+          }
+        ]
+      },
+      {
+        "same_session": true,
+        "pass": true,
+        "turns": [
+          {
+            "question": "What was their regular-season record?",
+            "status": 200,
+            "want": "53-29",
+            "records_in_answer": [
+              "53-29"
+            ],
+            "ok": true,
+            "llm_validated": false,
+            "revision": 1,
+            "answer": "Knicks regular season wins: 53 over 82 archived games. Knicks regular season losses: 29 over 82 archived games."
+          },
+          {
+            "question": "And overall?",
+            "status": 200,
+            "want": "69-32",
+            "records_in_answer": [
+              "69-32"
+            ],
+            "ok": true,
+            "llm_validated": false,
+            "revision": 2,
+            "answer": "Knicks (all phases) wins: 69 over 101 archived games. Knicks (all phases) losses: 32 over 101 archived games."
+          }
+        ]
+      },
+      {
+        "same_session": true,
+        "pass": true,
+        "turns": [
+          {
+            "question": "What was their regular-season record?",
+            "status": 200,
+            "want": "53-29",
+            "records_in_answer": [
+              "53-29"
+            ],
+            "ok": true,
+            "llm_validated": false,
+            "revision": 1,
+            "answer": "Knicks regular season wins: 53 over 82 archived games. Knicks regular season losses: 29 over 82 archived games."
+          },
+          {
+            "question": "And overall?",
+            "status": 200,
+            "want": "69-32",
+            "records_in_answer": [
+              "69-32"
+            ],
+            "ok": true,
+            "llm_validated": false,
+            "revision": 2,
+            "answer": "Knicks (all phases) wins: 69 over 101 archived games. Knicks (all phases) losses: 32 over 101 archived games."
+          }
+        ]
+      }
+    ],
+    "overall_then_playoffs": [
+      {
+        "same_session": true,
+        "pass": true,
+        "turns": [
+          {
+            "question": "What was their regular-season record?",
+            "status": 200,
+            "want": "53-29",
+            "records_in_answer": [
+              "53-29"
+            ],
+            "ok": true,
+            "llm_validated": true,
+            "revision": 1,
+            "answer": "In the 2025-26 regular season, the Knicks went 53-29 over 82 archived games."
+          },
+          {
+            "question": "And overall?",
+            "status": 200,
+            "want": "69-32",
+            "records_in_answer": [
+              "69-32"
+            ],
+            "ok": true,
+            "llm_validated": true,
+            "revision": 2,
+            "answer": "Across all phases in the 2025-26 archive, the Knicks went 69-32 over 101 games, scoring 11,750 points with a +802 margin."
+          },
+          {
+            "question": "And in the playoffs?",
+            "status": 200,
+            "want": "16-3",
+            "records_in_answer": [
+              "16-3"
+            ],
+            "ok": true,
+            "llm_validated": false,
+            "revision": 3,
+            "answer": "Knicks playoffs wins: 16 over 19 archived games. Knicks playoffs losses: 3 over 19 archived games."
+          }
+        ]
+      },
+      {
+        "same_session": true,
+        "pass": true,
+        "turns": [
+          {
+            "question": "What was their regular-season record?",
+            "status": 200,
+            "want": "53-29",
+            "records_in_answer": [
+              "53-29"
+            ],
+            "ok": true,
+            "llm_validated": false,
+            "revision": 1,
+            "answer": "Knicks regular season wins: 53 over 82 archived games. Knicks regular season losses: 29 over 82 archived games."
+          },
+          {
+            "question": "And overall?",
+            "status": 200,
+            "want": "69-32",
+            "records_in_answer": [
+              "69-32"
+            ],
+            "ok": true,
+            "llm_validated": false,
+            "revision": 2,
+            "answer": "Knicks (all phases) wins: 69 over 101 archived games. Knicks (all phases) losses: 32 over 101 archived games."
+          },
+          {
+            "question": "And in the playoffs?",
+            "status": 200,
+            "want": "16-3",
+            "records_in_answer": [
+              "16-3"
+            ],
+            "ok": true,
+            "llm_validated": false,
+            "revision": 3,
+            "answer": "Knicks playoffs wins: 16 over 19 archived games. Knicks playoffs losses: 3 over 19 archived games."
+          }
+        ]
+      },
+      {
+        "same_session": true,
+        "pass": true,
+        "turns": [
+          {
+            "question": "What was their regular-season record?",
+            "status": 200,
+            "want": "53-29",
+            "records_in_answer": [
+              "53-29"
+            ],
+            "ok": true,
+            "llm_validated": false,
+            "revision": 1,
+            "answer": "Knicks regular season wins: 53 over 82 archived games. Knicks regular season losses: 29 over 82 archived games."
+          },
+          {
+            "question": "And overall?",
+            "status": 200,
+            "want": "69-32",
+            "records_in_answer": [
+              "69-32"
+            ],
+            "ok": true,
+            "llm_validated": false,
+            "revision": 2,
+            "answer": "Knicks (all phases) wins: 69 over 101 archived games. Knicks (all phases) losses: 32 over 101 archived games."
+          },
+          {
+            "question": "And in the playoffs?",
+            "status": 200,
+            "want": "16-3",
+            "records_in_answer": [
+              "16-3"
+            ],
+            "ok": true,
+            "llm_validated": false,
+            "revision": 3,
+            "answer": "Knicks playoffs wins: 16 over 19 archived games. Knicks playoffs losses: 3 over 19 archived games."
+          }
+        ]
+      }
+    ]
   }
 }

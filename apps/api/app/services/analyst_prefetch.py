@@ -78,12 +78,13 @@ def prefetch_calls(tools: AnalystTools) -> list[ToolCall]:
     if len(scope.player_ids) > 1:
         return []
     if tools.topic != question:
-        # "And overall?" re-asks the previous topic in a new scope. The backend scope is
-        # authoritative in dispatch, so the topic text only selects the tool.
+        # "And overall?" re-asks the previous topic in a new scope. The topic only picks the
+        # tool; the call carries the follow-up itself, so dispatch resolves the new scope
+        # and never the topic's own phase or game_ids.
         if not _TEAM_AGGREGATE.search(tools.topic) or _COMPARATIVE.search(tools.topic):
             return []
         aggregation = "average" if _AVERAGE.search(tools.topic) else "total"
-        return [ToolCall(name="get_team_stats", question=tools.topic, aggregation=aggregation)]
+        return [ToolCall(name="get_team_stats", question=question, aggregation=aggregation)]
     if (
         scope.player_ids
         and scope.opponent_id
