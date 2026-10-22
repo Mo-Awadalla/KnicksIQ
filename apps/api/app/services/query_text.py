@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import re
 import unicodedata
+from collections.abc import Callable
 from typing import Literal
 
 _METRICS = {
@@ -81,20 +82,36 @@ def metric_in_text(question: str) -> str | None:
     )
 
 
+# Each period phrase and the periods it names. Scope checks reuse the same table, so a
+# phrase the parser understands is never mistaken for an unknown subject.
+_PERIOD_PHRASES: tuple[tuple[re.Pattern[str], Callable[[re.Match[str]], set[int]]], ...] = (
+    (re.compile(r"\bq([1-9])\b"), lambda m: {int(m.group(1))}),
+    (re.compile(r"\b([1-9])(?:st|nd|rd|th) quarter\b"), lambda m: {int(m.group(1))}),
+    (
+        re.compile(r"\b(first|second|third|fourth) quarter\b"),
+        lambda m: {("first", "second", "third", "fourth").index(m.group(1)) + 1},
+    ),
+    (re.compile(r"\bfirst half\b"), lambda m: {1, 2}),
+    (re.compile(r"\bsecond half\b"), lambda m: {3, 4}),
+    (re.compile(r"\blate (?:fourth|4th)\b"), lambda m: {4}),
+)
+
+
 def periods_in_text(question: str) -> list[int]:
     q = normalize(question)
-    values = {int(value) for value in re.findall(r"\bq([1-9])\b", q)}
-    values.update(int(value) for value in re.findall(r"\b([1-9])(?:st|nd|rd|th) quarter\b", q))
-    for period, ordinal in enumerate(("first", "second", "third", "fourth"), start=1):
-        if re.search(rf"\b{ordinal} quarter\b", q):
-            values.add(period)
-    if "first half" in q:
-        values.update({1, 2})
-    if "second half" in q:
-        values.update({3, 4})
-    if "late fourth" in q or "late 4th" in q:
-        values.add(4)
+    values: set[int] = set()
+    for pattern, periods in _PERIOD_PHRASES:
+        for match in pattern.finditer(q):
+            values |= periods(match)
     return sorted(values)
+
+
+def without_period_phrases(text: str) -> str:
+    """Normalized text with every recognised period phrase removed."""
+    q = normalize(text)
+    for pattern, _ in _PERIOD_PHRASES:
+        q = pattern.sub(" ", q)
+    return q
 
 
 def is_explanation(question: str) -> bool:

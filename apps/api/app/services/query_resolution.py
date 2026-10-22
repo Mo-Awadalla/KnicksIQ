@@ -37,6 +37,7 @@ from app.services.query_text import (
     metric_in_text,
     normalize,
     periods_in_text,
+    without_period_phrases,
 )
 from app.services.team_aliases import team_ids_in_text
 from pydantic import BaseModel, ConfigDict, Field
@@ -416,7 +417,7 @@ async def phrase_names_scope(db: AsyncSession, phrase: str, data_version: str | 
         return True
     leftover = {
         word
-        for word in normalize(phrase).split()
+        for word in without_period_phrases(phrase).split()
         if not word.isdigit()
         and word not in _SCOPE_WORDS
         and word not in METRIC_WORDS

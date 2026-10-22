@@ -1,0 +1,72 @@
+{
+  "measured_sha": "51f184a",
+  "branch": "codex/llmp-final2",
+  "harness": "tools/release/followup_bench.py",
+  "command": "uv run --package knicksiq-api python tools/release/followup_bench.py --trials 2 --out docs/release-evidence/llm-primary-20261021/final-go/followup/followup_sessions.json",
+  "config": {
+    "provider": "opencode-go",
+    "writer": "deepseek-v4.1-flash",
+    "reviewer": "gpt-6-luna",
+    "reasoning": "none",
+    "redis_db": 10,
+    "sessions_file": "apps/api/app/evaluation/followup_sessions.jsonl"
+  },
+  "note": "The raw followup_sessions.json records its static default base 5b585e6; the measured code is 51f184a.",
+  "trials": 2,
+  "sessions": 27,
+  "turns": 128,
+  "turn_passes": 116,
+  "session_runs": 54,
+  "session_passes": 42,
+  "by_trial": {
+    "1": {
+      "turns": 64,
+      "turn_passes": 58,
+      "sessions": 27,
+      "session_passes": 21,
+      "llm_validated": 60,
+      "degraded": 4,
+      "scope_clean": 27
+    },
+    "2": {
+      "turns": 64,
+      "turn_passes": 58,
+      "sessions": 27,
+      "session_passes": 21,
+      "llm_validated": 61,
+      "degraded": 3,
+      "scope_clean": 27
+    }
+  },
+  "spread": {
+    "turn_passes": 0,
+    "session_passes": 0
+  },
+  "session_spread": {
+    "both": 19,
+    "exactly_one": 4,
+    "neither": 4
+  },
+  "model_path": {
+    "turns_llm_validated": 121,
+    "turns": 128,
+    "share": 0.9453125,
+    "by_trial": {
+      "1": "60/64",
+      "2": "61/64"
+    },
+    "calls": {
+      "orchestrate_deepseek_chat": 149,
+      "revise_deepseek_chat": 33,
+      "review_luna_responses": 132,
+      "served_model_mismatch": 0,
+      "local_prepare": 128,
+      "local_tool": 124
+    }
+  },
+  "failure_causes": {
+    "pipeline:degraded": 7,
+    "answer:value": 3,
+    "answer:declined": 2
+  }
+}
