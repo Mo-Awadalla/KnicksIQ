@@ -130,3 +130,6 @@ docs/release-evidence/llm-primary-20261021/w4-reviewer/*.json* linguist-generate
 # Live multi-turn follow-up benchmark output (w4, OpenCode Go).
 docs/release-evidence/llm-primary-20261021/w4-followups/*.json linguist-generated=true
 docs/release-evidence/llm-primary-20261021/w4-followups/*.txt linguist-generated=true
+# Follow-up state/topic fixes: live session output and offline transcripts.
+docs/release-evidence/llm-primary-20261021/w4-state/*.json linguist-generated=true
+docs/release-evidence/llm-primary-20261021/w4-state/*.txt linguist-generated=true
