@@ -139,8 +139,9 @@ def _explained(token: NumberToken, exact: set[Decimal], claim_values: Iterable[D
     for value in claim_values:
         if abs(token.value - value) <= token.tolerance:
             return True
-        # A percent sign over a ratio is a unit conversion of the same backend value.
-        if token.percent and abs(token.value - value * 100) <= token.tolerance * 100:
+        # A percent sign over a ratio is a unit conversion of the same backend value. The
+        # tolerance is already in displayed units ("10%" allows 9.5 to 10.5).
+        if token.percent and abs(token.value - value * 100) <= token.tolerance:
             return True
     return False
 
