@@ -68,10 +68,8 @@ TOOLS: tuple[ToolSpec, ...] = (
     ToolSpec(
         name="get_team_stats",
         description=(
-            "gives wins, losses, points and margin for one population (a season, window or "
-            "opponent scope) as totals (aggregation total) or per-game averages (aggregation "
-            "average), so choose the aggregation the user asked for; it does not split a "
-            "population"
+            "wins, losses, points and margin for one population (season, window or opponent "
+            "scope), total or per game; it does not split a population"
         ),
         handler="app.services.analyst_tool_team:run",
         recovery_role="team",
@@ -111,9 +109,8 @@ TOOLS: tuple[ToolSpec, ...] = (
     ToolSpec(
         name="get_game_flow",
         description=(
-            "runs, deficits, comebacks, lead changes and lost leads from play-by-play; ranks "
-            "the observed extreme across the selected games and names the game, period and "
-            "clock"
+            "play-by-play runs, deficits, comebacks and lost leads; ranks the observed "
+            "extreme across the selected games"
         ),
         handler="app.services.analyst_tool_runs:run",
         supports_periods=True,
@@ -121,10 +118,9 @@ TOOLS: tuple[ToolSpec, ...] = (
     ToolSpec(
         name="get_team_splits",
         description=(
-            "splits team results into every requested bucket: home/road, wins/losses, one or "
-            "two opponents, month, first N games, before/after the All-Star break, phase, "
-            "close games, overtime or back-to-backs; each bucket reports its record, points "
-            "and margin with its own game count"
+            "home/road, wins/losses, opponent, month, first N, All-Star break, phase, close, "
+            "overtime and back-to-back splits; each bucket reports its own record, points and "
+            "margin"
         ),
         handler="app.services.analyst_tool_splits:run",
         needs_games=False,
@@ -132,8 +128,8 @@ TOOLS: tuple[ToolSpec, ...] = (
     ToolSpec(
         name="get_period_scoring",
         description=(
-            "quarter, half, halftime and overtime scoring for the Knicks and opponents, per "
-            "game and aggregated; use instead of get_team_stats for those questions"
+            "quarter, half, halftime and overtime scoring, per game and aggregated; use "
+            "instead of get_team_stats"
         ),
         handler="app.services.analyst_tool_periods:run",
         supports_periods=True,
@@ -178,14 +174,21 @@ def tools_hint() -> str:
     flow_hint = f"Game-flow questions: call {flow.name} alone first. " if flow is not None else ""
     splits = TOOLS_BY_NAME.get("get_team_splits")
     split_hint = (
-        f"Split or side-by-side questions: call {splits.name} alone first. "
+        f"Split or comparison questions: call {splits.name} alone first. "
         if splits is not None
+        else ""
+    )
+    periods = TOOLS_BY_NAME.get("get_period_scoring")
+    period_hint = (
+        f"Quarter, half and halftime questions: call {periods.name} alone first. "
+        if periods is not None
         else ""
     )
     listed = "; ".join(f"{spec.name} {spec.description}" for spec in TOOLS if not spec.prompt_lead)
     return (
         flow_hint
         + split_hint
+        + period_hint
         + f"For interesting stats or another player, call {lead.name} {lead.description}. "
         "Empty claims means call a tool before stating stats. "
         f"{listed}. Answer once evidence is sufficient. "
