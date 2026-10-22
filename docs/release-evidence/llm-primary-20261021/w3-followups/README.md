@@ -19,6 +19,7 @@ Base: `codex/llm-integration` at `5b585e6` (branch `codex/llm-w3-followups`).
 | `offline_scope_audit.json` | Every turn of every session: expected scope, actual scope, carried claims, prefetch calls, fallback text, honest checks, cause. |
 | `offline_spread.json` | Per-session pass marks from two runs and the summary. |
 | `repro.txt` | Captured reproduction transcript. |
+| `failing_turns.txt` | One row per failing turn: cause, scope issues, prefetch and recovery stages, fallback text. |
 
 Generated JSON and TXT are marked `linguist-generated=true` in `.gitattributes`.
 
