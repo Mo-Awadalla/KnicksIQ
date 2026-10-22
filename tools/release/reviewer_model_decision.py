@@ -86,6 +86,8 @@ def build_arm(name: str, false_acceptance_path: Path, replay_path: Path) -> dict
             "recorded": proportion(recorded_accepted, wrong_units["observations"]),
         },
         "wrong_accepted_mutations": proportion(mutated_accepted, wrong["observations"]),
+        "mutation_cases": wrong["cases"],
+        "mutation_gate_rejected": wrong["gate_rejected"],
         "controls_accepted": proportion(controls["accepted"], controls["observations"]),
         "false_rejects": proportion(correct_units["rejected"], correct_units["observations"]),
         "true_rejects": proportion(wrong_units["rejected"], wrong_units["observations"]),
@@ -139,13 +141,16 @@ def fmt(prop: dict[str, Any]) -> str:
 
 
 def markdown(arms: list[dict[str, Any]], winner: dict[str, Any]) -> str:
+    first = arms[0]
+    reachable = first["mutation_cases"] - first["mutation_gate_rejected"]
     lines = [
         "# Reviewer model decision",
         "",
         "Both arms replayed the same 24 recorded answers (14 correct, 3 wrong with review "
         "payloads; 7 missed excluded) with only `ANALYST_REVIEW_MODEL` changed. Wrong-answer "
-        "cases are 21 mutations, 18 of which pass the deterministic gate and reach the "
-        "reviewer; controls are the 14 unmutated correct answers. Intervals are Wilson 95%.",
+        f"cases are {first['mutation_cases']} mutations, {reachable} of which pass the "
+        "deterministic gate and reach the reviewer; controls are the 14 unmutated correct "
+        "answers. Intervals are Wilson 95%.",
         "",
         "| model | wrong accepted (mutated + recorded) | controls accepted | "
         "false rejects (correct) | true rejects (wrong) | malformed reviews | "
@@ -177,13 +182,14 @@ def markdown(arms: list[dict[str, Any]], winner: dict[str, Any]) -> str:
             "Wrong accepted counts every observation of a wrong answer that passed the "
             "pipeline: gate-passing mutations of correct answers plus recorded wrong writer "
             "answers replayed from `head-units.jsonl`. The rule applies to that total because "
-            "the replay arm also measures wrong acceptances; the two sub-counts and their "
-            "opposing directions are shown in the table. False rejects count trials where a "
-            "correct recorded answer was rejected (reviewer, deterministic or structure). "
-            "Malformed reviews count provider replies that failed JSON validation across both "
-            "arms, including retried first attempts; the denominator is provider calls. "
-            "Latency is the provider call from the false-acceptance arm; replay-arm latency "
-            "and every call's model, protocol and token cap are in `decision.json`.",
+            "the replay arm also measures wrong acceptances. In this run no model accepted a "
+            "gate-passing mutation, so the difference comes entirely from recorded wrong "
+            "answers. False rejects count trials where a correct recorded answer was rejected "
+            "(reviewer, deterministic or structure). Malformed reviews count provider replies "
+            "that failed JSON validation across both arms, including retried first attempts; "
+            "the denominator is provider calls. Latency is the provider call from the "
+            "false-acceptance arm; replay-arm latency and every call's model, protocol and "
+            "token cap are in `decision.json`.",
             "",
         ]
     )
