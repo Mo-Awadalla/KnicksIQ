@@ -22,7 +22,7 @@ from app.services.archive_retrieval import (
     search_archive_vectors,
 )
 from app.services.evidence_contracts import Candidate, Evidence, ToolCall, ToolResult, VerifiedClaim
-from app.services.query_policy import names_phase
+from app.services.query_policy import SeasonType, names_phase
 from app.services.query_resolution import ResolvedQuery, is_record_request, resolve_query
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -47,6 +47,14 @@ class AnalystTools:
         self.rows: list[tuple[PlayerGameStat, Player]] = []
         self.scope: ResolvedQuery | None = None
         self.different = bool(re.search(r"\bdifferent player\b", question, re.I))
+        self.topic = question
+        self.followup = bool(
+            re.search(
+                r"\b(he|him|his|that|another|different player)\b|^\s*(why|now|and|what about)",
+                question,
+                re.I,
+            )
+        )
         self.timings: list[dict[str, Any]] = []
 
     async def prepare(self) -> None:
@@ -87,9 +95,22 @@ class AnalystTools:
                 "box_score_rows": len(self.rows),
             }
         )
+        prior = self.state.get("scope", {})
+        followup = self.followup
+        # A follow-up keeps the phase under discussion. Resolving with it as the default,
+        # rather than patching season_type afterwards, keeps game_ids in the same phase.
+        default_season_type: SeasonType | None = "regular"
+        if followup and prior.get("all_phases"):
+            default_season_type = None
+        elif followup and prior.get("season_type"):
+            default_season_type = prior["season_type"]
         resolve_started = time.monotonic()
         self.scope = await resolve_query(
-            self.db, self.question, intent="analyst", data_version=self.release.version
+            self.db,
+            self.question,
+            intent="analyst",
+            data_version=self.release.version,
+            default_season_type=default_season_type,
         )
         self.timings.append(
             {
@@ -115,14 +136,6 @@ class AnalystTools:
             and re.search(r"\b(between|from|through|until)\b", self.question, re.I)
         ):
             self.scope = self.scope.model_copy(update={"game_ids": []})
-        prior = self.state.get("scope", {})
-        followup = bool(
-            re.search(
-                r"\b(he|him|his|that|another|different player)\b|^\s*(why|now|and|what about)",
-                self.question,
-                re.I,
-            )
-        )
         if followup:
             updates = {}
             named_phase = names_phase(self.question)
@@ -131,10 +144,14 @@ class AnalystTools:
                     continue
                 if key == "season_type":
                     # Matchup questions span every phase, and a follow-up keeps the phase
-                    # under discussion unless it names one.
-                    if self.scope.opponent_id and not named_phase:
+                    # under discussion unless it names one. "Overall" names all phases, so
+                    # its None must not fall through to the inherit-if-empty rule below.
+                    if named_phase or self.scope.opponent_id:
                         continue
-                    if prior.get("season_type") and not named_phase:
+                    if prior.get("all_phases"):
+                        updates.update(season_type=None, all_phases=True)
+                        continue
+                    if prior.get("season_type"):
                         updates[key] = prior["season_type"]
                         continue
                 if not getattr(self.scope, key) and prior.get(key):
@@ -166,7 +183,12 @@ class AnalystTools:
             )
         self.state["scope"] = self.scope.model_dump(mode="json")
         self.state["scope_origin"] = "user" if not followup else "verified_followup"
-        self.state["intent"] = self.question[:1200]
+        # "And overall?" names a new scope for the previous topic, not a new topic.
+        elliptical = followup and not self.scope.player_ids and not self.scope.metric
+        self.topic = (
+            self.state.get("intent") if elliptical and self.state.get("intent") else None
+        ) or self.question
+        self.state["intent"] = self.topic[:1200]
         # Immutable release references are revalidated for identity and integrity at admission.
         if self.state.get("release") == self.release.version:
             permitted_games = {g.id for g in self.selected_games(self.scope)}
@@ -175,6 +197,9 @@ class AnalystTools:
                 if (
                     claim.release_id == self.release.version
                     and set(claim.game_ids or []) <= permitted_games
+                    # A one-phase claim is a subset of every phase but does not answer it;
+                    # carried over, it also suppresses the prefetch that would.
+                    and not (self.scope.all_phases and claim.season_type is not None)
                     and (
                         not self.scope.player_ids
                         or claim.subject_id in {f"player:{pid}" for pid in self.scope.player_ids}

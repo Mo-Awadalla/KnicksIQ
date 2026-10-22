@@ -14,7 +14,7 @@ from app.models.dataset_release import DatasetRelease
 from app.models.game import Game
 from app.models.game_event import GameEvent
 from app.models.player import Player
-from app.services.query_policy import is_outcome_subset, resolve_phase
+from app.services.query_policy import SeasonType, is_outcome_subset, resolve_phase
 from app.services.team_aliases import team_ids_in_text
 from pydantic import BaseModel, ConfigDict, Field
 from sqlalchemy import func, select
@@ -95,6 +95,8 @@ class ResolvedQuery(BaseModel):
     relative_game_count: int | None = None
     periods: list[int] = Field(default_factory=list)
     season_type: Literal["regular", "play_in", "playoffs"] | None = None
+    # The user asked for every phase; distinguishes None from "unspecified" for merges.
+    all_phases: bool = False
     home_away: Literal["home", "away"] | None = None
     game_result: Literal["W", "L"] | None = None
     metric: str | None = None
@@ -301,6 +303,7 @@ async def resolve_query(
     intent: str,
     data_version: str | None = None,
     typo_threshold: float = 0.86,
+    default_season_type: SeasonType | None = "regular",
 ) -> ResolvedQuery:
     """Resolve canonical entities and filters without model inference."""
     release_id, resolved_version = await _active_release(db, data_version)
@@ -379,7 +382,8 @@ async def resolve_query(
         date_end = explicit_dates[0]
 
     season_level = not (opponent_id or explicit_dates or relative_count or date_start or date_end)
-    named_phase, season_type = resolve_phase(question, season_level=season_level)
+    phase = resolve_phase(question, season_level=season_level, default=default_season_type)
+    named_phase, season_type = phase.named, phase.season_type
     home_away = (
         "home"
         if re.search(r"\bhome\b", q)
@@ -514,6 +518,7 @@ async def resolve_query(
         relative_game_count=relative_count,
         periods=_periods(question),
         season_type=season_type,
+        all_phases=phase.all_phases,
         home_away=home_away,
         game_result=game_result,
         metric=_metric(question),

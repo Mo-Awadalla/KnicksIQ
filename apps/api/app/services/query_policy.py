@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import re
 import unicodedata
-from typing import Literal
+from typing import Literal, NamedTuple
 
 SeasonType = Literal["regular", "play_in", "playoffs"]
 
@@ -41,15 +41,31 @@ def names_phase(question: str) -> bool:
     return names_play_in(question) or bool(_PHASE_WORDS.search(_normalize(question)))
 
 
-def resolve_phase(question: str, *, season_level: bool) -> tuple[bool, SeasonType | None]:
-    """Whether the question names a phase, and the season type to scope it to.
+def names_all_phases(question: str) -> bool:
+    q = _normalize(question)
+    return bool(re.search(r"\boverall\b|\bincluding (?:the )?playoffs\b|\ball phases\b", q))
 
-    Season-level stats are regular season; matchups and windows span every phase.
+
+class Phase(NamedTuple):
+    named: bool
+    season_type: SeasonType | None
+    # True only when every phase was asked for (or inherited), never when merely unspecified.
+    all_phases: bool
+
+
+def resolve_phase(
+    question: str, *, season_level: bool, default: SeasonType | None = "regular"
+) -> Phase:
+    """The phase a question is scoped to.
+
+    Season-level stats use ``default``: the regular season, or in a follow-up the phase
+    under discussion (``None`` when that was every phase). Matchups and windows span every
+    phase.
     """
     q = _normalize(question)
     play_in = names_play_in(question)
     named = play_in or bool(re.search(r"\bplayoff|\bpostseason|\bregular season\b", q))
-    season_type = (
+    season_type: SeasonType | None = (
         "playoffs"
         if "playoff" in q or "postseason" in q
         else "play_in"
@@ -58,11 +74,11 @@ def resolve_phase(question: str, *, season_level: bool) -> tuple[bool, SeasonTyp
         if "regular season" in q
         else None
     )
-    if "overall" in q or "including playoffs" in q or "all phases" in q:
-        season_type = None
-    elif season_type is None and season_level:
-        season_type = "regular"
-    return named, season_type
+    if names_all_phases(question):
+        return Phase(named=named, season_type=None, all_phases=True)
+    if season_type is None and season_level:
+        return Phase(named=named, season_type=default, all_phases=default is None)
+    return Phase(named=named, season_type=season_type, all_phases=False)
 
 
 def is_outcome_subset(question: str) -> bool:
