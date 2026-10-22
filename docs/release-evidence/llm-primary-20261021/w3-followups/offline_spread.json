@@ -4,11 +4,11 @@
   "identical": true,
   "summary": {
     "sessions": 27,
-    "sessions_pass": 7,
-    "sessions_scope_clean": 9,
+    "sessions_pass": 27,
+    "sessions_scope_clean": 27,
     "turns": 64,
-    "turns_pass": 35,
-    "turns_scope_clean": 42
+    "turns_pass": 64,
+    "turns_scope_clean": 64
   },
   "sessions": {
     "phase_regular_overall_playoffs": {
@@ -96,30 +96,30 @@
     "team_ppg_home_away_playoffs": {
       "turns": 3,
       "turn_pass": [
-        false,
-        false,
-        false
+        true,
+        true,
+        true
       ],
       "causes": [
-        "answer:value",
-        "scope",
-        "scope"
+        "ok",
+        "ok",
+        "ok"
       ],
-      "pass": false,
-      "scope_clean": false
+      "pass": true,
+      "scope_clean": true
     },
     "opponent_switch_record": {
       "turns": 2,
       "turn_pass": [
         true,
-        false
+        true
       ],
       "causes": [
         "ok",
-        "scope"
+        "ok"
       ],
-      "pass": false,
-      "scope_clean": false
+      "pass": true,
+      "scope_clean": true
     },
     "opponent_phase_switch": {
       "turns": 3,
@@ -140,136 +140,136 @@
       "turns": 3,
       "turn_pass": [
         true,
-        false,
-        false
+        true,
+        true
       ],
       "causes": [
         "ok",
-        "scope",
-        "scope"
+        "ok",
+        "ok"
       ],
-      "pass": false,
-      "scope_clean": false
+      "pass": true,
+      "scope_clean": true
     },
     "player_switch": {
       "turns": 2,
       "turn_pass": [
         true,
-        false
+        true
       ],
       "causes": [
         "ok",
-        "scope+decline"
+        "ok"
       ],
-      "pass": false,
-      "scope_clean": false
+      "pass": true,
+      "scope_clean": true
     },
     "player_pronoun_metric": {
       "turns": 2,
       "turn_pass": [
         true,
-        false
+        true
       ],
       "causes": [
         "ok",
-        "scope+decline"
+        "ok"
       ],
-      "pass": false,
-      "scope_clean": false
+      "pass": true,
+      "scope_clean": true
     },
     "player_phase_change": {
       "turns": 2,
       "turn_pass": [
         true,
-        false
+        true
       ],
       "causes": [
         "ok",
-        "scope+decline"
+        "ok"
       ],
-      "pass": false,
-      "scope_clean": false
+      "pass": true,
+      "scope_clean": true
     },
     "player_month_switch": {
       "turns": 2,
       "turn_pass": [
         true,
-        false
+        true
       ],
       "causes": [
         "ok",
-        "scope+decline"
+        "ok"
       ],
-      "pass": false,
-      "scope_clean": false
+      "pass": true,
+      "scope_clean": true
     },
     "player_last5_to_month": {
       "turns": 2,
       "turn_pass": [
         true,
-        false
+        true
       ],
       "causes": [
         "ok",
-        "scope+decline"
+        "ok"
       ],
-      "pass": false,
-      "scope_clean": false
+      "pass": true,
+      "scope_clean": true
     },
     "team_total_average": {
       "turns": 2,
       "turn_pass": [
         true,
-        false
+        true
       ],
       "causes": [
         "ok",
-        "scope"
+        "ok"
       ],
-      "pass": false,
-      "scope_clean": false
+      "pass": true,
+      "scope_clean": true
     },
     "game_reference_chain": {
       "turns": 3,
       "turn_pass": [
-        false,
-        false,
-        false
+        true,
+        true,
+        true
       ],
       "causes": [
-        "answer:value",
-        "scope+decline",
-        "scope+decline"
+        "ok",
+        "ok",
+        "ok"
       ],
-      "pass": false,
-      "scope_clean": false
+      "pass": true,
+      "scope_clean": true
     },
     "game_why": {
       "turns": 2,
       "turn_pass": [
-        false,
-        false
+        true,
+        true
       ],
       "causes": [
-        "answer:value",
-        "latent_scope"
+        "ok",
+        "ok"
       ],
-      "pass": false,
-      "scope_clean": false
+      "pass": true,
+      "scope_clean": true
     },
     "betting_decline": {
       "turns": 3,
       "turn_pass": [
         true,
         true,
-        false
+        true
       ],
       "causes": [
         "ok",
         "ok",
-        "answer:declined"
+        "ok"
       ],
-      "pass": false,
+      "pass": true,
       "scope_clean": true
     },
     "injury_decline": {
@@ -277,117 +277,111 @@
       "turn_pass": [
         true,
         true,
-        false
+        true
       ],
       "causes": [
         "ok",
         "ok",
-        "scope"
+        "ok"
       ],
-      "pass": false,
-      "scope_clean": false
+      "pass": true,
+      "scope_clean": true
     },
     "phase_after_player": {
       "turns": 3,
       "turn_pass": [
         true,
         true,
-        false
+        true
       ],
       "causes": [
         "ok",
         "ok",
-        "scope+decline"
+        "ok"
       ],
-      "pass": false,
-      "scope_clean": false
+      "pass": true,
+      "scope_clean": true
     },
     "topic_overall_after_player": {
       "turns": 2,
       "turn_pass": [
         true,
-        false
+        true
       ],
       "causes": [
         "ok",
-        "scope+decline"
+        "ok"
       ],
-      "pass": false,
-      "scope_clean": false
+      "pass": true,
+      "scope_clean": true
     },
     "team_month_switch": {
       "turns": 2,
       "turn_pass": [
-        false,
-        false
+        true,
+        true
       ],
       "causes": [
-        "answer:value",
-        "scope"
+        "ok",
+        "ok"
       ],
-      "pass": false,
-      "scope_clean": false
+      "pass": true,
+      "scope_clean": true
     },
     "team_margin": {
       "turns": 2,
       "turn_pass": [
-        false,
-        false
+        true,
+        true
       ],
       "causes": [
-        "answer:value",
-        "scope"
+        "ok",
+        "ok"
       ],
-      "pass": false,
-      "scope_clean": false
+      "pass": true,
+      "scope_clean": true
     },
     "opponent_switch_team_stats": {
       "turns": 2,
       "turn_pass": [
-        false,
-        false
+        true,
+        true
       ],
       "causes": [
-        "scope",
-        "scope"
+        "ok",
+        "ok"
       ],
-      "pass": false,
-      "scope_clean": false
+      "pass": true,
+      "scope_clean": true
     },
     "reverse_switch_topic": {
       "turns": 2,
       "turn_pass": [
         true,
-        false
+        true
       ],
       "causes": [
         "ok",
-        "scope+decline"
+        "ok"
       ],
-      "pass": false,
-      "scope_clean": false
+      "pass": true,
+      "scope_clean": true
     },
     "decline_then_overall": {
       "turns": 3,
       "turn_pass": [
         true,
         true,
-        false
+        true
       ],
       "causes": [
         "ok",
         "ok",
-        "answer:declined"
+        "ok"
       ],
-      "pass": false,
+      "pass": true,
       "scope_clean": true
     }
   },
-  "cause_counts": {
-    "answer:value": 5,
-    "scope": 11,
-    "scope+decline": 10,
-    "latent_scope": 1,
-    "answer:declined": 2
-  }
+  "cause_counts": {}
 }

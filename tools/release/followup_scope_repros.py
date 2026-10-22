@@ -45,13 +45,19 @@ async def prepare(db, release, question: str, state: dict) -> AnalystTools:
 
 
 def next_state(tools: AnalystTools, claims: list | None = None) -> dict:
-    return {
-        "scope": tools.scope.model_dump(mode="json") if tools.scope else {},
-        "intent": tools.topic,
-        "claims": [claim.model_dump(mode="json") for claim in (claims or [])],
-        "evidence": [],
-        "release": tools.release.version,
-    }
+    # The session store commits the whole state dict prepare produced, not only the
+    # fields it names; keep last_topic/last_scope so a later decline can fall back.
+    state = clone(tools.state)
+    state.update(
+        {
+            "scope": tools.scope.model_dump(mode="json") if tools.scope else {},
+            "intent": tools.topic,
+            "claims": [claim.model_dump(mode="json") for claim in (claims or [])],
+            "evidence": [],
+            "release": tools.release.version,
+        }
+    )
+    return state
 
 
 async def fallback_result(db, release, question: str, state: dict) -> dict:
@@ -250,6 +256,7 @@ async def main() -> None:
         regular = await prepare(db, release, "What was the Knicks' record?", {})
         state = next_state(regular)
         state["intent"] = "Should I put money on the Knicks winning the championship?"
+        state["declined"] = True
         result = await fallback_result(db, release, "And overall?", state)
         outcomes.append(
             show(

@@ -1719,23 +1719,13 @@
             "game_ids": [
               83,
               84,
-              85,
-              86,
               87,
-              88,
               89,
               90,
-              91,
-              92,
               93,
               94,
-              95,
-              96,
-              97,
-              98,
               99,
-              100,
-              101
+              100
             ],
             "date_start": null,
             "date_end": null,
@@ -1905,11 +1895,11 @@
             }
           ],
           "recovery": null,
-          "fallback_text": "Knicks regular season wins: 30 over 40 archived games. Knicks regular season losses: 10 over 40 archived games.",
+          "fallback_text": "Knicks regular season points per game: 119.0 over 40 archived games.",
           "fallback_checks": {
             "fact": "119.00",
             "value": 119.0,
-            "value_ok": false
+            "value_ok": true
           },
           "fallback_score": {
             "id": "How many points per game did the Knicks score at home?",
@@ -1918,10 +1908,8 @@
             "answerable": true,
             "outcome": null,
             "old_meets_expectation": false,
-            "meets_expectation": false,
-            "failures": [
-              "required_facts"
-            ],
+            "meets_expectation": true,
+            "failures": [],
             "checks": {
               "validated": true,
               "decline_signal": null,
@@ -1930,9 +1918,9 @@
               "clarification": false,
               "substantive": true,
               "evidence_mode": "claims",
-              "claim_citations": 2,
+              "claim_citations": 1,
               "archive_receipts": 0,
-              "numbers_total": 4,
+              "numbers_total": 2,
               "unbacked_numbers": [],
               "detected_entities": [
                 "Knicks"
@@ -1941,7 +1929,7 @@
               "required_facts": [
                 "119.00"
               ],
-              "required_facts_ok": false,
+              "required_facts_ok": true,
               "required_entities_ok": true,
               "required_phrases_ok": null,
               "echo_question": false,
@@ -1949,8 +1937,8 @@
               "missing_turning_detail": false
             }
           },
-          "fallback_ok": false,
-          "cause": "answer:value"
+          "fallback_ok": true,
+          "cause": "ok"
         },
         {
           "turn": 2,
@@ -2027,15 +2015,13 @@
             "all_phases": false,
             "home_away": "away",
             "game_result": null,
-            "metric": null,
+            "metric": "points",
             "requires_clarification": false,
             "clarification_reason": null,
             "clarification_options": [],
             "data_version": "2025-26.20260928.1"
           },
-          "scope_issues": [
-            "metric=None want points"
-          ],
+          "scope_issues": [],
           "carried_claims": [],
           "prefetch": [
             {
@@ -2046,11 +2032,11 @@
             }
           ],
           "recovery": null,
-          "fallback_text": "Knicks regular season wins: 23 over 42 archived games. Knicks regular season losses: 19 over 42 archived games.",
+          "fallback_text": "Knicks regular season points per game: 114.02380952380952 over 42 archived games.",
           "fallback_checks": {
             "fact": "114.02",
             "value": 114.0238,
-            "value_ok": false
+            "value_ok": true
           },
           "fallback_score": {
             "id": "And on the road?",
@@ -2059,10 +2045,8 @@
             "answerable": true,
             "outcome": null,
             "old_meets_expectation": false,
-            "meets_expectation": false,
-            "failures": [
-              "required_facts"
-            ],
+            "meets_expectation": true,
+            "failures": [],
             "checks": {
               "validated": true,
               "decline_signal": null,
@@ -2071,9 +2055,9 @@
               "clarification": false,
               "substantive": true,
               "evidence_mode": "claims",
-              "claim_citations": 2,
+              "claim_citations": 1,
               "archive_receipts": 0,
-              "numbers_total": 4,
+              "numbers_total": 2,
               "unbacked_numbers": [],
               "detected_entities": [
                 "Knicks"
@@ -2082,7 +2066,7 @@
               "required_facts": [
                 "114.02"
               ],
-              "required_facts_ok": false,
+              "required_facts_ok": true,
               "required_entities_ok": true,
               "required_phrases_ok": null,
               "echo_question": false,
@@ -2090,8 +2074,8 @@
               "missing_turning_detail": false
             }
           },
-          "fallback_ok": false,
-          "cause": "scope"
+          "fallback_ok": true,
+          "cause": "ok"
         },
         {
           "turn": 3,
@@ -2117,24 +2101,15 @@
             "team_ids": [],
             "opponent_id": null,
             "game_ids": [
-              83,
-              84,
               85,
               86,
-              87,
               88,
-              89,
-              90,
               91,
               92,
-              93,
-              94,
               95,
               96,
               97,
               98,
-              99,
-              100,
               101
             ],
             "date_start": null,
@@ -2145,15 +2120,13 @@
             "all_phases": false,
             "home_away": "away",
             "game_result": null,
-            "metric": null,
+            "metric": "points",
             "requires_clarification": false,
             "clarification_reason": null,
             "clarification_options": [],
             "data_version": "2025-26.20260928.1"
           },
-          "scope_issues": [
-            "metric=None want points"
-          ],
+          "scope_issues": [],
           "carried_claims": [],
           "prefetch": [
             {
@@ -2164,11 +2137,11 @@
             }
           ],
           "recovery": null,
-          "fallback_text": "Knicks playoffs wins: 9 over 10 archived games. Knicks playoffs losses: 1 over 10 archived games.",
+          "fallback_text": "Knicks playoffs points per game: 116.9 over 10 archived games.",
           "fallback_checks": {
             "fact": "116.90",
             "value": 116.9,
-            "value_ok": false
+            "value_ok": true
           },
           "fallback_score": {
             "id": "And in the playoffs?",
@@ -2177,10 +2150,8 @@
             "answerable": true,
             "outcome": null,
             "old_meets_expectation": false,
-            "meets_expectation": false,
-            "failures": [
-              "required_facts"
-            ],
+            "meets_expectation": true,
+            "failures": [],
             "checks": {
               "validated": true,
               "decline_signal": null,
@@ -2189,9 +2160,9 @@
               "clarification": false,
               "substantive": true,
               "evidence_mode": "claims",
-              "claim_citations": 2,
+              "claim_citations": 1,
               "archive_receipts": 0,
-              "numbers_total": 4,
+              "numbers_total": 2,
               "unbacked_numbers": [],
               "detected_entities": [
                 "Knicks"
@@ -2200,7 +2171,7 @@
               "required_facts": [
                 "116.90"
               ],
-              "required_facts_ok": false,
+              "required_facts_ok": true,
               "required_entities_ok": true,
               "required_phrases_ok": null,
               "echo_question": false,
@@ -2208,12 +2179,12 @@
               "missing_turning_detail": false
             }
           },
-          "fallback_ok": false,
-          "cause": "scope"
+          "fallback_ok": true,
+          "cause": "ok"
         }
       ],
-      "pass": false,
-      "scope_clean": false
+      "pass": true,
+      "scope_clean": true
     },
     {
       "id": "opponent_switch_record",
@@ -2273,7 +2244,7 @@
             "status": "ok",
             "claims": 4
           },
-          "fallback_text": "Knicks regular season wins: 3 over 4 archived games against BOS. Knicks regular season losses: 1 over 4 archived games against BOS.",
+          "fallback_text": "Knicks regular season wins: 3 over 4 archived games against Celtics. Knicks regular season losses: 1 over 4 archived games against Celtics.",
           "fallback_checks": {
             "record": "3-1",
             "records_in_answer": [],
@@ -2362,48 +2333,32 @@
             "home_away": null,
             "game_result": null,
             "metric": null,
-            "requires_clarification": true,
+            "requires_clarification": false,
             "clarification_reason": null,
-            "clarification_options": [
-              "Ariel Hukporti",
-              "Dillon Jones",
-              "Guerschon Yabusele",
-              "Jalen Brunson",
-              "Jeremy Sochan",
-              "Jordan Clarkson",
-              "Jose Alvarado",
-              "Josh Hart",
-              "Karl-Anthony Towns",
-              "Kevin McCullar Jr.",
-              "Landry Shamet",
-              "Mikal Bridges",
-              "Miles McBride",
-              "Mitchell Robinson",
-              "Mohamed Diawara",
-              "OG Anunoby",
-              "Pac\u00f4me Dadiet",
-              "Tosan Evbuomwan",
-              "Trey Jemison III",
-              "Tyler Kolek"
-            ],
+            "clarification_options": [],
             "data_version": "2025-26.20260928.1"
           },
-          "scope_issues": [
-            "requires_clarification"
-          ],
+          "scope_issues": [],
           "carried_claims": [],
-          "prefetch": [],
-          "recovery": {
-            "tool": "get_team_stats",
-            "aggregation": "total",
-            "status": "ambiguous_entity",
-            "claims": 0
-          },
-          "fallback_text": "Which subject did you mean? Ariel Hukporti; Dillon Jones; Guerschon Yabusele; Jalen Brunson; Jeremy Sochan; Jordan Clarkson; Jose Alvarado; Josh Hart; Karl-Anthony Towns; Kevin McCullar Jr.; Landry Shamet; Mikal Bridges; Miles McBride; Mitchell Robinson; Mohamed Diawara; OG Anunoby; Pac\u00f4me Dadiet; Tosan Evbuomwan; Trey Jemison III; Tyler Kolek",
+          "prefetch": [
+            {
+              "tool": "get_team_stats",
+              "aggregation": "total",
+              "status": "ok",
+              "claims": 8
+            }
+          ],
+          "recovery": null,
+          "fallback_text": "Knicks (all phases) wins: 6 over 7 archived games against Cavaliers (regular season 2-1, playoffs 4-0). Knicks (all phases) losses: 1 over 7 archived games against Cavaliers (regular season 2-1, playoffs 4-0).",
           "fallback_checks": {
             "record": "6-1",
-            "records_in_answer": [],
-            "record_ok": false
+            "records_in_answer": [
+              "2-1",
+              "4-0",
+              "2-1",
+              "4-0"
+            ],
+            "record_ok": true
           },
           "fallback_score": {
             "id": "What about Cleveland?",
@@ -2412,93 +2367,42 @@
             "answerable": true,
             "outcome": null,
             "old_meets_expectation": false,
-            "meets_expectation": false,
-            "failures": [
-              "clarification",
-              "unbacked_entities",
-              "required_facts",
-              "required_entities",
-              "no_cited_claims"
-            ],
+            "meets_expectation": true,
+            "failures": [],
             "checks": {
               "validated": true,
-              "decline_signal": "structure:clarification",
-              "decline_signals": [
-                "structure:clarification"
-              ],
+              "decline_signal": null,
+              "decline_signals": [],
               "declined": false,
-              "clarification": true,
+              "clarification": false,
               "substantive": true,
-              "evidence_mode": "archive_index_scoped",
-              "claim_citations": 0,
+              "evidence_mode": "claims",
+              "claim_citations": 2,
               "archive_receipts": 0,
-              "numbers_total": 0,
+              "numbers_total": 8,
               "unbacked_numbers": [],
               "detected_entities": [
-                "Anthony",
-                "Ariel Hukporti",
-                "DeAndre Jordan",
-                "Dillon Jones",
-                "Guerschon Yabusele",
-                "Jalen Brunson",
-                "Jeremy Sochan",
-                "Jordan Clarkson",
-                "Jose Alvarado",
-                "Josh Hart",
-                "Karl-Anthony Towns",
-                "Kevin McCullar Jr.",
-                "Landry Shamet",
-                "Mikal Bridges",
-                "Miles McBride",
-                "Mitchell Robinson",
-                "Mohamed Diawara",
-                "OG Anunoby",
-                "Pac\u00f4me Dadiet",
-                "Tosan Evbuomwan",
-                "Trey Jemison III",
-                "Tyler Kolek"
+                "Cavaliers",
+                "Knicks"
               ],
-              "unbacked_entities": [
-                "Anthony",
-                "Ariel Hukporti",
-                "DeAndre Jordan",
-                "Dillon Jones",
-                "Guerschon Yabusele",
-                "Jalen Brunson",
-                "Jeremy Sochan",
-                "Jordan Clarkson",
-                "Jose Alvarado",
-                "Josh Hart",
-                "Karl-Anthony Towns",
-                "Kevin McCullar Jr.",
-                "Landry Shamet",
-                "Mikal Bridges",
-                "Miles McBride",
-                "Mitchell Robinson",
-                "Mohamed Diawara",
-                "OG Anunoby",
-                "Pac\u00f4me Dadiet",
-                "Tosan Evbuomwan",
-                "Trey Jemison III",
-                "Tyler Kolek"
-              ],
+              "unbacked_entities": [],
               "required_facts": [
                 "6-1"
               ],
-              "required_facts_ok": false,
-              "required_entities_ok": false,
+              "required_facts_ok": true,
+              "required_entities_ok": true,
               "required_phrases_ok": null,
               "echo_question": false,
               "hedged_causal": false,
               "missing_turning_detail": false
             }
           },
-          "fallback_ok": false,
-          "cause": "scope"
+          "fallback_ok": true,
+          "cause": "ok"
         }
       ],
-      "pass": false,
-      "scope_clean": false
+      "pass": true,
+      "scope_clean": true
     },
     {
       "id": "opponent_phase_switch",
@@ -2560,7 +2464,7 @@
             }
           ],
           "recovery": null,
-          "fallback_text": "Knicks regular season wins: 2 over 4 archived games against PHI. Knicks regular season losses: 2 over 4 archived games against PHI.",
+          "fallback_text": "Knicks regular season wins: 2 over 4 archived games against 76ers. Knicks regular season losses: 2 over 4 archived games against 76ers.",
           "fallback_checks": {
             "record": "2-2",
             "records_in_answer": [],
@@ -2630,25 +2534,10 @@
             "team_ids": [],
             "opponent_id": "PHI",
             "game_ids": [
-              83,
-              84,
-              85,
-              86,
-              87,
-              88,
               89,
               90,
               91,
-              92,
-              93,
-              94,
-              95,
-              96,
-              97,
-              98,
-              99,
-              100,
-              101
+              92
             ],
             "date_start": null,
             "date_end": null,
@@ -2675,7 +2564,7 @@
             }
           ],
           "recovery": null,
-          "fallback_text": "Knicks playoffs wins: 4 over 4 archived games against PHI. Knicks playoffs losses: 0 over 4 archived games against PHI.",
+          "fallback_text": "Knicks playoffs wins: 4 over 4 archived games against 76ers. Knicks playoffs losses: 0 over 4 archived games against 76ers.",
           "fallback_checks": {
             "record": "4-0",
             "records_in_answer": [],
@@ -2744,7 +2633,16 @@
             "player_ids": [],
             "team_ids": [],
             "opponent_id": "PHI",
-            "game_ids": [],
+            "game_ids": [
+              27,
+              35,
+              45,
+              55,
+              89,
+              90,
+              91,
+              92
+            ],
             "date_start": null,
             "date_end": null,
             "relative_game_count": null,
@@ -2770,7 +2668,7 @@
             }
           ],
           "recovery": null,
-          "fallback_text": "Knicks (all phases) wins: 6 over 8 archived games against PHI (regular season 2-2, playoffs 4-0). Knicks (all phases) losses: 2 over 8 archived games against PHI (regular season 2-2, playoffs 4-0).",
+          "fallback_text": "Knicks (all phases) wins: 6 over 8 archived games against 76ers (regular season 2-2, playoffs 4-0). Knicks (all phases) losses: 2 over 8 archived games against 76ers (regular season 2-2, playoffs 4-0).",
           "fallback_checks": {
             "record": "6-2",
             "records_in_answer": [
@@ -2886,7 +2784,7 @@
             "status": "ok",
             "claims": 8
           },
-          "fallback_text": "Knicks (all phases) wins: 6 over 7 archived games against CLE (regular season 2-1, playoffs 4-0). Knicks (all phases) losses: 1 over 7 archived games against CLE (regular season 2-1, playoffs 4-0).",
+          "fallback_text": "Knicks (all phases) wins: 6 over 7 archived games against Cavaliers (regular season 2-1, playoffs 4-0). Knicks (all phases) losses: 1 over 7 archived games against Cavaliers (regular season 2-1, playoffs 4-0).",
           "fallback_checks": {
             "record": "6-1",
             "records_in_answer": [
@@ -2962,51 +2860,15 @@
             "opponent_id": "CLE",
             "game_ids": [
               1,
-              2,
-              6,
-              7,
-              8,
-              9,
-              10,
-              11,
-              12,
-              18,
-              19,
-              21,
-              22,
-              23,
-              27,
-              28,
               30,
-              34,
-              35,
-              37,
-              42,
-              43,
-              44,
-              46,
-              48,
-              49,
-              51,
-              54,
-              56,
-              57,
-              61,
-              63,
-              69,
-              70,
-              72,
-              73,
-              78,
-              80,
-              81,
-              82
+              93,
+              94
             ],
             "date_start": null,
             "date_end": null,
             "relative_game_count": null,
             "periods": [],
-            "season_type": "regular",
+            "season_type": null,
             "all_phases": false,
             "home_away": "home",
             "game_result": null,
@@ -3016,25 +2878,27 @@
             "clarification_options": [],
             "data_version": "2025-26.20260928.1"
           },
-          "scope_issues": [
-            "season_type=regular want None",
-            "game_count=2 want 4"
-          ],
+          "scope_issues": [],
           "carried_claims": [],
           "prefetch": [
             {
               "tool": "get_team_stats",
               "aggregation": "total",
               "status": "ok",
-              "claims": 4
+              "claims": 8
             }
           ],
           "recovery": null,
-          "fallback_text": "Knicks regular season wins: 2 over 2 archived games against CLE. Knicks regular season losses: 0 over 2 archived games against CLE.",
+          "fallback_text": "Knicks (all phases) wins: 4 over 4 archived games against Cavaliers (regular season 2-0, playoffs 2-0). Knicks (all phases) losses: 0 over 4 archived games against Cavaliers (regular season 2-0, playoffs 2-0).",
           "fallback_checks": {
             "record": "4-0",
-            "records_in_answer": [],
-            "record_ok": false
+            "records_in_answer": [
+              "2-0",
+              "2-0",
+              "2-0",
+              "2-0"
+            ],
+            "record_ok": true
           },
           "fallback_score": {
             "id": "And at home?",
@@ -3043,10 +2907,8 @@
             "answerable": true,
             "outcome": null,
             "old_meets_expectation": false,
-            "meets_expectation": false,
-            "failures": [
-              "required_facts"
-            ],
+            "meets_expectation": true,
+            "failures": [],
             "checks": {
               "validated": true,
               "decline_signal": null,
@@ -3055,9 +2917,9 @@
               "clarification": false,
               "substantive": true,
               "evidence_mode": "claims",
-              "claim_citations": 4,
+              "claim_citations": 2,
               "archive_receipts": 0,
-              "numbers_total": 4,
+              "numbers_total": 8,
               "unbacked_numbers": [],
               "detected_entities": [
                 "Cavaliers",
@@ -3067,7 +2929,7 @@
               "required_facts": [
                 "4-0"
               ],
-              "required_facts_ok": false,
+              "required_facts_ok": true,
               "required_entities_ok": true,
               "required_phrases_ok": null,
               "echo_question": false,
@@ -3075,8 +2937,8 @@
               "missing_turning_detail": false
             }
           },
-          "fallback_ok": false,
-          "cause": "scope"
+          "fallback_ok": true,
+          "cause": "ok"
         },
         {
           "turn": 3,
@@ -3102,54 +2964,15 @@
             "team_ids": [],
             "opponent_id": "CLE",
             "game_ids": [
-              3,
-              4,
-              5,
-              13,
-              14,
-              15,
-              16,
-              17,
-              20,
-              24,
-              25,
-              26,
-              29,
-              31,
-              32,
-              33,
-              36,
-              38,
-              39,
-              40,
-              41,
-              45,
-              47,
-              50,
-              52,
-              53,
-              55,
-              58,
               59,
-              60,
-              62,
-              64,
-              65,
-              66,
-              67,
-              68,
-              71,
-              74,
-              75,
-              76,
-              77,
-              79
+              95,
+              96
             ],
             "date_start": null,
             "date_end": null,
             "relative_game_count": null,
             "periods": [],
-            "season_type": "regular",
+            "season_type": null,
             "all_phases": false,
             "home_away": "away",
             "game_result": null,
@@ -3159,25 +2982,27 @@
             "clarification_options": [],
             "data_version": "2025-26.20260928.1"
           },
-          "scope_issues": [
-            "season_type=regular want None",
-            "game_count=1 want 3"
-          ],
+          "scope_issues": [],
           "carried_claims": [],
           "prefetch": [
             {
               "tool": "get_team_stats",
               "aggregation": "total",
               "status": "ok",
-              "claims": 4
+              "claims": 8
             }
           ],
           "recovery": null,
-          "fallback_text": "Knicks regular season wins: 0 over 1 archived games against CLE. Knicks regular season losses: 1 over 1 archived games against CLE.",
+          "fallback_text": "Knicks (all phases) wins: 2 over 3 archived games against Cavaliers (regular season 0-1, playoffs 2-0). Knicks (all phases) losses: 1 over 3 archived games against Cavaliers (regular season 0-1, playoffs 2-0).",
           "fallback_checks": {
             "record": "2-1",
-            "records_in_answer": [],
-            "record_ok": false
+            "records_in_answer": [
+              "0-1",
+              "2-0",
+              "0-1",
+              "2-0"
+            ],
+            "record_ok": true
           },
           "fallback_score": {
             "id": "And on the road?",
@@ -3186,10 +3011,8 @@
             "answerable": true,
             "outcome": null,
             "old_meets_expectation": false,
-            "meets_expectation": false,
-            "failures": [
-              "required_facts"
-            ],
+            "meets_expectation": true,
+            "failures": [],
             "checks": {
               "validated": true,
               "decline_signal": null,
@@ -3198,9 +3021,9 @@
               "clarification": false,
               "substantive": true,
               "evidence_mode": "claims",
-              "claim_citations": 2,
+              "claim_citations": 6,
               "archive_receipts": 0,
-              "numbers_total": 4,
+              "numbers_total": 8,
               "unbacked_numbers": [],
               "detected_entities": [
                 "Cavaliers",
@@ -3210,7 +3033,7 @@
               "required_facts": [
                 "2-1"
               ],
-              "required_facts_ok": false,
+              "required_facts_ok": true,
               "required_entities_ok": true,
               "required_phrases_ok": null,
               "echo_question": false,
@@ -3218,12 +3041,12 @@
               "missing_turning_detail": false
             }
           },
-          "fallback_ok": false,
-          "cause": "scope"
+          "fallback_ok": true,
+          "cause": "ok"
         }
       ],
-      "pass": false,
-      "scope_clean": false
+      "pass": true,
+      "scope_clean": true
     },
     {
       "id": "player_switch",
@@ -3360,42 +3183,43 @@
             ],
             "team_ids": [],
             "opponent_id": null,
-            "game_ids": [],
+            "game_ids": [
+              97,
+              98,
+              99,
+              100,
+              101
+            ],
             "date_start": null,
             "date_end": null,
-            "relative_game_count": null,
+            "relative_game_count": 5,
             "periods": [],
-            "season_type": "regular",
+            "season_type": null,
             "all_phases": false,
             "home_away": null,
             "game_result": null,
-            "metric": null,
+            "metric": "points",
             "requires_clarification": false,
             "clarification_reason": null,
             "clarification_options": [],
             "data_version": "2025-26.20260928.1"
           },
-          "scope_issues": [
-            "season_type=regular want None",
-            "relative_game_count=None want 5",
-            "metric=None want points",
-            "game_count=82 want 5"
-          ],
+          "scope_issues": [],
           "carried_claims": [],
           "prefetch": [
             {
-              "tool": "discover_facts",
+              "tool": "get_player_stats",
               "aggregation": "average",
               "status": "ok",
-              "claims": 10
+              "claims": 1
             }
           ],
           "recovery": null,
-          "fallback_text": "I can't answer that: verified archive facts are unavailable on this turn.",
+          "fallback_text": "Karl-Anthony Towns: 13.0 points per appearance across 5 observed appearances in the 2025-26 playoffs.",
           "fallback_checks": {
             "fact": "13.0",
             "value": 13.0,
-            "value_ok": false
+            "value_ok": true
           },
           "fallback_score": {
             "id": "What about Towns?",
@@ -3404,47 +3228,42 @@
             "answerable": true,
             "outcome": null,
             "old_meets_expectation": false,
-            "meets_expectation": false,
-            "failures": [
-              "declined:phrase:decline",
-              "not_substantive",
-              "required_facts",
-              "required_entities",
-              "no_cited_claims"
-            ],
+            "meets_expectation": true,
+            "failures": [],
             "checks": {
               "validated": true,
-              "decline_signal": "phrase:decline",
-              "decline_signals": [
-                "phrase:decline"
-              ],
-              "declined": true,
+              "decline_signal": null,
+              "decline_signals": [],
+              "declined": false,
               "clarification": false,
-              "substantive": false,
-              "evidence_mode": "archive_index_scoped",
-              "claim_citations": 0,
+              "substantive": true,
+              "evidence_mode": "claims",
+              "claim_citations": 1,
               "archive_receipts": 0,
-              "numbers_total": 0,
+              "numbers_total": 2,
               "unbacked_numbers": [],
-              "detected_entities": [],
+              "detected_entities": [
+                "Anthony",
+                "Karl-Anthony Towns"
+              ],
               "unbacked_entities": [],
               "required_facts": [
                 "13.0"
               ],
-              "required_facts_ok": false,
-              "required_entities_ok": false,
+              "required_facts_ok": true,
+              "required_entities_ok": true,
               "required_phrases_ok": null,
               "echo_question": false,
               "hedged_causal": false,
               "missing_turning_detail": false
             }
           },
-          "fallback_ok": false,
-          "cause": "scope+decline"
+          "fallback_ok": true,
+          "cause": "ok"
         }
       ],
-      "pass": false,
-      "scope_clean": false
+      "pass": true,
+      "scope_clean": true
     },
     {
       "id": "player_pronoun_metric",
@@ -3590,12 +3409,27 @@
             ],
             "team_ids": [],
             "opponent_id": null,
-            "game_ids": [],
-            "date_start": null,
-            "date_end": null,
+            "game_ids": [
+              20,
+              21,
+              22,
+              23,
+              24,
+              25,
+              26,
+              27,
+              28,
+              29,
+              30,
+              31,
+              32,
+              33
+            ],
+            "date_start": "2025-12-02",
+            "date_end": "2025-12-31",
             "relative_game_count": null,
             "periods": [],
-            "season_type": "regular",
+            "season_type": null,
             "all_phases": false,
             "home_away": null,
             "game_result": null,
@@ -3605,12 +3439,7 @@
             "clarification_options": [],
             "data_version": "2025-26.20260928.1"
           },
-          "scope_issues": [
-            "season_type=regular want None",
-            "date_start=None want 2025-12-02",
-            "date_end=None want 2025-12-31",
-            "game_count=82 want 14"
-          ],
+          "scope_issues": [],
           "carried_claims": [
             {
               "metric": "assists:average",
@@ -3620,18 +3449,18 @@
           ],
           "prefetch": [
             {
-              "tool": "discover_facts",
+              "tool": "get_player_stats",
               "aggregation": "average",
               "status": "ok",
-              "claims": 10
+              "claims": 1
             }
           ],
           "recovery": null,
-          "fallback_text": "I can't answer that: verified archive facts are unavailable on this turn.",
+          "fallback_text": "Jalen Brunson: 30.6 points per appearance across 13 observed appearances in the 2025-26 regular season.",
           "fallback_checks": {
             "fact": "30.6",
             "value": 30.6154,
-            "value_ok": false
+            "value_ok": true
           },
           "fallback_score": {
             "id": "And his points?",
@@ -3640,47 +3469,41 @@
             "answerable": true,
             "outcome": null,
             "old_meets_expectation": false,
-            "meets_expectation": false,
-            "failures": [
-              "declined:phrase:decline",
-              "not_substantive",
-              "required_facts",
-              "required_entities",
-              "no_cited_claims"
-            ],
+            "meets_expectation": true,
+            "failures": [],
             "checks": {
               "validated": true,
-              "decline_signal": "phrase:decline",
-              "decline_signals": [
-                "phrase:decline"
-              ],
-              "declined": true,
+              "decline_signal": null,
+              "decline_signals": [],
+              "declined": false,
               "clarification": false,
-              "substantive": false,
-              "evidence_mode": "archive_index_scoped",
-              "claim_citations": 0,
+              "substantive": true,
+              "evidence_mode": "claims",
+              "claim_citations": 1,
               "archive_receipts": 0,
-              "numbers_total": 0,
+              "numbers_total": 2,
               "unbacked_numbers": [],
-              "detected_entities": [],
+              "detected_entities": [
+                "Jalen Brunson"
+              ],
               "unbacked_entities": [],
               "required_facts": [
                 "30.6"
               ],
-              "required_facts_ok": false,
-              "required_entities_ok": false,
+              "required_facts_ok": true,
+              "required_entities_ok": true,
               "required_phrases_ok": null,
               "echo_question": false,
               "hedged_causal": false,
               "missing_turning_detail": false
             }
           },
-          "fallback_ok": false,
-          "cause": "scope+decline"
+          "fallback_ok": true,
+          "cause": "ok"
         }
       ],
-      "pass": false,
-      "scope_clean": false
+      "pass": true,
+      "scope_clean": true
     },
     {
       "id": "player_phase_change",
@@ -3923,30 +3746,28 @@
             "all_phases": false,
             "home_away": null,
             "game_result": null,
-            "metric": null,
+            "metric": "points",
             "requires_clarification": false,
             "clarification_reason": null,
             "clarification_options": [],
             "data_version": "2025-26.20260928.1"
           },
-          "scope_issues": [
-            "metric=None want points"
-          ],
+          "scope_issues": [],
           "carried_claims": [],
           "prefetch": [
             {
-              "tool": "discover_facts",
+              "tool": "get_player_stats",
               "aggregation": "average",
               "status": "ok",
-              "claims": 10
+              "claims": 1
             }
           ],
           "recovery": null,
-          "fallback_text": "I can't answer that: verified archive facts are unavailable on this turn.",
+          "fallback_text": "Jalen Brunson: 28.4 points per appearance across 19 observed appearances in the 2025-26 playoffs.",
           "fallback_checks": {
             "fact": "28.4",
             "value": 28.3684,
-            "value_ok": false
+            "value_ok": true
           },
           "fallback_score": {
             "id": "And in the playoffs?",
@@ -3955,47 +3776,41 @@
             "answerable": true,
             "outcome": null,
             "old_meets_expectation": false,
-            "meets_expectation": false,
-            "failures": [
-              "declined:phrase:decline",
-              "not_substantive",
-              "required_facts",
-              "required_entities",
-              "no_cited_claims"
-            ],
+            "meets_expectation": true,
+            "failures": [],
             "checks": {
               "validated": true,
-              "decline_signal": "phrase:decline",
-              "decline_signals": [
-                "phrase:decline"
-              ],
-              "declined": true,
+              "decline_signal": null,
+              "decline_signals": [],
+              "declined": false,
               "clarification": false,
-              "substantive": false,
-              "evidence_mode": "archive_index_scoped",
-              "claim_citations": 0,
+              "substantive": true,
+              "evidence_mode": "claims",
+              "claim_citations": 1,
               "archive_receipts": 0,
-              "numbers_total": 0,
+              "numbers_total": 2,
               "unbacked_numbers": [],
-              "detected_entities": [],
+              "detected_entities": [
+                "Jalen Brunson"
+              ],
               "unbacked_entities": [],
               "required_facts": [
                 "28.4"
               ],
-              "required_facts_ok": false,
-              "required_entities_ok": false,
+              "required_facts_ok": true,
+              "required_entities_ok": true,
               "required_phrases_ok": null,
               "echo_question": false,
               "hedged_causal": false,
               "missing_turning_detail": false
             }
           },
-          "fallback_ok": false,
-          "cause": "scope+decline"
+          "fallback_ok": true,
+          "cause": "ok"
         }
       ],
-      "pass": false,
-      "scope_clean": false
+      "pass": true,
+      "scope_clean": true
     },
     {
       "id": "player_month_switch",
@@ -4167,30 +3982,28 @@
             "all_phases": false,
             "home_away": null,
             "game_result": null,
-            "metric": null,
+            "metric": "rebounds",
             "requires_clarification": false,
             "clarification_reason": null,
             "clarification_options": [],
             "data_version": "2025-26.20260928.1"
           },
-          "scope_issues": [
-            "metric=None want rebounds"
-          ],
+          "scope_issues": [],
           "carried_claims": [],
           "prefetch": [
             {
-              "tool": "discover_facts",
+              "tool": "get_player_stats",
               "aggregation": "average",
               "status": "ok",
-              "claims": 10
+              "claims": 1
             }
           ],
           "recovery": null,
-          "fallback_text": "I can't answer that: verified archive facts are unavailable on this turn.",
+          "fallback_text": "Karl-Anthony Towns: 12.1 rebounds per appearance across 14 observed appearances in the 2025-26 regular season.",
           "fallback_checks": {
             "fact": "12.1",
             "value": 12.0714,
-            "value_ok": false
+            "value_ok": true
           },
           "fallback_score": {
             "id": "And in January?",
@@ -4199,47 +4012,42 @@
             "answerable": true,
             "outcome": null,
             "old_meets_expectation": false,
-            "meets_expectation": false,
-            "failures": [
-              "declined:phrase:decline",
-              "not_substantive",
-              "required_facts",
-              "required_entities",
-              "no_cited_claims"
-            ],
+            "meets_expectation": true,
+            "failures": [],
             "checks": {
               "validated": true,
-              "decline_signal": "phrase:decline",
-              "decline_signals": [
-                "phrase:decline"
-              ],
-              "declined": true,
+              "decline_signal": null,
+              "decline_signals": [],
+              "declined": false,
               "clarification": false,
-              "substantive": false,
-              "evidence_mode": "archive_index_scoped",
-              "claim_citations": 0,
+              "substantive": true,
+              "evidence_mode": "claims",
+              "claim_citations": 1,
               "archive_receipts": 0,
-              "numbers_total": 0,
+              "numbers_total": 2,
               "unbacked_numbers": [],
-              "detected_entities": [],
+              "detected_entities": [
+                "Anthony",
+                "Karl-Anthony Towns"
+              ],
               "unbacked_entities": [],
               "required_facts": [
                 "12.1"
               ],
-              "required_facts_ok": false,
-              "required_entities_ok": false,
+              "required_facts_ok": true,
+              "required_entities_ok": true,
               "required_phrases_ok": null,
               "echo_question": false,
               "hedged_causal": false,
               "missing_turning_detail": false
             }
           },
-          "fallback_ok": false,
-          "cause": "scope+decline"
+          "fallback_ok": true,
+          "cause": "ok"
         }
       ],
-      "pass": false,
-      "scope_clean": false
+      "pass": true,
+      "scope_clean": true
     },
     {
       "id": "player_last5_to_month",
@@ -4401,30 +4209,28 @@
             "all_phases": false,
             "home_away": null,
             "game_result": null,
-            "metric": null,
+            "metric": "points",
             "requires_clarification": false,
             "clarification_reason": null,
             "clarification_options": [],
             "data_version": "2025-26.20260928.1"
           },
-          "scope_issues": [
-            "metric=None want points"
-          ],
+          "scope_issues": [],
           "carried_claims": [],
           "prefetch": [
             {
-              "tool": "discover_facts",
+              "tool": "get_player_stats",
               "aggregation": "average",
               "status": "ok",
-              "claims": 10
+              "claims": 1
             }
           ],
           "recovery": null,
-          "fallback_text": "I can't answer that: verified archive facts are unavailable on this turn.",
+          "fallback_text": "Karl-Anthony Towns: 22.3 points per appearance across 12 observed appearances in the 2025-26 regular season.",
           "fallback_checks": {
             "fact": "22.3",
             "value": 22.3333,
-            "value_ok": false
+            "value_ok": true
           },
           "fallback_score": {
             "id": "And in December?",
@@ -4433,47 +4239,42 @@
             "answerable": true,
             "outcome": null,
             "old_meets_expectation": false,
-            "meets_expectation": false,
-            "failures": [
-              "declined:phrase:decline",
-              "not_substantive",
-              "required_facts",
-              "required_entities",
-              "no_cited_claims"
-            ],
+            "meets_expectation": true,
+            "failures": [],
             "checks": {
               "validated": true,
-              "decline_signal": "phrase:decline",
-              "decline_signals": [
-                "phrase:decline"
-              ],
-              "declined": true,
+              "decline_signal": null,
+              "decline_signals": [],
+              "declined": false,
               "clarification": false,
-              "substantive": false,
-              "evidence_mode": "archive_index_scoped",
-              "claim_citations": 0,
+              "substantive": true,
+              "evidence_mode": "claims",
+              "claim_citations": 1,
               "archive_receipts": 0,
-              "numbers_total": 0,
+              "numbers_total": 2,
               "unbacked_numbers": [],
-              "detected_entities": [],
+              "detected_entities": [
+                "Anthony",
+                "Karl-Anthony Towns"
+              ],
               "unbacked_entities": [],
               "required_facts": [
                 "22.3"
               ],
-              "required_facts_ok": false,
-              "required_entities_ok": false,
+              "required_facts_ok": true,
+              "required_entities_ok": true,
               "required_phrases_ok": null,
               "echo_question": false,
               "hedged_causal": false,
               "missing_turning_detail": false
             }
           },
-          "fallback_ok": false,
-          "cause": "scope+decline"
+          "fallback_ok": true,
+          "cause": "ok"
         }
       ],
-      "pass": false,
-      "scope_clean": false
+      "pass": true,
+      "scope_clean": true
     },
     {
       "id": "team_total_average",
@@ -4611,28 +4412,37 @@
             "player_ids": [],
             "team_ids": [],
             "opponent_id": null,
-            "game_ids": [],
-            "date_start": null,
-            "date_end": null,
+            "game_ids": [
+              20,
+              21,
+              22,
+              23,
+              24,
+              25,
+              26,
+              27,
+              28,
+              29,
+              30,
+              31,
+              32,
+              33
+            ],
+            "date_start": "2025-12-02",
+            "date_end": "2025-12-31",
             "relative_game_count": null,
             "periods": [],
-            "season_type": "regular",
+            "season_type": null,
             "all_phases": false,
             "home_away": null,
             "game_result": null,
-            "metric": null,
+            "metric": "points",
             "requires_clarification": false,
             "clarification_reason": null,
             "clarification_options": [],
             "data_version": "2025-26.20260928.1"
           },
-          "scope_issues": [
-            "season_type=regular want None",
-            "metric=None want points",
-            "date_start=None want 2025-12-02",
-            "date_end=None want 2025-12-31",
-            "game_count=82 want 14"
-          ],
+          "scope_issues": [],
           "carried_claims": [
             {
               "metric": "points",
@@ -4643,17 +4453,17 @@
           "prefetch": [
             {
               "tool": "get_team_stats",
-              "aggregation": "total",
+              "aggregation": "average",
               "status": "ok",
-              "claims": 6
+              "claims": 4
             }
           ],
           "recovery": null,
-          "fallback_text": "Knicks regular season points per game: 116.45121951219512 over 82 archived games. Knicks regular season points: 9549 over 82 archived games.",
+          "fallback_text": "Knicks regular season points per game: 122.14285714285714 over 14 archived games.",
           "fallback_checks": {
             "fact": "122.14",
             "value": 122.1429,
-            "value_ok": false
+            "value_ok": true
           },
           "fallback_score": {
             "id": "And per game?",
@@ -4662,10 +4472,8 @@
             "answerable": true,
             "outcome": null,
             "old_meets_expectation": false,
-            "meets_expectation": false,
-            "failures": [
-              "required_facts"
-            ],
+            "meets_expectation": true,
+            "failures": [],
             "checks": {
               "validated": true,
               "decline_signal": null,
@@ -4674,9 +4482,9 @@
               "clarification": false,
               "substantive": true,
               "evidence_mode": "claims",
-              "claim_citations": 2,
+              "claim_citations": 1,
               "archive_receipts": 0,
-              "numbers_total": 4,
+              "numbers_total": 2,
               "unbacked_numbers": [],
               "detected_entities": [
                 "Knicks"
@@ -4685,7 +4493,7 @@
               "required_facts": [
                 "122.14"
               ],
-              "required_facts_ok": false,
+              "required_facts_ok": true,
               "required_entities_ok": true,
               "required_phrases_ok": null,
               "echo_question": false,
@@ -4693,12 +4501,12 @@
               "missing_turning_detail": false
             }
           },
-          "fallback_ok": false,
-          "cause": "scope"
+          "fallback_ok": true,
+          "cause": "ok"
         }
       ],
-      "pass": false,
-      "scope_clean": false
+      "pass": true,
+      "scope_clean": true
     },
     {
       "id": "game_reference_chain",
@@ -4755,11 +4563,11 @@
             }
           ],
           "recovery": null,
-          "fallback_text": "Knicks playoffs wins: 1 over 1 archived games. Knicks playoffs losses: 0 over 1 archived games.",
+          "fallback_text": "Knicks playoffs points: 94 over 1 archived games (94-90 at Spurs on 2026-06-13).",
           "fallback_checks": {
             "fact": "94",
             "value": 94.0,
-            "value_ok": false
+            "value_ok": true
           },
           "fallback_score": {
             "id": "How many points did the Knicks score in their last game?",
@@ -4768,10 +4576,8 @@
             "answerable": true,
             "outcome": null,
             "old_meets_expectation": false,
-            "meets_expectation": false,
-            "failures": [
-              "required_facts"
-            ],
+            "meets_expectation": true,
+            "failures": [],
             "checks": {
               "validated": true,
               "decline_signal": null,
@@ -4780,18 +4586,19 @@
               "clarification": false,
               "substantive": true,
               "evidence_mode": "claims",
-              "claim_citations": 2,
+              "claim_citations": 1,
               "archive_receipts": 0,
               "numbers_total": 4,
               "unbacked_numbers": [],
               "detected_entities": [
-                "Knicks"
+                "Knicks",
+                "Spurs"
               ],
               "unbacked_entities": [],
               "required_facts": [
                 "94"
               ],
-              "required_facts_ok": false,
+              "required_facts_ok": true,
               "required_entities_ok": true,
               "required_phrases_ok": null,
               "echo_question": false,
@@ -4799,8 +4606,8 @@
               "missing_turning_detail": false
             }
           },
-          "fallback_ok": false,
-          "cause": "answer:value"
+          "fallback_ok": true,
+          "cause": "ok"
         },
         {
           "turn": 2,
@@ -4831,12 +4638,14 @@
             ],
             "team_ids": [],
             "opponent_id": null,
-            "game_ids": [],
-            "date_start": null,
-            "date_end": null,
+            "game_ids": [
+              101
+            ],
+            "date_start": "2026-06-13",
+            "date_end": "2026-06-13",
             "relative_game_count": null,
             "periods": [],
-            "season_type": "regular",
+            "season_type": null,
             "all_phases": false,
             "home_away": null,
             "game_result": null,
@@ -4846,28 +4655,22 @@
             "clarification_options": [],
             "data_version": "2025-26.20260928.1"
           },
-          "scope_issues": [
-            "season_type=regular want None",
-            "date_start=None want 2026-06-13",
-            "date_end=None want 2026-06-13",
-            "game_count=82 want 1",
-            "game_ids differ (got [], want [101])"
-          ],
+          "scope_issues": [],
           "carried_claims": [],
           "prefetch": [
             {
               "tool": "discover_facts",
               "aggregation": "average",
               "status": "ok",
-              "claims": 10
+              "claims": 1
             }
           ],
           "recovery": null,
-          "fallback_text": "I can't answer that: verified archive facts are unavailable on this turn.",
+          "fallback_text": "Jalen Brunson recorded 45 points on 2026-06-13 against SAS.",
           "fallback_checks": {
             "fact": "45",
             "value": 45.0,
-            "value_ok": false
+            "value_ok": true
           },
           "fallback_score": {
             "id": "How many points did Brunson score in that game?",
@@ -4876,43 +4679,38 @@
             "answerable": true,
             "outcome": null,
             "old_meets_expectation": false,
-            "meets_expectation": false,
-            "failures": [
-              "declined:phrase:decline",
-              "not_substantive",
-              "required_facts",
-              "required_entities",
-              "no_cited_claims"
-            ],
+            "meets_expectation": true,
+            "failures": [],
             "checks": {
               "validated": true,
-              "decline_signal": "phrase:decline",
-              "decline_signals": [
-                "phrase:decline"
-              ],
-              "declined": true,
+              "decline_signal": null,
+              "decline_signals": [],
+              "declined": false,
               "clarification": false,
-              "substantive": false,
-              "evidence_mode": "archive_index_scoped",
-              "claim_citations": 0,
+              "substantive": true,
+              "evidence_mode": "claims",
+              "claim_citations": 1,
               "archive_receipts": 0,
-              "numbers_total": 0,
+              "numbers_total": 2,
               "unbacked_numbers": [],
-              "detected_entities": [],
+              "detected_entities": [
+                "Jalen Brunson",
+                "Spurs"
+              ],
               "unbacked_entities": [],
               "required_facts": [
                 "45"
               ],
-              "required_facts_ok": false,
-              "required_entities_ok": false,
+              "required_facts_ok": true,
+              "required_entities_ok": true,
               "required_phrases_ok": null,
               "echo_question": false,
               "hedged_causal": false,
               "missing_turning_detail": false
             }
           },
-          "fallback_ok": false,
-          "cause": "scope+decline"
+          "fallback_ok": true,
+          "cause": "ok"
         },
         {
           "turn": 3,
@@ -4943,44 +4741,39 @@
             ],
             "team_ids": [],
             "opponent_id": null,
-            "game_ids": [],
-            "date_start": null,
-            "date_end": null,
+            "game_ids": [
+              100
+            ],
+            "date_start": "2026-06-10",
+            "date_end": "2026-06-10",
             "relative_game_count": null,
             "periods": [],
-            "season_type": "regular",
+            "season_type": null,
             "all_phases": false,
             "home_away": null,
             "game_result": null,
-            "metric": null,
+            "metric": "points",
             "requires_clarification": false,
             "clarification_reason": null,
             "clarification_options": [],
             "data_version": "2025-26.20260928.1"
           },
-          "scope_issues": [
-            "season_type=regular want None",
-            "metric=None want points",
-            "date_start=None want 2026-06-10",
-            "date_end=None want 2026-06-10",
-            "game_count=82 want 1",
-            "game_ids differ (got [], want [100])"
-          ],
+          "scope_issues": [],
           "carried_claims": [],
           "prefetch": [
             {
               "tool": "discover_facts",
               "aggregation": "average",
               "status": "ok",
-              "claims": 10
+              "claims": 1
             }
           ],
           "recovery": null,
-          "fallback_text": "I can't answer that: verified archive facts are unavailable on this turn.",
+          "fallback_text": "Jalen Brunson recorded 36 points on 2026-06-10 against SAS.",
           "fallback_checks": {
             "fact": "36",
             "value": 36.0,
-            "value_ok": false
+            "value_ok": true
           },
           "fallback_score": {
             "id": "And in the game before that?",
@@ -4989,47 +4782,42 @@
             "answerable": true,
             "outcome": null,
             "old_meets_expectation": false,
-            "meets_expectation": false,
-            "failures": [
-              "declined:phrase:decline",
-              "not_substantive",
-              "required_facts",
-              "required_entities",
-              "no_cited_claims"
-            ],
+            "meets_expectation": true,
+            "failures": [],
             "checks": {
               "validated": true,
-              "decline_signal": "phrase:decline",
-              "decline_signals": [
-                "phrase:decline"
-              ],
-              "declined": true,
+              "decline_signal": null,
+              "decline_signals": [],
+              "declined": false,
               "clarification": false,
-              "substantive": false,
-              "evidence_mode": "archive_index_scoped",
-              "claim_citations": 0,
+              "substantive": true,
+              "evidence_mode": "claims",
+              "claim_citations": 1,
               "archive_receipts": 0,
-              "numbers_total": 0,
+              "numbers_total": 2,
               "unbacked_numbers": [],
-              "detected_entities": [],
+              "detected_entities": [
+                "Jalen Brunson",
+                "Spurs"
+              ],
               "unbacked_entities": [],
               "required_facts": [
                 "36"
               ],
-              "required_facts_ok": false,
-              "required_entities_ok": false,
+              "required_facts_ok": true,
+              "required_entities_ok": true,
               "required_phrases_ok": null,
               "echo_question": false,
               "hedged_causal": false,
               "missing_turning_detail": false
             }
           },
-          "fallback_ok": false,
-          "cause": "scope+decline"
+          "fallback_ok": true,
+          "cause": "ok"
         }
       ],
-      "pass": false,
-      "scope_clean": false
+      "pass": true,
+      "scope_clean": true
     },
     {
       "id": "game_why",
@@ -5088,10 +4876,10 @@
             }
           ],
           "recovery": null,
-          "fallback_text": "Knicks playoffs wins: 0 over 1 archived games. Knicks playoffs losses: 1 over 1 archived games.",
+          "fallback_text": "Knicks playoffs points: 111 over 1 archived games (111-115 vs Spurs on 2026-06-08).",
           "fallback_checks": {
             "fact": "111",
-            "fact_ok": false
+            "fact_ok": true
           },
           "fallback_score": {
             "id": "How many points did the Knicks score in the game on 2026-06-08?",
@@ -5100,10 +4888,8 @@
             "answerable": true,
             "outcome": null,
             "old_meets_expectation": false,
-            "meets_expectation": false,
-            "failures": [
-              "required_facts"
-            ],
+            "meets_expectation": true,
+            "failures": [],
             "checks": {
               "validated": true,
               "decline_signal": null,
@@ -5112,18 +4898,19 @@
               "clarification": false,
               "substantive": true,
               "evidence_mode": "claims",
-              "claim_citations": 2,
+              "claim_citations": 1,
               "archive_receipts": 0,
               "numbers_total": 4,
               "unbacked_numbers": [],
               "detected_entities": [
-                "Knicks"
+                "Knicks",
+                "Spurs"
               ],
               "unbacked_entities": [],
               "required_facts": [
                 "111"
               ],
-              "required_facts_ok": false,
+              "required_facts_ok": true,
               "required_entities_ok": null,
               "required_phrases_ok": null,
               "echo_question": false,
@@ -5131,8 +4918,8 @@
               "missing_turning_detail": false
             }
           },
-          "fallback_ok": false,
-          "cause": "answer:value"
+          "fallback_ok": true,
+          "cause": "ok"
         },
         {
           "turn": 2,
@@ -5159,12 +4946,14 @@
             "player_ids": [],
             "team_ids": [],
             "opponent_id": null,
-            "game_ids": [],
-            "date_start": null,
-            "date_end": null,
+            "game_ids": [
+              99
+            ],
+            "date_start": "2026-06-08",
+            "date_end": "2026-06-08",
             "relative_game_count": null,
             "periods": [],
-            "season_type": "regular",
+            "season_type": null,
             "all_phases": false,
             "home_away": null,
             "game_result": null,
@@ -5174,14 +4963,14 @@
             "clarification_options": [],
             "data_version": "2025-26.20260928.1"
           },
-          "scope_issues": [
-            "season_type=regular want None",
-            "date_start=None want 2026-06-08",
-            "date_end=None want 2026-06-08",
-            "game_count=82 want 1",
-            "game_ids differ (got [], want [99])"
+          "scope_issues": [],
+          "carried_claims": [
+            {
+              "metric": "points",
+              "season_type": "playoffs",
+              "games": 1
+            }
           ],
-          "carried_claims": [],
           "prefetch": [
             {
               "tool": "get_team_stats",
@@ -5191,7 +4980,7 @@
             }
           ],
           "recovery": null,
-          "fallback_text": "Knicks regular season wins: 53 over 82 archived games. Knicks regular season losses: 29 over 82 archived games.",
+          "fallback_text": "Knicks playoffs points: 111 over 1 archived games (111-115 vs Spurs on 2026-06-08). Knicks playoffs margin: -4 over 1 archived games (111-115 vs Spurs on 2026-06-08).",
           "fallback_checks": {
             "fact": null,
             "fact_ok": true
@@ -5203,10 +4992,8 @@
             "answerable": true,
             "outcome": null,
             "old_meets_expectation": false,
-            "meets_expectation": false,
-            "failures": [
-              "required_entities"
-            ],
+            "meets_expectation": true,
+            "failures": [],
             "checks": {
               "validated": true,
               "decline_signal": null,
@@ -5217,27 +5004,28 @@
               "evidence_mode": "claims",
               "claim_citations": 2,
               "archive_receipts": 0,
-              "numbers_total": 4,
+              "numbers_total": 8,
               "unbacked_numbers": [],
               "detected_entities": [
-                "Knicks"
+                "Knicks",
+                "Spurs"
               ],
               "unbacked_entities": [],
               "required_facts": [],
               "required_facts_ok": null,
-              "required_entities_ok": false,
+              "required_entities_ok": true,
               "required_phrases_ok": null,
               "echo_question": false,
               "hedged_causal": false,
               "missing_turning_detail": false
             }
           },
-          "fallback_ok": false,
-          "cause": "latent_scope"
+          "fallback_ok": true,
+          "cause": "ok"
         }
       ],
-      "pass": false,
-      "scope_clean": false
+      "pass": true,
+      "scope_clean": true
     },
     {
       "id": "betting_decline",
@@ -5496,18 +5284,20 @@
           },
           "scope_issues": [],
           "carried_claims": [],
-          "prefetch": [],
-          "recovery": {
-            "tool": "get_team_stats",
-            "aggregation": "total",
-            "status": "ok",
-            "claims": 4
-          },
-          "fallback_text": "I can't answer that: verified archive facts are unavailable on this turn.",
+          "prefetch": [
+            {
+              "tool": "get_team_stats",
+              "aggregation": "total",
+              "status": "ok",
+              "claims": 4
+            }
+          ],
+          "recovery": null,
+          "fallback_text": "Knicks playoffs wins: 16 over 19 archived games. Knicks playoffs losses: 3 over 19 archived games.",
           "fallback_checks": {
             "record": "16-3",
             "records_in_answer": [],
-            "record_ok": false
+            "record_ok": true
           },
           "fallback_score": {
             "id": "And in the playoffs?",
@@ -5516,46 +5306,40 @@
             "answerable": true,
             "outcome": null,
             "old_meets_expectation": false,
-            "meets_expectation": false,
-            "failures": [
-              "declined:phrase:decline",
-              "not_substantive",
-              "required_facts",
-              "required_entities",
-              "no_cited_claims"
-            ],
+            "meets_expectation": true,
+            "failures": [],
             "checks": {
               "validated": true,
-              "decline_signal": "phrase:decline",
-              "decline_signals": [
-                "phrase:decline"
-              ],
-              "declined": true,
+              "decline_signal": null,
+              "decline_signals": [],
+              "declined": false,
               "clarification": false,
-              "substantive": false,
-              "evidence_mode": "archive_index_scoped",
-              "claim_citations": 0,
+              "substantive": true,
+              "evidence_mode": "claims",
+              "claim_citations": 2,
               "archive_receipts": 0,
-              "numbers_total": 0,
+              "numbers_total": 4,
               "unbacked_numbers": [],
-              "detected_entities": [],
+              "detected_entities": [
+                "Knicks"
+              ],
               "unbacked_entities": [],
               "required_facts": [
                 "16-3"
               ],
-              "required_facts_ok": false,
-              "required_entities_ok": false,
+              "required_facts_ok": true,
+              "required_entities_ok": true,
               "required_phrases_ok": null,
               "echo_question": false,
               "hedged_causal": false,
               "missing_turning_detail": false
             }
           },
-          "fallback_ok": false,
-          "cause": "answer:declined"
+          "fallback_ok": true,
+          "cause": "ok"
         }
       ],
-      "pass": false,
+      "pass": true,
       "scope_clean": true
     },
     {
@@ -5800,12 +5584,27 @@
             ],
             "team_ids": [],
             "opponent_id": null,
-            "game_ids": [],
-            "date_start": null,
-            "date_end": null,
+            "game_ids": [
+              20,
+              21,
+              22,
+              23,
+              24,
+              25,
+              26,
+              27,
+              28,
+              29,
+              30,
+              31,
+              32,
+              33
+            ],
+            "date_start": "2025-12-02",
+            "date_end": "2025-12-31",
             "relative_game_count": null,
             "periods": [],
-            "season_type": "regular",
+            "season_type": null,
             "all_phases": false,
             "home_away": null,
             "game_result": null,
@@ -5815,27 +5614,22 @@
             "clarification_options": [],
             "data_version": "2025-26.20260928.1"
           },
-          "scope_issues": [
-            "season_type=regular want None",
-            "date_start=None want 2025-12-02",
-            "date_end=None want 2025-12-31",
-            "game_count=82 want 14"
-          ],
+          "scope_issues": [],
           "carried_claims": [],
           "prefetch": [
             {
-              "tool": "discover_facts",
+              "tool": "get_player_stats",
               "aggregation": "average",
               "status": "ok",
-              "claims": 16
+              "claims": 1
             }
           ],
           "recovery": null,
-          "fallback_text": "Jalen Brunson: 6.8 assists per appearance across 74 appearances in 2025-26 regular season.",
+          "fallback_text": "Jalen Brunson: 7.1 assists per appearance across 13 observed appearances in the 2025-26 regular season.",
           "fallback_checks": {
             "fact": "7.1",
             "value": 7.0769,
-            "value_ok": false
+            "value_ok": true
           },
           "fallback_score": {
             "id": "And his assists?",
@@ -5844,10 +5638,8 @@
             "answerable": true,
             "outcome": null,
             "old_meets_expectation": false,
-            "meets_expectation": false,
-            "failures": [
-              "required_facts"
-            ],
+            "meets_expectation": true,
+            "failures": [],
             "checks": {
               "validated": true,
               "decline_signal": null,
@@ -5867,7 +5659,7 @@
               "required_facts": [
                 "7.1"
               ],
-              "required_facts_ok": false,
+              "required_facts_ok": true,
               "required_entities_ok": true,
               "required_phrases_ok": null,
               "echo_question": false,
@@ -5875,12 +5667,12 @@
               "missing_turning_detail": false
             }
           },
-          "fallback_ok": false,
-          "cause": "scope"
+          "fallback_ok": true,
+          "cause": "ok"
         }
       ],
-      "pass": false,
-      "scope_clean": false
+      "pass": true,
+      "scope_clean": true
     },
     {
       "id": "phase_after_player",
@@ -6217,30 +6009,28 @@
             "all_phases": false,
             "home_away": null,
             "game_result": null,
-            "metric": null,
+            "metric": "points",
             "requires_clarification": false,
             "clarification_reason": null,
             "clarification_options": [],
             "data_version": "2025-26.20260928.1"
           },
-          "scope_issues": [
-            "metric=None want points"
-          ],
+          "scope_issues": [],
           "carried_claims": [],
           "prefetch": [
             {
-              "tool": "discover_facts",
+              "tool": "get_player_stats",
               "aggregation": "average",
               "status": "ok",
-              "claims": 10
+              "claims": 1
             }
           ],
           "recovery": null,
-          "fallback_text": "I can't answer that: verified archive facts are unavailable on this turn.",
+          "fallback_text": "Jalen Brunson: 28.4 points per appearance across 19 observed appearances in the 2025-26 playoffs.",
           "fallback_checks": {
             "fact": "28.4",
             "value": 28.3684,
-            "value_ok": false
+            "value_ok": true
           },
           "fallback_score": {
             "id": "And in the playoffs?",
@@ -6249,47 +6039,41 @@
             "answerable": true,
             "outcome": null,
             "old_meets_expectation": false,
-            "meets_expectation": false,
-            "failures": [
-              "declined:phrase:decline",
-              "not_substantive",
-              "required_facts",
-              "required_entities",
-              "no_cited_claims"
-            ],
+            "meets_expectation": true,
+            "failures": [],
             "checks": {
               "validated": true,
-              "decline_signal": "phrase:decline",
-              "decline_signals": [
-                "phrase:decline"
-              ],
-              "declined": true,
+              "decline_signal": null,
+              "decline_signals": [],
+              "declined": false,
               "clarification": false,
-              "substantive": false,
-              "evidence_mode": "archive_index_scoped",
-              "claim_citations": 0,
+              "substantive": true,
+              "evidence_mode": "claims",
+              "claim_citations": 1,
               "archive_receipts": 0,
-              "numbers_total": 0,
+              "numbers_total": 2,
               "unbacked_numbers": [],
-              "detected_entities": [],
+              "detected_entities": [
+                "Jalen Brunson"
+              ],
               "unbacked_entities": [],
               "required_facts": [
                 "28.4"
               ],
-              "required_facts_ok": false,
-              "required_entities_ok": false,
+              "required_facts_ok": true,
+              "required_entities_ok": true,
               "required_phrases_ok": null,
               "echo_question": false,
               "hedged_causal": false,
               "missing_turning_detail": false
             }
           },
-          "fallback_ok": false,
-          "cause": "scope+decline"
+          "fallback_ok": true,
+          "cause": "ok"
         }
       ],
-      "pass": false,
-      "scope_clean": false
+      "pass": true,
+      "scope_clean": true
     },
     {
       "id": "topic_overall_after_player",
@@ -6435,30 +6219,28 @@
             "all_phases": true,
             "home_away": null,
             "game_result": null,
-            "metric": null,
+            "metric": "points",
             "requires_clarification": false,
             "clarification_reason": null,
             "clarification_options": [],
             "data_version": "2025-26.20260928.1"
           },
-          "scope_issues": [
-            "metric=None want points"
-          ],
+          "scope_issues": [],
           "carried_claims": [],
           "prefetch": [
             {
-              "tool": "discover_facts",
+              "tool": "get_player_stats",
               "aggregation": "average",
               "status": "ok",
-              "claims": 10
+              "claims": 1
             }
           ],
           "recovery": null,
-          "fallback_text": "I can't answer that: verified archive facts are unavailable on this turn.",
+          "fallback_text": "Jalen Brunson: 26.5 points per appearance across 93 observed appearances in the 2025-26 regular season and playoffs.",
           "fallback_checks": {
             "fact": "26.5",
             "value": 26.5161,
-            "value_ok": false
+            "value_ok": true
           },
           "fallback_score": {
             "id": "And overall?",
@@ -6467,47 +6249,41 @@
             "answerable": true,
             "outcome": null,
             "old_meets_expectation": false,
-            "meets_expectation": false,
-            "failures": [
-              "declined:phrase:decline",
-              "not_substantive",
-              "required_facts",
-              "required_entities",
-              "no_cited_claims"
-            ],
+            "meets_expectation": true,
+            "failures": [],
             "checks": {
               "validated": true,
-              "decline_signal": "phrase:decline",
-              "decline_signals": [
-                "phrase:decline"
-              ],
-              "declined": true,
+              "decline_signal": null,
+              "decline_signals": [],
+              "declined": false,
               "clarification": false,
-              "substantive": false,
-              "evidence_mode": "archive_index_scoped",
-              "claim_citations": 0,
+              "substantive": true,
+              "evidence_mode": "claims",
+              "claim_citations": 1,
               "archive_receipts": 0,
-              "numbers_total": 0,
+              "numbers_total": 2,
               "unbacked_numbers": [],
-              "detected_entities": [],
+              "detected_entities": [
+                "Jalen Brunson"
+              ],
               "unbacked_entities": [],
               "required_facts": [
                 "26.5"
               ],
-              "required_facts_ok": false,
-              "required_entities_ok": false,
+              "required_facts_ok": true,
+              "required_entities_ok": true,
               "required_phrases_ok": null,
               "echo_question": false,
               "hedged_causal": false,
               "missing_turning_detail": false
             }
           },
-          "fallback_ok": false,
-          "cause": "scope+decline"
+          "fallback_ok": true,
+          "cause": "ok"
         }
       ],
-      "pass": false,
-      "scope_clean": false
+      "pass": true,
+      "scope_clean": true
     },
     {
       "id": "team_month_switch",
@@ -6577,11 +6353,11 @@
             }
           ],
           "recovery": null,
-          "fallback_text": "Knicks regular season wins: 10 over 14 archived games. Knicks regular season losses: 4 over 14 archived games.",
+          "fallback_text": "Knicks regular season points per game: 122.14285714285714 over 14 archived games.",
           "fallback_checks": {
             "fact": "122.14",
             "value": 122.1429,
-            "value_ok": false
+            "value_ok": true
           },
           "fallback_score": {
             "id": "How many points per game did the Knicks score in December?",
@@ -6590,10 +6366,8 @@
             "answerable": true,
             "outcome": null,
             "old_meets_expectation": false,
-            "meets_expectation": false,
-            "failures": [
-              "required_facts"
-            ],
+            "meets_expectation": true,
+            "failures": [],
             "checks": {
               "validated": true,
               "decline_signal": null,
@@ -6602,9 +6376,9 @@
               "clarification": false,
               "substantive": true,
               "evidence_mode": "claims",
-              "claim_citations": 2,
+              "claim_citations": 1,
               "archive_receipts": 0,
-              "numbers_total": 4,
+              "numbers_total": 2,
               "unbacked_numbers": [],
               "detected_entities": [
                 "Knicks"
@@ -6613,7 +6387,7 @@
               "required_facts": [
                 "122.14"
               ],
-              "required_facts_ok": false,
+              "required_facts_ok": true,
               "required_entities_ok": true,
               "required_phrases_ok": null,
               "echo_question": false,
@@ -6621,8 +6395,8 @@
               "missing_turning_detail": false
             }
           },
-          "fallback_ok": false,
-          "cause": "answer:value"
+          "fallback_ok": true,
+          "cause": "ok"
         },
         {
           "turn": 2,
@@ -6672,15 +6446,13 @@
             "all_phases": false,
             "home_away": null,
             "game_result": null,
-            "metric": null,
+            "metric": "points",
             "requires_clarification": false,
             "clarification_reason": null,
             "clarification_options": [],
             "data_version": "2025-26.20260928.1"
           },
-          "scope_issues": [
-            "metric=None want points"
-          ],
+          "scope_issues": [],
           "carried_claims": [],
           "prefetch": [
             {
@@ -6691,11 +6463,11 @@
             }
           ],
           "recovery": null,
-          "fallback_text": "Knicks regular season wins: 7 over 15 archived games. Knicks regular season losses: 8 over 15 archived games.",
+          "fallback_text": "Knicks regular season points per game: 110.13333333333334 over 15 archived games.",
           "fallback_checks": {
             "fact": "110.13",
             "value": 110.1333,
-            "value_ok": false
+            "value_ok": true
           },
           "fallback_score": {
             "id": "And in January?",
@@ -6704,10 +6476,8 @@
             "answerable": true,
             "outcome": null,
             "old_meets_expectation": false,
-            "meets_expectation": false,
-            "failures": [
-              "required_facts"
-            ],
+            "meets_expectation": true,
+            "failures": [],
             "checks": {
               "validated": true,
               "decline_signal": null,
@@ -6716,9 +6486,9 @@
               "clarification": false,
               "substantive": true,
               "evidence_mode": "claims",
-              "claim_citations": 2,
+              "claim_citations": 1,
               "archive_receipts": 0,
-              "numbers_total": 4,
+              "numbers_total": 2,
               "unbacked_numbers": [],
               "detected_entities": [
                 "Knicks"
@@ -6727,7 +6497,7 @@
               "required_facts": [
                 "110.13"
               ],
-              "required_facts_ok": false,
+              "required_facts_ok": true,
               "required_entities_ok": true,
               "required_phrases_ok": null,
               "echo_question": false,
@@ -6735,12 +6505,12 @@
               "missing_turning_detail": false
             }
           },
-          "fallback_ok": false,
-          "cause": "scope"
+          "fallback_ok": true,
+          "cause": "ok"
         }
       ],
-      "pass": false,
-      "scope_clean": false
+      "pass": true,
+      "scope_clean": true
     },
     {
       "id": "team_margin",
@@ -6810,11 +6580,11 @@
             }
           ],
           "recovery": null,
-          "fallback_text": "Knicks regular season wins: 10 over 14 archived games. Knicks regular season losses: 4 over 14 archived games.",
+          "fallback_text": "Knicks regular season points per game: 122.14285714285714 over 14 archived games.",
           "fallback_checks": {
             "fact": "122.14",
             "value": 122.1429,
-            "value_ok": false
+            "value_ok": true
           },
           "fallback_score": {
             "id": "How many points per game did the Knicks score in December?",
@@ -6823,10 +6593,8 @@
             "answerable": true,
             "outcome": null,
             "old_meets_expectation": false,
-            "meets_expectation": false,
-            "failures": [
-              "required_facts"
-            ],
+            "meets_expectation": true,
+            "failures": [],
             "checks": {
               "validated": true,
               "decline_signal": null,
@@ -6835,9 +6603,9 @@
               "clarification": false,
               "substantive": true,
               "evidence_mode": "claims",
-              "claim_citations": 2,
+              "claim_citations": 1,
               "archive_receipts": 0,
-              "numbers_total": 4,
+              "numbers_total": 2,
               "unbacked_numbers": [],
               "detected_entities": [
                 "Knicks"
@@ -6846,7 +6614,7 @@
               "required_facts": [
                 "122.14"
               ],
-              "required_facts_ok": false,
+              "required_facts_ok": true,
               "required_entities_ok": true,
               "required_phrases_ok": null,
               "echo_question": false,
@@ -6854,8 +6622,8 @@
               "missing_turning_detail": false
             }
           },
-          "fallback_ok": false,
-          "cause": "answer:value"
+          "fallback_ok": true,
+          "cause": "ok"
         },
         {
           "turn": 2,
@@ -6880,36 +6648,40 @@
             "player_ids": [],
             "team_ids": [],
             "opponent_id": null,
-            "game_ids": [],
-            "date_start": null,
-            "date_end": null,
+            "game_ids": [
+              20,
+              21,
+              22,
+              23,
+              24,
+              25,
+              26,
+              27,
+              28,
+              29,
+              30,
+              31,
+              32,
+              33
+            ],
+            "date_start": "2025-12-02",
+            "date_end": "2025-12-31",
             "relative_game_count": null,
             "periods": [],
-            "season_type": "regular",
+            "season_type": null,
             "all_phases": false,
             "home_away": null,
             "game_result": null,
-            "metric": null,
+            "metric": "margin",
             "requires_clarification": false,
             "clarification_reason": null,
             "clarification_options": [],
             "data_version": "2025-26.20260928.1"
           },
-          "scope_issues": [
-            "season_type=regular want None",
-            "metric=None want margin",
-            "date_start=None want 2025-12-02",
-            "date_end=None want 2025-12-31",
-            "game_count=82 want 14"
-          ],
+          "scope_issues": [],
           "carried_claims": [
             {
-              "metric": "wins",
-              "season_type": "regular",
-              "games": 14
-            },
-            {
-              "metric": "losses",
+              "metric": "points_per_game",
               "season_type": "regular",
               "games": 14
             }
@@ -6923,11 +6695,11 @@
             }
           ],
           "recovery": null,
-          "fallback_text": "Knicks regular season wins: 53 over 82 archived games. Knicks regular season losses: 29 over 82 archived games.",
+          "fallback_text": "Knicks regular season margin per game: 5.214285714285714 over 14 archived games.",
           "fallback_checks": {
             "fact": "5.21",
             "value": 5.2143,
-            "value_ok": false
+            "value_ok": true
           },
           "fallback_score": {
             "id": "And their average margin?",
@@ -6936,10 +6708,8 @@
             "answerable": true,
             "outcome": null,
             "old_meets_expectation": false,
-            "meets_expectation": false,
-            "failures": [
-              "required_facts"
-            ],
+            "meets_expectation": true,
+            "failures": [],
             "checks": {
               "validated": true,
               "decline_signal": null,
@@ -6948,9 +6718,9 @@
               "clarification": false,
               "substantive": true,
               "evidence_mode": "claims",
-              "claim_citations": 2,
+              "claim_citations": 1,
               "archive_receipts": 0,
-              "numbers_total": 4,
+              "numbers_total": 2,
               "unbacked_numbers": [],
               "detected_entities": [
                 "Knicks"
@@ -6959,7 +6729,7 @@
               "required_facts": [
                 "5.21"
               ],
-              "required_facts_ok": false,
+              "required_facts_ok": true,
               "required_entities_ok": true,
               "required_phrases_ok": null,
               "echo_question": false,
@@ -6967,12 +6737,12 @@
               "missing_turning_detail": false
             }
           },
-          "fallback_ok": false,
-          "cause": "scope"
+          "fallback_ok": true,
+          "cause": "ok"
         }
       ],
-      "pass": false,
-      "scope_clean": false
+      "pass": true,
+      "scope_clean": true
     },
     {
       "id": "opponent_switch_team_stats",
@@ -7003,7 +6773,12 @@
               "BOS"
             ],
             "opponent_id": "BOS",
-            "game_ids": [],
+            "game_ids": [
+              2,
+              20,
+              53,
+              80
+            ],
             "date_start": null,
             "date_end": null,
             "relative_game_count": null,
@@ -7013,32 +6788,27 @@
             "home_away": null,
             "game_result": null,
             "metric": "points",
-            "requires_clarification": true,
-            "clarification_reason": "ambiguous_game",
-            "clarification_options": [
-              "2025-10-24: BOS at NYK",
-              "2025-12-02: NYK at BOS",
-              "2026-02-08: NYK at BOS",
-              "2026-04-09: BOS at NYK"
-            ],
+            "requires_clarification": false,
+            "clarification_reason": null,
+            "clarification_options": [],
             "data_version": "2025-26.20260928.1"
           },
-          "scope_issues": [
-            "requires_clarification"
-          ],
+          "scope_issues": [],
           "carried_claims": [],
-          "prefetch": [],
-          "recovery": {
-            "tool": "get_team_stats",
-            "aggregation": "total",
-            "status": "ambiguous_entity",
-            "claims": 0
-          },
-          "fallback_text": "Which subject did you mean? 2025-10-24: BOS at NYK; 2025-12-02: NYK at BOS; 2026-02-08: NYK at BOS; 2026-04-09: BOS at NYK",
+          "prefetch": [
+            {
+              "tool": "get_team_stats",
+              "aggregation": "average",
+              "status": "ok",
+              "claims": 4
+            }
+          ],
+          "recovery": null,
+          "fallback_text": "Knicks regular season points per game: 111.25 over 4 archived games against Celtics.",
           "fallback_checks": {
             "fact": "111.25",
             "value": 111.25,
-            "value_ok": false
+            "value_ok": true
           },
           "fallback_score": {
             "id": "How many points per game did the Knicks score against Boston?",
@@ -7047,25 +6817,19 @@
             "answerable": true,
             "outcome": null,
             "old_meets_expectation": false,
-            "meets_expectation": false,
-            "failures": [
-              "clarification",
-              "required_facts",
-              "no_cited_claims"
-            ],
+            "meets_expectation": true,
+            "failures": [],
             "checks": {
               "validated": true,
-              "decline_signal": "structure:clarification",
-              "decline_signals": [
-                "structure:clarification"
-              ],
+              "decline_signal": null,
+              "decline_signals": [],
               "declined": false,
-              "clarification": true,
+              "clarification": false,
               "substantive": true,
-              "evidence_mode": "archive_index_scoped",
-              "claim_citations": 0,
+              "evidence_mode": "claims",
+              "claim_citations": 1,
               "archive_receipts": 0,
-              "numbers_total": 4,
+              "numbers_total": 2,
               "unbacked_numbers": [],
               "detected_entities": [
                 "Celtics",
@@ -7075,7 +6839,7 @@
               "required_facts": [
                 "111.25"
               ],
-              "required_facts_ok": false,
+              "required_facts_ok": true,
               "required_entities_ok": true,
               "required_phrases_ok": null,
               "echo_question": false,
@@ -7083,8 +6847,8 @@
               "missing_turning_detail": false
             }
           },
-          "fallback_ok": false,
-          "cause": "scope"
+          "fallback_ok": true,
+          "cause": "ok"
         },
         {
           "turn": 2,
@@ -7128,15 +6892,13 @@
             "all_phases": false,
             "home_away": null,
             "game_result": null,
-            "metric": null,
+            "metric": "points",
             "requires_clarification": false,
             "clarification_reason": null,
             "clarification_options": [],
             "data_version": "2025-26.20260928.1"
           },
-          "scope_issues": [
-            "metric=None want points"
-          ],
+          "scope_issues": [],
           "carried_claims": [],
           "prefetch": [
             {
@@ -7147,11 +6909,11 @@
             }
           ],
           "recovery": null,
-          "fallback_text": "Knicks (all phases) wins: 6 over 7 archived games against CLE (regular season 2-1, playoffs 4-0). Knicks (all phases) losses: 1 over 7 archived games against CLE (regular season 2-1, playoffs 4-0).",
+          "fallback_text": "Knicks (all phases) points per game: 116.28571428571429 over 7 archived games against Cavaliers (regular season 2-1, playoffs 4-0).",
           "fallback_checks": {
             "fact": "116.29",
             "value": 116.2857,
-            "value_ok": false
+            "value_ok": true
           },
           "fallback_score": {
             "id": "And against Cleveland?",
@@ -7160,10 +6922,8 @@
             "answerable": true,
             "outcome": null,
             "old_meets_expectation": false,
-            "meets_expectation": false,
-            "failures": [
-              "required_facts"
-            ],
+            "meets_expectation": true,
+            "failures": [],
             "checks": {
               "validated": true,
               "decline_signal": null,
@@ -7172,9 +6932,9 @@
               "clarification": false,
               "substantive": true,
               "evidence_mode": "claims",
-              "claim_citations": 2,
+              "claim_citations": 1,
               "archive_receipts": 0,
-              "numbers_total": 8,
+              "numbers_total": 4,
               "unbacked_numbers": [],
               "detected_entities": [
                 "Cavaliers",
@@ -7184,7 +6944,7 @@
               "required_facts": [
                 "116.29"
               ],
-              "required_facts_ok": false,
+              "required_facts_ok": true,
               "required_entities_ok": true,
               "required_phrases_ok": null,
               "echo_question": false,
@@ -7192,12 +6952,12 @@
               "missing_turning_detail": false
             }
           },
-          "fallback_ok": false,
-          "cause": "scope"
+          "fallback_ok": true,
+          "cause": "ok"
         }
       ],
-      "pass": false,
-      "scope_clean": false
+      "pass": true,
+      "scope_clean": true
     },
     {
       "id": "reverse_switch_topic",
@@ -7344,43 +7104,52 @@
             ],
             "team_ids": [],
             "opponent_id": null,
-            "game_ids": [],
-            "date_start": null,
-            "date_end": null,
+            "game_ids": [
+              20,
+              21,
+              22,
+              23,
+              24,
+              25,
+              26,
+              27,
+              28,
+              29,
+              30,
+              31,
+              32,
+              33
+            ],
+            "date_start": "2025-12-02",
+            "date_end": "2025-12-31",
             "relative_game_count": null,
             "periods": [],
-            "season_type": "regular",
+            "season_type": null,
             "all_phases": false,
             "home_away": null,
             "game_result": null,
-            "metric": null,
+            "metric": "points",
             "requires_clarification": false,
             "clarification_reason": null,
             "clarification_options": [],
             "data_version": "2025-26.20260928.1"
           },
-          "scope_issues": [
-            "season_type=regular want None",
-            "metric=None want points",
-            "date_start=None want 2025-12-02",
-            "date_end=None want 2025-12-31",
-            "game_count=82 want 14"
-          ],
+          "scope_issues": [],
           "carried_claims": [],
           "prefetch": [
             {
-              "tool": "discover_facts",
+              "tool": "get_player_stats",
               "aggregation": "average",
               "status": "ok",
-              "claims": 10
+              "claims": 1
             }
           ],
           "recovery": null,
-          "fallback_text": "I can't answer that: verified archive facts are unavailable on this turn.",
+          "fallback_text": "Jalen Brunson: 30.6 points per appearance across 13 observed appearances in the 2025-26 regular season.",
           "fallback_checks": {
             "fact": "30.6",
             "value": 30.6154,
-            "value_ok": false
+            "value_ok": true
           },
           "fallback_score": {
             "id": "What about Brunson?",
@@ -7389,47 +7158,41 @@
             "answerable": true,
             "outcome": null,
             "old_meets_expectation": false,
-            "meets_expectation": false,
-            "failures": [
-              "declined:phrase:decline",
-              "not_substantive",
-              "required_facts",
-              "required_entities",
-              "no_cited_claims"
-            ],
+            "meets_expectation": true,
+            "failures": [],
             "checks": {
               "validated": true,
-              "decline_signal": "phrase:decline",
-              "decline_signals": [
-                "phrase:decline"
-              ],
-              "declined": true,
+              "decline_signal": null,
+              "decline_signals": [],
+              "declined": false,
               "clarification": false,
-              "substantive": false,
-              "evidence_mode": "archive_index_scoped",
-              "claim_citations": 0,
+              "substantive": true,
+              "evidence_mode": "claims",
+              "claim_citations": 1,
               "archive_receipts": 0,
-              "numbers_total": 0,
+              "numbers_total": 2,
               "unbacked_numbers": [],
-              "detected_entities": [],
+              "detected_entities": [
+                "Jalen Brunson"
+              ],
               "unbacked_entities": [],
               "required_facts": [
                 "30.6"
               ],
-              "required_facts_ok": false,
-              "required_entities_ok": false,
+              "required_facts_ok": true,
+              "required_entities_ok": true,
               "required_phrases_ok": null,
               "echo_question": false,
               "hedged_causal": false,
               "missing_turning_detail": false
             }
           },
-          "fallback_ok": false,
-          "cause": "scope+decline"
+          "fallback_ok": true,
+          "cause": "ok"
         }
       ],
-      "pass": false,
-      "scope_clean": false
+      "pass": true,
+      "scope_clean": true
     },
     {
       "id": "decline_then_overall",
@@ -7668,18 +7431,20 @@
           },
           "scope_issues": [],
           "carried_claims": [],
-          "prefetch": [],
-          "recovery": {
-            "tool": "get_team_stats",
-            "aggregation": "total",
-            "status": "ok",
-            "claims": 4
-          },
-          "fallback_text": "I can't answer that: verified archive facts are unavailable on this turn.",
+          "prefetch": [
+            {
+              "tool": "get_team_stats",
+              "aggregation": "total",
+              "status": "ok",
+              "claims": 4
+            }
+          ],
+          "recovery": null,
+          "fallback_text": "Knicks (all phases) wins: 69 over 101 archived games. Knicks (all phases) losses: 32 over 101 archived games.",
           "fallback_checks": {
             "record": "69-32",
             "records_in_answer": [],
-            "record_ok": false
+            "record_ok": true
           },
           "fallback_score": {
             "id": "And overall?",
@@ -7688,321 +7453,50 @@
             "answerable": true,
             "outcome": null,
             "old_meets_expectation": false,
-            "meets_expectation": false,
-            "failures": [
-              "declined:phrase:decline",
-              "not_substantive",
-              "required_facts",
-              "required_entities",
-              "no_cited_claims"
-            ],
+            "meets_expectation": true,
+            "failures": [],
             "checks": {
               "validated": true,
-              "decline_signal": "phrase:decline",
-              "decline_signals": [
-                "phrase:decline"
-              ],
-              "declined": true,
+              "decline_signal": null,
+              "decline_signals": [],
+              "declined": false,
               "clarification": false,
-              "substantive": false,
-              "evidence_mode": "archive_index_scoped",
-              "claim_citations": 0,
+              "substantive": true,
+              "evidence_mode": "claims",
+              "claim_citations": 2,
               "archive_receipts": 0,
-              "numbers_total": 0,
+              "numbers_total": 4,
               "unbacked_numbers": [],
-              "detected_entities": [],
+              "detected_entities": [
+                "Knicks"
+              ],
               "unbacked_entities": [],
               "required_facts": [
                 "69-32"
               ],
-              "required_facts_ok": false,
-              "required_entities_ok": false,
+              "required_facts_ok": true,
+              "required_entities_ok": true,
               "required_phrases_ok": null,
               "echo_question": false,
               "hedged_causal": false,
               "missing_turning_detail": false
             }
           },
-          "fallback_ok": false,
-          "cause": "answer:declined"
+          "fallback_ok": true,
+          "cause": "ok"
         }
       ],
-      "pass": false,
+      "pass": true,
       "scope_clean": true
     }
   ],
   "summary": {
     "sessions": 27,
-    "sessions_pass": 7,
-    "sessions_scope_clean": 9,
+    "sessions_pass": 27,
+    "sessions_scope_clean": 27,
     "turns": 64,
-    "turns_pass": 35,
-    "turns_scope_clean": 42
+    "turns_pass": 64,
+    "turns_scope_clean": 64
   },
-  "causes": {
-    "answer:value": [
-      {
-        "session": "team_ppg_home_away_playoffs",
-        "turn": 1,
-        "question": "How many points per game did the Knicks score at home?",
-        "issues": []
-      },
-      {
-        "session": "game_reference_chain",
-        "turn": 1,
-        "question": "How many points did the Knicks score in their last game?",
-        "issues": []
-      },
-      {
-        "session": "game_why",
-        "turn": 1,
-        "question": "How many points did the Knicks score in the game on 2026-06-08?",
-        "issues": []
-      },
-      {
-        "session": "team_month_switch",
-        "turn": 1,
-        "question": "How many points per game did the Knicks score in December?",
-        "issues": []
-      },
-      {
-        "session": "team_margin",
-        "turn": 1,
-        "question": "How many points per game did the Knicks score in December?",
-        "issues": []
-      }
-    ],
-    "scope": [
-      {
-        "session": "team_ppg_home_away_playoffs",
-        "turn": 2,
-        "question": "And on the road?",
-        "issues": [
-          "metric=None want points"
-        ]
-      },
-      {
-        "session": "team_ppg_home_away_playoffs",
-        "turn": 3,
-        "question": "And in the playoffs?",
-        "issues": [
-          "metric=None want points"
-        ]
-      },
-      {
-        "session": "opponent_switch_record",
-        "turn": 2,
-        "question": "What about Cleveland?",
-        "issues": [
-          "requires_clarification"
-        ]
-      },
-      {
-        "session": "opponent_home_road",
-        "turn": 2,
-        "question": "And at home?",
-        "issues": [
-          "season_type=regular want None",
-          "game_count=2 want 4"
-        ]
-      },
-      {
-        "session": "opponent_home_road",
-        "turn": 3,
-        "question": "And on the road?",
-        "issues": [
-          "season_type=regular want None",
-          "game_count=1 want 3"
-        ]
-      },
-      {
-        "session": "team_total_average",
-        "turn": 2,
-        "question": "And per game?",
-        "issues": [
-          "season_type=regular want None",
-          "metric=None want points",
-          "date_start=None want 2025-12-02",
-          "date_end=None want 2025-12-31",
-          "game_count=82 want 14"
-        ]
-      },
-      {
-        "session": "injury_decline",
-        "turn": 3,
-        "question": "And his assists?",
-        "issues": [
-          "season_type=regular want None",
-          "date_start=None want 2025-12-02",
-          "date_end=None want 2025-12-31",
-          "game_count=82 want 14"
-        ]
-      },
-      {
-        "session": "team_month_switch",
-        "turn": 2,
-        "question": "And in January?",
-        "issues": [
-          "metric=None want points"
-        ]
-      },
-      {
-        "session": "team_margin",
-        "turn": 2,
-        "question": "And their average margin?",
-        "issues": [
-          "season_type=regular want None",
-          "metric=None want margin",
-          "date_start=None want 2025-12-02",
-          "date_end=None want 2025-12-31",
-          "game_count=82 want 14"
-        ]
-      },
-      {
-        "session": "opponent_switch_team_stats",
-        "turn": 1,
-        "question": "How many points per game did the Knicks score against Boston?",
-        "issues": [
-          "requires_clarification"
-        ]
-      },
-      {
-        "session": "opponent_switch_team_stats",
-        "turn": 2,
-        "question": "And against Cleveland?",
-        "issues": [
-          "metric=None want points"
-        ]
-      }
-    ],
-    "scope+decline": [
-      {
-        "session": "player_switch",
-        "turn": 2,
-        "question": "What about Towns?",
-        "issues": [
-          "season_type=regular want None",
-          "relative_game_count=None want 5",
-          "metric=None want points",
-          "game_count=82 want 5"
-        ]
-      },
-      {
-        "session": "player_pronoun_metric",
-        "turn": 2,
-        "question": "And his points?",
-        "issues": [
-          "season_type=regular want None",
-          "date_start=None want 2025-12-02",
-          "date_end=None want 2025-12-31",
-          "game_count=82 want 14"
-        ]
-      },
-      {
-        "session": "player_phase_change",
-        "turn": 2,
-        "question": "And in the playoffs?",
-        "issues": [
-          "metric=None want points"
-        ]
-      },
-      {
-        "session": "player_month_switch",
-        "turn": 2,
-        "question": "And in January?",
-        "issues": [
-          "metric=None want rebounds"
-        ]
-      },
-      {
-        "session": "player_last5_to_month",
-        "turn": 2,
-        "question": "And in December?",
-        "issues": [
-          "metric=None want points"
-        ]
-      },
-      {
-        "session": "game_reference_chain",
-        "turn": 2,
-        "question": "How many points did Brunson score in that game?",
-        "issues": [
-          "season_type=regular want None",
-          "date_start=None want 2026-06-13",
-          "date_end=None want 2026-06-13",
-          "game_count=82 want 1",
-          "game_ids differ (got [], want [101])"
-        ]
-      },
-      {
-        "session": "game_reference_chain",
-        "turn": 3,
-        "question": "And in the game before that?",
-        "issues": [
-          "season_type=regular want None",
-          "metric=None want points",
-          "date_start=None want 2026-06-10",
-          "date_end=None want 2026-06-10",
-          "game_count=82 want 1",
-          "game_ids differ (got [], want [100])"
-        ]
-      },
-      {
-        "session": "phase_after_player",
-        "turn": 3,
-        "question": "And in the playoffs?",
-        "issues": [
-          "metric=None want points"
-        ]
-      },
-      {
-        "session": "topic_overall_after_player",
-        "turn": 2,
-        "question": "And overall?",
-        "issues": [
-          "metric=None want points"
-        ]
-      },
-      {
-        "session": "reverse_switch_topic",
-        "turn": 2,
-        "question": "What about Brunson?",
-        "issues": [
-          "season_type=regular want None",
-          "metric=None want points",
-          "date_start=None want 2025-12-02",
-          "date_end=None want 2025-12-31",
-          "game_count=82 want 14"
-        ]
-      }
-    ],
-    "latent_scope": [
-      {
-        "session": "game_why",
-        "turn": 2,
-        "question": "Why did they lose that game?",
-        "issues": [
-          "season_type=regular want None",
-          "date_start=None want 2026-06-08",
-          "date_end=None want 2026-06-08",
-          "game_count=82 want 1",
-          "game_ids differ (got [], want [99])"
-        ]
-      }
-    ],
-    "answer:declined": [
-      {
-        "session": "betting_decline",
-        "turn": 3,
-        "question": "And in the playoffs?",
-        "issues": []
-      },
-      {
-        "session": "decline_then_overall",
-        "turn": 3,
-        "question": "And overall?",
-        "issues": []
-      }
-    ]
-  }
+  "causes": {}
 }
