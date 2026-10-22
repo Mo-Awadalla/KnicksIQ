@@ -24,6 +24,7 @@ latency and capacity figures in `latency/` and `cost/`, which were measured with
 | [splits](splits/) | Independent SQL audit for `get_team_splits` answers, rebuilding each bucket from raw game rows. |
 | [quarters](quarters/) | `get_period_scoring` measurement: base declines versus the merged head answering quarter questions. |
 | [cost](cost/) | Cost diagnosis, ledger reconciliation and billed-failure settlement. Its capacity figure predates the 16,000-byte budget; see `final/`. |
+| [w3-routing](w3-routing/) | Settings-driven OpenRouter upstream routing, a per-upstream table from 1,269 recorded calls, the call-count analysis, and the pending live before/after arms. Live blocked by provider credits. |
 | [final](final/) | Input budget A/B (8,000 vs 16,000 bytes, 70 questions x 2 trials), factual audit of both trials, one held-out run, preflight. Shipped config: p50 3,312 ms, p95 7,640 ms, about 1,009 questions per month at $2. |
 | [final/relabel](final/relabel/) | Offline rescore of both held-out runs under phase-policy labels: baseline 4/60, final 29/60. This is a rescore of observed responses, not a fresh run, and `date_range_last_n-007` later drove a code fix, so the held-out set is no longer untouched. |
 | [final/gate](final/gate/) | Saved backend and web suite output for the integration head. |

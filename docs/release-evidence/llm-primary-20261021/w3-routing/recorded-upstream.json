@@ -1,0 +1,173 @@
+{
+  "calls": 1269,
+  "cost_artifact": {
+    "by_provider": {
+      "BaseTen": {
+        "calls": 2,
+        "completion_tokens": 346,
+        "effective_completion_usd_per_m": 4.0647,
+        "effective_prompt_usd_per_m": 0.4257,
+        "finish_reasons": {
+          "stop": 2
+        },
+        "prompt_tokens": 3304,
+        "reported_cost_usd": 0.0014064
+      },
+      "Together": {
+        "calls": 67,
+        "completion_tokens": 13535,
+        "effective_completion_usd_per_m": 1.9867,
+        "effective_prompt_usd_per_m": 0.2395,
+        "finish_reasons": {
+          "stop": 67
+        },
+        "prompt_tokens": 112261,
+        "reported_cost_usd": 0.02688952
+      }
+    },
+    "calls": 69,
+    "note": "Single 20-question production run; effective rates include prompt/completion mix and cached tokens, not the list prices.",
+    "path": "docs/release-evidence/llm-primary-20261021/cost/prod-none/calls.jsonl"
+  },
+  "per_stage": {
+    "answer": {
+      "BaseTen": {
+        "calls": 1,
+        "p50_ms": 573,
+        "p95_ms": 573
+      },
+      "Reka": {
+        "calls": 6,
+        "p50_ms": 1698.0,
+        "p95_ms": 4221
+      },
+      "Together": {
+        "calls": 450,
+        "p50_ms": 879.0,
+        "p95_ms": 2157
+      }
+    },
+    "plan": {
+      "BaseTen": {
+        "calls": 3,
+        "p50_ms": 739.1,
+        "p95_ms": 921
+      },
+      "Together": {
+        "calls": 287,
+        "p50_ms": 471,
+        "p95_ms": 1009
+      }
+    },
+    "repair": {
+      "Reka": {
+        "calls": 35,
+        "p50_ms": 1250,
+        "p95_ms": 3308
+      },
+      "Together": {
+        "calls": 121,
+        "p50_ms": 721,
+        "p95_ms": 1748
+      }
+    },
+    "review": {
+      "BaseTen": {
+        "calls": 3,
+        "p50_ms": 2310,
+        "p95_ms": 3068.6
+      },
+      "Reka": {
+        "calls": 137,
+        "p50_ms": 1560,
+        "p95_ms": 2948
+      },
+      "Together": {
+        "calls": 226,
+        "p50_ms": 1371.2,
+        "p95_ms": 2787
+      }
+    }
+  },
+  "providers": {
+    "BaseTen": {
+      "answer_questions": 1,
+      "answer_validated_rate": 0.0,
+      "calls": 7,
+      "content_kinds": {
+        "string": 7
+      },
+      "finish_reasons": {
+        "stop": 7
+      },
+      "max_latency_ms": 3068.6,
+      "mean_latency_ms": 1447.0,
+      "p50_latency_ms": 921,
+      "p95_latency_ms": 3068.6,
+      "reasoning_token_calls": 0,
+      "review_questions": 1,
+      "review_validated_rate": 1.0,
+      "stages": {
+        "answer": 1,
+        "plan": 3,
+        "review": 3
+      }
+    },
+    "Reka": {
+      "answer_questions": 6,
+      "answer_validated_rate": 0.5,
+      "calls": 178,
+      "content_kinds": {
+        "string": 178
+      },
+      "finish_reasons": {
+        "stop": 178
+      },
+      "max_latency_ms": 6236,
+      "mean_latency_ms": 1694.4,
+      "p50_latency_ms": 1535.0,
+      "p95_latency_ms": 3233,
+      "reasoning_token_calls": 0,
+      "review_questions": 135,
+      "review_validated_rate": 0.941,
+      "stages": {
+        "answer": 6,
+        "repair": 35,
+        "review": 137
+      }
+    },
+    "Together": {
+      "answer_questions": 442,
+      "answer_validated_rate": 0.767,
+      "calls": 1084,
+      "content_kinds": {
+        "string": 1084
+      },
+      "finish_reasons": {
+        "stop": 1084
+      },
+      "max_latency_ms": 10947,
+      "mean_latency_ms": 997.7,
+      "p50_latency_ms": 813.6,
+      "p95_latency_ms": 2095,
+      "reasoning_token_calls": 0,
+      "review_questions": 221,
+      "review_validated_rate": 0.968,
+      "stages": {
+        "answer": 450,
+        "plan": 287,
+        "repair": 121,
+        "review": 226
+      }
+    }
+  },
+  "records": 451,
+  "runs": {
+    "final-16000": 140,
+    "final-8000": 140,
+    "final-8000-drops": 56,
+    "latency-after-gate": 40,
+    "latency-after-premerge": 40,
+    "latency-base-gate": 40
+  }
+}
