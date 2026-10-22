@@ -1,0 +1,594 @@
+{
+  "checks": [
+    {
+      "check": "route",
+      "id": "date_range_last_n-005",
+      "expected": "get_team_splits",
+      "actual": "get_team_splits",
+      "pass": true
+    },
+    {
+      "check": "facts",
+      "id": "date_range_last_n-005",
+      "expected": [
+        "18-9 in 27 games"
+      ],
+      "actual": "Knicks after the All-Star break, regular season: 18-9 in 27 games; 113.26 for, 106.59 against, +6.67 margin per game.",
+      "pass": true
+    },
+    {
+      "check": "fallback",
+      "id": "date_range_last_n-005",
+      "expected": [
+        "18-9 in 27 games"
+      ],
+      "actual": "Knicks after the All-Star break, regular season: 18-9 in 27 games; 113.26 for, 106.59 against, +6.67 margin per game.",
+      "pass": true
+    },
+    {
+      "check": "route",
+      "id": "date_range_last_n-010",
+      "expected": "get_team_splits",
+      "actual": "get_team_splits",
+      "pass": true
+    },
+    {
+      "check": "facts",
+      "id": "date_range_last_n-010",
+      "expected": [
+        "7-3 in 10 games"
+      ],
+      "actual": "Knicks first 10 games, regular season: 7-3 in 10 games; 121.80 for, 112.70 against, +9.10 margin per game.",
+      "pass": true
+    },
+    {
+      "check": "fallback",
+      "id": "date_range_last_n-010",
+      "expected": [
+        "7-3 in 10 games"
+      ],
+      "actual": "Knicks first 10 games, regular season: 7-3 in 10 games; 121.80 for, 112.70 against, +9.10 margin per game.",
+      "pass": true
+    },
+    {
+      "check": "route",
+      "id": "comparisons-001",
+      "expected": "get_team_splits",
+      "actual": "get_team_splits",
+      "pass": true
+    },
+    {
+      "check": "facts",
+      "id": "comparisons-001",
+      "expected": [
+        "119.00 for",
+        "114.02 for"
+      ],
+      "actual": "Knicks home, regular season: 30-10 in 40 games; 119.00 for, 108.97 against, +10.03 margin per game.\nKnicks on the road, regular season: 23-19 in 42 games; 114.02 for, 111.21 against, +2.81 margin per game.",
+      "pass": true
+    },
+    {
+      "check": "fallback",
+      "id": "comparisons-001",
+      "expected": [
+        "119.00 for",
+        "114.02 for"
+      ],
+      "actual": "Knicks home, regular season: 30-10 in 40 games; 119.00 for, 108.97 against, +10.03 margin per game. Knicks on the road, regular season: 23-19 in 42 games; 114.02 for, 111.21 against, +2.81 margin per game.",
+      "pass": true
+    },
+    {
+      "check": "route",
+      "id": "comparisons-003",
+      "expected": "get_team_splits",
+      "actual": "get_team_splits",
+      "pass": true
+    },
+    {
+      "check": "facts",
+      "id": "comparisons-003",
+      "expected": [
+        "3-1 in 4 games",
+        "5-0 in 5 games"
+      ],
+      "actual": "Knicks vs BOS, all phases: 3-1 in 4 games; 111.25 for, 103.25 against, +8.00 margin per game.\nKnicks vs BOS, regular season: 3-1 in 4 games; 111.25 for, 103.25 against, +8.00 margin per game.\nKnicks vs TOR, all phases: 5-0 in 5 games; 115.00 for, 95.40 against, +19.60 margin per game.\nKnicks vs TOR, regular season: 5-0 in 5 games; 115.00 for, 95.40 against, +19.60 margin per game.",
+      "pass": true
+    },
+    {
+      "check": "fallback",
+      "id": "comparisons-003",
+      "expected": [
+        "3-1 in 4 games",
+        "5-0 in 5 games"
+      ],
+      "actual": "Knicks vs BOS, all phases: 3-1 in 4 games; 111.25 for, 103.25 against, +8.00 margin per game. Knicks vs BOS, regular season: 3-1 in 4 games; 111.25 for, 103.25 against, +8.00 margin per game. Knicks vs TOR, all phases: 5-0 in 5 games; 115.00 for, 95.40 against, +19.60 margin per game. Knicks vs TOR, regular season: 5-0 in 5 games; 115.00 for, 95.40 against, +19.60 margin per game.",
+      "pass": true
+    },
+    {
+      "check": "route",
+      "id": "comparisons-004",
+      "expected": "get_team_splits",
+      "actual": "get_team_splits",
+      "pass": true
+    },
+    {
+      "check": "facts",
+      "id": "comparisons-004",
+      "expected": [
+        "first 10 games",
+        "6-4 in 10 games"
+      ],
+      "actual": "Knicks first 10 games, regular season: 7-3 in 10 games; 121.80 for, 112.70 against, +9.10 margin per game.\nKnicks last 10 games, regular season: 6-4 in 10 games; 111.20 for, 108.30 against, +2.90 margin per game.",
+      "pass": true
+    },
+    {
+      "check": "fallback",
+      "id": "comparisons-004",
+      "expected": [
+        "first 10 games",
+        "6-4 in 10 games"
+      ],
+      "actual": "Knicks first 10 games, regular season: 7-3 in 10 games; 121.80 for, 112.70 against, +9.10 margin per game. Knicks last 10 games, regular season: 6-4 in 10 games; 111.20 for, 108.30 against, +2.90 margin per game.",
+      "pass": true
+    },
+    {
+      "check": "route",
+      "id": "comparisons-009",
+      "expected": "get_period_scoring",
+      "actual": "get_period_scoring",
+      "pass": true
+    },
+    {
+      "check": "facts",
+      "id": "comparisons-009",
+      "expected": [
+        "Q3",
+        "Q4"
+      ],
+      "actual": "Regular season period report, 82 of 82 games.\nRegular season, 82 of 82 games. reg Q3: 2375 pts (28.96/g), opp 2307 (28.13), diff +68, 37-5-40. reg Q4: 2316 pts (28.24/g), opp 2078 (25.34), diff +238, 50-5-27. reg Q3 vs Q4: +59 pts, +0.72/g.",
+      "pass": true
+    },
+    {
+      "check": "fallback",
+      "id": "comparisons-009",
+      "expected": [
+        "Q3",
+        "Q4"
+      ],
+      "actual": "Regular season, 82 of 82 games. reg Q3: 2375 pts (28.96/g), opp 2307 (28.13), diff +68, 37-5-40. reg Q4: 2316 pts (28.24/g), opp 2078 (25.34), diff +238, 50-5-27. reg Q3 vs Q4: +59 pts, +0.72/g.",
+      "pass": true
+    },
+    {
+      "check": "route",
+      "id": "single_game_narrative-001",
+      "expected": "get_game_flow",
+      "actual": "get_game_flow",
+      "pass": true
+    },
+    {
+      "check": "facts",
+      "id": "single_game_narrative-001",
+      "expected": [
+        "largest lead lost",
+        "14 points"
+      ],
+      "actual": "Regular season 2025-12-02 vs BOS: the largest lead lost was 14 points at Q2 11:07 (37-23); BOS took the lead for good at Q2 03:26 (49-50) and NYK lost 117-123.\nRegular season 2025-10-24 vs BOS: the largest deficit erased in a win was 8 points at Q1 00:17 (22-30); NYK first tied or led at Q2 10:27 (30-30) and won 105-95, outscoring BOS 8-0 in that stretch.\nLargest deficit in a Knicks loss across the selected games: 18 points. Regular season 2025-12-02 vs BOS (117-123): 18 points at Q3 00:03 (76-94); BOS took the lead for good at Q2 03:26 (49-50).\nRegular season 2025-12-02 vs BOS: the largest opponent run in a Knicks loss was a BOS 12-0 run from Q2 10:07 to Q2 08:25, score 39-25 to 39-37; NYK lost 117-123.\nRegular season 2025-10-24 vs BOS: the largest Knicks run in the selected games was a NYK 17-0 run from Q2 07:29 to Q2 03:49, score 33-36 to 50-36; NYK won 105-95.\nRegular season 2025-10-24 vs BOS: the largest opponent run in the selected games was a BOS 12-0 run from Q3 04:20 to Q4 10:52, score 82-58 to 82-70; NYK won 105-95.",
+      "pass": true
+    },
+    {
+      "check": "fallback",
+      "id": "single_game_narrative-001",
+      "expected": [
+        "largest lead lost",
+        "14 points"
+      ],
+      "actual": "Regular season 2025-12-02 vs BOS: the largest lead lost was 14 points at Q2 11:07 (37-23); BOS took the lead for good at Q2 03:26 (49-50) and NYK lost 117-123. Regular season 2025-10-24 vs BOS: the largest deficit erased in a win was 8 points at Q1 00:17 (22-30); NYK first tied or led at Q2 10:27 (30-30) and won 105-95, outscoring BOS 8-0 in that stretch. Largest deficit in a Knicks loss across the selected games: 18 points. Regular season 2025-12-02 vs BOS (117-123): 18 points at Q3 00:03 (76-94); BOS took the lead for good at Q2 03:26 (49-50). Regular season 2025-12-02 vs BOS: the largest opponent run in a Knicks loss was a BOS 12-0 run from Q2 10:07 to Q2 08:25, score 39-25 to 39-37; NYK lost 117-123. Regular season 2025-10-24 vs BOS: the largest Knicks run in the selected games was a NYK 17-0 run from Q2 07:29 to Q2 03:49, score 33-36 to 50-36; NYK won 105-95. Regular season 2025-10-24 vs BOS: the largest opponent run in the selected games was a BOS 12-0 run from Q3 04:20 to Q4 10:52, score 82-58 to 82-70; NYK won 105-95.",
+      "pass": true
+    },
+    {
+      "check": "route",
+      "id": "single_game_narrative-003",
+      "expected": "get_period_scoring",
+      "actual": "get_period_scoring",
+      "pass": true
+    },
+    {
+      "check": "facts",
+      "id": "single_game_narrative-003",
+      "expected": [
+        "Q4 30-28",
+        "Q4 15-28"
+      ],
+      "actual": "Regular season and playoffs period report, 9 of 9 games.\nRegular season and playoffs, 9 of 9 games. Opponent: Atlanta. Phases: 3 reg, 6 playoffs. 12-27 a: Q4 30-36 (-6); 128-125 W (+3) 01-02 h: Q4 29-17 (+12); 99-111 L (-12) 04-06 a: Q4 27-26 (+1); 108-105 W (+3) 04-18 h p: Q4 30-28 (+2); 113-102 W (+11) 04-20 h p: Q4 15-28 (-13); 106-107 L (-1) 04-23 a p: Q4 28-21 (+7); 108-109 L (-1) 04-25 a p: Q4 28-33 (-5); 114-98 W (+16) 04-28 h p: Q4 36-25 (+11); 126-97 W (+29) 04-30 a p: Q4 23-25 (-2); 140-89 W (+51)",
+      "pass": true
+    },
+    {
+      "check": "fallback",
+      "id": "single_game_narrative-003",
+      "expected": [
+        "Q4 30-28",
+        "Q4 15-28"
+      ],
+      "actual": "Regular season and playoffs, 9 of 9 games. Opponent: Atlanta. Phases: 3 reg, 6 playoffs. 12-27 a: Q4 30-36 (-6); 128-125 W (+3) 01-02 h: Q4 29-17 (+12); 99-111 L (-12) 04-06 a: Q4 27-26 (+1); 108-105 W (+3) 04-18 h p: Q4 30-28 (+2); 113-102 W (+11) 04-20 h p: Q4 15-28 (-13); 106-107 L (-1) 04-23 a p: Q4 28-21 (+7); 108-109 L (-1) 04-25 a p: Q4 28-33 (-5); 114-98 W (+16) 04-28 h p: Q4 36-25 (+11); 126-97 W (+29) 04-30 a p: Q4 23-25 (-2); 140-89 W (+51)",
+      "pass": true
+    },
+    {
+      "check": "route",
+      "id": "single_game_narrative-005",
+      "expected": "get_period_scoring",
+      "actual": "get_period_scoring",
+      "pass": true
+    },
+    {
+      "check": "facts",
+      "id": "single_game_narrative-005",
+      "expected": [
+        "half 53-47",
+        "half 72-47"
+      ],
+      "actual": "Regular season period report, 4 of 4 games.\nRegular season, 4 of 4 games. Opponent: Charlotte. regular season halves: H1 56.0-54.0/g, H2 55.75-53.25/g; H2 vs H1 -0.25/g, -1 pts; led 2, trailed 2; comebacks 0, blown 0. 11-26 a; half 72-47, 2H 57-54; 129-101 W (+28) 12-03 h; half 53-47, 2H 66-57; 119-104 W (+15) 03-26 a; half 55-65, 2H 48-49; 103-114 L (-11) 04-12 h; half 44-57, 2H 52-53; 96-110 L (-14)",
+      "pass": true
+    },
+    {
+      "check": "fallback",
+      "id": "single_game_narrative-005",
+      "expected": [
+        "half 53-47",
+        "half 72-47"
+      ],
+      "actual": "Regular season, 4 of 4 games. Opponent: Charlotte. regular season halves: H1 56.0-54.0/g, H2 55.75-53.25/g; H2 vs H1 -0.25/g, -1 pts; led 2, trailed 2; comebacks 0, blown 0. 11-26 a; half 72-47, 2H 57-54; 129-101 W (+28) 12-03 h; half 53-47, 2H 66-57; 119-104 W (+15) 03-26 a; half 55-65, 2H 48-49; 103-114 L (-11) 04-12 h; half 44-57, 2H 52-53; 96-110 L (-14)",
+      "pass": true
+    },
+    {
+      "check": "route",
+      "id": "single_game_narrative-008",
+      "expected": "get_game_flow",
+      "actual": "get_game_flow",
+      "pass": true
+    },
+    {
+      "check": "facts",
+      "id": "single_game_narrative-008",
+      "expected": [
+        "13-0 run"
+      ],
+      "actual": "Regular season 2026-01-28 vs TOR: the largest deficit erased in a win was 12 points at Q2 09:15 (22-34); NYK first tied or led at Q3 03:54 (69-68) and won 119-92, outscoring TOR 47-34 in that stretch.\nRegular season 2026-01-28 vs TOR: within that comeback, NYK's biggest run was 7-0 from Q3 07:46 to Q3 06:36, score 55-66 to 62-66.\nRegular season 2026-01-28 vs TOR: the largest Knicks run in the selected games was a NYK 13-0 run from Q3 02:59 to Q3 00:20, score 69-70 to 82-70; NYK won 119-92.\nRegular season 2025-11-30 vs TOR: the largest opponent run in the selected games was a TOR 14-0 run from Q2 10:00 to Q2 07:52, score 48-24 to 48-38; NYK won 116-94.",
+      "pass": true
+    },
+    {
+      "check": "fallback",
+      "id": "single_game_narrative-008",
+      "expected": [
+        "13-0 run"
+      ],
+      "actual": "Regular season 2026-01-28 vs TOR: the largest deficit erased in a win was 12 points at Q2 09:15 (22-34); NYK first tied or led at Q3 03:54 (69-68) and won 119-92, outscoring TOR 47-34 in that stretch. Regular season 2026-01-28 vs TOR: within that comeback, NYK's biggest run was 7-0 from Q3 07:46 to Q3 06:36, score 55-66 to 62-66. Regular season 2026-01-28 vs TOR: the largest Knicks run in the selected games was a NYK 13-0 run from Q3 02:59 to Q3 00:20, score 69-70 to 82-70; NYK won 119-92. Regular season 2025-11-30 vs TOR: the largest opponent run in the selected games was a TOR 14-0 run from Q2 10:00 to Q2 07:52, score 48-24 to 48-38; NYK won 116-94.",
+      "pass": true
+    },
+    {
+      "check": "route",
+      "id": "aliases_typos-005",
+      "expected": "get_game_flow",
+      "actual": "get_game_flow",
+      "pass": true
+    },
+    {
+      "check": "facts",
+      "id": "aliases_typos-005",
+      "expected": [
+        "20-0 run"
+      ],
+      "actual": "Regular season 2025-12-05 vs UTA: the largest Knicks run in the selected games was a NYK 20-0 run from Q1 09:14 to Q1 05:53, score 3-0 to 23-0; NYK won 146-112.\nRegular season 2026-03-20 vs BKN: the largest opponent run in the selected games was a BKN 17-0 run from Q4 09:22 to Q4 03:33, score 84-70 to 84-87; NYK won 93-92.\nRegular season 2026-03-15 vs GSW: the largest deficit erased in a win was 21 points at Q2 09:30 (25-46); NYK first tied or led at Q3 03:58 (73-73) and won 110-107, outscoring GSW 48-27 in that stretch.\nRegular season 2026-03-15 vs GSW: within that comeback, NYK's biggest run was 8-0 from Q2 00:08 to Q3 10:47, score 42-54 to 50-54.\nLargest deficit in a Knicks loss across the selected games: 43 points. Regular season 2026-02-06 vs DET (80-118): 43 points at Q4 01:57 (73-116); DET took the lead for good at Q1 02:53 (14-16).\nRegular season 2025-12-31 vs SAS: the largest lead lost was 19 points at Q2 03:51 (71-52); SAS took the lead for good at Q4 03:38 (118-119) and NYK lost 132-134.\nRegular season 2026-01-17 vs PHX: the largest opponent run in a Knicks loss was a PHX 15-0 run from Q3 03:57 to Q4 11:39, score 77-67 to 77-82; NYK lost 99-106.",
+      "pass": true
+    },
+    {
+      "check": "fallback",
+      "id": "aliases_typos-005",
+      "expected": [
+        "20-0 run"
+      ],
+      "actual": "Regular season 2025-12-05 vs UTA: the largest Knicks run in the selected games was a NYK 20-0 run from Q1 09:14 to Q1 05:53, score 3-0 to 23-0; NYK won 146-112. Regular season 2026-03-20 vs BKN: the largest opponent run in the selected games was a BKN 17-0 run from Q4 09:22 to Q4 03:33, score 84-70 to 84-87; NYK won 93-92. Regular season 2026-03-15 vs GSW: the largest deficit erased in a win was 21 points at Q2 09:30 (25-46); NYK first tied or led at Q3 03:58 (73-73) and won 110-107, outscoring GSW 48-27 in that stretch. Regular season 2026-03-15 vs GSW: within that comeback, NYK's biggest run was 8-0 from Q2 00:08 to Q3 10:47, score 42-54 to 50-54. Largest deficit in a Knicks loss across the selected games: 43 points. Regular season 2026-02-06 vs DET (80-118): 43 points at Q4 01:57 (73-116); DET took the lead for good at Q1 02:53 (14-16). Regular season 2025-12-31 vs SAS: the largest lead lost was 19 points at Q2 03:51 (71-52); SAS took the lead for good at Q4 03:38 (118-119) and NYK lost 132-134.",
+      "pass": true
+    },
+    {
+      "check": "route",
+      "id": "aliases_typos-007",
+      "expected": "get_period_scoring",
+      "actual": "get_period_scoring",
+      "pass": true
+    },
+    {
+      "check": "facts",
+      "id": "aliases_typos-007",
+      "expected": [
+        "Q4 23-27"
+      ],
+      "actual": "Regular season period report, 4 of 4 games.\nRegular season, 4 of 4 games. Opponent: Chicago. 10-31 a: Q1 27-35 (-8) Q2 26-37 (-11) Q3 38-28 (+10) Q4 34-35 (-1); 125-135 L (-10) 11-02 h: Q1 34-24 (+10) Q2 34-36 (-2) Q3 37-29 (+8) Q4 23-27 (-4); 128-116 W (+12) 02-22 a: Q1 25-27 (-2) Q2 27-26 (+1) Q3 31-25 (+6) Q4 22-21 (+1); 105-99 W (+6) 04-03 h: Q1 38-16 (+22) Q2 40-25 (+15) Q3 30-31 (-1) Q4 28-24 (+4); 136-96 W (+40)",
+      "pass": true
+    },
+    {
+      "check": "fallback",
+      "id": "aliases_typos-007",
+      "expected": [
+        "Q4 23-27"
+      ],
+      "actual": "Regular season, 4 of 4 games. Opponent: Chicago. 10-31 a: Q1 27-35 (-8) Q2 26-37 (-11) Q3 38-28 (+10) Q4 34-35 (-1); 125-135 L (-10) 11-02 h: Q1 34-24 (+10) Q2 34-36 (-2) Q3 37-29 (+8) Q4 23-27 (-4); 128-116 W (+12) 02-22 a: Q1 25-27 (-2) Q2 27-26 (+1) Q3 31-25 (+6) Q4 22-21 (+1); 105-99 W (+6) 04-03 h: Q1 38-16 (+22) Q2 40-25 (+15) Q3 30-31 (-1) Q4 28-24 (+4); 136-96 W (+40)",
+      "pass": true
+    },
+    {
+      "check": "route",
+      "id": "aliases_typos-010",
+      "expected": "get_game_flow",
+      "actual": "get_game_flow",
+      "pass": true
+    },
+    {
+      "check": "facts",
+      "id": "aliases_typos-010",
+      "expected": [
+        "19 points"
+      ],
+      "actual": "Regular season 2026-03-15 vs GSW: the largest deficit erased in a win was 21 points at Q2 09:30 (25-46); NYK first tied or led at Q3 03:58 (73-73) and won 110-107, outscoring GSW 48-27 in that stretch.\nRegular season 2026-03-15 vs GSW: within that comeback, NYK's biggest run was 8-0 from Q2 00:08 to Q3 10:47, score 42-54 to 50-54.\nLargest deficit in a Knicks loss across the selected games: 43 points. Regular season 2026-02-06 vs DET (80-118): 43 points at Q4 01:57 (73-116); DET took the lead for good at Q1 02:53 (14-16).\nRegular season 2025-12-31 vs SAS: the largest lead lost was 19 points at Q2 03:51 (71-52); SAS took the lead for good at Q4 03:38 (118-119) and NYK lost 132-134.\nRegular season 2026-01-17 vs PHX: the largest opponent run in a Knicks loss was a PHX 15-0 run from Q3 03:57 to Q4 11:39, score 77-67 to 77-82; NYK lost 99-106.\nRegular season 2025-12-05 vs UTA: the largest Knicks run in the selected games was a NYK 20-0 run from Q1 09:14 to Q1 05:53, score 3-0 to 23-0; NYK won 146-112.\nRegular season 2026-03-20 vs BKN: the largest opponent run in the selected games was a BKN 17-0 run from Q4 09:22 to Q4 03:33, score 84-70 to 84-87; NYK won 93-92.",
+      "pass": true
+    },
+    {
+      "check": "fallback",
+      "id": "aliases_typos-010",
+      "expected": [
+        "19 points"
+      ],
+      "actual": "Regular season 2026-03-15 vs GSW: the largest deficit erased in a win was 21 points at Q2 09:30 (25-46); NYK first tied or led at Q3 03:58 (73-73) and won 110-107, outscoring GSW 48-27 in that stretch. Regular season 2026-03-15 vs GSW: within that comeback, NYK's biggest run was 8-0 from Q2 00:08 to Q3 10:47, score 42-54 to 50-54. Largest deficit in a Knicks loss across the selected games: 43 points. Regular season 2026-02-06 vs DET (80-118): 43 points at Q4 01:57 (73-116); DET took the lead for good at Q1 02:53 (14-16). Regular season 2025-12-31 vs SAS: the largest lead lost was 19 points at Q2 03:51 (71-52); SAS took the lead for good at Q4 03:38 (118-119) and NYK lost 132-134. Regular season 2026-01-17 vs PHX: the largest opponent run in a Knicks loss was a PHX 15-0 run from Q3 03:57 to Q4 11:39, score 77-67 to 77-82; NYK lost 99-106. Regular season 2025-12-05 vs UTA: the largest Knicks run in the selected games was a NYK 20-0 run from Q1 09:14 to Q1 05:53, score 3-0 to 23-0; NYK won 146-112.",
+      "pass": true
+    },
+    {
+      "check": "route",
+      "id": "turning_points-001",
+      "expected": "get_game_flow",
+      "actual": "get_game_flow",
+      "pass": true
+    },
+    {
+      "check": "facts",
+      "id": "turning_points-001",
+      "expected": [
+        "17-0 run"
+      ],
+      "actual": "Regular season 2025-10-24 vs BOS: the largest Knicks run in the selected games was a NYK 17-0 run from Q2 07:29 to Q2 03:49, score 33-36 to 50-36; NYK won 105-95.\nRegular season 2025-10-24 vs BOS: the largest opponent run in the selected games was a BOS 12-0 run from Q3 04:20 to Q4 10:52, score 82-58 to 82-70; NYK won 105-95.\nRegular season 2025-10-24 vs BOS: the largest deficit erased in a win was 8 points at Q1 00:17 (22-30); NYK first tied or led at Q2 10:27 (30-30) and won 105-95, outscoring BOS 8-0 in that stretch.\nLargest deficit in a Knicks loss across the selected games: 18 points. Regular season 2025-12-02 vs BOS (117-123): 18 points at Q3 00:03 (76-94); BOS took the lead for good at Q2 03:26 (49-50).\nRegular season 2025-12-02 vs BOS: the largest lead lost was 14 points at Q2 11:07 (37-23); BOS took the lead for good at Q2 03:26 (49-50) and NYK lost 117-123.\nRegular season 2025-12-02 vs BOS: the largest opponent run in a Knicks loss was a BOS 12-0 run from Q2 10:07 to Q2 08:25, score 39-25 to 39-37; NYK lost 117-123.",
+      "pass": true
+    },
+    {
+      "check": "fallback",
+      "id": "turning_points-001",
+      "expected": [
+        "17-0 run"
+      ],
+      "actual": "Regular season 2025-10-24 vs BOS: the largest Knicks run in the selected games was a NYK 17-0 run from Q2 07:29 to Q2 03:49, score 33-36 to 50-36; NYK won 105-95. Regular season 2025-10-24 vs BOS: the largest opponent run in the selected games was a BOS 12-0 run from Q3 04:20 to Q4 10:52, score 82-58 to 82-70; NYK won 105-95. Regular season 2025-10-24 vs BOS: the largest deficit erased in a win was 8 points at Q1 00:17 (22-30); NYK first tied or led at Q2 10:27 (30-30) and won 105-95, outscoring BOS 8-0 in that stretch. Largest deficit in a Knicks loss across the selected games: 18 points. Regular season 2025-12-02 vs BOS (117-123): 18 points at Q3 00:03 (76-94); BOS took the lead for good at Q2 03:26 (49-50). Regular season 2025-12-02 vs BOS: the largest lead lost was 14 points at Q2 11:07 (37-23); BOS took the lead for good at Q2 03:26 (49-50) and NYK lost 117-123. Regular season 2025-12-02 vs BOS: the largest opponent run in a Knicks loss was a BOS 12-0 run from Q2 10:07 to Q2 08:25, score 39-25 to 39-37; NYK lost 117-123.",
+      "pass": true
+    },
+    {
+      "check": "route",
+      "id": "turning_points-003",
+      "expected": "get_game_flow",
+      "actual": "get_game_flow",
+      "pass": true
+    },
+    {
+      "check": "facts",
+      "id": "turning_points-003",
+      "expected": [
+        "largest lead lost",
+        "14 points"
+      ],
+      "actual": "Playoffs 2026-04-20 vs ATL: the largest lead lost was 14 points at Q3 06:56 (78-64); ATL took the lead for good at Q4 00:33 (103-105) and NYK lost 106-107.\nLargest deficit in a Knicks loss across the selected games: 26 points. Regular season 2026-01-02 vs ATL (99-111): 26 points at Q3 01:14 (68-94); ATL took the lead for good at Q1 01:02 (30-31).\nRegular season 2026-04-06 vs ATL: the largest deficit erased in a win was 10 points at Q3 06:44 (61-71); NYK first tied or led at Q3 02:00 (75-74) and won 108-105, outscoring ATL 14-3 in that stretch.\nRegular season 2026-04-06 vs ATL: within that comeback, NYK's biggest run was 5-0 from Q3 06:03 to Q3 05:23, score 64-73 to 69-73.\nPlayoffs 2026-04-20 vs ATL: the largest opponent run in a Knicks loss was a ATL 11-0 run from Q4 04:46 to Q4 01:33, score 100-92 to 100-103; NYK lost 106-107.\nPlayoffs 2026-04-30 vs ATL: the largest Knicks run in the selected games was a NYK 16-0 run from Q1 01:50 to Q2 09:58, score 32-15 to 48-15; NYK won 140-89.\nRegular season 2026-04-06 vs ATL: the largest opponent run in the selected games was a ATL 12-0 run from Q2 07:52 to Q2 05:02, score 43-36 to 43-48; NYK won 108-105.",
+      "pass": true
+    },
+    {
+      "check": "fallback",
+      "id": "turning_points-003",
+      "expected": [
+        "largest lead lost",
+        "14 points"
+      ],
+      "actual": "Playoffs 2026-04-20 vs ATL: the largest lead lost was 14 points at Q3 06:56 (78-64); ATL took the lead for good at Q4 00:33 (103-105) and NYK lost 106-107. Largest deficit in a Knicks loss across the selected games: 26 points. Regular season 2026-01-02 vs ATL (99-111): 26 points at Q3 01:14 (68-94); ATL took the lead for good at Q1 01:02 (30-31). Regular season 2026-04-06 vs ATL: the largest deficit erased in a win was 10 points at Q3 06:44 (61-71); NYK first tied or led at Q3 02:00 (75-74) and won 108-105, outscoring ATL 14-3 in that stretch. Regular season 2026-04-06 vs ATL: within that comeback, NYK's biggest run was 5-0 from Q3 06:03 to Q3 05:23, score 64-73 to 69-73. Playoffs 2026-04-20 vs ATL: the largest opponent run in a Knicks loss was a ATL 11-0 run from Q4 04:46 to Q4 01:33, score 100-92 to 100-103; NYK lost 106-107. Playoffs 2026-04-30 vs ATL: the largest Knicks run in the selected games was a NYK 16-0 run from Q1 01:50 to Q2 09:58, score 32-15 to 48-15; NYK won 140-89.",
+      "pass": true
+    },
+    {
+      "check": "route",
+      "id": "turning_points-005",
+      "expected": "get_game_flow",
+      "actual": "get_game_flow",
+      "pass": true
+    },
+    {
+      "check": "facts",
+      "id": "turning_points-005",
+      "expected": [
+        "21 points"
+      ],
+      "actual": "Regular season 2026-03-15 vs GSW: the largest deficit erased in a win was 21 points at Q2 09:30 (25-46); NYK first tied or led at Q3 03:58 (73-73) and won 110-107, outscoring GSW 48-27 in that stretch.\nRegular season 2026-03-15 vs GSW: within that comeback, NYK's biggest run was 8-0 from Q2 00:08 to Q3 10:47, score 42-54 to 50-54.\nLargest deficit in a Knicks loss across the selected games: 43 points. Regular season 2026-02-06 vs DET (80-118): 43 points at Q4 01:57 (73-116); DET took the lead for good at Q1 02:53 (14-16).\nRegular season 2025-12-31 vs SAS: the largest lead lost was 19 points at Q2 03:51 (71-52); SAS took the lead for good at Q4 03:38 (118-119) and NYK lost 132-134.\nRegular season 2026-01-17 vs PHX: the largest opponent run in a Knicks loss was a PHX 15-0 run from Q3 03:57 to Q4 11:39, score 77-67 to 77-82; NYK lost 99-106.\nRegular season 2025-12-05 vs UTA: the largest Knicks run in the selected games was a NYK 20-0 run from Q1 09:14 to Q1 05:53, score 3-0 to 23-0; NYK won 146-112.\nRegular season 2026-03-20 vs BKN: the largest opponent run in the selected games was a BKN 17-0 run from Q4 09:22 to Q4 03:33, score 84-70 to 84-87; NYK won 93-92.",
+      "pass": true
+    },
+    {
+      "check": "fallback",
+      "id": "turning_points-005",
+      "expected": [
+        "21 points"
+      ],
+      "actual": "Regular season 2026-03-15 vs GSW: the largest deficit erased in a win was 21 points at Q2 09:30 (25-46); NYK first tied or led at Q3 03:58 (73-73) and won 110-107, outscoring GSW 48-27 in that stretch. Regular season 2026-03-15 vs GSW: within that comeback, NYK's biggest run was 8-0 from Q2 00:08 to Q3 10:47, score 42-54 to 50-54. Largest deficit in a Knicks loss across the selected games: 43 points. Regular season 2026-02-06 vs DET (80-118): 43 points at Q4 01:57 (73-116); DET took the lead for good at Q1 02:53 (14-16). Regular season 2025-12-31 vs SAS: the largest lead lost was 19 points at Q2 03:51 (71-52); SAS took the lead for good at Q4 03:38 (118-119) and NYK lost 132-134. Regular season 2026-01-17 vs PHX: the largest opponent run in a Knicks loss was a PHX 15-0 run from Q3 03:57 to Q4 11:39, score 77-67 to 77-82; NYK lost 99-106. Regular season 2025-12-05 vs UTA: the largest Knicks run in the selected games was a NYK 20-0 run from Q1 09:14 to Q1 05:53, score 3-0 to 23-0; NYK won 146-112.",
+      "pass": true
+    },
+    {
+      "check": "route",
+      "id": "turning_points-007",
+      "expected": "get_game_flow",
+      "actual": "get_game_flow",
+      "pass": true
+    },
+    {
+      "check": "facts",
+      "id": "turning_points-007",
+      "expected": [
+        "15-0 run"
+      ],
+      "actual": "Regular season 2026-01-17 vs PHX: the largest opponent run in a Knicks loss was a PHX 15-0 run from Q3 03:57 to Q4 11:39, score 77-67 to 77-82; NYK lost 99-106.\nRegular season 2026-03-20 vs BKN: the largest opponent run in the selected games was a BKN 17-0 run from Q4 09:22 to Q4 03:33, score 84-70 to 84-87; NYK won 93-92.\nRegular season 2025-12-05 vs UTA: the largest Knicks run in the selected games was a NYK 20-0 run from Q1 09:14 to Q1 05:53, score 3-0 to 23-0; NYK won 146-112.\nRegular season 2026-03-15 vs GSW: the largest deficit erased in a win was 21 points at Q2 09:30 (25-46); NYK first tied or led at Q3 03:58 (73-73) and won 110-107, outscoring GSW 48-27 in that stretch.\nRegular season 2026-03-15 vs GSW: within that comeback, NYK's biggest run was 8-0 from Q2 00:08 to Q3 10:47, score 42-54 to 50-54.\nLargest deficit in a Knicks loss across the selected games: 43 points. Regular season 2026-02-06 vs DET (80-118): 43 points at Q4 01:57 (73-116); DET took the lead for good at Q1 02:53 (14-16).\nRegular season 2025-12-31 vs SAS: the largest lead lost was 19 points at Q2 03:51 (71-52); SAS took the lead for good at Q4 03:38 (118-119) and NYK lost 132-134.",
+      "pass": true
+    },
+    {
+      "check": "fallback",
+      "id": "turning_points-007",
+      "expected": [
+        "15-0 run"
+      ],
+      "actual": "Regular season 2026-01-17 vs PHX: the largest opponent run in a Knicks loss was a PHX 15-0 run from Q3 03:57 to Q4 11:39, score 77-67 to 77-82; NYK lost 99-106. Regular season 2026-03-20 vs BKN: the largest opponent run in the selected games was a BKN 17-0 run from Q4 09:22 to Q4 03:33, score 84-70 to 84-87; NYK won 93-92. Regular season 2025-12-05 vs UTA: the largest Knicks run in the selected games was a NYK 20-0 run from Q1 09:14 to Q1 05:53, score 3-0 to 23-0; NYK won 146-112. Regular season 2026-03-15 vs GSW: the largest deficit erased in a win was 21 points at Q2 09:30 (25-46); NYK first tied or led at Q3 03:58 (73-73) and won 110-107, outscoring GSW 48-27 in that stretch. Regular season 2026-03-15 vs GSW: within that comeback, NYK's biggest run was 8-0 from Q2 00:08 to Q3 10:47, score 42-54 to 50-54. Largest deficit in a Knicks loss across the selected games: 43 points. Regular season 2026-02-06 vs DET (80-118): 43 points at Q4 01:57 (73-116); DET took the lead for good at Q1 02:53 (14-16).",
+      "pass": true
+    },
+    {
+      "check": "route",
+      "id": "turning_points-008",
+      "expected": "get_game_flow",
+      "actual": "get_game_flow",
+      "pass": true
+    },
+    {
+      "check": "facts",
+      "id": "turning_points-008",
+      "expected": [
+        "21 points"
+      ],
+      "actual": "Largest deficit in a Knicks loss across the selected games: 21 points. Regular season 2026-03-26 vs CHA (103-114): 21 points at Q4 08:32 (83-104); CHA took the lead for good at Q1 00:08 (36-38); Regular season 2026-04-12 vs CHA (96-110): 21 points at Q4 04:27 (84-105); CHA took the lead for good at Q1 03:27 (16-17).\nRegular season 2025-11-26 vs CHA: the largest deficit erased in a win was 6 points at Q1 10:20 (2-8); NYK first tied or led at Q1 08:16 (11-11) and won 129-101, outscoring CHA 9-3 in that stretch.\nRegular season 2025-11-26 vs CHA: within that comeback, NYK's biggest run was 5-0 from Q1 10:00 to Q1 09:33, score 2-8 to 7-8.\nRegular season 2026-04-12 vs CHA: the largest lead lost was 3 points at Q1 10:26 (3-0); CHA took the lead for good at Q1 03:27 (16-17) and NYK lost 96-110.\nRegular season 2026-04-12 vs CHA: the largest opponent run in a Knicks loss was a CHA 10-0 run from Q1 01:00 to Q2 11:29, score 20-22 to 20-32; NYK lost 96-110.\nRegular season 2025-11-26 vs CHA: the largest Knicks run in the selected games was a NYK 13-0 run from Q2 02:06 to Q2 00:01, score 59-47 to 72-47; NYK won 129-101.\nRegular season 2026-04-12 vs CHA: the largest opponent run in the selected games was a CHA 10-0 run from Q1 01:00 to Q2 11:29, score 20-22 to 20-32; NYK lost 96-110.",
+      "pass": true
+    },
+    {
+      "check": "fallback",
+      "id": "turning_points-008",
+      "expected": [
+        "21 points"
+      ],
+      "actual": "Largest deficit in a Knicks loss across the selected games: 21 points. Regular season 2026-03-26 vs CHA (103-114): 21 points at Q4 08:32 (83-104); CHA took the lead for good at Q1 00:08 (36-38); Regular season 2026-04-12 vs CHA (96-110): 21 points at Q4 04:27 (84-105); CHA took the lead for good at Q1 03:27 (16-17). Regular season 2025-11-26 vs CHA: the largest deficit erased in a win was 6 points at Q1 10:20 (2-8); NYK first tied or led at Q1 08:16 (11-11) and won 129-101, outscoring CHA 9-3 in that stretch. Regular season 2025-11-26 vs CHA: within that comeback, NYK's biggest run was 5-0 from Q1 10:00 to Q1 09:33, score 2-8 to 7-8. Regular season 2026-04-12 vs CHA: the largest lead lost was 3 points at Q1 10:26 (3-0); CHA took the lead for good at Q1 03:27 (16-17) and NYK lost 96-110. Regular season 2026-04-12 vs CHA: the largest opponent run in a Knicks loss was a CHA 10-0 run from Q1 01:00 to Q2 11:29, score 20-22 to 20-32; NYK lost 96-110. Regular season 2025-11-26 vs CHA: the largest Knicks run in the selected games was a NYK 13-0 run from Q2 02:06 to Q2 00:01, score 59-47 to 72-47; NYK won 129-101.",
+      "pass": true
+    },
+    {
+      "check": "route",
+      "id": "turning_points-009",
+      "expected": "get_game_flow",
+      "actual": "get_game_flow",
+      "pass": true
+    },
+    {
+      "check": "facts",
+      "id": "turning_points-009",
+      "expected": [
+        "12 points"
+      ],
+      "actual": "Regular season 2026-01-28 vs TOR: the largest deficit erased in a win was 12 points at Q2 09:15 (22-34); NYK first tied or led at Q3 03:54 (69-68) and won 119-92, outscoring TOR 47-34 in that stretch.\nRegular season 2026-01-28 vs TOR: within that comeback, NYK's biggest run was 7-0 from Q3 07:46 to Q3 06:36, score 55-66 to 62-66.\nRegular season 2026-01-28 vs TOR: the largest Knicks run in the selected games was a NYK 13-0 run from Q3 02:59 to Q3 00:20, score 69-70 to 82-70; NYK won 119-92.\nRegular season 2025-11-30 vs TOR: the largest opponent run in the selected games was a TOR 14-0 run from Q2 10:00 to Q2 07:52, score 48-24 to 48-38; NYK won 116-94.",
+      "pass": true
+    },
+    {
+      "check": "fallback",
+      "id": "turning_points-009",
+      "expected": [
+        "12 points"
+      ],
+      "actual": "Regular season 2026-01-28 vs TOR: the largest deficit erased in a win was 12 points at Q2 09:15 (22-34); NYK first tied or led at Q3 03:54 (69-68) and won 119-92, outscoring TOR 47-34 in that stretch. Regular season 2026-01-28 vs TOR: within that comeback, NYK's biggest run was 7-0 from Q3 07:46 to Q3 06:36, score 55-66 to 62-66. Regular season 2026-01-28 vs TOR: the largest Knicks run in the selected games was a NYK 13-0 run from Q3 02:59 to Q3 00:20, score 69-70 to 82-70; NYK won 119-92. Regular season 2025-11-30 vs TOR: the largest opponent run in the selected games was a TOR 14-0 run from Q2 10:00 to Q2 07:52, score 48-24 to 48-38; NYK won 116-94.",
+      "pass": true
+    },
+    {
+      "check": "unchanged",
+      "id": "exact_statistics-001",
+      "expected": "get_team_stats",
+      "actual": "get_team_stats",
+      "pass": true
+    },
+    {
+      "check": "unchanged",
+      "id": "date_range_last_n-001",
+      "expected": "get_team_stats",
+      "actual": "get_team_stats",
+      "pass": true
+    },
+    {
+      "check": "unchanged",
+      "id": "date_range_last_n-007",
+      "expected": "get_team_stats",
+      "actual": "get_team_stats",
+      "pass": true
+    },
+    {
+      "check": "unchanged",
+      "id": "aliases_typos-002",
+      "expected": "get_team_stats",
+      "actual": "get_team_stats",
+      "pass": true
+    },
+    {
+      "check": "unchanged",
+      "id": "unsupported-001",
+      "expected": null,
+      "actual": null,
+      "pass": true
+    },
+    {
+      "check": "unchanged",
+      "id": "unsupported-009",
+      "expected": null,
+      "actual": null,
+      "pass": true
+    },
+    {
+      "check": "metric-gate",
+      "id": "comparisons-005",
+      "expected": false,
+      "actual": false,
+      "pass": true
+    },
+    {
+      "check": "metric-gate",
+      "id": "comparisons-006",
+      "expected": false,
+      "actual": false,
+      "pass": true
+    },
+    {
+      "check": "metric-gate",
+      "id": "comparisons-010",
+      "expected": false,
+      "actual": false,
+      "pass": true
+    },
+    {
+      "check": "metric-gate",
+      "id": "aliases_typos-008",
+      "expected": false,
+      "actual": false,
+      "pass": true
+    },
+    {
+      "check": "prompt",
+      "id": "get_team_splits",
+      "expected": true,
+      "actual": true,
+      "pass": true
+    },
+    {
+      "check": "prompt",
+      "id": "observed maximum",
+      "expected": true,
+      "actual": true,
+      "pass": true
+    },
+    {
+      "check": "prompt",
+      "id": "list the matching archived games",
+      "expected": true,
+      "actual": true,
+      "pass": true
+    },
+    {
+      "check": "prompt",
+      "id": "must not add specific numbers",
+      "expected": true,
+      "actual": true,
+      "pass": true
+    }
+  ],
+  "failed": 0
+}
