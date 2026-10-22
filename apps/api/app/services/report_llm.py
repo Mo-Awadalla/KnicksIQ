@@ -175,15 +175,21 @@ class OpenAICompatibleLLMAdapter(LLMAdapter):
             raise ValueError("Unsupported model wire protocol")
         payload = json.dumps(self._request_body(system, user)).encode("utf-8")
         endpoint = "/responses" if protocol == "responses" else "/chat/completions"
+        headers = {
+            "Authorization": f"Bearer {self.api_key}",
+            "Content-Type": "application/json",
+        }
+        if self.model_protocols or "opencode.ai" in self.base_url:
+            headers.update(
+                {
+                    "User-Agent": "knicksiq/1.0",
+                    "x-opencode-session": self.session_id,
+                }
+            )
         req = urllib.request.Request(
             f"{self.base_url}{endpoint}",
             data=payload,
-            headers={
-                "Authorization": f"Bearer {self.api_key}",
-                "Content-Type": "application/json",
-                "User-Agent": "knicksiq/1.0",
-                "x-opencode-session": self.session_id,
-            },
+            headers=headers,
             method="POST",
         )
         try:

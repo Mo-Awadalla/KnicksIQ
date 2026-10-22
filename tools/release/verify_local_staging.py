@@ -104,7 +104,10 @@ def preflight(probe: Probe, api: str, web: str) -> None:
         require(ready.get("data_version") == VERSION, f"{name}: wrong release")
         optional = ready.get("optional_dependencies", {})
         require(optional.get("redis") == "configured", f"{name}: Redis is not configured")
-        require(optional.get("openrouter") == "disabled", f"{name}: OpenRouter must be disabled")
+        require(
+            optional.get("model_provider") == "disabled",
+            f"{name}: model provider must be disabled",
+        )
         require(optional.get("qdrant") == "disabled", f"{name}: vector service must be disabled")
     archive = probe.request("archive status", web + "/api/archive/status")
     require(archive.get("data_version") == VERSION, "Archive status used the wrong release")

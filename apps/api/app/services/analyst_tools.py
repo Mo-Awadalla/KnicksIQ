@@ -205,7 +205,9 @@ class AnalystTools:
             if self.different:
                 updates["player_ids"] = []
             self.scope = self.scope.model_copy(update=updates)
-        if (not self.scope.player_ids or self.scope.metric is None) and (
+        if (
+            not self.scope.player_ids or not (self.scope.metric or self.scope.requested_metrics)
+        ) and (
             not self.scope.requires_clarification
             or self.scope.clarification_reason == "ambiguous_game"
         ):
@@ -1045,7 +1047,7 @@ class AnalystTools:
             scope
             and scope.player_ids
             and scope.game_ids
-            and scope.metric is None
+            and not (scope.metric or scope.requested_metrics)
             and (
                 len(scope.game_ids) == 1
                 or re.search(r"\b(?:biggest|best|largest) win\b", self.question, re.I)

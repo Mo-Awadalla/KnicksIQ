@@ -106,3 +106,37 @@ async def test_same_turn_execution_returns_canonical_committed_answer(local_redi
     assert await second.commit({"answer": "Canonical"}, {"intent": "canonical"})
     assert await first.commit({"answer": "Stale"}, {"intent": "stale"})
     assert first.replay == {"answer": "Canonical"}
+
+
+@pytest.mark.parametrize(
+    "question",
+    [
+        "How did Brunson perform in points and assists on January 1, 2026?",
+        "What were Brunson's average points and assists on January 1, 2026?",
+    ],
+)
+async def test_named_compound_stats_are_not_an_unqualified_profile(
+    client, local_redis, monkeypatch, question
+):
+    from app.core.db import AsyncSessionLocal
+
+    monkeypatch.setattr(get_settings(), "analyst_evidence_loop_enabled", True)
+    monkeypatch.setattr(get_settings(), "analysis_answer_mode", "deterministic")
+    async with AsyncSessionLocal() as db:
+        await make_tools(db)
+    response = await client.post(
+        "/analysis/query",
+        json={
+            "question": question,
+            "turn_id": "named-compound-profile-case",
+        },
+    )
+    assert response.status_code == 200
+    body = response.json()
+    assert body["state_committed"]
+    delivered = {
+        c["metadata"]["claim"]["metric_id"]
+        for c in body["citations"]
+        if c.get("metadata", {}).get("claim")
+    }
+    assert delivered == {"points:average", "assists:average"}

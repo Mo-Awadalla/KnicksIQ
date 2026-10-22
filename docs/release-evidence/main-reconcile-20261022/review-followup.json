@@ -1,0 +1,376 @@
+{
+  "staging_preflight_passed": true,
+  "preflight_surface": "Actual local API and Vite proxy, not a Docker lifecycle/restart check.",
+  "observations": [
+    {
+      "name": "direct API readiness",
+      "url": "http://127.0.0.1:8000/health/ready",
+      "method": "GET",
+      "request": null,
+      "status": 200,
+      "response": {
+        "status": "ready",
+        "data_version": "2025-26.20260928.1",
+        "required_failures": [],
+        "optional_dependencies": {
+          "qdrant": "disabled",
+          "redis": "configured",
+          "model_provider": "disabled"
+        }
+      },
+      "request_id": "7c8de7a38daf4e01bc5dc19e0cb02e6f",
+      "elapsed_ms": 73.78
+    },
+    {
+      "name": "web proxy readiness",
+      "url": "http://127.0.0.1:5187/api/health/ready",
+      "method": "GET",
+      "request": null,
+      "status": 200,
+      "response": {
+        "status": "ready",
+        "data_version": "2025-26.20260928.1",
+        "required_failures": [],
+        "optional_dependencies": {
+          "qdrant": "disabled",
+          "redis": "configured",
+          "model_provider": "disabled"
+        }
+      },
+      "request_id": "76178c63a93244c2bea0c687820eb263",
+      "elapsed_ms": 15.91
+    },
+    {
+      "name": "archive status",
+      "url": "http://127.0.0.1:5187/api/archive/status",
+      "method": "GET",
+      "request": null,
+      "status": 200,
+      "response": {
+        "season": "2025-26",
+        "data_version": "2025-26.20260928.1",
+        "games": 101,
+        "regular_season_games": 82,
+        "postseason_games": 19,
+        "reports": 101,
+        "activated_at": "2026-10-20T21:12:15.674728Z",
+        "capabilities": [
+          "records",
+          "scores_and_margins",
+          "opponents",
+          "player_and_team_box_scores",
+          "shooting_splits",
+          "quarter_scoring",
+          "play_by_play",
+          "scoring_runs",
+          "reviewed_postgame_reports"
+        ],
+        "matching_games": 101
+      },
+      "request_id": "7955d3f095444882822001319d228b4b",
+      "elapsed_ms": 25.04
+    },
+    {
+      "name": "games page",
+      "url": "http://127.0.0.1:5187/api/games?limit=1",
+      "method": "GET",
+      "request": null,
+      "status": 200,
+      "response": [
+        {
+          "id": 101,
+          "nba_game_id": "0042500405",
+          "season": "2025-26",
+          "game_date": "2026-06-13",
+          "home_team_id": "SAS",
+          "away_team_id": "NYK",
+          "home_score": 90,
+          "away_score": 94,
+          "status": "final",
+          "season_type": "playoffs",
+          "data_status": "analysis_ready",
+          "source_name": "NbaApiDataSource",
+          "source_url": "https://stats.nba.com/stats/playbyplayv3?GameID=0042500405&StartPeriod=0&EndPeriod=14",
+          "source_game_id": "0042500405",
+          "game_label": null,
+          "series_name": null,
+          "series_game_number": null,
+          "margin": -4,
+          "winner_team_id": "NYK"
+        }
+      ],
+      "request_id": "ff75739a484f433ca7827dd8067584a4",
+      "elapsed_ms": 17.25
+    },
+    {
+      "name": "game detail",
+      "url": "http://127.0.0.1:5187/api/games/101",
+      "method": "GET",
+      "request": null,
+      "status": 200,
+      "response": {
+        "id": 101,
+        "nba_game_id": "0042500405",
+        "season": "2025-26",
+        "game_date": "2026-06-13",
+        "home_team_id": "SAS",
+        "away_team_id": "NYK",
+        "home_score": 90,
+        "away_score": 94,
+        "status": "final",
+        "season_type": "playoffs",
+        "data_status": "analysis_ready",
+        "source_name": "NbaApiDataSource",
+        "source_url": "https://stats.nba.com/stats/playbyplayv3?GameID=0042500405&StartPeriod=0&EndPeriod=14",
+        "source_game_id": "0042500405",
+        "game_label": null,
+        "series_name": null,
+        "series_game_number": null,
+        "margin": -4,
+        "winner_team_id": "NYK",
+        "home_team": {
+          "id": "SAS",
+          "name": "Spurs",
+          "city": "San Antonio",
+          "abbreviation": "SAS",
+          "conference": "West",
+          "division": "Southwest",
+          "nba_team_id": 1610612759
+        },
+        "away_team": {
+          "id": "NYK",
+          "name": "Knicks",
+          "city": "New York",
+          "abbreviation": "NYK",
+          "conference": "East",
+          "division": "Atlantic",
+          "nba_team_id": 1610612752
+        }
+      },
+      "request_id": "7ead236a743445f9993c3f159349e089",
+      "elapsed_ms": 15.43
+    },
+    {
+      "name": "reports page",
+      "url": "http://127.0.0.1:5187/api/reports?limit=1",
+      "method": "GET",
+      "request": null,
+      "status": 200,
+      "response": [
+        {
+          "id": 101,
+          "game_id": 101,
+          "title": "NYK 94, SAS 90",
+          "summary": "NYK defeated SAS 94-90 on 2026-06-13.",
+          "created_at": "2026-10-20T21:12:14.308656Z"
+        }
+      ],
+      "request_id": "0a79845c9a224e1fb3bca2aedd293dc6",
+      "elapsed_ms": 15.68
+    },
+    {
+      "name": "report detail",
+      "url": "http://127.0.0.1:5187/api/reports/101",
+      "method": "GET",
+      "request": null,
+      "status": 200,
+      "response": {
+        "id": 101,
+        "game_id": 101,
+        "title": "NYK 94, SAS 90",
+        "summary": "NYK defeated SAS 94-90 on 2026-06-13.",
+        "turning_point": "Selected scoring interval: NYK scored 10 points and allowed 0 points from Q4 07:43 to Q4 04:48 (events 398-426, inclusive).",
+        "best_stretch": "Selected scoring interval: NYK scored 10 points and allowed 0 points from Q4 07:43 to Q4 04:48 (events 398-426, inclusive).",
+        "worst_stretch": "Selected scoring interval: SAS scored 11 points and allowed 2 points from Q3 10:41 to Q3 08:49 (events 242-256, inclusive).",
+        "player_notes": [
+          "Jalen Brunson: 45 points, 3 rebounds, 3 assists.",
+          "Dylan Harper: 25 points, 5 rebounds, 4 assists.",
+          "Victor Wembanyama: 19 points, 14 rebounds, 2 assists."
+        ],
+        "suggested_adjustments": [],
+        "sources": [
+          {
+            "claims": [
+              "title",
+              "summary"
+            ],
+            "type": "game",
+            "nba_game_id": "0042500405",
+            "fields": [
+              "home_score",
+              "away_score",
+              "home_team_id",
+              "away_team_id",
+              "game_date"
+            ],
+            "game_id": 101,
+            "source_url": "https://www.nba.com/game/0042500405/box-score",
+            "source_name": "NBA.com box score"
+          },
+          {
+            "claims": [
+              "player_notes[0]"
+            ],
+            "type": "traditional_box_score",
+            "nba_game_id": "0042500405",
+            "nba_player_id": 1628973,
+            "fields": [
+              "points",
+              "rebounds",
+              "assists"
+            ],
+            "row_sha256": "cc246c53b2d92f43b3505fd142cdf50bc36d5864d67ffc663d2b1d2436c04b5e",
+            "game_id": 101,
+            "source_url": "https://www.nba.com/game/0042500405/box-score",
+            "source_name": "NBA.com box score"
+          },
+          {
+            "claims": [
+              "player_notes[1]"
+            ],
+            "type": "traditional_box_score",
+            "nba_game_id": "0042500405",
+            "nba_player_id": 1642844,
+            "fields": [
+              "points",
+              "rebounds",
+              "assists"
+            ],
+            "row_sha256": "c6ed5085f6173a8e4801b05c02a22bafc6e845afa8c03e07af50503fee5df04c",
+            "game_id": 101,
+            "source_url": "https://www.nba.com/game/0042500405/box-score",
+            "source_name": "NBA.com box score"
+          },
+          {
+            "claims": [
+              "player_notes[2]"
+            ],
+            "type": "traditional_box_score",
+            "nba_game_id": "0042500405",
+            "nba_player_id": 1641705,
+            "fields": [
+              "points",
+              "rebounds",
+              "assists"
+            ],
+            "row_sha256": "f3cd1134d3dd5dbf04ce1b82cf056899eff1a356a5ebaf694c509417be3a6849",
+            "game_id": 101,
+            "source_url": "https://www.nba.com/game/0042500405/box-score",
+            "source_name": "NBA.com box score"
+          },
+          {
+            "claims": [
+              "turning_point"
+            ],
+            "type": "play_by_play",
+            "nba_game_id": "0042500405",
+            "team_id": "NYK",
+            "points_for": 10,
+            "points_against": 0,
+            "start_period": 4,
+            "end_period": 4,
+            "start_clock": "07:43",
+            "end_clock": "04:48",
+            "start_sequence": 398,
+            "end_sequence": 426,
+            "baseline_sequence": 397,
+            "baseline_score": {
+              "home": 83,
+              "away": 73
+            },
+            "end_score": {
+              "home": 83,
+              "away": 83
+            },
+            "game_id": 101,
+            "source_url": "https://stats.nba.com/stats/playbyplayv3?GameID=0042500405&StartPeriod=0&EndPeriod=14",
+            "source_name": "NbaApiDataSource"
+          },
+          {
+            "claims": [
+              "best_stretch"
+            ],
+            "type": "play_by_play",
+            "nba_game_id": "0042500405",
+            "team_id": "NYK",
+            "points_for": 10,
+            "points_against": 0,
+            "start_period": 4,
+            "end_period": 4,
+            "start_clock": "07:43",
+            "end_clock": "04:48",
+            "start_sequence": 398,
+            "end_sequence": 426,
+            "baseline_sequence": 397,
+            "baseline_score": {
+              "home": 83,
+              "away": 73
+            },
+            "end_score": {
+              "home": 83,
+              "away": 83
+            },
+            "game_id": 101,
+            "source_url": "https://stats.nba.com/stats/playbyplayv3?GameID=0042500405&StartPeriod=0&EndPeriod=14",
+            "source_name": "NbaApiDataSource"
+          },
+          {
+            "claims": [
+              "worst_stretch"
+            ],
+            "type": "play_by_play",
+            "nba_game_id": "0042500405",
+            "team_id": "SAS",
+            "points_for": 11,
+            "points_against": 2,
+            "start_period": 3,
+            "end_period": 3,
+            "start_clock": "10:41",
+            "end_clock": "08:49",
+            "start_sequence": 242,
+            "end_sequence": 256,
+            "baseline_sequence": 241,
+            "baseline_score": {
+              "home": 42,
+              "away": 39
+            },
+            "end_score": {
+              "home": 53,
+              "away": 41
+            },
+            "game_id": 101,
+            "source_url": "https://stats.nba.com/stats/playbyplayv3?GameID=0042500405&StartPeriod=0&EndPeriod=14",
+            "source_name": "NbaApiDataSource"
+          }
+        ],
+        "tool_calls": [],
+        "created_at": "2026-10-20T21:12:14.308656Z"
+      },
+      "request_id": "c43d4f7ca5b645529d82fd1d231ba513",
+      "elapsed_ms": 11.61
+    }
+  ],
+  "named_compound_cases": [
+    {
+      "question": "How did Brunson perform in points and assists on December 2, 2025?",
+      "answer": "Jalen Brunson: 11.0 assists per appearance across 1 observed appearances in the 2025-26 all-phase Knicks archive, 2025-12-02 through 2025-12-02. Jalen Brunson: 15.0 points per appearance across 1 observed appearances in the 2025-26 all-phase Knicks archive, 2025-12-02 through 2025-12-02.",
+      "metrics": [
+        "assists:average",
+        "points:average"
+      ],
+      "committed": true,
+      "passed": true
+    },
+    {
+      "question": "What were Brunson's average points and assists on December 2, 2025?",
+      "answer": "Jalen Brunson: 11.0 assists per appearance across 1 observed appearances in the 2025-26 all-phase Knicks archive, 2025-12-02 through 2025-12-02. Jalen Brunson: 15.0 points per appearance across 1 observed appearances in the 2025-26 all-phase Knicks archive, 2025-12-02 through 2025-12-02.",
+      "metrics": [
+        "assists:average",
+        "points:average"
+      ],
+      "committed": true,
+      "passed": true
+    }
+  ],
+  "passed": true
+}

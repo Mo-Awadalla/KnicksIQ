@@ -89,6 +89,22 @@ the bounded prompt, and Go-specific effort remains separate from ordinary compat
 All 79 targeted compatibility cases pass after those corrections. The final hosted CI result
 is the publication gate.
 
-The final local suite passes 1,318 tests after all corrections. Ruff, formatting and Pyright
-pass on the reconciled source. Publication is through PR #36. PR #35 remains unchanged as the
-old integration archive. Hosted CI status is attached to the exact head commit on PR #36.
+At `2bed96a`, the local suite passed 1,318 tests, and all hosted CI checks passed.
+Publication is through PR #36. PR #35 remains unchanged as the old integration archive.
+Hosted CI status is attached to the exact head commit on PR #36.
+
+## Review follow-up
+
+Two named compound questions on one game still entered the unqualified-profile path. A scalar
+metric of `None` can mean multiple metrics, not only no metric. Profile, discovery and record
+guards now check the requested metric set too. Both public API cases failed with no facts
+before the correction and now deliver the requested points and assists.
+
+The staging verifier now checks the `model_provider` health dependency. Its full seven-request
+preflight passed against the actual local API and Vite proxy. This is not a Docker restart
+verification. The same run exercised both named compound questions against the real archive.
+See `review-followup.json`.
+
+Targeted profile and payload checks pass 29 cases. Provider compatibility checks pass 31 cases.
+Go session headers stay on configured mixed-protocol hosts rather than ordinary OpenRouter
+calls. Ruff, formatting and Pyright pass. The new head requires its own hosted CI verdict.
