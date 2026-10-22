@@ -1,0 +1,108 @@
+{
+  "frozen_sha": "51f184a23645f1d43f930a520a1cc053397a315b",
+  "branch": "codex/llmp-w4-heldout-final",
+  "run_commits": {
+    "main_live": "b91982d8b638107deaf80df564aa467aef399371",
+    "followup_live": "10b3636ab7f90f82d28c2fce9da94e7a27d7085e"
+  },
+  "heldout_set": {
+    "source_branch": "codex/llmp-w3-heldout2",
+    "source_head": "e3128fe",
+    "question_count": 80,
+    "categories": {
+      "aliases_typos": 11,
+      "comparisons": 11,
+      "date_range_last_n": 12,
+      "exact_statistics": 12,
+      "single_game_narrative": 11,
+      "turning_points": 11,
+      "unsupported": 12
+    },
+    "question_order_sha256": "897c693f9c978cfe2f68a05136cda75d4d74e37c3640bd352c0196f76d3ed9bd",
+    "build_check": "PASS: held-out v2 files match the generator"
+  },
+  "main_live_run": {
+    "trials": 1,
+    "questions": 80,
+    "honest_passes": 41,
+    "honest_score": 0.5125,
+    "wilson_95": [0.4049, 0.6189],
+    "per_category": {
+      "aliases_typos": {"pass": 5, "total": 11, "score": 0.4545, "wilson_95": [0.2127, 0.7199]},
+      "comparisons": {"pass": 2, "total": 11, "score": 0.1818, "wilson_95": [0.0514, 0.477]},
+      "date_range_last_n": {"pass": 7, "total": 12, "score": 0.5833, "wilson_95": [0.3195, 0.8067]},
+      "exact_statistics": {"pass": 6, "total": 12, "score": 0.5, "wilson_95": [0.2538, 0.7462]},
+      "single_game_narrative": {"pass": 8, "total": 11, "score": 0.7273, "wilson_95": [0.4344, 0.9025]},
+      "turning_points": {"pass": 2, "total": 11, "score": 0.1818, "wilson_95": [0.0514, 0.477]},
+      "unsupported": {"pass": 11, "total": 12, "score": 0.9167, "wilson_95": [0.6461, 0.9851]}
+    },
+    "unsupported_honest_declines": {"pass": 11, "total": 12, "failed_ids": ["heldout2-unsupported-008"]}
+  },
+  "followup_live_run": {
+    "trials": 1,
+    "sessions": 10,
+    "turns": 20,
+    "turn_passes": 9,
+    "turn_1_passes": 9,
+    "turn_2_passes": 0,
+    "session_passes": 0,
+    "sessions_with_integrity_pass": 10,
+    "cause_counts": {"pipeline:degraded": 6, "scope": 5},
+    "note": "One held-out run; sessions require all turns to pass. Follow-up failures are not retried."
+  },
+  "sql_audit": {
+    "responses": 80,
+    "numeric_atoms_found": 393,
+    "audit_verified": 209,
+    "audit_wrong_flags": 33,
+    "audit_unverified": 151,
+    "manual_sql_verdicts": {"REAL": 0, "BINDING": 33},
+    "unverified_are_not_passes": true
+  },
+  "latency": {
+    "trials": 1,
+    "main_question_trace_ms": {
+      "method": "prepare_total plus all non-prepare trace latencies per response; excludes outer app/network overhead",
+      "p50": 10611,
+      "p95": 16118.1,
+      "mean": 10739.8,
+      "max": 18768
+    },
+    "main_stage_ms": {
+      "tool": {"calls": 98, "p50": 71, "p95": 153.5, "mean": 82.1},
+      "orchestrate": {"calls": 120, "p50": 2569, "p95": 4436.5, "mean": 2636.8},
+      "review": {"calls": 80, "p50": 4946.5, "p95": 8967.9, "mean": 5123.9},
+      "revise": {"calls": 44, "p50": 2494, "p95": 4118.4, "mean": 2675.1}
+    },
+    "followup_recorded_trace_ms": {
+      "method": "sum of stage latency_ms retained by the adapter; excludes outer app/network overhead and omitted prepare stages",
+      "turns": 20,
+      "turn_p50": 8627,
+      "turn_p95": 23219.1,
+      "turn_mean": 11084.3,
+      "session_p50": 22802,
+      "session_p95": 31732.8,
+      "session_mean": 22168.6
+    }
+  },
+  "cost": {
+    "main_run_usd": 0.229063,
+    "pricing_usd_per_million_tokens": {
+      "deepseek-v4.1-flash": {"input": 0.3, "output": 1.2},
+      "gpt-6-luna": {"input": 0.1, "output": 0.5}
+    },
+    "main_model_usage": {
+      "deepseek-v4.1-flash": {"protocol": "chat", "calls": 164, "prompt_tokens": 498592, "completion_tokens": 37353, "total_tokens": 535945, "cost_usd": 0.194401},
+      "gpt-6-luna": {"protocol": "responses", "calls": 80, "prompt_tokens": 190420, "completion_tokens": 31240, "total_tokens": 221660, "cost_usd": 0.034662}
+    },
+    "followup_run_usd": null,
+    "followup_cost_note": "Not recoverable from the committed live artifact: the adapter retained model/protocol/latency but not prompt/completion token usage. No rerun was made."
+  },
+  "backend_gate": {
+    "command": "env -i HOME=$HOME PATH=$PATH TEST_MODE=true uv run pytest apps packages tools/report_audit",
+    "result": "439 passed in 32.72s"
+  },
+  "done_predicate": {
+    "held_out_at_least_80_percent": "NOT VERIFIED"
+  }
+}

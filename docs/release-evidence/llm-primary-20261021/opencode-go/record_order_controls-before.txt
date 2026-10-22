@@ -1,0 +1,10 @@
+OK  flagged=True want=True: Over their last 5 games, the Knicks went 1-4.
+OK  flagged=True want=True: The Knicks had a 1-4 record over their last 5 games.
+OK  flagged=True want=True: They finished 1-4 in that stretch.
+OK  flagged=False want=False: Over their last 5 games, the Knicks went 4-1.
+BAD flagged=True want=False: Brunson shot 1-4 from three in the opener.
+BAD flagged=True want=False: Towns went 1-4 from the line.
+BAD flagged=True want=False: The Knicks trailed 1-4 early in the first quarter.
+BAD flagged=True want=False: They opened on a 4-1 run and later gave up a 1-4 stretch.
+BAD flagged=True want=False: Hart was 1-4 shooting in the fourth quarter.
+FAILURES 5

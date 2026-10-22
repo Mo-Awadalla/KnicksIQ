@@ -406,6 +406,23 @@ def numeric_issues(
 _RECORD = re.compile(r"(?<![\w.-])(\d{1,3})-(\d{1,3})(?![\w-]|\.\d)")
 
 
+# A number pair is a W-L record only when the sentence says so: "went 4-1", "a 4-1 record".
+# Shooting lines ("shot 1-4 from three"), scores, runs and stretches use the same shape.
+_RECORD_BEFORE = re.compile(
+    r"\b(?:went|go|going|finished|finish|stood|record(?: of| was| is| at)?)\s+$", re.IGNORECASE
+)
+_RECORD_AFTER = re.compile(r"^\s*(?:record|mark)\b", re.IGNORECASE)
+_NOT_RECORD_AFTER = re.compile(
+    r"^\s*(?:from|shooting|on (?:field|three|free)|run|stretch|lead|deficit)\b", re.IGNORECASE
+)
+
+
+def _is_record_context(before: str, after: str) -> bool:
+    if _NOT_RECORD_AFTER.search(after):
+        return False
+    return bool(_RECORD_BEFORE.search(before) or _RECORD_AFTER.search(after))
+
+
 def record_order_issues(spans: list[str], claims: Mapping[str, VerifiedClaim]) -> list[str]:
     """A W-L record written in reverse. Both numbers are trusted values, so the value check
     passes; only the pairing of a wins claim with a losses claim over the same games shows
@@ -419,6 +436,8 @@ def record_order_issues(spans: list[str], claims: Mapping[str, VerifiedClaim]) -
     issues: list[str] = []
     for index, span in enumerate(spans, start=1):
         for match in _RECORD.finditer(span):
+            if not _is_record_context(span[: match.start()], span[match.end() :]):
+                continue
             shown = (Decimal(match.group(1)), Decimal(match.group(2)))
             if shown not in pairs and shown[::-1] in pairs and shown[0] != shown[1]:
                 issues.append(

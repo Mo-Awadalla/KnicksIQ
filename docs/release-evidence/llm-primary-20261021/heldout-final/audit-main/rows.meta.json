@@ -1,0 +1,8 @@
+{
+  "frozen_sha": "51f184a23645f1d43f930a520a1cc053397a315b",
+  "artifact": "rows.jsonl",
+  "sha256": "5a46205a269ee53aa519a454da78860543772ba1ddd9f52c183066ca255fe407",
+  "rows": 80,
+  "produced_by": "docs/release-evidence/llm-primary-20261021/factual-audit/audit.py",
+  "source": "../main.responses.jsonl"
+}
