@@ -1,6 +1,6 @@
 {
   "future_failures": 1,
-  "benign_failures": 3,
+  "benign_failures": 0,
   "rows": [
     {
       "question": "How will Brunson play next season?",
@@ -12,7 +12,8 @@
       "route": "factual_fallback",
       "case_id": "unsupported-008",
       "kind": "future",
-      "ok": false
+      "ok": false,
+      "future_scope": false
     },
     {
       "question": "How will the Knicks do next year?",
@@ -24,7 +25,8 @@
       "route": "factual_fallback",
       "case_id": "future-next-year",
       "kind": "future",
-      "ok": true
+      "ok": true,
+      "future_scope": false
     },
     {
       "question": "Who will win tomorrow's game?",
@@ -36,7 +38,8 @@
       "route": "factual_fallback",
       "case_id": "future-tomorrow",
       "kind": "future",
-      "ok": true
+      "ok": true,
+      "future_scope": false
     },
     {
       "question": "Will you tell me Brunson's points per game this season?",
@@ -48,7 +51,8 @@
       "route": "factual_fallback",
       "case_id": "benign-001",
       "kind": "benign",
-      "ok": true
+      "ok": true,
+      "future_scope": false
     },
     {
       "question": "Will you show me the Knicks' record for the 2025-26 season?",
@@ -60,7 +64,8 @@
       "route": "factual_fallback",
       "case_id": "benign-002",
       "kind": "benign",
-      "ok": true
+      "ok": true,
+      "future_scope": false
     },
     {
       "question": "Which player will I see leading the team in assists?",
@@ -72,7 +77,8 @@
       "route": "factual_fallback",
       "case_id": "benign-003",
       "kind": "benign",
-      "ok": false
+      "ok": true,
+      "future_scope": false
     },
     {
       "question": "Who will I see at the top of the rebounding list?",
@@ -84,7 +90,8 @@
       "route": "factual_fallback",
       "case_id": "benign-004",
       "kind": "benign",
-      "ok": false
+      "ok": true,
+      "future_scope": false
     },
     {
       "question": "Will you compare Brunson's home and road scoring?",
@@ -96,7 +103,8 @@
       "route": "factual_fallback",
       "case_id": "benign-005",
       "kind": "benign",
-      "ok": true
+      "ok": true,
+      "future_scope": false
     },
     {
       "question": "Will you pull up the scoring from their final game?",
@@ -108,7 +116,8 @@
       "route": "factual_fallback",
       "case_id": "benign-006",
       "kind": "benign",
-      "ok": true
+      "ok": true,
+      "future_scope": false
     },
     {
       "question": "How many points will I find for Brunson in their final game?",
@@ -120,7 +129,8 @@
       "route": "factual_fallback",
       "case_id": "benign-007",
       "kind": "benign",
-      "ok": true
+      "ok": true,
+      "future_scope": false
     },
     {
       "question": "Which quarter will I see the biggest Knicks run in?",
@@ -132,7 +142,8 @@
       "route": "factual_fallback",
       "case_id": "benign-008",
       "kind": "benign",
-      "ok": false
+      "ok": true,
+      "future_scope": false
     },
     {
       "question": "Will you explain why the Knicks lost to Boston?",
@@ -144,7 +155,8 @@
       "route": "factual_fallback",
       "case_id": "benign-009",
       "kind": "benign",
-      "ok": true
+      "ok": true,
+      "future_scope": false
     },
     {
       "question": "What will I see if I look at their three-point shooting at home?",
@@ -156,7 +168,9 @@
       "route": "factual_fallback",
       "case_id": "benign-010",
       "kind": "benign",
-      "ok": true
+      "ok": true,
+      "future_scope": false
     }
-  ]
+  ],
+  "rescored_with_after_detection_criteria": true
 }
