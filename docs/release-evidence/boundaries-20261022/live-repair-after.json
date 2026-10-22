@@ -1,0 +1,252 @@
+{
+  "release": "2025-26.20260928.1",
+  "live": true,
+  "provider": "opencode-go",
+  "writer": "deepseek-v4.1-flash",
+  "reviewer": "gpt-6-luna",
+  "records": [
+    {
+      "question": "How many points did Brunson average in December?",
+      "resolved_metric": "points",
+      "resolved_aggregation": "average",
+      "metric_ids": [
+        "points:average"
+      ],
+      "values": [
+        30.615384615384617
+      ],
+      "game_counts": [
+        13
+      ],
+      "supporting_receipts": [
+        1
+      ],
+      "review_claims": 1,
+      "review_receipts": 1,
+      "review_payload_bytes": 4843,
+      "review_evidence_bytes": 981,
+      "review_within_budget": true,
+      "conflicting_request_preserved_intent": true,
+      "repair": {
+        "answer": "Jalen Brunson averaged 30.6 points per appearance across 13 observed appearances in December (2025-26 regular season, Dec 2\u201331). This covers only appearances in the available archive; there is no player row for one archived game (ID 29), so he did not appear there.",
+        "validated": false,
+        "reason": "Deterministic evidence check failed: span 2 uses 29, which is not a supplied claim value, receipt or capability",
+        "declared_claim_ids": [
+          "claim:2596b58f8b8f6122da36abb4acea15fc753ab45fafde6cd46ccb8f440758a01b"
+        ],
+        "delivered_citations": 0
+      },
+      "model_calls": 1,
+      "trace": [
+        {
+          "stage": "revise",
+          "tool": "llm_orchestrate",
+          "schema": "ProposedAnswer",
+          "latency_ms": 1916,
+          "model": "deepseek-v4.1-flash",
+          "served_model": "deepseek-v4.1-flash",
+          "protocol": "chat",
+          "provider": null,
+          "prompt_tokens": 3143,
+          "completion_tokens": 193,
+          "total_tokens": 3336,
+          "reasoning_tokens": 0,
+          "finish_reason": "stop",
+          "content_kind": "string",
+          "provider_format_echo": false,
+          "input_bytes": 10273,
+          "response_bytes": 564,
+          "max_tokens": 1600,
+          "http_ttfb_ms": 1912.5,
+          "http_elapsed_ms": 1912.9,
+          "contract_version": "analyst-evidence-v1",
+          "prompt_version": "analyst-balanced-v4",
+          "validator_version": "whole-answer-v2"
+        }
+      ]
+    },
+    {
+      "question": "How many total assists did Brunson have in December?",
+      "resolved_metric": "assists",
+      "resolved_aggregation": "total",
+      "metric_ids": [
+        "assists:total"
+      ],
+      "values": [
+        92
+      ],
+      "game_counts": [
+        13
+      ],
+      "supporting_receipts": [
+        1
+      ],
+      "review_claims": 1,
+      "review_receipts": 1,
+      "review_payload_bytes": 4728,
+      "review_evidence_bytes": 907,
+      "review_within_budget": true,
+      "conflicting_request_preserved_intent": true,
+      "repair": {
+        "answer": "Jalen Brunson recorded 92 total assists in December (2025-26 regular season), across 13 observed appearances from December 2 to 31. This covers only his appearances in the available archive.",
+        "validated": true,
+        "reason": "",
+        "declared_claim_ids": [
+          "claim:e567cada77c586381787e3484138c47f410430e78a8b956db5b095b216b1cfd3"
+        ],
+        "delivered_citations": 2
+      },
+      "model_calls": 2,
+      "trace": [
+        {
+          "stage": "revise",
+          "tool": "llm_orchestrate",
+          "schema": "ProposedAnswer",
+          "latency_ms": 1975,
+          "model": "deepseek-v4.1-flash",
+          "served_model": "deepseek-v4.1-flash",
+          "protocol": "chat",
+          "provider": null,
+          "prompt_tokens": 3119,
+          "completion_tokens": 185,
+          "total_tokens": 3304,
+          "reasoning_tokens": null,
+          "finish_reason": "stop",
+          "content_kind": "string",
+          "provider_format_echo": false,
+          "input_bytes": 10201,
+          "response_bytes": 593,
+          "max_tokens": 1600,
+          "http_ttfb_ms": 1973.3,
+          "http_elapsed_ms": 1974.9,
+          "contract_version": "analyst-evidence-v1",
+          "prompt_version": "analyst-balanced-v4",
+          "validator_version": "whole-answer-v2"
+        },
+        {
+          "stage": "review",
+          "tool": "llm_review",
+          "schema": "AnswerReview",
+          "latency_ms": 6554,
+          "model": "gpt-6-luna",
+          "served_model": "gpt-6-luna",
+          "protocol": "responses",
+          "provider": null,
+          "prompt_tokens": 1791,
+          "completion_tokens": 313,
+          "total_tokens": 2104,
+          "reasoning_tokens": 0,
+          "finish_reason": "stop",
+          "content_kind": "string",
+          "provider_format_echo": false,
+          "input_bytes": 7205,
+          "response_bytes": 1209,
+          "max_tokens": 3000,
+          "http_ttfb_ms": 6551.0,
+          "http_elapsed_ms": 6552.0,
+          "contract_version": "analyst-evidence-v1",
+          "prompt_version": "analyst-balanced-v4",
+          "validator_version": "whole-answer-v2",
+          "review_spans": 2,
+          "review_empty_id_spans": 0,
+          "review_attachable_spans": 0,
+          "review_accepted": true
+        }
+      ]
+    },
+    {
+      "question": "What was their regular-season record?",
+      "resolved_metric": null,
+      "resolved_aggregation": null,
+      "metric_ids": [
+        "wins",
+        "losses"
+      ],
+      "values": [
+        53,
+        29
+      ],
+      "game_counts": [
+        82,
+        82
+      ],
+      "supporting_receipts": [
+        1,
+        1
+      ],
+      "review_claims": 2,
+      "review_receipts": 2,
+      "review_payload_bytes": 5685,
+      "review_evidence_bytes": 1530,
+      "review_within_budget": true,
+      "repair": {
+        "answer": "In the available 2025-26 regular-season archive, the Knicks went 53-29 over 82 games.",
+        "validated": true,
+        "reason": "",
+        "declared_claim_ids": [
+          "claim:1da73dbdd2a42f790fede4c08926e065683a9b9a6fcdf38455a51b524a5a93e1",
+          "claim:0336abee9111bc79c99b15e4d6c2a1a79dcbce64ea6b8929c3c39e4952af0245"
+        ],
+        "delivered_citations": 2
+      },
+      "model_calls": 2,
+      "trace": [
+        {
+          "stage": "revise",
+          "tool": "llm_orchestrate",
+          "schema": "ProposedAnswer",
+          "latency_ms": 4906,
+          "model": "deepseek-v4.1-flash",
+          "served_model": "deepseek-v4.1-flash",
+          "protocol": "chat",
+          "provider": null,
+          "prompt_tokens": 3489,
+          "completion_tokens": 208,
+          "total_tokens": 3697,
+          "reasoning_tokens": 0,
+          "finish_reason": "stop",
+          "content_kind": "string",
+          "provider_format_echo": false,
+          "input_bytes": 10928,
+          "response_bytes": 572,
+          "max_tokens": 1600,
+          "http_ttfb_ms": 4903.6,
+          "http_elapsed_ms": 4905.1,
+          "contract_version": "analyst-evidence-v1",
+          "prompt_version": "analyst-balanced-v4",
+          "validator_version": "whole-answer-v2"
+        },
+        {
+          "stage": "review",
+          "tool": "llm_review",
+          "schema": "AnswerReview",
+          "latency_ms": 5046,
+          "model": "gpt-6-luna",
+          "served_model": "gpt-6-luna",
+          "protocol": "responses",
+          "provider": null,
+          "prompt_tokens": 2140,
+          "completion_tokens": 263,
+          "total_tokens": 2403,
+          "reasoning_tokens": 0,
+          "finish_reason": "stop",
+          "content_kind": "string",
+          "provider_format_echo": false,
+          "input_bytes": 7890,
+          "response_bytes": 865,
+          "max_tokens": 3000,
+          "http_ttfb_ms": 5045.2,
+          "http_elapsed_ms": 5045.5,
+          "contract_version": "analyst-evidence-v1",
+          "prompt_version": "analyst-balanced-v4",
+          "validator_version": "whole-answer-v2",
+          "review_spans": 1,
+          "review_empty_id_spans": 0,
+          "review_attachable_spans": 0,
+          "review_accepted": true
+        }
+      ]
+    }
+  ],
+  "passed": false
+}

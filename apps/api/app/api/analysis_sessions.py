@@ -41,9 +41,7 @@ async def _finish_turn(
         response.revision = None
         response.state_committed = False
         response.degraded = True
-        response.warnings.append(
-            "Conversation state could not be committed. Retry the same turn."
-        )
+        response.warnings.append("Conversation state could not be committed. Retry the same turn.")
     return response
 
 

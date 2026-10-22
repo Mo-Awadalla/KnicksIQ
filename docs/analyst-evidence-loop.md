@@ -33,10 +33,15 @@ Capabilities are derived: a tool with `supports_periods` adds period scores and 
 events to the model-facing data list. Quarter, period, play-by-play and split questions are
 answerable. Dispatch names the period tools when a full-game tool cannot serve a period scope.
 
+`ResolvedQuery` owns the requested metric and aggregation as well as the game population.
+Dispatch applies that scope before execution. Player, comparison and team handlers prefer the
+resolved metric and aggregation over model-supplied alternatives. An unspecified field remains
+available for the model to select. Aggregation is saved with session scope for follow-up turns.
+
 ## Claims, prompt and reviewer
 
-`evidence_contracts.py` defines the versioned contracts. Prompt version is `analyst-balanced-v4`;
-validator version is `whole-answer-v2`. Claim IDs hash the release, definitions, calculation,
+`evidence_contracts.py` defines the versioned contracts. Prompt version is `analyst-balanced-v5`;
+validator version is `whole-answer-v3`. Claim IDs hash the release, definitions, calculation,
 subject, scope, value and provenance. The writer can reference IDs and request rounding; it cannot
 overwrite claims. Analytics read the complete applicable release population. Zero-minute player
 rows are excluded from appearance denominators; missing rows are coverage gaps.
@@ -46,12 +51,17 @@ release rows under the existing eligibility policies. Catalog leaders retain the
 qualifier population. Recent comparisons have distinct recent and prior claims, denominators and
 source windows. Committed responses alone advance novelty state.
 
-The reviewer receives a fresh context with the proposed answer, backend claims, selected receipts,
-capabilities and interpretation policy. The backend owns the sentence spans and requires one
-verdict per span in order. Before the model call, deterministic checks run:
+`answer_evidence.py` selects the answer's declared claims, their baseline claims and supporting
+receipts, plus explicitly cited receipts. Validation, reviewer input and delivery use that
+selection. A factual statement cannot borrow a different, undeclared claim to pass the numeric
+check. Unknown or unsupplied references fail before review.
 
-- every number in the answer must match a supplied claim value within rounding tolerance, a
-  receipt or a curated capability number;
+The reviewer receives a fresh context with the proposed answer, selected evidence, capabilities
+and interpretation policy. The backend owns the sentence spans and requires one verdict per span
+in order. Before the model call, deterministic checks run:
+
+- every number in the answer must match a selected claim value within rounding tolerance, a
+  selected receipt or a curated capability number;
 - numbers from the question are accepted only in decline, coverage, date-window or clarification
   spans where they are criteria, not asserted facts;
 - identifier hashes and game ids are never whitelisted.
@@ -59,6 +69,10 @@ verdict per span in order. Before the model call, deterministic checks run:
 Malformed, incomplete, unknown and unsupported verdicts fail closed. A malformed review response
 is retried once, then the turn falls back. A supported verdict is authoritative for its span. The
 reviewer is not proof of truth; human calibration remains a release gate.
+
+Repair requests use a separate prompt matching the flat `ProposedAnswer` schema. They return
+`text`, `claims`, `evidence_ids`, `fact_ids` and `follow_up_questions`, without an action or
+answer wrapper. Repairs cannot investigate or change the requested metric or aggregation.
 
 ## Model input, prefetch and latency
 
@@ -73,10 +87,11 @@ A/B in `docs/release-evidence/llm-primary-20261021/final/README.md` chose it ove
 passes rose from 27/70 to 38/70 in both trials and dropped claims fell from 8.2 to 2.2 per
 question. p95 latency rose from 6.2 s to 7.6 s and mean cost from $0.0011 to $0.0020 per question.
 Payloads still reach p95 15,557 bytes, so the budget remains the binding constraint.
-Input packing drops whole records and preserves their server-side references. Large claims are
-omitted, never truncated. UTF-8 bytes bound input conservatively. Review packing drops eligibility
-policy and generic coverage caveats before aborting a turn; values, subjects, scope, windows,
-denominators and receipts remain.
+Writer input packing drops whole records and preserves their server-side references. Large
+claims are omitted, never truncated. Review packing keeps every selected claim and receipt or
+fails before calling the reviewer. It removes server-only source-id lists from calculation
+receipts, not their statements or sample sizes. The separate evidence ceiling stays at 6,000
+UTF-8 bytes. Enlarging the total input limit does not enlarge that ceiling.
 
 `ANALYST_PREFETCH_ENABLED` defaults to true. Deterministic prefetch runs the one tool a clear
 question already requires before the first model call: `discover_facts` for narrative, turning
@@ -197,6 +212,10 @@ first-turn retries. Different input under the same ID, stale revisions and concu
 return 409. Sessions and replay records expire after 24 hours of inactivity. Redis loss gives an
 explicitly stateless factual response; a failed commit never claims a committed revision. The
 browser retains turn IDs for retry and prevents synchronous duplicate submission.
+
+Greetings and pre-model refusals use the same session revision, replay and commit path. Their
+reply is committed without changing the prior topic or scope and without a model call. A
+following pronoun or metric question therefore still refers to the earlier archive question.
 
 Both chat surfaces share a transcript that remains fully visible. Each request sends the ten
 previous individual messages, excluding the current question. The API keeps at least a UTF-8-safe
