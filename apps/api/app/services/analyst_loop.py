@@ -46,6 +46,19 @@ REFUSAL_ACTIONS = frozenset({"decline", "explain_coverage"})
 FACTUAL_REVIEW_TYPES = frozenset({"factual", "interpretation"})
 
 
+def fallback_warning(failure: Exception) -> str:
+    """The user-facing reason a validated answer was not delivered.
+
+    The fallback text is still a verified archive answer; the warning only says what the
+    turn could not do. It never attributes a malformed model response to the budget.
+    """
+    if isinstance(failure, ValidationError):
+        return "Proposed wording did not pass evidence review."
+    if isinstance(failure, TimeoutError):
+        return "The answer could not be verified within this turn's time limit."
+    return "The answer could not be verified on this turn."
+
+
 class AnalystLoop:
     def __init__(
         self, tools: AnalystTools, context: list[dict[str, str]], *, started: float | None = None
@@ -140,7 +153,11 @@ class AnalystLoop:
                         return await self.investigate()
             except Exception as exc:
                 failure = exc
-            result = await self.fallback("Model or budget unavailable.")
+            result = await self.fallback(
+                "Model or budget unavailable."
+                if failure is None
+                else fallback_warning(failure)
+            )
             if failure is not None:
                 logger.warning(
                     "analyst_execution_failed request_id=%s error_type=%s stage=%s "
