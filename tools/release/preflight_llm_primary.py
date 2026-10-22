@@ -13,8 +13,9 @@ env.mode
 env.evidence_loop
     ANALYST_EVIDENCE_LOOP_ENABLED is false. llm_primary would then bypass the evidence loop.
 env.provider
-    The provider is not OpenRouter, the base URL is not HTTPS, the model name is blank, or the API
-    key is absent. Presence only; the key is never copied into the report.
+    The provider is not one of the known hosts (OpenRouter, OpenCode Go), its base URL does not
+    match it, the URL is not HTTPS, the model name is blank, or the API key is absent. Presence
+    only; the key is never copied into the report.
 env.allowlist
     The allowlist is empty, has a wildcard or duplicates, or omits the configured chat or summary
     model. A typo would send requests to an unapproved model.

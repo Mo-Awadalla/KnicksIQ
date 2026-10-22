@@ -6,13 +6,32 @@ KnicksIQ serves one immutable Knicks 2025-26 archive. Render hosts a static
 React application and a free, read-only FastAPI service. Neon Free Postgres is
 the authoritative store. Render Free Key Value supplies ephemeral shared rate
 limits, answer caching, session state, and AI budget state. Qdrant Cloud holds
-release-versioned retrieval indexes. OpenRouter composes validated answers from
-backend-computed claims or selects bounded retrieval; it never authors a number.
-Sentry receives scrubbed errors and low-sample traces.
+release-versioned retrieval indexes. Sentry receives scrubbed errors and
+low-sample traces.
+
+Models run on OpenCode Go, the owner's subscription, at
+`https://opencode.ai/inference/go/openai/v1`. `deepseek-v4.1-flash` writes over
+Chat Completions and `gpt-6-luna` reviews over the Responses API, so the
+reviewer is a different model family from the writer. `AI_MODEL_PROTOCOLS` maps
+a model to its wire protocol; a model it does not name uses Chat Completions.
+Go reports no per-call cost, so `AI_MODEL_PRICES` (USD per million input/output
+tokens) prices each call and the monthly ledger settles real usage. Each analyst
+turn sends a random session id in `x-opencode-session`, never the user's session
+token, plus the configured `User-Agent`. The writer and reviewer compose
+validated answers from backend-computed claims or select bounded retrieval; they
+never author a number.
+
+OpenCode's terms say the service is for "your own internal use, and not on
+behalf of or for the benefit of any third party", and Go is described as being
+for coding-agent traffic. A public site serves third parties. The owner accepted
+that risk for a small hobby project. If the account is suspended, every answer
+falls back to the deterministic path. The full record, including the probe
+results and the exact switch back to OpenRouter, is in
+[the OpenCode Go decision](release-evidence/llm-primary-20261021/opencode-go/README.md).
 
 Postgres and one validated active `dataset_releases` row are required.
-Qdrant, Redis, and OpenRouter are optional at request time. Their failure must
-not prevent deterministic factual answers.
+Qdrant, Redis, and the model host are optional at request time. Their failure
+must not prevent deterministic factual answers.
 
 ## Immutable release boundary
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Check that the launch mode is stated once and not contradicted by the analyst docs.
+"""Check that the launch mode and model host are stated once and not contradicted.
 
 Render is the deployed declaration. The release checklist's intended-launch section is the
 authoritative document. The analyst implementation document must link there and must not assert a
@@ -21,6 +21,11 @@ KEYS = (
     "ANALYST_EVIDENCE_LOOP_ENABLED",
     "ANALYSIS_SHADOW_SAMPLE_RATE",
     "OPENROUTER_MONTHLY_CUTOFF_USD",
+    # The model host is part of the launch: a stale provider or model in either document is the
+    # same class of drift as a stale answer mode.
+    "AI_PROVIDER",
+    "AI_CHAT_MODEL",
+    "ANALYST_REVIEW_MODEL",
 )
 TOOLS = (
     "get_player_stats",
@@ -58,7 +63,7 @@ def checklist_values(text: str) -> dict[str, str]:
     section = text.split(CHECKLIST_HEADING, 1)[1].split("\n## ", 1)[0]
     values: dict[str, str] = {}
     for key in KEYS:
-        match = re.search(rf"{key}\s*=\s*([A-Za-z0-9_.]+)", section)
+        match = re.search(rf"{key}\s*=\s*([A-Za-z0-9_.-]+)", section)
         if match:
             values[key] = match.group(1)
     return values
