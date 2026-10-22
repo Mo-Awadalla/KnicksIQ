@@ -6,7 +6,7 @@ the deployed services, model choices, input limits, or release approval.
 ## Results
 
 - The new regression file failed nine cases before the fixes and passed two controls. All eleven
-  now pass. The full backend suite passes 450 tests.
+  now pass. That initial backend run passed 450 tests. The follow-up correction below passes 461.
 - In real Chromium, a Brunson-in-December question followed by a greeting, a betting refusal,
   and "And his assists?" keeps the same session and advances revisions 1 through 4. The last
   answer gives 7.1 assists across 13 December appearances. Before the fix, the refusal discarded
@@ -26,6 +26,43 @@ the deployed services, model choices, input limits, or release approval.
 - The offline follow-up audit remains 27 of 27 sessions and 64 of 64 turns. The existing numeric
   mutation check rejects 324 of 324 wrong-number mutations and accepts all 14 correct controls.
   These checks are not a measurement of the live reviewer's accuracy.
+
+## Compound-request and coverage correction
+
+The first authority rule had a regression. The scalar parser selected one member of a
+compound request, so all player calls could return rebounds or averages. Setting the scalar
+to unspecified repaired dispatch but exposed another problem. Planning and fallback still
+treated unspecified statistics as points.
+
+The corrected scope carries `requested_metrics` and `requested_aggregations`. Dispatch selects
+within those sets. Deterministic prefetch fetches simple compound requests within the existing
+tool limit, and fallback retains all requested facts. Player tools reject the team-only margin
+metric as unsupported instead of raising an attribute error.
+
+The new direct regressions initially reported six failures and two passing controls. Two
+public API regressions then reproduced missing facts after a model failure. All 22 boundary
+regressions now pass, including an additional unrequested-metric control. The complete backend
+suite passes 461 tests. The existing 27-session, 64-turn scope audit still passes.
+
+`compound-live.json` preserves the failed intermediate API run. After the requested-set fix,
+`compound-live-after.json` records both questions delivering every requested metric. The
+three-stat answer used factual fallback and delivered 30.6 points, 3.2 rebounds and 7.1 assists
+per appearance. The total-and-average answer passed model review and delivered 398 total
+points and 30.6 per appearance. This is a two-question smoke check, not a new benchmark.
+
+The rejected repair had copied game ID 29 from backend coverage text. That was a producer-side
+contract mismatch, not an invented model number. Coverage now describes non-appearances and
+missing data without identifiers. Review retains those limitations. The targeted repeat in
+`coverage-repair-after.json` passed review with the numeric gate unchanged. The original failed
+artifact is retained.
+
+Run `tools/release/verify_compound_queries.py --live --out <path>` with the same local database
+and Go environment as the repair check to repeat the two compound API questions.
+
+The fake reviewer report's `comparisons-004` rejection does not establish a factual regression.
+That recorded answer is a clarification with no claims. The fake labels every span factual and
+supplies no citation. Real reviewer instructions classify that text as conversational.
+
 
 ## Contracts
 
