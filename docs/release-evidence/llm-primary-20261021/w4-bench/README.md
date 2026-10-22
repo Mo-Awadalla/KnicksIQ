@@ -23,8 +23,8 @@ Every writer call was `deepseek-v4.1-flash`/`chat` (255) and every review `gpt-6
 ## 1. Honest score per category, per trial, spread
 
 `meets_expectation` from `analyst_scoring.py` via the harness. Claim-backed equals the honest
-score in both trials (36 and 35). Validated responses are 41 and 38; the difference is declines
-and fallbacks that the honest scorer still accepts.
+score in both trials (36 and 35). Validated responses are 41 and 38: a decline can score
+honestly without validation, and a validated answer still has to pass the fact checks.
 
 | Category | Trial 1 / 10 | Trial 2 / 10 | Spread |
 | --- | ---: | ---: | ---: |
@@ -94,7 +94,10 @@ with its stated scope. Independent SQL over the same restore tables:
   cross-check clock against score, so it flags one and passes the other.
 
 So: 0 of the 36 flagged atoms is a wrong numeric value, but 453 atoms (256 + 197) could not be
-bound by the audit and are not passes. Item 2 is judged on the audit's own output, below.
+bound by the audit and are not passes. Binding also errs in the other direction: trial 2
+verifies `turning_points-005`'s 21-point deficit against a 2025-11-12 ORL game instead of the
+stated GSW game, so `verified` is not a full pass either. Item 2 is judged on the audit's own
+output, below.
 
 ## 3. Unsupported category
 
