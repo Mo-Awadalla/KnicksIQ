@@ -1,0 +1,274 @@
+{
+  "generated_at": "2026-10-22T15:56:16.025085+00:00",
+  "redis_db": "9",
+  "questions": 60,
+  "trials": 2,
+  "by_trial": {
+    "1": {
+      "questions": 30,
+      "meets_expectation": 16,
+      "claim_backed": 16,
+      "validated": 15,
+      "p50_latency_ms": 10858.6,
+      "p95_latency_ms": 20599.7,
+      "mean_latency_ms": 12175.7,
+      "ledger_delta_usd": 0.0856649,
+      "mean_cost_per_question_usd": 0.002855497,
+      "provider_calls": 74,
+      "mean_calls_per_question": 2.47,
+      "unsupported_declined": 1,
+      "unsupported_questions": 5,
+      "reconciles": false
+    },
+    "2": {
+      "questions": 30,
+      "meets_expectation": 17,
+      "claim_backed": 17,
+      "validated": 18,
+      "p50_latency_ms": 13665.8,
+      "p95_latency_ms": 27585.3,
+      "mean_latency_ms": 14249.4,
+      "ledger_delta_usd": 0.1068503,
+      "mean_cost_per_question_usd": 0.003561677,
+      "provider_calls": 78,
+      "mean_calls_per_question": 2.6,
+      "unsupported_declined": 2,
+      "unsupported_questions": 5,
+      "reconciles": false
+    }
+  },
+  "spread_meets_expectation": 1,
+  "by_category": {
+    "aliases_typos": {
+      "trial1": "2/3",
+      "trial2": "2/3"
+    },
+    "comparisons": {
+      "trial1": "1/6",
+      "trial2": "1/6"
+    },
+    "date_range_last_n": {
+      "trial1": "3/5",
+      "trial2": "4/5"
+    },
+    "exact_statistics": {
+      "trial1": "3/3",
+      "trial2": "3/3"
+    },
+    "single_game_narrative": {
+      "trial1": "1/5",
+      "trial2": "1/5"
+    },
+    "turning_points": {
+      "trial1": "1/3",
+      "trial2": "1/3"
+    },
+    "unsupported": {
+      "trial1": "5/5",
+      "trial2": "5/5"
+    }
+  },
+  "latency": {
+    "p50_ms": 12007.2,
+    "p95_ms": 23564.8,
+    "mean_ms": 13212.6,
+    "by_stage": {
+      "session_and_release": {
+        "calls": 60,
+        "p50_ms": 5.0,
+        "p95_ms": 11.0,
+        "mean_ms": 8.6,
+        "share_of_stage_total": 0.001
+      },
+      "archive_records": {
+        "calls": 60,
+        "p50_ms": 22.0,
+        "p95_ms": 65.0,
+        "mean_ms": 30.4,
+        "share_of_stage_total": 0.002
+      },
+      "query_resolution": {
+        "calls": 60,
+        "p50_ms": 57.0,
+        "p95_ms": 88.0,
+        "mean_ms": 59.6,
+        "share_of_stage_total": 0.005
+      },
+      "plan": {
+        "calls": 14,
+        "p50_ms": 2930.0,
+        "p95_ms": 8195.0,
+        "mean_ms": 3455.0,
+        "share_of_stage_total": 0.061
+      },
+      "tool": {
+        "calls": 53,
+        "p50_ms": 76.0,
+        "p95_ms": 684.0,
+        "mean_ms": 126.8,
+        "share_of_stage_total": 0.009
+      },
+      "answer": {
+        "calls": 65,
+        "p50_ms": 3685.0,
+        "p95_ms": 10872.0,
+        "mean_ms": 4434.1,
+        "share_of_stage_total": 0.366
+      },
+      "review": {
+        "calls": 47,
+        "p50_ms": 6608.0,
+        "p95_ms": 11711.0,
+        "mean_ms": 7092.0,
+        "share_of_stage_total": 0.424
+      },
+      "repair": {
+        "calls": 26,
+        "p50_ms": 3102.0,
+        "p95_ms": 6691.0,
+        "mean_ms": 4007.9,
+        "share_of_stage_total": 0.132
+      },
+      "other": {
+        "calls": 0,
+        "p50_ms": null,
+        "p95_ms": null,
+        "mean_ms": null,
+        "share_of_stage_total": 0.0
+      }
+    }
+  },
+  "calls": {
+    "total": 152,
+    "mean_per_question": 2.53,
+    "p50_per_question": 2.0,
+    "p95_per_question": 4.0,
+    "max_per_question": 5,
+    "by_stage": {
+      "orchestrate": 79,
+      "review": 47,
+      "revise": 26
+    },
+    "by_model": {
+      "deepseek-v4.1-flash": 105,
+      "gpt-6-luna": 47
+    },
+    "by_protocol": {
+      "None": 0,
+      "chat": 105,
+      "responses": 45
+    },
+    "errors": 2
+  },
+  "cost": {
+    "ledger_delta_total_usd": 0.1925152,
+    "per_call_charged_total_usd": 0.2099574,
+    "settled_total_usd": 0.1925152,
+    "open_delta_total_usd": 0,
+    "reconciled_total_usd": 0.2099574,
+    "reconciles": false,
+    "unreconciled_questions": [
+      "comparisons-006",
+      "comparisons-007"
+    ],
+    "mean_per_question_usd": 0.003208587,
+    "p50_per_question_usd": 0.0023876,
+    "p95_per_question_usd": 0.0055662,
+    "monthly_capacity_at_2_usd": 623
+  },
+  "outcomes": {
+    "failed:orchestrate:RuntimeError": 2,
+    "failed:review:TimeoutError": 2,
+    "failed:revise:ValidationError": 8,
+    "fallback:review_rejected": 15,
+    "validated": 28,
+    "validated_declined": 5
+  },
+  "arm": "B",
+  "settings": {
+    "ai_reasoning_effort": "low",
+    "analyst_reasoning_effort": "low",
+    "analyst_answer_max_tokens": 4000,
+    "analyst_review_max_tokens": 6000,
+    "ai_model_protocols": {
+      "gpt-6-luna": "responses"
+    },
+    "ai_chat_model": "deepseek-v4.1-flash",
+    "analyst_review_model": "gpt-6-luna",
+    "analyst_deadline_seconds": 30.0,
+    "ai_request_timeout_seconds": 20.0
+  },
+  "arm_extra": {
+    "generated_at": "2026-10-22T15:56:16.025856+00:00",
+    "calls": 152,
+    "calls_with_extra": 152,
+    "by_stage": {
+      "orchestrate": {
+        "calls": 79,
+        "reasoning_tokens": 14640,
+        "calls_with_reasoning": 79,
+        "prompt_tokens": 239057,
+        "completion_tokens": 35480,
+        "finish_reasons": {
+          "stop": 77,
+          "length": 2
+        },
+        "content_kinds": {
+          "string": 77,
+          "empty_string": 2
+        },
+        "max_tokens_seen": [
+          600,
+          4000
+        ],
+        "errors": 2
+      },
+      "review": {
+        "calls": 47,
+        "reasoning_tokens": 6556,
+        "calls_with_reasoning": 33,
+        "prompt_tokens": 109061,
+        "completion_tokens": 26430,
+        "finish_reasons": {
+          "stop": 45,
+          "None": 2
+        },
+        "content_kinds": {
+          "string": 45,
+          "None": 2
+        },
+        "max_tokens_seen": [
+          6000
+        ],
+        "errors": 0
+      },
+      "revise": {
+        "calls": 26,
+        "reasoning_tokens": 4441,
+        "calls_with_reasoning": 26,
+        "prompt_tokens": 68242,
+        "completion_tokens": 11357,
+        "finish_reasons": {
+          "stop": 26
+        },
+        "content_kinds": {
+          "string": 26
+        },
+        "max_tokens_seen": [
+          4000
+        ],
+        "errors": 0
+      }
+    },
+    "outcomes": {
+      "validated": 28,
+      "failed:revise:ValidationError": 8,
+      "fallback:review_rejected": 15,
+      "validated_declined": 5,
+      "failed:orchestrate:RuntimeError": 2,
+      "failed:review:TimeoutError": 2
+    },
+    "truncated_calls": 2,
+    "empty_output_calls": 2
+  }
+}

@@ -1,0 +1,136 @@
+{
+  "scope": "meets_expectation now requires: not declined or clarification, validated delivery, substantive content, no unbacked number or entity, required facts present, no echo, and no unbacked causal hedge. claim_backed additionally requires cited claim values.",
+  "mode": "live",
+  "dataset": "/Users/mohamedawadalla/.local/share/knicksiq/worktrees/w4-thinking/apps/api/app/evaluation/questions.jsonl",
+  "questions": 30,
+  "old_meets_expectation": 17,
+  "meets_expectation": 17,
+  "claim_backed_meets_expectation": 17,
+  "delta": 0,
+  "by_answerable": {
+    "answerable": {
+      "questions": 25,
+      "old": 15,
+      "new": 12
+    },
+    "unsupported": {
+      "questions": 5,
+      "old": 2,
+      "new": 5
+    }
+  },
+  "survived": [
+    "exact_statistics-001",
+    "exact_statistics-002",
+    "exact_statistics-003",
+    "date_range_last_n-001",
+    "date_range_last_n-002",
+    "date_range_last_n-003",
+    "comparisons-003",
+    "single_game_narrative-001",
+    "turning_points-001",
+    "aliases_typos-001",
+    "aliases_typos-002",
+    "unsupported-003",
+    "date_range_last_n-005",
+    "unsupported-006"
+  ],
+  "lost": [
+    {
+      "id": "single_game_narrative-002",
+      "category": "single_game_narrative",
+      "failures": [
+        "clarification",
+        "no_cited_claims"
+      ],
+      "reason": "skipped_work_clarification",
+      "answer": "The archive contains several Knicks\u2013Raptors matchups this season: a late-November game in New York, a December game in Toronto, a late-January game in Toronto, an early-March game in Toronto, and an April game in New York. Which of those do you mean?"
+    },
+    {
+      "id": "turning_points-002",
+      "category": "turning_points",
+      "failures": [
+        "clarification",
+        "missing_turning_detail",
+        "no_cited_claims"
+      ],
+      "reason": "skipped_work_clarification",
+      "answer": "I have five Knicks\u2013Raptors matchups archived for this season: one in late November at home, one in early December in Toronto, one in late January in Toronto, one in early March in Toronto, and one in mid-April at home. Which of those do you mean? I can then walk through the play-by-play runs, deficits and lead changes in that game."
+    },
+    {
+      "id": "aliases_typos-003",
+      "category": "aliases_typos",
+      "failures": [
+        "clarification"
+      ],
+      "reason": "skipped_work_clarification",
+      "answer": "I need to know which game you mean. The archive has several notable Jalen Brunson (JB) games from the 2025-26 regular season: 47 points, 3 rebounds, 8 assists and 0 turnovers vs MIA on 2025-12-21; 42 points, 8 rebounds, 9 assists and 5 turnovers vs DEN on 2026-02-04; 40 points, 5 rebounds, 8 assists and 1 turnover vs IND on 2026-02-10; 40 points, 4 rebounds, 8 assists and 2 turnovers vs ORL on 2025-12-13; 37 points, 5 rebounds, 7 assists and 3 turnovers vs MIA on 2025-10-26; and 33 points, 3 rebounds, 11 assists and 2 turnovers vs ORL on 2025-11-22. Tell me the opponent or date and I'll detail that one."
+    }
+  ],
+  "gained": [
+    {
+      "id": "unsupported-001",
+      "failures": []
+    },
+    {
+      "id": "unsupported-002",
+      "failures": []
+    },
+    {
+      "id": "unsupported-004",
+      "failures": []
+    }
+  ],
+  "failure_counts": {
+    "not_validated": 7,
+    "no_cited_claims": 6,
+    "clarification": 4,
+    "declined": 3,
+    "not_substantive": 3,
+    "missing_turning_detail": 1
+  },
+  "by_category": {
+    "aliases_typos": {
+      "questions": 3,
+      "old": 3,
+      "new": 2,
+      "claim_backed": 2
+    },
+    "comparisons": {
+      "questions": 6,
+      "old": 1,
+      "new": 1,
+      "claim_backed": 1
+    },
+    "date_range_last_n": {
+      "questions": 5,
+      "old": 4,
+      "new": 4,
+      "claim_backed": 4
+    },
+    "exact_statistics": {
+      "questions": 3,
+      "old": 3,
+      "new": 3,
+      "claim_backed": 3
+    },
+    "single_game_narrative": {
+      "questions": 5,
+      "old": 2,
+      "new": 1,
+      "claim_backed": 1
+    },
+    "turning_points": {
+      "questions": 3,
+      "old": 2,
+      "new": 1,
+      "claim_backed": 1
+    },
+    "unsupported": {
+      "questions": 5,
+      "old": 2,
+      "new": 5,
+      "claim_backed": 5
+    }
+  }
+}

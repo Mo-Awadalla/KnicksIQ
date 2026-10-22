@@ -1,0 +1,569 @@
+{
+  "A": {
+    "arm": "A",
+    "settings": {
+      "ai_reasoning_effort": "none",
+      "analyst_reasoning_effort": "none",
+      "analyst_answer_max_tokens": 1600,
+      "analyst_review_max_tokens": 3000,
+      "ai_model_protocols": {
+        "gpt-6-luna": "responses"
+      },
+      "ai_chat_model": "deepseek-v4.1-flash",
+      "analyst_review_model": "gpt-6-luna",
+      "analyst_deadline_seconds": 30.0,
+      "ai_request_timeout_seconds": 20.0
+    },
+    "questions": 60,
+    "trials": 2,
+    "honest": {
+      "trial_1": 18,
+      "trial_2": 17
+    },
+    "honest_total": 35,
+    "honest_spread": 1,
+    "claim_backed_total": 35,
+    "validated": 36,
+    "by_category": {
+      "aliases_typos": "5/6",
+      "comparisons": "2/12",
+      "date_range_last_n": "7/10",
+      "exact_statistics": "6/6",
+      "single_game_narrative": "2/10",
+      "turning_points": "3/6",
+      "unsupported": "10/10"
+    },
+    "outcomes": {
+      "failed:orchestrate:TimeoutError": 2,
+      "failed:orchestrate:ValidationError": 1,
+      "failed:revise:TimeoutError": 1,
+      "failed:revise:ValidationError": 8,
+      "fallback:review_rejected": 12,
+      "validated": 28,
+      "validated_declined": 8
+    },
+    "failed_stages": {
+      "revise:ValidationError": 8,
+      "orchestrate:ValidationError": 1,
+      "orchestrate:TimeoutError": 2,
+      "revise:TimeoutError": 1
+    },
+    "failed_stages_total": 12,
+    "calls": {
+      "total": 157,
+      "mean_per_question": 2.62,
+      "p50_per_question": 2.0,
+      "p95_per_question": 4.0,
+      "max_per_question": 5,
+      "by_stage": {
+        "orchestrate": 77,
+        "review": 43,
+        "revise": 37
+      },
+      "by_model": {
+        "deepseek-v4.1-flash": 114,
+        "gpt-6-luna": 43
+      },
+      "by_protocol": {
+        "None": 0,
+        "chat": 113,
+        "responses": 43
+      },
+      "errors": 0
+    },
+    "call_errors": 0,
+    "truncated_calls": 0,
+    "empty_output_calls": 0,
+    "cancelled_calls": 1,
+    "model_error_calls": 0,
+    "latency": {
+      "p50_ms": 7014.4,
+      "p95_ms": 14647.1,
+      "mean_ms": 8209.5,
+      "by_stage": {
+        "session_and_release": {
+          "calls": 60,
+          "p50_ms": 5.0,
+          "p95_ms": 9.0
+        },
+        "archive_records": {
+          "calls": 60,
+          "p50_ms": 22.0,
+          "p95_ms": 68.0
+        },
+        "query_resolution": {
+          "calls": 60,
+          "p50_ms": 57.0,
+          "p95_ms": 68.0
+        },
+        "plan": {
+          "calls": 14,
+          "p50_ms": 1555.0,
+          "p95_ms": 2108.0
+        },
+        "tool": {
+          "calls": 48,
+          "p50_ms": 72.0,
+          "p95_ms": 631.0
+        },
+        "answer": {
+          "calls": 63,
+          "p50_ms": 2418.0,
+          "p95_ms": 3806.0
+        },
+        "review": {
+          "calls": 43,
+          "p50_ms": 4225.0,
+          "p95_ms": 6990.0
+        },
+        "repair": {
+          "calls": 37,
+          "p50_ms": 2332.0,
+          "p95_ms": 11317.0
+        }
+      }
+    },
+    "reasoning_tokens": {
+      "total": 0,
+      "by_stage": {
+        "orchestrate": 0,
+        "review": 0,
+        "revise": 0
+      },
+      "per_call_p50": 0.0,
+      "per_call_p95": 0.0,
+      "per_question": 0.0
+    },
+    "cost": {
+      "total_usd": 0.164593,
+      "per_question_usd": 0.002743217,
+      "p95_per_question_usd": 0.0048104,
+      "reconciles": true,
+      "monthly_capacity_at_2_usd": 729
+    },
+    "unsupported": {
+      "questions": 10,
+      "declined": 6,
+      "declined_ids": [
+        "unsupported-001",
+        "unsupported-003",
+        "unsupported-004",
+        "unsupported-001",
+        "unsupported-003",
+        "unsupported-006"
+      ],
+      "not_declined": [
+        {
+          "id": "unsupported-002",
+          "outcome": "failed:orchestrate:ValidationError"
+        },
+        {
+          "id": "unsupported-006",
+          "outcome": "failed:revise:ValidationError"
+        },
+        {
+          "id": "unsupported-002",
+          "outcome": "failed:revise:ValidationError"
+        },
+        {
+          "id": "unsupported-004",
+          "outcome": "failed:revise:ValidationError"
+        }
+      ]
+    },
+    "audit": {
+      "found": 467,
+      "verified": 349,
+      "wrong": 5,
+      "unverified": 113,
+      "checked": 354,
+      "responses": 60,
+      "responses_with_wrong": 3,
+      "coverage": 0.758
+    },
+    "ledger_reconciles_all": true,
+    "mean_calls_per_question": 2.62
+  },
+  "B": {
+    "arm": "B",
+    "settings": {
+      "ai_reasoning_effort": "low",
+      "analyst_reasoning_effort": "low",
+      "analyst_answer_max_tokens": 4000,
+      "analyst_review_max_tokens": 6000,
+      "ai_model_protocols": {
+        "gpt-6-luna": "responses"
+      },
+      "ai_chat_model": "deepseek-v4.1-flash",
+      "analyst_review_model": "gpt-6-luna",
+      "analyst_deadline_seconds": 30.0,
+      "ai_request_timeout_seconds": 20.0
+    },
+    "questions": 60,
+    "trials": 2,
+    "honest": {
+      "trial_1": 16,
+      "trial_2": 17
+    },
+    "honest_total": 33,
+    "honest_spread": 1,
+    "claim_backed_total": 33,
+    "validated": 33,
+    "by_category": {
+      "aliases_typos": "4/6",
+      "comparisons": "2/12",
+      "date_range_last_n": "7/10",
+      "exact_statistics": "6/6",
+      "single_game_narrative": "2/10",
+      "turning_points": "2/6",
+      "unsupported": "10/10"
+    },
+    "outcomes": {
+      "failed:orchestrate:RuntimeError": 2,
+      "failed:review:TimeoutError": 2,
+      "failed:revise:ValidationError": 8,
+      "fallback:review_rejected": 15,
+      "validated": 28,
+      "validated_declined": 5
+    },
+    "failed_stages": {
+      "revise:ValidationError": 8,
+      "orchestrate:RuntimeError": 2,
+      "review:TimeoutError": 2
+    },
+    "failed_stages_total": 12,
+    "calls": {
+      "total": 152,
+      "mean_per_question": 2.53,
+      "p50_per_question": 2.0,
+      "p95_per_question": 4.0,
+      "max_per_question": 5,
+      "by_stage": {
+        "orchestrate": 79,
+        "review": 47,
+        "revise": 26
+      },
+      "by_model": {
+        "deepseek-v4.1-flash": 105,
+        "gpt-6-luna": 47
+      },
+      "by_protocol": {
+        "None": 0,
+        "chat": 105,
+        "responses": 45
+      },
+      "errors": 2
+    },
+    "call_errors": 2,
+    "truncated_calls": 2,
+    "empty_output_calls": 0,
+    "cancelled_calls": 2,
+    "model_error_calls": 2,
+    "latency": {
+      "p50_ms": 12007.2,
+      "p95_ms": 23564.8,
+      "mean_ms": 13212.6,
+      "by_stage": {
+        "session_and_release": {
+          "calls": 60,
+          "p50_ms": 5.0,
+          "p95_ms": 11.0
+        },
+        "archive_records": {
+          "calls": 60,
+          "p50_ms": 22.0,
+          "p95_ms": 65.0
+        },
+        "query_resolution": {
+          "calls": 60,
+          "p50_ms": 57.0,
+          "p95_ms": 88.0
+        },
+        "plan": {
+          "calls": 14,
+          "p50_ms": 2930.0,
+          "p95_ms": 8195.0
+        },
+        "tool": {
+          "calls": 53,
+          "p50_ms": 76.0,
+          "p95_ms": 684.0
+        },
+        "answer": {
+          "calls": 65,
+          "p50_ms": 3685.0,
+          "p95_ms": 10872.0
+        },
+        "review": {
+          "calls": 47,
+          "p50_ms": 6608.0,
+          "p95_ms": 11711.0
+        },
+        "repair": {
+          "calls": 26,
+          "p50_ms": 3102.0,
+          "p95_ms": 6691.0
+        }
+      }
+    },
+    "reasoning_tokens": {
+      "total": 25637,
+      "by_stage": {
+        "orchestrate": 14640,
+        "review": 6556,
+        "revise": 4441
+      },
+      "per_call_p50": 125.0,
+      "per_call_p95": 581.0,
+      "per_question": 427.3
+    },
+    "cost": {
+      "total_usd": 0.1925152,
+      "per_question_usd": 0.003208587,
+      "p95_per_question_usd": 0.0055662,
+      "reconciles": false,
+      "monthly_capacity_at_2_usd": 623
+    },
+    "unsupported": {
+      "questions": 10,
+      "declined": 3,
+      "declined_ids": [
+        "unsupported-006",
+        "unsupported-003",
+        "unsupported-006"
+      ],
+      "not_declined": [
+        {
+          "id": "unsupported-001",
+          "outcome": "failed:revise:ValidationError"
+        },
+        {
+          "id": "unsupported-002",
+          "outcome": "fallback:review_rejected"
+        },
+        {
+          "id": "unsupported-003",
+          "outcome": "failed:revise:ValidationError"
+        },
+        {
+          "id": "unsupported-004",
+          "outcome": "failed:revise:ValidationError"
+        },
+        {
+          "id": "unsupported-001",
+          "outcome": "fallback:review_rejected"
+        },
+        {
+          "id": "unsupported-002",
+          "outcome": "failed:revise:ValidationError"
+        },
+        {
+          "id": "unsupported-004",
+          "outcome": "fallback:review_rejected"
+        }
+      ]
+    },
+    "audit": {
+      "found": 501,
+      "verified": 314,
+      "wrong": 4,
+      "unverified": 183,
+      "checked": 318,
+      "responses": 60,
+      "responses_with_wrong": 3,
+      "coverage": 0.6347
+    },
+    "ledger_reconciles_all": false,
+    "mean_calls_per_question": 2.53
+  },
+  "C": {
+    "arm": "C",
+    "settings": {
+      "ai_reasoning_effort": "medium",
+      "analyst_reasoning_effort": "medium",
+      "analyst_answer_max_tokens": 4000,
+      "analyst_review_max_tokens": 6000,
+      "ai_model_protocols": {
+        "gpt-6-luna": "responses"
+      },
+      "ai_chat_model": "deepseek-v4.1-flash",
+      "analyst_review_model": "gpt-6-luna",
+      "analyst_deadline_seconds": 30.0,
+      "ai_request_timeout_seconds": 20.0
+    },
+    "questions": 60,
+    "trials": 2,
+    "honest": {
+      "trial_1": 16,
+      "trial_2": 10
+    },
+    "honest_total": 26,
+    "honest_spread": 6,
+    "claim_backed_total": 26,
+    "validated": 22,
+    "by_category": {
+      "aliases_typos": "3/6",
+      "comparisons": "1/12",
+      "date_range_last_n": "6/10",
+      "exact_statistics": "5/6",
+      "single_game_narrative": "1/10",
+      "turning_points": "0/6",
+      "unsupported": "10/10"
+    },
+    "outcomes": {
+      "failed:orchestrate:RuntimeError": 3,
+      "failed:orchestrate:TimeoutError": 1,
+      "failed:review:TimeoutError": 21,
+      "failed:revise:TimeoutError": 2,
+      "failed:revise:ValidationError": 4,
+      "fallback:review_rejected": 7,
+      "validated": 17,
+      "validated_declined": 5
+    },
+    "failed_stages": {
+      "revise:ValidationError": 4,
+      "review:TimeoutError": 21,
+      "revise:TimeoutError": 2,
+      "orchestrate:RuntimeError": 3,
+      "orchestrate:TimeoutError": 1
+    },
+    "failed_stages_total": 31,
+    "calls": {
+      "total": 147,
+      "mean_per_question": 2.45,
+      "p50_per_question": 2.0,
+      "p95_per_question": 4.0,
+      "max_per_question": 4,
+      "by_stage": {
+        "orchestrate": 83,
+        "review": 47,
+        "revise": 17
+      },
+      "by_model": {
+        "deepseek-v4.1-flash": 100,
+        "gpt-6-luna": 47
+      },
+      "by_protocol": {
+        "None": 0,
+        "chat": 97,
+        "responses": 26
+      },
+      "errors": 3
+    },
+    "call_errors": 3,
+    "truncated_calls": 7,
+    "empty_output_calls": 0,
+    "cancelled_calls": 24,
+    "model_error_calls": 3,
+    "latency": {
+      "p50_ms": 19303.4,
+      "p95_ms": 27631.0,
+      "mean_ms": 19151.7,
+      "by_stage": {
+        "session_and_release": {
+          "calls": 60,
+          "p50_ms": 4.0,
+          "p95_ms": 6.0
+        },
+        "archive_records": {
+          "calls": 60,
+          "p50_ms": 20.0,
+          "p95_ms": 57.0
+        },
+        "query_resolution": {
+          "calls": 60,
+          "p50_ms": 56.0,
+          "p95_ms": 75.0
+        },
+        "plan": {
+          "calls": 19,
+          "p50_ms": 3247.0,
+          "p95_ms": 6684.0
+        },
+        "tool": {
+          "calls": 58,
+          "p50_ms": 76.0,
+          "p95_ms": 655.0
+        },
+        "answer": {
+          "calls": 64,
+          "p50_ms": 5167.0,
+          "p95_ms": 12782.0
+        },
+        "review": {
+          "calls": 47,
+          "p50_ms": 12661.0,
+          "p95_ms": 20001.0
+        },
+        "repair": {
+          "calls": 17,
+          "p50_ms": 4283.0,
+          "p95_ms": 12081.0
+        }
+      }
+    },
+    "reasoning_tokens": {
+      "total": 41856,
+      "by_stage": {
+        "orchestrate": 28922,
+        "review": 8984,
+        "revise": 3950
+      },
+      "per_call_p50": 235.0,
+      "per_call_p95": 853.0,
+      "per_question": 697.6
+    },
+    "cost": {
+      "total_usd": 0.4126013,
+      "per_question_usd": 0.006876688,
+      "p95_per_question_usd": 0.0153097,
+      "reconciles": false,
+      "monthly_capacity_at_2_usd": 290
+    },
+    "unsupported": {
+      "questions": 10,
+      "declined": 5,
+      "declined_ids": [
+        "unsupported-001",
+        "unsupported-003",
+        "unsupported-004",
+        "unsupported-001",
+        "unsupported-006"
+      ],
+      "not_declined": [
+        {
+          "id": "unsupported-002",
+          "outcome": "failed:review:TimeoutError"
+        },
+        {
+          "id": "unsupported-006",
+          "outcome": "failed:review:TimeoutError"
+        },
+        {
+          "id": "unsupported-002",
+          "outcome": "failed:revise:ValidationError"
+        },
+        {
+          "id": "unsupported-003",
+          "outcome": "failed:review:TimeoutError"
+        },
+        {
+          "id": "unsupported-004",
+          "outcome": "failed:review:TimeoutError"
+        }
+      ]
+    },
+    "audit": {
+      "found": 568,
+      "verified": 421,
+      "wrong": 0,
+      "unverified": 147,
+      "checked": 421,
+      "responses": 60,
+      "responses_with_wrong": 0,
+      "coverage": 0.7412
+    },
+    "ledger_reconciles_all": false,
+    "mean_calls_per_question": 2.45
+  }
+}

@@ -6,3 +6,5 @@ arm-*/trial*.json linguist-generated=true
 arm-*/audit/** linguist-generated=true
 arm-*/wrong-numbers.md linguist-generated=true
 smoke-*/** linguist-generated=true
+
+*.log linguist-generated=true
