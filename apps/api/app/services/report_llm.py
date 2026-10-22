@@ -16,9 +16,11 @@ import time
 import urllib.error
 import urllib.request
 from abc import ABC, abstractmethod
+from collections.abc import Mapping
 from typing import Any
 
 from app.core.config import get_settings
+from app.services.llm_wire import PROTOCOLS, Request, priced
 
 
 class LLMAdapter(ABC):
@@ -49,7 +51,7 @@ class MockLLMAdapter(LLMAdapter):
 
 
 class OpenAICompatibleLLMAdapter(LLMAdapter):
-    """Minimal OpenAI-compatible chat completions adapter."""
+    """OpenAI-compatible adapter; the wire protocol is chosen per model (see llm_wire)."""
 
     def __init__(
         self,
@@ -64,6 +66,9 @@ class OpenAICompatibleLLMAdapter(LLMAdapter):
         provider_order: list[str] | None = None,
         provider_sort: str | None = "latency",
         provider_allow_fallbacks: bool = True,
+        protocols: Mapping[str, str] | None = None,
+        prices: dict[str, list[float]] | None = None,
+        user_agent: str = "knicksiq/1.0",
     ) -> None:
         self.base_url = base_url.rstrip("/")
         self.api_key = api_key
@@ -75,6 +80,11 @@ class OpenAICompatibleLLMAdapter(LLMAdapter):
         self.provider_order = list(provider_order or [])
         self.provider_sort = provider_sort
         self.provider_allow_fallbacks = provider_allow_fallbacks
+        self.protocols = dict(protocols or {})
+        self.prices = dict(prices or {})
+        self.user_agent = user_agent
+        # A random per-conversation id for host-side routing and caching; never a user token.
+        self.session_id: str | None = None
         self.response_schema: dict[str, Any] | None = None
         self.last_metadata: dict[str, Any] = {}
 
@@ -83,48 +93,40 @@ class OpenAICompatibleLLMAdapter(LLMAdapter):
 
         return await asyncio.to_thread(self._generate_sync, system, user)
 
+    def _provider(self) -> dict[str, Any]:
+        provider: dict[str, Any] = {"allow_fallbacks": self.provider_allow_fallbacks}
+        if self.provider_sort and self.provider_sort != "none":
+            provider["sort"] = self.provider_sort
+        if self.provider_order:
+            provider["order"] = self.provider_order
+        return provider
+
     def _generate_sync(self, system: str, user: str) -> str:
-        payload_body: dict[str, Any] = {
-            "model": self.model,
-            "messages": [
-                {"role": "system", "content": system},
-                {"role": "user", "content": user},
-            ],
-            "temperature": 0,
-            "max_tokens": self.max_tokens,
-        }
-        if "openrouter.ai" in self.base_url:
-            # The configured OpenRouter account is allowed to use providers that
-            # collect data. Keep fallbacks enabled, while requiring parameter
-            # support below whenever a structured response is requested.
-            provider: dict[str, Any] = {"allow_fallbacks": self.provider_allow_fallbacks}
-            if self.provider_sort and self.provider_sort != "none":
-                provider["sort"] = self.provider_sort
-            if self.provider_order:
-                provider["order"] = self.provider_order
-            payload_body["provider"] = provider
-            if self.reasoning_effort is not None:
-                payload_body["reasoning"] = {"effort": self.reasoning_effort}
-        if self.response_schema is not None:
-            payload_body["response_format"] = {
-                "type": "json_schema",
-                "json_schema": {"name": "analyst", "strict": True, "schema": self.response_schema},
-            }
-            if "openrouter.ai" in self.base_url:
-                payload_body["provider"]["require_parameters"] = True
-        elif self.response_format_json:
-            payload_body["response_format"] = {"type": "json_object"}
-            if "openrouter.ai" in self.base_url:
-                payload_body["provider"]["require_parameters"] = True
+        protocol = self.protocols.get(self.model, "chat")
+        build, parse = PROTOCOLS[protocol]
+        path, payload_body = build(
+            Request(
+                model=self.model,
+                system=system,
+                user=user,
+                max_tokens=self.max_tokens,
+                reasoning_effort=self.reasoning_effort,
+                response_schema=self.response_schema,
+                json_object=self.response_format_json,
+                openrouter="openrouter.ai" in self.base_url,
+                provider=self._provider(),
+            )
+        )
         payload = json.dumps(payload_body).encode("utf-8")
+        headers = {
+            "Authorization": f"Bearer {self.api_key}",
+            "Content-Type": "application/json",
+            "User-Agent": self.user_agent,
+        }
+        if self.session_id:
+            headers["x-opencode-session"] = self.session_id
         req = urllib.request.Request(
-            f"{self.base_url}/chat/completions",
-            data=payload,
-            headers={
-                "Authorization": f"Bearer {self.api_key}",
-                "Content-Type": "application/json",
-            },
-            method="POST",
+            f"{self.base_url}{path}", data=payload, headers=headers, method="POST"
         )
         sent_at = time.monotonic()
         first_byte_at: float | None = None
@@ -154,23 +156,19 @@ class OpenAICompatibleLLMAdapter(LLMAdapter):
         if body.get("error") is not None:
             detail = json.dumps(body["error"], ensure_ascii=False)
             raise RuntimeError(f"AI provider returned an error: {detail[:1000]}")
-        choices = body.get("choices")
-        if not isinstance(choices, list) or not choices:
-            detail = json.dumps(body, ensure_ascii=False)
-            raise RuntimeError(f"AI provider response omitted choices: {detail[:1000]}")
-        choice = choices[0] if isinstance(choices[0], dict) else {}
-        raw_message = choice.get("message")
-        message = raw_message if isinstance(raw_message, dict) else {}
-        content = message.get("content")
-        reasoning = message.get("reasoning") or message.get("reasoning_content")
-        finish_reason = choice.get("finish_reason")
-        usage = body.get("usage") or {}
+        reply = parse(body)
+        content = reply.content
+        usage = reply.usage
+        if usage.get("cost") is None:
+            cost = priced(usage, self.model, self.prices)
+            if cost is not None:
+                usage["cost"] = cost
         self.last_metadata = {key: body.get(key) for key in ("id", "model", "provider")}
         self.last_metadata.update(
             {
+                "protocol": protocol,
                 "usage": usage,
-                "finish_reason": finish_reason,
-                "native_finish_reason": choice.get("native_finish_reason"),
+                "finish_reason": reply.finish_reason,
                 "content_kind": (
                     "string"
                     if isinstance(content, str) and content
@@ -180,9 +178,9 @@ class OpenAICompatibleLLMAdapter(LLMAdapter):
                     if content is None
                     else type(content).__name__
                 ),
-                "reasoning_chars": len(reasoning) if isinstance(reasoning, str) else None,
-                "message_keys": sorted(message),
-                "choice_keys": sorted(choice),
+                "reasoning_chars": reply.reasoning_chars,
+                "message_keys": reply.message_keys,
+                **reply.extra,
                 "request_bytes": len(payload),
                 "response_bytes": len(raw),
                 "http_ttfb_ms": round((first_byte_at - sent_at) * 1000, 1)
@@ -192,16 +190,17 @@ class OpenAICompatibleLLMAdapter(LLMAdapter):
                 "max_tokens": self.max_tokens,
             }
         )
-        if not isinstance(content, str):
+        if not isinstance(content, str) or not content:
             # Keep the cause in the error: an empty completion is usually a token ceiling or
             # a provider fault, and the two need different fixes.
             raise RuntimeError(
                 "AI provider response omitted message content "
-                f"(finish_reason={finish_reason}, provider={self.last_metadata.get('provider')}, "
+                f"(finish_reason={reply.finish_reason}, protocol={protocol}, "
+                f"provider={self.last_metadata.get('provider')}, "
                 f"model={self.last_metadata.get('model')}, max_tokens={self.max_tokens}, "
                 f"usage={json.dumps(usage, separators=(',', ':'))[:500]}, "
                 f"content_kind={self.last_metadata['content_kind']}, "
-                f"message_keys={sorted(message)})"
+                f"message_keys={reply.message_keys})"
             )
         return content
 
@@ -225,6 +224,9 @@ def get_llm_adapter(*, response_format_json: bool = True) -> LLMAdapter:
         provider_order=getattr(settings, "openrouter_provider_order", []),
         provider_sort=getattr(settings, "openrouter_provider_sort", "latency"),
         provider_allow_fallbacks=getattr(settings, "openrouter_provider_allow_fallbacks", True),
+        protocols=settings.ai_model_protocols,
+        prices=settings.ai_model_prices,
+        user_agent=settings.ai_user_agent,
     )
 
 

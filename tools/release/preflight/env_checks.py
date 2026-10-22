@@ -86,14 +86,20 @@ def check_evidence_loop(ctx: Context) -> None:
     )
 
 
+# Provider name to the host its base URL must point at.
+KNOWN_PROVIDERS = {"openrouter": "openrouter.ai", "opencode-go": "opencode.ai/inference/go"}
+
+
 def check_provider(ctx: Context) -> None:
     if ctx.settings is None:
         ctx.add("env.provider", False, "settings unavailable", {})
         return
     settings = ctx.settings
     problems = []
-    if settings.ai_provider.lower() != "openrouter":
-        problems.append("AI_PROVIDER is not openrouter")
+    if settings.ai_provider.lower() not in KNOWN_PROVIDERS:
+        problems.append(f"AI_PROVIDER is not one of {sorted(KNOWN_PROVIDERS)}")
+    elif KNOWN_PROVIDERS[settings.ai_provider.lower()] not in settings.ai_base_url:
+        problems.append("AI_BASE_URL does not match AI_PROVIDER")
     if not settings.ai_base_url.startswith("https://"):
         problems.append("AI_BASE_URL is not HTTPS")
     if not settings.ai_chat_model.strip():
@@ -103,7 +109,7 @@ def check_provider(ctx: Context) -> None:
     ctx.add(
         "env.provider",
         not problems,
-        "; ".join(problems) or "OpenRouter provider configured with a key",
+        "; ".join(problems) or f"{settings.ai_provider} provider configured with a key",
         {
             "provider": settings.ai_provider,
             "base_url_host": settings.ai_base_url.split("/")[2]
@@ -135,11 +141,18 @@ def check_allowlist(ctx: Context) -> None:
     summary_model = (settings.openrouter_summary_model or "").strip()
     if summary_model and summary_model not in allowed:
         problems.append("summary model is not allowlisted")
+    review_model = (settings.analyst_review_model or "").strip()
+    if review_model and review_model not in allowed:
+        problems.append("review model is not allowlisted")
     ctx.add(
         "env.allowlist",
         not problems,
-        "; ".join(problems) or "chat and summary models are allowlisted",
-        {"allowed_models": allowed, "chat_model": settings.ai_chat_model},
+        "; ".join(problems) or "chat, summary and review models are allowlisted",
+        {
+            "allowed_models": allowed,
+            "chat_model": settings.ai_chat_model,
+            "review_model": review_model or settings.ai_chat_model,
+        },
     )
 
 

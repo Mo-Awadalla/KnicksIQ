@@ -173,6 +173,22 @@ def reviewer_system_prompt() -> str:
     )
 
 
+def configure_reviewer(adapter: Any, settings: Any) -> None:
+    """Point an adapter at the deployed reviewer: its model and output cap.
+
+    Replay and measurement tools call this too, so they measure the production reviewer.
+    A review model outside a non-empty allowlist is refused, which fails the review closed.
+    """
+    adapter.max_tokens = settings.analyst_review_max_tokens
+    model = settings.analyst_review_model
+    if not model or not hasattr(adapter, "model"):
+        return
+    allowed = settings.openrouter_allowed_models
+    if allowed and model not in allowed:
+        raise ValueError("Review model is not in the allowed model list")
+    adapter.model = model
+
+
 async def request_model[Schema: BaseModel](
     loop: AnalystLoop,
     schema: type[Schema],
@@ -201,12 +217,14 @@ async def request_model[Schema: BaseModel](
         instruction_bytes=token_upper_bound(system),
     )
     adapter = get_llm_adapter()
+    if hasattr(adapter, "session_id"):
+        adapter.session_id = getattr(loop, "session_id", None)  # pyright: ignore[reportAttributeAccessIssue]
     # The provider defaults this model to high-effort reasoning, and reasoning tokens count
     # against max_tokens. Measured reviewer calls spent 500-1000 tokens reasoning and then
     # truncated their JSON at the old 1200 cap; one review needs ~900-1200 visible tokens.
     # Size the caps from that usage and disable reasoning for bounded structured calls.
     if schema is AnswerReview:
-        adapter.max_tokens = loop.settings.analyst_review_max_tokens
+        configure_reviewer(adapter, loop.settings)
     elif schema is Action and not loop.tools.claims:
         adapter.max_tokens = 600
     else:
@@ -269,7 +287,10 @@ async def request_model[Schema: BaseModel](
                 "tool": "llm_review" if review else "llm_orchestrate",
                 "schema": schema.__name__,
                 "latency_ms": round((time.monotonic() - started) * 1000),
-                "model": loop.settings.ai_chat_model,
+                # The model this call was sent to; the reviewer can differ from the writer.
+                "model": getattr(adapter, "model", None) or loop.settings.ai_chat_model,
+                "served_model": metadata.get("model"),
+                "protocol": metadata.get("protocol"),
                 "provider": metadata.get("provider"),
                 "prompt_tokens": usage.get("prompt_tokens"),
                 "completion_tokens": usage.get("completion_tokens"),

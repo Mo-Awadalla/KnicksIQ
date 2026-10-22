@@ -59,6 +59,12 @@ class Settings(BaseSettings):
     ai_request_timeout_seconds: float = 20.0
     # Matches production. Unset, the model spends max_tokens on reasoning and returns no JSON.
     ai_reasoning_effort: Literal["none", "minimal", "low", "medium", "high"] | None = "none"
+    # Wire protocol per model when it is not Chat Completions, e.g. {"gpt-6-luna": "responses"}.
+    ai_model_protocols: dict[str, Literal["chat", "responses"]] = Field(default_factory=dict)
+    # USD per million [input, output] tokens, used only when the host reports no cost, so the
+    # monthly ledger settles real usage instead of the flat reservation.
+    ai_model_prices: dict[str, list[float]] = Field(default_factory=dict)
+    ai_user_agent: str = "knicksiq/1.0"
 
     openrouter_api_key: str | None = None
     openrouter_summary_model: str = "deepseek/deepseek-v4.1-flash"
@@ -138,6 +144,8 @@ class Settings(BaseSettings):
     # max_tokens before any visible JSON. These bounded calls need no chain of thought.
     analyst_reasoning_effort: Literal["none", "minimal", "low", "medium", "high"] | None = "none"
     analyst_review_max_tokens: int = Field(default=3000, ge=256, le=8000)
+    # A reviewer from a different model family than the writer; unset reuses ai_chat_model.
+    analyst_review_model: str | None = None
     analyst_answer_max_tokens: int = Field(default=1600, ge=256, le=8000)
     analyst_evidence_tokens: int = Field(default=6000, ge=100, le=6000)
     analyst_input_tokens: int = Field(default=16000, ge=1000, le=32000)

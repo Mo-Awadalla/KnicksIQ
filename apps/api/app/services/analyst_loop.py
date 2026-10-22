@@ -5,6 +5,7 @@ from __future__ import annotations
 import asyncio
 import logging
 import time
+import uuid
 from typing import Any
 
 from app.core.config import get_settings
@@ -52,6 +53,8 @@ class AnalystLoop:
         self.tools, self.context = tools, bounded_history(context)
         self.settings = get_settings()
         self.started = started or time.monotonic()
+        # Random per-turn id for host routing and prompt caching; never the session token.
+        self.session_id = uuid.uuid4().hex
         self.calls = 0
         self.rounds = 0
         self.tool_count = 0

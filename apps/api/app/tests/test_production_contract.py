@@ -41,11 +41,19 @@ def test_render_blueprint_enables_the_grounded_ai_configuration():
     api = next(service for service in blueprint["services"] if service["name"] == "knicksiq-api")
     env = {item["key"]: item.get("value") for item in api["envVars"]}
 
-    model = "deepseek/deepseek-v4.1-flash"
-    assert env["AI_PROVIDER"] == "openrouter"
-    assert env["AI_CHAT_MODEL"] == model
-    assert env["OPENROUTER_ALLOWED_MODELS"] == f'["{model}"]'
-    assert env["OPENROUTER_SUMMARY_MODEL"] == model
+    import json
+
+    allowed = json.loads(env["OPENROUTER_ALLOWED_MODELS"])
+    writer, reviewer = env["AI_CHAT_MODEL"], env["ANALYST_REVIEW_MODEL"]
+    # Every model the site can call is allowlisted, and the reviewer is a different model.
+    assert {writer, reviewer, env["OPENROUTER_SUMMARY_MODEL"]} <= set(allowed)
+    assert reviewer != writer
+    protocols = json.loads(env.get("AI_MODEL_PROTOCOLS") or "{}")
+    prices = json.loads(env.get("AI_MODEL_PRICES") or "{}")
+    # A host that reports no cost needs a price for every model, or the ledger overcharges.
+    if env["AI_PROVIDER"] != "openrouter":
+        assert {writer, reviewer} <= set(prices)
+    assert set(protocols.values()) <= {"chat", "responses"}
     assert env["RAG_LLM_PLANNER_ENABLED"] == "true"
     assert env["RAG_QDRANT_ENABLED"] == "true"
     assert env["RAG_QDRANT_CLOUD_INFERENCE"] == "true"
