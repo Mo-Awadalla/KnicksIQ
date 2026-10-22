@@ -1,0 +1,6 @@
+# Measurements produced by bench_runner.py and factual-audit/audit.py.
+*.jsonl linguist-generated=true
+trial*.json linguist-generated=true
+metrics.json linguist-generated=true
+audit/** linguist-generated=true
+wrong-numbers.md linguist-generated=true
