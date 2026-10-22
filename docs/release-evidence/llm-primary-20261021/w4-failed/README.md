@@ -92,8 +92,10 @@ would have raised `extra_forbidden`. The five remaining first-attempt failures a
 other stochastic shapes: `{"type":"answer",...}`, `{"type":"answer_from_available_evidence",
 ...}`, an answer wrapped under `proposed_answer`/`answer`, and one reply containing only
 `{"type":"json_object"}`. Each was retried successfully, so no after turn failed a repair.
-The rollout does not invent a better answer: after turns are 21 validated/declined and
-20 review-rejected fallbacks, versus 4 validated/declined and 27 schema failures before.
+Turn outcomes on the same 42 turns: before, 7 validated/declined, 27 schema failures,
+7 review-rejected fallbacks and 1 orchestrate timeout; after, 21 validated/declined,
+0 schema failures, 20 review-rejected fallbacks and the same 1 timeout. The repair fix
+therefore moves turns out of the schema-failure bucket without inventing answers.
 
 ## Future-question fallback
 
