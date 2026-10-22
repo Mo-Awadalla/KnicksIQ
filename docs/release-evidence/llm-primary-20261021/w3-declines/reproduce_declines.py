@@ -76,6 +76,8 @@ UNCHANGED: dict[str, str | None] = {
     "date_range_last_n-007": "get_team_stats",
     "aliases_typos-002": "get_team_stats",
     "unsupported-001": None,
+    "unsupported-006": None,
+    "unsupported-007": None,
     "unsupported-009": None,
 }
 

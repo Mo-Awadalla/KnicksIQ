@@ -528,6 +528,20 @@
     },
     {
       "check": "unchanged",
+      "id": "unsupported-006",
+      "expected": null,
+      "actual": "discover_facts",
+      "pass": false
+    },
+    {
+      "check": "unchanged",
+      "id": "unsupported-007",
+      "expected": null,
+      "actual": "discover_facts",
+      "pass": false
+    },
+    {
+      "check": "unchanged",
       "id": "unsupported-009",
       "expected": null,
       "actual": null,
@@ -590,5 +604,5 @@
       "pass": false
     }
   ],
-  "failed": 60
+  "failed": 62
 }
