@@ -68,9 +68,10 @@ TOOLS: tuple[ToolSpec, ...] = (
     ToolSpec(
         name="get_team_stats",
         description=(
-            "gives team wins and losses plus points and margin, as totals (aggregation total) "
-            "or per-game averages (aggregation average), so choose the aggregation the user "
-            "asked for"
+            "gives wins, losses, points and margin for one population (a season, window or "
+            "opponent scope) as totals (aggregation total) or per-game averages (aggregation "
+            "average), so choose the aggregation the user asked for; it does not split a "
+            "population"
         ),
         handler="app.services.analyst_tool_team:run",
         recovery_role="team",
@@ -109,21 +110,30 @@ TOOLS: tuple[ToolSpec, ...] = (
     ),
     ToolSpec(
         name="get_game_flow",
-        description="play-by-play flow",
+        description=(
+            "runs, deficits, comebacks, lead changes and lost leads from play-by-play; ranks "
+            "the observed extreme across the selected games and names the game, period and "
+            "clock"
+        ),
         handler="app.services.analyst_tool_runs:run",
         supports_periods=True,
     ),
     ToolSpec(
         name="get_team_splits",
-        description="team splits",
+        description=(
+            "splits team results into every requested bucket: home/road, wins/losses, one or "
+            "two opponents, month, first N games, before/after the All-Star break, phase, "
+            "close games, overtime or back-to-backs; each bucket reports its record, points "
+            "and margin with its own game count"
+        ),
         handler="app.services.analyst_tool_splits:run",
         needs_games=False,
     ),
     ToolSpec(
         name="get_period_scoring",
         description=(
-            "quarter, half and overtime scoring for the Knicks and opponents, per game and "
-            "aggregated; use instead of get_team_stats for those questions"
+            "quarter, half, halftime and overtime scoring for the Knicks and opponents, per "
+            "game and aggregated; use instead of get_team_stats for those questions"
         ),
         handler="app.services.analyst_tool_periods:run",
         supports_periods=True,
@@ -166,9 +176,16 @@ def tools_hint() -> str:
     lead = next(spec for spec in TOOLS if spec.prompt_lead)
     flow = TOOLS_BY_NAME.get("get_game_flow")
     flow_hint = f"Game-flow questions: call {flow.name} alone first. " if flow is not None else ""
+    splits = TOOLS_BY_NAME.get("get_team_splits")
+    split_hint = (
+        f"Split or side-by-side questions: call {splits.name} alone first. "
+        if splits is not None
+        else ""
+    )
     listed = "; ".join(f"{spec.name} {spec.description}" for spec in TOOLS if not spec.prompt_lead)
     return (
         flow_hint
+        + split_hint
         + f"For interesting stats or another player, call {lead.name} {lead.description}. "
         "Empty claims means call a tool before stating stats. "
         f"{listed}. Answer once evidence is sufficient. "
