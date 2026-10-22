@@ -37,7 +37,7 @@ Commands (local DB only; never the repo `.env` URL):
 
 | sweep | cases | wrong player | wrong ambiguity | silent ambiguity | wrong date |
 |---|---|---|---|---|---|
-| players | 5394 | 490 | 162 | 122 | - |
+| players | 5395 | 487 | 167 | 122 | - |
 | dates | 27 | - | - | - | 18 |
 
 Representative baseline rows:
@@ -78,16 +78,31 @@ already in the tree.
    population; `last N games` keeps slicing from the end; both work with a month or an
    opponent scope.
 
-## After (pre-compound-name correction)
+## After (final code)
 
-On the 11edf42 integration merge, before the final compound-name token guard:
+After the compound-surname token guard, the same sweeps produced:
 
 | sweep | cases | wrong player | wrong ambiguity | silent ambiguity | wrong date |
 |---|---|---|---|---|---|
-| players | 5394 | 1 | 0 | 0 | - |
+| players | 5395 | 0 | 0 | 0 | - |
 | dates | 27 | - | - | - | 0 |
 
-The remaining player row is `typo_substitute Robinson-Earl`: input `robinson earz`
-resolved to Mitchell Robinson because its exact `Robinson` surname token preempted
-the closer compound-surname typo. This failing row is preserved in
-`players-after.json` before that correction.
+Player sweep residuals: 257 typo variants correctly ask because multiple plausible
+players are within the safe margin; 923 typo cases remain unresolved rather than
+silently selecting a different player. Two typo variants exactly collide with
+other release aliases and are excluded from the typo score. The compound-name
+row `robinson earz` now resolves to player 241, Robinson-Earl, instead of player
+147, Mitchell Robinson.
+
+The reported questions resolve to Mikal Bridges (player 131) and the exact
+`2026-03-01..2026-03-15` window (9 games). First/opening-N and last-N windows,
+including opponent- and month-filtered variants, all resolve to expected game ids.
+
+Local deterministic acceptance also passed: `w3-declines/reproduce_declines.py`
+reported 73/73; the four correctness repro scripts each reported 0 failures;
+`followup_scope_audit.py` reported 27/27 sessions and 64/64 turns scope-clean.
+`followup_scope_repros.py` reported 0/12 reproductions (its exit status is nonzero
+when the previously recorded defects no longer reproduce).
+
+The backend gate passed: 439 pytest tests, Ruff check, formatting check on 250 files,
+and pyright with 0 errors, warnings, or information diagnostics.
