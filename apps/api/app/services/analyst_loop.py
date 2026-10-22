@@ -12,7 +12,7 @@ from app.core.config import get_settings
 from app.services.analyst_budget import BudgetReservation
 from app.services.analyst_delivery import fallback, fallback_claims, render, render_fallback
 from app.services.analyst_payload import build_payload
-from app.services.analyst_prefetch import prefetch_calls
+from app.services.analyst_prefetch import covers_planned_shape, prefetch_calls
 from app.services.analyst_provider import (
     Schema,
     encoded,
@@ -222,13 +222,18 @@ class AnalystLoop:
         """
         if not self.settings.analyst_prefetch_enabled:
             return
-        # Prefetch exists to replace the planning call on a turn that starts without evidence.
-        # When results or committed claims are already present the writer can answer or choose
-        # its own tool; a duplicate lookup would only add overlapping claims to the payload.
-        if self.results or self.tools.claims:
+        # Prefetch exists to replace the planning call on a turn that starts without the
+        # evidence the question needs. A prefetched lookup would only duplicate claims
+        # already committed for this exact shape and population.
+        if self.results:
             return
         calls = prefetch_calls(self.tools)
         if not calls:
+            return
+        # Committed claims are prior-turn facts. They replace the planning call only when
+        # they already answer this turn's aggregation and population; "And per game?"
+        # after a committed total must fetch the average instead of reusing the total.
+        if covers_planned_shape(self.tools, calls):
             return
         self.preplanned = [call.name for call in calls]
         for call in calls:

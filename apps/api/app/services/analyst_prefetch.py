@@ -122,6 +122,52 @@ def split_requested(question: str, scope: ResolvedQuery | None) -> bool:
     )
 
 
+def covers_planned_shape(tools: AnalystTools, calls: list[ToolCall]) -> bool:
+    """True when committed claims already carry the planned lookup's shape and population.
+
+    A carried claim stands in for the plan only when it answers the same aggregation over
+    the same games. "And per game?" after a committed December total has the right
+    population and the wrong aggregation; "And overall?" after that total has the right
+    aggregation over a subset. Both must run the lookup rather than let a stale claim
+    answer the turn.
+    """
+    scope = tools.scope
+    if scope is None or not tools.claims:
+        return False
+    expected = {game.id for game in scope.window(tools.selected_games(scope))}
+    for call in calls:
+        aggregation = call.aggregation or "average"
+        if call.name == "get_team_stats":
+            wanted = (
+                {"points_per_game", "margin_per_game"}
+                if aggregation == "average"
+                else {"points", "margin"}
+            )
+            population = expected
+            subjects = {"team:NYK"}
+        elif call.name == "get_player_stats":
+            metric = call.metric or scope.metric or "points"
+            wanted = {f"{metric}:{aggregation}"}
+            subjects = {f"player:{player_id}" for player_id in scope.player_ids}
+            population = {
+                stat.game_id
+                for stat, player in tools.rows
+                if f"player:{player.id}" in subjects
+                and stat.minutes > 0
+                and stat.game_id in expected
+            }
+        else:
+            return False
+        if not any(
+            claim.metric_id in wanted
+            and claim.subject_id in subjects
+            and set(claim.game_ids or []) == population
+            for claim in tools.claims.values()
+        ):
+            return False
+    return True
+
+
 def prefetch_calls(tools: AnalystTools) -> list[ToolCall]:
     """Tools the backend can choose without a model call when the question is clear.
 
