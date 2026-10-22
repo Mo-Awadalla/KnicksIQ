@@ -52,8 +52,11 @@ async def ready(db: Annotated[AsyncSession, Depends(get_db)]):
             failures.append("ip_hash_secret")
         if settings.public_web_origin not in settings.cors_origins:
             failures.append("cors_origin")
-        if settings.ai_provider == "openrouter" and not settings.openrouter_allowed_models:
-            failures.append("openrouter_model_allowlist")
+        if (
+            settings.ai_provider not in {"mock", "none", "disabled"}
+            and not settings.openrouter_allowed_models
+        ):
+            failures.append("model_allowlist")
 
     optional = {
         "qdrant": (
@@ -62,9 +65,9 @@ async def ready(db: Annotated[AsyncSession, Depends(get_db)]):
             else await asyncio.to_thread(qdrant_health_status)
         ),
         "redis": "configured" if settings.redis_url else "disabled",
-        "openrouter": (
+        "model_provider": (
             "disabled"
-            if settings.ai_provider.lower() != "openrouter"
+            if settings.ai_provider.lower() in {"mock", "none", "disabled"}
             else "configured"
             if settings.openrouter_api_key or settings.ai_api_key
             else "degraded"

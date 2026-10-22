@@ -1620,6 +1620,14 @@ class AnalystLoop:
         if comparison and not (team_groups or player_comparison or opponent_filter):
             return None
         score_average = bool(re.search(r"\baverage scores?\b|\bscores? per game\b", question, re.I))
+        if (
+            scope.player_ids
+            and not comparison
+            and scope.requested_metrics
+            and set(scope.requested_metrics) <= set(PLAYER_METRICS)
+            and (len(scope.requested_metrics) > 1 or len(scope.requested_aggregations) > 1)
+        ):
+            return "get_player_stats"
         if scope.player_ids:
             opponent_profile = bool(
                 scope.metric is None
@@ -1808,7 +1816,24 @@ class AnalystLoop:
         adapter = get_llm_adapter()
         # Action schemas include final answers, which need the answer cap. Tool-only followups
         # are additionally checked below against the 600-token conservative bound.
-        adapter.max_tokens = 600 if schema is Action and not self.tools.claims else 1200
+        if review:
+            adapter.max_tokens = self.settings.analyst_review_max_tokens
+            review_model = self.settings.analyst_review_model
+            if review_model:
+                if (
+                    self.settings.openrouter_allowed_models
+                    and review_model not in self.settings.openrouter_allowed_models
+                ):
+                    raise ValueError("Review model is not in the allowed model list")
+                if not adapter.model:
+                    raise ValueError("This adapter cannot select the configured review model")
+                adapter.model = review_model
+        else:
+            adapter.max_tokens = (
+                600
+                if schema is Action and not self.tools.claims
+                else self.settings.analyst_answer_max_tokens
+            )
         if hasattr(adapter, "response_schema"):
             adapter.response_schema = (
                 scoped_response_schema(schema, payload)
@@ -1850,12 +1875,19 @@ class AnalystLoop:
                 raise ValueError("Tool action exceeds output cap")
             return value
         finally:
+            metadata = getattr(adapter, "last_metadata", {})
+            usage = metadata.get("usage")
+            cost = usage.get("cost") if isinstance(usage, dict) else None
+            if valid_reported_cost(cost):
+                self.costs[-1] = cost
             self.trace.append(
                 {
                     "stage": "review" if review else "revise" if repair else "orchestrate",
                     "tool": "llm_review" if review else "llm_orchestrate",
                     "latency_ms": round((time.monotonic() - started) * 1000),
-                    "model": self.settings.ai_chat_model,
+                    "model": getattr(adapter, "model", self.settings.ai_chat_model),
+                    "served_model": getattr(adapter, "last_metadata", {}).get("model"),
+                    "protocol": getattr(adapter, "last_metadata", {}).get("protocol"),
                     "provider": getattr(adapter, "last_metadata", {}).get("provider"),
                     "contract_version": CONTRACT_VERSION,
                     "prompt_version": PROMPT_VERSION,
@@ -2279,7 +2311,8 @@ class AnalystLoop:
                             )
                             else scope.metric or "points"
                         )
-                        relevant = relevant and claim.metric_id.split(":")[0] == expected_metric
+                        allowed_metrics = set(scope.requested_metrics) or {expected_metric}
+                        relevant = relevant and claim.metric_id.split(":")[0] in allowed_metrics
                 if relevant:
                     claims.append(claim)
         if threshold_request:

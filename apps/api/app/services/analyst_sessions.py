@@ -31,14 +31,20 @@ end
 return {'execute', redis.call('HGET', KEYS[1], 'state') or '{}'}
 """
 _COMMIT = """
-if redis.call('GET', KEYS[2]) ~= ARGV[1] then return 0 end
+local old = redis.call('HGET', KEYS[1], 'turn:' .. ARGV[4])
+if old then
+  local t = cjson.decode(old)
+  if t.digest ~= ARGV[7] then return {'rejected', ''} end
+  return {'replay', t.response}
+end
+if redis.call('GET', KEYS[2]) ~= ARGV[1] then return {'rejected', ''} end
 local revision = tonumber(redis.call('HGET', KEYS[1], 'revision') or '0')
-if revision ~= tonumber(ARGV[2]) then return 0 end
+if revision ~= tonumber(ARGV[2]) then return {'rejected', ''} end
 redis.call('HSET', KEYS[1], 'revision', revision + 1, 'state', ARGV[3],
            'turn:' .. ARGV[4], ARGV[5])
 redis.call('EXPIRE', KEYS[1], ARGV[6])
 redis.call('DEL', KEYS[2])
-return 1
+return {'committed', ''}
 """
 _ABORT = """
 if redis.call('GET', KEYS[1]) == ARGV[1] then return redis.call('DEL', KEYS[1]) end
@@ -118,20 +124,23 @@ class SessionTurn:
             return False
         try:
             record = json.dumps({"digest": self.digest, "response": json.dumps(response)})
-            return bool(
-                await redis.eval(
-                    _COMMIT,
-                    2,
-                    self.key,
-                    self.key + ":lease",
-                    self.owner,
-                    self.revision,
-                    json.dumps(state),
-                    self.turn_id,
-                    record,
-                    TTL,
-                )
+            status, value = await redis.eval(
+                _COMMIT,
+                2,
+                self.key,
+                self.key + ":lease",
+                self.owner,
+                self.revision,
+                json.dumps(state),
+                self.turn_id,
+                record,
+                TTL,
+                self.digest,
             )
+            if status.decode() == "replay":
+                self.replay = json.loads(value.decode())
+                return True
+            return status.decode() == "committed"
         except Exception:
             return False
         finally:
