@@ -67,7 +67,7 @@ async def test_redis_failure_gives_explicit_stateless_facts(client, monkeypatch)
     async def unavailable():
         return None
 
-    monkeypatch.setattr(analyst_sessions, "_redis", unavailable)
+    monkeypatch.setattr(analyst_sessions, "_session_redis", unavailable)
     async with AsyncSessionLocal() as db:
         await _seed_release_stats(db)
     response = (

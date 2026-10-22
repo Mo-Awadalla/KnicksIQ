@@ -12,7 +12,7 @@ from app.core.config import get_settings
 from app.services.analyst_budget import BudgetReservation
 from app.services.analyst_delivery import fallback, fallback_claims, render, render_fallback
 from app.services.analyst_payload import build_payload
-from app.services.analyst_prefetch import prefetch_calls
+from app.services.analyst_prefetch import covers_planned_shape, prefetch_calls
 from app.services.analyst_provider import (
     Schema,
     encoded,
@@ -46,6 +46,19 @@ REFUSAL_ACTIONS = frozenset({"decline", "explain_coverage"})
 FACTUAL_REVIEW_TYPES = frozenset({"factual", "interpretation"})
 
 
+def fallback_warning(failure: Exception) -> str:
+    """The user-facing reason a validated answer was not delivered.
+
+    The fallback text is still a verified archive answer; the warning only says what the
+    turn could not do. It never attributes a malformed model response to the budget.
+    """
+    if isinstance(failure, ValidationError):
+        return "Proposed wording did not pass evidence review."
+    if isinstance(failure, TimeoutError):
+        return "The answer could not be verified within this turn's time limit."
+    return "The answer could not be verified on this turn."
+
+
 class AnalystLoop:
     def __init__(
         self, tools: AnalystTools, context: list[dict[str, str]], *, started: float | None = None
@@ -70,6 +83,9 @@ class AnalystLoop:
         self.recovery_ran = False
         self.request_id = ""
         self.preplanned: list[str] = []
+        # The writer chose decline/explain_coverage this turn; a fallback delivery must
+        # still not turn that refusal into the next turn's accepted topic.
+        self.model_refused = False
 
     def payload(
         self,
@@ -140,7 +156,9 @@ class AnalystLoop:
                         return await self.investigate()
             except Exception as exc:
                 failure = exc
-            result = await self.fallback("Model or budget unavailable.")
+            result = await self.fallback(
+                "Model or budget unavailable." if failure is None else fallback_warning(failure)
+            )
             if failure is not None:
                 logger.warning(
                     "analyst_execution_failed request_id=%s error_type=%s stage=%s "
@@ -222,13 +240,18 @@ class AnalystLoop:
         """
         if not self.settings.analyst_prefetch_enabled:
             return
-        # Prefetch exists to replace the planning call on a turn that starts without evidence.
-        # When results or committed claims are already present the writer can answer or choose
-        # its own tool; a duplicate lookup would only add overlapping claims to the payload.
-        if self.results or self.tools.claims:
+        # Prefetch exists to replace the planning call on a turn that starts without the
+        # evidence the question needs. A prefetched lookup would only duplicate claims
+        # already committed for this exact shape and population.
+        if self.results:
             return
         calls = prefetch_calls(self.tools)
         if not calls:
+            return
+        # Committed claims are prior-turn facts. They replace the planning call only when
+        # they already answer this turn's aggregation and population; "And per game?"
+        # after a committed total must fetch the average instead of reusing the total.
+        if covers_planned_shape(self.tools, calls):
             return
         self.preplanned = [call.name for call in calls]
         for call in calls:
@@ -268,6 +291,7 @@ class AnalystLoop:
                 raise ValueError("Malformed answer action")
             self.last_answer = answer
             refused = action.action in REFUSAL_ACTIONS
+            self.model_refused = refused
             supported, reason = await self.validate(answer)
             if supported:
                 return self.render(answer, llm=True, refused=refused)

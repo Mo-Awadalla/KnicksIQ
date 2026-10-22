@@ -54,8 +54,8 @@ async def local_redis(monkeypatch, tmp_path):
                 await asyncio.sleep(0.01)
             except Exception:
                 await asyncio.sleep(0.01)
-        for module in (analyst_budget, analyst_sessions):
-            monkeypatch.setattr(module, "_redis", connection)
+        monkeypatch.setattr(analyst_budget, "_redis", connection)
+        monkeypatch.setattr(analyst_sessions, "_session_redis", connection)
         yield redis
     finally:
         await redis.aclose()
