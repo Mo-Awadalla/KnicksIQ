@@ -1,0 +1,51 @@
+{
+  "policy": "new",
+  "cases": {
+    "backed": {
+      "status": 200,
+      "llm_validated": true,
+      "review_calls": [
+        {
+          "provider": "scripted",
+          "finish_reason": "stop",
+          "review_spans": 1,
+          "review_empty_id_spans": 1,
+          "review_attachable_spans": 1,
+          "review_accepted": true
+        }
+      ],
+      "answer": "Knicks regular season wins: 53 over 82 archived games.",
+      "warnings": [],
+      "citations": 1
+    },
+    "unbacked": {
+      "status": 200,
+      "llm_validated": false,
+      "review_calls": [
+        {
+          "provider": "scripted",
+          "finish_reason": "stop",
+          "review_spans": 2,
+          "review_empty_id_spans": 2,
+          "review_attachable_spans": 1,
+          "review_accepted": false
+        },
+        {
+          "provider": "scripted",
+          "finish_reason": "stop",
+          "review_spans": 2,
+          "review_empty_id_spans": 2,
+          "review_attachable_spans": 1,
+          "review_accepted": false
+        }
+      ],
+      "answer": "Knicks regular season points: 9549 over 82 archived games.",
+      "warnings": [
+        "Proposed wording did not pass evidence review."
+      ],
+      "citations": 1
+    }
+  },
+  "backed_delivered": true,
+  "unbacked_fell_back": true
+}

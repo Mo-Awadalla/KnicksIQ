@@ -1,0 +1,170 @@
+{
+  "summary": {
+    "records": [
+      "docs/release-evidence/llm-primary-20261021/revids/base-live-valid.jsonl",
+      "docs/release-evidence/llm-primary-20261021/revids/example-review-supported.jsonl",
+      "docs/release-evidence/llm-primary-20261021/reviewer/head-units.jsonl",
+      "docs/release-evidence/llm-primary-20261021/reviewer/head-production-24.jsonl",
+      "docs/release-evidence/llm-primary-20261021/reviewer/base-production-8.jsonl",
+      "docs/release-evidence/llm-primary-20261021/reviewer/head-fix-4.jsonl",
+      "docs/release-evidence/llm-primary-20261021/reviewer/head-fix-2b.jsonl"
+    ],
+    "review_calls": 57,
+    "calls_with_empty_ids": 0,
+    "call_rate": 0.0,
+    "factual_spans": 68,
+    "empty_id_spans": 0,
+    "span_rate": 0.0,
+    "by_provider": [
+      {
+        "provider": "Together",
+        "calls": 57,
+        "calls_with_empty_ids": 0,
+        "call_rate": 0.0,
+        "factual_spans": 68,
+        "empty_id_spans": 0
+      }
+    ],
+    "by_finish_reason": [
+      {
+        "finish_reason": "None",
+        "calls": 44,
+        "calls_with_empty_ids": 0,
+        "call_rate": 0.0,
+        "factual_spans": 50,
+        "empty_id_spans": 0
+      },
+      {
+        "finish_reason": "stop",
+        "calls": 13,
+        "calls_with_empty_ids": 0,
+        "call_rate": 0.0,
+        "factual_spans": 18,
+        "empty_id_spans": 0
+      }
+    ],
+    "by_payload_bytes": [
+      {
+        "payload_bytes_bucket": "<=11000",
+        "calls": 10,
+        "calls_with_empty_ids": 0,
+        "call_rate": 0.0,
+        "factual_spans": 15,
+        "empty_id_spans": 0
+      },
+      {
+        "payload_bytes_bucket": "<=5000",
+        "calls": 22,
+        "calls_with_empty_ids": 0,
+        "call_rate": 0.0,
+        "factual_spans": 24,
+        "empty_id_spans": 0
+      },
+      {
+        "payload_bytes_bucket": "<=8000",
+        "calls": 25,
+        "calls_with_empty_ids": 0,
+        "call_rate": 0.0,
+        "factual_spans": 29,
+        "empty_id_spans": 0
+      }
+    ],
+    "by_claims": [
+      {
+        "claims_bucket": "<=1",
+        "calls": 27,
+        "calls_with_empty_ids": 0,
+        "call_rate": 0.0,
+        "factual_spans": 29,
+        "empty_id_spans": 0
+      },
+      {
+        "claims_bucket": "<=2",
+        "calls": 16,
+        "calls_with_empty_ids": 0,
+        "call_rate": 0.0,
+        "factual_spans": 20,
+        "empty_id_spans": 0
+      },
+      {
+        "claims_bucket": "<=3",
+        "calls": 7,
+        "calls_with_empty_ids": 0,
+        "call_rate": 0.0,
+        "factual_spans": 7,
+        "empty_id_spans": 0
+      },
+      {
+        "claims_bucket": ">3",
+        "calls": 7,
+        "calls_with_empty_ids": 0,
+        "call_rate": 0.0,
+        "factual_spans": 12,
+        "empty_id_spans": 0
+      }
+    ],
+    "by_spans": [
+      {
+        "spans_bucket": "<=1",
+        "calls": 48,
+        "calls_with_empty_ids": 0,
+        "call_rate": 0.0,
+        "factual_spans": 48,
+        "empty_id_spans": 0
+      },
+      {
+        "spans_bucket": "<=2",
+        "calls": 7,
+        "calls_with_empty_ids": 0,
+        "call_rate": 0.0,
+        "factual_spans": 14,
+        "empty_id_spans": 0
+      },
+      {
+        "spans_bucket": "<=3",
+        "calls": 2,
+        "calls_with_empty_ids": 0,
+        "call_rate": 0.0,
+        "factual_spans": 6,
+        "empty_id_spans": 0
+      }
+    ],
+    "by_answer_chars": [
+      {
+        "answer_chars_bucket": "<=200",
+        "calls": 44,
+        "calls_with_empty_ids": 0,
+        "call_rate": 0.0,
+        "factual_spans": 46,
+        "empty_id_spans": 0
+      },
+      {
+        "answer_chars_bucket": "<=400",
+        "calls": 12,
+        "calls_with_empty_ids": 0,
+        "call_rate": 0.0,
+        "factual_spans": 20,
+        "empty_id_spans": 0
+      },
+      {
+        "answer_chars_bucket": "<=800",
+        "calls": 1,
+        "calls_with_empty_ids": 0,
+        "call_rate": 0.0,
+        "factual_spans": 2,
+        "empty_id_spans": 0
+      }
+    ],
+    "by_mode": [
+      {
+        "mode": "live",
+        "calls": 57,
+        "calls_with_empty_ids": 0,
+        "call_rate": 0.0,
+        "factual_spans": 68,
+        "empty_id_spans": 0
+      }
+    ],
+    "empty_id_calls": []
+  }
+}
