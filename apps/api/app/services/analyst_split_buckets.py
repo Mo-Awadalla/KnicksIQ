@@ -14,7 +14,8 @@ from typing import TYPE_CHECKING, Any
 
 from app.models.box_score import PeriodScore
 from app.models.team import Team
-from app.services.query_resolution import _MONTHS, ResolvedQuery
+from app.services.query_resolution import ResolvedQuery
+from app.services.query_text import MONTHS
 from sqlalchemy import select
 
 if TYPE_CHECKING:
@@ -244,7 +245,7 @@ def _month_buckets(
             continue
         phase_games, phase_used = _phase_games(month_games, phase, defaulted, notes)
         year = month_games[0].game_date.year
-        label = f"{next(name for name, value in _MONTHS.items() if value == month).title()} {year}"
+        label = f"{next(name for name, value in MONTHS.items() if value == month).title()} {year}"
         bucket = _bucket_games(
             phase_games,
             f"month:{year}-{month:02d}",

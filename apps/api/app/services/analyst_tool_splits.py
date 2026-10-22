@@ -44,7 +44,9 @@ from app.services.analyst_split_buckets import (
     _window_buckets,
 )
 from app.services.evidence_contracts import ToolResult
-from app.services.query_resolution import _MONTHS, ResolvedQuery, team_ids_in_text
+from app.services.query_resolution import ResolvedQuery
+from app.services.query_text import MONTHS
+from app.services.team_aliases import team_ids_in_text
 
 if TYPE_CHECKING:
     from app.models.game import Game
@@ -85,7 +87,7 @@ def _norm(text: str) -> str:
 
 def _months_in(q: str) -> tuple[int, ...]:
     found: list[int] = []
-    for name, number in _MONTHS.items():
+    for name, number in MONTHS.items():
         if name == "may":
             # "may" is far more often a modal verb than a month in this archive.
             if not re.search(r"\b(?:in|during|from|through|since|before|after|of)\s+may\b", q):

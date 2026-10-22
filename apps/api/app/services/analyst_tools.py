@@ -13,6 +13,7 @@ from app.models.box_score import PlayerGameStat
 from app.models.dataset_release import DatasetRelease
 from app.models.game import Game
 from app.models.player import Player
+from app.models.team import Team
 from app.services.analyst_calculations import METRICS
 from app.services.analyst_dispatch import execute_call
 from app.services.analyst_tool_registry import capability_data_types
@@ -22,8 +23,9 @@ from app.services.archive_retrieval import (
     search_archive_vectors,
 )
 from app.services.evidence_contracts import Candidate, Evidence, ToolCall, ToolResult, VerifiedClaim
-from app.services.query_policy import SeasonType, names_phase
-from app.services.query_resolution import ResolvedQuery, is_record_request, resolve_query
+from app.services.query_game_scope import InheritedScope
+from app.services.query_resolution import ResolvedQuery, resolve_query
+from app.services.query_text import aggregation_of
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -46,6 +48,8 @@ class AnalystTools:
         self.games: list[Game] = []
         self.rows: list[tuple[PlayerGameStat, Player]] = []
         self.scope: ResolvedQuery | None = None
+        self.aggregation: str | None = None
+        self.team_names: dict[str, str] = {}
         self.different = bool(re.search(r"\bdifferent player\b", question, re.I))
         self.topic = question
         self.followup = bool(
@@ -86,6 +90,10 @@ class AnalystTools:
             ).all()
         )
         self.rows = [(stat, player) for stat, player in loaded_rows]
+        self.team_names = {
+            team_id: name
+            for team_id, name in (await self.db.execute(select(Team.id, Team.name))).all()
+        }
         self.timings.append(
             {
                 "stage": "prepare",
@@ -95,22 +103,54 @@ class AnalystTools:
                 "box_score_rows": len(self.rows),
             }
         )
-        prior = self.state.get("scope", {})
+        entry_topic = str(self.state.get("intent") or "")
+        entry_scope = self.state.get("scope") or {}
+        # A declined turn keeps the last accepted topic and scope for the next follow-up.
+        declined = bool(self.state.get("declined", False))
+        if entry_topic and not declined:
+            self.state["last_topic"] = entry_topic
+            self.state["last_scope"] = entry_scope
+        prior_topic = (
+            entry_topic if entry_topic and not declined else str(self.state.get("last_topic") or "")
+        )
+        prior_scope = (
+            entry_scope if entry_scope and not declined else (self.state.get("last_scope") or {})
+        )
         followup = self.followup
-        # A follow-up keeps the phase under discussion. Resolving with it as the default,
-        # rather than patching season_type afterwards, keeps game_ids in the same phase.
-        default_season_type: SeasonType | None = "regular"
-        if followup and prior.get("all_phases"):
-            default_season_type = None
-        elif followup and prior.get("season_type"):
-            default_season_type = prior["season_type"]
+        inherited = (
+            InheritedScope(
+                topic=prior_topic,
+                player_ids=prior_scope.get("player_ids") or [],
+                metric=prior_scope.get("metric"),
+                aggregation=aggregation_of(prior_topic),
+                season_type=prior_scope.get("season_type"),
+                all_phases=bool(prior_scope.get("all_phases")),
+                home_away=prior_scope.get("home_away"),
+                opponent_id=prior_scope.get("opponent_id"),
+                game_result=prior_scope.get("game_result"),
+                date_start=prior_scope.get("date_start"),
+                date_end=prior_scope.get("date_end"),
+                relative_game_count=prior_scope.get("relative_game_count"),
+                game_ids=prior_scope.get("game_ids") or [],
+                periods=prior_scope.get("periods") or [],
+            )
+            if followup and (prior_topic or prior_scope)
+            else None
+        )
+        self.aggregation = aggregation_of(self.question) or (
+            inherited.aggregation if inherited else None
+        )
         resolve_started = time.monotonic()
+        # Resolving with the inherited scope as the default, rather than patching keys
+        # afterwards, keeps the phase, window and game ids in one consistent population.
         self.scope = await resolve_query(
             self.db,
             self.question,
             intent="analyst",
             data_version=self.release.version,
-            default_season_type=default_season_type,
+            default_season_type=(inherited.season_type if inherited is not None else "regular"),
+            default_all_phases=inherited.all_phases if inherited is not None else False,
+            inherit=inherited,
         )
         self.timings.append(
             {
@@ -136,33 +176,13 @@ class AnalystTools:
             and re.search(r"\b(between|from|through|until)\b", self.question, re.I)
         ):
             self.scope = self.scope.model_copy(update={"game_ids": []})
-        if followup:
-            updates = {}
-            named_phase = names_phase(self.question)
-            for key in ("player_ids", "season_type", "opponent_id", "home_away", "game_result"):
-                if key == "game_result" and is_record_request(self.question):
-                    continue
-                if key == "season_type":
-                    # Matchup questions span every phase, and a follow-up keeps the phase
-                    # under discussion unless it names one. "Overall" names all phases, so
-                    # its None must not fall through to the inherit-if-empty rule below.
-                    if named_phase or self.scope.opponent_id:
-                        continue
-                    if prior.get("all_phases"):
-                        updates.update(season_type=None, all_phases=True)
-                        continue
-                    if prior.get("season_type"):
-                        updates[key] = prior["season_type"]
-                        continue
-                if not getattr(self.scope, key) and prior.get(key):
-                    updates[key] = prior[key]
-            if self.different:
-                updates["player_ids"] = []
-            self.scope = self.scope.model_copy(update=updates)
+        if self.different:
+            self.scope = self.scope.model_copy(update={"player_ids": []})
         unknown_subject = re.search(r"\babout\s+(.+?)[?.!]*$", self.question, re.I)
         if (
             unknown_subject
             and not self.scope.player_ids
+            and not self.scope.team_ids
             and not self.different
             and not re.search(
                 r"\b(knicks|nyk|season|archive|team|playoff|game)\b", unknown_subject[1], re.I
@@ -183,12 +203,18 @@ class AnalystTools:
             )
         self.state["scope"] = self.scope.model_dump(mode="json")
         self.state["scope_origin"] = "user" if not followup else "verified_followup"
-        # "And overall?" names a new scope for the previous topic, not a new topic.
-        elliptical = followup and not self.scope.player_ids and not self.scope.metric
+        # An elliptical follow-up moves phase, window, site, opponent or game reference
+        # without naming a subject, metric or new answer kind: it continues the topic.
+        elliptical = bool(
+            inherited is not None and inherited.continues_topic(self.question, self.scope)
+        )
         self.topic = (
-            self.state.get("intent") if elliptical and self.state.get("intent") else None
+            inherited.topic if elliptical and inherited is not None and inherited.topic else None
         ) or self.question
         self.state["intent"] = self.topic[:1200]
+        if not entry_topic:
+            self.state["last_topic"] = self.topic
+            self.state["last_scope"] = self.state["scope"]
         # Immutable release references are revalidated for identity and integrity at admission.
         if self.state.get("release") == self.release.version:
             permitted_games = {g.id for g in self.selected_games(self.scope)}
@@ -240,6 +266,10 @@ class AnalystTools:
             ],
             "scope": self.scope.model_dump(mode="json") if self.scope else {},
         }
+
+    def team_label(self, team_id: str) -> str:
+        """The archive's display name for a team id, so prose never prints SAS."""
+        return self.team_names.get(team_id, team_id)
 
     def selected_games(self, scope: ResolvedQuery) -> list[Game]:
         games = [
