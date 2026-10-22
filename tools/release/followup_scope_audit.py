@@ -77,6 +77,7 @@ def citations_for(claims: list) -> list[dict]:
 def committed_state(tools: AnalystTools, claims: list) -> dict:
     """The state delivery commits: used claims, their evidence and delivered subjects."""
     state = clone(tools.state)
+    state["declined"] = not claims
     references = {ref for claim in claims for ref in claim.supporting_evidence_ids}
     state["claims"] = [claim.model_dump(mode="json") for claim in claims]
     state["evidence"] = [
