@@ -54,13 +54,18 @@ class Phase(NamedTuple):
 
 
 def resolve_phase(
-    question: str, *, season_level: bool, default: SeasonType | None = "regular"
+    question: str,
+    *,
+    season_level: bool,
+    default: SeasonType | None = "regular",
+    default_all_phases: bool = False,
 ) -> Phase:
     """The phase a question is scoped to.
 
     Season-level stats use ``default``: the regular season, or in a follow-up the phase
-    under discussion (``None`` when that was every phase). Matchups and windows span every
-    phase.
+    under discussion. ``default_all_phases`` marks that phase as every phase; without it
+    a ``None`` default is an unspecified phase (a matchup or window spans every phase
+    but did not ask for every phase). Matchups and windows span every phase.
     """
     q = _normalize(question)
     play_in = names_play_in(question)
@@ -77,7 +82,7 @@ def resolve_phase(
     if names_all_phases(question):
         return Phase(named=named, season_type=None, all_phases=True)
     if season_type is None and season_level:
-        return Phase(named=named, season_type=default, all_phases=default is None)
+        return Phase(named=named, season_type=default, all_phases=default_all_phases)
     return Phase(named=named, season_type=season_type, all_phases=False)
 
 

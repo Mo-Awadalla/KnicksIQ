@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import re
-import unicodedata
 from collections import defaultdict
 from datetime import date
 from difflib import SequenceMatcher
@@ -14,7 +13,22 @@ from app.models.dataset_release import DatasetRelease
 from app.models.game import Game
 from app.models.game_event import GameEvent
 from app.models.player import Player
-from app.services.query_policy import SeasonType, is_outcome_subset, resolve_phase
+from app.services.query_game_scope import InheritedScope, referenced_game
+from app.services.query_policy import (
+    Phase,
+    SeasonType,
+    is_outcome_subset,
+    names_phase,
+    resolve_phase,
+)
+from app.services.query_text import (
+    MONTHS,
+    is_explanation,
+    is_record_request,
+    metric_in_text,
+    normalize,
+    periods_in_text,
+)
 from app.services.team_aliases import team_ids_in_text
 from pydantic import BaseModel, ConfigDict, Field
 from sqlalchemy import func, select
@@ -26,38 +40,6 @@ _CURATED_PLAYER_ALIASES = {
     "kat": "Karl-Anthony Towns",
     "karl towns": "Karl-Anthony Towns",
     "og": "OG Anunoby",
-}
-_MONTHS = {
-    "january": 1,
-    "february": 2,
-    "march": 3,
-    "april": 4,
-    "may": 5,
-    "june": 6,
-    "july": 7,
-    "august": 8,
-    "september": 9,
-    "october": 10,
-    "november": 11,
-    "december": 12,
-}
-_METRICS = {
-    "point": "points",
-    "points": "points",
-    "scoring": "points",
-    "rebound": "rebounds",
-    "rebounds": "rebounds",
-    "assist": "assists",
-    "assists": "assists",
-    "steal": "steals",
-    "steals": "steals",
-    "block": "blocks",
-    "blocks": "blocks",
-    "turnover": "turnovers",
-    "turnovers": "turnovers",
-    "plus minus": "plus_minus",
-    "three": "three_pointers_made",
-    "threes": "three_pointers_made",
 }
 _NAME_STOPWORDS = {
     "against",
@@ -134,24 +116,8 @@ class ResolvedQuery(BaseModel):
         }
 
 
-def _normalize(value: str) -> str:
-    ascii_value = unicodedata.normalize("NFKD", value).encode("ascii", "ignore").decode()
-    return re.sub(r"[^a-z0-9]+", " ", ascii_value.lower()).strip()
-
-
-def is_record_request(question: str) -> bool:
-    """A record spans both outcomes; explicit subsets still take precedence."""
-    q = _normalize(question.replace("–", "-").replace("—", "-"))
-    if re.search(r"\b(?:only|in)\s+(?:wins?|loss(?:es)?)\b", q):
-        return False
-    return bool(
-        re.search(r"\brecord\b", q)
-        or (re.search(r"\bwins?\b", q) and re.search(r"\bloss(?:es)?\b", q))
-    )
-
-
 def _player_aliases(player: Player) -> set[str]:
-    normalized = _normalize(player.full_name)
+    normalized = normalize(player.full_name)
     parts = normalized.split()
     aliases = {normalized, parts[-1]}
     if len(parts) > 1:
@@ -165,7 +131,7 @@ def _player_aliases(player: Player) -> set[str]:
 def _name_candidates(question: str) -> list[str]:
     candidates: list[str] = []
     for raw in re.findall(r"\b[A-Za-z][A-Za-z'-]{2,}(?:\s+[A-Za-z][A-Za-z'-]{2,})?\b", question):
-        normalized = _normalize(raw)
+        normalized = normalize(raw)
         words = normalized.split()
         if words and not all(word in _NAME_STOPWORDS for word in words):
             candidates.append(normalized)
@@ -181,7 +147,7 @@ def _resolve_player_mentions(
     typo_threshold: float,
     allow_fuzzy: bool = True,
 ) -> tuple[list[int], list[str]]:
-    normalized_question = f" {_normalize(question)} "
+    normalized_question = f" {normalize(question)} "
     aliases: dict[str, list[Player]] = defaultdict(list)
     for player in players:
         for alias in _player_aliases(player):
@@ -192,8 +158,8 @@ def _resolve_player_mentions(
     remaining = normalized_question
     # Full names and curated aliases are authoritative and consume their spans
     # before ambiguous surname matching.
-    for player in sorted(players, key=lambda item: -len(_normalize(item.full_name))):
-        full_name = _normalize(player.full_name)
+    for player in sorted(players, key=lambda item: -len(normalize(item.full_name))):
+        full_name = normalize(player.full_name)
         if re.search(rf"\b{re.escape(full_name)}\b", remaining):
             resolved[player.id] = player
             remaining = re.sub(rf"\b{re.escape(full_name)}\b", " ", remaining)
@@ -250,34 +216,6 @@ def _resolve_player_mentions(
     return sorted(resolved), sorted(player.full_name for player in ambiguous.values())
 
 
-def _periods(question: str) -> list[int]:
-    q = _normalize(question)
-    values = {int(value) for value in re.findall(r"\bq([1-9])\b", q)}
-    values.update(int(value) for value in re.findall(r"\b([1-9])(?:st|nd|rd|th) quarter\b", q))
-    for period, ordinal in enumerate(("first", "second", "third", "fourth"), start=1):
-        if re.search(rf"\b{ordinal} quarter\b", q):
-            values.add(period)
-    if "first half" in q:
-        values.update({1, 2})
-    if "second half" in q:
-        values.update({3, 4})
-    if "late fourth" in q or "late 4th" in q:
-        values.add(4)
-    return sorted(values)
-
-
-def _metric(question: str) -> str | None:
-    q = _normalize(question)
-    return next(
-        (
-            metric
-            for phrase, metric in sorted(_METRICS.items(), key=lambda item: -len(item[0]))
-            if re.search(rf"\b{re.escape(phrase)}\b", q)
-        ),
-        None,
-    )
-
-
 async def _active_release(
     db: AsyncSession,
     data_version: str | None,
@@ -304,8 +242,15 @@ async def resolve_query(
     data_version: str | None = None,
     typo_threshold: float = 0.86,
     default_season_type: SeasonType | None = "regular",
+    default_all_phases: bool = False,
+    inherit: InheritedScope | None = None,
 ) -> ResolvedQuery:
-    """Resolve canonical entities and filters without model inference."""
+    """Resolve canonical entities and filters without model inference.
+
+    ``inherit`` supplies the previous accepted turn's scope and topic as the default
+    values for everything this question does not name, before candidate selection, so
+    the resolved game ids and phase stay consistent with each other.
+    """
     release_id, resolved_version = await _active_release(db, data_version)
     game_stmt = select(Game).where((Game.home_team_id == "NYK") | (Game.away_team_id == "NYK"))
     if release_id is not None:
@@ -350,9 +295,12 @@ async def resolve_query(
                 typo_threshold=typo_threshold,
             )
 
-    q = _normalize(question)
+    q = normalize(question)
     team_ids = sorted(team_ids_in_text(question) - {"NYK"})
-    opponent_id = team_ids[0] if len(team_ids) == 1 else None
+    if team_ids:
+        opponent_id = team_ids[0] if len(team_ids) == 1 else None
+    else:
+        opponent_id = inherit.opponent_id if inherit else None
     explicit_dates = [
         date.fromisoformat(value) for value in re.findall(r"\b20\d{2}-\d{2}-\d{2}\b", question)
     ]
@@ -370,7 +318,7 @@ async def resolve_query(
         date_start = latest_date.replace(day=1)
         date_end = latest_date
     else:
-        named_month = next((month for name, month in _MONTHS.items() if name in q), None)
+        named_month = next((month for name, month in MONTHS.items() if name in q), None)
         if named_month and games:
             month_dates = [game.game_date for game in games if game.game_date.month == named_month]
             if month_dates:
@@ -381,18 +329,40 @@ async def resolve_query(
         date_start = games[0].game_date if games else None
         date_end = explicit_dates[0]
 
+    named_phase = names_phase(question)
+    reference = referenced_game(question, inherit, games)
+    named_window = bool(explicit_dates or relative_count or date_start or date_end or reference)
+    if reference:
+        # A deictic game reference names the whole window, not only one filter.
+        date_start = date_end = reference.game_date
+        relative_count = None
+    elif inherit is not None and not named_window and not named_phase:
+        relative_count = inherit.relative_game_count
+        date_start = inherit.date_start
+        date_end = inherit.date_end
+
     season_level = not (opponent_id or explicit_dates or relative_count or date_start or date_end)
-    phase = resolve_phase(question, season_level=season_level, default=default_season_type)
+    if inherit is not None and not named_phase:
+        phase = Phase(named=False, season_type=inherit.season_type, all_phases=inherit.all_phases)
+    else:
+        phase = resolve_phase(
+            question,
+            season_level=season_level,
+            default=default_season_type,
+            default_all_phases=default_all_phases,
+        )
     named_phase, season_type = phase.named, phase.season_type
-    home_away = (
+    named_site = (
         "home"
         if re.search(r"\bhome\b", q)
         else "away"
         if re.search(r"\b(?:road|away)\b", q)
         else None
     )
-    game_result = None
-    if not is_record_request(question) and is_outcome_subset(question):
+    home_away = named_site or (inherit.home_away if inherit else None)
+    if is_record_request(question):
+        game_result = None
+    elif is_outcome_subset(question):
         game_result = (
             "W"
             if re.search(r"\bwins?\b|\bwon\b|\bwinning\b", q)
@@ -400,8 +370,25 @@ async def resolve_query(
             if re.search(r"\bloss(?:es)?\b|\blost\b|\blosing\b", q)
             else None
         )
+    else:
+        game_result = inherit.game_result if inherit else None
 
-    candidates = games
+    if player_ids or ambiguous_players:
+        resolved_player_ids = player_ids
+    elif inherit is not None:
+        resolved_player_ids = inherit.player_ids
+    else:
+        resolved_player_ids = []
+    periods = periods_in_text(question)
+    if not periods and inherit is not None:
+        periods = inherit.periods
+    metric = metric_in_text(question)
+    if is_record_request(question) or is_explanation(question):
+        metric = None
+    elif metric is None and inherit is not None:
+        metric = inherit.metric
+
+    candidates = [reference] if reference else games
     if opponent_id:
         candidates = [
             game for game in candidates if opponent_id in {game.home_team_id, game.away_team_id}
@@ -435,6 +422,8 @@ async def resolve_query(
         or re.search(r"\bgame where\b", q)
         or (
             opponent_id
+            # per/each/a game count a population, not one game.
+            and not re.search(r"\b(?:per|each|a)\s+game\b", q)
             and re.search(r"\b(?:the|that|most recent)?\s*game\b", q)
             and "games" not in q
         )
@@ -488,7 +477,9 @@ async def resolve_query(
         descriptive_reference = True
 
     resolved_game_ids: list[int] = []
-    if relative_count:
+    if reference:
+        resolved_game_ids = [reference.id]
+    elif relative_count:
         resolved_game_ids = [game.id for game in candidates[-relative_count:]]
     elif descriptive_reference:
         if "most recent" in q and candidates:
@@ -509,19 +500,19 @@ async def resolve_query(
 
     return ResolvedQuery(
         intent=intent,
-        player_ids=player_ids,
+        player_ids=resolved_player_ids,
         team_ids=team_ids,
         opponent_id=opponent_id,
         game_ids=resolved_game_ids,
         date_start=date_start,
         date_end=date_end,
         relative_game_count=relative_count,
-        periods=_periods(question),
+        periods=periods,
         season_type=season_type,
         all_phases=phase.all_phases,
         home_away=home_away,
         game_result=game_result,
-        metric=_metric(question),
+        metric=metric,
         requires_clarification=clarification_reason is not None,
         clarification_reason=clarification_reason,
         clarification_options=clarification_options,
