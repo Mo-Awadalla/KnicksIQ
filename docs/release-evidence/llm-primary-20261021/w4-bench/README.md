@@ -16,7 +16,9 @@ writer `deepseek-v4.1-flash` over Chat Completions, reviewer `gpt-6-luna` over t
 API, `AI_REASONING_EFFORT=none`, `ANALYSIS_ANSWER_MODE=llm_primary`,
 `ANALYST_EVIDENCE_LOOP_ENABLED=true`, `RAG_QDRANT_ENABLED=false`, `ANALYST_INPUT_TOKENS` at the
 16,000 default, cutoff $2, Redis db 2 flushed once before the run. Wall time 1,129.89 s.
-All 354 provider calls returned without transport error; no `MissingSessionID` occurred.
+The benchmark made 354 provider calls. Two 7-question smoke runs before it spent 31 more
+(16 and 15), so the measurement spent 385 Go calls. No call returned a transport error and no
+`MissingSessionID` occurred.
 Every writer call was `deepseek-v4.1-flash`/`chat` (255) and every review `gpt-6-luna`/
 `responses` (99), with `served_model` equal to the requested model on all 354.
 
