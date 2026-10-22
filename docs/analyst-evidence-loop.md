@@ -87,11 +87,34 @@ player-versus-opponent questions, comparative metric questions and two-populatio
 Prefetch passes only a question and aggregation; the backend applies the resolved scope.
 Prefetched tools count toward the tool and model call bounds.
 
-Measured on 140 questions (70 questions in two trials) at the 16,000-byte input budget: p50
-3,312 ms, p95 7,640 ms, mean cost $0.001981 per question, 2.74 provider calls per question and
-99/140 validated. The base tree was p50 3,117 ms and p95 4,370 ms at 2.83 calls. The p95 gate of
-four seconds is not met, so promotion needs an owner exception or further work. Full stage tables
-and artifacts are in the [final measurement](release-evidence/llm-primary-20261021/final/README.md).
+Measured on OpenRouter, on 140 questions (70 questions in two trials) at the 16,000-byte input
+budget: p50 3,312 ms, p95 7,640 ms, mean cost $0.001981 per question, 2.74 provider calls per
+question and 99/140 validated. The base tree was p50 3,117 ms and p95 4,370 ms at 2.83 calls. The
+p95 gate of four seconds is not met, so promotion needs an owner exception or further work.
+OpenCode Go latency is not yet measured. Full stage tables and artifacts are in the
+[final measurement](release-evidence/llm-primary-20261021/final/README.md).
+
+## Model host and wire protocol
+
+Production sends model calls to OpenCode Go at
+`https://opencode.ai/inference/go/openai/v1`. `AI_CHAT_MODEL=deepseek-v4.1-flash` writes over Chat
+Completions. `ANALYST_REVIEW_MODEL=gpt-6-luna` reviews over the Responses API, because Go serves
+Luna only there; `AI_MODEL_PROTOCOLS={"gpt-6-luna":"responses"}` maps a model to its protocol and a
+model it does not name uses Chat Completions. `configure_reviewer` applies the review model in
+production and in every replay or measurement tool, so those tools measure the deployed reviewer.
+A review model outside the allowlist fails the review closed, and preflight reports it.
+
+`AI_MODEL_PRICES` lists USD per million input/output tokens. Go reports no per-call cost, so
+without it the ledger would settle the flat $0.01 reservation instead of real usage. DeepSeek is
+priced at Go's peak rate, so the ledger never undercounts. Neither the writer nor the reviewer
+authors a number; the backend computes every claim.
+
+Each turn sends a random session id in `x-opencode-session`, generated per analyst loop as
+`uuid4().hex`; it is never the user's `session_token`. Requests also send `AI_USER_AGENT`
+(`knicksiq/1.0`). The owner accepted the terms risk on 2026-10-22; the wording and the switch back
+to OpenRouter are in
+[the OpenCode Go decision](release-evidence/llm-primary-20261021/opencode-go/README.md) and
+[the runbook](production-runbook.md#model-host).
 
 ## Refusals and the `refused` flag
 
@@ -143,10 +166,11 @@ uncertain in-flight requests, then restore a conservative total through administ
 Redis access. The ledger has no automatic expiry. A new month also requires reconciliation. Shadow
 uses the same ledger.
 
-At $2, measured capacity is about 1,009 questions per month on the 70-question mix and about 750
-at the held-out rate. Mean cost is $0.001981 per question on the 70-question mix and $0.002668
-on the held-out rate. Capacity is highly route dependent: OpenRouter routing is unpinned, and the
-same model spans an 8.8x price range across endpoints. See the
+At $2, measured on OpenRouter, capacity is about 1,009 questions per month on the 70-question mix
+and about 750 at the held-out rate. Mean cost is $0.001981 per question on the 70-question mix and
+$0.002668 on the held-out rate. Capacity was highly route dependent: OpenRouter routing is
+unpinned, and the same model spans an 8.8x price range across endpoints. Go has one upstream and
+reports no per-call cost, so its capacity is untested. See the
 [final measurement](release-evidence/llm-primary-20261021/final/README.md). Category breakdowns and
 the accounting reconciliation are in `release-evidence/llm-primary-20261021/cost/README.md`.
 
@@ -193,7 +217,7 @@ in-memory chat usable and displays a refresh-recovery notice.
 ## Verification and promotion
 
 Run `uv run --package knicksiq-api python -m app.evaluation.analyst_probe` against the configured
-provider. `ANALYST_PROVIDER_FORMAT=json_schema` enables strict schema and OpenRouter
+provider. `ANALYST_PROVIDER_FORMAT=json_schema` enables strict schema and, on OpenRouter,
 `require_parameters`; the explicit default `json_object` still requires local schema validation.
 No model substitution occurs.
 
@@ -209,10 +233,12 @@ The scorer reads structure first, then cited claim values. It records `refused`,
 only for an unanswerable question. Numbers in an answer must appear in a cited claim or receipt.
 See `docs/evaluation.md` and the `scoring` evidence directory.
 
-The production model is `deepseek/deepseek-v4.1-flash`, selected by the owner on 2026-09-22.
-Production uses JSON-object output with local schema checks, `ANALYST_REASONING_EFFORT=none`,
-`AI_REASONING_EFFORT=none`, latency-prioritized OpenRouter routing and required parameter support.
-The independent whole-answer review remains mandatory. The application cutoff is $2.
+Production writes with `deepseek-v4.1-flash` and reviews with `gpt-6-luna` on OpenCode Go, the
+owner's decision on 2026-10-22; the writer was selected on 2026-09-22. Production uses JSON-object
+output with local schema checks, `ANALYST_REASONING_EFFORT=none` and `AI_REASONING_EFFORT=none`. Go
+takes the top-level `reasoning_effort` field; OpenRouter's `provider` routing block and
+`require_parameters` are not sent to it. The independent whole-answer review remains mandatory.
+The application cutoff is $2.
 
 DeepSeek passed the Action, ProposedAnswer and AnswerReview capability probes. The independent SQL
 audit found zero incorrect and zero unsupported figures on the audited responses. The honest

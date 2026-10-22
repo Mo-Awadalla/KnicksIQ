@@ -34,7 +34,7 @@ These are baselines, not release-gate passes.
 | Set | Questions | Honest pass | Notes |
 | --- | ---: | ---: | --- |
 | Committed 70 responses, offline rescore | 70 | 21 | No claim values in the old artifact; scoped index only. |
-| Held-out set, live provider | 60 | 5 | Run before the correctness fixes; 45 review rejections and 8 provider failures. |
+| Held-out set, live OpenRouter provider | 60 | 5 | Run before the correctness fixes; 45 review rejections and 8 provider failures. |
 | Independent SQL audit of audited responses | 36 | 0 incorrect | 28 correct, 4 appropriate declines, 4 missed declines, 0 unsupported. |
 
 The audit recomputes every number from the restored release with independent SQL. It found zero
@@ -56,15 +56,18 @@ Release gates remain:
 - analyst p95 latency below four seconds;
 - measured cost and monthly capacity at the $2 cutoff.
 
-The quality and latency gates are not met by the current evidence. The held-out baseline is 5/60.
-Measured latency at the 16,000-byte input budget is p50 3,312 ms and p95 7,640 ms on 140 questions
-(70 questions in two trials). The independent audit supports the factual correctness of the
-responses it reviewed but does not replace the held-out quality gate. Promotion requires owner
-sign-off on the recorded exception or further work.
+The quality and latency gates are not met by the current evidence. The held-out baseline is 5/60,
+measured on OpenRouter. Latency measured on OpenRouter at the 16,000-byte input budget is p50
+3,312 ms and p95 7,640 ms on 140 questions (70 questions in two trials). OpenCode Go latency is not
+yet measured. The independent audit supports the factual correctness of the responses it reviewed
+but does not replace the held-out quality gate. Promotion requires owner sign-off on the recorded
+exception or further work.
 
-Cost and capacity are measured at $2: mean cost is $0.001981 per question on the 70-question mix,
-which supports about 1,009 questions per month. The held-out rate supports about 750 questions per
-month. Capacity is route dependent. See the [final measurement](release-evidence/llm-primary-20261021/final/README.md)
+Cost and capacity were measured on OpenRouter at $2: mean cost is $0.001981 per question on the
+70-question mix, which supports about 1,009 questions per month. The held-out rate supports about
+750 questions per month. Capacity was route dependent. Go reports no per-call cost, so there the
+ledger prices token usage from `AI_MODEL_PRICES` against the same $2 cutoff. See the
+[final measurement](release-evidence/llm-primary-20261021/final/README.md)
 and the cost evidence in `release-evidence/llm-primary-20261021/cost/README.md`.
 
 ## Offline harness

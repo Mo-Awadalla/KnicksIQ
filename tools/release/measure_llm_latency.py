@@ -279,8 +279,11 @@ async def run(
 
     meta = {
         "generated_at": datetime.now(UTC).isoformat(),
-        "scope": "In-process ASGI app, real OpenRouter provider, restored active release, "
-        "llm_primary evidence loop, sequential single client, no answer cache.",
+        "scope": (
+            f"In-process ASGI app, real {settings.ai_provider} provider, "
+            "restored active release, llm_primary evidence loop, sequential single client, "
+            "no answer cache."
+        ),
         "provider": settings.ai_provider,
         "model": settings.ai_chat_model,
         "answer_mode": settings.analysis_answer_mode,

@@ -12,8 +12,10 @@ are declined rather than invented.
 - Neon Free Postgres: authoritative factual data and active release metadata.
 - Render Free Key Value: ephemeral shared rate limits, response caching, and AI budget state.
 - Qdrant Cloud provides optional hybrid retrieval; Postgres/lexical retrieval remains authoritative when it is unavailable.
-- OpenRouter: composes validated answers from backend-computed claims; deterministic cited facts
-  remain the fallback.
+- OpenCode Go, the owner's subscription, is the model host. `deepseek-v4.1-flash` writes over
+  Chat Completions and `gpt-6-luna` reviews over the Responses API. Both compose answers from
+  backend-computed claims; deterministic cited facts remain the fallback. The owner accepted the
+  terms risk described in [the architecture note](docs/architecture.md#production-system).
 - Sentry: scrubbed exception, trace, alert, and uptime monitoring.
 
 Workers, ingestion, report generation, MCP, admin routes, Swagger, and runtime data mutations are
