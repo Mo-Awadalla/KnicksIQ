@@ -24,6 +24,8 @@ from app.services.query_parsing import (
     _resolve_player_mentions,
     is_game_score_request,
     is_record_request,
+    requested_aggregations,
+    requested_metrics,
 )
 from app.services.team_aliases import team_ids_in_text
 from app.services.team_scope import scores
@@ -64,6 +66,8 @@ class ResolvedQuery(BaseModel):
     home_away: Literal["home", "away"] | None = None
     game_result: Literal["W", "L"] | None = None
     metric: str | None = None
+    requested_metrics: list[str] = Field(default_factory=list)
+    requested_aggregations: list[Literal["average", "total"]] = Field(default_factory=list)
     requires_clarification: bool = False
     clarification_reason: str | None = None
     clarification_options: list[str] = Field(default_factory=list)
@@ -481,6 +485,8 @@ async def resolve_query(
         home_away=home_away,
         game_result=game_result,
         metric=_metric(question),
+        requested_metrics=sorted(requested_metrics(question)),
+        requested_aggregations=sorted(requested_aggregations(question)),
         requires_clarification=clarification_reason is not None,
         clarification_reason=clarification_reason,
         clarification_options=clarification_options,

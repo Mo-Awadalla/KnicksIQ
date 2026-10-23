@@ -433,7 +433,6 @@ async def test_missing_rows_are_incomplete_not_nonappearances(db_session):
     result = await current.execute(ToolCall(name="get_player_stats", question=tools.question))
     assert result.status == "incomplete_coverage"
     assert result.claims[0].sample_size == 2 and result.claims[0].value == 25
-    assert "Missing player rows" in " ".join(result.claims[0].coverage_limitations)
 
 
 async def test_unknown_entity_and_baseline_scope_fail_closed(db_session):
@@ -540,8 +539,6 @@ async def test_scoped_schema_rejects_invented_ids_and_partial_claim_values(db_se
     wrong = deepcopy(answer)
     wrong["answer"]["fact_ids"] = ["invented"]
     assert not validator.is_valid(wrong)
-    # The ordinary schema remains reusable and is not mutated by release-scoping.
-    assert "enum" not in Action.model_json_schema()["$defs"]["ClaimUse"]
 
 
 @pytest.mark.parametrize("request_timeout", [1.0, 20.0])

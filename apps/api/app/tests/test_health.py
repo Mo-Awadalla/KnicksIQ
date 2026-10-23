@@ -27,7 +27,7 @@ async def test_ready_distinguishes_disabled_optional_services(client, monkeypatc
     assert response.json()["optional_dependencies"] == {
         "qdrant": "disabled",
         "redis": "disabled",
-        "openrouter": "disabled",
+        "model_provider": "disabled",
     }
 
 
