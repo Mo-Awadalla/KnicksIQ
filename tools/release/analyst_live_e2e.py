@@ -1,9 +1,18 @@
-"""End-to-end check of the llm_primary analyst against a real provider and a restored release.
+"""End-to-end benchmark of the llm_primary analyst against a real provider and a restored release.
 
-Live mode sends questions through the in-process FastAPI app (same code path as production) and
-records the full response payload. Offline mode re-scores a committed responses artifact without
-the provider. Both modes run the deterministic checks in analyst_scoring.py and write one JSONL
-row per question plus a category table.
+Live mode sends benchmark questions through the in-process FastAPI app (same code path as
+production) and records, per question, the full response payload, every model call and the first
+exception that ended the turn. Offline mode re-scores a committed responses artifact without the
+provider. Both modes run the deterministic checks in analyst_scoring.py and write one JSONL row
+per question plus a category table.
+
+This is a benchmark, not the formal release evaluation: it never gates a release and its numbers
+are not release evidence. The human-reviewed release evaluation lives in app.evaluation
+(analyst_evaluation.py, release_runner.py, guarded_release.py).
+
+Both modes need the archive database (DB_URL) for numeric re-scoring. Live runs additionally
+need an activated release, Redis with the monthly ledger (REDIS_URL), and provider settings
+(AI_*, ANALYSIS_ANSWER_MODE=llm_primary). Offline mode does not call the provider or start the API.
 
     uv run --package knicksiq-api python tools/release/analyst_live_e2e.py --out report.json
     uv run --package knicksiq-api python tools/release/analyst_live_e2e.py \
@@ -32,7 +41,7 @@ from archive_values import build as build_archive_values  # noqa: E402
 from archive_values import scoped_corpus
 
 ROOT = Path(__file__).resolve().parents[2]
-QUESTIONS = ROOT / "apps/api/app/evaluation/questions.jsonl"
+QUESTIONS = ROOT / "apps/api/app/evaluation/benchmark_questions.jsonl"
 HELDOUT = ROOT / "apps/api/app/evaluation/heldout_questions.jsonl"
 
 
@@ -51,11 +60,103 @@ class FailureCapture(logging.Handler):
             )
 
 
+class Trace:
+    """Per-question record of every model call and the first exception that ended the turn."""
+
+    def __init__(self) -> None:
+        self.calls: list[dict] = []
+        self.error: dict | None = None
+
+    def reset(self) -> None:
+        self.calls, self.error = [], None
+
+
+TRACE = Trace()
+RAW_LIMIT = 1500
+_TRACING_INSTALLED = False
+
+
+class RecordingAdapter:
+    """Wraps the provider adapter to keep what the model was sent and what it returned."""
+
+    def __init__(self, inner):
+        object.__setattr__(self, "inner", inner)
+
+    def __getattr__(self, name):
+        return getattr(self.inner, name)
+
+    def __setattr__(self, name, value):
+        setattr(self.inner, name, value)
+
+    async def generate(self, **kwargs):
+        from app.services.analyst_loop import _claim_choice_domains
+
+        if os.environ.get("E2E_SCHEMA_SCOPE") == "writer" and "review_spans" in kwargs["user"]:
+            # Experiment knob: keep provider schema enforcement for the writer, not the reviewer.
+            self.inner.response_schema = None
+        record: dict = {
+            "kind": "review" if "review_spans" in kwargs["user"] else "writer",
+            "system_bytes": len(kwargs["system"].encode()),
+            "user_bytes": len(kwargs["user"].encode()),
+            "schema_enforced": getattr(self.inner, "response_schema", None) is not None,
+        }
+        try:
+            payload = json.loads(kwargs["user"])
+            required = payload.get("required_claim_indexes")
+            if required:
+                slots, related = _claim_choice_domains(payload)
+                record["slots"] = [
+                    {"claims": len(claims), "choices": len(choices)}
+                    for claims, choices in zip(required, slots, strict=True)
+                ]
+                record["related_choices"] = len(related)
+                record["claim_uses"] = len(payload.get("claim_uses") or [])
+        except (ValueError, TypeError, KeyError):
+            record["payload_unreadable"] = True
+        TRACE.calls.append(record)
+        try:
+            raw = await self.inner.generate(**kwargs)
+        except Exception as exc:
+            record["provider_error"] = f"{type(exc).__name__}: {str(exc)[:300]}"
+            raise
+        meta = getattr(self.inner, "last_metadata", {}) or {}
+        record.update(provider=meta.get("provider"), model=meta.get("model"), raw=raw[:RAW_LIMIT])
+        record["raw_bytes"] = len(raw.encode())
+        return raw
+
+
+def install_tracing() -> None:
+    """Send every analyst provider call through the recording adapter, once per process."""
+    global _TRACING_INSTALLED
+    if _TRACING_INSTALLED:
+        return
+    from app.services import analyst_loop
+
+    real_get = analyst_loop.get_llm_adapter
+    analyst_loop.get_llm_adapter = lambda *a, **k: RecordingAdapter(real_get(*a, **k))
+    real_investigate = analyst_loop.AnalystLoop.investigate
+
+    async def investigate(self, *args, **kwargs):
+        try:
+            return await real_investigate(self, *args, **kwargs)
+        except Exception as exc:
+            TRACE.error = {"type": type(exc).__name__, "message": str(exc)[:500]}
+            raise
+
+    analyst_loop.AnalystLoop.investigate = investigate
+    _TRACING_INSTALLED = True
+
+
 def load_cases(path: Path) -> list[dict]:
     return [json.loads(line) for line in path.read_text().splitlines() if line.strip()]
 
 
-def sample(rows: list[dict], per_category: int, all_rows: bool) -> list[dict]:
+def sample(
+    rows: list[dict], per_category: int, all_rows: bool = False, ids: set[str] | None = None
+) -> list[dict]:
+    """First `per_category` rows of every non-follow-up category, or exactly the requested ids."""
+    if ids:
+        return [row for row in rows if row["id"] in ids]
     if all_rows:
         return [row for row in rows if row["category"] != "follow_ups"]
     seen: collections.Counter[str] = collections.Counter()
@@ -70,16 +171,28 @@ def sample(rows: list[dict], per_category: int, all_rows: bool) -> list[dict]:
 
 
 DECLINE = re.compile(
-    r"\b(i can(?:'|’)?t|i cannot|can(?:'|’)?t (?:give|provide|answer|predict|verify)|"
+    r"\b(i can(?:'|’)?t|i cannot|i do(?:n't| not) have|"
+    r"can(?:'|’)?t (?:give|provide|answer|predict|verify)|"
     r"cannot (?:give|provide|answer|predict)|not able to|unable to|do(?:es)? not (?:include|"
     r"cover|contain)|doesn(?:'|’)?t (?:include|cover|contain)|no (?:live|future|current))",
     re.I,
 )
 
 
+CLARIFY = re.compile(r"\b(which|do you mean|should i use|did you mean)\b[^?]*\?", re.I)
+
+
 def classify(body: dict, failures: list[dict]) -> str:
+    answer = body.get("answer") or ""
+    kind = (
+        "declined"
+        if DECLINE.search(answer)
+        else "clarification"
+        if CLARIFY.search(answer)
+        else "answer"
+    )
     if body.get("llm_validated"):
-        return "validated_declined" if DECLINE.search(body.get("answer") or "") else "validated"
+        return "validated" if kind == "answer" else f"validated_{kind}"
     if failures:
         return f"failed:{failures[-1]['stage']}:{failures[-1]['error_type']}"
     warnings = " ".join(body.get("warnings") or [])
@@ -87,7 +200,7 @@ def classify(body: dict, failures: list[dict]) -> str:
         return "fallback:review_rejected"
     if "could not be verified" in warnings:
         return "fallback:unverified"
-    return "fallback:other"
+    return f"deterministic_{kind}"
 
 
 def old_meets_expectation(case: dict, outcome: str) -> bool:
@@ -95,6 +208,18 @@ def old_meets_expectation(case: dict, outcome: str) -> bool:
     if case["answerable"]:
         return outcome == "validated"
     return outcome == "validated_declined"
+
+
+def meets_expectation(row: dict, outcome: str) -> bool:
+    """Coarse outcome screen: answerable questions need a substantive answer.
+
+    Unsupported ones need a decline, so a clarification meets neither and is counted on its own.
+    The scored verdict is `score()["meets_expectation"]`; this screen only keeps the per-outcome
+    counts comparable with earlier benchmark runs.
+    """
+    if row["answerable"]:
+        return outcome in {"validated", "deterministic_answer"}
+    return outcome.endswith("_declined")
 
 
 def score(case: dict, response: dict, archive) -> dict:
@@ -127,12 +252,13 @@ def score(case: dict, response: dict, archive) -> dict:
     return best
 
 
-async def run_live(cases: list[dict], archive, timeout: float) -> list[dict]:
+async def run_live(cases: list[dict], archive, timeout: float, repeat: int = 1) -> list[dict]:
     from app.main import create_app
     from httpx import ASGITransport, AsyncClient
 
     capture = FailureCapture()
     logging.getLogger().addHandler(capture)
+    install_tracing()
     app = create_app()
     results = []
     async with app.router.lifespan_context(app):
@@ -140,8 +266,9 @@ async def run_live(cases: list[dict], archive, timeout: float) -> list[dict]:
         async with AsyncClient(
             transport=transport, base_url="http://test", timeout=timeout
         ) as client:
-            for case in cases:
+            for case in list(cases) * repeat:
                 capture.records.clear()
+                TRACE.reset()
                 response = await client.post(
                     "/analysis/query",
                     json={
@@ -161,6 +288,7 @@ async def run_live(cases: list[dict], archive, timeout: float) -> list[dict]:
                     "answerable": case["answerable"],
                     "question": case["question"],
                     "outcome": outcome,
+                    "outcome_meets_expectation": meets_expectation(case, outcome),
                     "old_meets_expectation": old_meets_expectation(case, outcome),
                     "answer": body.get("answer") or "",
                     "citations": body.get("citations") or [],
@@ -173,6 +301,8 @@ async def run_live(cases: list[dict], archive, timeout: float) -> list[dict]:
                     "tool_calls": body.get("tool_calls") or [],
                     "data_version": body.get("data_version"),
                     "status_code": response.status_code,
+                    "error": TRACE.error,
+                    "model_calls": TRACE.calls,
                 }
                 results.append({**record, "score": score(case, record, archive)})
     return results
@@ -203,12 +333,15 @@ def run_offline(cases: list[dict], responses_path: Path, archive) -> list[dict]:
                 raw.get("meets_expectation", old_meets_expectation(case, raw.get("outcome", ""))),
             ),
             "llm_validated": raw.get(
-                "llm_validated", raw.get("outcome") in {"validated", "validated_declined"}
+                "llm_validated", str(raw.get("outcome", "")).startswith("validated")
             ),
-            "degraded": str(raw.get("outcome", "")).startswith(("fallback", "failed", "http_")),
+            "degraded": str(raw.get("outcome", "")).startswith(
+                ("fallback", "failed", "http_", "deterministic_")
+            ),
             "citations_reduced": reduced,
             "reconstructed_fields": reduced or "llm_validated" not in raw,
         }
+        record["outcome_meets_expectation"] = meets_expectation(case, record["outcome"])
         results.append({**record, "score": score(case, record, archive)})
     return results
 
@@ -229,6 +362,8 @@ def summarize(mode: str, dataset: str, results: list[dict]) -> dict:
     for item in results:
         for failure in item["score"]["failures"]:
             failures[failure.split(":")[0]] += 1
+    outcomes = collections.Counter(item.get("outcome") or "unknown" for item in results)
+    screened = sum(int(item.get("outcome_meets_expectation", 0)) for item in results)
     answerable = [item for item in results if item["score"]["answerable"]]
     unsupported = [item for item in results if not item["score"]["answerable"]]
     old = sum(int(item["score"]["old_meets_expectation"]) for item in results)
@@ -236,9 +371,13 @@ def summarize(mode: str, dataset: str, results: list[dict]) -> dict:
     backed = sum(int(item["score"]["claim_backed_meets_expectation"]) for item in results)
     return {
         "scope": (
-            "meets_expectation now requires: not declined or clarification, validated delivery, "
-            "substantive content, no unbacked number or entity, required facts present, no echo, "
-            "and no unbacked causal hedge. claim_backed additionally requires cited claim values."
+            "Benchmark, never the formal release evaluation. meets_expectation requires: not "
+            "declined or clarification, validated delivery, substantive content, no unbacked "
+            "number or entity, required facts present, no echo, and no unbacked causal hedge. "
+            "claim_backed additionally requires cited claim values. "
+            "outcome_meets_expectation is the earlier coarse screen: a validated or deterministic "
+            "answer for answerable questions and a decline for unsupported ones. Expectations "
+            "come from unreviewed draft labels."
         ),
         "mode": mode,
         "dataset": dataset,
@@ -247,6 +386,9 @@ def summarize(mode: str, dataset: str, results: list[dict]) -> dict:
         "meets_expectation": new,
         "claim_backed_meets_expectation": backed,
         "delta": old - new,
+        "outcome_meets_expectation": screened,
+        "outcome_meets_expectation_rate": round(screened / len(results), 3) if results else 0.0,
+        "outcomes": dict(outcomes.most_common()),
         "by_answerable": {
             "answerable": {
                 "questions": len(answerable),
@@ -334,24 +476,27 @@ def main() -> None:
     parser.add_argument("--per-category", type=int, default=5)
     parser.add_argument("--all", action="store_true", help="run every question in the set")
     parser.add_argument("--limit", type=int, default=0, help="cap live questions")
-    parser.add_argument("--ids", default="", help="comma-separated case ids to run")
+    parser.add_argument(
+        "--ids", default="", help="comma-separated case ids; overrides live sampling"
+    )
+    parser.add_argument(
+        "--repeat", type=int, default=1, help="run each live question this many times"
+    )
     parser.add_argument("--timeout", type=float, default=60)
     args = parser.parse_args()
 
     questions = args.questions or (HELDOUT if args.heldout else QUESTIONS)
     cases = load_cases(questions)
     archive = asyncio.run(build_archive())
+    wanted = {item.strip() for item in args.ids.split(",") if item.strip()}
     if args.responses:
         results = run_offline(cases, args.responses, archive)
         mode = "offline"
     else:
-        picked = sample(cases, args.per_category, args.all)
-        if args.ids:
-            wanted = {item.strip() for item in args.ids.split(",") if item.strip()}
-            picked = [case for case in picked if case["id"] in wanted]
+        picked = sample(cases, args.per_category, args.all, wanted)
         if args.limit:
             picked = picked[: args.limit]
-        results = asyncio.run(run_live(picked, archive, args.timeout))
+        results = asyncio.run(run_live(picked, archive, args.timeout, args.repeat))
         mode = "live"
     summary = summarize(mode, str(questions), results)
     summary["source"] = str(args.responses) if args.responses else "live in-process API"

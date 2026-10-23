@@ -458,6 +458,10 @@
   border-top: 1px solid var(--line-subtle);
 }
 
+.table-scroll:focus-visible {
+  outline-offset: -3px;
+}
+
 .data-table {
   width: 100%;
   min-width: 40rem;

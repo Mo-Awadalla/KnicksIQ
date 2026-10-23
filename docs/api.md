@@ -13,7 +13,10 @@ use `limit` and `offset` where supported.
 
 - `GET /health/live`: process liveness.
 - `GET /health/ready`: Postgres and active-release readiness plus optional
-  dependency status. Returns 503 without a validated active release.
+  dependency status. Returns 503 without a validated active release. Qdrant
+  reports `checking` while its first background probe is still running,
+  `degraded` only after a failed probe; retrieval still attempts Qdrant while
+  `checking`.
 - `GET /`: service metadata.
 - `GET /archive/status`: active season, data version, game/report counts, and
   supported capabilities.
@@ -33,6 +36,37 @@ the production router.
 
 Only reviewed reports from the active release are public. The legacy
 `GET /games/{game_id}/bad-stretches` route remains development-only.
+
+#### Play-by-play score contract
+
+`GET /games/{game_id}/play-by-play` returns the displayed scoreboard state after
+each event, not a literal raw archive score observation. `home_score` and
+`away_score` are home/away oriented; `score_margin` is their difference. The UI
+renders away—home and converts the margin to Knicks orientation.
+Projection starts at 0–0 and processes the whole ordered game before applying a
+`period` filter, so a missing observation at a quarter boundary retains prior
+state. Projection never writes back to canonical source rows.
+
+New NBA ingestion retains `score_observed` internally: `true` means an explicit
+complete scoreboard pair (including an explicit 0–0 correction), `false` means
+no complete valid pair, and `null` means historical source presence was not
+retained. Explicit observations replace the prior pair, even when scores decrease
+or return to zero. Missing observations retain the prior pair. Historical `null`
+rows alone use the original normalized 0–0 sentinel heuristic. The additive
+nullable migration does not backfill historical rows or alter the approved
+archive. Export includes presence only when known, preserving legacy row bytes;
+ingest and release loading retain it. This internal flag is not a new public API
+field.
+
+For the approved `0022500003` opening sequence, the source jump-ball and Mobley
+miss have empty NBA `scoreHome`/`scoreAway` strings. The intervening baskets
+record 0–2 and 3–2. Thus sequence 4 displays 3–2, margin +1, while its immutable
+normalized archive row remains 0–0, margin 0. Source-aware browser expectations
+must distinguish empty observations from explicit `"0"` values and retain both
+raw and projected states. This display projection is not an independent
+reconstruction of scoring contributions: known upstream scoreboard discrepancies
+remain visible, and corrected/ambiguous intervals remain excluded from certified
+run claims.
 
 ### Analyst query
 
@@ -65,9 +99,10 @@ have zero citations. A pre-model refusal returns `refused=true`,
 `llm_validated=false`, `degraded=false`, no citations and the refusal warning.
 `ask_clarification` is not a refusal. A refusal is a normal HTTP 200 response.
 
-The evidence loop exposes nine tools to the model: `get_player_stats`,
+The evidence loop exposes eleven tools to the model: `get_player_stats`,
 `get_team_stats`, `compare_windows`, `discover_facts`, `search_archive`,
-`get_evidence`, `get_game_flow`, `get_team_splits` and `get_period_scoring`.
+`get_evidence`, `find_player_games`, `get_game_narrative`, `get_game_flow`,
+`get_team_splits` and `get_period_scoring`.
 Quarter, period, play-by-play and split questions are supported. Internal
 retrieval plans, claim-validation comparisons, classifier data, evidence, routes
 and tool traces are excluded in production.

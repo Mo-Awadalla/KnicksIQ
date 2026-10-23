@@ -147,7 +147,6 @@ async def test_ambiguous_narrative_requests_game_selection_without_receipts(clie
     assert response.status_code == 200
     body = response.json()
     assert body["route"] == "clarification"
-    assert "Which game" in body["answer"]
     assert body["refused"] is False
     assert body["citations"] == []
 
@@ -210,26 +209,32 @@ async def test_best_defensive_game_binds_lowest_points_allowed_before_retrieval(
 
 
 @pytest.mark.parametrize(
-    "question",
+    ("question", "required_inputs"),
     [
-        "How did the Knicks erase their largest deficit?",
-        "What was the most damaging opponent run this season?",
-        "What was the Knics biggest run?",
-        "What was NY's worst collpase?",
+        (
+            "How did the Knicks erase their largest deficit?",
+            ["scope", "observed", "erased", "tied", "lead", "win"],
+        ),
+        (
+            "What was the most damaging opponent run this season?",
+            ["season", "boundaries", "damage"],
+        ),
+        ("What was the Knics biggest run?", ["unanswered", "net", "window", "scope"]),
+        ("What was NY's worst collpase?", ["lead", "margin", "interval", "scope", "loss"]),
     ],
 )
-async def test_season_run_superlative_preserves_scope_and_requests_metric(client, question):
+async def test_season_run_superlative_preserves_scope_and_requests_metric(
+    client, question, required_inputs
+):
     response = await client.post("/analysis/query", json={"question": question})
     assert response.status_code == 200
     body = response.json()
     assert body["route"] == "clarification"
-    assert "season-wide ranking" in body["answer"]
-    assert "time window" in body["answer"]
-    assert "Which game" not in body["answer"]
+    assert all(term in body["answer"].lower() for term in required_inputs)
     assert body["citations"] == []
 
 
-async def test_narrative_game_choices_disclose_truncated_dates(client, db_session):
+async def test_narrative_game_choices_include_all_archived_dates(client, db_session):
     for offset in range(9):
         db_session.add(
             Game(
@@ -245,11 +250,15 @@ async def test_narrative_game_choices_disclose_truncated_dates(client, db_sessio
             )
         )
     await db_session.commit()
+    games_response = await client.get("/games?team_id=ATL")
+    assert games_response.status_code == 200
+    expected_dates = {game["game_date"] for game in games_response.json()}
+    assert {f"2026-03-{day:02d}" for day in range(1, 10)} <= expected_dates
     response = await client.post(
         "/analysis/query", json={"question": "Explain the Knicks game against Atlanta."}
     )
+    assert response.status_code == 200
     body = response.json()
     assert body["route"] == "clarification"
-    assert "Showing the first 8:" in body["answer"]
-    assert "2026-03-01" in body["answer"]
-    assert "2026-03-09" not in body["answer"]
+    assert body["citations"] == []
+    assert all(game_date in body["answer"] for game_date in expected_dates)

@@ -236,3 +236,165 @@ async def test_play_by_play_carries_placeholder_scores_across_periods_without_wr
             )
         ).scalar_one()
         assert (stored.home_score, stored.away_score) == (0, 0)
+
+
+async def test_play_by_play_projects_first_native_source_sequence_without_raw_writes(client):
+    """NBA 0022500003 actions 2-5: initial blank, 0-2, 3-2, blank."""
+    from app.models.game_event import GameEvent
+    from sqlalchemy import delete, select
+
+    observations = [
+        (1, "12:00", "jump_ball", "Jump Ball Hukporti vs. Allen: Tip to Mitchell", 0, 0),
+        (2, "11:45", "made_shot", "Mobley 12' Turnaround Fadeaway (2 PTS)", 0, 2),
+        (3, "11:20", "made_shot", "Brunson 3PT Jump Shot (3 PTS) (Towns 1 AST)", 3, 2),
+        (4, "11:02", "missed_shot", "MISS Mobley 14' Turnaround Fadeaway Shot", 0, 0),
+    ]
+    async with AsyncSessionLocal() as session:
+        await session.execute(delete(GameEvent).where(GameEvent.game_id == 1))
+        session.add_all(
+            GameEvent(
+                game_id=1,
+                sequence=sequence,
+                period=1,
+                clock=clock,
+                event_type=kind,
+                description=description,
+                home_score=home,
+                away_score=away,
+                score_margin=home - away,
+            )
+            for sequence, clock, kind, description, home, away in observations
+        )
+        await session.commit()
+
+    response = await client.get("/games/1/play-by-play")
+    assert response.status_code == 200
+    rows = response.json()
+    assert [(r["sequence"], r["home_score"], r["away_score"], r["score_margin"]) for r in rows] == [
+        (1, 0, 0, 0),
+        (2, 0, 2, -2),
+        (3, 3, 2, 1),
+        (4, 3, 2, 1),
+    ]
+    assert [r["description"] for r in rows] == [r[3] for r in observations]
+    async with AsyncSessionLocal() as session:
+        stored = (
+            (
+                await session.execute(
+                    select(GameEvent).where(GameEvent.game_id == 1).order_by(GameEvent.sequence)
+                )
+            )
+            .scalars()
+            .all()
+        )
+        assert [(r.home_score, r.away_score) for r in stored] == [
+            (r[4], r[5]) for r in observations
+        ]
+
+
+async def test_play_by_play_preserves_observed_zero_and_backward_score_corrections(client):
+    from app.models.game_event import GameEvent
+    from sqlalchemy import delete
+
+    # A zero for one team is a recorded observation, never an absent pair.
+    scores = [(0, 0), (3, 2), (0, 2), (3, 0), (2, 0)]
+    async with AsyncSessionLocal() as session:
+        await session.execute(delete(GameEvent).where(GameEvent.game_id == 1))
+        session.add_all(
+            GameEvent(
+                game_id=1,
+                sequence=sequence,
+                period=1,
+                clock="11:00",
+                event_type="made_shot",
+                home_score=home,
+                away_score=away,
+                score_margin=home - away,
+            )
+            for sequence, (home, away) in enumerate(scores, start=1)
+        )
+        await session.commit()
+
+    response = await client.get("/games/1/play-by-play")
+    assert response.status_code == 200
+    assert [(r["home_score"], r["away_score"], r["score_margin"]) for r in response.json()] == [
+        (home, away, home - away) for home, away in scores
+    ]
+
+
+async def test_play_by_play_retains_source_score_presence_through_normalization_and_sql(client):
+    from app.core.seed_loader import SEED_DIR
+    from app.models.game_event import GameEvent
+    from basketball_core.parsers.play_by_play import parse_events
+    from sqlalchemy import delete, select
+    from worker_app.adapters.nba_api_source import NbaApiDataSource
+    from worker_app.adapters.nba_normalization import parse_pbp_v3_action
+    from worker_app.core.config import NbaApiSettings
+
+    source = NbaApiDataSource(NbaApiSettings(), SEED_DIR)
+    raw_scores = [("0", "0"), ("3", "2"), ("", ""), ("0", "0"), ("", ""), ("0", "2")]
+    raw_events = [
+        parse_pbp_v3_action(
+            {
+                "actionType": "Jump Ball",
+                "period": 1,
+                "clock": "PT11M00.00S",
+                "teamTricode": "",
+                "personId": 0,
+                "description": f"Score observation {sequence}",
+                "scoreHome": home,
+                "scoreAway": away,
+            },
+            source._trigraph_to_nba_id,
+        )
+        for sequence, (home, away) in enumerate(raw_scores, start=1)
+    ]
+    assert all(event is not None for event in raw_events)
+    events = parse_events(1, [event for event in raw_events if event is not None])
+    assert [event.score_observed for event in events] == [True, True, False, True, False, True]
+    async with AsyncSessionLocal() as session:
+        await session.execute(delete(GameEvent).where(GameEvent.game_id == 1))
+        session.add_all(
+            GameEvent(**event.model_dump(exclude_none=True, exclude={"id"})) for event in events
+        )
+        await session.commit()
+
+    response = await client.get("/games/1/play-by-play")
+    assert response.status_code == 200
+    assert [(r["home_score"], r["away_score"], r["score_margin"]) for r in response.json()] == [
+        (0, 0, 0),
+        (3, 2, 1),
+        (3, 2, 1),
+        (0, 0, 0),
+        (0, 0, 0),
+        (0, 2, -2),
+    ]
+    async with AsyncSessionLocal() as session:
+        stored = (
+            (
+                await session.execute(
+                    select(GameEvent).where(GameEvent.game_id == 1).order_by(GameEvent.sequence)
+                )
+            )
+            .scalars()
+            .all()
+        )
+        assert [event.score_observed for event in stored] == [True, True, False, True, False, True]
+        assert [(event.home_score, event.away_score) for event in stored] == [
+            (int(home or 0), int(away or 0)) for home, away in raw_scores
+        ]
+        from worker_app.release_export import _event_row
+
+        exported = [_event_row(event, "0022500003", None) for event in stored]
+        assert [row["score_observed"] for row in exported] == [True, True, False, True, False, True]
+        legacy = GameEvent(
+            game_id=1,
+            sequence=99,
+            period=1,
+            clock="12:00",
+            event_type="jump_ball",
+            home_score=0,
+            away_score=0,
+            score_margin=0,
+        )
+        assert "score_observed" not in _event_row(legacy, "0022500003", None)

@@ -469,6 +469,26 @@ async def run(
             gaps.append(gap)
     ordered = [(game, views[game.id]) for game in selected if game.id in views]
     covered_evidence = [_evidence(tools, game, view) for game, view in ordered]
+    # A period comparison keeps the all-phase population, matching the team-stat
+    # resolver; the season-level period report below keeps its regular-season default.
+    claim_games = selected
+    claim_views = views
+    if (
+        scope.season_type is None
+        and not (scope.game_ids or scope.date_start or scope.date_end)
+        and not scope.relative_game_count
+        and not scope.opponent_id
+        and re.search(r"\b(?:compare|comparison|versus|vs)\b", tools.question, re.I)
+    ):
+        raw_all = await _load_periods(tools, games)
+        all_views: dict[int, dict[str, Any]] = {}
+        for game in games:
+            view, _gap = period_view(tools, game, raw_all.get(game.id, {}))
+            if view is not None:
+                all_views[game.id] = view
+        if all_views:
+            claim_games = games
+            claim_views = all_views
     available = sorted({int(period) for view in views.values() for period in view["periods"]})
     periods = requested_periods(scope, call.question, available)
     phase_scope = phase_label([name for _, _, phases, _ in groups for name in phases])
@@ -477,6 +497,35 @@ async def run(
             tools, scope, groups, periods, views, ordered, selected, gaps, covered_evidence
         )
     ]
+    for period in periods:
+        pairs = [
+            (game, claim_views[game.id]["periods"][str(period)])
+            for game in claim_games
+            if game.id in claim_views and str(period) in claim_views[game.id]["periods"]
+        ]
+        if not pairs or len(pairs) != len(claim_games):
+            continue
+        total = sum(pair[0] for _, pair in pairs)
+        average = total / len(pairs)
+        receipts = [_evidence(tools, game, claim_views[game.id]) for game, _ in pairs]
+        claims.append(
+            tools.claim(
+                subject="team:NYK",
+                metric="period_points:average",
+                value=average,
+                unit="points per team game",
+                games=claim_games,
+                evidence=receipts,
+                scope=scope.model_copy(update={"periods": [period]}),
+                sample=len(pairs),
+                denominator=len(pairs),
+                eligibility={"period": period, "coverage": "one score per team game"},
+                statement=(
+                    f"{label(period)}: Knicks averaged {average:.4f} points per game "
+                    f"({total} points across {len(pairs)} games)."
+                ),
+            )
+        )
     message = "Period scoring computed from period_scores; overtime is separate from Q4 and halves."
     if gaps:
         message += " Some selected games lack complete rows and are reported as coverage gaps."

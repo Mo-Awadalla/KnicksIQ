@@ -11,6 +11,7 @@ To swap in a real LLM, subclass `LLMAdapter` and inject it.
 from __future__ import annotations
 
 import json
+import math
 import ssl
 import time
 import urllib.error
@@ -21,13 +22,15 @@ from collections.abc import Mapping
 from typing import Any
 
 from app.core.config import get_settings
-from app.services.llm_wire import PROTOCOLS, Request, priced
+from app.services.llm_wire import PROTOCOLS, priced
+from app.services.llm_wire import Request as WireRequest
 
 
 class LLMAdapter(ABC):
     """Interface for a report-generating LLM."""
 
     max_tokens: int = 500
+    model: str = ""
     timeout_seconds: float = 20
     response_schema: dict[str, Any] | None = None
     last_metadata: dict[str, Any] = {}
@@ -64,11 +67,14 @@ class OpenAICompatibleLLMAdapter(LLMAdapter):
         response_format_json: bool = True,
         max_tokens: int = 500,
         reasoning_effort: str | None = None,
+        provider_route: str | None = None,
+        max_prompt_price: float | None = None,
+        max_completion_price: float | None = None,
         provider_order: list[str] | None = None,
         provider_sort: str | None = "latency",
         provider_allow_fallbacks: bool = True,
-        protocols: Mapping[str, str] | None = None,
-        prices: dict[str, list[float]] | None = None,
+        model_protocols: Mapping[str, str] | None = None,
+        model_prices: dict[str, list[float]] | None = None,
         user_agent: str = "knicksiq/1.0",
     ) -> None:
         self.base_url = base_url.rstrip("/")
@@ -78,16 +84,31 @@ class OpenAICompatibleLLMAdapter(LLMAdapter):
         self.response_format_json = response_format_json
         self.max_tokens = max_tokens
         self.reasoning_effort = reasoning_effort
+        self.provider_route = provider_route
+        self.max_prompt_price = max_prompt_price
+        self.max_completion_price = max_completion_price
         self.provider_order = list(provider_order or [])
         self.provider_sort = provider_sort
         self.provider_allow_fallbacks = provider_allow_fallbacks
-        self.protocols = dict(protocols or {})
-        self.prices = dict(prices or {})
+        self.model_protocols = dict(model_protocols or {})
+        self.model_prices = dict(model_prices or {})
         self.user_agent = user_agent
         # A random id for host-side routing and caching; never a user token. Go rejects any
         # request without one, so every adapter starts with its own; the analyst loop
         # replaces it with one id per turn.
         self.session_id: str | None = uuid.uuid4().hex
+        policy = (provider_route, max_prompt_price, max_completion_price)
+        if any(value is not None for value in policy):
+            if not isinstance(provider_route, str) or not provider_route.strip():
+                raise ValueError("A pinned OpenRouter route is required with price caps")
+            if any(
+                not isinstance(price, (int, float))
+                or isinstance(price, bool)
+                or not math.isfinite(price)
+                or price <= 0
+                for price in (max_prompt_price, max_completion_price)
+            ):
+                raise ValueError("Both finite positive OpenRouter price caps are required")
         self.response_schema: dict[str, Any] | None = None
         self.last_metadata: dict[str, Any] = {}
 
@@ -102,21 +123,46 @@ class OpenAICompatibleLLMAdapter(LLMAdapter):
             provider["sort"] = self.provider_sort
         if self.provider_order:
             provider["order"] = self.provider_order
+        if self.provider_route is not None:
+            # Caps use OpenRouter's USD-per-million-token units. An exact route excludes
+            # fallback providers and per-request surcharges.
+            provider = {
+                "only": [self.provider_route],
+                "order": [self.provider_route],
+                "allow_fallbacks": False,
+                "require_parameters": True,
+                "max_price": {
+                    "prompt": self.max_prompt_price,
+                    "completion": self.max_completion_price,
+                    "request": 0,
+                },
+            }
+            if self.provider_route.endswith("/fp8"):
+                provider["quantizations"] = ["fp8"]
         return provider
 
     def _generate_sync(self, system: str, user: str) -> str:
-        protocol = self.protocols.get(self.model, "chat")
+        self.last_metadata = {}
+        protocol = self.model_protocols.get(self.model, "chat")
+        if protocol not in PROTOCOLS:
+            raise ValueError("Unsupported model wire protocol")
         build, parse = PROTOCOLS[protocol]
+        openrouter = "openrouter.ai" in self.base_url
+        # OpenRouter and the Go host accept a reasoning setting; a plain compatible host
+        # must receive neither field, matching the ordinary router's transport contract.
+        reasoning_effort = self.reasoning_effort
+        if not openrouter and not (self.model_protocols or "opencode.ai" in self.base_url):
+            reasoning_effort = None
         path, payload_body = build(
-            Request(
+            WireRequest(
                 model=self.model,
                 system=system,
                 user=user,
                 max_tokens=self.max_tokens,
-                reasoning_effort=self.reasoning_effort,
+                reasoning_effort=reasoning_effort,
                 response_schema=self.response_schema,
                 json_object=self.response_format_json,
-                openrouter="openrouter.ai" in self.base_url,
+                openrouter=openrouter,
                 provider=self._provider(),
             )
         )
@@ -161,11 +207,12 @@ class OpenAICompatibleLLMAdapter(LLMAdapter):
             raise RuntimeError(f"AI provider returned an error: {detail[:1000]}")
         reply = parse(body)
         content = reply.content
-        usage = reply.usage
+        usage = dict(reply.usage)
         if usage.get("cost") is None:
-            cost = priced(usage, self.model, self.prices)
-            if cost is not None:
-                usage["cost"] = cost
+            estimate = priced(usage, self.model, self.model_prices)
+            if estimate is not None:
+                usage["cost"] = estimate
+                usage["cost_source"] = "configured_token_rates"
         self.last_metadata = {key: body.get(key) for key in ("id", "model", "provider")}
         self.last_metadata.update(
             {
@@ -193,7 +240,9 @@ class OpenAICompatibleLLMAdapter(LLMAdapter):
                 "max_tokens": self.max_tokens,
             }
         )
-        if not isinstance(content, str) or not content:
+        if reply.finish_reason in {"length", "incomplete", "failed", "cancelled"}:
+            raise RuntimeError("AI provider returned an incomplete response")
+        if not isinstance(content, str) or not content.strip():
             # Keep the cause in the error: an empty completion is usually a token ceiling or
             # a provider fault, and the two need different fixes.
             raise RuntimeError(
@@ -224,12 +273,15 @@ def get_llm_adapter(*, response_format_json: bool = True) -> LLMAdapter:
         response_format_json=response_format_json,
         max_tokens=getattr(settings, "rag_generation_max_output_tokens", 500),
         reasoning_effort=settings.ai_reasoning_effort,
+        provider_route=getattr(settings, "openrouter_provider_route", None),
+        max_prompt_price=getattr(settings, "openrouter_max_prompt_price", None),
+        max_completion_price=getattr(settings, "openrouter_max_completion_price", None),
         provider_order=getattr(settings, "openrouter_provider_order", []),
         provider_sort=getattr(settings, "openrouter_provider_sort", "latency"),
         provider_allow_fallbacks=getattr(settings, "openrouter_provider_allow_fallbacks", True),
-        protocols=settings.ai_model_protocols,
-        prices=settings.ai_model_prices,
-        user_agent=settings.ai_user_agent,
+        model_protocols=getattr(settings, "ai_model_protocols", {}),
+        model_prices=getattr(settings, "ai_model_prices", {}),
+        user_agent=getattr(settings, "ai_user_agent", "knicksiq/1.0"),
     )
 
 

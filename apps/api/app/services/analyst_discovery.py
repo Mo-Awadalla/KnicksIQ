@@ -14,7 +14,6 @@ from basketball_core.analytics.registry import STAT_REGISTRY
 
 if TYPE_CHECKING:
     from app.services.analyst_tools import AnalystTools
-from app.services.analyst_calculations import METRICS
 
 
 def discover(tools: AnalystTools, scope: ResolvedQuery, games: list[Game]) -> ToolResult:
@@ -62,7 +61,13 @@ def discover(tools: AnalystTools, scope: ResolvedQuery, games: list[Game]) -> To
         if fact_id in seen:
             continue
         receipt = tools.receipt(game, stat, player)
-        metrics = [scope.metric] if scope.metric in METRICS else ["box_score"]
+        requested_metric = scope.metric
+        # Derived metrics (starts, percentages, double-doubles) have no stored column;
+        # discovery reports the observed box-score line instead of inventing one.
+        metric = "box_score"
+        if requested_metric is not None and hasattr(stat, requested_metric):
+            metric = requested_metric
+        metrics = [metric]
         claims = []
         for metric in metrics:
             values = {
@@ -114,8 +119,8 @@ def discover(tools: AnalystTools, scope: ResolvedQuery, games: list[Game]) -> To
             extreme_selected=True,
         )
         score = (
-            getattr(stat, scope.metric)
-            if scope.metric in METRICS
+            getattr(stat, metric)
+            if metric != "box_score"
             else stat.points + 1.5 * stat.assists + stat.rebounds - stat.turnovers
         )
         pool.append((score, candidate, claims, [receipt]))

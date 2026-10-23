@@ -6,13 +6,50 @@ import hashlib
 import json
 import re
 from decimal import Decimal
-from typing import TYPE_CHECKING, Any, Literal
+from typing import TYPE_CHECKING, Any, Literal, get_args
 
 from app.services.analyst_tool_registry import TOOL_NAMES, TOOLS
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    Field,
+    ValidationInfo,
+    field_validator,
+    model_validator,
+)
+
+PlayerMetric = Literal[
+    "points",
+    "rebounds",
+    "assists",
+    "turnovers",
+    "steals",
+    "blocks",
+    "three_pointers_made",
+    "three_point_percentage",
+    "starts",
+    "plus_minus",
+    "minutes",
+    "double_doubles",
+]
+TeamMetric = Literal[
+    "wins",
+    "losses",
+    "points",
+    "margin",
+    "turnovers",
+    "field_goal_percentage",
+    "bench_points",
+    "period_points",
+    "leaders",
+    "comparisons",
+]
+ToolMetric = Literal[PlayerMetric, TeamMetric]
+PLAYER_METRICS = get_args(PlayerMetric)
+TEAM_METRICS = get_args(TeamMetric)
 
 CONTRACT_VERSION = "analyst-evidence-v1"
-PROMPT_VERSION = "analyst-balanced-v5"
+PROMPT_VERSION = "analyst-balanced-v6"
 VALIDATOR_VERSION = "whole-answer-v3"
 INTERPRETATION_POLICY = (
     "Explain observed magnitude, contrast and basketball meaning. Never infer unobserved "
@@ -106,25 +143,13 @@ else:
     ToolName = Literal[*TOOL_NAMES]
 
 PLAYER_METRIC_TOOLS = frozenset(spec.name for spec in TOOLS if spec.reads_metric)
+_KNOWN_METRICS = frozenset((*PLAYER_METRICS, *TEAM_METRICS))
 
 
 class ToolCall(Contract):
     name: ToolName
     question: str = Field(max_length=1200)
-    metric: (
-        Literal[
-            "points",
-            "rebounds",
-            "assists",
-            "turnovers",
-            "steals",
-            "blocks",
-            "three_pointers_made",
-            "plus_minus",
-            "minutes",
-        ]
-        | None
-    ) = None
+    metric: ToolMetric | None = None
     aggregation: Literal["average", "total"] = "average"
     baseline_question: str | None = Field(default=None, max_length=1200)
     evidence_ids: list[str] = Field(default_factory=list, max_length=20)
@@ -134,9 +159,29 @@ class ToolCall(Contract):
     def _metric_only_for_player_tools(cls, data: Any) -> Any:
         # Only player calculations read `metric`; models also send team words such as "wins"
         # to the other tools, which ignore it. Rejecting those would abort the whole turn.
-        if isinstance(data, dict) and data.get("name") not in PLAYER_METRIC_TOOLS:
+        if (
+            isinstance(data, dict)
+            and data.get("name") not in PLAYER_METRIC_TOOLS
+            and data.get("metric") in _KNOWN_METRICS
+        ):
+            # Known metrics on tools that do not read one are harmless planning words;
+            # an unknown metric must still fail the ToolMetric type, exactly as the
+            # emitted response schema rejects it.
             data = {key: value for key, value in data.items() if key != "metric"}
         return data
+
+    @field_validator("metric")
+    @classmethod
+    def validate_player_metric(
+        cls, value: ToolMetric | None, info: ValidationInfo
+    ) -> ToolMetric | None:
+        if (
+            info.data.get("name") in PLAYER_METRIC_TOOLS
+            and value is not None
+            and value not in PLAYER_METRICS
+        ):
+            raise ValueError("Player calculations require a supported player metric")
+        return value
 
 
 class ClaimUse(Contract):

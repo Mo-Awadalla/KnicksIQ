@@ -2,11 +2,12 @@
 
 from __future__ import annotations
 
+import json
 from datetime import UTC, datetime
 
 import pytest
 from app.core.config import get_settings
-from app.services import analyst_provider
+from app.services import analyst_loop
 from app.services.analyst_loop import AnalystLoop
 from app.services.evidence_contracts import (
     Action,
@@ -232,27 +233,34 @@ async def test_declared_fact_is_reviewed_without_unrelated_evidence(
         last_metadata = {"usage": {"cost": 0}}
 
         async def generate(self, *, system, user):
-            import json
-
             payload = json.loads(user)
             captured.append(payload)
-            return AnswerReview(
-                assertions=[
-                    AssertionReview(
-                        text=span,
-                        assertion_type="factual",
-                        verdict="supported",
-                        offending_text=None,
-                        supporting_claim_ids=[claim.claim_id],
-                        supporting_evidence_ids=[],
-                        reason="Matches the declared fact.",
-                    )
-                    for span in payload["review_spans"]
-                ]
-            ).model_dump_json()
+            answer = analyst_loop.payload_proposed_answer(payload)
+            assert answer is not None
+            return json.dumps(
+                analyst_loop.encode_model_response(
+                    payload,
+                    {
+                        "assertions": [
+                            {
+                                "text": span,
+                                "assertion_type": "factual",
+                                "verdict": "supported",
+                                "offending_text": None,
+                                "supporting_claim_ids": [
+                                    item["claim_id"] for item in answer["claims"]
+                                ],
+                                "supporting_evidence_ids": [],
+                                "reason": "Matches the declared fact.",
+                            }
+                            for span in payload["review_spans"]
+                        ]
+                    },
+                )
+            )
 
-    monkeypatch.setattr(analyst_provider, "get_llm_adapter", Reviewer)
+    monkeypatch.setattr(analyst_loop, "get_llm_adapter", Reviewer)
     accepted, reason = await loop.validate(answer)
     assert accepted, reason
-    assert {c["claim_id"] for c in captured[0]["claims"]} == {claim.claim_id}
+    assert {c["claim_id"] for c in analyst_loop.payload_claims(captured[0])} == {claim.claim_id}
     assert {e["evidence_id"] for e in captured[0]["evidence"]} <= set(claim.supporting_evidence_ids)

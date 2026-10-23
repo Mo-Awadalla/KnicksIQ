@@ -87,14 +87,20 @@ def parse_pbp_v3_action(action: Any, known_teams: Collection[str]) -> dict[str, 
     person_id = action.get("personId")
     player_id = int(person_id) if person_id else None
 
+    score_observed = all(
+        action.get(field) is not None and str(action[field]).strip() != ""
+        for field in ("scoreHome", "scoreAway")
+    )
     try:
         home_score = int(action.get("scoreHome") or 0)
     except (TypeError, ValueError):
         home_score = 0
+        score_observed = False
     try:
         away_score = int(action.get("scoreAway") or 0)
     except (TypeError, ValueError):
         away_score = 0
+        score_observed = False
 
     event: dict[str, Any] = {
         "period": int(action.get("period") or 1),
@@ -106,6 +112,7 @@ def parse_pbp_v3_action(action: Any, known_teams: Collection[str]) -> dict[str, 
         "player_name": str(action.get("playerName") or "").strip() or None,
         "home_score": home_score,
         "away_score": away_score,
+        "score_observed": score_observed,
     }
 
     # Optional: shot_distance_ft (only meaningful for shot events).

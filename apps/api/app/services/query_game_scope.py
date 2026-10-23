@@ -114,6 +114,7 @@ class InheritedScope(BaseModel):
     date_end: date | None = None
     relative_game_count: int | None = None
     relative_from_start: bool = False
+    relative_game_order: Literal["first", "last"] = "last"
     game_ids: list[int] = Field(default_factory=list)
     periods: list[int] = Field(default_factory=list)
 

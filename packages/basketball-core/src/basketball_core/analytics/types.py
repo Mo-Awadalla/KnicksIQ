@@ -8,6 +8,7 @@ from typing import Literal
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from basketball_core.analytics.registry import STAT_REGISTRY
+from basketball_core.analytics.thresholds import Comparison
 
 
 class AnalyticsOperation(str, Enum):
@@ -66,6 +67,7 @@ class AnalyticsPlan(BaseModel):
     retrieval_required: bool = False
     ambiguities: list[str] = Field(default_factory=list)
     threshold: float | None = None
+    threshold_comparison: Comparison = "gte"
 
     @field_validator("stats")
     @classmethod

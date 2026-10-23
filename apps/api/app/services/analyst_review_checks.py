@@ -7,6 +7,7 @@ or accept a number that exists in no backend record.
 
 from __future__ import annotations
 
+import json
 import re
 from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
@@ -297,6 +298,10 @@ def _claim_sources(claim: VerifiedClaim, sources: list[_Source]) -> None:
             _value_sources(value, sources, claim.unit)
         else:
             _value_sources(value, sources)
+    if claim.metric_id == "game_score":
+        comparison = claim.eligibility.get("comparison")
+        if isinstance(comparison, Mapping):
+            _value_sources(comparison.get("sample_size"), sources, "games")
     sample = view.get("sample_size")
     if isinstance(sample, (int, float)) and not isinstance(sample, bool):
         # A claim's sample is a count of games (team) or appearances (player).
@@ -372,6 +377,22 @@ _CONVERSATIONAL = re.compile(
 )
 
 
+_ISO_DATE = re.compile(r"(?<!\d)(\d{4})-(\d{2})-(\d{2})(?!\d)")
+_SCORE_PAIR = re.compile(r"(?<!\d)(\d{1,3})\s*[–-]\s*(\d{1,3})(?!\d)")
+
+
+def _source_dates(
+    claims: Mapping[str, VerifiedClaim], evidence: Mapping[str, Evidence]
+) -> set[str]:
+    """Archive dates the writer may restate without treating their digits as quantities."""
+    values: set[str] = set()
+    for claim in claims.values():
+        values.update(_ISO_DATE.findall(json.dumps(claim.model_dump(mode="json"), default=str)))
+    for item in evidence.values():
+        values.update(_ISO_DATE.findall(json.dumps(item.metadata, default=str)))
+    return {"-".join(parts) for parts in values}
+
+
 def numeric_issues(
     answer: ProposedAnswer,
     spans: list[str],
@@ -382,6 +403,14 @@ def numeric_issues(
 ) -> list[str]:
     sources = _number_sources(claims, evidence, capabilities)
     question_numbers = {token.value for token in number_tokens(question)}
+    source_dates = _source_dates(claims, evidence)
+    score_values = {
+        Decimal(str(value))
+        for claim in claims.values()
+        if claim.metric_id == "game_score" and isinstance(claim.value, Mapping)
+        for value in claim.value.values()
+        if isinstance(value, (int, float)) and not isinstance(value, bool)
+    }
     issues: list[str] = []
     for index, span in enumerate(spans, start=1):
         criterion = bool(
@@ -390,7 +419,21 @@ def numeric_issues(
             or _CONVERSATIONAL.search(span)
             or "?" in span
         )
+        dated = [
+            (match.start(), match.end())
+            for match in _ISO_DATE.finditer(span)
+            if "-".join(match.groups()) in source_dates
+        ]
+        scores = [
+            (match.start(), match.end())
+            for match in _SCORE_PAIR.finditer(span)
+            if all(Decimal(part) in score_values for part in match.groups())
+        ]
         for token in number_tokens(span):
+            if any(start <= token.start < end for start, end in dated):
+                continue
+            if any(start <= token.start < end for start, end in scores):
+                continue
             if _explained(token, token_unit(span, token), sources):
                 continue
             if criterion and token.value in question_numbers:

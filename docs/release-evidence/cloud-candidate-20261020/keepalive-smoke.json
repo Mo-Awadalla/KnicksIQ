@@ -1,0 +1,9 @@
+{
+  "observed_at": "2026-10-20T21:23:26.538133+00:00",
+  "scope": "Exact liveness command from api-keepalive.yml executed locally against the live API. GitHub schedule not active until merged and not verified by this receipt. No readiness or answer-quality claim.",
+  "workflow_sha256": "c0d59285c47e7be48074e8a7dc21e334d327433e2585ac36945408334ad571b8",
+  "command": "curl --fail --silent --show-error --max-time 90 \\\n  https://api.knicksiq.win/health/live | jq -e '.status == \"ok\"'\n",
+  "exit_code": 0,
+  "stdout": "true\n",
+  "stderr": ""
+}

@@ -50,7 +50,13 @@ def _chat_request(req: Request) -> tuple[str, dict[str, Any]]:
     if req.openrouter:
         body["provider"] = dict(req.provider)
         if req.reasoning_effort is not None:
-            body["reasoning"] = {"effort": req.reasoning_effort}
+            # "none" is not an effort OpenRouter accepts for every model; the disabled
+            # switch is the production form and still admits the request.
+            body["reasoning"] = (
+                {"enabled": False}
+                if req.reasoning_effort == "none"
+                else {"effort": req.reasoning_effort}
+            )
     elif req.reasoning_effort is not None:
         # Hosts other than OpenRouter take the OpenAI top-level field; DeepSeek otherwise
         # thinks by default and spends the completion budget before any JSON.

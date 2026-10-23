@@ -1,0 +1,139 @@
+{
+  "schema": "knicksiq-candidate-observation-manifest/v1",
+  "tested_commit": "976eb7c38e553844e3e992f89a3fa6e3a4560d28",
+  "generated_at_utc": "2026-10-21T01:21:41.683832+00:00",
+  "scope": "Observation packet, not a release record or approved quality result. Evidence publication does not change serving code.",
+  "public_artifacts": {
+    "docs/release-evidence/candidate-20261021/README.md": {
+      "sha256": "b46e88b8912c6b818b7086864c91978e86c7d9b5b556a0d1374bdfaef2461664",
+      "bytes": 6874
+    },
+    "docs/release-evidence/candidate-20261021/cloud-identity.json": {
+      "sha256": "e32623b735b3187517c820c7b2f89018523fce0d32c292e07907fc025d7449c1",
+      "bytes": 3981
+    },
+    "docs/release-evidence/candidate-20261021/cloud-review.json": {
+      "sha256": "63f893c05c3a4dd4950f7e460869fc3a03db0921b9a3c16f2c686b6606074987",
+      "bytes": 3685
+    },
+    "docs/release-evidence/candidate-20261021/cloud-search-smoke.json": {
+      "sha256": "870762f6180d4c79a8beb4db49e82e0b72c125c270b168ac3b5e7307110fcc73",
+      "bytes": 4889
+    },
+    "docs/release-evidence/candidate-20261021/hosted-ci.json": {
+      "sha256": "105b57474a9b185cf1f708998395f68acdc8ebb5457249576e16808b1d403033",
+      "bytes": 1518
+    },
+    "docs/release-evidence/candidate-20261021/keepalive-scheduled.json": {
+      "sha256": "4984a9ee081c85016d9178cba04e5c90158dba9659c43e5c2ac038b7fea72704",
+      "bytes": 1568
+    },
+    "docs/release-evidence/candidate-20261021/launch-observations.json": {
+      "sha256": "b1c5a07ab9d26e39440ab6a48d76873bd259d6d1eaa26f4af7f55c5494108036",
+      "bytes": 18572
+    },
+    "docs/release-evidence/candidate-20261021/launch-review.json": {
+      "sha256": "b0c0f9235c337438b5d68f92c7b6d515749e8d72441868ec64f9fe9c61e1efbd",
+      "bytes": 22186
+    },
+    "docs/release-evidence/evaluation-contract-20261019/README.md": {
+      "sha256": "ec8c3a3f3569a48b3c48a6dec908efa85a0f846381d631ca12cab2421eb9532b",
+      "bytes": 4100
+    },
+    "docs/release-evidence/hosted-health-20261020.json": {
+      "sha256": "77f6eb4c6b2c51f3824cbf01b0c1310f5deb78449561719708e2a6926fadd213",
+      "bytes": 16246
+    },
+    "docs/release-evidence/keepalive-manual-20261020.json": {
+      "sha256": "53537c7fa1467caf9676a60a2408fe3c5b8791a7b51ab7bc39358ce1a690ed82",
+      "bytes": 1186
+    },
+    "docs/release-evidence/report-audit-20261020/audit.json": {
+      "sha256": "0e02fdf61c14d8b4b53821b460305c4ab9c3c4393ea24e1707f703d16c65b715",
+      "bytes": 400340
+    },
+    "docs/release-evidence/report-audit-20261020/final-candidate.json": {
+      "sha256": "a354af7355538506d4a6ec6299d6002698aff05c21537f2980a8fe7eaa4bf499",
+      "bytes": 1168
+    },
+    "docs/release-evidence/report-audit-20261020/receipt.json": {
+      "sha256": "0d9f4b812664da4a26e6d2682bddf5329503bffad29c0fc5ab901327da6f42af",
+      "bytes": 6166
+    }
+  },
+  "private_archive": {
+    "path": "~/.local/share/knicksiq/release-evidence/20261021-976eb7c/candidate-976eb7c-private.zip",
+    "sha256": "4a90c8f342a15b29a0785a74081cc5b57ab57b0d29cad7bafa86fbb254281467",
+    "bytes": 8996504,
+    "mode": "0600",
+    "directory_mode": "0700",
+    "source_artifacts": 31,
+    "integrity": "ZIP CRC and every manifest SHA-256 verified",
+    "contains_opaque_local_session_tokens": true,
+    "do_not_commit": true
+  },
+  "original_cohort": {
+    "questions": 120,
+    "questions_sha256": "a546b99c36fedb59a475479016b0338fe113c4478d5165c4a5073d144ffdf482",
+    "fixed_semantic_members": [
+      "aliases_typos-001",
+      "aliases_typos-002",
+      "aliases_typos-003",
+      "aliases_typos-004",
+      "aliases_typos-005",
+      "aliases_typos-006",
+      "aliases_typos-007",
+      "aliases_typos-008",
+      "aliases_typos-009",
+      "aliases_typos-010",
+      "follow_ups-001",
+      "follow_ups-002",
+      "follow_ups-003",
+      "follow_ups-004",
+      "follow_ups-005",
+      "follow_ups-006",
+      "follow_ups-007",
+      "follow_ups-008",
+      "follow_ups-009",
+      "follow_ups-010",
+      "single_game_narrative-001",
+      "single_game_narrative-002",
+      "single_game_narrative-003",
+      "single_game_narrative-004",
+      "single_game_narrative-005",
+      "single_game_narrative-006",
+      "single_game_narrative-007",
+      "single_game_narrative-008",
+      "single_game_narrative-009",
+      "single_game_narrative-010",
+      "single_game_narrative-011",
+      "single_game_narrative-012",
+      "single_game_narrative-013",
+      "single_game_narrative-014",
+      "single_game_narrative-015",
+      "single_game_narrative-016",
+      "single_game_narrative-017",
+      "single_game_narrative-018",
+      "single_game_narrative-019",
+      "single_game_narrative-020",
+      "turning_points-001",
+      "turning_points-002",
+      "turning_points-003",
+      "turning_points-004",
+      "turning_points-005",
+      "turning_points-006",
+      "turning_points-007",
+      "turning_points-008",
+      "turning_points-009",
+      "turning_points-010"
+    ],
+    "fixed_semantic_count": 50,
+    "owner_approved_frozen_contract": false,
+    "official_quality_run_claimed": false
+  },
+  "owner_approval": null,
+  "release_ready": false,
+  "deployment_authorized": false,
+  "aliases_promoted": false,
+  "production_budget_changed": false
+}

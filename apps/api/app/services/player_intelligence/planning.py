@@ -20,6 +20,7 @@ from basketball_core.analytics import (
     OutputType,
     ResolvedPlayer,
     Timeframe,
+    parse_stat_threshold,
 )
 from basketball_core.analytics.registry import stat_keys_in_text
 
@@ -223,24 +224,9 @@ def _parse_plan(text: str, resolved: list[Player]) -> AnalyticsPlan:
     if game_selector:
         filters["game_selector"] = game_selector
 
-    threshold = None
-    threshold_match = re.search(
-        r"(?:at least\s+)?(\d+(?:\.\d+)?)\s*(?:\+|plus)?\s*"
-        r"(points?|rebounds?|assists?|steals?|blocks?)",
-        q,
-    )
-    if threshold_match:
-        threshold = float(threshold_match.group(1))
-        key = threshold_match.group(2).rstrip("s")
-        key = {
-            "point": "points",
-            "rebound": "rebounds",
-            "assist": "assists",
-            "steal": "steals",
-            "block": "blocks",
-        }[key]
-        if key not in stats:
-            stats.insert(0, key)
+    threshold = parse_stat_threshold(text)
+    if threshold and threshold.stat not in stats:
+        stats.insert(0, threshold.stat)
 
     # Select the operation before applying any conditioning filters. Words such as
     # "winning" and "correlated" describe a question; they do not select only wins.
@@ -386,5 +372,6 @@ def _parse_plan(text: str, resolved: list[Player]) -> AnalyticsPlan:
         output_type=output,
         aggregation_mode=aggregation_mode,
         retrieval_required=False,
-        threshold=threshold,
+        threshold=threshold.value if threshold else None,
+        threshold_comparison=threshold.comparison if threshold else "gte",
     )

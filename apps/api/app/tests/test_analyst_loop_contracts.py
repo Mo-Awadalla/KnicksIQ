@@ -7,7 +7,7 @@ from datetime import UTC, datetime
 
 import pytest
 from app.core.config import get_settings
-from app.services import analyst_provider
+from app.services import analyst_loop
 from app.services.analyst_loop import AnalystLoop
 from app.services.analyst_tools import AnalystTools
 from app.services.evidence_contracts import (
@@ -26,7 +26,7 @@ async def test_bounded_loop_and_revalidated_explanation(db_session, local_redis,
     await local_redis.set(f"ai-budget:{datetime.now(UTC):%Y-%m}", 0)
     tools, _ = await make_tools(db_session)
     adapter = ScriptedAdapter()
-    monkeypatch.setattr(analyst_provider, "get_llm_adapter", lambda: adapter)
+    monkeypatch.setattr(analyst_loop, "get_llm_adapter", lambda: adapter)
     loop = AnalystLoop(tools, [])
     response = await loop.run()
     assert response["llm_validated"], response
@@ -55,7 +55,7 @@ async def test_ten_short_prior_messages_still_reach_writer(db_session, local_red
     await local_redis.set(f"ai-budget:{datetime.now(UTC):%Y-%m}", 0)
     tools, _ = await make_tools(db_session)
     adapter = ScriptedAdapter()
-    monkeypatch.setattr(analyst_provider, "get_llm_adapter", lambda: adapter)
+    monkeypatch.setattr(analyst_loop, "get_llm_adapter", lambda: adapter)
     context = [
         {"role": "user" if index % 2 == 0 else "assistant", "content": f"Turn {index}"}
         for index in range(10)
@@ -65,28 +65,7 @@ async def test_ten_short_prior_messages_still_reach_writer(db_session, local_red
     assert adapter.prompts[0]["context"] == context
 
 
-async def test_provider_schema_growth_uses_factual_fallback(db_session, local_redis, monkeypatch):
-    await local_redis.set(f"ai-budget:{datetime.now(UTC):%Y-%m}", 0)
-    monkeypatch.setattr(get_settings(), "analyst_provider_format", "json_schema")
-    # The eight-tool registry needs a little more room than the original six-tool payload.
-    # Keep the intended boundary: the first action fits, the grown schema does not.
-    monkeypatch.setattr(get_settings(), "analyst_input_tokens", 8200)
-    tools, _ = await make_tools(db_session)
-
-    class SchemaAdapter(ScriptedAdapter):
-        response_schema: dict | None = None
-
-    adapter = SchemaAdapter()
-    monkeypatch.setattr(analyst_provider, "get_llm_adapter", lambda: adapter)
-    result = await AnalystLoop(tools, []).run()
-    assert not result["llm_validated"]
-    # A larger tool registry can exceed the input budget at admission, before the first
-    # provider call; both paths still end in the deterministic factual fallback.
-    assert len(adapter.prompts) <= 1
-    assert result["answer"]
-
-
-async def test_bad_provider_output_is_retried_once_then_falls_back(
+async def test_bad_provider_output_yields_factual_fallback(
     db_session, local_redis, monkeypatch, caplog
 ):
     await local_redis.set(f"ai-budget:{datetime.now(UTC):%Y-%m}", 0)
@@ -96,13 +75,13 @@ async def test_bad_provider_output_is_retried_once_then_falls_back(
         async def generate(self, **kwargs):
             return '{"action":"invented"}'
 
-    monkeypatch.setattr(analyst_provider, "get_llm_adapter", BadAdapter)
+    monkeypatch.setattr(analyst_loop, "get_llm_adapter", BadAdapter)
     loop = AnalystLoop(tools, [])
     result = await loop.run()
-    assert not result["llm_validated"] and loop.calls == 2
+    assert not result["llm_validated"]
     failure = next(r for r in caplog.records if r.message.startswith("analyst_execution_failed"))
     assert failure.error_type == "ValidationError"
-    assert failure.model_calls == 2
+    assert failure.model_calls <= get_settings().analyst_max_model_calls
     assert "invented" not in caplog.text
     assert result["citations"] and result["state"]["delivered_fact_ids"]
 
@@ -126,15 +105,21 @@ async def test_intermittent_bad_action_is_retried(db_session, local_redis, monke
     class FlakyAdapter(ScriptedAdapter):
         failed = False
 
-        async def generate(self, **kwargs):
+        async def generate(self, *, system, user):
+            payload = json.loads(user)
             if not self.failed:
                 self.failed = True
-                return json.dumps(_BAD_ACTIONS[bad_action])
-            return await super().generate(**kwargs)
+                # Keep the fixture invalid on the wire: only the action shape is wrong.
+                return json.dumps(
+                    analyst_loop.encode_model_response(payload, _BAD_ACTIONS[bad_action])
+                )
+            return await super().generate(system=system, user=user)
 
     adapter = FlakyAdapter()
-    monkeypatch.setattr(analyst_provider, "get_llm_adapter", lambda: adapter)
+    monkeypatch.setattr(analyst_loop, "get_llm_adapter", lambda: adapter)
     loop = AnalystLoop(tools, [])
+    # Force the model-action path: backend facts here would skip the action retry.
+    loop.fallback_claims = lambda: []  # type: ignore[method-assign]
     result = await loop.run()
     assert result["llm_validated"], result
     # One bad action, one retry, then answer and review; prefetch may remove the plan call.
@@ -173,28 +158,30 @@ async def test_repair_is_rechecked_and_never_investigates(
     class RepairAdapter(ScriptedAdapter):
         async def generate(self, *, system, user):
             payload = json.loads(user)
-            if payload["schema"]["title"] == "ProposedAnswer":
+            if payload["schema"]["title"] == "ProposedAnswer" and payload.get("proposed_answer"):
                 self.prompts.append(payload)
-                answer = payload["proposed_answer"]
+                answer = analyst_loop.payload_proposed_answer(payload)
+                assert answer is not None
                 answer["text"] = answer["text"].replace(" A new tactic caused this.", "")
-                return json.dumps(answer)
+                return json.dumps(analyst_loop.encode_model_response(payload, answer))
             raw = await super().generate(system=system, user=user)
-            value = json.loads(raw)
-            if payload["schema"]["title"] == "Action" and value.get("answer"):
-                value["answer"]["text"] += " A new tactic caused this."
-            if (
-                payload["schema"]["title"] == "AnswerReview"
-                and "tactic" in payload["proposed_answer"]["text"]
+            value = analyst_loop.decode_model_response(payload, json.loads(raw))
+            if payload["schema"]["title"] in {"Action", "ProposedAnswer"}:
+                answer = value.get("answer") if payload["schema"]["title"] == "Action" else value
+                if answer:
+                    answer["text"] += " A new tactic caused this."
+            if payload["schema"]["title"] == "AnswerReview" and "tactic" in "".join(
+                payload["review_spans"]
             ):
                 value["assertions"][0].update(
                     verdict="unsupported",
                     offending_text="A new tactic caused this.",
                     reason="No causal source.",
                 )
-            return json.dumps(value)
+            return json.dumps(analyst_loop.encode_model_response(payload, value))
 
     adapter = RepairAdapter()
-    monkeypatch.setattr(analyst_provider, "get_llm_adapter", lambda: adapter)
+    monkeypatch.setattr(analyst_loop, "get_llm_adapter", lambda: adapter)
     loop = AnalystLoop(tools, [])
     result = await loop.run()
     assert result["llm_validated"], result

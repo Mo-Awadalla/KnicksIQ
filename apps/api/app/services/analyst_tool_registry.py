@@ -107,6 +107,27 @@ TOOLS: tuple[ToolSpec, ...] = (
         needs_games=False,
     ),
     ToolSpec(
+        name="find_player_games",
+        description=(
+            "counts a player's games meeting an explicit per-game stat threshold and lists "
+            "the matching archived games"
+        ),
+        handler="app.services.analyst_tool_player:find_player_games",
+        needs_player=True,
+        reads_metric=True,
+        data_types=("player_box_scores",),
+    ),
+    ToolSpec(
+        name="get_game_narrative",
+        description=(
+            "canonical game narratives, tied game stories, comebacks and lost leads selected "
+            "from the archive"
+        ),
+        handler="app.services.analyst_tool_narrative:run",
+        needs_games=False,
+        supports_periods=True,
+    ),
+    ToolSpec(
         name="get_game_flow",
         description=(
             "play-by-play runs, deficits, comebacks and lost leads; ranks the observed "
@@ -184,7 +205,18 @@ def tools_hint() -> str:
         if periods is not None
         else ""
     )
-    listed = "; ".join(f"{spec.name} {spec.description}" for spec in TOOLS if not spec.prompt_lead)
+
+    def short(description: str, limit: int = 36) -> str:
+        # The full description is repeated in the capability manifest. The routing prompt
+        # keeps one terse clause per tool so the bounded input fits (see prompt budget tests).
+        head = description.split(";")[0].split(" (")[0].strip()
+        if len(head) <= limit:
+            return head
+        return head[:limit].rsplit(" ", 1)[0]
+
+    listed = "; ".join(
+        f"{spec.name} {short(spec.description)}" for spec in TOOLS if not spec.prompt_lead
+    )
     return (
         flow_hint
         + split_hint

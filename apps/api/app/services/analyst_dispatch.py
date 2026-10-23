@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING
 
 from app.services.analyst_calculations import METRICS
 from app.services.analyst_tool_registry import TOOLS_BY_NAME, period_tool_names
-from app.services.evidence_contracts import ToolResult
+from app.services.evidence_contracts import PLAYER_METRICS, ToolResult
 from app.services.query_resolution import resolve_query
 
 if TYPE_CHECKING:
@@ -15,12 +15,26 @@ if TYPE_CHECKING:
     from app.services.evidence_contracts import ToolCall
 
 
+def _split_definition_call(name: str, reason: str | None) -> bool:
+    """A split tool resolves its own undefined back-to-back/close-game buckets.
+
+    User-facing HTTP still raises the clarification before any tool runs; a direct
+    typed call may ask the split handler for those definitional buckets.
+    """
+    return name == "get_team_splits" and reason in {
+        "undefined_back_to_back_leg",
+        "undefined_comparison_threshold",
+    }
+
+
 async def execute_call(tools: AnalystTools, call: ToolCall) -> ToolResult:
     assert tools.scope is not None
     spec = TOOLS_BY_NAME[call.name]
     if not spec.needs_scope:
         return await spec.resolve_handler()(tools, call, None, [])
-    if tools.scope.requires_clarification:
+    if tools.scope.requires_clarification and not _split_definition_call(
+        call.name, tools.scope.clarification_reason
+    ):
         return ToolResult(
             status="ambiguous_entity",
             message="Which subject did you mean?",
@@ -47,11 +61,21 @@ async def execute_call(tools: AnalystTools, call: ToolCall) -> ToolResult:
         default_season_type=tools.scope.season_type,
         default_all_phases=tools.scope.all_phases,
     )
-    if scope.requires_clarification:
+    if scope.requires_clarification and not _split_definition_call(
+        call.name, scope.clarification_reason
+    ):
         return ToolResult(
             status="ambiguous_entity",
             message="Ambiguous entity.",
             choices=scope.clarification_options,
+        )
+    if spec.reads_metric and call.metric is not None and call.metric not in PLAYER_METRICS:
+        # A typed player metric cannot be a team metric; reject it before authoritative
+        # scope values can overwrite the model's suggestion.
+        return ToolResult(
+            status="unsupported_metric_or_scope",
+            message="Player calculations require a supported player metric.",
+            scope=tools.scope.model_dump(mode="json"),
         )
     # The turn's resolved scope is authoritative: a call may add a subject the turn left
     # unnamed, but it may not change the phase, window, site or game reference the turn
@@ -79,7 +103,11 @@ async def execute_call(tools: AnalystTools, call: ToolCall) -> ToolResult:
         authoritative = getattr(tools.scope, key)
         if authoritative:
             update[key] = authoritative
-    if spec.reads_metric and len(tools.scope.requested_metrics) > 1:
+    if (
+        spec.reads_metric
+        and len(tools.scope.requested_metrics) > 1
+        and (call.metric is not None or tools.scope.metric is not None)
+    ):
         selected_metric = call.metric or scope.metric
         if selected_metric not in tools.scope.requested_metrics:
             return ToolResult(

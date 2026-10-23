@@ -2,8 +2,10 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 import logging
+import re
 import time
 from pathlib import Path
 from typing import Any
@@ -14,14 +16,17 @@ from app.models.dataset_release import DatasetRelease
 from app.models.game import Game
 from app.models.game_event import GameEvent
 from app.models.report import Report
+from app.services.archive_units import UNIT_RECIPE, build_archive_units, unit_search_text
 from app.services.embeddings import embed_texts
 from app.services.possession_chunks import build_possession_chunks
 from app.services.qdrant_client import (
-    ensure_candidate_not_serving,
+    create_collection,
     ensure_collections,
+    get_qdrant_client,
+    preflight_candidate_collections,
     recreate_collection,
     upsert_points,
-    validate_candidate_collection,
+    validate_candidate_identity,
     versioned_collection,
 )
 from sqlalchemy import select
@@ -93,9 +98,16 @@ async def build_rag_artifacts(
     game_order: str = GAME_ORDER_DATE,
     reset_qdrant: bool = False,
     data_version: str | None = None,
+    index_revision: str | None = None,
 ) -> dict[str, Any]:
     """Write derived possession chunks and table exports without mutating source data."""
     started_at = time.perf_counter()
+    if data_version and reset_qdrant:
+        raise ValueError("Versioned candidate indexing is create-only; --reset-qdrant is forbidden")
+    if index_revision and (
+        not data_version or not re.fullmatch(r"[a-z0-9][a-z0-9-]{0,47}", index_revision)
+    ):
+        raise ValueError("An index revision requires a release and an alphanumeric/hyphen identity")
     out_dir.mkdir(parents=True, exist_ok=True)
     games_stmt = (
         select(Game)
@@ -110,6 +122,10 @@ async def build_rag_artifacts(
         )
     all_games = list((await db.execute(games_stmt)).scalars().all())
     games = _select_games(all_games, game_limit=game_limit, game_order=game_order)
+    archive_units = await build_archive_units(db, games, data_version) if data_version else []
+    with (out_dir / "archive_units.jsonl").open("w") as unit_file:
+        for record in archive_units:
+            unit_file.write(json.dumps(record, sort_keys=True) + "\n")
     game_ids = [game.id for game in games]
     logger.info(
         "rag_index_games_selected",
@@ -210,56 +226,64 @@ async def build_rag_artifacts(
     candidate_aliases: dict[str, str] = {}
     settings = get_settings()
     possession_collection = (
-        versioned_collection(settings.rag_qdrant_possessions_collection, data_version)
+        versioned_collection(
+            settings.rag_qdrant_possessions_collection,
+            f"{data_version}__{index_revision}" if index_revision else data_version,
+        )
         if data_version
         else settings.rag_qdrant_possessions_collection
     )
-    if settings.rag_qdrant_enabled and (reset_qdrant or data_version):
-        if data_version:
-            ensure_candidate_not_serving(possession_collection)
-        recreate_collection(possession_collection)
-        qdrant_reset = True
-    elif settings.rag_qdrant_enabled and possession_records:
-        ensure_collections()
-    if settings.rag_qdrant_enabled and possession_records:
-        for batch in _iter_batches(possession_records, QDRANT_INDEX_BATCH_SIZE):
-            documents = [_embedding_text(record) for record in batch]
-            if getattr(settings, "rag_qdrant_cloud_inference", False):
-                qdrant_upserted += upsert_points(
-                    possession_collection,
-                    batch,
-                    documents=documents,
+    reused_collections: list[str] = []
+    if settings.rag_qdrant_enabled and data_version:
+        supporting_records = await _release_supporting_records(db, games, data_version)
+        for record in archive_units:
+            kind = record["payload"]["unit_type"]
+            collection = (
+                settings.rag_qdrant_games_collection
+                if kind in {"multigame_aggregate", "game_scoring_comparison"}
+                else settings.rag_qdrant_box_scores_collection
+            )
+            supporting_records[collection].append(record)
+        collections = {
+            settings.rag_qdrant_possessions_collection: possession_records,
+            **supporting_records,
+        }
+        counts, candidate_aliases, reused_collections = _prepare_release_collections(
+            collections, data_version, index_revision=index_revision
+        )
+        qdrant_upserted = (
+            0 if possession_collection in reused_collections else len(possession_records)
+        )
+        supporting_counts = {
+            alias: count for alias, count in counts.items() if alias in supporting_records
+        }
+    else:
+        if settings.rag_qdrant_enabled and reset_qdrant:
+            recreate_collection(possession_collection)
+            qdrant_reset = True
+        elif settings.rag_qdrant_enabled and possession_records:
+            ensure_collections()
+        if settings.rag_qdrant_enabled and possession_records:
+            for batch in _iter_batches(possession_records, QDRANT_INDEX_BATCH_SIZE):
+                documents = [_embedding_text(record) for record in batch]
+                if getattr(settings, "rag_qdrant_cloud_inference", False):
+                    qdrant_upserted += upsert_points(
+                        possession_collection, batch, documents=documents
+                    )
+                else:
+                    qdrant_upserted += upsert_points(
+                        possession_collection, batch, embed_texts(documents)
+                    )
+                logger.info(
+                    "rag_index_qdrant_batch_upserted",
+                    extra={
+                        "collection": possession_collection,
+                        "batch_size": len(batch),
+                        "qdrant_upserted": qdrant_upserted,
+                    },
                 )
-            else:
-                qdrant_upserted += upsert_points(
-                    possession_collection,
-                    # Writes target an immutable physical collection when a release
-                    # version is supplied; the stable alias moves only after validation.
-                    batch,
-                    embed_texts(documents),
-                )
-            logger.info(
-                "rag_index_qdrant_batch_upserted",
-                extra={
-                    "collection": possession_collection,
-                    "batch_size": len(batch),
-                    "qdrant_upserted": qdrant_upserted,
-                },
-            )
-        if qdrant_upserted != len(possession_records):
-            raise RuntimeError("Qdrant indexed point count did not match release records")
-        if data_version:
-            validate_candidate_collection(
-                possession_collection, data_version, len(possession_records)
-            )
-            supporting_counts, supporting_collections = await _build_release_supporting_collections(
-                db, games, data_version
-            )
-            candidate_aliases = {
-                settings.rag_qdrant_possessions_collection: possession_collection,
-                **supporting_collections,
-            }
-        else:
+            if qdrant_upserted != len(possession_records):
+                raise RuntimeError("Qdrant indexed point count did not match release records")
             supporting_counts = {}
 
     manifest = {
@@ -295,8 +319,12 @@ async def build_rag_artifacts(
         "qdrant_upserted": qdrant_upserted,
         "qdrant_supporting_counts": supporting_counts,
         "data_version": data_version,
+        "index_revision": index_revision,
+        "archive_source_units": len(archive_units),
+        "archive_units_path": str(out_dir / "archive_units.jsonl"),
         "candidate_aliases": candidate_aliases,
         "aliases_promoted": False,
+        "qdrant_reused_collections": reused_collections,
         "qdrant_collection": possession_collection,
         "qdrant_batch_size": QDRANT_INDEX_BATCH_SIZE,
         "elapsed_seconds": round(time.perf_counter() - started_at, 3),
@@ -315,12 +343,12 @@ async def build_rag_artifacts(
     return manifest
 
 
-async def _build_release_supporting_collections(
+async def _release_supporting_records(
     db: AsyncSession,
     games: list[Game],
     data_version: str,
-) -> tuple[dict[str, int], dict[str, str]]:
-    """Build summaries, box facts, and reviewed reports before alias promotion."""
+) -> dict[str, list[dict[str, Any]]]:
+    """Collect all supporting source records before any candidate resource write."""
     settings = get_settings()
     game_ids = [game.id for game in games]
     games_by_id = {game.id: game for game in games}
@@ -417,27 +445,70 @@ async def _build_release_supporting_collections(
         }
         for row in reports
     ]
-    collections = {
+    return {
         settings.rag_qdrant_games_collection: game_records,
         settings.rag_qdrant_box_scores_collection: box_records,
         settings.rag_qdrant_reports_collection: report_records,
     }
-    counts: dict[str, int] = {}
-    physical_names: dict[str, str] = {}
+
+
+def _prepare_release_collections(
+    collections: dict[str, list[dict[str, Any]]],
+    data_version: str,
+    *,
+    index_revision: str | None = None,
+) -> tuple[dict[str, int], dict[str, str], list[str]]:
+    """Preflight the complete release, then create only missing inactive targets."""
+    settings = get_settings()
+    namespace = f"{data_version}__{index_revision}" if index_revision else data_version
+    aliases = {alias: versioned_collection(alias, namespace) for alias in collections}
+    if len(set(aliases.values())) != 4:
+        raise RuntimeError("Candidate indexing requires four distinct collection destinations")
+    documents: dict[str, list[str]] = {}
+    has_units = any(
+        record["payload"].get("unit_type") for records in collections.values() for record in records
+    )
     for alias, records in collections.items():
-        physical = versioned_collection(alias, data_version)
-        physical_names[alias] = physical
-        ensure_candidate_not_serving(physical)
-        recreate_collection(physical)
-        inserted = 0
-        for batch in _iter_batches(records, QDRANT_INDEX_BATCH_SIZE):
-            documents = [str(record["payload"]["semantic_summary"]) for record in batch]
-            if settings.rag_qdrant_cloud_inference:
-                inserted += upsert_points(physical, batch, documents=documents)
+        texts = [
+            _embedding_text(record)
+            if alias == settings.rag_qdrant_possessions_collection
+            else unit_search_text(record["payload"])
+            for record in records
+        ]
+        documents[alias] = texts
+        for record, text in zip(records, texts, strict=True):
+            record["payload"]["_index_embedding"] = {
+                "model": settings.rag_embedding_model,
+                "mode": "cloud" if settings.rag_qdrant_cloud_inference else "local",
+                "document_sha256": hashlib.sha256(text.encode()).hexdigest(),
+            }
+            if has_units:
+                record["payload"]["_index_embedding"]["source_unit_schema"] = UNIT_RECIPE
+    client = get_qdrant_client()
+    targets = {aliases[alias]: records for alias, records in collections.items()}
+    reusable = preflight_candidate_collections(targets, data_version, client=client)
+    # Preflight all four before creating any: a later conflicting report must not
+    # leave a rebuilt possession index. Provider create conflicts stop, never reset.
+    for collection in targets:
+        if collection not in reusable:
+            if has_units:
+                create_collection(collection, client=client, include_archive_units=True)
             else:
-                inserted += upsert_points(physical, batch, embed_texts(documents))
-        if inserted != len(records) or not records:
-            raise RuntimeError(f"Qdrant {alias} validation failed")
-        validate_candidate_collection(physical, data_version, len(records))
-        counts[alias] = inserted
-    return counts, physical_names
+                create_collection(collection, client=client)
+    counts = {}
+    for alias, records in collections.items():
+        physical = aliases[alias]
+        if physical not in reusable:
+            inserted = 0
+            for index in range(0, len(records), QDRANT_INDEX_BATCH_SIZE):
+                batch = records[index : index + QDRANT_INDEX_BATCH_SIZE]
+                texts = documents[alias][index : index + QDRANT_INDEX_BATCH_SIZE]
+                if settings.rag_qdrant_cloud_inference:
+                    inserted += upsert_points(physical, batch, documents=texts, client=client)
+                else:
+                    inserted += upsert_points(physical, batch, embed_texts(texts), client=client)
+            if inserted != len(records):
+                raise RuntimeError(f"Qdrant {alias} indexed point count mismatch")
+            validate_candidate_identity(physical, data_version, records, client=client)
+        counts[alias] = len(records)
+    return counts, aliases, sorted(reusable)

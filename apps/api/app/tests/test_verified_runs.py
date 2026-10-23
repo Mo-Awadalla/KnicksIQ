@@ -46,3 +46,30 @@ def test_away_run_and_unknown_boundary():
     result = verified_runs(GAME, rows, [valid, missing])
     assert len(result) == 1
     assert (result[0]["points_for"], result[0]["points_against"]) == (6, 2)
+
+
+def test_explicit_zero_correction_is_not_certified_as_missing_score():
+    import pytest
+    from app.models.game import Game
+    from app.models.game_event import GameEvent
+    from app.services.canonical_narrative import _maximum_runs
+
+    rows = [
+        GameEvent(
+            game_id=1,
+            sequence=sequence,
+            period=1,
+            clock="1:00",
+            home_score=home,
+            away_score=away,
+            score_observed=observed,
+        )
+        for sequence, (home, away, observed) in enumerate(
+            [(0, 2, True), (0, 0, True), (0, 4, True)], start=1
+        )
+    ]
+    unsafe = Row(team_id="BOS", start_sequence=1, end_sequence=3)
+    assert verified_runs(GAME, rows, [unsafe]) == []
+    game = Game(id=1, home_team_id="NYK", away_team_id="BOS", home_score=0, away_score=4)
+    with pytest.raises(ValueError):
+        _maximum_runs(game, rows)

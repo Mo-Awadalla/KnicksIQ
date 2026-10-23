@@ -11,7 +11,7 @@ import json
 from datetime import UTC, datetime
 
 import pytest
-from app.services import analyst_provider
+from app.services import analyst_loop
 from app.services.analyst_loop import AnalystLoop
 from app.services.evidence_contracts import ToolCall
 from app.tests.support.analyst_protocol import (
@@ -32,47 +32,52 @@ class DeclaredAdapter(ScriptedAdapter):
     async def generate(self, *, system, user):
         payload = json.loads(user)
         if payload["schema"]["title"] == "AnswerReview":
-            answer = payload["proposed_answer"]
+            answer = analyst_loop.payload_proposed_answer(payload)
+            claim_ids = [claim["claim_id"] for claim in answer["claims"]] if answer else []
             return json.dumps(
-                {
-                    "assertions": [
-                        {
-                            "text": span,
-                            "assertion_type": self.review_type,
-                            "verdict": "supported",
-                            "offending_text": None,
-                            "supporting_claim_ids": [
-                                claim["claim_id"] for claim in answer["claims"]
-                            ],
-                            "supporting_evidence_ids": [],
-                            "reason": "Fixture supports the declared intent.",
-                        }
-                        for span in payload["review_spans"]
-                    ]
-                }
+                analyst_loop.encode_model_response(
+                    payload,
+                    {
+                        "assertions": [
+                            {
+                                "text": span,
+                                "assertion_type": self.review_type,
+                                "verdict": "supported",
+                                "offending_text": None,
+                                "supporting_claim_ids": claim_ids,
+                                "supporting_evidence_ids": [],
+                                "reason": "Fixture supports the declared intent.",
+                            }
+                            for span in payload["review_spans"]
+                        ]
+                    },
+                )
             )
         self.prompts.append(payload)
+        available = analyst_loop.payload_claims(payload)
         candidate = next(iter(payload["candidates"]), None)
         used = (
-            [claim for claim in payload["claims"] if claim["claim_id"] in candidate["claim_ids"]]
+            [claim for claim in available if claim["claim_id"] in candidate["claim_ids"]]
             if candidate and self.claim_count
-            else payload["claims"][: self.claim_count]
+            else available[: self.claim_count]
         )
+        required = payload.get("required_claim_indexes")
+        if required:
+            used = [available[domain[0]] for domain in required]
         text = self.text.format(statement=used[0]["statement"] if used else "No archive fact.")
+        answer = {
+            "text": text,
+            "claims": [
+                {"claim_id": claim["claim_id"], "displayed_value": claim["value"]} for claim in used
+            ],
+            "evidence_ids": [],
+            "fact_ids": [candidate["fact_id"]] if candidate and used else [],
+        }
         return json.dumps(
-            {
-                "action": self.action,
-                "tools": [],
-                "answer": {
-                    "text": text,
-                    "claims": [
-                        {"claim_id": claim["claim_id"], "displayed_value": claim["value"]}
-                        for claim in used
-                    ],
-                    "evidence_ids": [],
-                    "fact_ids": [candidate["fact_id"]] if candidate and used else [],
-                },
-            }
+            analyst_loop.encode_model_response(
+                payload,
+                {"action": self.action, "tools": [], "answer": answer},
+            )
         )
 
 
@@ -93,9 +98,12 @@ async def test_decline_with_partial_facts_is_refused(db_session, local_redis, mo
         "I can't predict the next game. Related archive fact: {statement}",
         claims=1,
     )
-    monkeypatch.setattr(analyst_provider, "get_llm_adapter", lambda: adapter)
+    monkeypatch.setattr(analyst_loop, "get_llm_adapter", lambda: adapter)
     loop = AnalystLoop(tools, [])
     loop.results.append(result)
+    # Refusal semantics are a model-action contract: force the action path even though
+    # prefetched facts exist, or the loop would ask for the final answer directly.
+    loop.fallback_claims = lambda: []  # type: ignore[method-assign]
     result = await loop.run()
     assert result["llm_validated"], result
     assert result["refused"] is True
@@ -119,8 +127,10 @@ async def test_non_declines_are_not_refused(
     await local_redis.set(f"ai-budget:{datetime.now(UTC):%Y-%m}", 0)
     tools, _ = await make_tools(db_session)
     adapter = DeclaredAdapter(action, text, review_type=review_type)
-    monkeypatch.setattr(analyst_provider, "get_llm_adapter", lambda: adapter)
-    result = await AnalystLoop(tools, []).run()
+    monkeypatch.setattr(analyst_loop, "get_llm_adapter", lambda: adapter)
+    loop = AnalystLoop(tools, [])
+    loop.fallback_claims = lambda: []  # type: ignore[method-assign]
+    result = await loop.run()
     assert result["llm_validated"], result
     assert result["refused"] is False
 
@@ -133,8 +143,10 @@ async def test_explained_coverage_is_refused(db_session, local_redis, monkeypatc
         "I can't provide live injury data. The archive covers 2025-26 game records.",
         review_type="coverage",
     )
-    monkeypatch.setattr(analyst_provider, "get_llm_adapter", lambda: adapter)
-    result = await AnalystLoop(tools, []).run()
+    monkeypatch.setattr(analyst_loop, "get_llm_adapter", lambda: adapter)
+    loop = AnalystLoop(tools, [])
+    loop.fallback_claims = lambda: []  # type: ignore[method-assign]
+    result = await loop.run()
     assert result["llm_validated"], result
     assert result["refused"] is True
 
@@ -142,7 +154,7 @@ async def test_explained_coverage_is_refused(db_session, local_redis, monkeypatc
 async def test_fallback_answer_is_not_refused(db_session, local_redis, monkeypatch):
     await local_redis.set(f"ai-budget:{datetime.now(UTC):%Y-%m}", 0)
     tools, _ = await make_tools(db_session)
-    monkeypatch.setattr(analyst_provider, "get_llm_adapter", FailingAdapter)
+    monkeypatch.setattr(analyst_loop, "get_llm_adapter", FailingAdapter)
     result = await AnalystLoop(tools, []).run()
     assert not result["llm_validated"]
     assert result["citations"]
@@ -154,7 +166,9 @@ async def test_fallback_on_unavailable_live_question_is_refused(
 ):
     await local_redis.set(f"ai-budget:{datetime.now(UTC):%Y-%m}", 0)
     tools, _ = await make_tools(db_session, "Who is injured today?")
-    monkeypatch.setattr(analyst_provider, "get_llm_adapter", FailingAdapter)
+    monkeypatch.setattr(analyst_loop, "get_llm_adapter", FailingAdapter)
     result = await AnalystLoop(tools, []).run()
     assert not result["llm_validated"]
+    # A live-only question has no evidence-backed answer: the deterministic fallback
+    # must mark the turn refused instead of dressing archive facts as a live answer.
     assert result["refused"] is True

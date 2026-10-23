@@ -1,0 +1,61 @@
+{
+  "rows": [
+    {
+      "question": "How many points did Brunson average in December?",
+      "status": 200,
+      "answer": "Jalen Brunson: 30.6 points per appearance across 13 observed appearances in the 2025-26 all-phase Knicks archive, 2025-12-02 through 2025-12-31.",
+      "revision": 1,
+      "committed": true,
+      "sameSession": true,
+      "citations": [
+        {
+          "metric": "points:average",
+          "window": {
+            "date_start": "2025-12-02",
+            "date_end": "2025-12-31",
+            "requested": {
+              "date_start": "2025-12-01",
+              "date_end": "2025-12-31"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "question": "Hello",
+      "status": 200,
+      "answer": "Hi — ask me about an archived Knicks game, player stat, streak, opponent, or turning point.",
+      "revision": 2,
+      "committed": true,
+      "sameSession": true,
+      "citations": []
+    },
+    {
+      "question": "Which parlay should I bet on tonight?",
+      "status": 200,
+      "answer": "I don't have live, current, injury, trade, betting or future coverage. I can answer questions about games in the 2025-26 Knicks archive.",
+      "revision": 3,
+      "committed": true,
+      "sameSession": true,
+      "citations": []
+    },
+    {
+      "question": "And his assists?",
+      "status": 200,
+      "answer": "Jalen Brunson: 6.6 assists per appearance across 93 observed appearances in the 2025-26 all-phase Knicks archive, 2025-10-22 through 2026-06-13.",
+      "revision": 4,
+      "committed": true,
+      "sameSession": true,
+      "citations": [
+        {
+          "metric": "assists:average",
+          "window": {
+            "date_start": "2025-10-22",
+            "date_end": "2026-06-13"
+          }
+        }
+      ]
+    }
+  ],
+  "passed": false
+}

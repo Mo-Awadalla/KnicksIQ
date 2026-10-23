@@ -7,9 +7,9 @@ import pytest
 from app.api.analysis import _sample_shadow
 from app.core.config import get_settings
 from app.core.db import AsyncSessionLocal
-from app.services import analyst_provider
-from app.tests.support.analyst_protocol import ScriptedAdapter, local_redis  # noqa: F401
-from app.tests.support.player_archive import _seed_release_stats
+from app.services import analyst_loop
+from app.tests.test_analyst_contracts import ScriptedAdapter, local_redis  # noqa: F401
+from app.tests.test_player_intelligence import _seed_release_stats
 
 
 @pytest.mark.parametrize(
@@ -60,7 +60,7 @@ async def test_evidence_loop_shadow_http(
             return '{"action":"invented"}'
 
         monkeypatch.setattr(adapter, "generate", invalid_generate)
-    monkeypatch.setattr(analyst_provider, "get_llm_adapter", lambda: adapter)
+    monkeypatch.setattr(analyst_loop, "get_llm_adapter", lambda: adapter)
     request_id = next(
         f"sampling-{i}" for i in range(1000) if _sample_shadow(f"sampling-{i}", 0.1) == sampled
     )
