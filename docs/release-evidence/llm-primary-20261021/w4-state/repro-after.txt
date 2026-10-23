@@ -1,0 +1,53 @@
+NOT REPRODUCED player switch loses window and metric
+  want relative_game_count=5, metric=points, 5 games
+  got  relative_game_count=5, metric=points, games=5
+NOT REPRODUCED pronoun metric change loses month
+  want date_start=2025-12-02, date_end=2025-12-31, 14 games
+  got  date_start=2025-12-02, date_end=2025-12-31, games=14
+NOT REPRODUCED elliptical playoff follow-up loses metric
+  want player_ids=[134], metric=points, season_type=playoffs
+  got  player_ids=[134], metric=points, season_type=playoffs
+NOT REPRODUCED And overall? after a player window loses topic and metric
+  want topic=How many points did Brunson average over the last 5 games?, metric=points
+  got  topic='How many points did Brunson average over the last 5 games?', metric=points
+NOT REPRODUCED that game loses game_ids and phase
+  want game_ids=[101], season_type=None, 1 game
+  got  game_ids=[101], season_type=None, games=1
+NOT REPRODUCED matchup follow-up drops any-phase scope
+  want season_type=None, 4 games
+  got  season_type=None, games=4
+NOT REPRODUCED what about an opponent asks for a player
+  want requires_clarification=False, opponent_id=CLE
+  got  requires_clarification=False, opponent_id=CLE, choices=[]
+NOT REPRODUCED per game against an opponent asks which game
+  want requires_clarification=False, opponent_id=BOS, 4 games
+  got  requires_clarification=False, choices=[], games=4
+NOT REPRODUCED fallback answers a points-per-game question with wins and losses
+  want claims include points_per_game
+  got  claims=['points_per_game'], text='Knicks regular season points per game: 119.0 over 40 archived games.'
+NOT REPRODUCED overall after a decline loses the record topic
+  want claims include wins and losses
+  got  claims=['wins', 'losses'], text='Knicks (all phases) wins: 69 over 101 archived games. Knicks (all phases) losses: 32 over 101 archiv'
+NOT REPRODUCED per game after a total keeps total aggregation and loses the month
+  want date_start=2025-12-02, 14 games, average request
+  got  date_start=2025-12-02, games=14, prefetch=[('get_team_stats', 'average', 'ok')], text='Knicks regular season points per game: 122.14285714285714 over 14 archived games'
+NOT REPRODUCED why follow-up loses the game and answers with a season record
+  want game_ids=[99], 1 game, answer mentions Spurs
+  got  game_ids=[99], games=1, text='Knicks playoffs points: 111 over 1 archived games (111-115 vs Spurs on 2026-06-08). Knicks'
+NOT REPRODUCED refusal that cites facts overwrites the prior topic and month
+  want declined=True, date_start=2025-12-02, 14 games
+  got  declined=True, date_start=2025-12-02, games=14
+NOT REPRODUCED per game after a total never runs the average lookup
+  want prefetched points_per_game, date_start=2025-12-02, 14 games
+  got  prefetch=['wins', 'losses', 'points_per_game', 'margin_per_game'], date_start=2025-12-02, games=14
+analyst_execution_failed request_id= error_type=ValidationError stage=admission recovery_ran=True recovered_facts=True
+NOT REPRODUCED a failed repair call claims the model or budget was unavailable
+  want a warning that names neither model nor budget
+  got  warning='Proposed wording did not pass evidence review.'
+NOT REPRODUCED an expired lease discards a completed turn and misreports a replay
+  want commit=True after lease expiry, repeat commit=True
+  got  commit=True, repeat=True
+NOT REPRODUCED refused turn's factual fallback overwrites the prior month
+  want declined=True, date_start=2025-12-02, 14 games
+  got  declined=True, answer='Jalen Brunson: 26.0 points per appearance across 74 observed', date_start=2025-12-02, games=14
+REPRODUCED 0 of 17

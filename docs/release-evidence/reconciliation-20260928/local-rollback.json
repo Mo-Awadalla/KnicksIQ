@@ -1,0 +1,6 @@
+{
+  "old_version": "2025-26.20260714.1",
+  "candidate_version": "2025-26.20260928.1",
+  "restored_old_then_candidate": true,
+  "scope": "isolated PostgreSQL activation; no services or remote aliases"
+}

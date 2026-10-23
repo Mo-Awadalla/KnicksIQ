@@ -1,0 +1,51 @@
+{
+  "candidate": "6e89d3a84a59f91920f17f7610ac47ecc963cd6c",
+  "requested_fixes": [
+    "Preserve session continuity across greetings and pre-model refusals",
+    "Make resolved metric and aggregation authoritative for tool execution",
+    "Align repair prompt with the flat ProposedAnswer schema",
+    "Validate and review the same declared evidence"
+  ],
+  "regression_command": "TEST_MODE=true uv run pytest apps/api/app/tests/test_analyst_boundaries.py -q --junitxml=release-artifacts/20261022-boundary-fixes/before.xml",
+  "regressions": {"failed": 9, "passed_controls": 2},
+  "browser": {
+    "url": "http://127.0.0.1:5186/",
+    "api": "http://127.0.0.1:8176",
+    "mode": "deterministic",
+    "questions": [
+      "How many points did Brunson average in December?",
+      "Which parlay should I bet on tonight?",
+      "And his assists?"
+    ],
+    "observed": [
+      "30.6 points per appearance across 13 observed appearances",
+      "Refusal and refresh-recovery notice stating the answer was not saved",
+      "Which subject did you mean? followed by the roster"
+    ],
+    "expected_follow_up": "Jalen Brunson: 7.1 assists per appearance across 13 observed appearances"
+  },
+  "repair_contract": {
+    "requested_schema": "ProposedAnswer",
+    "actual_prompt_requirement": "Answer actions require an answer object",
+    "effect": "An action-shaped answer fails the required flat schema",
+    "existing_proof": "release-artifacts/20261022-module-audit/probe_protocols.json"
+  },
+  "failure_modes": [
+    "An early reply discards session identity or bypasses revision and replay checks",
+    "A model call silently replaces the user's metric or aggregation",
+    "An unspecified metric is incorrectly locked instead of remaining model-selectable",
+    "A claimless factual answer is authorized using a claim it never declared",
+    "Reviewer packing silently drops an explicitly cited receipt",
+    "Evidence-only factual answers or legitimate non-factual refusals become impossible",
+    "A repair must follow two conflicting output formats"
+  ],
+  "design": {
+    "session_options": ["Browser exception for specific reply kinds", "Existing server session finalization for every admitted turn"],
+    "session_choice": "Shared server finalization preserves replay and revision invariants without adding a client-side exception",
+    "evidence_options": ["Infer missing references and attach them after generation", "Resolve declared references once and reject factual text that is not backed by that selected bundle"],
+    "evidence_choice": "Declared references define the proof; no inference of undeclared factual authority",
+    "query_shape": "ResolvedQuery carries metric and aggregation alongside its population",
+    "repair_shape": "ProposedAnswer remains flat and gets its own instructions"
+  },
+  "paid_model_calls": 0
+}

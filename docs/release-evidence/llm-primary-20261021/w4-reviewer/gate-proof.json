@@ -1,0 +1,427 @@
+{
+  "measured_at": "2026-10-22T15:04:41+00:00",
+  "records": [
+    "docs/release-evidence/llm-primary-20261021/reviewer/head-units.jsonl"
+  ],
+  "labels": "docs/release-evidence/llm-primary-20261021/reviewer/labels.json",
+  "classes": {
+    "number_swapped_other_metric": "A value is replaced by another trusted claim value for a different metric. numeric_issues compares Decimal values and ignores metric_id.",
+    "wrong_subject": "Only the player or team subject changes; every number is unchanged and trusted. The gate has no subject check.",
+    "wrong_phase_or_window": "Only home/road or playoffs/regular-season wording changes; every number stays trusted. Filters and season_type are reviewer-visible, not gate-checked.",
+    "wins_losses_swapped": "Both numbers are supplied claim values. The gate checks presence, not which value is wins and which is losses.",
+    "per_game_total_confusion": "The value is unchanged and trusted; only the per-game versus total wording changes. The gate does not inspect units.",
+    "unsupported_causal_or_ranking": "The added sentence contains no number tokens, so numeric_issues has nothing to check. Declared claim references are unchanged.",
+    "coincident_percent": "The percent token equals an integer value of an unrelated trusted claim or sample size, so _explained accepts it by value before percent conversion."
+  },
+  "all_passed": false,
+  "controls": [
+    {
+      "case_id": "control:exact_statistics-001",
+      "unit": "exact_statistics-001",
+      "answer": "In the available 2025-26 archive, the Knicks went 69-32 across 101 games.",
+      "gate_issues": []
+    },
+    {
+      "case_id": "control:exact_statistics-002",
+      "unit": "exact_statistics-002",
+      "answer": "The Knicks scored 11,750 total points across 101 archived games in the 2025-26 release.",
+      "gate_issues": []
+    },
+    {
+      "case_id": "control:exact_statistics-003",
+      "unit": "exact_statistics-003",
+      "answer": "The Knicks averaged 116.34 points per game across 101 archived games in the 2025-26 release.",
+      "gate_issues": []
+    },
+    {
+      "case_id": "control:exact_statistics-004",
+      "unit": "exact_statistics-004",
+      "answer": "The Knicks' average margin was 7.94 points per game across 101 archived games in the 2025-26 release.",
+      "gate_issues": []
+    },
+    {
+      "case_id": "control:exact_statistics-005",
+      "unit": "exact_statistics-005",
+      "answer": "The Knicks won 37 home games in the available 2025-26 archive.",
+      "gate_issues": []
+    },
+    {
+      "case_id": "control:exact_statistics-006",
+      "unit": "exact_statistics-006",
+      "answer": "The Knicks won 32 road games in the available 2025-26 archive.",
+      "gate_issues": []
+    },
+    {
+      "case_id": "control:exact_statistics-007",
+      "unit": "exact_statistics-007",
+      "answer": "The Knicks lost 32 games across the 101 archived games in this release.",
+      "gate_issues": []
+    },
+    {
+      "case_id": "control:exact_statistics-008",
+      "unit": "exact_statistics-008",
+      "answer": "In the available 2025-26 archive, the Knicks' biggest win by margin is a 54-point win (120 points scored, 0 losses in that filtered set).",
+      "gate_issues": []
+    },
+    {
+      "case_id": "control:date_range_last_n-001",
+      "unit": "date_range_last_n-001",
+      "answer": "Over their last 5 archived games, the Knicks went 4-1.",
+      "gate_issues": []
+    },
+    {
+      "case_id": "control:date_range_last_n-002",
+      "unit": "date_range_last_n-002",
+      "answer": "Over their last 10 archived games, the Knicks averaged 114.1 points per game (9 wins, 1 loss).",
+      "gate_issues": []
+    },
+    {
+      "case_id": "control:date_range_last_n-003",
+      "unit": "date_range_last_n-003",
+      "answer": "Jalen Brunson averaged 32.6 points per game over his last 5 games (2025-26 playoffs, June 3\u201313, 2026).",
+      "gate_issues": []
+    },
+    {
+      "case_id": "control:date_range_last_n-004",
+      "unit": "date_range_last_n-004",
+      "answer": "From January 1 through January 31, the Knicks went 7-8 across 15 archived games, scoring 1,652 total points.",
+      "gate_issues": []
+    },
+    {
+      "case_id": "control:comparisons-002",
+      "unit": "comparisons-002",
+      "answer": "In the 2025-26 all-phase archive, Jalen Brunson averaged 26.5 points per appearance across 93 observed appearances, while Karl-Anthony Towns averaged 19.2 across 94. Both figures cover only observed appearances, and some archived games are missing player rows.",
+      "gate_issues": []
+    },
+    {
+      "case_id": "control:comparisons-004",
+      "unit": "comparisons-004",
+      "answer": "Who do you mean by \"their\"? Please name the player (or team) whose first 10 games and last 10 games you want compared.",
+      "gate_issues": []
+    }
+  ],
+  "mutations": [
+    {
+      "case_id": "metric_swap_ppg_to_margin",
+      "class": "number_swapped_other_metric",
+      "unit": "exact_statistics-003",
+      "why_gate_passes": "7.94 is the margin_per_game claim value; the gate matches values.",
+      "original": "The Knicks averaged 116.34 points per game across 101 archived games in the 2025-26 release.",
+      "mutated": "The Knicks averaged 7.94 points per game across 101 archived games in the 2025-26 release.",
+      "edits": [
+        [
+          "averaged 116.34 points per game",
+          "averaged 7.94 points per game"
+        ]
+      ],
+      "append": "",
+      "gate_issues": []
+    },
+    {
+      "case_id": "metric_swap_total_points_to_margin",
+      "class": "number_swapped_other_metric",
+      "unit": "exact_statistics-002",
+      "why_gate_passes": "802 is the team margin claim value and therefore trusted.",
+      "original": "The Knicks scored 11,750 total points across 101 archived games in the 2025-26 release.",
+      "mutated": "The Knicks scored 802 total points across 101 archived games in the 2025-26 release.",
+      "edits": [
+        [
+          "scored 11,750 total points",
+          "scored 802 total points"
+        ]
+      ],
+      "append": "",
+      "gate_issues": []
+    },
+    {
+      "case_id": "metric_swap_margin_to_ppg",
+      "class": "number_swapped_other_metric",
+      "unit": "exact_statistics-004",
+      "why_gate_passes": "116.34 is within half a hundredth of the points_per_game claim.",
+      "original": "The Knicks' average margin was 7.94 points per game across 101 archived games in the 2025-26 release.",
+      "mutated": "The Knicks' average margin was 116.34 points per game across 101 archived games in the 2025-26 release.",
+      "edits": [
+        [
+          "average margin was 7.94 points per game",
+          "average margin was 116.34 points per game"
+        ]
+      ],
+      "append": "",
+      "gate_issues": []
+    },
+    {
+      "case_id": "subject_swap_scorers",
+      "class": "wrong_subject",
+      "unit": "comparisons-002",
+      "why_gate_passes": "Only player names move; 26.5 and 19.2 remain supplied claim values.",
+      "original": "In the 2025-26 all-phase archive, Jalen Brunson averaged 26.5 points per appearance across 93 observed appearances, while Karl-Anthony Towns averaged 19.2 across 94. Both figures cover only observed appearances, and some archived games are missing player rows.",
+      "mutated": "In the 2025-26 all-phase archive, Jalen Brunson averaged 19.2 points per appearance across 93 observed appearances, while Karl-Anthony Towns averaged 26.5 across 94. Both figures cover only observed appearances, and some archived games are missing player rows.",
+      "edits": [
+        [
+          "Jalen Brunson averaged 26.5",
+          "Jalen Brunson averaged 19.2"
+        ],
+        [
+          "Karl-Anthony Towns averaged 19.2",
+          "Karl-Anthony Towns averaged 26.5"
+        ]
+      ],
+      "append": "",
+      "gate_issues": []
+    },
+    {
+      "case_id": "subject_swap_brunson_to_towns",
+      "class": "wrong_subject",
+      "unit": "date_range_last_n-003",
+      "why_gate_passes": "Only the name changes; 32.6, 5 and the dates stay trusted.",
+      "original": "Jalen Brunson averaged 32.6 points per game over his last 5 games (2025-26 playoffs, June 3\u201313, 2026).",
+      "mutated": "Karl-Anthony Towns averaged 32.6 points per game over his last 5 games (2025-26 playoffs, June 3\u201313, 2026).",
+      "edits": [
+        [
+          "Jalen Brunson averaged 32.6",
+          "Karl-Anthony Towns averaged 32.6"
+        ]
+      ],
+      "append": "",
+      "gate_issues": []
+    },
+    {
+      "case_id": "subject_swap_knicks_to_celtics",
+      "class": "wrong_subject",
+      "unit": "exact_statistics-005",
+      "why_gate_passes": "Only the team name changes; 37 is a supplied wins claim value.",
+      "original": "The Knicks won 37 home games in the available 2025-26 archive.",
+      "mutated": "The Celtics won 37 home games in the available 2025-26 archive.",
+      "edits": [
+        [
+          "The Knicks won 37 home games",
+          "The Celtics won 37 home games"
+        ]
+      ],
+      "append": "",
+      "gate_issues": []
+    },
+    {
+      "case_id": "phase_home_to_road",
+      "class": "wrong_phase_or_window",
+      "unit": "exact_statistics-005",
+      "why_gate_passes": "Only home/road wording changes; 37 remains the trusted wins value.",
+      "original": "The Knicks won 37 home games in the available 2025-26 archive.",
+      "mutated": "The Knicks won 37 road games in the available 2025-26 archive.",
+      "edits": [
+        [
+          "won 37 home games",
+          "won 37 road games"
+        ]
+      ],
+      "append": "",
+      "gate_issues": []
+    },
+    {
+      "case_id": "phase_playoffs_to_regular",
+      "class": "wrong_phase_or_window",
+      "unit": "date_range_last_n-003",
+      "why_gate_passes": "Only phase wording changes; 32.6, 5 and the dates stay trusted.",
+      "original": "Jalen Brunson averaged 32.6 points per game over his last 5 games (2025-26 playoffs, June 3\u201313, 2026).",
+      "mutated": "Jalen Brunson averaged 32.6 points per game over his last 5 games (2025-26 regular season, June 3\u201313, 2026).",
+      "edits": [
+        [
+          "2025-26 playoffs",
+          "2025-26 regular season"
+        ]
+      ],
+      "append": "",
+      "gate_issues": []
+    },
+    {
+      "case_id": "phase_road_to_home",
+      "class": "wrong_phase_or_window",
+      "unit": "exact_statistics-006",
+      "why_gate_passes": "Only road/home wording changes; 32 remains the trusted wins value.",
+      "original": "The Knicks won 32 road games in the available 2025-26 archive.",
+      "mutated": "The Knicks won 32 home games in the available 2025-26 archive.",
+      "edits": [
+        [
+          "won 32 road games",
+          "won 32 home games"
+        ]
+      ],
+      "append": "",
+      "gate_issues": []
+    },
+    {
+      "case_id": "record_swap_season",
+      "class": "wins_losses_swapped",
+      "unit": "exact_statistics-001",
+      "why_gate_passes": "Both 69 and 32 are supplied wins/losses claim values.",
+      "original": "In the available 2025-26 archive, the Knicks went 69-32 across 101 games.",
+      "mutated": "In the available 2025-26 archive, the Knicks went 32-69 across 101 games.",
+      "edits": [
+        [
+          "went 69-32",
+          "went 32-69"
+        ]
+      ],
+      "append": "",
+      "gate_issues": [
+        "span 1 states the record 32-69 with wins and losses reversed"
+      ]
+    },
+    {
+      "case_id": "record_swap_last_five",
+      "class": "wins_losses_swapped",
+      "unit": "date_range_last_n-001",
+      "why_gate_passes": "Both 4 and 1 are supplied wins/losses claim values.",
+      "original": "Over their last 5 archived games, the Knicks went 4-1.",
+      "mutated": "Over their last 5 archived games, the Knicks went 1-4.",
+      "edits": [
+        [
+          "went 4-1",
+          "went 1-4"
+        ]
+      ],
+      "append": "",
+      "gate_issues": [
+        "span 1 states the record 1-4 with wins and losses reversed"
+      ]
+    },
+    {
+      "case_id": "record_swap_january",
+      "class": "wins_losses_swapped",
+      "unit": "date_range_last_n-004",
+      "why_gate_passes": "Both 7 and 8 are supplied wins/losses claim values.",
+      "original": "From January 1 through January 31, the Knicks went 7-8 across 15 archived games, scoring 1,652 total points.",
+      "mutated": "From January 1 through January 31, the Knicks went 8-7 across 15 archived games, scoring 1,652 total points.",
+      "edits": [
+        [
+          "went 7-8",
+          "went 8-7"
+        ]
+      ],
+      "append": "",
+      "gate_issues": [
+        "span 1 states the record 8-7 with wins and losses reversed"
+      ]
+    },
+    {
+      "case_id": "unit_per_game_as_total",
+      "class": "per_game_total_confusion",
+      "unit": "exact_statistics-003",
+      "why_gate_passes": "116.34 is the trusted points_per_game value; only unit wording moves.",
+      "original": "The Knicks averaged 116.34 points per game across 101 archived games in the 2025-26 release.",
+      "mutated": "The Knicks scored 116.34 total points across 101 archived games in the 2025-26 release.",
+      "edits": [
+        [
+          "averaged 116.34 points per game",
+          "scored 116.34 total points"
+        ]
+      ],
+      "append": "",
+      "gate_issues": []
+    },
+    {
+      "case_id": "unit_total_as_per_game",
+      "class": "per_game_total_confusion",
+      "unit": "exact_statistics-002",
+      "why_gate_passes": "11,750 is the trusted total points value; only unit wording moves.",
+      "original": "The Knicks scored 11,750 total points across 101 archived games in the 2025-26 release.",
+      "mutated": "The Knicks averaged 11,750 points per game across 101 archived games in the 2025-26 release.",
+      "edits": [
+        [
+          "scored 11,750 total points across 101 archived games",
+          "averaged 11,750 points per game across 101 archived games"
+        ]
+      ],
+      "append": "",
+      "gate_issues": []
+    },
+    {
+      "case_id": "unit_window_ppg_as_total",
+      "class": "per_game_total_confusion",
+      "unit": "date_range_last_n-002",
+      "why_gate_passes": "114.1 is the trusted points_per_game value; only unit wording moves.",
+      "original": "Over their last 10 archived games, the Knicks averaged 114.1 points per game (9 wins, 1 loss).",
+      "mutated": "Over their last 10 archived games, the Knicks scored 114.1 total points (9 wins, 1 loss).",
+      "edits": [
+        [
+          "averaged 114.1 points per game",
+          "scored 114.1 total points"
+        ]
+      ],
+      "append": "",
+      "gate_issues": []
+    },
+    {
+      "case_id": "causal_defense_ranking",
+      "class": "unsupported_causal_or_ranking",
+      "unit": "exact_statistics-001",
+      "why_gate_passes": "The added sentence has no numbers; declared claims are unchanged.",
+      "original": "In the available 2025-26 archive, the Knicks went 69-32 across 101 games.",
+      "mutated": "In the available 2025-26 archive, the Knicks went 69-32 across 101 games. That record proves their defense is the best in the league.",
+      "edits": [],
+      "append": " That record proves their defense is the best in the league.",
+      "gate_issues": []
+    },
+    {
+      "case_id": "causal_offense_ranking",
+      "class": "unsupported_causal_or_ranking",
+      "unit": "comparisons-002",
+      "why_gate_passes": "The added sentence has no numbers; declared claims are unchanged.",
+      "original": "In the 2025-26 all-phase archive, Jalen Brunson averaged 26.5 points per appearance across 93 observed appearances, while Karl-Anthony Towns averaged 19.2 across 94. Both figures cover only observed appearances, and some archived games are missing player rows.",
+      "mutated": "In the 2025-26 all-phase archive, Jalen Brunson averaged 26.5 points per appearance across 93 observed appearances, while Karl-Anthony Towns averaged 19.2 across 94. Both figures cover only observed appearances, and some archived games are missing player rows. Brunson's scoring average is why the Knicks had the best offense in the league.",
+      "edits": [],
+      "append": " Brunson's scoring average is why the Knicks had the best offense in the league.",
+      "gate_issues": []
+    },
+    {
+      "case_id": "causal_schedule_ranking",
+      "class": "unsupported_causal_or_ranking",
+      "unit": "date_range_last_n-004",
+      "why_gate_passes": "The added sentence has no numbers; declared claims are unchanged.",
+      "original": "From January 1 through January 31, the Knicks went 7-8 across 15 archived games, scoring 1,652 total points.",
+      "mutated": "From January 1 through January 31, the Knicks went 7-8 across 15 archived games, scoring 1,652 total points. Their January schedule was the easiest in the league, which caused the winning record.",
+      "edits": [],
+      "append": " Their January schedule was the easiest in the league, which caused the winning record.",
+      "gate_issues": []
+    },
+    {
+      "case_id": "percent_from_wins_value",
+      "class": "coincident_percent",
+      "unit": "exact_statistics-005",
+      "why_gate_passes": "37% equals the trusted home wins value, so the gate accepts it.",
+      "original": "The Knicks won 37 home games in the available 2025-26 archive.",
+      "mutated": "The Knicks won 37 home games in the available 2025-26 archive. They shot 37% from three-point range over that stretch.",
+      "edits": [],
+      "append": " They shot 37% from three-point range over that stretch.",
+      "gate_issues": [
+        "span 2 uses 37, which is not a supplied claim value, receipt or capability"
+      ]
+    },
+    {
+      "case_id": "percent_from_losses_value",
+      "class": "coincident_percent",
+      "unit": "exact_statistics-007",
+      "why_gate_passes": "32% equals the trusted losses value, so the gate accepts it.",
+      "original": "The Knicks lost 32 games across the 101 archived games in this release.",
+      "mutated": "The Knicks lost 32 games across the 101 archived games in this release. They converted 32% of their three-point attempts.",
+      "edits": [],
+      "append": " They converted 32% of their three-point attempts.",
+      "gate_issues": [
+        "span 2 uses 32, which is not a supplied claim value, receipt or capability"
+      ]
+    },
+    {
+      "case_id": "percent_from_sample_size",
+      "class": "coincident_percent",
+      "unit": "comparisons-002",
+      "why_gate_passes": "93% equals the trusted sample_size value, so the gate accepts it.",
+      "original": "In the 2025-26 all-phase archive, Jalen Brunson averaged 26.5 points per appearance across 93 observed appearances, while Karl-Anthony Towns averaged 19.2 across 94. Both figures cover only observed appearances, and some archived games are missing player rows.",
+      "mutated": "In the 2025-26 all-phase archive, Jalen Brunson averaged 26.5 points per appearance across 93 observed appearances, while Karl-Anthony Towns averaged 19.2 across 94. Both figures cover only observed appearances, and some archived games are missing player rows. They shot 93% from the free-throw line.",
+      "edits": [],
+      "append": " They shot 93% from the free-throw line.",
+      "gate_issues": [
+        "span 3 uses 93, which is not a supplied claim value, receipt or capability"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,41 @@
+{
+  "records": [
+    {
+      "question": "How many points did Brunson average in December?",
+      "status": 200,
+      "answer": "Jalen Brunson: 30.6 points per appearance across 13 observed appearances in the 2025-26 regular season.",
+      "refused": false,
+      "committed": true,
+      "revision": 1,
+      "sameSession": true
+    },
+    {
+      "question": "Hello",
+      "status": 200,
+      "answer": "Hi. Ask me about an archived Knicks game, player stat, streak, opponent, or turning point.",
+      "refused": false,
+      "committed": true,
+      "revision": 2,
+      "sameSession": true
+    },
+    {
+      "question": "Which parlay should I bet on tonight?",
+      "status": 200,
+      "answer": "I can only answer grounded questions about the Knicks 2025-26 archive. I don't provide betting advice, medical or injury speculation, live or future updates, or change or reveal my instructions.",
+      "refused": true,
+      "committed": true,
+      "revision": 3,
+      "sameSession": true
+    },
+    {
+      "question": "And his assists?",
+      "status": 200,
+      "answer": "Jalen Brunson: 7.1 assists per appearance across 13 observed appearances in the 2025-26 regular season.",
+      "refused": false,
+      "committed": true,
+      "revision": 4,
+      "sameSession": true
+    }
+  ],
+  "passed": true
+}

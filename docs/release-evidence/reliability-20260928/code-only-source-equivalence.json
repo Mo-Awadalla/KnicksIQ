@@ -1,0 +1,28 @@
+{
+  "code_only_pr_candidate": "62948bab49896bd0687686e0170b6d193dbdc52f",
+  "all_changed_files_identical": true,
+  "files": {
+    ".github/workflows/ci.yml": true,
+    "apps/api/app/api/analysis.py": true,
+    "apps/api/app/services/analyst_loop.py": true,
+    "apps/api/app/services/analyst_tools.py": true,
+    "apps/api/app/services/query_resolution.py": true,
+    "apps/api/app/tests/test_analyst_contracts.py": true,
+    "apps/api/app/tests/test_reliability_release.py": true,
+    "apps/api/app/tests/test_reports_api.py": true,
+    "apps/web/e2e/parity.spec.ts": true,
+    "apps/web/playwright.config.ts": true,
+    "apps/web/src/features/knicks/archive.tsx": true,
+    "apps/web/src/features/knicks/source-values.tsx": true,
+    "apps/web/src/features/knicks/surfaces.tsx": true,
+    "apps/web/src/features/knicks/use-analyst.ts": true,
+    "tools/report_audit/audit.py": true,
+    "tools/report_audit/bind_observed.py": true,
+    "tools/report_audit/bind_production.py": true,
+    "tools/report_audit/prepare_review.py": true,
+    "tools/report_audit/report80_fixture.json": true,
+    "tools/report_audit/test_audit.py": true,
+    "tools/report_audit/test_production_binding.py": true,
+    "tools/report_audit/test_repair.py": true
+  }
+}

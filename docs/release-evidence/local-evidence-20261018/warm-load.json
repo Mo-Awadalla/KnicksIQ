@@ -1,0 +1,26 @@
+{
+  "observed_at": "2026-10-18T23:00:45.827083+00:00",
+  "base_url": "http://localhost:8000",
+  "data_version": "2025-26.20260928.1",
+  "readiness": {
+    "status": "ready",
+    "data_version": "2025-26.20260928.1",
+    "required_failures": [],
+    "optional_dependencies": {
+      "qdrant": "disabled",
+      "redis": "configured",
+      "openrouter": "configured"
+    }
+  },
+  "scope": "Ten distinct factual analyst questions with archive readers; clear cache required",
+  "metrics": {
+    "concurrency": 10,
+    "archive_p95_ms": 76.34975004475564,
+    "analyst_p95_ms": 777.2889580228366,
+    "error_rate": 0.0,
+    "requests": 2462,
+    "analyst_requests": 10
+  },
+  "errors": [],
+  "passed": true
+}

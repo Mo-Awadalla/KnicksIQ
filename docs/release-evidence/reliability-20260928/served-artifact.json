@@ -1,0 +1,18 @@
+{
+  "web_url": "https://www.knicksiq.win",
+  "render_source_commit": "98d21753910b16440970d9081a2e352a4aacdb8d",
+  "entry": "/assets/index-C2m0QUOW.js",
+  "entry_sha256": "0b2ace3b26fcb3927becd38754930932bed94e8cc14836f16d293cb83e3a03e8",
+  "configured_api_url_present": false,
+  "persistence_source_matches_merged_commit": true,
+  "assets": [
+    {
+      "path": "/assets/archive-BY3n5Bn-.js",
+      "sha256": "d9200fc8ac625582511f58808e1a27ee3b48ceb8f3e502ab81ba223e976c6134",
+      "contains_storage_key": true,
+      "contains_interrupted_notice": true
+    }
+  ],
+  "identity_limit": "Captured served asset hashes and Render commit binding; local rebuild was not byte-identical (deployment environment/build differs).",
+  "intended_api_url_verified_by_browser_routes": "https://api.knicksiq.win; production fixtures match this exact origin"
+}

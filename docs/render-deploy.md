@@ -13,24 +13,31 @@ immutable archive.
   `QDRANT_URL` and `QDRANT_API_KEY`.
 
 Launch goes straight to `llm_primary` with no sampled shadow stage. Qdrant Cloud Inference and
-hybrid retrieval are enabled. Qdrant, Redis, OpenRouter, and Sentry remain optional
-for availability: deterministic Postgres-backed answers remain available when
-they fail. The free Key Value instance is intentionally non-persistent because
-every stored rate-limit, cache, and budget entry is reconstructible runtime
-state.
+hybrid retrieval are enabled. Qdrant, Redis, the model host, and Sentry remain optional for
+availability: deterministic Postgres-backed answers remain available when they fail. Production
+calls models through the owner's OpenCode Go subscription at
+`https://opencode.ai/inference/go/openai/v1`: `deepseek-v4.1-flash` writes and `gpt-6-luna`
+reviews, selected by `ANALYST_REVIEW_MODEL`. The intended launch configuration is `llm_primary`;
+[the release checklist](release-checklist.md#intended-launch-configuration) is the single
+authoritative statement of that configuration. The free Key Value instance is intentionally
+non-persistent because every stored rate-limit, cache, and budget entry is reconstructible
+runtime state.
 
 ## Before creating the blueprint
 
 1. Complete every owner gate in `docs/release-checklist.md`.
-2. Confirm the `knicksiq.win` DNS values, Formspree endpoint, and Nemotron
+2. Confirm the `knicksiq.win` DNS values, Formspree endpoint, and model
    allowlist in the blueprint and public files.
 3. Create a Neon Free project and Qdrant Cloud cluster. In Render, set `DB_URL`
    to Neon's direct connection string and set `QDRANT_URL`, `QDRANT_API_KEY`,
-   OpenRouter, and Sentry secrets. Never store those values in the blueprint.
-   For an existing Blueprint service, open `knicksiq-api` → **Environment**,
-   enter the values in the existing `QDRANT_URL` and `QDRANT_API_KEY` rows,
-   then choose **Save and deploy**. A `sync: false` Blueprint entry is only a
-   secret placeholder; syncing the Blueprint does not populate its value.
+   `AI_API_KEY` (the OpenCode Go key), and Sentry secrets. Never store those
+   values in the blueprint. `AI_PROVIDER`, `AI_BASE_URL`, `AI_CHAT_MODEL`,
+   `ANALYST_REVIEW_MODEL`, `AI_MODEL_PROTOCOLS` and `AI_MODEL_PRICES` are
+   non-secret values in the blueprint. For an existing Blueprint service, open
+   `knicksiq-api` → **Environment**, enter the values in the existing
+   `QDRANT_URL` and `QDRANT_API_KEY` rows, then choose **Save and deploy**. A
+   `sync: false` Blueprint entry is only a secret placeholder; syncing the
+   Blueprint does not populate its value.
 4. Free Render services do not support pre-deploy commands. Run migrations
    against Neon from the local release environment before deploying:
 

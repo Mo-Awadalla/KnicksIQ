@@ -1,0 +1,48 @@
+{
+  "candidate": "91ada687ec6e6a3c4bb2ac2a561e91f6c8ea8cc3",
+  "scope": "local candidate commands; not hosted CI",
+  "backend": {
+    "passed": 407,
+    "skipped": 0
+  },
+  "postgres_loader": {
+    "passed": 6,
+    "server_major": 18
+  },
+  "frontend": {
+    "browser_tests": 47,
+    "e2e": 38,
+    "accessibility_serious": 0,
+    "accessibility_critical": 0
+  },
+  "static": [
+    "ruff",
+    "format",
+    "pyright"
+  ],
+  "container_builds": [
+    "api",
+    "web"
+  ],
+  "critical_fixable_vulnerabilities": {
+    "api": 0,
+    "web": 0
+  },
+  "gitleaks_candidate_diff": "passed",
+  "codeql": "not_run",
+  "hosted_ci": "not_run_remote_writes_prohibited",
+  "artifacts": {
+    "frontend-test.txt": "b749d4b9fc1de32bd44e60d90e882d6cb5593aaf57c71aaf4204d3cd577e9ebd",
+    "source-identity.json": "7b625f07f8d00fdfdd596e7703f4048f7bf00fb76b7b017b88ba8a3442935e69",
+    "ruff.txt": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+    "pyright.txt": "6d88a1b220adb7a3d62092b6e38431f0b3fe8babe9864fab90e5849766260332",
+    "postgres.xml": "85749a464686f8fb7b355f15d91887edf9ab572dbb5dc391c90de1854da59df2",
+    "trivy-web.json": "eae9807326e5b7fba96b3302960a2714f968b3425d84f6dfb3a4733861da8cb6",
+    "gitleaks-candidate-diff.json": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+    "format.txt": "be05eba385c4aa3cfc2f02c3191dfad1969b9e462fadc2cbb394fe03f409ff03",
+    "trivy-api.json": "0f87137c4d6eef2f9cae99bf0413db81b813b4c7a01f1ec56a2fae1c7611a494",
+    "backend.xml": "ac73b829622ca67fb6e0028966246e1da054c687d476077cbdc5a1f73e999fd2",
+    "migration-ci.txt": "f1da7cd039f0536bb6f3bcfad9760df96ec7df39cfc84ecf867b9561a71cdc70",
+    "frontend-e2e.txt": "493a755c5a810da41862ef238002738e5d6bf4c14b129ee424dcc71b10b1373d"
+  }
+}

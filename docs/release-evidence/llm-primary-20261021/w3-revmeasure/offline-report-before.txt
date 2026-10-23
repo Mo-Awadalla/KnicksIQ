@@ -1,0 +1,13 @@
+runner crashed: TypeError: cannot unpack non-iterable NoneType object
+{
+  "production_cap": 3000,
+  "caps_seen": [
+    1200
+  ],
+  "checks": {
+    "report_rendered": false,
+    "effective_cap_recorded": false,
+    "calls_used_production_cap": false
+  }
+}
+FAIL

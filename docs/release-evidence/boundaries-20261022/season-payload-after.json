@@ -1,0 +1,33 @@
+{
+  "release": "2025-26.20260928.1",
+  "live": false,
+  "provider": "disabled",
+  "writer": "deepseek/deepseek-v4.1-flash",
+  "reviewer": null,
+  "records": [
+    {
+      "question": "How many points did Brunson average this season?",
+      "resolved_metric": "points",
+      "resolved_aggregation": "average",
+      "metric_ids": [
+        "points:average"
+      ],
+      "values": [
+        26.04054054054054
+      ],
+      "game_counts": [
+        74
+      ],
+      "supporting_receipts": [
+        1
+      ],
+      "review_claims": 1,
+      "review_receipts": 1,
+      "review_payload_bytes": 5014,
+      "review_evidence_bytes": 1137,
+      "review_within_budget": true,
+      "conflicting_request_preserved_intent": true
+    }
+  ],
+  "passed": true
+}

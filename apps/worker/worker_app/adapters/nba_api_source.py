@@ -21,7 +21,7 @@ We translate v3 → seed shape here so `packages/basketball-core`'s
 
 A future refactor of `play_by_play.parse_events()` to accept the
 nba_api v3 shape natively would let us delete the normalization
-block in `_parse_pbp_v3_action()` below. Until then, the
+block in `nba_normalization.parse_pbp_v3_action()`. Until then, the
 duplication is intentional.
 
 # Why no DB access here?
@@ -37,11 +37,9 @@ from __future__ import annotations
 
 import json
 import logging
-import re
 import time
 from collections import deque
 from collections.abc import Callable
-from datetime import date
 from pathlib import Path
 from typing import Any, TypeVar
 
@@ -56,32 +54,16 @@ from nba_api.stats.endpoints import (
     playbyplayv3,
 )
 
+from worker_app.adapters.nba_normalization import (
+    normalize_season_type,
+    parse_nba_game_date,
+    parse_pbp_v3_action,
+)
 from worker_app.core.config import NbaApiSettings
 
 log = logging.getLogger(__name__)
 
 T = TypeVar("T")
-
-# NBA PBP v3 `actionType` strings → our seed event_type strings.
-# See: https://github.com/swar/nba_api — PlayByPlayV3
-_ACTION_TYPE_MAP: dict[str, str] = {
-    "Made Shot": "made_shot",
-    "Missed Shot": "missed_shot",
-    "Rebound": "rebound",
-    "Turnover": "turnover",
-    "Foul": "foul",
-    "Free Throw": "free_throw",
-    "Substitution": "substitution",
-    "Timeout": "timeout",
-    "Jump Ball": "jump_ball",
-    "Period Begin": "period_start",
-    "Period End": "period_end",
-    "Violation": "violation",
-    "Ejection": "ejection",
-}
-
-# PBP v3 `clock` is an ISO 8601 duration like "PT12M00.00S".
-_ISO_DURATION_RE = re.compile(r"^PT(?:(\d+)M)?(?:(\d+(?:\.\d+)?)S)?$")
 
 
 class NbaApiDataSource:
@@ -195,7 +177,7 @@ class NbaApiDataSource:
 
             game_date_str = str(row.get("GAME_DATE") or "").strip()
             try:
-                game_date = self._parse_nba_game_date(game_date_str)
+                game_date = parse_nba_game_date(game_date_str)
             except ValueError:
                 log.warning("Could not parse game_date %r for %s; skipping", game_date_str, game_id)
                 continue
@@ -211,7 +193,7 @@ class NbaApiDataSource:
                     "home_score": 0,
                     "away_score": 0,
                     "status": "final",
-                    "season_type": self._normalize_season_type(
+                    "season_type": normalize_season_type(
                         str(row.get("KNICKSIQ_SEASON_TYPE") or "")
                     ),
                 },
@@ -249,7 +231,7 @@ class NbaApiDataSource:
         events: list[dict[str, Any]] = []
         for row in rows:
             action = dict(zip(headers, row, strict=True))
-            parsed = self._parse_pbp_v3_action(action)
+            parsed = parse_pbp_v3_action(action, self._trigraph_to_nba_id)
             if parsed is not None:
                 events.append(parsed)
 
@@ -439,101 +421,3 @@ class NbaApiDataSource:
         delay = base * (2 ** (attempt - 1))
         log.debug("Retry attempt %d failed; sleeping %.2fs", attempt, delay)
         time.sleep(delay)
-
-    @staticmethod
-    def _parse_nba_game_date(value: str) -> date:
-        """Parse NBA's `GAME_DATE` strings.
-
-        `LeagueGameFinder` has returned both ISO dates (`2026-04-12`)
-        and legacy display dates (`OCT 22, 2024`) depending on endpoint
-        version / nba_api release.
-        """
-        from datetime import datetime
-
-        try:
-            return date.fromisoformat(value)
-        except ValueError:
-            return datetime.strptime(value, "%b %d, %Y").date()
-
-    @staticmethod
-    def _normalize_season_type(value: str) -> str:
-        normalized = value.strip().lower().replace(" ", "_")
-        if normalized == "playin":
-            return "play_in"
-        if normalized == "playoffs":
-            return "playoffs"
-        return "regular"
-
-    @staticmethod
-    def _iso_duration_to_clock(value: str) -> str:
-        """Convert ISO 8601 duration ('PT12M00.00S') to 'MM:SS'."""
-        if not value:
-            return "12:00"
-        match = _ISO_DURATION_RE.match(value)
-        if not match:
-            return value  # pass through; parser tolerates non-standard clocks
-        minutes = int(match.group(1) or 0)
-        seconds = float(match.group(2) or 0)
-        return f"{minutes:02d}:{int(seconds):02d}"
-
-    def _parse_pbp_v3_action(self, action: Any) -> dict[str, Any] | None:
-        """Translate one nba_api v3 action row into a seed-shaped event dict.
-
-        The dict shape matches the `events` array in `seed/games.json`:
-        `period`, `clock`, `event_type`, `description`, `team_id` (trigraph),
-        `player_id` (nba_player_id int, remapped by the job), `home_score`,
-        `away_score`, optional `shot_distance_ft`.
-        """
-        if not isinstance(action, dict):
-            return None
-
-        action_type = str(action.get("actionType") or "").strip()
-        event_type = _ACTION_TYPE_MAP.get(action_type)
-        if event_type is None:
-            return None  # unknown action type — skip rather than fabricate
-
-        team_tricode = action.get("teamTricode")
-        team_id = str(team_tricode).strip().upper() or None
-        if team_id and team_id not in self._trigraph_to_nba_id:
-            team_id = None  # unknown team trigraph (e.g. from ASG); drop attribution
-
-        person_id = action.get("personId")
-        player_id = int(person_id) if person_id else None
-
-        score_observed = all(
-            action.get(field) is not None and str(action[field]).strip() != ""
-            for field in ("scoreHome", "scoreAway")
-        )
-        try:
-            home_score = int(action.get("scoreHome") or 0)
-        except (TypeError, ValueError):
-            home_score = 0
-            score_observed = False
-        try:
-            away_score = int(action.get("scoreAway") or 0)
-        except (TypeError, ValueError):
-            away_score = 0
-            score_observed = False
-
-        event: dict[str, Any] = {
-            "period": int(action.get("period") or 1),
-            "clock": self._iso_duration_to_clock(str(action.get("clock") or "")),
-            "event_type": event_type,
-            "description": str(action.get("description") or ""),
-            "team_id": team_id,
-            "player_id": player_id,
-            "player_name": str(action.get("playerName") or "").strip() or None,
-            "home_score": home_score,
-            "away_score": away_score,
-            "score_observed": score_observed,
-        }
-
-        # Optional: shot_distance_ft (only meaningful for shot events).
-        shot_distance = action.get("shotDistance")
-        if event_type in ("made_shot", "missed_shot", "free_throw") and shot_distance:
-            try:
-                event["shot_distance_ft"] = int(shot_distance)
-            except (TypeError, ValueError):
-                pass
-
-        return event

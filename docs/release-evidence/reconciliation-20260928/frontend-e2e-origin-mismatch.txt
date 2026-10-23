@@ -1,0 +1,706 @@
+$ playwright test --reporter=html,list
+(node:4752) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+[2m[WebServer] [22m(node:4759) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[2m[WebServer] [22m(Use `node --trace-warnings ...` to show where the warning was created)
+[2m[WebServer] [22m[2m$ tsc -b && vite build[22m
+[2m[WebServer] [22m(node:4808) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[2m[WebServer] [22m(Use `node --trace-warnings ...` to show where the warning was created)
+[2m[WebServer] [22m(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+[2m[WebServer] [22m  - `__dirname` (vite.config.ts:21:25). Use `import.meta.dirname` instead
+[2m[WebServer] [22mSet `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+[2m[WebServer] [22m(node:4808) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+[2m[WebServer] [22m(node:4815) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[2m[WebServer] [22m(Use `node --trace-warnings ...` to show where the warning was created)
+[2m[WebServer] [22m[2m$ vite preview --host 127.0.0.1 --port 4173[22m
+[2m[WebServer] [22m(node:4836) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[2m[WebServer] [22m(Use `node --trace-warnings ...` to show where the warning was created)
+[2m[WebServer] [22m(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+[2m[WebServer] [22m  - `__dirname` (vite.config.ts:21:25). Use `import.meta.dirname` instead
+[2m[WebServer] [22mSet `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+[2m[WebServer] [22m(node:4836) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+
+Running 38 tests using 4 workers
+
+(node:4851) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:4853) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:4852) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:4850) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:4850) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(node:4850) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:4851) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(node:4852) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(node:4852) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:4851) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:4853) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(node:4853) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   1 e2e/parity.spec.ts:38:3 › games: extreme page URLs do not crash pagination (574ms)
+  ✘   4 e2e/landing.spec.ts:14:3 › landing reflows and stays accessible at 390px (5.4s)
+  ✘   2 e2e/report-sources.spec.ts:9:1 › corrected report sources expose exact intervals and use internal game IDs (5.4s)
+(node:4889) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:4890) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘   3 e2e/archive.spec.ts:24:1 › public archive loads and exposes policy links (5.6s)
+(node:4891) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:4889) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(node:4889) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:4890) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(node:4890) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:4891) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(node:4891) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘   7 e2e/report-sources.spec.ts:29:1 › legacy source notes and absent optional source types do not break a report (5.4s)
+  ✘   6 e2e/landing.spec.ts:14:3 › landing reflows and stays accessible at 735px (5.4s)
+(node:4919) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:4919) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(node:4919) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘   8 e2e/archive.spec.ts:49:1 › chat stays locked until archive checks finish (5.4s)
+(node:4920) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:4920) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(node:4920) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘   9 e2e/landing.spec.ts:14:3 › landing reflows and stays accessible at 768px (5.2s)
+(node:4964) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:4964) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(node:4964) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘   5 e2e/parity.spec.ts:47:3 › games: server errors stay on the page and can be retried (20.2s)
+(node:5028) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:5028) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(node:5028) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  11 e2e/landing.spec.ts:14:3 › landing reflows and stays accessible at 1024px (5.3s)
+(node:5037) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:5037) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(node:5037) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  12 e2e/parity.spec.ts:60:3 › games: item 101 and URL pagination (5.2s)
+(node:5078) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:5078) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(node:5078) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  14 e2e/parity.spec.ts:71:3 › games: invalid ID stops loading (297ms)
+  ✓  15 e2e/parity.spec.ts:38:3 › reports: extreme page URLs do not crash pagination (293ms)
+  ✘  13 e2e/landing.spec.ts:14:3 › landing reflows and stays accessible at 1440px (5.3s)
+(node:5124) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:5124) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(node:5124) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  17 e2e/landing.spec.ts:32:1 › landing keyboard submission preserves newlines and recovers from a failed answer (5.2s)
+(node:5496) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:5496) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(node:5496) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  18 e2e/landing.spec.ts:61:1 › landing readiness error locks questions and offers recovery (5.2s)
+  ✘  10 e2e/archive.spec.ts:71:1 › an archive question makes only the analysis request (30.0s)
+(node:5516) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:5516) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(node:5516) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  19 e2e/archive.spec.ts:106:1 › feedback form posts to the configured Formspree endpoint (95ms)
+  ✘  16 e2e/parity.spec.ts:47:3 › reports: server errors stay on the page and can be retried (25.2s)
+(node:5528) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:5528) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(node:5528) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  20 e2e/parity.spec.ts:60:3 › reports: item 101 and URL pagination (5.2s)
+(node:5535) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:5535) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(node:5535) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  21 e2e/parity.spec.ts:71:3 › reports: invalid ID stops loading (312ms)
+  ✘  22 e2e/parity.spec.ts:78:1 › analyst retains full conversation across client navigation with bounded context (5.2s)
+(node:5546) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:5546) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(node:5546) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  23 e2e/parity.spec.ts:117:1 › follow-up submits immediately and New chat clears both surfaces (30.0s)
+(node:5655) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:5655) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(node:5655) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  24 e2e/parity.spec.ts:146:1 › interrupted request retries the exact turn after reload (28.2s)
+
+
+  1) e2e/archive.spec.ts:24:1 › public archive loads and exposes policy links ──────────────────────
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeEnabled[2m([22m[2m)[22m failed
+
+    Locator:  getByRole('textbox', { name: 'Ask the archive' })
+    Expected: enabled
+    Received: disabled
+    Timeout:  5000ms
+
+    Call log:
+    [2m  - Expect "toBeEnabled" with timeout 5000ms[22m
+    [2m  - waiting for getByRole('textbox', { name: 'Ask the archive' })[22m
+    [2m    9 × locator resolved to <textarea rows="3" maxlength="1200" data-slot="textarea" id="archive-question" enterkeyhint="search" placeholder="Ask about a game, streak, opponent, player, or turning point…" class="flex field-sizing-content min-h-16 w-full rounded-md border border-input bg-transparent px-3 py-2 text-base shadow-xs transition-[color,box-shadow] outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 ari…></textarea>[22m
+    [2m      - unexpected value "disabled"[22m
+
+
+      35 |   await expect(page.getByText('Archive current')).toHaveCount(0)
+      36 |   await expect(page.getByText('Record', { exact: true })).toHaveCount(0)
+    > 37 |   await expect(page.getByRole('textbox', { name: 'Ask the archive' })).toBeEnabled()
+         |                                                                        ^
+      38 |   expect(dataRequests.sort()).toEqual(['/api/archive/status', '/api/games'])
+      39 |   const accessibility = await new AxeBuilder({ page })
+      40 |     .withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa'])
+        at /Users/mohamedawadalla/Projects/KnicksIQ/apps/web/e2e/archive.spec.ts:37:72
+
+    Error Context: test-results/archive-public-archive-loads-and-exposes-policy-links/error-context.md
+
+  2) e2e/archive.spec.ts:49:1 › chat stays locked until archive checks finish ──────────────────────
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeEnabled[2m([22m[2m)[22m failed
+
+    Locator:  getByRole('textbox', { name: 'Ask the archive' })
+    Expected: enabled
+    Received: disabled
+    Timeout:  5000ms
+
+    Call log:
+    [2m  - Expect "toBeEnabled" with timeout 5000ms[22m
+    [2m  - waiting for getByRole('textbox', { name: 'Ask the archive' })[22m
+    [2m    9 × locator resolved to <textarea rows="3" maxlength="1200" data-slot="textarea" id="archive-question" enterkeyhint="search" placeholder="Ask about a game, streak, opponent, player, or turning point…" class="flex field-sizing-content min-h-16 w-full rounded-md border border-input bg-transparent px-3 py-2 text-base shadow-xs transition-[color,box-shadow] outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 ari…></textarea>[22m
+    [2m      - unexpected value "disabled"[22m
+
+
+      65 |   await expect(page.getByText('Preparing archive')).toBeVisible()
+      66 |   releaseGames()
+    > 67 |   await expect(chat).toBeEnabled()
+         |                      ^
+      68 |   await expect(page.getByText('Preparing archive')).toHaveCount(0)
+      69 | })
+      70 |
+        at /Users/mohamedawadalla/Projects/KnicksIQ/apps/web/e2e/archive.spec.ts:67:22
+
+    Error Context: test-results/archive-chat-stays-locked-until-archive-checks-finish/error-context.md
+
+  3) e2e/archive.spec.ts:71:1 › an archive question makes only the analysis request ────────────────
+
+    [31mTest timeout of 30000ms exceeded.[39m
+
+    Error: locator.click: Test timeout of 30000ms exceeded.
+    Call log:
+    [2m  - waiting for getByRole('button', { name: 'What was their best win?' }).first()[22m
+    [2m    - locator resolved to <button type="button" class="archive-prompt">What was their best win?</button>[22m
+    [2m  - attempting click action[22m
+    [2m    2 × waiting for element to be visible, enabled and stable[22m
+    [2m      - element is not enabled[22m
+    [2m    - retrying click action[22m
+    [2m    - waiting 20ms[22m
+    [2m    2 × waiting for element to be visible, enabled and stable[22m
+    [2m      - element is not enabled[22m
+    [2m    - retrying click action[22m
+    [2m      - waiting 100ms[22m
+    [2m    57 × waiting for element to be visible, enabled and stable[22m
+    [2m       - element is not enabled[22m
+    [2m     - retrying click action[22m
+    [2m       - waiting 500ms[22m
+
+
+       95 |     .getByRole('button', { name: 'What was their best win?' })
+       96 |     .first()
+    >  97 |     .click()
+          |      ^
+       98 |   await expect(page.getByText('The archive answer.')).toBeVisible()
+       99 |   expect(dataRequests.slice(0, 2).sort()).toEqual([
+      100 |     '/api/archive/status',
+        at /Users/mohamedawadalla/Projects/KnicksIQ/apps/web/e2e/archive.spec.ts:97:6
+
+    Error Context: test-results/archive-an-archive-question-makes-only-the-analysis-request/error-context.md
+
+  4) e2e/landing.spec.ts:14:3 › landing reflows and stays accessible at 390px ──────────────────────
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeEnabled[2m([22m[2m)[22m failed
+
+    Locator:  getByRole('textbox', { name: 'Ask the archive' })
+    Expected: enabled
+    Received: disabled
+    Timeout:  5000ms
+
+    Call log:
+    [2m  - Expect "toBeEnabled" with timeout 5000ms[22m
+    [2m  - waiting for getByRole('textbox', { name: 'Ask the archive' })[22m
+    [2m    7 × locator resolved to <textarea rows="3" maxlength="1200" data-slot="textarea" id="archive-question" enterkeyhint="search" placeholder="Ask about a game, streak, opponent, player, or turning point…" class="flex field-sizing-content min-h-16 w-full rounded-md border border-input bg-transparent px-3 py-2 text-base shadow-xs transition-[color,box-shadow] outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 ari…></textarea>[22m
+    [2m      - unexpected value "disabled"[22m
+
+
+      16 |     await readyArchive(page)
+      17 |     await page.goto('/')
+    > 18 |     await expect(page.getByRole('textbox', { name: 'Ask the archive' })).toBeEnabled()
+         |                                                                          ^
+      19 |     await page.evaluate(() => document.fonts.ready)
+      20 |     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
+      21 |     const audit = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze()
+        at /Users/mohamedawadalla/Projects/KnicksIQ/apps/web/e2e/landing.spec.ts:18:74
+
+    Error Context: test-results/landing-landing-reflows-and-stays-accessible-at-390px/error-context.md
+
+  5) e2e/landing.spec.ts:14:3 › landing reflows and stays accessible at 735px ──────────────────────
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeEnabled[2m([22m[2m)[22m failed
+
+    Locator:  getByRole('textbox', { name: 'Ask the archive' })
+    Expected: enabled
+    Received: disabled
+    Timeout:  5000ms
+
+    Call log:
+    [2m  - Expect "toBeEnabled" with timeout 5000ms[22m
+    [2m  - waiting for getByRole('textbox', { name: 'Ask the archive' })[22m
+    [2m    7 × locator resolved to <textarea rows="3" maxlength="1200" data-slot="textarea" id="archive-question" enterkeyhint="search" placeholder="Ask about a game, streak, opponent, player, or turning point…" class="flex field-sizing-content min-h-16 w-full rounded-md border border-input bg-transparent px-3 py-2 text-base shadow-xs transition-[color,box-shadow] outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 ari…></textarea>[22m
+    [2m      - unexpected value "disabled"[22m
+
+
+      16 |     await readyArchive(page)
+      17 |     await page.goto('/')
+    > 18 |     await expect(page.getByRole('textbox', { name: 'Ask the archive' })).toBeEnabled()
+         |                                                                          ^
+      19 |     await page.evaluate(() => document.fonts.ready)
+      20 |     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
+      21 |     const audit = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze()
+        at /Users/mohamedawadalla/Projects/KnicksIQ/apps/web/e2e/landing.spec.ts:18:74
+
+    Error Context: test-results/landing-landing-reflows-and-stays-accessible-at-735px/error-context.md
+
+  6) e2e/landing.spec.ts:14:3 › landing reflows and stays accessible at 768px ──────────────────────
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeEnabled[2m([22m[2m)[22m failed
+
+    Locator:  getByRole('textbox', { name: 'Ask the archive' })
+    Expected: enabled
+    Received: disabled
+    Timeout:  5000ms
+
+    Call log:
+    [2m  - Expect "toBeEnabled" with timeout 5000ms[22m
+    [2m  - waiting for getByRole('textbox', { name: 'Ask the archive' })[22m
+    [2m    6 × locator resolved to <textarea rows="3" maxlength="1200" data-slot="textarea" id="archive-question" enterkeyhint="search" placeholder="Ask about a game, streak, opponent, player, or turning point…" class="flex field-sizing-content min-h-16 w-full rounded-md border border-input bg-transparent px-3 py-2 text-base shadow-xs transition-[color,box-shadow] outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 ari…></textarea>[22m
+    [2m      - unexpected value "disabled"[22m
+
+
+      16 |     await readyArchive(page)
+      17 |     await page.goto('/')
+    > 18 |     await expect(page.getByRole('textbox', { name: 'Ask the archive' })).toBeEnabled()
+         |                                                                          ^
+      19 |     await page.evaluate(() => document.fonts.ready)
+      20 |     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
+      21 |     const audit = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze()
+        at /Users/mohamedawadalla/Projects/KnicksIQ/apps/web/e2e/landing.spec.ts:18:74
+
+    Error Context: test-results/landing-landing-reflows-and-stays-accessible-at-768px/error-context.md
+
+  7) e2e/landing.spec.ts:14:3 › landing reflows and stays accessible at 1024px ─────────────────────
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeEnabled[2m([22m[2m)[22m failed
+
+    Locator:  getByRole('textbox', { name: 'Ask the archive' })
+    Expected: enabled
+    Received: disabled
+    Timeout:  5000ms
+
+    Call log:
+    [2m  - Expect "toBeEnabled" with timeout 5000ms[22m
+    [2m  - waiting for getByRole('textbox', { name: 'Ask the archive' })[22m
+    [2m    7 × locator resolved to <textarea rows="3" maxlength="1200" data-slot="textarea" id="archive-question" enterkeyhint="search" placeholder="Ask about a game, streak, opponent, player, or turning point…" class="flex field-sizing-content min-h-16 w-full rounded-md border border-input bg-transparent px-3 py-2 text-base shadow-xs transition-[color,box-shadow] outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 ari…></textarea>[22m
+    [2m      - unexpected value "disabled"[22m
+
+
+      16 |     await readyArchive(page)
+      17 |     await page.goto('/')
+    > 18 |     await expect(page.getByRole('textbox', { name: 'Ask the archive' })).toBeEnabled()
+         |                                                                          ^
+      19 |     await page.evaluate(() => document.fonts.ready)
+      20 |     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
+      21 |     const audit = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze()
+        at /Users/mohamedawadalla/Projects/KnicksIQ/apps/web/e2e/landing.spec.ts:18:74
+
+    Error Context: test-results/landing-landing-reflows-and-stays-accessible-at-1024px/error-context.md
+
+  8) e2e/landing.spec.ts:14:3 › landing reflows and stays accessible at 1440px ─────────────────────
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeEnabled[2m([22m[2m)[22m failed
+
+    Locator:  getByRole('textbox', { name: 'Ask the archive' })
+    Expected: enabled
+    Received: disabled
+    Timeout:  5000ms
+
+    Call log:
+    [2m  - Expect "toBeEnabled" with timeout 5000ms[22m
+    [2m  - waiting for getByRole('textbox', { name: 'Ask the archive' })[22m
+    [2m    7 × locator resolved to <textarea rows="3" maxlength="1200" data-slot="textarea" id="archive-question" enterkeyhint="search" placeholder="Ask about a game, streak, opponent, player, or turning point…" class="flex field-sizing-content min-h-16 w-full rounded-md border border-input bg-transparent px-3 py-2 text-base shadow-xs transition-[color,box-shadow] outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 ari…></textarea>[22m
+    [2m      - unexpected value "disabled"[22m
+
+
+      16 |     await readyArchive(page)
+      17 |     await page.goto('/')
+    > 18 |     await expect(page.getByRole('textbox', { name: 'Ask the archive' })).toBeEnabled()
+         |                                                                          ^
+      19 |     await page.evaluate(() => document.fonts.ready)
+      20 |     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
+      21 |     const audit = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze()
+        at /Users/mohamedawadalla/Projects/KnicksIQ/apps/web/e2e/landing.spec.ts:18:74
+
+    Error Context: test-results/landing-landing-reflows-and-stays-accessible-at-1440px/error-context.md
+
+  9) e2e/landing.spec.ts:32:1 › landing keyboard submission preserves newlines and recovers from a failed answer 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeEnabled[2m([22m[2m)[22m failed
+
+    Locator:  getByRole('textbox', { name: 'Ask the archive' })
+    Expected: enabled
+    Received: disabled
+    Timeout:  5000ms
+
+    Call log:
+    [2m  - Expect "toBeEnabled" with timeout 5000ms[22m
+    [2m  - waiting for getByRole('textbox', { name: 'Ask the archive' })[22m
+    [2m    7 × locator resolved to <textarea rows="3" maxlength="1200" data-slot="textarea" id="archive-question" enterkeyhint="search" placeholder="Ask about a game, streak, opponent, player, or turning point…" class="flex field-sizing-content min-h-16 w-full rounded-md border border-input bg-transparent px-3 py-2 text-base shadow-xs transition-[color,box-shadow] outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 ari…></textarea>[22m
+    [2m      - unexpected value "disabled"[22m
+
+
+      42 |   })
+      43 |   await page.goto('/')
+    > 44 |   await expect(page.getByRole('textbox', { name: 'Ask the archive' })).toBeEnabled()
+         |                                                                        ^
+      45 |   await page.keyboard.press('Tab')
+      46 |   await expect(page.getByRole('link', { name: 'Skip to archive search' })).toBeFocused()
+      47 |   await page.keyboard.press('Enter')
+        at /Users/mohamedawadalla/Projects/KnicksIQ/apps/web/e2e/landing.spec.ts:44:72
+
+    Error Context: test-results/landing-landing-keyboard-s-5ef7a-covers-from-a-failed-answer/error-context.md
+
+  10) e2e/landing.spec.ts:61:1 › landing readiness error locks questions and offers recovery ───────
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+    Locator: getByText('Archive unavailable', { exact: true })
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+    [2m  - Expect "toBeVisible" with timeout 5000ms[22m
+    [2m  - waiting for getByText('Archive unavailable', { exact: true })[22m
+
+
+      62 |   await page.route('**/api/archive/status*', (route) => route.fulfill({ status: 503, json: {} }))
+      63 |   await page.goto('/')
+    > 64 |   await expect(page.getByText('Archive unavailable', { exact: true })).toBeVisible()
+         |                                                                        ^
+      65 |   await expect(page.getByRole('textbox', { name: 'Ask the archive' })).toBeDisabled()
+      66 |   await readyArchive(page)
+      67 |   await page.getByRole('button', { name: 'Try again', exact: true }).click()
+        at /Users/mohamedawadalla/Projects/KnicksIQ/apps/web/e2e/landing.spec.ts:64:72
+
+    Error Context: test-results/landing-landing-readiness--c2fb6-estions-and-offers-recovery/error-context.md
+
+  11) e2e/parity.spec.ts:47:3 › games: server errors stay on the page and can be retried ───────────
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+    Locator: getByRole('alert')
+    Expected: visible
+    Timeout: 20000ms
+    Error: element(s) not found
+
+    Call log:
+    [2m  - Expect "toBeVisible" with timeout 20000ms[22m
+    [2m  - waiting for getByRole('alert')[22m
+
+
+      51 |       : { json: [] }))
+      52 |     await page.goto(`/${path}`)
+    > 53 |     await expect(page.getByRole('alert')).toBeVisible({ timeout: 20000 })
+         |                                           ^
+      54 |     await expect(page).toHaveURL(new RegExp(`/${path}$`))
+      55 |     fail = false
+      56 |     await page.getByRole('button', { name: 'Try again', exact: true }).click()
+        at /Users/mohamedawadalla/Projects/KnicksIQ/apps/web/e2e/parity.spec.ts:53:43
+
+    Error Context: test-results/parity-games-server-errors-bdabb-the-page-and-can-be-retried/error-context.md
+
+  12) e2e/parity.spec.ts:60:3 › games: item 101 and URL pagination ─────────────────────────────────
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoHaveCount[2m([22m[32mexpected[39m[2m)[22m failed
+
+    Locator:  locator('.game-row')
+    Expected: [32m1[39m
+    Received: [31m0[39m
+    Timeout:  5000ms
+
+    Call log:
+    [2m  - Expect "toHaveCount" with timeout 5000ms[22m
+    [2m  - waiting for locator('.game-row')[22m
+    [2m    9 × locator resolved to 0 elements[22m
+    [2m      - unexpected value "0"[22m
+
+
+      61 |     await page.goto(`/${path}?page=3`)
+      62 |     const rows = page.locator(path === 'games' ? '.game-row' : '.report-row')
+    > 63 |     await expect(rows).toHaveCount(1)
+         |                        ^
+      64 |     await expect(rows.first()).toHaveAttribute('href', new RegExp(`/${path}/101`))
+      65 |     await page.getByRole('button', { name: '1', exact: true }).click()
+      66 |     await expect(rows).toHaveCount(50)
+        at /Users/mohamedawadalla/Projects/KnicksIQ/apps/web/e2e/parity.spec.ts:63:24
+
+    Error Context: test-results/parity-games-item-101-and-URL-pagination/error-context.md
+
+  13) e2e/parity.spec.ts:47:3 › reports: server errors stay on the page and can be retried ─────────
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoContainText[2m([22m[32mexpected[39m[2m)[22m failed
+
+    Locator: getByRole('status')
+    Expected substring: [32m"No reviewed reports"[39m
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+    [2m  - Expect "toContainText" with timeout 5000ms[22m
+    [2m  - waiting for getByRole('status')[22m
+    [2m    6 × locator resolved to <div role="status" class="surface-state surface-state-loading">…</div>[22m
+    [2m      - unexpected value "Loading reviewed reports…"[22m
+
+
+      56 |     await page.getByRole('button', { name: 'Try again', exact: true }).click()
+      57 |     await expect(page.getByRole('alert')).toHaveCount(0)
+    > 58 |     await expect(page.getByRole('status')).toContainText(path === 'games' ? 'No games match' : 'No reviewed reports')
+         |                                            ^
+      59 |   })
+      60 |   test(`${path}: item 101 and URL pagination`, async ({ page }) => {
+      61 |     await page.goto(`/${path}?page=3`)
+        at /Users/mohamedawadalla/Projects/KnicksIQ/apps/web/e2e/parity.spec.ts:58:44
+
+    Error Context: test-results/parity-reports-server-erro-d0aff-the-page-and-can-be-retried/error-context.md
+
+  14) e2e/parity.spec.ts:60:3 › reports: item 101 and URL pagination ───────────────────────────────
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoHaveCount[2m([22m[32mexpected[39m[2m)[22m failed
+
+    Locator:  locator('.report-row')
+    Expected: [32m1[39m
+    Received: [31m0[39m
+    Timeout:  5000ms
+
+    Call log:
+    [2m  - Expect "toHaveCount" with timeout 5000ms[22m
+    [2m  - waiting for locator('.report-row')[22m
+    [2m    9 × locator resolved to 0 elements[22m
+    [2m      - unexpected value "0"[22m
+
+
+      61 |     await page.goto(`/${path}?page=3`)
+      62 |     const rows = page.locator(path === 'games' ? '.game-row' : '.report-row')
+    > 63 |     await expect(rows).toHaveCount(1)
+         |                        ^
+      64 |     await expect(rows.first()).toHaveAttribute('href', new RegExp(`/${path}/101`))
+      65 |     await page.getByRole('button', { name: '1', exact: true }).click()
+      66 |     await expect(rows).toHaveCount(50)
+        at /Users/mohamedawadalla/Projects/KnicksIQ/apps/web/e2e/parity.spec.ts:63:24
+
+    Error Context: test-results/parity-reports-item-101-and-URL-pagination/error-context.md
+
+  15) e2e/parity.spec.ts:78:1 › analyst retains full conversation across client navigation with bounded context 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeEnabled[2m([22m[2m)[22m failed
+
+    Locator:  getByRole('textbox', { name: 'Ask a season question' })
+    Expected: enabled
+    Received: disabled
+    Timeout:  5000ms
+
+    Call log:
+    [2m  - Expect "toBeEnabled" with timeout 5000ms[22m
+    [2m  - waiting for getByRole('textbox', { name: 'Ask a season question' })[22m
+    [2m    7 × locator resolved to <textarea disabled rows="5" maxlength="1200" data-slot="textarea" id="analyst-question" placeholder="Ask about a game, streak, opponent, player, or turning point…" class="flex field-sizing-content min-h-16 w-full rounded-md border border-input bg-transparent px-3 py-2 text-base shadow-xs transition-[color,box-shadow] outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:bor…></textarea>[22m
+    [2m      - unexpected value "disabled"[22m
+
+
+       98 |   for (let i = 1; i <= 8; i++) {
+       99 |     const box = page.getByRole('textbox', { name: 'Ask a season question' })
+    > 100 |     await expect(box).toBeEnabled()
+          |                       ^
+      101 |     await box.fill(`Question ${i}`)
+      102 |     await box.press('Enter')
+      103 |     await expect(page.getByText(`Answer ${i}`, { exact: true })).toBeVisible()
+        at /Users/mohamedawadalla/Projects/KnicksIQ/apps/web/e2e/parity.spec.ts:100:23
+
+    Error Context: test-results/parity-analyst-retains-ful-1d89a-gation-with-bounded-context/error-context.md
+
+  16) e2e/parity.spec.ts:117:1 › follow-up submits immediately and New chat clears both surfaces ───
+
+    [31mTest timeout of 30000ms exceeded.[39m
+
+    Error: locator.fill: Test timeout of 30000ms exceeded.
+    Call log:
+    [2m  - waiting for getByRole('textbox', { name: 'Ask the archive' })[22m
+    [2m    - locator resolved to <textarea rows="3" maxlength="1200" data-slot="textarea" id="archive-question" enterkeyhint="search" placeholder="Ask about a game, streak, opponent, player, or turning point…" class="flex field-sizing-content min-h-16 w-full rounded-md border border-input bg-transparent px-3 py-2 text-base shadow-xs transition-[color,box-shadow] outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 ari…></textarea>[22m
+    [2m    - fill("How did New York score?")[22m
+    [2m  - attempting fill action[22m
+    [2m    2 × waiting for element to be visible, enabled and editable[22m
+    [2m      - element is not enabled[22m
+    [2m    - retrying fill action[22m
+    [2m    - waiting 20ms[22m
+    [2m    2 × waiting for element to be visible, enabled and editable[22m
+    [2m      - element is not enabled[22m
+    [2m    - retrying fill action[22m
+    [2m      - waiting 100ms[22m
+    [2m    59 × waiting for element to be visible, enabled and editable[22m
+    [2m       - element is not enabled[22m
+    [2m     - retrying fill action[22m
+    [2m       - waiting 500ms[22m
+
+
+      129 |   })
+      130 |   await page.goto('/')
+    > 131 |   await page.getByRole('textbox', { name: 'Ask the archive' }).fill('How did New York score?')
+          |                                                                ^
+      132 |   await page.getByRole('button', { name: 'Search archive' }).click()
+      133 |   await expect(page.getByText('Answer 1', { exact: true })).toBeVisible()
+      134 |   await page.getByRole('button', { name: 'How did Boston respond?' }).click()
+        at /Users/mohamedawadalla/Projects/KnicksIQ/apps/web/e2e/parity.spec.ts:131:64
+
+    Error Context: test-results/parity-follow-up-submits-i-69e6e-w-chat-clears-both-surfaces/error-context.md
+
+  17) e2e/report-sources.spec.ts:9:1 › corrected report sources expose exact intervals and use internal game IDs 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoHaveCount[2m([22m[32mexpected[39m[2m)[22m failed
+
+    Locator:  locator('.report-source')
+    Expected: [32m7[39m
+    Received: [31m0[39m
+    Timeout:  5000ms
+
+    Call log:
+    [2m  - Expect "toHaveCount" with timeout 5000ms[22m
+    [2m  - waiting for locator('.report-source')[22m
+    [2m    9 × locator resolved to 0 elements[22m
+    [2m      - unexpected value "0"[22m
+
+
+      14 |   await page.route(`**/api/games/${fixture.game.id}/play-by-play`, (route) => route.fulfill({ json: fixture.events }))
+      15 |   await page.goto(`/reports/${fixture.report.id}`)
+    > 16 |   await expect(page.locator('.report-source')).toHaveCount(7)
+         |                                                ^
+      17 |   await expect(page.locator('.report-sources')).toContainText('Events 365–385, inclusive')
+      18 |   await expect(page.getByRole('link', { name: 'Donovan Mitchell box score source' })).toHaveAttribute('href', 'https://www.nba.com/game/0022500003/box-score')
+      19 |   await expect(page.getByRole('link', { name: 'Selected scoring interval source', exact: false })).toHaveAttribute('href', /playbyplayv3\?GameID=0022500003/)
+        at /Users/mohamedawadalla/Projects/KnicksIQ/apps/web/e2e/report-sources.spec.ts:16:48
+
+    Error Context: test-results/report-sources-corrected-r-d1526-s-and-use-internal-game-IDs/error-context.md
+
+  18) e2e/report-sources.spec.ts:29:1 › legacy source notes and absent optional source types do not break a report 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoHaveText[2m([22m[32mexpected[39m[2m)[22m failed
+
+    Locator:  getByRole('heading', { level: 1 })
+    Expected: [32m"NYK 119, CLE 111"[39m
+    Received: [31m"Loading report."[39m
+    Timeout:  5000ms
+
+    Call log:
+    [2m  - Expect "toHaveText" with timeout 5000ms[22m
+    [2m  - waiting for getByRole('heading', { level: 1 })[22m
+    [2m    7 × locator resolved to <h1>Loading report.</h1>[22m
+    [2m      - unexpected value "Loading report."[22m
+
+
+      32 |   } }))
+      33 |   await page.goto(`/reports/${fixture.report.id}`)
+    > 34 |   await expect(page.getByRole('heading', { level: 1 })).toHaveText(fixture.report.title)
+         |                                                         ^
+      35 |   await expect(page.getByText('Legacy source note', { exact: true })).toBeVisible()
+      36 |   await expect(page.locator('.report-sources a')).toHaveCount(0)
+      37 | })
+        at /Users/mohamedawadalla/Projects/KnicksIQ/apps/web/e2e/report-sources.spec.ts:34:57
+
+    Error Context: test-results/report-sources-legacy-sour-32e93-types-do-not-break-a-report/error-context.md
+
+  19) e2e/parity.spec.ts:146:1 › interrupted request retries the exact turn after reload ───────────
+
+    Test was interrupted.
+
+    Error: locator.fill: Test ended.
+    Call log:
+    [2m  - waiting for getByRole('textbox', { name: 'Ask a season question' })[22m
+    [2m    - locator resolved to <textarea disabled rows="5" maxlength="1200" data-slot="textarea" id="analyst-question" placeholder="Ask about a game, streak, opponent, player, or turning point…" class="flex field-sizing-content min-h-16 w-full rounded-md border border-input bg-transparent px-3 py-2 text-base shadow-xs transition-[color,box-shadow] outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:bor…></textarea>[22m
+    [2m    - fill("What happened?")[22m
+    [2m  - attempting fill action[22m
+    [2m    2 × waiting for element to be visible, enabled and editable[22m
+    [2m      - element is not enabled[22m
+    [2m    - retrying fill action[22m
+    [2m    - waiting 20ms[22m
+    [2m    2 × waiting for element to be visible, enabled and editable[22m
+    [2m      - element is not enabled[22m
+    [2m    - retrying fill action[22m
+    [2m      - waiting 100ms[22m
+    [2m    55 × waiting for element to be visible, enabled and editable[22m
+    [2m       - element is not enabled[22m
+    [2m     - retrying fill action[22m
+    [2m       - waiting 500ms[22m
+
+
+      161 |   })
+      162 |   await page.goto('/analyst')
+    > 163 |   await page.getByRole('textbox', { name: 'Ask a season question' }).fill('What happened?')
+          |                                                                      ^
+      164 |   await page.getByRole('button', { name: 'Ask archive' }).click()
+      165 |   await expect(page.getByText('What happened?', { exact: true })).toBeVisible()
+      166 |   await page.reload()
+        at /Users/mohamedawadalla/Projects/KnicksIQ/apps/web/e2e/parity.spec.ts:163:70
+
+    Error Context: test-results/parity-interrupted-request-f4f63-the-exact-turn-after-reload/error-context.md
+
+  18 failed
+    e2e/archive.spec.ts:24:1 › public archive loads and exposes policy links ───────────────────────
+    e2e/archive.spec.ts:49:1 › chat stays locked until archive checks finish ───────────────────────
+    e2e/archive.spec.ts:71:1 › an archive question makes only the analysis request ─────────────────
+    e2e/landing.spec.ts:14:3 › landing reflows and stays accessible at 390px ───────────────────────
+    e2e/landing.spec.ts:14:3 › landing reflows and stays accessible at 735px ───────────────────────
+    e2e/landing.spec.ts:14:3 › landing reflows and stays accessible at 768px ───────────────────────
+    e2e/landing.spec.ts:14:3 › landing reflows and stays accessible at 1024px ──────────────────────
+    e2e/landing.spec.ts:14:3 › landing reflows and stays accessible at 1440px ──────────────────────
+    e2e/landing.spec.ts:32:1 › landing keyboard submission preserves newlines and recovers from a failed answer 
+    e2e/landing.spec.ts:61:1 › landing readiness error locks questions and offers recovery ─────────
+    e2e/parity.spec.ts:47:3 › games: server errors stay on the page and can be retried ─────────────
+    e2e/parity.spec.ts:60:3 › games: item 101 and URL pagination ───────────────────────────────────
+    e2e/parity.spec.ts:47:3 › reports: server errors stay on the page and can be retried ───────────
+    e2e/parity.spec.ts:60:3 › reports: item 101 and URL pagination ─────────────────────────────────
+    e2e/parity.spec.ts:78:1 › analyst retains full conversation across client navigation with bounded context 
+    e2e/parity.spec.ts:117:1 › follow-up submits immediately and New chat clears both surfaces ─────
+    e2e/report-sources.spec.ts:9:1 › corrected report sources expose exact intervals and use internal game IDs 
+    e2e/report-sources.spec.ts:29:1 › legacy source notes and absent optional source types do not break a report 
+  1 interrupted
+    e2e/parity.spec.ts:146:1 › interrupted request retries the exact turn after reload ─────────────
+  14 did not run
+  5 passed (2.2m)
+[ELIFECYCLE] Command failed with exit code 130.

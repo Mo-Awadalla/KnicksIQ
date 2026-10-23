@@ -1,0 +1,15 @@
+{
+  "prior-record-checks.json": "4286e6e10ddd15e387807e3433fcb7e5ecf372634b7679456e970d03f82a59d0",
+  "gate-matrix.json": "6c33a92ef98eb3cf89e68284d7e1ad4fa57112f39eb010088534b0c63eaee7bd",
+  "evaluation-approval-package.json": "d3c85c29afaefaa3bfa0dc8dde571a6a7029d4f54e26b7cd3c53cbc4571da4d9",
+  "release-gate.json": "1941fba5d43b73230c33840f89f22c09fa3ef06c7ebc501f28391315172c9333",
+  "merge-ci.json": "cf19d455afa417aca11ca1ab69d6371afbbb95addd50b06de7422445315f9ccc",
+  "verify_bindings.py": "9bacdb655f62f28332ec1f22264585470a8c6ef92eb18188f579e940203e37b9",
+  "README.md": "cc8240282f501dbeb3f8426985d7a29eb39cdd372bdb89ac812486f804463f04",
+  "environment-observation.json": "ea2feff6c1175663e3db1301003e316bb74b62a067c986107881322e5458a8ce",
+  "candidate-identity.json": "51d9f3cf96799017770b7227bb20cc4c10a12b8ce1aef5ad62e1709ac4db61eb",
+  "content-binding.json": "0a3da098bacdc4061abfd956e300e0736e336ca4e7e46c4d82f49e4868351f76",
+  "merge-ci-results.txt": "16ee3ca0ca0bc3b1e0567ced7cfd8d2e7aba0b5dc675e9d818860bb228a9956d",
+  "evaluation-approval.md": "39e9e7cdc91bbe4293fa539b62d2c04ef0ef14f484f2c94e8bb804d28e510734",
+  "provider-verification-plan.md": "128d8b7ce64fe8939d848094fb2c514261b247d7f4f79753c789880ad5ce685e"
+}

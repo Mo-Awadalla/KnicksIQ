@@ -1,0 +1,4559 @@
+{
+  "measured_at": "2026-10-22T15:07:49+00:00",
+  "model": "gpt-6-luna",
+  "records": [
+    "docs/release-evidence/llm-primary-20261021/reviewer/head-units.jsonl"
+  ],
+  "labels": "docs/release-evidence/llm-primary-20261021/reviewer/labels.json",
+  "trials_per_case": 2,
+  "reviewer_max_tokens": 3000,
+  "reviewer": {
+    "model_requested": "gpt-6-luna",
+    "max_tokens": 3000,
+    "observed_max_tokens": {
+      "3000": 58
+    },
+    "requested_models": {
+      "gpt-6-luna": 58
+    },
+    "served_models": {
+      "gpt-6-luna": 58
+    },
+    "providers": {
+      "null": 58
+    },
+    "protocols": {
+      "responses": 58
+    },
+    "calls": 58,
+    "cost_usd": 0.017993,
+    "cost_per_call": 0.00031,
+    "call_latency_ms": {
+      "p50": 2828.9,
+      "p95": 4897.9,
+      "samples": 58
+    },
+    "outcomes": {
+      "accepted": 26,
+      "verdict_rejected": 32
+    },
+    "retried_trials": 0
+  },
+  "classes": {
+    "number_swapped_other_metric": "A value is replaced by another trusted claim value for a different metric. numeric_issues compares Decimal values and ignores metric_id.",
+    "wrong_subject": "Only the player or team subject changes; every number is unchanged and trusted. The gate has no subject check.",
+    "wrong_phase_or_window": "Only home/road or playoffs/regular-season wording changes; every number stays trusted. Filters and season_type are reviewer-visible, not gate-checked.",
+    "wins_losses_swapped": "Both numbers are supplied claim values. The gate checks presence, not which value is wins and which is losses.",
+    "per_game_total_confusion": "The value is unchanged and trusted; only the per-game versus total wording changes. The gate does not inspect units.",
+    "unsupported_causal_or_ranking": "The added sentence contains no number tokens, so numeric_issues has nothing to check. Declared claim references are unchanged.",
+    "coincident_percent": "The percent token equals an integer value of an unrelated trusted claim or sample size, so _explained accepts it by value before percent conversion."
+  },
+  "gate_proof": {
+    "all_passed": false,
+    "controls": [
+      {
+        "case_id": "control:exact_statistics-001",
+        "gate_issues": []
+      },
+      {
+        "case_id": "control:exact_statistics-002",
+        "gate_issues": []
+      },
+      {
+        "case_id": "control:exact_statistics-003",
+        "gate_issues": []
+      },
+      {
+        "case_id": "control:exact_statistics-004",
+        "gate_issues": []
+      },
+      {
+        "case_id": "control:exact_statistics-005",
+        "gate_issues": []
+      },
+      {
+        "case_id": "control:exact_statistics-006",
+        "gate_issues": []
+      },
+      {
+        "case_id": "control:exact_statistics-007",
+        "gate_issues": []
+      },
+      {
+        "case_id": "control:exact_statistics-008",
+        "gate_issues": []
+      },
+      {
+        "case_id": "control:date_range_last_n-001",
+        "gate_issues": []
+      },
+      {
+        "case_id": "control:date_range_last_n-002",
+        "gate_issues": []
+      },
+      {
+        "case_id": "control:date_range_last_n-003",
+        "gate_issues": []
+      },
+      {
+        "case_id": "control:date_range_last_n-004",
+        "gate_issues": []
+      },
+      {
+        "case_id": "control:comparisons-002",
+        "gate_issues": []
+      },
+      {
+        "case_id": "control:comparisons-004",
+        "gate_issues": []
+      }
+    ],
+    "mutations": [
+      {
+        "case_id": "metric_swap_ppg_to_margin",
+        "gate_issues": []
+      },
+      {
+        "case_id": "metric_swap_total_points_to_margin",
+        "gate_issues": []
+      },
+      {
+        "case_id": "metric_swap_margin_to_ppg",
+        "gate_issues": []
+      },
+      {
+        "case_id": "subject_swap_scorers",
+        "gate_issues": []
+      },
+      {
+        "case_id": "subject_swap_brunson_to_towns",
+        "gate_issues": []
+      },
+      {
+        "case_id": "subject_swap_knicks_to_celtics",
+        "gate_issues": []
+      },
+      {
+        "case_id": "phase_home_to_road",
+        "gate_issues": []
+      },
+      {
+        "case_id": "phase_playoffs_to_regular",
+        "gate_issues": []
+      },
+      {
+        "case_id": "phase_road_to_home",
+        "gate_issues": []
+      },
+      {
+        "case_id": "record_swap_season",
+        "gate_issues": [
+          "span 1 states the record 32-69 with wins and losses reversed"
+        ]
+      },
+      {
+        "case_id": "record_swap_last_five",
+        "gate_issues": [
+          "span 1 states the record 1-4 with wins and losses reversed"
+        ]
+      },
+      {
+        "case_id": "record_swap_january",
+        "gate_issues": [
+          "span 1 states the record 8-7 with wins and losses reversed"
+        ]
+      },
+      {
+        "case_id": "unit_per_game_as_total",
+        "gate_issues": []
+      },
+      {
+        "case_id": "unit_total_as_per_game",
+        "gate_issues": []
+      },
+      {
+        "case_id": "unit_window_ppg_as_total",
+        "gate_issues": []
+      },
+      {
+        "case_id": "causal_defense_ranking",
+        "gate_issues": []
+      },
+      {
+        "case_id": "causal_offense_ranking",
+        "gate_issues": []
+      },
+      {
+        "case_id": "causal_schedule_ranking",
+        "gate_issues": []
+      },
+      {
+        "case_id": "percent_from_wins_value",
+        "gate_issues": [
+          "span 2 uses 37, which is not a supplied claim value, receipt or capability"
+        ]
+      },
+      {
+        "case_id": "percent_from_losses_value",
+        "gate_issues": [
+          "span 2 uses 32, which is not a supplied claim value, receipt or capability"
+        ]
+      },
+      {
+        "case_id": "percent_from_sample_size",
+        "gate_issues": [
+          "span 3 uses 93, which is not a supplied claim value, receipt or capability"
+        ]
+      }
+    ]
+  },
+  "controls_summary": {
+    "cases": 14,
+    "gate_rejected": 0,
+    "trials_per_case": 2,
+    "observations": 28,
+    "accepted": 26,
+    "accept_rate": 0.9286,
+    "wilson_95": [
+      0.7735,
+      0.9802
+    ],
+    "cost_usd": 0.00843,
+    "cost_per_call": 0.000301,
+    "reviewer_calls": 28,
+    "latency_ms": {
+      "p50": 2825,
+      "p95": 4241,
+      "samples": 28
+    },
+    "call_latency_ms": {
+      "p50": 2823.9,
+      "p95": 4240.8,
+      "samples": 28
+    },
+    "max_tokens": {
+      "3000": 28
+    },
+    "protocols": {
+      "responses": 28
+    },
+    "requested_models": {
+      "gpt-6-luna": 28
+    },
+    "providers": {
+      "null": 28
+    },
+    "models": {
+      "gpt-6-luna": 28
+    }
+  },
+  "mutations_summary": {
+    "cases": 21,
+    "gate_rejected": 6,
+    "trials_per_case": 2,
+    "observations": 30,
+    "accepted": 0,
+    "accept_rate": 0.0,
+    "wilson_95": [
+      0.0,
+      0.1135
+    ],
+    "cost_usd": 0.009564,
+    "cost_per_call": 0.000319,
+    "reviewer_calls": 30,
+    "latency_ms": {
+      "p50": 2887,
+      "p95": 4898,
+      "samples": 30
+    },
+    "call_latency_ms": {
+      "p50": 2886.6,
+      "p95": 4897.9,
+      "samples": 30
+    },
+    "max_tokens": {
+      "3000": 30
+    },
+    "protocols": {
+      "responses": 30
+    },
+    "requested_models": {
+      "gpt-6-luna": 30
+    },
+    "providers": {
+      "null": 30
+    },
+    "models": {
+      "gpt-6-luna": 30
+    }
+  },
+  "by_class": {
+    "number_swapped_other_metric": {
+      "cases": 3,
+      "gate_rejected": 0,
+      "trials_per_case": 2,
+      "observations": 6,
+      "accepted": 0,
+      "accept_rate": 0.0,
+      "wilson_95": [
+        0.0,
+        0.3903
+      ],
+      "cost_usd": 0.00161,
+      "cost_per_call": 0.000268,
+      "reviewer_calls": 6,
+      "latency_ms": {
+        "p50": 2490,
+        "p95": 3619,
+        "samples": 6
+      },
+      "call_latency_ms": {
+        "p50": 2489.3,
+        "p95": 3618.4,
+        "samples": 6
+      },
+      "max_tokens": {
+        "3000": 6
+      },
+      "protocols": {
+        "responses": 6
+      },
+      "requested_models": {
+        "gpt-6-luna": 6
+      },
+      "providers": {
+        "null": 6
+      },
+      "models": {
+        "gpt-6-luna": 6
+      }
+    },
+    "wrong_subject": {
+      "cases": 3,
+      "gate_rejected": 0,
+      "trials_per_case": 2,
+      "observations": 6,
+      "accepted": 0,
+      "accept_rate": 0.0,
+      "wilson_95": [
+        0.0,
+        0.3903
+      ],
+      "cost_usd": 0.002023,
+      "cost_per_call": 0.000337,
+      "reviewer_calls": 6,
+      "latency_ms": {
+        "p50": 2612,
+        "p95": 4778,
+        "samples": 6
+      },
+      "call_latency_ms": {
+        "p50": 2611.5,
+        "p95": 4777.3,
+        "samples": 6
+      },
+      "max_tokens": {
+        "3000": 6
+      },
+      "protocols": {
+        "responses": 6
+      },
+      "requested_models": {
+        "gpt-6-luna": 6
+      },
+      "providers": {
+        "null": 6
+      },
+      "models": {
+        "gpt-6-luna": 6
+      }
+    },
+    "wrong_phase_or_window": {
+      "cases": 3,
+      "gate_rejected": 0,
+      "trials_per_case": 2,
+      "observations": 6,
+      "accepted": 0,
+      "accept_rate": 0.0,
+      "wilson_95": [
+        0.0,
+        0.3903
+      ],
+      "cost_usd": 0.001644,
+      "cost_per_call": 0.000274,
+      "reviewer_calls": 6,
+      "latency_ms": {
+        "p50": 2506,
+        "p95": 2916,
+        "samples": 6
+      },
+      "call_latency_ms": {
+        "p50": 2505.4,
+        "p95": 2915.3,
+        "samples": 6
+      },
+      "max_tokens": {
+        "3000": 6
+      },
+      "protocols": {
+        "responses": 6
+      },
+      "requested_models": {
+        "gpt-6-luna": 6
+      },
+      "providers": {
+        "null": 6
+      },
+      "models": {
+        "gpt-6-luna": 6
+      }
+    },
+    "wins_losses_swapped": {
+      "cases": 3,
+      "gate_rejected": 3,
+      "trials_per_case": 2,
+      "observations": 0,
+      "accepted": 0,
+      "accept_rate": null,
+      "wilson_95": null,
+      "cost_usd": 0,
+      "cost_per_call": null,
+      "reviewer_calls": 0,
+      "latency_ms": {
+        "p50": null,
+        "p95": null,
+        "samples": 0
+      },
+      "call_latency_ms": {
+        "p50": null,
+        "p95": null,
+        "samples": 0
+      },
+      "max_tokens": {},
+      "protocols": {},
+      "requested_models": {},
+      "providers": {},
+      "models": {}
+    },
+    "per_game_total_confusion": {
+      "cases": 3,
+      "gate_rejected": 0,
+      "trials_per_case": 2,
+      "observations": 6,
+      "accepted": 0,
+      "accept_rate": 0.0,
+      "wilson_95": [
+        0.0,
+        0.3903
+      ],
+      "cost_usd": 0.001843,
+      "cost_per_call": 0.000307,
+      "reviewer_calls": 6,
+      "latency_ms": {
+        "p50": 3155,
+        "p95": 5527,
+        "samples": 6
+      },
+      "call_latency_ms": {
+        "p50": 3154.2,
+        "p95": 5526.5,
+        "samples": 6
+      },
+      "max_tokens": {
+        "3000": 6
+      },
+      "protocols": {
+        "responses": 6
+      },
+      "requested_models": {
+        "gpt-6-luna": 6
+      },
+      "providers": {
+        "null": 6
+      },
+      "models": {
+        "gpt-6-luna": 6
+      }
+    },
+    "unsupported_causal_or_ranking": {
+      "cases": 3,
+      "gate_rejected": 0,
+      "trials_per_case": 2,
+      "observations": 6,
+      "accepted": 0,
+      "accept_rate": 0.0,
+      "wilson_95": [
+        0.0,
+        0.3903
+      ],
+      "cost_usd": 0.002443,
+      "cost_per_call": 0.000407,
+      "reviewer_calls": 6,
+      "latency_ms": {
+        "p50": 3600,
+        "p95": 4898,
+        "samples": 6
+      },
+      "call_latency_ms": {
+        "p50": 3599.9,
+        "p95": 4897.9,
+        "samples": 6
+      },
+      "max_tokens": {
+        "3000": 6
+      },
+      "protocols": {
+        "responses": 6
+      },
+      "requested_models": {
+        "gpt-6-luna": 6
+      },
+      "providers": {
+        "null": 6
+      },
+      "models": {
+        "gpt-6-luna": 6
+      }
+    },
+    "coincident_percent": {
+      "cases": 3,
+      "gate_rejected": 3,
+      "trials_per_case": 2,
+      "observations": 0,
+      "accepted": 0,
+      "accept_rate": null,
+      "wilson_95": null,
+      "cost_usd": 0,
+      "cost_per_call": null,
+      "reviewer_calls": 0,
+      "latency_ms": {
+        "p50": null,
+        "p95": null,
+        "samples": 0
+      },
+      "call_latency_ms": {
+        "p50": null,
+        "p95": null,
+        "samples": 0
+      },
+      "max_tokens": {},
+      "protocols": {},
+      "requested_models": {},
+      "providers": {},
+      "models": {}
+    }
+  },
+  "reviewer_calls": 58,
+  "cost_usd": 0.017993,
+  "providers": {
+    "null": 58
+  },
+  "models": {
+    "gpt-6-luna": 58
+  },
+  "controls": [
+    {
+      "case_id": "control:exact_statistics-001",
+      "unit": "exact_statistics-001",
+      "answer": "In the available 2025-26 archive, the Knicks went 69-32 across 101 games.",
+      "gate_issues": [],
+      "observations": [
+        {
+          "outcome": "accepted",
+          "accepted": true,
+          "causes": [],
+          "error": null,
+          "retried": false,
+          "cost_usd": 0.0002929,
+          "latency_ms": 2662,
+          "calls": [
+            {
+              "provider": null,
+              "model": "gpt-6-luna",
+              "served_model": "gpt-6-luna",
+              "requested_model": "gpt-6-luna",
+              "protocol": "responses",
+              "max_tokens": 3000,
+              "cost_usd": 0.0002929,
+              "prompt_tokens": 1759,
+              "completion_tokens": 234,
+              "finish_reason": "stop",
+              "latency_ms": 2655.7,
+              "ttfb_ms": 2655.4
+            }
+          ],
+          "review": {
+            "assertions": [
+              {
+                "text": "In the available 2025-26 archive, the Knicks went 69-32 across 101 games.",
+                "assertion_type": "factual",
+                "verdict": "supported",
+                "offending_text": null,
+                "supporting_claim_ids": [
+                  "claim:6967a12a584c5b797f5522c968d0474cc9cfe47b49e27ad4f9ad75caf8521a49",
+                  "claim:755cd7abc5d4380efd7d5e411145b32485817ed483eaa2b570e3a36b0c03094c"
+                ],
+                "supporting_evidence_ids": [],
+                "reason": "Both record totals and the archived-game count are supported."
+              }
+            ],
+            "follow_up_reviews": [
+              {
+                "text": "What was the Knicks' point differential this season?",
+                "verdict": "supported",
+                "supporting_claim_ids": [],
+                "supporting_evidence_ids": [],
+                "reason": "Archived team metrics include points and margin, supporting point differential."
+              },
+              {
+                "text": "How many points did the Knicks score in total this season?",
+                "verdict": "supported",
+                "supporting_claim_ids": [],
+                "supporting_evidence_ids": [],
+                "reason": "The archive includes team points, supporting this question."
+              }
+            ]
+          },
+          "trial": 0
+        },
+        {
+          "outcome": "accepted",
+          "accepted": true,
+          "causes": [],
+          "error": null,
+          "retried": false,
+          "cost_usd": 0.0003029,
+          "latency_ms": 2825,
+          "calls": [
+            {
+              "provider": null,
+              "model": "gpt-6-luna",
+              "served_model": "gpt-6-luna",
+              "requested_model": "gpt-6-luna",
+              "protocol": "responses",
+              "max_tokens": 3000,
+              "cost_usd": 0.0003029,
+              "prompt_tokens": 1759,
+              "completion_tokens": 254,
+              "finish_reason": "stop",
+              "latency_ms": 2823.9,
+              "ttfb_ms": 2823.6
+            }
+          ],
+          "review": {
+            "assertions": [
+              {
+                "text": "In the available 2025-26 archive, the Knicks went 69-32 across 101 games.",
+                "assertion_type": "factual",
+                "verdict": "supported",
+                "offending_text": null,
+                "supporting_claim_ids": [
+                  "claim:6967a12a584c5b797f5522c968d0474cc9cfe47b49e27ad4f9ad75caf8521a49",
+                  "claim:755cd7abc5d4380efd7d5e411145b32485817ed483eaa2b570e3a36b0c03094c"
+                ],
+                "supporting_evidence_ids": [],
+                "reason": "Both records and the archived-game count are supported for the stated season and archive."
+              }
+            ],
+            "follow_up_reviews": [
+              {
+                "text": "What was the Knicks' point differential this season?",
+                "verdict": "insufficient_evidence",
+                "supporting_claim_ids": [],
+                "supporting_evidence_ids": [],
+                "reason": "The archive supports team margin, but no point-differential value is provided."
+              },
+              {
+                "text": "How many points did the Knicks score in total this season?",
+                "verdict": "insufficient_evidence",
+                "supporting_claim_ids": [],
+                "supporting_evidence_ids": [],
+                "reason": "Team points are available as a metric, but no season total is provided."
+              }
+            ]
+          },
+          "trial": 1
+        }
+      ]
+    },
+    {
+      "case_id": "control:exact_statistics-002",
+      "unit": "exact_statistics-002",
+      "answer": "The Knicks scored 11,750 total points across 101 archived games in the 2025-26 release.",
+      "gate_issues": [],
+      "observations": [
+        {
+          "outcome": "accepted",
+          "accepted": true,
+          "causes": [],
+          "error": null,
+          "retried": false,
+          "cost_usd": 0.0002625,
+          "latency_ms": 2585,
+          "calls": [
+            {
+              "provider": null,
+              "model": "gpt-6-luna",
+              "served_model": "gpt-6-luna",
+              "requested_model": "gpt-6-luna",
+              "protocol": "responses",
+              "max_tokens": 3000,
+              "cost_usd": 0.0002625,
+              "prompt_tokens": 1525,
+              "completion_tokens": 220,
+              "finish_reason": "stop",
+              "latency_ms": 2584.4,
+              "ttfb_ms": 2583.0
+            }
+          ],
+          "review": {
+            "assertions": [
+              {
+                "text": "The Knicks scored 11,750 total points across 101 archived games in the 2025-26 release.",
+                "assertion_type": "factual",
+                "verdict": "supported",
+                "offending_text": null,
+                "supporting_claim_ids": [
+                  "claim:f9b34fee66aed1e531b68052b5b1c7bc8f66127dca6d755e6b1c6c9b07bde8c4"
+                ],
+                "supporting_evidence_ids": [],
+                "reason": "The claim supports the Knicks' total points across 101 archived games in the 2025-26 release."
+              }
+            ],
+            "follow_up_reviews": [
+              {
+                "text": "What was the Knicks' average points per game?",
+                "verdict": "supported",
+                "supporting_claim_ids": [],
+                "supporting_evidence_ids": [],
+                "reason": "The archive contains team points and game counts, which support calculating an average."
+              },
+              {
+                "text": "How many total points did the Knicks allow (margin context)?",
+                "verdict": "insufficient_evidence",
+                "supporting_claim_ids": [],
+                "supporting_evidence_ids": [],
+                "reason": "The retrieved claim reports Knicks points scored, not points allowed."
+              }
+            ]
+          },
+          "trial": 0
+        },
+        {
+          "outcome": "accepted",
+          "accepted": true,
+          "causes": [],
+          "error": null,
+          "retried": false,
+          "cost_usd": 0.0002835,
+          "latency_ms": 3161,
+          "calls": [
+            {
+              "provider": null,
+              "model": "gpt-6-luna",
+              "served_model": "gpt-6-luna",
+              "requested_model": "gpt-6-luna",
+              "protocol": "responses",
+              "max_tokens": 3000,
+              "cost_usd": 0.0002835,
+              "prompt_tokens": 1525,
+              "completion_tokens": 262,
+              "finish_reason": "stop",
+              "latency_ms": 3160.7,
+              "ttfb_ms": 3160.4
+            }
+          ],
+          "review": {
+            "assertions": [
+              {
+                "text": "The Knicks scored 11,750 total points across 101 archived games in the 2025-26 release.",
+                "assertion_type": "factual",
+                "verdict": "supported",
+                "offending_text": null,
+                "supporting_claim_ids": [
+                  "claim:f9b34fee66aed1e531b68052b5b1c7bc8f66127dca6d755e6b1c6c9b07bde8c4"
+                ],
+                "supporting_evidence_ids": [],
+                "reason": "The claim supports Knicks points totaled over the stated archived games and release."
+              }
+            ],
+            "follow_up_reviews": [
+              {
+                "text": "What was the Knicks' average points per game?",
+                "verdict": "supported",
+                "supporting_claim_ids": [],
+                "supporting_evidence_ids": [],
+                "reason": "The archive provides team points and game counts to calculate an average."
+              },
+              {
+                "text": "How many total points did the Knicks allow (margin context)?",
+                "verdict": "unsupported",
+                "supporting_claim_ids": [],
+                "supporting_evidence_ids": [],
+                "reason": "Available team metrics include margin, but not total points allowed."
+              }
+            ]
+          },
+          "trial": 1
+        }
+      ]
+    },
+    {
+      "case_id": "control:exact_statistics-003",
+      "unit": "exact_statistics-003",
+      "answer": "The Knicks averaged 116.34 points per game across 101 archived games in the 2025-26 release.",
+      "gate_issues": [],
+      "observations": [
+        {
+          "outcome": "accepted",
+          "accepted": true,
+          "causes": [],
+          "error": null,
+          "retried": false,
+          "cost_usd": 0.0002545,
+          "latency_ms": 2818,
+          "calls": [
+            {
+              "provider": null,
+              "model": "gpt-6-luna",
+              "served_model": "gpt-6-luna",
+              "requested_model": "gpt-6-luna",
+              "protocol": "responses",
+              "max_tokens": 3000,
+              "cost_usd": 0.0002545,
+              "prompt_tokens": 1535,
+              "completion_tokens": 202,
+              "finish_reason": "stop",
+              "latency_ms": 2817.4,
+              "ttfb_ms": 2817.2
+            }
+          ],
+          "review": {
+            "assertions": [
+              {
+                "text": "The Knicks averaged 116.34 points per game across 101 archived games in the 2025-26 release.",
+                "assertion_type": "factual",
+                "verdict": "supported",
+                "offending_text": null,
+                "supporting_claim_ids": [
+                  "claim:deafd8c4fbb345abf20ac4820b893127789e3a5b6339c1a6425567c7590cbe1c"
+                ],
+                "supporting_evidence_ids": [],
+                "reason": "The cited claim supports the Knicks\u2019 points per game, archive sample, season, and release scope."
+              }
+            ],
+            "follow_up_reviews": [
+              {
+                "text": "What was the Knicks' average margin per game?",
+                "verdict": "supported",
+                "supporting_claim_ids": [],
+                "supporting_evidence_ids": [],
+                "reason": "Team margin is an available team metric."
+              },
+              {
+                "text": "How many games did the Knicks win and lose in the archive?",
+                "verdict": "supported",
+                "supporting_claim_ids": [],
+                "supporting_evidence_ids": [],
+                "reason": "The archive includes team win and loss metrics."
+              }
+            ]
+          },
+          "trial": 0
+        },
+        {
+          "outcome": "accepted",
+          "accepted": true,
+          "causes": [],
+          "error": null,
+          "retried": false,
+          "cost_usd": 0.0002795,
+          "latency_ms": 2881,
+          "calls": [
+            {
+              "provider": null,
+              "model": "gpt-6-luna",
+              "served_model": "gpt-6-luna",
+              "requested_model": "gpt-6-luna",
+              "protocol": "responses",
+              "max_tokens": 3000,
+              "cost_usd": 0.0002795,
+              "prompt_tokens": 1535,
+              "completion_tokens": 252,
+              "finish_reason": "stop",
+              "latency_ms": 2880.8,
+              "ttfb_ms": 2880.0
+            }
+          ],
+          "review": {
+            "assertions": [
+              {
+                "text": "The Knicks averaged 116.34 points per game across 101 archived games in the 2025-26 release.",
+                "assertion_type": "interpretation",
+                "verdict": "supported",
+                "offending_text": null,
+                "supporting_claim_ids": [
+                  "claim:deafd8c4fbb345abf20ac4820b893127789e3a5b6339c1a6425567c7590cbe1c"
+                ],
+                "supporting_evidence_ids": [],
+                "reason": "The claim supports the Knicks\u2019 points per game, archived-game denominator, and season release."
+              }
+            ],
+            "follow_up_reviews": [
+              {
+                "text": "What was the Knicks' average margin per game?",
+                "verdict": "supported",
+                "supporting_claim_ids": [],
+                "supporting_evidence_ids": [],
+                "reason": "Team margin is an available metric."
+              },
+              {
+                "text": "How many games did the Knicks win and lose in the archive?",
+                "verdict": "supported",
+                "supporting_claim_ids": [],
+                "supporting_evidence_ids": [],
+                "reason": "The archive includes team wins and losses."
+              }
+            ]
+          },
+          "trial": 1
+        }
+      ]
+    },
+    {
+      "case_id": "control:exact_statistics-004",
+      "unit": "exact_statistics-004",
+      "answer": "The Knicks' average margin was 7.94 points per game across 101 archived games in the 2025-26 release.",
+      "gate_issues": [],
+      "observations": [
+        {
+          "outcome": "accepted",
+          "accepted": true,
+          "causes": [],
+          "error": null,
+          "retried": false,
+          "cost_usd": 0.0002541,
+          "latency_ms": 2694,
+          "calls": [
+            {
+              "provider": null,
+              "model": "gpt-6-luna",
+              "served_model": "gpt-6-luna",
+              "requested_model": "gpt-6-luna",
+              "protocol": "responses",
+              "max_tokens": 3000,
+              "cost_usd": 0.0002541,
+              "prompt_tokens": 1516,
+              "completion_tokens": 205,
+              "finish_reason": "stop",
+              "latency_ms": 2692.9,
+              "ttfb_ms": 2692.6
+            }
+          ],
+          "review": {
+            "assertions": [
+              {
+                "text": "The Knicks' average margin was 7.94 points per game across 101 archived games in the 2025-26 release.",
+                "assertion_type": "factual",
+                "verdict": "supported",
+                "offending_text": null,
+                "supporting_claim_ids": [
+                  "claim:848e341e0d5b5a56add6d9677f544187e4754afa6e4d3768bf2c668ffd0d3c87"
+                ],
+                "supporting_evidence_ids": [],
+                "reason": "The claim supports the Knicks\u2019 average margin, game count, and release scope."
+              }
+            ],
+            "follow_up_reviews": [
+              {
+                "text": "What were the Knicks' total points over the archived games?",
+                "verdict": "supported",
+                "supporting_claim_ids": [],
+                "supporting_evidence_ids": [],
+                "reason": "Archived team points are within the available team metrics."
+              },
+              {
+                "text": "How many wins and losses did the Knicks have in the archive?",
+                "verdict": "supported",
+                "supporting_claim_ids": [],
+                "supporting_evidence_ids": [],
+                "reason": "Wins and losses are available team metrics."
+              }
+            ]
+          },
+          "trial": 0
+        },
+        {
+          "outcome": "accepted",
+          "accepted": true,
+          "causes": [],
+          "error": null,
+          "retried": false,
+          "cost_usd": 0.0002571,
+          "latency_ms": 3430,
+          "calls": [
+            {
+              "provider": null,
+              "model": "gpt-6-luna",
+              "served_model": "gpt-6-luna",
+              "requested_model": "gpt-6-luna",
+              "protocol": "responses",
+              "max_tokens": 3000,
+              "cost_usd": 0.0002571,
+              "prompt_tokens": 1516,
+              "completion_tokens": 211,
+              "finish_reason": "stop",
+              "latency_ms": 3428.8,
+              "ttfb_ms": 3428.5
+            }
+          ],
+          "review": {
+            "assertions": [
+              {
+                "text": "The Knicks' average margin was 7.94 points per game across 101 archived games in the 2025-26 release.",
+                "assertion_type": "factual",
+                "verdict": "supported",
+                "offending_text": null,
+                "supporting_claim_ids": [
+                  "claim:848e341e0d5b5a56add6d9677f544187e4754afa6e4d3768bf2c668ffd0d3c87"
+                ],
+                "supporting_evidence_ids": [],
+                "reason": "The cited claim supports the Knicks\u2019 average margin and archive sample for the stated release."
+              }
+            ],
+            "follow_up_reviews": [
+              {
+                "text": "What were the Knicks' total points over the archived games?",
+                "verdict": "supported",
+                "supporting_claim_ids": [],
+                "supporting_evidence_ids": [],
+                "reason": "Archived team points are within the archive\u2019s supported team metrics."
+              },
+              {
+                "text": "How many wins and losses did the Knicks have in the archive?",
+                "verdict": "supported",
+                "supporting_claim_ids": [],
+                "supporting_evidence_ids": [],
+                "reason": "Wins and losses are supported team metrics in the archive."
+              }
+            ]
+          },
+          "trial": 1
+        }
+      ]
+    },
+    {
+      "case_id": "control:exact_statistics-005",
+      "unit": "exact_statistics-005",
+      "answer": "The Knicks won 37 home games in the available 2025-26 archive.",
+      "gate_issues": [],
+      "observations": [
+        {
+          "outcome": "accepted",
+          "accepted": true,
+          "causes": [],
+          "error": null,
+          "retried": false,
+          "cost_usd": 0.0002604,
+          "latency_ms": 2759,
+          "calls": [
+            {
+              "provider": null,
+              "model": "gpt-6-luna",
+              "served_model": "gpt-6-luna",
+              "requested_model": "gpt-6-luna",
+              "protocol": "responses",
+              "max_tokens": 3000,
+              "cost_usd": 0.0002604,
+              "prompt_tokens": 1589,
+              "completion_tokens": 203,
+              "finish_reason": "stop",
+              "latency_ms": 2758.0,
+              "ttfb_ms": 2757.7
+            }
+          ],
+          "review": {
+            "assertions": [
+              {
+                "text": "The Knicks won 37 home games in the available 2025-26 archive.",
+                "assertion_type": "factual",
+                "verdict": "supported",
+                "offending_text": null,
+                "supporting_claim_ids": [
+                  "claim:b10b251d937dc4ee2cfd8206cef9737c50e452c8891f9f95f23a8f4c90db8a29"
+                ],
+                "supporting_evidence_ids": [],
+                "reason": "The claim supports 37 Knicks home wins in the available 2025-26 archive."
+              }
+            ],
+            "follow_up_reviews": [
+              {
+                "text": "How many home games did the Knicks lose?",
+                "verdict": "insufficient_evidence",
+                "supporting_claim_ids": [],
+                "supporting_evidence_ids": [],
+                "reason": "No claim supports the number of Knicks home losses."
+              },
+              {
+                "text": "How many total points did the Knicks score in home wins?",
+                "verdict": "insufficient_evidence",
+                "supporting_claim_ids": [],
+                "supporting_evidence_ids": [],
+                "reason": "The archive provides no total-points claim for home wins."
+              }
+            ]
+          },
+          "trial": 0
+        },
+        {
+          "outcome": "accepted",
+          "accepted": true,
+          "causes": [],
+          "error": null,
+          "retried": false,
+          "cost_usd": 0.0002569,
+          "latency_ms": 2867,
+          "calls": [
+            {
+              "provider": null,
+              "model": "gpt-6-luna",
+              "served_model": "gpt-6-luna",
+              "requested_model": "gpt-6-luna",
+              "protocol": "responses",
+              "max_tokens": 3000,
+              "cost_usd": 0.0002569,
+              "prompt_tokens": 1589,
+              "completion_tokens": 196,
+              "finish_reason": "stop",
+              "latency_ms": 2866.2,
+              "ttfb_ms": 2865.9
+            }
+          ],
+          "review": {
+            "assertions": [
+              {
+                "text": "The Knicks won 37 home games in the available 2025-26 archive.",
+                "assertion_type": "factual",
+                "verdict": "supported",
+                "offending_text": null,
+                "supporting_claim_ids": [
+                  "claim:b10b251d937dc4ee2cfd8206cef9737c50e452c8891f9f95f23a8f4c90db8a29"
+                ],
+                "supporting_evidence_ids": [],
+                "reason": "The claim supports the Knicks\u2019 37 archived home wins for 2025-26."
+              }
+            ],
+            "follow_up_reviews": [
+              {
+                "text": "How many home games did the Knicks lose?",
+                "verdict": "supported",
+                "supporting_claim_ids": [],
+                "supporting_evidence_ids": [],
+                "reason": "The archive contains team game results, including home losses."
+              },
+              {
+                "text": "How many total points did the Knicks score in home wins?",
+                "verdict": "supported",
+                "supporting_claim_ids": [],
+                "supporting_evidence_ids": [],
+                "reason": "The archive contains game scores and identifies home wins."
+              }
+            ]
+          },
+          "trial": 1
+        }
+      ]
+    },
+    {
+      "case_id": "control:exact_statistics-006",
+      "unit": "exact_statistics-006",
+      "answer": "The Knicks won 32 road games in the available 2025-26 archive.",
+      "gate_issues": [],
+      "observations": [
+        {
+          "outcome": "accepted",
+          "accepted": true,
+          "causes": [],
+          "error": null,
+          "retried": false,
+          "cost_usd": 0.0002606,
+          "latency_ms": 2829,
+          "calls": [
+            {
+              "provider": null,
+              "model": "gpt-6-luna",
+              "served_model": "gpt-6-luna",
+              "requested_model": "gpt-6-luna",
+              "protocol": "responses",
+              "max_tokens": 3000,
+              "cost_usd": 0.0002606,
+              "prompt_tokens": 1571,
+              "completion_tokens": 207,
+              "finish_reason": "stop",
+              "latency_ms": 2828.9,
+              "ttfb_ms": 2828.7
+            }
+          ],
+          "review": {
+            "assertions": [
+              {
+                "text": "The Knicks won 32 road games in the available 2025-26 archive.",
+                "assertion_type": "factual",
+                "verdict": "supported",
+                "offending_text": null,
+                "supporting_claim_ids": [
+                  "claim:0be31ae07e2e8a524a3b2a87a17f10abe5034cc39e8d0f036ffa839a8b81365b"
+                ],
+                "supporting_evidence_ids": [],
+                "reason": "The cited claim reports 32 Knicks away wins in the available 2025-26 archive."
+              }
+            ],
+            "follow_up_reviews": [
+              {
+                "text": "How many road games did the Knicks lose?",
+                "verdict": "supported",
+                "supporting_claim_ids": [],
+                "supporting_evidence_ids": [],
+                "reason": "The archive includes game scores and team results, so road losses can be counted."
+              },
+              {
+                "text": "What was the Knicks' average margin in road wins?",
+                "verdict": "supported",
+                "supporting_claim_ids": [],
+                "supporting_evidence_ids": [],
+                "reason": "The archive includes game scores and team margins, enabling calculation for road wins."
+              }
+            ]
+          },
+          "trial": 0
+        },
+        {
+          "outcome": "accepted",
+          "accepted": true,
+          "causes": [],
+          "error": null,
+          "retried": false,
+          "cost_usd": 0.0002591,
+          "latency_ms": 2318,
+          "calls": [
+            {
+              "provider": null,
+              "model": "gpt-6-luna",
+              "served_model": "gpt-6-luna",
+              "requested_model": "gpt-6-luna",
+              "protocol": "responses",
+              "max_tokens": 3000,
+              "cost_usd": 0.0002591,
+              "prompt_tokens": 1571,
+              "completion_tokens": 204,
+              "finish_reason": "stop",
+              "latency_ms": 2317.3,
+              "ttfb_ms": 2317.1
+            }
+          ],
+          "review": {
+            "assertions": [
+              {
+                "text": "The Knicks won 32 road games in the available 2025-26 archive.",
+                "assertion_type": "factual",
+                "verdict": "supported",
+                "offending_text": null,
+                "supporting_claim_ids": [
+                  "claim:0be31ae07e2e8a524a3b2a87a17f10abe5034cc39e8d0f036ffa839a8b81365b"
+                ],
+                "supporting_evidence_ids": [],
+                "reason": "The claim reports 32 Knicks wins filtered to away games in the 2025-26 archive."
+              }
+            ],
+            "follow_up_reviews": [
+              {
+                "text": "How many road games did the Knicks lose?",
+                "verdict": "supported",
+                "supporting_claim_ids": [],
+                "supporting_evidence_ids": [],
+                "reason": "The archive includes game scores and losses can be counted for away games."
+              },
+              {
+                "text": "What was the Knicks' average margin in road wins?",
+                "verdict": "supported",
+                "supporting_claim_ids": [],
+                "supporting_evidence_ids": [],
+                "reason": "The archive includes team margins, enabling an average for road wins."
+              }
+            ]
+          },
+          "trial": 1
+        }
+      ]
+    },
+    {
+      "case_id": "control:exact_statistics-007",
+      "unit": "exact_statistics-007",
+      "answer": "The Knicks lost 32 games across the 101 archived games in this release.",
+      "gate_issues": [],
+      "observations": [
+        {
+          "outcome": "accepted",
+          "accepted": true,
+          "causes": [],
+          "error": null,
+          "retried": false,
+          "cost_usd": 0.0002423,
+          "latency_ms": 2283,
+          "calls": [
+            {
+              "provider": null,
+              "model": "gpt-6-luna",
+              "served_model": "gpt-6-luna",
+              "requested_model": "gpt-6-luna",
+              "protocol": "responses",
+              "max_tokens": 3000,
+              "cost_usd": 0.0002423,
+              "prompt_tokens": 1483,
+              "completion_tokens": 188,
+              "finish_reason": "stop",
+              "latency_ms": 2282.4,
+              "ttfb_ms": 2282.1
+            }
+          ],
+          "review": {
+            "assertions": [
+              {
+                "text": "The Knicks lost 32 games across the 101 archived games in this release.",
+                "assertion_type": "factual",
+                "verdict": "supported",
+                "offending_text": null,
+                "supporting_claim_ids": [
+                  "claim:755cd7abc5d4380efd7d5e411145b32485817ed483eaa2b570e3a36b0c03094c"
+                ],
+                "supporting_evidence_ids": [],
+                "reason": "The claim reports 32 Knicks losses over 101 games in the available release archive."
+              }
+            ],
+            "follow_up_reviews": [
+              {
+                "text": "How many games did the Knicks win?",
+                "verdict": "insufficient_evidence",
+                "supporting_claim_ids": [],
+                "supporting_evidence_ids": [],
+                "reason": "The available claim reports losses, not wins."
+              },
+              {
+                "text": "What was the Knicks' total point margin?",
+                "verdict": "insufficient_evidence",
+                "supporting_claim_ids": [],
+                "supporting_evidence_ids": [],
+                "reason": "No point-margin claim is available."
+              }
+            ]
+          },
+          "trial": 0
+        },
+        {
+          "outcome": "accepted",
+          "accepted": true,
+          "causes": [],
+          "error": null,
+          "retried": false,
+          "cost_usd": 0.0002393,
+          "latency_ms": 2400,
+          "calls": [
+            {
+              "provider": null,
+              "model": "gpt-6-luna",
+              "served_model": "gpt-6-luna",
+              "requested_model": "gpt-6-luna",
+              "protocol": "responses",
+              "max_tokens": 3000,
+              "cost_usd": 0.0002393,
+              "prompt_tokens": 1483,
+              "completion_tokens": 182,
+              "finish_reason": "stop",
+              "latency_ms": 2399.9,
+              "ttfb_ms": 2399.7
+            }
+          ],
+          "review": {
+            "assertions": [
+              {
+                "text": "The Knicks lost 32 games across the 101 archived games in this release.",
+                "assertion_type": "factual",
+                "verdict": "supported",
+                "offending_text": null,
+                "supporting_claim_ids": [
+                  "claim:755cd7abc5d4380efd7d5e411145b32485817ed483eaa2b570e3a36b0c03094c"
+                ],
+                "supporting_evidence_ids": [],
+                "reason": "The claim supports the Knicks\u2019 loss total and archived-game scope."
+              }
+            ],
+            "follow_up_reviews": [
+              {
+                "text": "How many games did the Knicks win?",
+                "verdict": "supported",
+                "supporting_claim_ids": [],
+                "supporting_evidence_ids": [],
+                "reason": "The archive includes team wins as a supported metric."
+              },
+              {
+                "text": "What was the Knicks' total point margin?",
+                "verdict": "supported",
+                "supporting_claim_ids": [],
+                "supporting_evidence_ids": [],
+                "reason": "The archive includes team margin as a supported metric."
+              }
+            ]
+          },
+          "trial": 1
+        }
+      ]
+    },
+    {
+      "case_id": "control:exact_statistics-008",
+      "unit": "exact_statistics-008",
+      "answer": "In the available 2025-26 archive, the Knicks' biggest win by margin is a 54-point win (120 points scored, 0 losses in that filtered set).",
+      "gate_issues": [],
+      "observations": [
+        {
+          "outcome": "verdict_rejected",
+          "accepted": false,
+          "causes": [
+            "span1:verdict_insufficient_evidence"
+          ],
+          "error": null,
+          "retried": false,
+          "cost_usd": 0.0003635,
+          "latency_ms": 3406,
+          "calls": [
+            {
+              "provider": null,
+              "model": "gpt-6-luna",
+              "served_model": "gpt-6-luna",
+              "requested_model": "gpt-6-luna",
+              "protocol": "responses",
+              "max_tokens": 3000,
+              "cost_usd": 0.0003635,
+              "prompt_tokens": 2050,
+              "completion_tokens": 317,
+              "finish_reason": "stop",
+              "latency_ms": 3404.9,
+              "ttfb_ms": 3404.5
+            }
+          ],
+          "review": {
+            "assertions": [
+              {
+                "text": "In the available 2025-26 archive, the Knicks' biggest win by margin is a 54-point win (120 points scored, 0 losses in that filtered set).",
+                "assertion_type": "factual",
+                "verdict": "insufficient_evidence",
+                "offending_text": "biggest win by margin",
+                "supporting_claim_ids": [
+                  "claim:9c6bc3cf1f0903a822350f7d40a1d539d65ff5144e6a4fa92d78d55a21fe8a29",
+                  "claim:0c71e5955cc8971472e2e5b2577e320e15b0613d70939cb1913da57f69af1792",
+                  "claim:ef0e0d89e43e6acc322351898526ad6019e9a54a343122f8299a7a0baad59d36"
+                ],
+                "supporting_evidence_ids": [],
+                "reason": "The archive supports one win with a 54-point margin, but cannot establish it is the biggest overall."
+              }
+            ],
+            "follow_up_reviews": [
+              {
+                "text": "What was the Knicks' biggest loss by margin?",
+                "verdict": "supported",
+                "supporting_claim_ids": [],
+                "supporting_evidence_ids": [],
+                "reason": "This is a relevant follow-up about the Knicks and archived game margins."
+              },
+              {
+                "text": "How many points did the Knicks score in that game?",
+                "verdict": "supported",
+                "supporting_claim_ids": [],
+                "supporting_evidence_ids": [],
+                "reason": "This is a relevant follow-up about a score metric present in the archive."
+              }
+            ]
+          },
+          "trial": 0
+        },
+        {
+          "outcome": "verdict_rejected",
+          "accepted": false,
+          "causes": [
+            "span1:verdict_unsupported"
+          ],
+          "error": null,
+          "retried": false,
+          "cost_usd": 0.0004535,
+          "latency_ms": 4018,
+          "calls": [
+            {
+              "provider": null,
+              "model": "gpt-6-luna",
+              "served_model": "gpt-6-luna",
+              "requested_model": "gpt-6-luna",
+              "protocol": "responses",
+              "max_tokens": 3000,
+              "cost_usd": 0.0004535,
+              "prompt_tokens": 2050,
+              "completion_tokens": 497,
+              "finish_reason": "stop",
+              "latency_ms": 4017.6,
+              "ttfb_ms": 4017.3
+            }
+          ],
+          "review": {
+            "assertions": [
+              {
+                "text": "In the available 2025-26 archive, the Knicks' biggest win by margin is a 54-point win (120 points scored, 0 losses in that filtered set).",
+                "assertion_type": "interpretation",
+                "verdict": "unsupported",
+                "offending_text": "the Knicks' biggest win by margin",
+                "supporting_claim_ids": [
+                  "claim:9c6bc3cf1f0903a822350f7d40a1d539d65ff5144e6a4fa92d78d55a21fe8a29",
+                  "claim:0c71e5955cc8971472e2e5b2577e320e15b0613d70939cb1913da57f69af1792",
+                  "claim:61dfc7ebb486d11f7cc4bf5372d9b075144c91bfa01830f5b3b20dc4a6eb0129",
+                  "claim:ef0e0d89e43e6acc322351898526ad6019e9a54a343122f8299a7a0baad59d36"
+                ],
+                "supporting_evidence_ids": [],
+                "reason": "The claims cover one archived win, so they do not establish it was the biggest."
+              }
+            ],
+            "follow_up_reviews": [
+              {
+                "text": "What was the Knicks' biggest loss by margin?",
+                "verdict": "supported",
+                "supporting_claim_ids": [],
+                "supporting_evidence_ids": [],
+                "reason": "The archive includes game scores and team margins, allowing this question to be answered from available data."
+              },
+              {
+                "text": "How many points did the Knicks score in that game?",
+                "verdict": "supported",
+                "supporting_claim_ids": [
+                  "claim:0c71e5955cc8971472e2e5b2577e320e15b0613d70939cb1913da57f69af1792"
+                ],
+                "supporting_evidence_ids": [
+                  "2025-26.20260928.1:game:44"
+                ],
+                "reason": "The archived game claim reports the Knicks scored 120 points."
+              }
+            ]
+          },
+          "trial": 1
+        }
+      ]
+    },
+    {
+      "case_id": "control:date_range_last_n-001",
+      "unit": "date_range_last_n-001",
+      "answer": "Over their last 5 archived games, the Knicks went 4-1.",
+      "gate_issues": [],
+      "observations": [
+        {
+          "outcome": "accepted",
+          "accepted": true,
+          "causes": [],
+          "error": null,
+          "retried": false,
+          "cost_usd": 0.000291,
+          "latency_ms": 2553,
+          "calls": [
+            {
+              "provider": null,
+              "model": "gpt-6-luna",
+              "served_model": "gpt-6-luna",
+              "requested_model": "gpt-6-luna",
+              "protocol": "responses",
+              "max_tokens": 3000,
+              "cost_usd": 0.000291,
+              "prompt_tokens": 1770,
+              "completion_tokens": 228,
+              "finish_reason": "stop",
+              "latency_ms": 2552.6,
+              "ttfb_ms": 2552.4
+            }
+          ],
+          "review": {
+            "assertions": [
+              {
+                "text": "Over their last 5 archived games, the Knicks went 4-1.",
+                "assertion_type": "factual",
+                "verdict": "supported",
+                "offending_text": null,
+                "supporting_claim_ids": [
+                  "claim:018e2e515080da77386bbbae0862a4f70faf33162972c82852e7ef06aa607adb",
+                  "claim:5d86ab6c2808529e561724f6f6978443eeded4884edfd1bfefac304c8cf7691c"
+                ],
+                "supporting_evidence_ids": [],
+                "reason": "The claims support four wins and one loss across five archived Knicks games."
+              }
+            ],
+            "follow_up_reviews": [
+              {
+                "text": "What was the Knicks' average margin over those 5 games?",
+                "verdict": "supported",
+                "supporting_claim_ids": [],
+                "supporting_evidence_ids": [],
+                "reason": "Team margin is an available metric for the five-game scope."
+              },
+              {
+                "text": "How many total points did the Knicks score over those 5 games?",
+                "verdict": "supported",
+                "supporting_claim_ids": [],
+                "supporting_evidence_ids": [],
+                "reason": "Team points are available for the five-game scope."
+              }
+            ]
+          },
+          "trial": 0
+        },
+        {
+          "outcome": "accepted",
+          "accepted": true,
+          "causes": [],
+          "error": null,
+          "retried": false,
+          "cost_usd": 0.000331,
+          "latency_ms": 3220,
+          "calls": [
+            {
+              "provider": null,
+              "model": "gpt-6-luna",
+              "served_model": "gpt-6-luna",
+              "requested_model": "gpt-6-luna",
+              "protocol": "responses",
+              "max_tokens": 3000,
+              "cost_usd": 0.000331,
+              "prompt_tokens": 1770,
+              "completion_tokens": 308,
+              "finish_reason": "stop",
+              "latency_ms": 3219.2,
+              "ttfb_ms": 3218.7
+            }
+          ],
+          "review": {
+            "assertions": [
+              {
+                "text": "Over their last 5 archived games, the Knicks went 4-1.",
+                "assertion_type": "factual",
+                "verdict": "supported",
+                "offending_text": null,
+                "supporting_claim_ids": [
+                  "claim:018e2e515080da77386bbbae0862a4f70faf33162972c82852e7ef06aa607adb",
+                  "claim:5d86ab6c2808529e561724f6f6978443eeded4884edfd1bfefac304c8cf7691c"
+                ],
+                "supporting_evidence_ids": [
+                  "calculation:80b4952927058e9d89f6df216670f86d20728746e324d05c9deb48c47d060ad7",
+                  "calculation:0d82fecf467186c91ae453d29549937f59c40b02548a0944356961e8e13ae376"
+                ],
+                "reason": "The claims support four wins and one loss across five archived Knicks games."
+              }
+            ],
+            "follow_up_reviews": [
+              {
+                "text": "What was the Knicks' average margin over those 5 games?",
+                "verdict": "supported",
+                "supporting_claim_ids": [],
+                "supporting_evidence_ids": [],
+                "reason": "The archive includes team margin data for the requested five-game window."
+              },
+              {
+                "text": "How many total points did the Knicks score over those 5 games?",
+                "verdict": "supported",
+                "supporting_claim_ids": [],
+                "supporting_evidence_ids": [],
+                "reason": "The archive includes team points data for the requested five-game window."
+              }
+            ]
+          },
+          "trial": 1
+        }
+      ]
+    },
+    {
+      "case_id": "control:date_range_last_n-002",
+      "unit": "date_range_last_n-002",
+      "answer": "Over their last 10 archived games, the Knicks averaged 114.1 points per game (9 wins, 1 loss).",
+      "gate_issues": [],
+      "observations": [
+        {
+          "outcome": "accepted",
+          "accepted": true,
+          "causes": [],
+          "error": null,
+          "retried": false,
+          "cost_usd": 0.0003534,
+          "latency_ms": 2765,
+          "calls": [
+            {
+              "provider": null,
+              "model": "gpt-6-luna",
+              "served_model": "gpt-6-luna",
+              "requested_model": "gpt-6-luna",
+              "protocol": "responses",
+              "max_tokens": 3000,
+              "cost_usd": 0.0003534,
+              "prompt_tokens": 2119,
+              "completion_tokens": 283,
+              "finish_reason": "stop",
+              "latency_ms": 2764.3,
+              "ttfb_ms": 2763.9
+            }
+          ],
+          "review": {
+            "assertions": [
+              {
+                "text": "Over their last 10 archived games, the Knicks averaged 114.1 points per game (9 wins, 1 loss).",
+                "assertion_type": "factual",
+                "verdict": "supported",
+                "offending_text": null,
+                "supporting_claim_ids": [
+                  "claim:17fd24efa5e43c5d99e05614eab9f77ce82daf192b01a2fced23776f214723cb",
+                  "claim:b1e1bcc1f7a34299630cca503f26a16b882ea8fdb5d1908eeebbfaf9a6c59fcb",
+                  "claim:5ae1cfd59359c95904ef60375d14d1ad308b87b70bd38d74e631e784ab00efc7"
+                ],
+                "supporting_evidence_ids": [],
+                "reason": "The claims support Knicks scoring and record over 10 archived games."
+              }
+            ],
+            "follow_up_reviews": [
+              {
+                "text": "What was the Knicks' average margin over those 10 games?",
+                "verdict": "unsupported",
+                "supporting_claim_ids": [],
+                "supporting_evidence_ids": [],
+                "reason": "The available claims do not provide average margin."
+              },
+              {
+                "text": "How many points did the Knicks allow per game over those 10 games?",
+                "verdict": "unsupported",
+                "supporting_claim_ids": [],
+                "supporting_evidence_ids": [],
+                "reason": "The available claims do not provide points allowed per game."
+              }
+            ]
+          },
+          "trial": 0
+        },
+        {
+          "outcome": "accepted",
+          "accepted": true,
+          "causes": [],
+          "error": null,
+          "retried": false,
+          "cost_usd": 0.0003749,
+          "latency_ms": 3359,
+          "calls": [
+            {
+              "provider": null,
+              "model": "gpt-6-luna",
+              "served_model": "gpt-6-luna",
+              "requested_model": "gpt-6-luna",
+              "protocol": "responses",
+              "max_tokens": 3000,
+              "cost_usd": 0.0003749,
+              "prompt_tokens": 2119,
+              "completion_tokens": 326,
+              "finish_reason": "stop",
+              "latency_ms": 3352.2,
+              "ttfb_ms": 3352.0
+            }
+          ],
+          "review": {
+            "assertions": [
+              {
+                "text": "Over their last 10 archived games, the Knicks averaged 114.1 points per game (9 wins, 1 loss).",
+                "assertion_type": "factual",
+                "verdict": "supported",
+                "offending_text": null,
+                "supporting_claim_ids": [
+                  "claim:17fd24efa5e43c5d99e05614eab9f77ce82daf192b01a2fced23776f214723cb",
+                  "claim:b1e1bcc1f7a34299630cca503f26a16b882ea8fdb5d1908eeebbfaf9a6c59fcb",
+                  "claim:5ae1cfd59359c95904ef60375d14d1ad308b87b70bd38d74e631e784ab00efc7"
+                ],
+                "supporting_evidence_ids": [],
+                "reason": "The claims support the Knicks' 10-game scoring average and record in the available archive."
+              }
+            ],
+            "follow_up_reviews": [
+              {
+                "text": "What was the Knicks' average margin over those 10 games?",
+                "verdict": "unsupported",
+                "supporting_claim_ids": [],
+                "supporting_evidence_ids": [],
+                "reason": "The archive includes team margin metrics, but no margin claim for these 10 games is supplied."
+              },
+              {
+                "text": "How many points did the Knicks allow per game over those 10 games?",
+                "verdict": "unsupported",
+                "supporting_claim_ids": [],
+                "supporting_evidence_ids": [],
+                "reason": "Points allowed per game is not an available metric in this archive."
+              }
+            ]
+          },
+          "trial": 1
+        }
+      ]
+    },
+    {
+      "case_id": "control:date_range_last_n-003",
+      "unit": "date_range_last_n-003",
+      "answer": "Jalen Brunson averaged 32.6 points per game over his last 5 games (2025-26 playoffs, June 3\u201313, 2026).",
+      "gate_issues": [],
+      "observations": [
+        {
+          "outcome": "accepted",
+          "accepted": true,
+          "causes": [],
+          "error": null,
+          "retried": false,
+          "cost_usd": 0.0003126,
+          "latency_ms": 3550,
+          "calls": [
+            {
+              "provider": null,
+              "model": "gpt-6-luna",
+              "served_model": "gpt-6-luna",
+              "requested_model": "gpt-6-luna",
+              "protocol": "responses",
+              "max_tokens": 3000,
+              "cost_usd": 0.0003126,
+              "prompt_tokens": 1911,
+              "completion_tokens": 243,
+              "finish_reason": "stop",
+              "latency_ms": 3549.2,
+              "ttfb_ms": 3548.8
+            }
+          ],
+          "review": {
+            "assertions": [
+              {
+                "text": "Jalen Brunson averaged 32.6 points per game over his last 5 games (2025-26 playoffs, June 3\u201313, 2026).",
+                "assertion_type": "factual",
+                "verdict": "supported",
+                "offending_text": null,
+                "supporting_claim_ids": [
+                  "claim:b360281320642f137147e69b2e8c1deac80438a219592a4dfc929d490ddc448a"
+                ],
+                "supporting_evidence_ids": [
+                  "2025-26.20260928.1:game:97:player:134"
+                ],
+                "reason": "The claim supports Brunson\u2019s 32.6-point average across five observed playoff appearances in that date range."
+              }
+            ],
+            "follow_up_reviews": [
+              {
+                "text": "What was Brunson's assist average over those same 5 games?",
+                "verdict": "insufficient_evidence",
+                "supporting_claim_ids": [],
+                "supporting_evidence_ids": [],
+                "reason": "The supplied claim covers points, not assists."
+              },
+              {
+                "text": "How did Brunson's scoring average compare to his regular-season average?",
+                "verdict": "insufficient_evidence",
+                "supporting_claim_ids": [],
+                "supporting_evidence_ids": [],
+                "reason": "No regular-season scoring average is provided for comparison."
+              }
+            ]
+          },
+          "trial": 0
+        },
+        {
+          "outcome": "accepted",
+          "accepted": true,
+          "causes": [],
+          "error": null,
+          "retried": false,
+          "cost_usd": 0.0003041,
+          "latency_ms": 2365,
+          "calls": [
+            {
+              "provider": null,
+              "model": "gpt-6-luna",
+              "served_model": "gpt-6-luna",
+              "requested_model": "gpt-6-luna",
+              "protocol": "responses",
+              "max_tokens": 3000,
+              "cost_usd": 0.0003041,
+              "prompt_tokens": 1911,
+              "completion_tokens": 226,
+              "finish_reason": "stop",
+              "latency_ms": 2364.9,
+              "ttfb_ms": 2364.7
+            }
+          ],
+          "review": {
+            "assertions": [
+              {
+                "text": "Jalen Brunson averaged 32.6 points per game over his last 5 games (2025-26 playoffs, June 3\u201313, 2026).",
+                "assertion_type": "factual",
+                "verdict": "supported",
+                "offending_text": null,
+                "supporting_claim_ids": [
+                  "claim:b360281320642f137147e69b2e8c1deac80438a219592a4dfc929d490ddc448a"
+                ],
+                "supporting_evidence_ids": [],
+                "reason": "The claim supports Brunson\u2019s points average across five observed playoff appearances during the stated dates."
+              }
+            ],
+            "follow_up_reviews": [
+              {
+                "text": "What was Brunson's assist average over those same 5 games?",
+                "verdict": "insufficient_evidence",
+                "supporting_claim_ids": [],
+                "supporting_evidence_ids": [],
+                "reason": "The archive supplies no assist-average claim or box-score evidence for all five games."
+              },
+              {
+                "text": "How did Brunson's scoring average compare to his regular-season average?",
+                "verdict": "insufficient_evidence",
+                "supporting_claim_ids": [],
+                "supporting_evidence_ids": [],
+                "reason": "No regular-season average is supplied for comparison."
+              }
+            ]
+          },
+          "trial": 1
+        }
+      ]
+    },
+    {
+      "case_id": "control:date_range_last_n-004",
+      "unit": "date_range_last_n-004",
+      "answer": "From January 1 through January 31, the Knicks went 7-8 across 15 archived games, scoring 1,652 total points.",
+      "gate_issues": [],
+      "observations": [
+        {
+          "outcome": "accepted",
+          "accepted": true,
+          "causes": [],
+          "error": null,
+          "retried": false,
+          "cost_usd": 0.0003615,
+          "latency_ms": 5241,
+          "calls": [
+            {
+              "provider": null,
+              "model": "gpt-6-luna",
+              "served_model": "gpt-6-luna",
+              "requested_model": "gpt-6-luna",
+              "protocol": "responses",
+              "max_tokens": 3000,
+              "cost_usd": 0.0003615,
+              "prompt_tokens": 2085,
+              "completion_tokens": 306,
+              "finish_reason": "stop",
+              "latency_ms": 5241.0,
+              "ttfb_ms": 5240.9
+            }
+          ],
+          "review": {
+            "assertions": [
+              {
+                "text": "From January 1 through January 31, the Knicks went 7-8 across 15 archived games, scoring 1,652 total points.",
+                "assertion_type": "interpretation",
+                "verdict": "supported",
+                "offending_text": null,
+                "supporting_claim_ids": [
+                  "claim:8ae74bc11c415f391b098b9199758b96c5778d5e71a89a647b7c9a362e28d51c",
+                  "claim:5a43adf99c2a0a2ea22a22a49a7b16d024226960dd2e360e8d413ef5ca6e2854",
+                  "claim:030ed374b46dcae45c14e8faba1d5506eea08bbfd39ce356d5a813708e51b852"
+                ],
+                "supporting_evidence_ids": [],
+                "reason": "The cited archive claims support the Knicks\u2019 7\u20138 record and 1,652 points across 15 games."
+              }
+            ],
+            "follow_up_reviews": [
+              {
+                "text": "What was the Knicks' average points per game in January?",
+                "verdict": "supported",
+                "supporting_claim_ids": [],
+                "supporting_evidence_ids": [],
+                "reason": "The archive includes team points and game counts needed to calculate the January average."
+              },
+              {
+                "text": "How did the Knicks' January margin compare to another month?",
+                "verdict": "insufficient_evidence",
+                "supporting_claim_ids": [],
+                "supporting_evidence_ids": [],
+                "reason": "No comparison-month margin claims are provided."
+              }
+            ]
+          },
+          "trial": 0
+        },
+        {
+          "outcome": "accepted",
+          "accepted": true,
+          "causes": [],
+          "error": null,
+          "retried": false,
+          "cost_usd": 0.000359,
+          "latency_ms": 4241,
+          "calls": [
+            {
+              "provider": null,
+              "model": "gpt-6-luna",
+              "served_model": "gpt-6-luna",
+              "requested_model": "gpt-6-luna",
+              "protocol": "responses",
+              "max_tokens": 3000,
+              "cost_usd": 0.000359,
+              "prompt_tokens": 2085,
+              "completion_tokens": 301,
+              "finish_reason": "stop",
+              "latency_ms": 4240.8,
+              "ttfb_ms": 4240.5
+            }
+          ],
+          "review": {
+            "assertions": [
+              {
+                "text": "From January 1 through January 31, the Knicks went 7-8 across 15 archived games, scoring 1,652 total points.",
+                "assertion_type": "interpretation",
+                "verdict": "supported",
+                "offending_text": null,
+                "supporting_claim_ids": [
+                  "claim:8ae74bc11c415f391b098b9199758b96c5778d5e71a89a647b7c9a362e28d51c",
+                  "claim:5a43adf99c2a0a2ea22a22a49a7b16d024226960dd2e360e8d413ef5ca6e2854",
+                  "claim:030ed374b46dcae45c14e8faba1d5506eea08bbfd39ce356d5a813708e51b852"
+                ],
+                "supporting_evidence_ids": [],
+                "reason": "The cited claims support the Knicks\u2019 archived January win-loss record, game count, and points total."
+              }
+            ],
+            "follow_up_reviews": [
+              {
+                "text": "What was the Knicks' average points per game in January?",
+                "verdict": "supported",
+                "supporting_claim_ids": [],
+                "supporting_evidence_ids": [],
+                "reason": "Archived points and game-count claims support calculating this average."
+              },
+              {
+                "text": "How did the Knicks' January margin compare to another month?",
+                "verdict": "insufficient_evidence",
+                "supporting_claim_ids": [],
+                "supporting_evidence_ids": [],
+                "reason": "The archive provides no cited margin or other-month comparison."
+              }
+            ]
+          },
+          "trial": 1
+        }
+      ]
+    },
+    {
+      "case_id": "control:comparisons-002",
+      "unit": "comparisons-002",
+      "answer": "In the 2025-26 all-phase archive, Jalen Brunson averaged 26.5 points per appearance across 93 observed appearances, while Karl-Anthony Towns averaged 19.2 across 94. Both figures cover only observed appearances, and some archived games are missing player rows.",
+      "gate_issues": [],
+      "observations": [
+        {
+          "outcome": "accepted",
+          "accepted": true,
+          "causes": [],
+          "error": null,
+          "retried": false,
+          "cost_usd": 0.0004057,
+          "latency_ms": 3716,
+          "calls": [
+            {
+              "provider": null,
+              "model": "gpt-6-luna",
+              "served_model": "gpt-6-luna",
+              "requested_model": "gpt-6-luna",
+              "protocol": "responses",
+              "max_tokens": 3000,
+              "cost_usd": 0.0004057,
+              "prompt_tokens": 1977,
+              "completion_tokens": 416,
+              "finish_reason": "stop",
+              "latency_ms": 3715.2,
+              "ttfb_ms": 3714.1
+            }
+          ],
+          "review": {
+            "assertions": [
+              {
+                "text": "In the 2025-26 all-phase archive, Jalen Brunson averaged 26.5 points per appearance across 93 observed appearances, while Karl-Anthony Towns averaged 19.2 across 94. ",
+                "assertion_type": "factual",
+                "verdict": "supported",
+                "offending_text": null,
+                "supporting_claim_ids": [
+                  "claim:f93db38157478faeea46e511c3f0206cdd6365b4d6e232bc0b65384ae1ff0c36",
+                  "claim:1d8f1a95b71e9fcabfd9a1630d83feacb39f60646afe6aa711052b1419333e49"
+                ],
+                "supporting_evidence_ids": [],
+                "reason": "Both player averages and observed-appearance counts match the archive claims."
+              },
+              {
+                "text": "Both figures cover only observed appearances, and some archived games are missing player rows.",
+                "assertion_type": "coverage",
+                "verdict": "supported",
+                "offending_text": null,
+                "supporting_claim_ids": [],
+                "supporting_evidence_ids": [],
+                "reason": "The archive notes observed-appearance limits and missing player rows for both players."
+              }
+            ],
+            "follow_up_reviews": [
+              {
+                "text": "How do Brunson and Towns compare on three-pointers made per game this season?",
+                "verdict": "supported",
+                "supporting_claim_ids": [],
+                "supporting_evidence_ids": [],
+                "reason": "Three-pointers made is an available metric for both players."
+              },
+              {
+                "text": "How do Brunson and Towns compare in total points scored this season?",
+                "verdict": "supported",
+                "supporting_claim_ids": [],
+                "supporting_evidence_ids": [],
+                "reason": "Points and player box scores are available to compare totals."
+              }
+            ]
+          },
+          "trial": 0
+        },
+        {
+          "outcome": "accepted",
+          "accepted": true,
+          "causes": [],
+          "error": null,
+          "retried": false,
+          "cost_usd": 0.0004247,
+          "latency_ms": 4039,
+          "calls": [
+            {
+              "provider": null,
+              "model": "gpt-6-luna",
+              "served_model": "gpt-6-luna",
+              "requested_model": "gpt-6-luna",
+              "protocol": "responses",
+              "max_tokens": 3000,
+              "cost_usd": 0.0004247,
+              "prompt_tokens": 1977,
+              "completion_tokens": 454,
+              "finish_reason": "stop",
+              "latency_ms": 4038.4,
+              "ttfb_ms": 4038.0
+            }
+          ],
+          "review": {
+            "assertions": [
+              {
+                "text": "In the 2025-26 all-phase archive, Jalen Brunson averaged 26.5 points per appearance across 93 observed appearances, while Karl-Anthony Towns averaged 19.2 across 94. ",
+                "assertion_type": "factual",
+                "verdict": "supported",
+                "offending_text": null,
+                "supporting_claim_ids": [
+                  "claim:f93db38157478faeea46e511c3f0206cdd6365b4d6e232bc0b65384ae1ff0c36",
+                  "claim:1d8f1a95b71e9fcabfd9a1630d83feacb39f60646afe6aa711052b1419333e49"
+                ],
+                "supporting_evidence_ids": [],
+                "reason": "Both player averages and observed-appearance counts match the 2025-26 archive claims."
+              },
+              {
+                "text": "Both figures cover only observed appearances, and some archived games are missing player rows.",
+                "assertion_type": "coverage",
+                "verdict": "supported",
+                "offending_text": null,
+                "supporting_claim_ids": [
+                  "claim:f93db38157478faeea46e511c3f0206cdd6365b4d6e232bc0b65384ae1ff0c36",
+                  "claim:1d8f1a95b71e9fcabfd9a1630d83feacb39f60646afe6aa711052b1419333e49"
+                ],
+                "supporting_evidence_ids": [],
+                "reason": "Both claims limit averages to observed appearances and identify missing player rows."
+              }
+            ],
+            "follow_up_reviews": [
+              {
+                "text": "How do Brunson and Towns compare on three-pointers made per game this season?",
+                "verdict": "supported",
+                "supporting_claim_ids": [],
+                "supporting_evidence_ids": [],
+                "reason": "Three-pointers made is an available metric for comparing the players."
+              },
+              {
+                "text": "How do Brunson and Towns compare in total points scored this season?",
+                "verdict": "supported",
+                "supporting_claim_ids": [],
+                "supporting_evidence_ids": [],
+                "reason": "Points are available, so the archive can support a total-points comparison."
+              }
+            ]
+          },
+          "trial": 1
+        }
+      ]
+    },
+    {
+      "case_id": "control:comparisons-004",
+      "unit": "comparisons-004",
+      "answer": "Who do you mean by \"their\"? Please name the player (or team) whose first 10 games and last 10 games you want compared.",
+      "gate_issues": [],
+      "observations": [
+        {
+          "outcome": "accepted",
+          "accepted": true,
+          "causes": [],
+          "error": null,
+          "retried": false,
+          "cost_usd": 0.0001963,
+          "latency_ms": 2497,
+          "calls": [
+            {
+              "provider": null,
+              "model": "gpt-6-luna",
+              "served_model": "gpt-6-luna",
+              "requested_model": "gpt-6-luna",
+              "protocol": "responses",
+              "max_tokens": 3000,
+              "cost_usd": 0.0001963,
+              "prompt_tokens": 1238,
+              "completion_tokens": 145,
+              "finish_reason": "stop",
+              "latency_ms": 2496.2,
+              "ttfb_ms": 2496.0
+            }
+          ],
+          "review": {
+            "assertions": [
+              {
+                "text": "Who do you mean by \"their\"? ",
+                "assertion_type": "conversational",
+                "verdict": "supported",
+                "offending_text": null,
+                "supporting_claim_ids": [],
+                "supporting_evidence_ids": [],
+                "reason": "This appropriately asks the user to clarify the subject."
+              },
+              {
+                "text": "Please name the player (or team) whose first 10 games and last 10 games you want compared.",
+                "assertion_type": "conversational",
+                "verdict": "supported",
+                "offending_text": null,
+                "supporting_claim_ids": [],
+                "supporting_evidence_ids": [],
+                "reason": "This requests the missing subject needed to make the comparison."
+              }
+            ],
+            "follow_up_reviews": []
+          },
+          "trial": 0
+        },
+        {
+          "outcome": "accepted",
+          "accepted": true,
+          "causes": [],
+          "error": null,
+          "retried": false,
+          "cost_usd": 0.0001928,
+          "latency_ms": 1987,
+          "calls": [
+            {
+              "provider": null,
+              "model": "gpt-6-luna",
+              "served_model": "gpt-6-luna",
+              "requested_model": "gpt-6-luna",
+              "protocol": "responses",
+              "max_tokens": 3000,
+              "cost_usd": 0.0001928,
+              "prompt_tokens": 1238,
+              "completion_tokens": 138,
+              "finish_reason": "stop",
+              "latency_ms": 1986.7,
+              "ttfb_ms": 1986.5
+            }
+          ],
+          "review": {
+            "assertions": [
+              {
+                "text": "Who do you mean by \"their\"? ",
+                "assertion_type": "conversational",
+                "verdict": "supported",
+                "offending_text": null,
+                "supporting_claim_ids": [],
+                "supporting_evidence_ids": [],
+                "reason": "Asks the user to clarify the unspecified subject."
+              },
+              {
+                "text": "Please name the player (or team) whose first 10 games and last 10 games you want compared.",
+                "assertion_type": "conversational",
+                "verdict": "supported",
+                "offending_text": null,
+                "supporting_claim_ids": [],
+                "supporting_evidence_ids": [],
+                "reason": "Requests the information needed to make the comparison."
+              }
+            ],
+            "follow_up_reviews": []
+          },
+          "trial": 1
+        }
+      ]
+    }
+  ],
+  "mutations": [
+    {
+      "case_id": "metric_swap_ppg_to_margin",
+      "class": "number_swapped_other_metric",
+      "unit": "exact_statistics-003",
+      "why_gate_passes": "7.94 is the margin_per_game claim value; the gate matches values.",
+      "gate_issues": [],
+      "original": "The Knicks averaged 116.34 points per game across 101 archived games in the 2025-26 release.",
+      "mutated": "The Knicks averaged 7.94 points per game across 101 archived games in the 2025-26 release.",
+      "append": "",
+      "edits": [
+        [
+          "averaged 116.34 points per game",
+          "averaged 7.94 points per game"
+        ]
+      ],
+      "observations": [
+        {
+          "outcome": "verdict_rejected",
+          "accepted": false,
+          "causes": [
+            "span1:verdict_unsupported"
+          ],
+          "error": null,
+          "retried": false,
+          "cost_usd": 0.0002735,
+          "latency_ms": 2490,
+          "calls": [
+            {
+              "provider": null,
+              "model": "gpt-6-luna",
+              "served_model": "gpt-6-luna",
+              "requested_model": "gpt-6-luna",
+              "protocol": "responses",
+              "max_tokens": 3000,
+              "cost_usd": 0.0002735,
+              "prompt_tokens": 1535,
+              "completion_tokens": 240,
+              "finish_reason": "stop",
+              "latency_ms": 2489.3,
+              "ttfb_ms": 2489.0
+            }
+          ],
+          "review": {
+            "assertions": [
+              {
+                "text": "The Knicks averaged 7.94 points per game across 101 archived games in the 2025-26 release.",
+                "assertion_type": "factual",
+                "verdict": "unsupported",
+                "offending_text": "7.94 points per game",
+                "supporting_claim_ids": [
+                  "claim:deafd8c4fbb345abf20ac4820b893127789e3a5b6339c1a6425567c7590cbe1c"
+                ],
+                "supporting_evidence_ids": [
+                  "calculation:d993ae6cd86202ac698d33453fb7b54ea7c565db4bdb5d356719825cd640d79a"
+                ],
+                "reason": "The cited claim reports 116.34 points per game, not 7.94."
+              }
+            ],
+            "follow_up_reviews": [
+              {
+                "text": "What was the Knicks' average margin per game?",
+                "verdict": "supported",
+                "supporting_claim_ids": [],
+                "supporting_evidence_ids": [],
+                "reason": "The archive includes team margin metrics."
+              },
+              {
+                "text": "How many games did the Knicks win and lose in the archive?",
+                "verdict": "supported",
+                "supporting_claim_ids": [],
+                "supporting_evidence_ids": [],
+                "reason": "The archive includes team wins and losses."
+              }
+            ]
+          },
+          "trial": 0
+        },
+        {
+          "outcome": "verdict_rejected",
+          "accepted": false,
+          "causes": [
+            "span1:verdict_unsupported"
+          ],
+          "error": null,
+          "retried": false,
+          "cost_usd": 0.000255,
+          "latency_ms": 3619,
+          "calls": [
+            {
+              "provider": null,
+              "model": "gpt-6-luna",
+              "served_model": "gpt-6-luna",
+              "requested_model": "gpt-6-luna",
+              "protocol": "responses",
+              "max_tokens": 3000,
+              "cost_usd": 0.000255,
+              "prompt_tokens": 1535,
+              "completion_tokens": 203,
+              "finish_reason": "stop",
+              "latency_ms": 3618.4,
+              "ttfb_ms": 3618.1
+            }
+          ],
+          "review": {
+            "assertions": [
+              {
+                "text": "The Knicks averaged 7.94 points per game across 101 archived games in the 2025-26 release.",
+                "assertion_type": "factual",
+                "verdict": "unsupported",
+                "offending_text": "7.94 points per game",
+                "supporting_claim_ids": [
+                  "claim:deafd8c4fbb345abf20ac4820b893127789e3a5b6339c1a6425567c7590cbe1c"
+                ],
+                "supporting_evidence_ids": [],
+                "reason": "The cited claim reports 116.34 points per game, not 7.94."
+              }
+            ],
+            "follow_up_reviews": [
+              {
+                "text": "What was the Knicks' average margin per game?",
+                "verdict": "supported",
+                "supporting_claim_ids": [],
+                "supporting_evidence_ids": [],
+                "reason": "The archive includes team margin metrics."
+              },
+              {
+                "text": "How many games did the Knicks win and lose in the archive?",
+                "verdict": "supported",
+                "supporting_claim_ids": [],
+                "supporting_evidence_ids": [],
+                "reason": "The archive includes team wins and losses."
+              }
+            ]
+          },
+          "trial": 1
+        }
+      ]
+    },
+    {
+      "case_id": "metric_swap_total_points_to_margin",
+      "class": "number_swapped_other_metric",
+      "unit": "exact_statistics-002",
+      "why_gate_passes": "802 is the team margin claim value and therefore trusted.",
+      "gate_issues": [],
+      "original": "The Knicks scored 11,750 total points across 101 archived games in the 2025-26 release.",
+      "mutated": "The Knicks scored 802 total points across 101 archived games in the 2025-26 release.",
+      "append": "",
+      "edits": [
+        [
+          "scored 11,750 total points",
+          "scored 802 total points"
+        ]
+      ],
+      "observations": [
+        {
+          "outcome": "verdict_rejected",
+          "accepted": false,
+          "causes": [
+            "span1:verdict_unsupported"
+          ],
+          "error": null,
+          "retried": false,
+          "cost_usd": 0.0002566,
+          "latency_ms": 2601,
+          "calls": [
+            {
+              "provider": null,
+              "model": "gpt-6-luna",
+              "served_model": "gpt-6-luna",
+              "requested_model": "gpt-6-luna",
+              "protocol": "responses",
+              "max_tokens": 3000,
+              "cost_usd": 0.0002566,
+              "prompt_tokens": 1521,
+              "completion_tokens": 209,
+              "finish_reason": "stop",
+              "latency_ms": 2599.9,
+              "ttfb_ms": 2599.3
+            }
+          ],
+          "review": {
+            "assertions": [
+              {
+                "text": "The Knicks scored 802 total points across 101 archived games in the 2025-26 release.",
+                "assertion_type": "interpretation",
+                "verdict": "unsupported",
+                "offending_text": "802",
+                "supporting_claim_ids": [
+                  "claim:f9b34fee66aed1e531b68052b5b1c7bc8f66127dca6d755e6b1c6c9b07bde8c4"
+                ],
+                "supporting_evidence_ids": [],
+                "reason": "The cited claim supports 11,750 Knicks points, not the stated total."
+              }
+            ],
+            "follow_up_reviews": [
+              {
+                "text": "What was the Knicks' average points per game?",
+                "verdict": "supported",
+                "supporting_claim_ids": [],
+                "supporting_evidence_ids": [],
+                "reason": "The archive supports total points and game count, sufficient to calculate an average."
+              },
+              {
+                "text": "How many total points did the Knicks allow (margin context)?",
+                "verdict": "supported",
+                "supporting_claim_ids": [],
+                "supporting_evidence_ids": [],
+                "reason": "Team margins and scores are available to determine opponent points allowed."
+              }
+            ]
+          },
+          "trial": 0
+        },
+        {
+          "outcome": "verdict_rejected",
+          "accepted": false,
+          "causes": [
+            "span1:verdict_unsupported"
+          ],
+          "error": null,
+          "retried": false,
+          "cost_usd": 0.0002631,
+          "latency_ms": 2412,
+          "calls": [
+            {
+              "provider": null,
+              "model": "gpt-6-luna",
+              "served_model": "gpt-6-luna",
+              "requested_model": "gpt-6-luna",
+              "protocol": "responses",
+              "max_tokens": 3000,
+              "cost_usd": 0.0002631,
+              "prompt_tokens": 1521,
+              "completion_tokens": 222,
+              "finish_reason": "stop",
+              "latency_ms": 2411.4,
+              "ttfb_ms": 2411.1
+            }
+          ],
+          "review": {
+            "assertions": [
+              {
+                "text": "The Knicks scored 802 total points across 101 archived games in the 2025-26 release.",
+                "assertion_type": "factual",
+                "verdict": "unsupported",
+                "offending_text": "The Knicks scored 802 total points",
+                "supporting_claim_ids": [
+                  "claim:f9b34fee66aed1e531b68052b5b1c7bc8f66127dca6d755e6b1c6c9b07bde8c4"
+                ],
+                "supporting_evidence_ids": [],
+                "reason": "The cited claim supports 11,750 points, not 802."
+              }
+            ],
+            "follow_up_reviews": [
+              {
+                "text": "What was the Knicks' average points per game?",
+                "verdict": "supported",
+                "supporting_claim_ids": [],
+                "supporting_evidence_ids": [],
+                "reason": "The archive supports team points and archived-game count, enabling an average calculation."
+              },
+              {
+                "text": "How many total points did the Knicks allow (margin context)?",
+                "verdict": "insufficient_evidence",
+                "supporting_claim_ids": [],
+                "supporting_evidence_ids": [],
+                "reason": "The supplied claims do not provide opponents\u2019 points or a total-points-allowed calculation."
+              }
+            ]
+          },
+          "trial": 1
+        }
+      ]
+    },
+    {
+      "case_id": "metric_swap_margin_to_ppg",
+      "class": "number_swapped_other_metric",
+      "unit": "exact_statistics-004",
+      "why_gate_passes": "116.34 is within half a hundredth of the points_per_game claim.",
+      "gate_issues": [],
+      "original": "The Knicks' average margin was 7.94 points per game across 101 archived games in the 2025-26 release.",
+      "mutated": "The Knicks' average margin was 116.34 points per game across 101 archived games in the 2025-26 release.",
+      "append": "",
+      "edits": [
+        [
+          "average margin was 7.94 points per game",
+          "average margin was 116.34 points per game"
+        ]
+      ],
+      "observations": [
+        {
+          "outcome": "verdict_rejected",
+          "accepted": false,
+          "causes": [
+            "span1:verdict_unsupported"
+          ],
+          "error": null,
+          "retried": false,
+          "cost_usd": 0.0002931,
+          "latency_ms": 3306,
+          "calls": [
+            {
+              "provider": null,
+              "model": "gpt-6-luna",
+              "served_model": "gpt-6-luna",
+              "requested_model": "gpt-6-luna",
+              "protocol": "responses",
+              "max_tokens": 3000,
+              "cost_usd": 0.0002931,
+              "prompt_tokens": 1516,
+              "completion_tokens": 283,
+              "finish_reason": "stop",
+              "latency_ms": 3306.0,
+              "ttfb_ms": 3305.7
+            }
+          ],
+          "review": {
+            "assertions": [
+              {
+                "text": "The Knicks' average margin was 116.34 points per game across 101 archived games in the 2025-26 release.",
+                "assertion_type": "factual",
+                "verdict": "unsupported",
+                "offending_text": "116.34 points per game",
+                "supporting_claim_ids": [
+                  "claim:848e341e0d5b5a56add6d9677f544187e4754afa6e4d3768bf2c668ffd0d3c87"
+                ],
+                "supporting_evidence_ids": [],
+                "reason": "The cited claim reports an average margin of 7.94, not 116.34."
+              }
+            ],
+            "follow_up_reviews": [
+              {
+                "text": "What were the Knicks' total points over the archived games?",
+                "verdict": "insufficient_evidence",
+                "supporting_claim_ids": [],
+                "supporting_evidence_ids": [],
+                "reason": "The archive provides no cited claim for the Knicks' total points."
+              },
+              {
+                "text": "How many wins and losses did the Knicks have in the archive?",
+                "verdict": "insufficient_evidence",
+                "supporting_claim_ids": [],
+                "supporting_evidence_ids": [],
+                "reason": "The archive provides no cited claim for the Knicks' wins and losses."
+              }
+            ]
+          },
+          "trial": 0
+        },
+        {
+          "outcome": "verdict_rejected",
+          "accepted": false,
+          "causes": [
+            "span1:verdict_unsupported"
+          ],
+          "error": null,
+          "retried": false,
+          "cost_usd": 0.0002691,
+          "latency_ms": 2470,
+          "calls": [
+            {
+              "provider": null,
+              "model": "gpt-6-luna",
+              "served_model": "gpt-6-luna",
+              "requested_model": "gpt-6-luna",
+              "protocol": "responses",
+              "max_tokens": 3000,
+              "cost_usd": 0.0002691,
+              "prompt_tokens": 1516,
+              "completion_tokens": 235,
+              "finish_reason": "stop",
+              "latency_ms": 2469.8,
+              "ttfb_ms": 2469.6
+            }
+          ],
+          "review": {
+            "assertions": [
+              {
+                "text": "The Knicks' average margin was 116.34 points per game across 101 archived games in the 2025-26 release.",
+                "assertion_type": "factual",
+                "verdict": "unsupported",
+                "offending_text": "116.34 points per game",
+                "supporting_claim_ids": [
+                  "claim:848e341e0d5b5a56add6d9677f544187e4754afa6e4d3768bf2c668ffd0d3c87"
+                ],
+                "supporting_evidence_ids": [],
+                "reason": "The cited claim supports an average margin of 7.94, not 116.34 points per game."
+              }
+            ],
+            "follow_up_reviews": [
+              {
+                "text": "What were the Knicks' total points over the archived games?",
+                "verdict": "insufficient_evidence",
+                "supporting_claim_ids": [],
+                "supporting_evidence_ids": [],
+                "reason": "The archive supports points as a metric, but no total-points claim is provided."
+              },
+              {
+                "text": "How many wins and losses did the Knicks have in the archive?",
+                "verdict": "insufficient_evidence",
+                "supporting_claim_ids": [],
+                "supporting_evidence_ids": [],
+                "reason": "Wins and losses are supported metrics, but their counts are not provided."
+              }
+            ]
+          },
+          "trial": 1
+        }
+      ]
+    },
+    {
+      "case_id": "subject_swap_scorers",
+      "class": "wrong_subject",
+      "unit": "comparisons-002",
+      "why_gate_passes": "Only player names move; 26.5 and 19.2 remain supplied claim values.",
+      "gate_issues": [],
+      "original": "In the 2025-26 all-phase archive, Jalen Brunson averaged 26.5 points per appearance across 93 observed appearances, while Karl-Anthony Towns averaged 19.2 across 94. Both figures cover only observed appearances, and some archived games are missing player rows.",
+      "mutated": "In the 2025-26 all-phase archive, Jalen Brunson averaged 19.2 points per appearance across 93 observed appearances, while Karl-Anthony Towns averaged 26.5 across 94. Both figures cover only observed appearances, and some archived games are missing player rows.",
+      "append": "",
+      "edits": [
+        [
+          "Jalen Brunson averaged 26.5",
+          "Jalen Brunson averaged 19.2"
+        ],
+        [
+          "Karl-Anthony Towns averaged 19.2",
+          "Karl-Anthony Towns averaged 26.5"
+        ]
+      ],
+      "observations": [
+        {
+          "outcome": "verdict_rejected",
+          "accepted": false,
+          "causes": [
+            "span1:verdict_unsupported"
+          ],
+          "error": null,
+          "retried": false,
+          "cost_usd": 0.0004402,
+          "latency_ms": 4778,
+          "calls": [
+            {
+              "provider": null,
+              "model": "gpt-6-luna",
+              "served_model": "gpt-6-luna",
+              "requested_model": "gpt-6-luna",
+              "protocol": "responses",
+              "max_tokens": 3000,
+              "cost_usd": 0.0004402,
+              "prompt_tokens": 1977,
+              "completion_tokens": 485,
+              "finish_reason": "stop",
+              "latency_ms": 4777.3,
+              "ttfb_ms": 4776.0
+            }
+          ],
+          "review": {
+            "assertions": [
+              {
+                "text": "In the 2025-26 all-phase archive, Jalen Brunson averaged 19.2 points per appearance across 93 observed appearances, while Karl-Anthony Towns averaged 26.5 across 94. ",
+                "assertion_type": "factual",
+                "verdict": "unsupported",
+                "offending_text": "Jalen Brunson averaged 19.2 points per appearance across 93 observed appearances, while Karl-Anthony Towns averaged 26.5 across 94.",
+                "supporting_claim_ids": [
+                  "claim:f93db38157478faeea46e511c3f0206cdd6365b4d6e232bc0b65384ae1ff0c36",
+                  "claim:1d8f1a95b71e9fcabfd9a1630d83feacb39f60646afe6aa711052b1419333e49"
+                ],
+                "supporting_evidence_ids": [],
+                "reason": "The cited averages and appearance counts are assigned to the opposite players."
+              },
+              {
+                "text": "Both figures cover only observed appearances, and some archived games are missing player rows.",
+                "assertion_type": "coverage",
+                "verdict": "supported",
+                "offending_text": null,
+                "supporting_claim_ids": [
+                  "claim:f93db38157478faeea46e511c3f0206cdd6365b4d6e232bc0b65384ae1ff0c36",
+                  "claim:1d8f1a95b71e9fcabfd9a1630d83feacb39f60646afe6aa711052b1419333e49"
+                ],
+                "supporting_evidence_ids": [],
+                "reason": "Both claims specify observed appearances and identify missing player rows."
+              }
+            ],
+            "follow_up_reviews": [
+              {
+                "text": "How do Brunson and Towns compare on three-pointers made per game this season?",
+                "verdict": "supported",
+                "supporting_claim_ids": [],
+                "supporting_evidence_ids": [],
+                "reason": "The archive lists three-pointers made and player box scores, sufficient to compare this metric."
+              },
+              {
+                "text": "How do Brunson and Towns compare in total points scored this season?",
+                "verdict": "supported",
+                "supporting_claim_ids": [],
+                "supporting_evidence_ids": [],
+                "reason": "The archive contains player box scores with points, supporting a total-points comparison."
+              }
+            ]
+          },
+          "trial": 0
+        },
+        {
+          "outcome": "verdict_rejected",
+          "accepted": false,
+          "causes": [
+            "span1:verdict_unsupported"
+          ],
+          "error": null,
+          "retried": false,
+          "cost_usd": 0.0004417,
+          "latency_ms": 4104,
+          "calls": [
+            {
+              "provider": null,
+              "model": "gpt-6-luna",
+              "served_model": "gpt-6-luna",
+              "requested_model": "gpt-6-luna",
+              "protocol": "responses",
+              "max_tokens": 3000,
+              "cost_usd": 0.0004417,
+              "prompt_tokens": 1977,
+              "completion_tokens": 488,
+              "finish_reason": "stop",
+              "latency_ms": 4102.9,
+              "ttfb_ms": 4102.0
+            }
+          ],
+          "review": {
+            "assertions": [
+              {
+                "text": "In the 2025-26 all-phase archive, Jalen Brunson averaged 19.2 points per appearance across 93 observed appearances, while Karl-Anthony Towns averaged 26.5 across 94. ",
+                "assertion_type": "factual",
+                "verdict": "unsupported",
+                "offending_text": "Jalen Brunson averaged 19.2 points per appearance across 93 observed appearances, while Karl-Anthony Towns averaged 26.5 across 94.",
+                "supporting_claim_ids": [
+                  "claim:f93db38157478faeea46e511c3f0206cdd6365b4d6e232bc0b65384ae1ff0c36",
+                  "claim:1d8f1a95b71e9fcabfd9a1630d83feacb39f60646afe6aa711052b1419333e49"
+                ],
+                "supporting_evidence_ids": [],
+                "reason": "The cited scoring averages and appearance counts are assigned to the opposite players."
+              },
+              {
+                "text": "Both figures cover only observed appearances, and some archived games are missing player rows.",
+                "assertion_type": "coverage",
+                "verdict": "supported",
+                "offending_text": null,
+                "supporting_claim_ids": [],
+                "supporting_evidence_ids": [],
+                "reason": "The archive specifies observed appearances and missing player rows for both players."
+              }
+            ],
+            "follow_up_reviews": [
+              {
+                "text": "How do Brunson and Towns compare on three-pointers made per game this season?",
+                "verdict": "insufficient_evidence",
+                "supporting_claim_ids": [],
+                "supporting_evidence_ids": [],
+                "reason": "Three-pointers are available, but no comparison data was retrieved."
+              },
+              {
+                "text": "How do Brunson and Towns compare in total points scored this season?",
+                "verdict": "insufficient_evidence",
+                "supporting_claim_ids": [],
+                "supporting_evidence_ids": [],
+                "reason": "The retrieved claims provide averages, not total points."
+              }
+            ]
+          },
+          "trial": 1
+        }
+      ]
+    },
+    {
+      "case_id": "subject_swap_brunson_to_towns",
+      "class": "wrong_subject",
+      "unit": "date_range_last_n-003",
+      "why_gate_passes": "Only the name changes; 32.6, 5 and the dates stay trusted.",
+      "gate_issues": [],
+      "original": "Jalen Brunson averaged 32.6 points per game over his last 5 games (2025-26 playoffs, June 3\u201313, 2026).",
+      "mutated": "Karl-Anthony Towns averaged 32.6 points per game over his last 5 games (2025-26 playoffs, June 3\u201313, 2026).",
+      "append": "",
+      "edits": [
+        [
+          "Jalen Brunson averaged 32.6",
+          "Karl-Anthony Towns averaged 32.6"
+        ]
+      ],
+      "observations": [
+        {
+          "outcome": "verdict_rejected",
+          "accepted": false,
+          "causes": [
+            "span1:verdict_unsupported"
+          ],
+          "error": null,
+          "retried": false,
+          "cost_usd": 0.0003075,
+          "latency_ms": 2663,
+          "calls": [
+            {
+              "provider": null,
+              "model": "gpt-6-luna",
+              "served_model": "gpt-6-luna",
+              "requested_model": "gpt-6-luna",
+              "protocol": "responses",
+              "max_tokens": 3000,
+              "cost_usd": 0.0003075,
+              "prompt_tokens": 1915,
+              "completion_tokens": 232,
+              "finish_reason": "stop",
+              "latency_ms": 2661.5,
+              "ttfb_ms": 2661.3
+            }
+          ],
+          "review": {
+            "assertions": [
+              {
+                "text": "Karl-Anthony Towns averaged 32.6 points per game over his last 5 games (2025-26 playoffs, June 3\u201313, 2026).",
+                "assertion_type": "factual",
+                "verdict": "unsupported",
+                "offending_text": "Karl-Anthony Towns",
+                "supporting_claim_ids": [
+                  "claim:b360281320642f137147e69b2e8c1deac80438a219592a4dfc929d490ddc448a"
+                ],
+                "supporting_evidence_ids": [],
+                "reason": "The cited average is for Jalen Brunson, not Karl-Anthony Towns."
+              }
+            ],
+            "follow_up_reviews": [
+              {
+                "text": "What was Brunson's assist average over those same 5 games?",
+                "verdict": "insufficient_evidence",
+                "supporting_claim_ids": [],
+                "supporting_evidence_ids": [],
+                "reason": "The archive provides no assist-average claim or evidence for those five games."
+              },
+              {
+                "text": "How did Brunson's scoring average compare to his regular-season average?",
+                "verdict": "insufficient_evidence",
+                "supporting_claim_ids": [],
+                "supporting_evidence_ids": [],
+                "reason": "No regular-season scoring average is provided for comparison."
+              }
+            ]
+          },
+          "trial": 0
+        },
+        {
+          "outcome": "verdict_rejected",
+          "accepted": false,
+          "causes": [
+            "span1:verdict_unsupported"
+          ],
+          "error": null,
+          "retried": false,
+          "cost_usd": 0.000318,
+          "latency_ms": 2612,
+          "calls": [
+            {
+              "provider": null,
+              "model": "gpt-6-luna",
+              "served_model": "gpt-6-luna",
+              "requested_model": "gpt-6-luna",
+              "protocol": "responses",
+              "max_tokens": 3000,
+              "cost_usd": 0.000318,
+              "prompt_tokens": 1915,
+              "completion_tokens": 253,
+              "finish_reason": "stop",
+              "latency_ms": 2611.5,
+              "ttfb_ms": 2611.3
+            }
+          ],
+          "review": {
+            "assertions": [
+              {
+                "text": "Karl-Anthony Towns averaged 32.6 points per game over his last 5 games (2025-26 playoffs, June 3\u201313, 2026).",
+                "assertion_type": "factual",
+                "verdict": "unsupported",
+                "offending_text": "Karl-Anthony Towns",
+                "supporting_claim_ids": [
+                  "claim:b360281320642f137147e69b2e8c1deac80438a219592a4dfc929d490ddc448a"
+                ],
+                "supporting_evidence_ids": [
+                  "2025-26.20260928.1:game:97:player:134"
+                ],
+                "reason": "The cited average is for Jalen Brunson, not Karl-Anthony Towns."
+              }
+            ],
+            "follow_up_reviews": [
+              {
+                "text": "What was Brunson's assist average over those same 5 games?",
+                "verdict": "insufficient_evidence",
+                "supporting_claim_ids": [],
+                "supporting_evidence_ids": [],
+                "reason": "The available claim and evidence do not provide assists across all five games."
+              },
+              {
+                "text": "How did Brunson's scoring average compare to his regular-season average?",
+                "verdict": "insufficient_evidence",
+                "supporting_claim_ids": [],
+                "supporting_evidence_ids": [],
+                "reason": "No regular-season scoring average is provided in the available claims."
+              }
+            ]
+          },
+          "trial": 1
+        }
+      ]
+    },
+    {
+      "case_id": "subject_swap_knicks_to_celtics",
+      "class": "wrong_subject",
+      "unit": "exact_statistics-005",
+      "why_gate_passes": "Only the team name changes; 37 is a supplied wins claim value.",
+      "gate_issues": [],
+      "original": "The Knicks won 37 home games in the available 2025-26 archive.",
+      "mutated": "The Celtics won 37 home games in the available 2025-26 archive.",
+      "append": "",
+      "edits": [
+        [
+          "The Knicks won 37 home games",
+          "The Celtics won 37 home games"
+        ]
+      ],
+      "observations": [
+        {
+          "outcome": "verdict_rejected",
+          "accepted": false,
+          "causes": [
+            "span1:verdict_unsupported"
+          ],
+          "error": null,
+          "retried": false,
+          "cost_usd": 0.0002569,
+          "latency_ms": 2422,
+          "calls": [
+            {
+              "provider": null,
+              "model": "gpt-6-luna",
+              "served_model": "gpt-6-luna",
+              "requested_model": "gpt-6-luna",
+              "protocol": "responses",
+              "max_tokens": 3000,
+              "cost_usd": 0.0002569,
+              "prompt_tokens": 1589,
+              "completion_tokens": 196,
+              "finish_reason": "stop",
+              "latency_ms": 2421.3,
+              "ttfb_ms": 2421.0
+            }
+          ],
+          "review": {
+            "assertions": [
+              {
+                "text": "The Celtics won 37 home games in the available 2025-26 archive.",
+                "assertion_type": "factual",
+                "verdict": "unsupported",
+                "offending_text": "The Celtics",
+                "supporting_claim_ids": [
+                  "claim:b10b251d937dc4ee2cfd8206cef9737c50e452c8891f9f95f23a8f4c90db8a29"
+                ],
+                "supporting_evidence_ids": [],
+                "reason": "The cited claim concerns Knicks wins, not Celtics wins."
+              }
+            ],
+            "follow_up_reviews": [
+              {
+                "text": "How many home games did the Knicks lose?",
+                "verdict": "insufficient_evidence",
+                "supporting_claim_ids": [],
+                "supporting_evidence_ids": [],
+                "reason": "The archive claim reports home wins only, not losses."
+              },
+              {
+                "text": "How many total points did the Knicks score in home wins?",
+                "verdict": "insufficient_evidence",
+                "supporting_claim_ids": [],
+                "supporting_evidence_ids": [],
+                "reason": "No claim reports points scored in Knicks home wins."
+              }
+            ]
+          },
+          "trial": 0
+        },
+        {
+          "outcome": "verdict_rejected",
+          "accepted": false,
+          "causes": [
+            "span1:verdict_unsupported"
+          ],
+          "error": null,
+          "retried": false,
+          "cost_usd": 0.0002584,
+          "latency_ms": 2482,
+          "calls": [
+            {
+              "provider": null,
+              "model": "gpt-6-luna",
+              "served_model": "gpt-6-luna",
+              "requested_model": "gpt-6-luna",
+              "protocol": "responses",
+              "max_tokens": 3000,
+              "cost_usd": 0.0002584,
+              "prompt_tokens": 1589,
+              "completion_tokens": 199,
+              "finish_reason": "stop",
+              "latency_ms": 2481.6,
+              "ttfb_ms": 2481.3
+            }
+          ],
+          "review": {
+            "assertions": [
+              {
+                "text": "The Celtics won 37 home games in the available 2025-26 archive.",
+                "assertion_type": "factual",
+                "verdict": "unsupported",
+                "offending_text": "The Celtics",
+                "supporting_claim_ids": [
+                  "claim:b10b251d937dc4ee2cfd8206cef9737c50e452c8891f9f95f23a8f4c90db8a29"
+                ],
+                "supporting_evidence_ids": [],
+                "reason": "The cited claim supports Knicks home wins, not Celtics home wins."
+              }
+            ],
+            "follow_up_reviews": [
+              {
+                "text": "How many home games did the Knicks lose?",
+                "verdict": "insufficient_evidence",
+                "supporting_claim_ids": [],
+                "supporting_evidence_ids": [],
+                "reason": "The available claim covers Knicks home wins, not losses."
+              },
+              {
+                "text": "How many total points did the Knicks score in home wins?",
+                "verdict": "insufficient_evidence",
+                "supporting_claim_ids": [],
+                "supporting_evidence_ids": [],
+                "reason": "The available archive claims provide wins, not team points."
+              }
+            ]
+          },
+          "trial": 1
+        }
+      ]
+    },
+    {
+      "case_id": "phase_home_to_road",
+      "class": "wrong_phase_or_window",
+      "unit": "exact_statistics-005",
+      "why_gate_passes": "Only home/road wording changes; 37 remains the trusted wins value.",
+      "gate_issues": [],
+      "original": "The Knicks won 37 home games in the available 2025-26 archive.",
+      "mutated": "The Knicks won 37 road games in the available 2025-26 archive.",
+      "append": "",
+      "edits": [
+        [
+          "won 37 home games",
+          "won 37 road games"
+        ]
+      ],
+      "observations": [
+        {
+          "outcome": "verdict_rejected",
+          "accepted": false,
+          "causes": [
+            "span1:verdict_unsupported"
+          ],
+          "error": null,
+          "retried": false,
+          "cost_usd": 0.0002564,
+          "latency_ms": 2341,
+          "calls": [
+            {
+              "provider": null,
+              "model": "gpt-6-luna",
+              "served_model": "gpt-6-luna",
+              "requested_model": "gpt-6-luna",
+              "protocol": "responses",
+              "max_tokens": 3000,
+              "cost_usd": 0.0002564,
+              "prompt_tokens": 1589,
+              "completion_tokens": 195,
+              "finish_reason": "stop",
+              "latency_ms": 2340.3,
+              "ttfb_ms": 2340.1
+            }
+          ],
+          "review": {
+            "assertions": [
+              {
+                "text": "The Knicks won 37 road games in the available 2025-26 archive.",
+                "assertion_type": "factual",
+                "verdict": "unsupported",
+                "offending_text": "road games",
+                "supporting_claim_ids": [
+                  "claim:b10b251d937dc4ee2cfd8206cef9737c50e452c8891f9f95f23a8f4c90db8a29"
+                ],
+                "supporting_evidence_ids": [],
+                "reason": "The cited claim supports 37 home wins, not road wins."
+              }
+            ],
+            "follow_up_reviews": [
+              {
+                "text": "How many home games did the Knicks lose?",
+                "verdict": "supported",
+                "supporting_claim_ids": [],
+                "supporting_evidence_ids": [],
+                "reason": "The archive includes home game scores and team wins and losses."
+              },
+              {
+                "text": "How many total points did the Knicks score in home wins?",
+                "verdict": "supported",
+                "supporting_claim_ids": [],
+                "supporting_evidence_ids": [],
+                "reason": "The archive includes game scores and team points for home wins."
+              }
+            ]
+          },
+          "trial": 0
+        },
+        {
+          "outcome": "verdict_rejected",
+          "accepted": false,
+          "causes": [
+            "span1:verdict_unsupported"
+          ],
+          "error": null,
+          "retried": false,
+          "cost_usd": 0.0002569,
+          "latency_ms": 2181,
+          "calls": [
+            {
+              "provider": null,
+              "model": "gpt-6-luna",
+              "served_model": "gpt-6-luna",
+              "requested_model": "gpt-6-luna",
+              "protocol": "responses",
+              "max_tokens": 3000,
+              "cost_usd": 0.0002569,
+              "prompt_tokens": 1589,
+              "completion_tokens": 196,
+              "finish_reason": "stop",
+              "latency_ms": 2180.3,
+              "ttfb_ms": 2180.1
+            }
+          ],
+          "review": {
+            "assertions": [
+              {
+                "text": "The Knicks won 37 road games in the available 2025-26 archive.",
+                "assertion_type": "factual",
+                "verdict": "unsupported",
+                "offending_text": "road",
+                "supporting_claim_ids": [
+                  "claim:b10b251d937dc4ee2cfd8206cef9737c50e452c8891f9f95f23a8f4c90db8a29"
+                ],
+                "supporting_evidence_ids": [],
+                "reason": "The cited claim supports 37 home wins, not road wins."
+              }
+            ],
+            "follow_up_reviews": [
+              {
+                "text": "How many home games did the Knicks lose?",
+                "verdict": "insufficient_evidence",
+                "supporting_claim_ids": [],
+                "supporting_evidence_ids": [],
+                "reason": "The available claim counts home wins, not home losses."
+              },
+              {
+                "text": "How many total points did the Knicks score in home wins?",
+                "verdict": "insufficient_evidence",
+                "supporting_claim_ids": [],
+                "supporting_evidence_ids": [],
+                "reason": "No point total for home wins is provided."
+              }
+            ]
+          },
+          "trial": 1
+        }
+      ]
+    },
+    {
+      "case_id": "phase_playoffs_to_regular",
+      "class": "wrong_phase_or_window",
+      "unit": "date_range_last_n-003",
+      "why_gate_passes": "Only phase wording changes; 32.6, 5 and the dates stay trusted.",
+      "gate_issues": [],
+      "original": "Jalen Brunson averaged 32.6 points per game over his last 5 games (2025-26 playoffs, June 3\u201313, 2026).",
+      "mutated": "Jalen Brunson averaged 32.6 points per game over his last 5 games (2025-26 regular season, June 3\u201313, 2026).",
+      "append": "",
+      "edits": [
+        [
+          "2025-26 playoffs",
+          "2025-26 regular season"
+        ]
+      ],
+      "observations": [
+        {
+          "outcome": "verdict_rejected",
+          "accepted": false,
+          "causes": [
+            "span1:verdict_unsupported"
+          ],
+          "error": null,
+          "retried": false,
+          "cost_usd": 0.0003133,
+          "latency_ms": 2887,
+          "calls": [
+            {
+              "provider": null,
+              "model": "gpt-6-luna",
+              "served_model": "gpt-6-luna",
+              "requested_model": "gpt-6-luna",
+              "protocol": "responses",
+              "max_tokens": 3000,
+              "cost_usd": 0.0003133,
+              "prompt_tokens": 1913,
+              "completion_tokens": 244,
+              "finish_reason": "stop",
+              "latency_ms": 2886.6,
+              "ttfb_ms": 2886.3
+            }
+          ],
+          "review": {
+            "assertions": [
+              {
+                "text": "Jalen Brunson averaged 32.6 points per game over his last 5 games (2025-26 regular season, June 3\u201313, 2026).",
+                "assertion_type": "factual",
+                "verdict": "unsupported",
+                "offending_text": "2025-26 regular season",
+                "supporting_claim_ids": [
+                  "claim:b360281320642f137147e69b2e8c1deac80438a219592a4dfc929d490ddc448a"
+                ],
+                "supporting_evidence_ids": [
+                  "2025-26.20260928.1:game:97:player:134"
+                ],
+                "reason": "The cited average covers playoff appearances, not regular-season games."
+              }
+            ],
+            "follow_up_reviews": [
+              {
+                "text": "What was Brunson's assist average over those same 5 games?",
+                "verdict": "insufficient_evidence",
+                "supporting_claim_ids": [],
+                "supporting_evidence_ids": [],
+                "reason": "The available evidence and claims do not report assists across those five games."
+              },
+              {
+                "text": "How did Brunson's scoring average compare to his regular-season average?",
+                "verdict": "insufficient_evidence",
+                "supporting_claim_ids": [],
+                "supporting_evidence_ids": [],
+                "reason": "No regular-season scoring average is provided for comparison."
+              }
+            ]
+          },
+          "trial": 0
+        },
+        {
+          "outcome": "verdict_rejected",
+          "accepted": false,
+          "causes": [
+            "span1:verdict_unsupported"
+          ],
+          "error": null,
+          "retried": false,
+          "cost_usd": 0.0003118,
+          "latency_ms": 2916,
+          "calls": [
+            {
+              "provider": null,
+              "model": "gpt-6-luna",
+              "served_model": "gpt-6-luna",
+              "requested_model": "gpt-6-luna",
+              "protocol": "responses",
+              "max_tokens": 3000,
+              "cost_usd": 0.0003118,
+              "prompt_tokens": 1913,
+              "completion_tokens": 241,
+              "finish_reason": "stop",
+              "latency_ms": 2915.3,
+              "ttfb_ms": 2915.1
+            }
+          ],
+          "review": {
+            "assertions": [
+              {
+                "text": "Jalen Brunson averaged 32.6 points per game over his last 5 games (2025-26 regular season, June 3\u201313, 2026).",
+                "assertion_type": "factual",
+                "verdict": "unsupported",
+                "offending_text": "2025-26 regular season",
+                "supporting_claim_ids": [
+                  "claim:b360281320642f137147e69b2e8c1deac80438a219592a4dfc929d490ddc448a"
+                ],
+                "supporting_evidence_ids": [
+                  "2025-26.20260928.1:game:97:player:134"
+                ],
+                "reason": "The cited average covers playoff appearances, not regular-season games."
+              }
+            ],
+            "follow_up_reviews": [
+              {
+                "text": "What was Brunson's assist average over those same 5 games?",
+                "verdict": "insufficient_evidence",
+                "supporting_claim_ids": [],
+                "supporting_evidence_ids": [],
+                "reason": "The archive supplies no assist average for those five games."
+              },
+              {
+                "text": "How did Brunson's scoring average compare to his regular-season average?",
+                "verdict": "insufficient_evidence",
+                "supporting_claim_ids": [],
+                "supporting_evidence_ids": [],
+                "reason": "No regular-season scoring average is available for comparison."
+              }
+            ]
+          },
+          "trial": 1
+        }
+      ]
+    },
+    {
+      "case_id": "phase_road_to_home",
+      "class": "wrong_phase_or_window",
+      "unit": "exact_statistics-006",
+      "why_gate_passes": "Only road/home wording changes; 32 remains the trusted wins value.",
+      "gate_issues": [],
+      "original": "The Knicks won 32 road games in the available 2025-26 archive.",
+      "mutated": "The Knicks won 32 home games in the available 2025-26 archive.",
+      "append": "",
+      "edits": [
+        [
+          "won 32 road games",
+          "won 32 home games"
+        ]
+      ],
+      "observations": [
+        {
+          "outcome": "verdict_rejected",
+          "accepted": false,
+          "causes": [
+            "span1:verdict_unsupported"
+          ],
+          "error": null,
+          "retried": false,
+          "cost_usd": 0.0002521,
+          "latency_ms": 2717,
+          "calls": [
+            {
+              "provider": null,
+              "model": "gpt-6-luna",
+              "served_model": "gpt-6-luna",
+              "requested_model": "gpt-6-luna",
+              "protocol": "responses",
+              "max_tokens": 3000,
+              "cost_usd": 0.0002521,
+              "prompt_tokens": 1571,
+              "completion_tokens": 190,
+              "finish_reason": "stop",
+              "latency_ms": 2716.2,
+              "ttfb_ms": 2716.0
+            }
+          ],
+          "review": {
+            "assertions": [
+              {
+                "text": "The Knicks won 32 home games in the available 2025-26 archive.",
+                "assertion_type": "factual",
+                "verdict": "unsupported",
+                "offending_text": "home games",
+                "supporting_claim_ids": [
+                  "claim:0be31ae07e2e8a524a3b2a87a17f10abe5034cc39e8d0f036ffa839a8b81365b"
+                ],
+                "supporting_evidence_ids": [],
+                "reason": "The cited claim supports road wins, not home wins."
+              }
+            ],
+            "follow_up_reviews": [
+              {
+                "text": "How many road games did the Knicks lose?",
+                "verdict": "insufficient_evidence",
+                "supporting_claim_ids": [],
+                "supporting_evidence_ids": [],
+                "reason": "No claim supports road losses."
+              },
+              {
+                "text": "What was the Knicks' average margin in road wins?",
+                "verdict": "insufficient_evidence",
+                "supporting_claim_ids": [],
+                "supporting_evidence_ids": [],
+                "reason": "No claim supports average margin in road wins."
+              }
+            ]
+          },
+          "trial": 0
+        },
+        {
+          "outcome": "verdict_rejected",
+          "accepted": false,
+          "causes": [
+            "span1:verdict_unsupported"
+          ],
+          "error": null,
+          "retried": false,
+          "cost_usd": 0.0002536,
+          "latency_ms": 2506,
+          "calls": [
+            {
+              "provider": null,
+              "model": "gpt-6-luna",
+              "served_model": "gpt-6-luna",
+              "requested_model": "gpt-6-luna",
+              "protocol": "responses",
+              "max_tokens": 3000,
+              "cost_usd": 0.0002536,
+              "prompt_tokens": 1571,
+              "completion_tokens": 193,
+              "finish_reason": "stop",
+              "latency_ms": 2505.4,
+              "ttfb_ms": 2505.2
+            }
+          ],
+          "review": {
+            "assertions": [
+              {
+                "text": "The Knicks won 32 home games in the available 2025-26 archive.",
+                "assertion_type": "factual",
+                "verdict": "unsupported",
+                "offending_text": "home",
+                "supporting_claim_ids": [
+                  "claim:0be31ae07e2e8a524a3b2a87a17f10abe5034cc39e8d0f036ffa839a8b81365b"
+                ],
+                "supporting_evidence_ids": [],
+                "reason": "The cited claim counts road wins, not home wins."
+              }
+            ],
+            "follow_up_reviews": [
+              {
+                "text": "How many road games did the Knicks lose?",
+                "verdict": "insufficient_evidence",
+                "supporting_claim_ids": [],
+                "supporting_evidence_ids": [],
+                "reason": "No road-loss total is provided."
+              },
+              {
+                "text": "What was the Knicks' average margin in road wins?",
+                "verdict": "insufficient_evidence",
+                "supporting_claim_ids": [],
+                "supporting_evidence_ids": [],
+                "reason": "The archive does not provide an average margin for road wins."
+              }
+            ]
+          },
+          "trial": 1
+        }
+      ]
+    },
+    {
+      "case_id": "record_swap_season",
+      "class": "wins_losses_swapped",
+      "unit": "exact_statistics-001",
+      "why_gate_passes": "Both 69 and 32 are supplied wins/losses claim values.",
+      "gate_issues": [
+        "span 1 states the record 32-69 with wins and losses reversed"
+      ],
+      "original": "In the available 2025-26 archive, the Knicks went 69-32 across 101 games.",
+      "mutated": "In the available 2025-26 archive, the Knicks went 32-69 across 101 games.",
+      "append": "",
+      "edits": [
+        [
+          "went 69-32",
+          "went 32-69"
+        ]
+      ],
+      "observations": []
+    },
+    {
+      "case_id": "record_swap_last_five",
+      "class": "wins_losses_swapped",
+      "unit": "date_range_last_n-001",
+      "why_gate_passes": "Both 4 and 1 are supplied wins/losses claim values.",
+      "gate_issues": [
+        "span 1 states the record 1-4 with wins and losses reversed"
+      ],
+      "original": "Over their last 5 archived games, the Knicks went 4-1.",
+      "mutated": "Over their last 5 archived games, the Knicks went 1-4.",
+      "append": "",
+      "edits": [
+        [
+          "went 4-1",
+          "went 1-4"
+        ]
+      ],
+      "observations": []
+    },
+    {
+      "case_id": "record_swap_january",
+      "class": "wins_losses_swapped",
+      "unit": "date_range_last_n-004",
+      "why_gate_passes": "Both 7 and 8 are supplied wins/losses claim values.",
+      "gate_issues": [
+        "span 1 states the record 8-7 with wins and losses reversed"
+      ],
+      "original": "From January 1 through January 31, the Knicks went 7-8 across 15 archived games, scoring 1,652 total points.",
+      "mutated": "From January 1 through January 31, the Knicks went 8-7 across 15 archived games, scoring 1,652 total points.",
+      "append": "",
+      "edits": [
+        [
+          "went 7-8",
+          "went 8-7"
+        ]
+      ],
+      "observations": []
+    },
+    {
+      "case_id": "unit_per_game_as_total",
+      "class": "per_game_total_confusion",
+      "unit": "exact_statistics-003",
+      "why_gate_passes": "116.34 is the trusted points_per_game value; only unit wording moves.",
+      "gate_issues": [],
+      "original": "The Knicks averaged 116.34 points per game across 101 archived games in the 2025-26 release.",
+      "mutated": "The Knicks scored 116.34 total points across 101 archived games in the 2025-26 release.",
+      "append": "",
+      "edits": [
+        [
+          "averaged 116.34 points per game",
+          "scored 116.34 total points"
+        ]
+      ],
+      "observations": [
+        {
+          "outcome": "verdict_rejected",
+          "accepted": false,
+          "causes": [
+            "span1:verdict_unsupported"
+          ],
+          "error": null,
+          "retried": false,
+          "cost_usd": 0.0002693,
+          "latency_ms": 2551,
+          "calls": [
+            {
+              "provider": null,
+              "model": "gpt-6-luna",
+              "served_model": "gpt-6-luna",
+              "requested_model": "gpt-6-luna",
+              "protocol": "responses",
+              "max_tokens": 3000,
+              "cost_usd": 0.0002693,
+              "prompt_tokens": 1533,
+              "completion_tokens": 232,
+              "finish_reason": "stop",
+              "latency_ms": 2551.0,
+              "ttfb_ms": 2550.8
+            }
+          ],
+          "review": {
+            "assertions": [
+              {
+                "text": "The Knicks scored 116.34 total points across 101 archived games in the 2025-26 release.",
+                "assertion_type": "factual",
+                "verdict": "unsupported",
+                "offending_text": "116.34 total points",
+                "supporting_claim_ids": [
+                  "claim:deafd8c4fbb345abf20ac4820b893127789e3a5b6339c1a6425567c7590cbe1c"
+                ],
+                "supporting_evidence_ids": [],
+                "reason": "The cited claim supports 116.34 points per game, not total points."
+              }
+            ],
+            "follow_up_reviews": [
+              {
+                "text": "What was the Knicks' average margin per game?",
+                "verdict": "supported",
+                "supporting_claim_ids": [],
+                "supporting_evidence_ids": [],
+                "reason": "This is a relevant question about an available team metric."
+              },
+              {
+                "text": "How many games did the Knicks win and lose in the archive?",
+                "verdict": "supported",
+                "supporting_claim_ids": [],
+                "supporting_evidence_ids": [],
+                "reason": "Wins and losses are available team metrics for the archive."
+              }
+            ]
+          },
+          "trial": 0
+        },
+        {
+          "outcome": "verdict_rejected",
+          "accepted": false,
+          "causes": [
+            "span1:verdict_unsupported"
+          ],
+          "error": null,
+          "retried": false,
+          "cost_usd": 0.0002683,
+          "latency_ms": 2634,
+          "calls": [
+            {
+              "provider": null,
+              "model": "gpt-6-luna",
+              "served_model": "gpt-6-luna",
+              "requested_model": "gpt-6-luna",
+              "protocol": "responses",
+              "max_tokens": 3000,
+              "cost_usd": 0.0002683,
+              "prompt_tokens": 1533,
+              "completion_tokens": 230,
+              "finish_reason": "stop",
+              "latency_ms": 2633.1,
+              "ttfb_ms": 2632.9
+            }
+          ],
+          "review": {
+            "assertions": [
+              {
+                "text": "The Knicks scored 116.34 total points across 101 archived games in the 2025-26 release.",
+                "assertion_type": "factual",
+                "verdict": "unsupported",
+                "offending_text": "total points",
+                "supporting_claim_ids": [
+                  "claim:deafd8c4fbb345abf20ac4820b893127789e3a5b6339c1a6425567c7590cbe1c"
+                ],
+                "supporting_evidence_ids": [],
+                "reason": "The cited claim reports points per game, not total points."
+              }
+            ],
+            "follow_up_reviews": [
+              {
+                "text": "What was the Knicks' average margin per game?",
+                "verdict": "supported",
+                "supporting_claim_ids": [],
+                "supporting_evidence_ids": [],
+                "reason": "The archive includes team margin metrics, so this is answerable."
+              },
+              {
+                "text": "How many games did the Knicks win and lose in the archive?",
+                "verdict": "supported",
+                "supporting_claim_ids": [],
+                "supporting_evidence_ids": [],
+                "reason": "The archive includes team wins and losses, so this is answerable."
+              }
+            ]
+          },
+          "trial": 1
+        }
+      ]
+    },
+    {
+      "case_id": "unit_total_as_per_game",
+      "class": "per_game_total_confusion",
+      "unit": "exact_statistics-002",
+      "why_gate_passes": "11,750 is the trusted total points value; only unit wording moves.",
+      "gate_issues": [],
+      "original": "The Knicks scored 11,750 total points across 101 archived games in the 2025-26 release.",
+      "mutated": "The Knicks averaged 11,750 points per game across 101 archived games in the 2025-26 release.",
+      "append": "",
+      "edits": [
+        [
+          "scored 11,750 total points across 101 archived games",
+          "averaged 11,750 points per game across 101 archived games"
+        ]
+      ],
+      "observations": [
+        {
+          "outcome": "verdict_rejected",
+          "accepted": false,
+          "causes": [
+            "span1:verdict_unsupported"
+          ],
+          "error": null,
+          "retried": false,
+          "cost_usd": 0.0002927,
+          "latency_ms": 3353,
+          "calls": [
+            {
+              "provider": null,
+              "model": "gpt-6-luna",
+              "served_model": "gpt-6-luna",
+              "requested_model": "gpt-6-luna",
+              "protocol": "responses",
+              "max_tokens": 3000,
+              "cost_usd": 0.0002927,
+              "prompt_tokens": 1527,
+              "completion_tokens": 280,
+              "finish_reason": "stop",
+              "latency_ms": 3352.8,
+              "ttfb_ms": 3352.6
+            }
+          ],
+          "review": {
+            "assertions": [
+              {
+                "text": "The Knicks averaged 11,750 points per game across 101 archived games in the 2025-26 release.",
+                "assertion_type": "interpretation",
+                "verdict": "unsupported",
+                "offending_text": "averaged 11,750 points per game",
+                "supporting_claim_ids": [
+                  "claim:f9b34fee66aed1e531b68052b5b1c7bc8f66127dca6d755e6b1c6c9b07bde8c4"
+                ],
+                "supporting_evidence_ids": [],
+                "reason": "The claim reports 11,750 total points, not points per game."
+              }
+            ],
+            "follow_up_reviews": [
+              {
+                "text": "What was the Knicks' average points per game?",
+                "verdict": "supported",
+                "supporting_claim_ids": [],
+                "supporting_evidence_ids": [],
+                "reason": "The archive includes Knicks points across 101 games, supporting a per-game average calculation."
+              },
+              {
+                "text": "How many total points did the Knicks allow (margin context)?",
+                "verdict": "insufficient_evidence",
+                "supporting_claim_ids": [],
+                "supporting_evidence_ids": [],
+                "reason": "The supplied claim reports Knicks points scored, not points allowed."
+              }
+            ]
+          },
+          "trial": 0
+        },
+        {
+          "outcome": "verdict_rejected",
+          "accepted": false,
+          "causes": [
+            "span1:verdict_unsupported"
+          ],
+          "error": null,
+          "retried": false,
+          "cost_usd": 0.0002892,
+          "latency_ms": 3155,
+          "calls": [
+            {
+              "provider": null,
+              "model": "gpt-6-luna",
+              "served_model": "gpt-6-luna",
+              "requested_model": "gpt-6-luna",
+              "protocol": "responses",
+              "max_tokens": 3000,
+              "cost_usd": 0.0002892,
+              "prompt_tokens": 1527,
+              "completion_tokens": 273,
+              "finish_reason": "stop",
+              "latency_ms": 3154.2,
+              "ttfb_ms": 3154.0
+            }
+          ],
+          "review": {
+            "assertions": [
+              {
+                "text": "The Knicks averaged 11,750 points per game across 101 archived games in the 2025-26 release.",
+                "assertion_type": "factual",
+                "verdict": "unsupported",
+                "offending_text": "averaged 11,750 points per game",
+                "supporting_claim_ids": [
+                  "claim:f9b34fee66aed1e531b68052b5b1c7bc8f66127dca6d755e6b1c6c9b07bde8c4"
+                ],
+                "supporting_evidence_ids": [],
+                "reason": "The claim supports 11,750 total points, not that average per game."
+              }
+            ],
+            "follow_up_reviews": [
+              {
+                "text": "What was the Knicks' average points per game?",
+                "verdict": "supported",
+                "supporting_claim_ids": [],
+                "supporting_evidence_ids": [],
+                "reason": "This is a relevant question about a supported team scoring metric."
+              },
+              {
+                "text": "How many total points did the Knicks allow (margin context)?",
+                "verdict": "insufficient_evidence",
+                "supporting_claim_ids": [],
+                "supporting_evidence_ids": [],
+                "reason": "The archive provides no claim for points allowed."
+              }
+            ]
+          },
+          "trial": 1
+        }
+      ]
+    },
+    {
+      "case_id": "unit_window_ppg_as_total",
+      "class": "per_game_total_confusion",
+      "unit": "date_range_last_n-002",
+      "why_gate_passes": "114.1 is the trusted points_per_game value; only unit wording moves.",
+      "gate_issues": [],
+      "original": "Over their last 10 archived games, the Knicks averaged 114.1 points per game (9 wins, 1 loss).",
+      "mutated": "Over their last 10 archived games, the Knicks scored 114.1 total points (9 wins, 1 loss).",
+      "append": "",
+      "edits": [
+        [
+          "averaged 114.1 points per game",
+          "scored 114.1 total points"
+        ]
+      ],
+      "observations": [
+        {
+          "outcome": "verdict_rejected",
+          "accepted": false,
+          "causes": [
+            "span1:verdict_unsupported"
+          ],
+          "error": null,
+          "retried": false,
+          "cost_usd": 0.0003647,
+          "latency_ms": 3207,
+          "calls": [
+            {
+              "provider": null,
+              "model": "gpt-6-luna",
+              "served_model": "gpt-6-luna",
+              "requested_model": "gpt-6-luna",
+              "protocol": "responses",
+              "max_tokens": 3000,
+              "cost_usd": 0.0003647,
+              "prompt_tokens": 2117,
+              "completion_tokens": 306,
+              "finish_reason": "stop",
+              "latency_ms": 3206.9,
+              "ttfb_ms": 3206.6
+            }
+          ],
+          "review": {
+            "assertions": [
+              {
+                "text": "Over their last 10 archived games, the Knicks scored 114.1 total points (9 wins, 1 loss).",
+                "assertion_type": "factual",
+                "verdict": "unsupported",
+                "offending_text": "scored 114.1 total points",
+                "supporting_claim_ids": [
+                  "claim:17fd24efa5e43c5d99e05614eab9f77ce82daf192b01a2fced23776f214723cb",
+                  "claim:b1e1bcc1f7a34299630cca503f26a16b882ea8fdb5d1908eeebbfaf9a6c59fcb",
+                  "claim:5ae1cfd59359c95904ef60375d14d1ad308b87b70bd38d74e631e784ab00efc7"
+                ],
+                "supporting_evidence_ids": [],
+                "reason": "114.1 is the average points per game, not the total points scored."
+              }
+            ],
+            "follow_up_reviews": [
+              {
+                "text": "What was the Knicks' average margin over those 10 games?",
+                "verdict": "insufficient_evidence",
+                "supporting_claim_ids": [],
+                "supporting_evidence_ids": [],
+                "reason": "The archive supports margin metrics, but no margin claim or game-level margins are supplied."
+              },
+              {
+                "text": "How many points did the Knicks allow per game over those 10 games?",
+                "verdict": "insufficient_evidence",
+                "supporting_claim_ids": [],
+                "supporting_evidence_ids": [],
+                "reason": "No opponent scoring or points-allowed claim is supplied."
+              }
+            ]
+          },
+          "trial": 0
+        },
+        {
+          "outcome": "verdict_rejected",
+          "accepted": false,
+          "causes": [
+            "span1:verdict_unsupported"
+          ],
+          "error": null,
+          "retried": false,
+          "cost_usd": 0.0003592,
+          "latency_ms": 5527,
+          "calls": [
+            {
+              "provider": null,
+              "model": "gpt-6-luna",
+              "served_model": "gpt-6-luna",
+              "requested_model": "gpt-6-luna",
+              "protocol": "responses",
+              "max_tokens": 3000,
+              "cost_usd": 0.0003592,
+              "prompt_tokens": 2117,
+              "completion_tokens": 295,
+              "finish_reason": "stop",
+              "latency_ms": 5526.5,
+              "ttfb_ms": 5526.3
+            }
+          ],
+          "review": {
+            "assertions": [
+              {
+                "text": "Over their last 10 archived games, the Knicks scored 114.1 total points (9 wins, 1 loss).",
+                "assertion_type": "factual",
+                "verdict": "unsupported",
+                "offending_text": "114.1 total points",
+                "supporting_claim_ids": [
+                  "claim:17fd24efa5e43c5d99e05614eab9f77ce82daf192b01a2fced23776f214723cb",
+                  "claim:b1e1bcc1f7a34299630cca503f26a16b882ea8fdb5d1908eeebbfaf9a6c59fcb",
+                  "claim:5ae1cfd59359c95904ef60375d14d1ad308b87b70bd38d74e631e784ab00efc7"
+                ],
+                "supporting_evidence_ids": [],
+                "reason": "The cited 114.1 figure is points per game, not total points."
+              }
+            ],
+            "follow_up_reviews": [
+              {
+                "text": "What was the Knicks' average margin over those 10 games?",
+                "verdict": "insufficient_evidence",
+                "supporting_claim_ids": [],
+                "supporting_evidence_ids": [],
+                "reason": "No average-margin claim or supporting evidence is provided."
+              },
+              {
+                "text": "How many points did the Knicks allow per game over those 10 games?",
+                "verdict": "insufficient_evidence",
+                "supporting_claim_ids": [],
+                "supporting_evidence_ids": [],
+                "reason": "The archive metrics provided do not include points allowed."
+              }
+            ]
+          },
+          "trial": 1
+        }
+      ]
+    },
+    {
+      "case_id": "causal_defense_ranking",
+      "class": "unsupported_causal_or_ranking",
+      "unit": "exact_statistics-001",
+      "why_gate_passes": "The added sentence has no numbers; declared claims are unchanged.",
+      "gate_issues": [],
+      "original": "In the available 2025-26 archive, the Knicks went 69-32 across 101 games.",
+      "mutated": "In the available 2025-26 archive, the Knicks went 69-32 across 101 games. That record proves their defense is the best in the league.",
+      "append": " That record proves their defense is the best in the league.",
+      "edits": [],
+      "observations": [
+        {
+          "outcome": "verdict_rejected",
+          "accepted": false,
+          "causes": [
+            "span2:verdict_unsupported",
+            "span2:missing_ids"
+          ],
+          "error": null,
+          "retried": false,
+          "cost_usd": 0.0003344,
+          "latency_ms": 3280,
+          "calls": [
+            {
+              "provider": null,
+              "model": "gpt-6-luna",
+              "served_model": "gpt-6-luna",
+              "requested_model": "gpt-6-luna",
+              "protocol": "responses",
+              "max_tokens": 3000,
+              "cost_usd": 0.0003344,
+              "prompt_tokens": 1784,
+              "completion_tokens": 312,
+              "finish_reason": "stop",
+              "latency_ms": 3279.4,
+              "ttfb_ms": 3279.0
+            }
+          ],
+          "review": {
+            "assertions": [
+              {
+                "text": "In the available 2025-26 archive, the Knicks went 69-32 across 101 games. ",
+                "assertion_type": "factual",
+                "verdict": "supported",
+                "offending_text": null,
+                "supporting_claim_ids": [
+                  "claim:6967a12a584c5b797f5522c968d0474cc9cfe47b49e27ad4f9ad75caf8521a49",
+                  "claim:755cd7abc5d4380efd7d5e411145b32485817ed483eaa2b570e3a36b0c03094c"
+                ],
+                "supporting_evidence_ids": [],
+                "reason": "The archive claims support the Knicks\u2019 69 wins and 32 losses over 101 games."
+              },
+              {
+                "text": "That record proves their defense is the best in the league.",
+                "assertion_type": "interpretation",
+                "verdict": "unsupported",
+                "offending_text": "That record proves their defense is the best in the league.",
+                "supporting_claim_ids": [],
+                "supporting_evidence_ids": [],
+                "reason": "Win-loss records do not establish defensive quality or league ranking."
+              }
+            ],
+            "follow_up_reviews": [
+              {
+                "text": "What was the Knicks' point differential this season?",
+                "verdict": "supported",
+                "supporting_claim_ids": [],
+                "supporting_evidence_ids": [],
+                "reason": "Point differential is an available team metric for this season."
+              },
+              {
+                "text": "How many points did the Knicks score in total this season?",
+                "verdict": "supported",
+                "supporting_claim_ids": [],
+                "supporting_evidence_ids": [],
+                "reason": "Team points are an available metric for this season."
+              }
+            ]
+          },
+          "trial": 0
+        },
+        {
+          "outcome": "verdict_rejected",
+          "accepted": false,
+          "causes": [
+            "span2:verdict_unsupported",
+            "span2:missing_ids"
+          ],
+          "error": null,
+          "retried": false,
+          "cost_usd": 0.0003369,
+          "latency_ms": 3258,
+          "calls": [
+            {
+              "provider": null,
+              "model": "gpt-6-luna",
+              "served_model": "gpt-6-luna",
+              "requested_model": "gpt-6-luna",
+              "protocol": "responses",
+              "max_tokens": 3000,
+              "cost_usd": 0.0003369,
+              "prompt_tokens": 1784,
+              "completion_tokens": 317,
+              "finish_reason": "stop",
+              "latency_ms": 3257.6,
+              "ttfb_ms": 3257.4
+            }
+          ],
+          "review": {
+            "assertions": [
+              {
+                "text": "In the available 2025-26 archive, the Knicks went 69-32 across 101 games. ",
+                "assertion_type": "factual",
+                "verdict": "supported",
+                "offending_text": null,
+                "supporting_claim_ids": [
+                  "claim:6967a12a584c5b797f5522c968d0474cc9cfe47b49e27ad4f9ad75caf8521a49",
+                  "claim:755cd7abc5d4380efd7d5e411145b32485817ed483eaa2b570e3a36b0c03094c"
+                ],
+                "supporting_evidence_ids": [],
+                "reason": "The available archive claims support the Knicks\u2019 wins, losses, season, and game count."
+              },
+              {
+                "text": "That record proves their defense is the best in the league.",
+                "assertion_type": "interpretation",
+                "verdict": "unsupported",
+                "offending_text": "That record proves their defense is the best in the league.",
+                "supporting_claim_ids": [],
+                "supporting_evidence_ids": [],
+                "reason": "A win-loss record does not establish defensive ranking or overall defensive quality."
+              }
+            ],
+            "follow_up_reviews": [
+              {
+                "text": "What was the Knicks' point differential this season?",
+                "verdict": "supported",
+                "supporting_claim_ids": [],
+                "supporting_evidence_ids": [],
+                "reason": "The archive includes team margin data, which supports point differential."
+              },
+              {
+                "text": "How many points did the Knicks score in total this season?",
+                "verdict": "supported",
+                "supporting_claim_ids": [],
+                "supporting_evidence_ids": [],
+                "reason": "The archive includes team points data, which supports total points scored."
+              }
+            ]
+          },
+          "trial": 1
+        }
+      ]
+    },
+    {
+      "case_id": "causal_offense_ranking",
+      "class": "unsupported_causal_or_ranking",
+      "unit": "comparisons-002",
+      "why_gate_passes": "The added sentence has no numbers; declared claims are unchanged.",
+      "gate_issues": [],
+      "original": "In the 2025-26 all-phase archive, Jalen Brunson averaged 26.5 points per appearance across 93 observed appearances, while Karl-Anthony Towns averaged 19.2 across 94. Both figures cover only observed appearances, and some archived games are missing player rows.",
+      "mutated": "In the 2025-26 all-phase archive, Jalen Brunson averaged 26.5 points per appearance across 93 observed appearances, while Karl-Anthony Towns averaged 19.2 across 94. Both figures cover only observed appearances, and some archived games are missing player rows. Brunson's scoring average is why the Knicks had the best offense in the league.",
+      "append": " Brunson's scoring average is why the Knicks had the best offense in the league.",
+      "edits": [],
+      "observations": [
+        {
+          "outcome": "verdict_rejected",
+          "accepted": false,
+          "causes": [
+            "span3:verdict_unsupported",
+            "span3:missing_ids"
+          ],
+          "error": null,
+          "retried": false,
+          "cost_usd": 0.0004163,
+          "latency_ms": 3600,
+          "calls": [
+            {
+              "provider": null,
+              "model": "gpt-6-luna",
+              "served_model": "gpt-6-luna",
+              "requested_model": "gpt-6-luna",
+              "protocol": "responses",
+              "max_tokens": 3000,
+              "cost_usd": 0.0004163,
+              "prompt_tokens": 2013,
+              "completion_tokens": 430,
+              "finish_reason": "stop",
+              "latency_ms": 3599.9,
+              "ttfb_ms": 3599.7
+            }
+          ],
+          "review": {
+            "assertions": [
+              {
+                "text": "In the 2025-26 all-phase archive, Jalen Brunson averaged 26.5 points per appearance across 93 observed appearances, while Karl-Anthony Towns averaged 19.2 across 94. ",
+                "assertion_type": "factual",
+                "verdict": "supported",
+                "offending_text": null,
+                "supporting_claim_ids": [
+                  "claim:f93db38157478faeea46e511c3f0206cdd6365b4d6e232bc0b65384ae1ff0c36",
+                  "claim:1d8f1a95b71e9fcabfd9a1630d83feacb39f60646afe6aa711052b1419333e49"
+                ],
+                "supporting_evidence_ids": [],
+                "reason": "Both scoring averages and appearance counts match the 2025-26 all-phase archive claims."
+              },
+              {
+                "text": "Both figures cover only observed appearances, and some archived games are missing player rows. ",
+                "assertion_type": "coverage",
+                "verdict": "supported",
+                "offending_text": null,
+                "supporting_claim_ids": [],
+                "supporting_evidence_ids": [],
+                "reason": "The archive records observed appearances and missing player rows for both players."
+              },
+              {
+                "text": "Brunson's scoring average is why the Knicks had the best offense in the league.",
+                "assertion_type": "interpretation",
+                "verdict": "unsupported",
+                "offending_text": "Brunson's scoring average is why the Knicks had the best offense in the league.",
+                "supporting_claim_ids": [],
+                "supporting_evidence_ids": [],
+                "reason": "The claims do not establish team offense rankings or a causal link."
+              }
+            ],
+            "follow_up_reviews": [
+              {
+                "text": "How do Brunson and Towns compare on three-pointers made per game this season?",
+                "verdict": "insufficient_evidence",
+                "supporting_claim_ids": [],
+                "supporting_evidence_ids": [],
+                "reason": "No three-pointers-made claims are available."
+              },
+              {
+                "text": "How do Brunson and Towns compare in total points scored this season?",
+                "verdict": "insufficient_evidence",
+                "supporting_claim_ids": [],
+                "supporting_evidence_ids": [],
+                "reason": "The archive provides per-appearance averages, not season totals."
+              }
+            ]
+          },
+          "trial": 0
+        },
+        {
+          "outcome": "verdict_rejected",
+          "accepted": false,
+          "causes": [
+            "span3:verdict_unsupported",
+            "span3:missing_ids"
+          ],
+          "error": null,
+          "retried": false,
+          "cost_usd": 0.0005118,
+          "latency_ms": 4898,
+          "calls": [
+            {
+              "provider": null,
+              "model": "gpt-6-luna",
+              "served_model": "gpt-6-luna",
+              "requested_model": "gpt-6-luna",
+              "protocol": "responses",
+              "max_tokens": 3000,
+              "cost_usd": 0.0005118,
+              "prompt_tokens": 2013,
+              "completion_tokens": 621,
+              "finish_reason": "stop",
+              "latency_ms": 4897.9,
+              "ttfb_ms": 4897.7
+            }
+          ],
+          "review": {
+            "assertions": [
+              {
+                "text": "In the 2025-26 all-phase archive, Jalen Brunson averaged 26.5 points per appearance across 93 observed appearances, while Karl-Anthony Towns averaged 19.2 across 94. ",
+                "assertion_type": "factual",
+                "verdict": "supported",
+                "offending_text": null,
+                "supporting_claim_ids": [
+                  "claim:f93db38157478faeea46e511c3f0206cdd6365b4d6e232bc0b65384ae1ff0c36",
+                  "claim:1d8f1a95b71e9fcabfd9a1630d83feacb39f60646afe6aa711052b1419333e49"
+                ],
+                "supporting_evidence_ids": [],
+                "reason": "Both players\u2019 averages and observed-appearance counts match the cited archive claims."
+              },
+              {
+                "text": "Both figures cover only observed appearances, and some archived games are missing player rows. ",
+                "assertion_type": "coverage",
+                "verdict": "supported",
+                "offending_text": null,
+                "supporting_claim_ids": [
+                  "claim:f93db38157478faeea46e511c3f0206cdd6365b4d6e232bc0b65384ae1ff0c36",
+                  "claim:1d8f1a95b71e9fcabfd9a1630d83feacb39f60646afe6aa711052b1419333e49"
+                ],
+                "supporting_evidence_ids": [],
+                "reason": "Both claims limit the averages to observed appearances and disclose missing player rows."
+              },
+              {
+                "text": "Brunson's scoring average is why the Knicks had the best offense in the league.",
+                "assertion_type": "interpretation",
+                "verdict": "unsupported",
+                "offending_text": "Brunson's scoring average is why the Knicks had the best offense in the league.",
+                "supporting_claim_ids": [],
+                "supporting_evidence_ids": [],
+                "reason": "The cited player-scoring averages establish neither league-best offense nor a causal link."
+              }
+            ],
+            "follow_up_reviews": [
+              {
+                "text": "How do Brunson and Towns compare on three-pointers made per game this season?",
+                "verdict": "supported",
+                "supporting_claim_ids": [],
+                "supporting_evidence_ids": [],
+                "reason": "The archive includes three-pointers made, enabling a comparison for both players."
+              },
+              {
+                "text": "How do Brunson and Towns compare in total points scored this season?",
+                "verdict": "supported",
+                "supporting_claim_ids": [
+                  "claim:f93db38157478faeea46e511c3f0206cdd6365b4d6e232bc0b65384ae1ff0c36",
+                  "claim:1d8f1a95b71e9fcabfd9a1630d83feacb39f60646afe6aa711052b1419333e49"
+                ],
+                "supporting_evidence_ids": [],
+                "reason": "Both cited claims provide average points and observed appearance counts for the season."
+              }
+            ]
+          },
+          "trial": 1
+        }
+      ]
+    },
+    {
+      "case_id": "causal_schedule_ranking",
+      "class": "unsupported_causal_or_ranking",
+      "unit": "date_range_last_n-004",
+      "why_gate_passes": "The added sentence has no numbers; declared claims are unchanged.",
+      "gate_issues": [],
+      "original": "From January 1 through January 31, the Knicks went 7-8 across 15 archived games, scoring 1,652 total points.",
+      "mutated": "From January 1 through January 31, the Knicks went 7-8 across 15 archived games, scoring 1,652 total points. Their January schedule was the easiest in the league, which caused the winning record.",
+      "append": " Their January schedule was the easiest in the league, which caused the winning record.",
+      "edits": [],
+      "observations": [
+        {
+          "outcome": "verdict_rejected",
+          "accepted": false,
+          "causes": [
+            "span2:verdict_unsupported",
+            "span2:missing_ids"
+          ],
+          "error": null,
+          "retried": false,
+          "cost_usd": 0.0004013,
+          "latency_ms": 4485,
+          "calls": [
+            {
+              "provider": null,
+              "model": "gpt-6-luna",
+              "served_model": "gpt-6-luna",
+              "requested_model": "gpt-6-luna",
+              "protocol": "responses",
+              "max_tokens": 3000,
+              "cost_usd": 0.0004013,
+              "prompt_tokens": 2118,
+              "completion_tokens": 379,
+              "finish_reason": "stop",
+              "latency_ms": 4484.9,
+              "ttfb_ms": 4483.9
+            }
+          ],
+          "review": {
+            "assertions": [
+              {
+                "text": "From January 1 through January 31, the Knicks went 7-8 across 15 archived games, scoring 1,652 total points. ",
+                "assertion_type": "factual",
+                "verdict": "supported",
+                "offending_text": null,
+                "supporting_claim_ids": [
+                  "claim:8ae74bc11c415f391b098b9199758b96c5778d5e71a89a647b7c9a362e28d51c",
+                  "claim:5a43adf99c2a0a2ea22a22a49a7b16d024226960dd2e360e8d413ef5ca6e2854",
+                  "claim:030ed374b46dcae45c14e8faba1d5506eea08bbfd39ce356d5a813708e51b852"
+                ],
+                "supporting_evidence_ids": [],
+                "reason": "The cited archive claims support the Knicks\u2019 January record and points total."
+              },
+              {
+                "text": "Their January schedule was the easiest in the league, which caused the winning record.",
+                "assertion_type": "interpretation",
+                "verdict": "unsupported",
+                "offending_text": "Their January schedule was the easiest in the league, which caused the winning record.",
+                "supporting_claim_ids": [],
+                "supporting_evidence_ids": [],
+                "reason": "No evidence compares schedule difficulty or establishes that it caused the record."
+              }
+            ],
+            "follow_up_reviews": [
+              {
+                "text": "What was the Knicks' average points per game in January?",
+                "verdict": "supported",
+                "supporting_claim_ids": [],
+                "supporting_evidence_ids": [],
+                "reason": "The archive provides January points and game count sufficient to calculate an average."
+              },
+              {
+                "text": "How did the Knicks' January margin compare to another month?",
+                "verdict": "insufficient_evidence",
+                "supporting_claim_ids": [],
+                "supporting_evidence_ids": [],
+                "reason": "The archive does not provide another month\u2019s margin for comparison."
+              }
+            ]
+          },
+          "trial": 0
+        },
+        {
+          "outcome": "verdict_rejected",
+          "accepted": false,
+          "causes": [
+            "span2:verdict_unsupported",
+            "span2:missing_ids"
+          ],
+          "error": null,
+          "retried": false,
+          "cost_usd": 0.0004423,
+          "latency_ms": 3885,
+          "calls": [
+            {
+              "provider": null,
+              "model": "gpt-6-luna",
+              "served_model": "gpt-6-luna",
+              "requested_model": "gpt-6-luna",
+              "protocol": "responses",
+              "max_tokens": 3000,
+              "cost_usd": 0.0004423,
+              "prompt_tokens": 2118,
+              "completion_tokens": 461,
+              "finish_reason": "stop",
+              "latency_ms": 3884.7,
+              "ttfb_ms": 3884.5
+            }
+          ],
+          "review": {
+            "assertions": [
+              {
+                "text": "From January 1 through January 31, the Knicks went 7-8 across 15 archived games, scoring 1,652 total points. ",
+                "assertion_type": "factual",
+                "verdict": "supported",
+                "offending_text": null,
+                "supporting_claim_ids": [
+                  "claim:8ae74bc11c415f391b098b9199758b96c5778d5e71a89a647b7c9a362e28d51c",
+                  "claim:5a43adf99c2a0a2ea22a22a49a7b16d024226960dd2e360e8d413ef5ca6e2854",
+                  "claim:030ed374b46dcae45c14e8faba1d5506eea08bbfd39ce356d5a813708e51b852"
+                ],
+                "supporting_evidence_ids": [],
+                "reason": "The claims support the Knicks' archived January record, game count, and points total."
+              },
+              {
+                "text": "Their January schedule was the easiest in the league, which caused the winning record.",
+                "assertion_type": "interpretation",
+                "verdict": "unsupported",
+                "offending_text": "Their January schedule was the easiest in the league, which caused the winning record.",
+                "supporting_claim_ids": [],
+                "supporting_evidence_ids": [],
+                "reason": "No evidence compares schedule difficulty or establishes a cause for the record."
+              }
+            ],
+            "follow_up_reviews": [
+              {
+                "text": "What was the Knicks' average points per game in January?",
+                "verdict": "supported",
+                "supporting_claim_ids": [],
+                "supporting_evidence_ids": [],
+                "reason": "The archived points total and game count can support calculating the average."
+              },
+              {
+                "text": "How did the Knicks' January margin compare to another month?",
+                "verdict": "insufficient_evidence",
+                "supporting_claim_ids": [],
+                "supporting_evidence_ids": [],
+                "reason": "The supplied claims contain no January margin or other-month comparison."
+              }
+            ]
+          },
+          "trial": 1
+        }
+      ]
+    },
+    {
+      "case_id": "percent_from_wins_value",
+      "class": "coincident_percent",
+      "unit": "exact_statistics-005",
+      "why_gate_passes": "37% equals the trusted home wins value, so the gate accepts it.",
+      "gate_issues": [
+        "span 2 uses 37, which is not a supplied claim value, receipt or capability"
+      ],
+      "original": "The Knicks won 37 home games in the available 2025-26 archive.",
+      "mutated": "The Knicks won 37 home games in the available 2025-26 archive. They shot 37% from three-point range over that stretch.",
+      "append": " They shot 37% from three-point range over that stretch.",
+      "edits": [],
+      "observations": []
+    },
+    {
+      "case_id": "percent_from_losses_value",
+      "class": "coincident_percent",
+      "unit": "exact_statistics-007",
+      "why_gate_passes": "32% equals the trusted losses value, so the gate accepts it.",
+      "gate_issues": [
+        "span 2 uses 32, which is not a supplied claim value, receipt or capability"
+      ],
+      "original": "The Knicks lost 32 games across the 101 archived games in this release.",
+      "mutated": "The Knicks lost 32 games across the 101 archived games in this release. They converted 32% of their three-point attempts.",
+      "append": " They converted 32% of their three-point attempts.",
+      "edits": [],
+      "observations": []
+    },
+    {
+      "case_id": "percent_from_sample_size",
+      "class": "coincident_percent",
+      "unit": "comparisons-002",
+      "why_gate_passes": "93% equals the trusted sample_size value, so the gate accepts it.",
+      "gate_issues": [
+        "span 3 uses 93, which is not a supplied claim value, receipt or capability"
+      ],
+      "original": "In the 2025-26 all-phase archive, Jalen Brunson averaged 26.5 points per appearance across 93 observed appearances, while Karl-Anthony Towns averaged 19.2 across 94. Both figures cover only observed appearances, and some archived games are missing player rows.",
+      "mutated": "In the 2025-26 all-phase archive, Jalen Brunson averaged 26.5 points per appearance across 93 observed appearances, while Karl-Anthony Towns averaged 19.2 across 94. Both figures cover only observed appearances, and some archived games are missing player rows. They shot 93% from the free-throw line.",
+      "append": " They shot 93% from the free-throw line.",
+      "edits": [],
+      "observations": []
+    }
+  ],
+  "worst_accepted": []
+}

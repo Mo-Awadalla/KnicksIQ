@@ -1,0 +1,98 @@
+{
+  "label": "budget-16000",
+  "generated_at": "2026-10-21T23:09:27.680399+00:00",
+  "input_tokens": "16000",
+  "redis_db": "15",
+  "questions": 140,
+  "trials": 2,
+  "by_trial": {
+    "0": {
+      "questions": 70,
+      "meets_expectation": 38,
+      "claim_backed": 38,
+      "validated": 47,
+      "p50_latency_ms": 3279.2,
+      "p95_latency_ms": 7756.1,
+      "cost_usd": 0.159058803
+    },
+    "1": {
+      "questions": 70,
+      "meets_expectation": 38,
+      "claim_backed": 38,
+      "validated": 52,
+      "p50_latency_ms": 3140.1,
+      "p95_latency_ms": 7508.5,
+      "cost_usd": 0.118318609
+    }
+  },
+  "meets_expectation": 76,
+  "claim_backed": 76,
+  "validated": 99,
+  "old_meets_expectation": 79,
+  "by_category": {
+    "aliases_typos": {
+      "questions": 20,
+      "meets_expectation": 9,
+      "validated": 13
+    },
+    "comparisons": {
+      "questions": 20,
+      "meets_expectation": 10,
+      "validated": 19
+    },
+    "date_range_last_n": {
+      "questions": 20,
+      "meets_expectation": 12,
+      "validated": 14
+    },
+    "exact_statistics": {
+      "questions": 20,
+      "meets_expectation": 17,
+      "validated": 20
+    },
+    "single_game_narrative": {
+      "questions": 20,
+      "meets_expectation": 5,
+      "validated": 14
+    },
+    "turning_points": {
+      "questions": 20,
+      "meets_expectation": 8,
+      "validated": 10
+    },
+    "unsupported": {
+      "questions": 20,
+      "meets_expectation": 15,
+      "validated": 9
+    }
+  },
+  "outcomes": {
+    "validated": 70,
+    "validated_declined": 29,
+    "fallback:review_rejected": 39,
+    "fallback:other": 2
+  },
+  "fallback_reasons": {
+    "fallback:review_rejected": 39,
+    "fallback:other": 2
+  },
+  "p50_latency_ms": 3312.4,
+  "p95_latency_ms": 7640.5,
+  "mean_latency_ms": 3666.2,
+  "ledger_delta_total": 0.277377412,
+  "settled_total": 0.277377412,
+  "open_delta_total": 0,
+  "mean_cost_per_question": 0.001981267,
+  "reconciles": true,
+  "unreconciled": [],
+  "budget_events": {
+    "exceeds_input_budget": 0,
+    "exceeds_messages": [],
+    "writer_claim_drop_events": 59,
+    "writer_claims_dropped": 274,
+    "questions_with_claim_drops": 30,
+    "max_claims_dropped_one_call": 15,
+    "review_packing_refusals": 0,
+    "review_refusal_messages": []
+  }
+}

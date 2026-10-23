@@ -1,0 +1,59 @@
+{
+  "checks": [
+    {
+      "detail": "HTTP 200, status 'ok'",
+      "evidence": {
+        "status_code": 200
+      },
+      "id": "target.live",
+      "status": "pass"
+    },
+    {
+      "detail": "HTTP 200, status 'ready', data_version '2025-26.20260928.1', required_failures []",
+      "evidence": {
+        "data_version": "2025-26.20260928.1",
+        "db_active_version": "2025-26.20260928.1",
+        "optional_dependencies": {
+          "openrouter": "configured",
+          "qdrant": "disabled",
+          "redis": "configured"
+        },
+        "required_failures": [],
+        "status_code": 200
+      },
+      "id": "target.ready",
+      "status": "pass"
+    },
+    {
+      "detail": "HTTP 200, allow-origin 'https://www.knicksiq.win', expected 'https://www.knicksiq.win'",
+      "evidence": {
+        "allow_origin": "https://www.knicksiq.win",
+        "expected": "https://www.knicksiq.win",
+        "status_code": 200
+      },
+      "id": "target.cors",
+      "status": "pass"
+    },
+    {
+      "detail": "untrusted host returned HTTP 400",
+      "evidence": {
+        "status_code": 400
+      },
+      "id": "target.trusted_host",
+      "status": "pass"
+    }
+  ],
+  "expected_cutoff_usd": 2.0,
+  "expected_mode": "llm_primary",
+  "generated_at": "2026-10-21T21:39:26.550410+00:00",
+  "mode": "base-url",
+  "schema_version": 1,
+  "secrets_printed": false,
+  "summary": {
+    "fail": 0,
+    "pass": 4,
+    "skip": 0,
+    "status": "pass"
+  },
+  "target": "http://127.0.0.1:8765"
+}

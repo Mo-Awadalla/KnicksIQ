@@ -1,0 +1,2 @@
+controls pass gate 14 / 14
+Counter({('number_swapped_other_metric', 'reaches reviewer'): 3, ('wrong_subject', 'reaches reviewer'): 3, ('wrong_phase_or_window', 'reaches reviewer'): 3, ('wins_losses_swapped', 'gate-rejected'): 3, ('per_game_total_confusion', 'reaches reviewer'): 3, ('unsupported_causal_or_ranking', 'reaches reviewer'): 3, ('coincident_percent', 'gate-rejected'): 3})

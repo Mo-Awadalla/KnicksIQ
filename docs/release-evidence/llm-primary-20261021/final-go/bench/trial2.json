@@ -1,0 +1,158 @@
+{
+  "scope": "meets_expectation now requires: not declined or clarification, validated delivery, substantive content, no unbacked number or entity, required facts present, no echo, and no unbacked causal hedge. claim_backed additionally requires cited claim values.",
+  "mode": "live",
+  "dataset": "/Users/mohamedawadalla/.local/share/knicksiq/worktrees/final2/apps/api/app/evaluation/questions.jsonl",
+  "questions": 70,
+  "old_meets_expectation": 40,
+  "meets_expectation": 40,
+  "claim_backed_meets_expectation": 40,
+  "delta": 0,
+  "by_answerable": {
+    "answerable": {
+      "questions": 62,
+      "old": 35,
+      "new": 32
+    },
+    "unsupported": {
+      "questions": 8,
+      "old": 5,
+      "new": 8
+    }
+  },
+  "survived": [
+    "exact_statistics-001",
+    "exact_statistics-002",
+    "exact_statistics-003",
+    "exact_statistics-004",
+    "exact_statistics-005",
+    "exact_statistics-006",
+    "exact_statistics-007",
+    "exact_statistics-008",
+    "exact_statistics-009",
+    "exact_statistics-010",
+    "date_range_last_n-001",
+    "date_range_last_n-002",
+    "date_range_last_n-003",
+    "date_range_last_n-005",
+    "date_range_last_n-006",
+    "date_range_last_n-007",
+    "date_range_last_n-009",
+    "comparisons-002",
+    "comparisons-003",
+    "comparisons-004",
+    "comparisons-007",
+    "comparisons-008",
+    "single_game_narrative-001",
+    "single_game_narrative-003",
+    "turning_points-001",
+    "turning_points-005",
+    "turning_points-008",
+    "turning_points-009",
+    "aliases_typos-001",
+    "aliases_typos-006",
+    "aliases_typos-007",
+    "aliases_typos-008",
+    "unsupported-001",
+    "unsupported-003",
+    "unsupported-004",
+    "unsupported-006",
+    "unsupported-008"
+  ],
+  "lost": [
+    {
+      "id": "comparisons-005",
+      "category": "comparisons",
+      "failures": [
+        "declined:field:refused"
+      ],
+      "reason": "declined_answerable",
+      "answer": "The available claims don't cover average turnovers in wins versus losses, so no turnover comparison can be made from this evidence. The claims do show the Knicks' win and loss records and scoring splits: 53-0 in wins, 0-29 in losses, regular season."
+    },
+    {
+      "id": "single_game_narrative-004",
+      "category": "single_game_narrative",
+      "failures": [
+        "clarification",
+        "no_cited_claims"
+      ],
+      "reason": "skipped_work_clarification",
+      "answer": "Which Knicks\u2013Bulls game do you mean? The archive has four 2025-26 matchups: NYK at CHI, CHI at NYK, another NYK at CHI, and another CHI at NYK."
+    },
+    {
+      "id": "single_game_narrative-009",
+      "category": "single_game_narrative",
+      "failures": [
+        "declined:field:refused",
+        "clarification",
+        "no_cited_claims"
+      ],
+      "reason": "skipped_work_clarification",
+      "answer": "The archive covers eight Knicks\u2013Hawks games, so \"the Atlanta game\" is ambiguous. Tell me which one you mean and I can describe how the Knicks closed it."
+    }
+  ],
+  "gained": [
+    {
+      "id": "unsupported-002",
+      "failures": []
+    },
+    {
+      "id": "unsupported-005",
+      "failures": []
+    },
+    {
+      "id": "unsupported-007",
+      "failures": []
+    }
+  ],
+  "failure_counts": {
+    "not_validated": 24,
+    "no_cited_claims": 13,
+    "clarification": 10,
+    "declined": 5,
+    "not_substantive": 3
+  },
+  "by_category": {
+    "aliases_typos": {
+      "questions": 10,
+      "old": 4,
+      "new": 4,
+      "claim_backed": 4
+    },
+    "comparisons": {
+      "questions": 10,
+      "old": 6,
+      "new": 5,
+      "claim_backed": 5
+    },
+    "date_range_last_n": {
+      "questions": 10,
+      "old": 7,
+      "new": 7,
+      "claim_backed": 7
+    },
+    "exact_statistics": {
+      "questions": 10,
+      "old": 10,
+      "new": 10,
+      "claim_backed": 10
+    },
+    "single_game_narrative": {
+      "questions": 10,
+      "old": 4,
+      "new": 2,
+      "claim_backed": 2
+    },
+    "turning_points": {
+      "questions": 10,
+      "old": 4,
+      "new": 4,
+      "claim_backed": 4
+    },
+    "unsupported": {
+      "questions": 10,
+      "old": 5,
+      "new": 8,
+      "claim_backed": 8
+    }
+  }
+}

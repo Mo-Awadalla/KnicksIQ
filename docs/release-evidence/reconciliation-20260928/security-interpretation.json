@@ -1,0 +1,16 @@
+{
+  "candidate": "91ada687ec6e6a3c4bb2ac2a561e91f6c8ea8cc3",
+  "gitleaks_candidate_diff": "passed",
+  "gitleaks_full_archive": {
+    "exit_code": 1,
+    "finding": "docs/release-evidence/release-record.json:37 rollback.api_deployment",
+    "classification": "historical Render deployment identifier, not an API credential",
+    "suppressed": false
+  },
+  "trivy": {
+    "api_critical_fixable": 0,
+    "web_critical_fixable": 0
+  },
+  "hosted_codeql": "not_run_remote_writes_not_authorized",
+  "hosted_ci": "not_run_remote_writes_not_authorized"
+}

@@ -1,0 +1,9 @@
+
+/Users/mohamedawadalla/Projects/KnicksIQ/apps/web/src/routes/_authenticated/games/$gameId.tsx
+  4:10  warning  Fast refresh only works when a file only exports components. Move your component(s) to a separate file. If all exports are HOCs, add them to the `extraHOCs` option  react-refresh/only-export-components
+
+/Users/mohamedawadalla/Projects/KnicksIQ/apps/web/src/routes/_authenticated/reports/$reportId.tsx
+  4:10  warning  Fast refresh only works when a file only exports components. Move your component(s) to a separate file. If all exports are HOCs, add them to the `extraHOCs` option  react-refresh/only-export-components
+
+✖ 2 problems (0 errors, 2 warnings)
+

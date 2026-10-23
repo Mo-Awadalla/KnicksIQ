@@ -1,0 +1,8 @@
+{
+  "frozen_sha": "51f184a23645f1d43f930a520a1cc053397a315b",
+  "artifact": "main.scored.jsonl",
+  "sha256": "d791592c273513ded267b6b2cea4f6f1749f064c7c08bbcda99af6f0747ce07c",
+  "rows": 80,
+  "produced_by": "tools/release/analyst_live_e2e.py",
+  "run_commit": "b91982d8b638107deaf80df564aa467aef399371"
+}

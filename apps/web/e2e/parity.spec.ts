@@ -1,15 +1,6 @@
 import AxeBuilder from '@axe-core/playwright'
 import { expect, test } from './network-fixture'
-
-const api = (path: string) => (process.env.PLAYWRIGHT_API_URL || (process.env.PLAYWRIGHT_BASE_URL
-  ? 'https://api.knicksiq.win' : '**/api')) + path
-
-const games = Array.from({ length: 101 }, (_, index) => ({
-  id: index + 1, nba_game_id: `nba-${index + 1}`, season: '2025-26',
-  game_date: '2026-01-01', home_team_id: 'NYK', away_team_id: 'BOS',
-  home_score: 100, away_score: 90, winner_team_id: 'NYK', status: 'final',
-  season_type: 'regular', data_status: 'analysis_ready', margin: 10,
-}))
+import { api, games } from './parity-fixtures'
 
 test.beforeEach(async ({ page }) => {
   // Remote artifact checks use fixtures too: never spend provider budget.
@@ -59,7 +50,14 @@ for (const path of ['games', 'reports']) {
     await expect(page.getByRole('status')).toContainText(path === 'games' ? 'No games match' : 'No reviewed reports')
   })
   test(`${path}: item 101 and URL pagination`, async ({ page }) => {
-    await page.goto(`/${path}?page=3`)
+    const requests: Record<string, string>[] = []
+    page.on('request', (request) => {
+      const url = new URL(request.url())
+      if (url.pathname === `/api/${path}`) {
+        requests.push(Object.fromEntries(url.searchParams))
+      }
+    })
+    await page.goto(`/${path}?page=3&seasonType=regular&dataStatus=analysis_ready`)
     const rows = page.locator(path === 'games' ? '.game-row' : '.report-row')
     await expect(rows).toHaveCount(1)
     await expect(rows.first()).toHaveAttribute('href', new RegExp(`/${path}/101`))
@@ -67,7 +65,40 @@ for (const path of ['games', 'reports']) {
     await expect(rows).toHaveCount(50)
     await expect(page).toHaveURL(/page=1/)
     await page.getByRole('button', { name: '2', exact: true }).click()
+    await expect(rows).toHaveCount(50)
     await expect(rows.first()).toHaveAttribute('href', new RegExp(`/${path}/51`))
+    await expect(page).toHaveURL(/seasonType=regular/)
+    await expect(page).toHaveURL(/dataStatus=analysis_ready/)
+    expect(requests.map(({ limit, offset }) => ({ limit, offset }))).toEqual([
+      { limit: '50', offset: '100' },
+      { limit: '50', offset: path === 'games' ? undefined : '0' },
+      { limit: '50', offset: '50' },
+    ])
+    if (path === 'games') {
+      expect(requests.every((request) => request.season_type === 'regular' && request.data_status === 'analysis_ready')).toBe(true)
+    }
+    await test.info().attach('pagination-requests', {
+      body: JSON.stringify(requests, null, 2), contentType: 'application/json',
+    })
+    await test.info().attach('pagination-page-two', {
+      body: await page.screenshot(), contentType: 'image/png',
+    })
+  })
+  test(`${path}: invalid page URLs request the first page`, async ({ page }) => {
+    const requests: Record<string, string>[] = []
+    for (const value of ['0', '-1', '1.5', 'not-a-number', 'Infinity', '9007199254740991']) {
+      const request = page.waitForRequest((request) => new URL(request.url()).pathname === `/api/${path}`)
+      await page.goto(`/${path}?page=${value}`)
+      const url = new URL((await request).url())
+      requests.push({ page: value, ...Object.fromEntries(url.searchParams) })
+      expect(url.searchParams.get('limit')).toBe('50')
+      expect(url.searchParams.get('offset')).toBe(path === 'games' ? null : '0')
+      await expect(page.locator(path === 'games' ? '.game-row' : '.report-row')).toHaveCount(50)
+      await expect(page.getByRole('navigation', { name: 'Pagination' }).getByRole('button', { name: '1', exact: true })).toHaveAttribute('aria-current', 'page')
+    }
+    await test.info().attach('invalid-page-requests', {
+      body: JSON.stringify(requests, null, 2), contentType: 'application/json',
+    })
   })
   test(`${path}: invalid ID stops loading`, async ({ page }) => {
     await page.goto(`/${path}/invalid`)
@@ -75,245 +106,6 @@ for (const path of ['games', 'reports']) {
     await expect(page.getByText(/Loading (game detail|report)…/)).toHaveCount(0)
   })
 }
-
-test('analyst retains full conversation across client navigation with bounded context', async ({ page }) => {
-  const contexts: number[] = []
-  await page.route(api('/analysis/query'), (route) => {
-    const body = route.request().postDataJSON()
-    contexts.push(body.context.length)
-    const turn = contexts.length
-    const firstTurn = Math.max(1, turn - 5)
-    expect(body.context).toEqual(
-      Array.from({ length: turn - firstTurn }, (_, index) => [
-        { role: 'user', content: `Question ${firstTurn + index}` },
-        { role: 'assistant', content: `Answer ${firstTurn + index}` },
-      ]).flat()
-    )
-    return route.fulfill({ json: {
-      answer: `Answer ${contexts.length}`, warnings: [], citations: [], analytics: null,
-      refused: false, degraded: false, request_id: `q${contexts.length}`, data_version: 'parity.1',
-      conversation_state: { data_version: 'parity.1' },
-    } })
-  })
-  await page.goto('/analyst')
-  for (let i = 1; i <= 8; i++) {
-    const box = page.getByRole('textbox', { name: 'Ask a season question' })
-    await expect(box).toBeEnabled()
-    await box.fill(`Question ${i}`)
-    await box.press('Enter')
-    await expect(page.getByText(`Answer ${i}`, { exact: true })).toBeVisible()
-  }
-  expect(contexts).toEqual([0, 2, 4, 6, 8, 10, 10, 10])
-  const { default: AxeBuilder } = await import('@axe-core/playwright')
-  const populated = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa']).analyze()
-  expect(populated.violations.filter((v) => ['serious', 'critical'].includes(v.impact || ''))).toEqual([])
-  await page.getByRole('navigation', { name: 'Primary navigation' }).getByRole('link', { name: 'Archive', exact: true }).click()
-  await expect(page.getByText('Answer 1', { exact: true })).toBeVisible()
-  await expect(page.getByText('Answer 8', { exact: true })).toBeVisible()
-  await page.reload()
-  await expect(page.getByText('Answer 1', { exact: true })).toBeVisible()
-  await expect(page.getByText('Answer 8', { exact: true })).toBeVisible()
-})
-
-test('follow-up submits immediately and New chat clears both surfaces', async ({ page }) => {
-  const questions: string[] = []
-  await page.route(api('/analysis/query'), (route) => {
-    const body = route.request().postDataJSON()
-    questions.push(body.question)
-    return route.fulfill({ json: {
-      answer: `Answer ${questions.length}`, warnings: [], citations: [],
-      refused: false, degraded: false, data_version: 'parity.1',
-      session_token: 'a'.repeat(64), revision: questions.length,
-      state_committed: true, session_expires_at: '2099-01-01T00:00:00Z',
-      follow_up_questions: questions.length === 1 ? ['How did Boston respond?'] : [],
-    } })
-  })
-  await page.goto('/')
-  await page.getByRole('textbox', { name: 'Ask the archive' }).fill('How did New York score?')
-  await page.getByRole('button', { name: 'Search archive' }).click()
-  await expect(page.getByText('Answer 1', { exact: true })).toBeVisible()
-  await page.getByRole('button', { name: 'How did Boston respond?' }).click()
-  await expect(page.getByText('Answer 2', { exact: true })).toBeVisible()
-  expect(questions).toEqual(['How did New York score?', 'How did Boston respond?'])
-  await page.getByRole('link', { name: /Analyst/ }).click()
-  await expect(page.getByText('Answer 1', { exact: true })).toBeVisible()
-  await page.getByRole('button', { name: 'New chat' }).click()
-  await expect(page.getByRole('textbox', { name: 'Ask a season question' })).toBeFocused()
-  await expect(page.getByText('Answer 1', { exact: true })).toHaveCount(0)
-  await page.reload()
-  await expect(page.getByText('Answer 2', { exact: true })).toHaveCount(0)
-})
-
-test('interrupted request retries the exact turn after reload', async ({ page }) => {
-  let firstTurn = ''
-  let calls = 0
-  await page.route(api('/analysis/query'), (route) => {
-    calls++
-    const body = route.request().postDataJSON()
-    if (calls === 1) {
-      firstTurn = body.turn_id
-      return new Promise(() => {})
-    }
-    expect(body.turn_id).toBe(firstTurn)
-    return route.fulfill({ json: {
-      answer: 'Recovered answer.', warnings: [], citations: [],
-      refused: false, degraded: false, data_version: 'parity.1',
-    } })
-  })
-  await page.goto('/analyst')
-  await page.getByRole('textbox', { name: 'Ask a season question' }).fill('What happened?')
-  await page.getByRole('button', { name: 'Ask archive' }).click()
-  await expect(page.getByText('What happened?', { exact: true })).toBeVisible()
-  await page.reload()
-  await expect(page.getByText('A question was interrupted. Retry it when ready.')).toBeVisible()
-  await page.getByRole('button', { name: 'Retry question' }).click()
-  await expect(page.getByText('Recovered answer.')).toBeVisible()
-  await expect(page.getByText('What happened?', { exact: true })).toHaveCount(1)
-})
-
-test('session expiry keeps the question and retries with fresh context', async ({ page }) => {
-  const requests: { turn_id: string }[] = []
-  await page.route(api('/analysis/query'), (route) => {
-    const body = route.request().postDataJSON()
-    requests.push(body)
-    if (requests.length === 1) return route.fulfill({ json: {
-      answer: 'First answer.', warnings: [], citations: [], degraded: false,
-      refused: false, data_version: 'parity.1', session_token: 'a'.repeat(64),
-      revision: 1, state_committed: true, session_expires_at: '2099-01-01T00:00:00Z',
-    } })
-    if (requests.length === 2) return route.fulfill({ status: 409,
-      json: { detail: { reason: 'session_expired' } } })
-    expect(body.session_token).toBeUndefined()
-    expect(body.expected_revision).toBe(0)
-    expect(body.context).toEqual([])
-    expect(body.turn_id).toBe(requests[1].turn_id)
-    return route.fulfill({ json: {
-      answer: 'Fresh answer.', warnings: [], citations: [], degraded: false,
-      refused: false, data_version: 'parity.1',
-    } })
-  })
-  await page.goto('/analyst')
-  const box = page.getByRole('textbox', { name: 'Ask a season question' })
-  await box.fill('First question')
-  await box.press('Enter')
-  await expect(page.getByText('First answer.')).toBeVisible()
-  await box.fill('Second question')
-  await box.press('Enter')
-  await expect(page.getByText('Session expired. Previous messages remain readable.')).toBeVisible()
-  await expect(box).toHaveValue('Second question')
-  await page.getByRole('button', { name: 'Try again' }).click()
-  await expect(page.getByText('Fresh answer.')).toBeVisible()
-  await expect(page.getByText('Second question', { exact: true })).toHaveCount(1)
-})
-
-test('late response cannot restore a chat after New chat', async ({ page }) => {
-  let finish: (() => void) | undefined
-  await page.route(api('/analysis/query'), async (route) => {
-    await new Promise<void>((resolve) => { finish = resolve })
-    try { await route.fulfill({ json: {
-      answer: 'Late answer.', warnings: [], citations: [], degraded: false,
-      refused: false, data_version: 'parity.1',
-    } }) } catch { /* Request was aborted by New chat. */ }
-  })
-  await page.goto('/analyst')
-  const box = page.getByRole('textbox', { name: 'Ask a season question' })
-  await box.fill('Pending question')
-  await box.press('Enter')
-  await expect(page.getByText('Reading the season tape…')).toBeVisible()
-  await page.getByRole('button', { name: 'New chat' }).click()
-  finish?.()
-  await expect(page.getByText('Pending question', { exact: true })).toHaveCount(0)
-  await expect(page.getByText('Late answer.')).toHaveCount(0)
-  await expect(box).toBeEnabled()
-})
-
-test('storage failure leaves chat usable and explains refresh recovery', async ({ page }) => {
-  await page.addInitScript(() => {
-    Storage.prototype.setItem = () => { throw new Error('Storage disabled') }
-  })
-  await page.route(api('/analysis/query'), (route) => route.fulfill({ json: {
-    answer: 'In-memory answer.', warnings: [], citations: [], degraded: false,
-    refused: false, data_version: 'parity.1',
-  } }))
-  await page.goto('/analyst')
-  await expect(page.getByText('Refresh recovery is unavailable in this browser.')).toBeVisible()
-  const box = page.getByRole('textbox', { name: 'Ask a season question' })
-  await box.fill('What happened?')
-  await box.press('Enter')
-  await expect(page.getByText('In-memory answer.')).toBeVisible()
-})
-
-test('archive version change keeps history and starts fresh context', async ({ page }) => {
-  let version = 'parity.1'
-  await page.route(api('/archive/status*'), (route) => route.fulfill({ json: {
-    season: '2025-26', data_version: version, games: 101,
-  } }))
-  const requests: { context: unknown[]; session_token?: string }[] = []
-  await page.route(api('/analysis/query'), (route) => {
-    const body = route.request().postDataJSON()
-    requests.push(body)
-    return route.fulfill({ json: {
-      answer: `Answer ${requests.length}`, warnings: [], citations: [],
-      refused: false, degraded: false, data_version: version,
-      session_token: 'a'.repeat(64), revision: 1, state_committed: true,
-    } })
-  })
-  await page.goto('/analyst')
-  const box = page.getByRole('textbox', { name: 'Ask a season question' })
-  await box.fill('First question')
-  await box.press('Enter')
-  await expect(page.getByText('Answer 1', { exact: true })).toBeVisible()
-  version = 'parity.2'
-  await page.reload()
-  await expect(page.getByText('Archive updated. Previous messages are history; this is a new conversation.')).toBeVisible()
-  await expect(page.getByText('Answer 1', { exact: true })).toBeVisible()
-  await box.fill('New question')
-  await box.press('Enter')
-  await expect(page.getByText('Answer 2', { exact: true })).toBeVisible()
-  expect(requests[1].context).toEqual([])
-  expect(requests[1].session_token).toBeUndefined()
-})
-
-test('stateless reply remains readable without carrying its session context', async ({ page }) => {
-  const contexts: unknown[][] = []
-  await page.route(api('/analysis/query'), (route) => {
-    const body = route.request().postDataJSON()
-    contexts.push(body.context)
-    return route.fulfill({ json: {
-      answer: `Answer ${contexts.length}`, citations: [], refused: false,
-      degraded: true, data_version: 'parity.1',
-      warnings: contexts.length === 1
-        ? ['Stateless factual fallback: conversation storage unavailable.'] : [],
-    } })
-  })
-  await page.goto('/analyst')
-  const box = page.getByRole('textbox', { name: 'Ask a season question' })
-  await box.fill('First question')
-  await box.press('Enter')
-  await expect(page.getByText('Conversation state was unavailable. Start a new conversation from here.')).toBeVisible()
-  await box.fill('Second question')
-  await box.press('Enter')
-  await expect(page.getByText('Answer 2', { exact: true })).toBeVisible()
-  await expect(page.getByText('Answer 1', { exact: true })).toBeVisible()
-  expect(contexts).toEqual([[], []])
-})
-
-test('readiness has a slow-start message, deadline and explicit retry', async ({ page }) => {
-  await page.clock.install()
-  await page.route(api('/archive/status*'), () => new Promise(() => {}))
-  await page.goto('/analyst')
-  await expect(page.getByText('Preparing archive')).toBeVisible()
-  await page.clock.runFor(5001)
-  await expect(page.getByText('The archive is starting slowly. Please wait…')).toBeVisible()
-  await page.clock.runFor(55001)
-  await expect(page.getByText('Archive unavailable', { exact: true })).toBeVisible()
-  await expect(page.getByRole('textbox')).toBeDisabled()
-  await page.route(api('/archive/status*'), (route) => route.fulfill({ json: {
-    games: 101, data_version: 'parity.1',
-  } }))
-  await page.getByRole('button', { name: 'Try again' }).click()
-  await expect(page.getByRole('textbox')).toBeEnabled()
-})
 
 test('game evidence failure stays distinct from empty and never requests bad stretches', async ({ page }) => {
   const requested: string[] = []
@@ -387,89 +179,5 @@ for (const width of [390, 1440]) {
       expect(results.violations.filter((v) => ['serious', 'critical'].includes(v.impact || ''))).toEqual([])
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true)
     }
-  })
-}
-
-test('corrupted storage leaves chat usable with a recovery notice', async ({ page }) => {
-  await page.addInitScript(() => {
-    sessionStorage.setItem('knicksiq-conversation-v1', '{broken')
-  })
-  await page.route(api('/analysis/query'), (route) => route.fulfill({ json: {
-    answer: 'Recovered conversation.', warnings: [], citations: [], degraded: false,
-    refused: false, data_version: 'parity.1',
-  } }))
-  await page.goto('/analyst')
-  await expect(page.getByText('Refresh recovery is unavailable in this browser.')).toBeVisible()
-  const box = page.getByRole('textbox', { name: 'Ask a season question' })
-  await box.fill('What happened?')
-  await box.press('Enter')
-  await expect(page.getByText('Recovered conversation.')).toBeVisible()
-})
-
-test('sources expand into readable facts while retaining fallback warnings', async ({ page }) => {
-  await page.route(api('/analysis/query'), (route) => route.fulfill({ json: {
-    answer: 'Knicks wins: 2. Knicks losses: 1.', warnings: ['Archive coverage only.'],
-    citations: [{ type: 'verified_claim', title: 'Team record',
-      claim: '{"wins":2,"losses":1}', source_name: 'NBA.com',
-      source_url: 'https://www.nba.com/game/test', metadata: { internal: true } }],
-    degraded: true, refused: false, data_version: 'parity.1', llm_validated: false,
-  } }))
-  await page.goto('/analyst')
-  const box = page.getByRole('textbox', { name: 'Ask a season question' })
-  await box.fill('What was their record?')
-  await box.press('Enter')
-  await expect(page.getByText('Knicks wins: 2. Knicks losses: 1.')).toBeVisible()
-  await expect(page.getByText('Archive coverage only.')).toBeVisible()
-  await expect(page.getByText('Verified statistic', { exact: true })).not.toBeVisible()
-  await page.getByText('Sources (1)', { exact: true }).click()
-  await expect(page.getByText('Verified statistic', { exact: true })).toBeVisible()
-  await expect(page.locator('dt').filter({ hasText: /^wins$/i })).toBeVisible()
-  await expect(page.getByRole('link', { name: /Source: NBA.com/ })).toHaveAttribute('href', 'https://www.nba.com/game/test')
-  await expect(page.getByText('Developer diagnostics')).toHaveCount(0)
-})
-
-for (const surface of ['/', '/analyst']) {
-  test(`a delayed answer focus cannot steal the next question on ${surface}`, async ({ page }) => {
-    await page.addInitScript(() => {
-      const original = window.requestAnimationFrame.bind(window)
-      const cancel = window.cancelAnimationFrame.bind(window)
-      const queued = new Map<number, FrameRequestCallback>()
-      let next = 100000
-      const controls = window as typeof window & { holdAnswerFrames: boolean; flushAnswerFrames: () => void }
-      controls.holdAnswerFrames = false
-      window.requestAnimationFrame = (callback) => {
-        if (!controls.holdAnswerFrames) return original(callback)
-        const id = next++
-        queued.set(id, callback)
-        return id
-      }
-      window.cancelAnimationFrame = (id) => { queued.delete(id); cancel(id) }
-      controls.flushAnswerFrames = () => {
-        controls.holdAnswerFrames = false
-        const callbacks = [...queued.values()]
-        queued.clear()
-        callbacks.forEach((callback) => callback(performance.now()))
-      }
-    })
-    let requests = 0
-    await page.route(api('/analysis/query'), (route) => route.fulfill({ json: {
-      answer: `Answer ${++requests}`, warnings: [], citations: [], degraded: false,
-      refused: false, data_version: 'parity.1',
-    } }))
-    await page.goto(surface)
-    const box = page.getByRole('textbox', { name: surface === '/' ? 'Ask the archive' : 'Ask a season question' })
-    await box.fill('First question')
-    await page.evaluate(() => { (window as unknown as { holdAnswerFrames: boolean }).holdAnswerFrames = true })
-    await box.press('Enter')
-    await expect(page.getByText('Answer 1', { exact: true })).toBeVisible()
-    await box.fill('Next question')
-    await page.evaluate(() => (window as unknown as { flushAnswerFrames: () => void }).flushAnswerFrames())
-    await expect(box).toBeFocused()
-    await page.keyboard.press('Enter')
-    await expect(page.getByText('Answer 2', { exact: true })).toBeVisible()
-    expect(requests).toBe(2)
-    await test.info().attach('next-turn-recovered', {
-      body: await page.screenshot(), contentType: 'image/png',
-    })
   })
 }

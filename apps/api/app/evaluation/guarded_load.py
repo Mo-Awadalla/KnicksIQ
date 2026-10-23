@@ -613,7 +613,8 @@ def original_quality_pass(
 
 
 async def run(args) -> None:
-    from app.api import analysis
+    from app.api import analysis_generation
+    from app.api.analysis_retrieval import _sample_shadow
     from app.services import analyst_loop
 
     root, goal = args.evidence_root.resolve(), args.goal_dir.resolve()
@@ -654,7 +655,7 @@ async def run(args) -> None:
     )
     original_cases = load_contract(root / GOLD, root / APPROVAL)["cases"]
     shadow_cap = 6 * sum(
-        analysis._sample_shadow(evaluation_request_id(FROZEN[GOLD], "shadow", case["id"]), 0.1)
+        _sample_shadow(evaluation_request_id(FROZEN[GOLD], "shadow", case["id"]), 0.1)
         for case in original_cases
     )
     require(
@@ -714,7 +715,7 @@ async def run(args) -> None:
     status, process = "failed", None
     original_adapter, original_analysis_adapter = (
         analyst_loop.get_llm_adapter,
-        analysis.get_llm_adapter,
+        analysis_generation.get_llm_adapter,
     )
     wrapper = None
     initial_tickets = {call["id"] for call in budget.snapshot()["calls"]}
@@ -743,7 +744,7 @@ async def run(args) -> None:
                 session.failed("uncounted_load_adapter")
                 raise RuntimeError("Uncounted load provider path denied")
 
-            analysis.get_llm_adapter = denied
+            analysis_generation.get_llm_adapter = denied
             from app.main import create_app
 
             wrapper = LoadHTTP(create_app(), session, identity["cases"], identity["request_ids"])
@@ -906,7 +907,7 @@ async def run(args) -> None:
         if process is not None and process.returncode is None:
             process.terminate()
             await process.wait()
-            analyst_loop.get_llm_adapter, analysis.get_llm_adapter = (
+            analyst_loop.get_llm_adapter, analysis_generation.get_llm_adapter = (
                 original_adapter,
                 original_analysis_adapter,
             )

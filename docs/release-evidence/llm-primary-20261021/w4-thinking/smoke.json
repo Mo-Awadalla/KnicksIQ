@@ -1,0 +1,4 @@
+[
+  {"id": "exact_statistics-001", "category": "exact_statistics", "why": "smoke"},
+  {"id": "comparisons-001", "category": "comparisons", "why": "smoke:failed:revise:ValidationError"}
+]

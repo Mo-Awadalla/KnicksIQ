@@ -52,10 +52,8 @@ async def ready(db: Annotated[AsyncSession, Depends(get_db)]):
             failures.append("ip_hash_secret")
         if settings.public_web_origin not in settings.cors_origins:
             failures.append("cors_origin")
-        if (
-            settings.ai_provider not in {"mock", "none", "disabled"}
-            and not settings.openrouter_allowed_models
-        ):
+        model_provider = settings.ai_provider.lower() not in {"mock", "none", "disabled"}
+        if model_provider and not settings.openrouter_allowed_models:
             failures.append("model_allowlist")
 
     optional = {
@@ -69,7 +67,7 @@ async def ready(db: Annotated[AsyncSession, Depends(get_db)]):
             "disabled"
             if settings.ai_provider.lower() in {"mock", "none", "disabled"}
             else "configured"
-            if settings.openrouter_api_key or settings.ai_api_key
+            if settings.ai_api_key
             else "degraded"
         ),
     }

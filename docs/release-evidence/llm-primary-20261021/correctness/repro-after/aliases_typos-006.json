@@ -1,0 +1,148 @@
+{
+  "id": "aliases_typos-006",
+  "question": "How did they do v ATL?",
+  "resolved_scope": {
+    "intent": "analyst",
+    "player_ids": [],
+    "team_ids": [
+      "ATL"
+    ],
+    "opponent_id": "ATL",
+    "game_ids": 9,
+    "date_start": null,
+    "date_end": null,
+    "relative_game_count": null,
+    "periods": [],
+    "season_type": null,
+    "home_away": null,
+    "game_result": null,
+    "metric": null,
+    "requires_clarification": false,
+    "clarification_reason": null,
+    "clarification_options": [],
+    "data_version": "2025-26.20260928.1"
+  },
+  "tool": {
+    "status": "ok",
+    "message": "Archive team totals.",
+    "claims": [
+      {
+        "metric_id": "wins",
+        "value": 6,
+        "season_type": null,
+        "sample_size": 9,
+        "statement": "Knicks wins: 6 over 9 archived games against ATL.",
+        "limitations": [
+          "Available archive only; no causal inference."
+        ]
+      },
+      {
+        "metric_id": "losses",
+        "value": 3,
+        "season_type": null,
+        "sample_size": 9,
+        "statement": "Knicks losses: 3 over 9 archived games against ATL.",
+        "limitations": [
+          "Available archive only; no causal inference."
+        ]
+      },
+      {
+        "metric_id": "points_per_game",
+        "value": 115.77777777777777,
+        "season_type": null,
+        "sample_size": 9,
+        "statement": "Knicks points per game: 115.77777777777777 over 9 archived games against ATL.",
+        "limitations": [
+          "Available archive only; no causal inference."
+        ]
+      },
+      {
+        "metric_id": "margin_per_game",
+        "value": 11.0,
+        "season_type": null,
+        "sample_size": 9,
+        "statement": "Knicks margin per game: 11.0 over 9 archived games against ATL.",
+        "limitations": [
+          "Available archive only; no causal inference."
+        ]
+      },
+      {
+        "metric_id": "wins",
+        "value": 2,
+        "season_type": "regular",
+        "sample_size": 3,
+        "statement": "Knicks regular season wins: 2 over 3 archived games against ATL.",
+        "limitations": [
+          "Available archive only; no causal inference."
+        ]
+      },
+      {
+        "metric_id": "losses",
+        "value": 1,
+        "season_type": "regular",
+        "sample_size": 3,
+        "statement": "Knicks regular season losses: 1 over 3 archived games against ATL.",
+        "limitations": [
+          "Available archive only; no causal inference."
+        ]
+      },
+      {
+        "metric_id": "wins",
+        "value": 4,
+        "season_type": "playoffs",
+        "sample_size": 6,
+        "statement": "Knicks playoffs wins: 4 over 6 archived games against ATL.",
+        "limitations": [
+          "Available archive only; no causal inference."
+        ]
+      },
+      {
+        "metric_id": "losses",
+        "value": 2,
+        "season_type": "playoffs",
+        "sample_size": 6,
+        "statement": "Knicks playoffs losses: 2 over 6 archived games against ATL.",
+        "limitations": [
+          "Available archive only; no causal inference."
+        ]
+      }
+    ],
+    "evidence": 9,
+    "scope": {
+      "intent": "get_team_stats",
+      "player_ids": [],
+      "team_ids": [
+        "ATL"
+      ],
+      "opponent_id": "ATL",
+      "game_ids": 9,
+      "date_start": null,
+      "date_end": null,
+      "relative_game_count": null,
+      "periods": [],
+      "season_type": null,
+      "home_away": null,
+      "game_result": null,
+      "metric": null,
+      "requires_clarification": false,
+      "clarification_reason": null,
+      "clarification_options": [],
+      "data_version": "2025-26.20260928.1"
+    }
+  },
+  "fallback": {
+    "answer": "Knicks wins: 6 over 9 archived games against ATL. Knicks losses: 3 over 9 archived games against ATL. Knicks regular season wins: 2 over 3 archived games against ATL. Knicks regular season losses: 1 over 3 archived games against ATL. Knicks playoffs wins: 4 over 6 archived games against ATL. Knicks playoffs losses: 2 over 6 archived games against ATL.",
+    "route": "factual_fallback",
+    "warnings": [
+      "Model or budget unavailable."
+    ],
+    "claims": [
+      "wins",
+      "losses",
+      "wins",
+      "losses",
+      "wins",
+      "losses"
+    ]
+  }
+}

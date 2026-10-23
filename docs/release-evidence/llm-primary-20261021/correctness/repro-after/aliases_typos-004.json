@@ -1,0 +1,77 @@
+{
+  "id": "aliases_typos-004",
+  "question": "Tell me about KAT vs the Raps.",
+  "resolved_scope": {
+    "intent": "analyst",
+    "player_ids": [
+      75
+    ],
+    "team_ids": [
+      "TOR"
+    ],
+    "opponent_id": "TOR",
+    "game_ids": 5,
+    "date_start": null,
+    "date_end": null,
+    "relative_game_count": null,
+    "periods": [],
+    "season_type": null,
+    "home_away": null,
+    "game_result": null,
+    "metric": null,
+    "requires_clarification": false,
+    "clarification_reason": null,
+    "clarification_options": [],
+    "data_version": "2025-26.20260928.1"
+  },
+  "tool": {
+    "status": "ok",
+    "message": "Calculated from all applicable database rows; retrieval is not the denominator.",
+    "claims": [
+      {
+        "metric_id": "points:average",
+        "value": 17.4,
+        "season_type": "regular",
+        "sample_size": 5,
+        "statement": "Karl-Anthony Towns: 17.4 points per appearance across 5 observed appearances in the 2025-26 regular season.",
+        "limitations": [
+          "Only observed appearances in the available archive."
+        ]
+      }
+    ],
+    "evidence": 5,
+    "scope": {
+      "intent": "get_player_stats",
+      "player_ids": [
+        75
+      ],
+      "team_ids": [
+        "TOR"
+      ],
+      "opponent_id": "TOR",
+      "game_ids": 5,
+      "date_start": null,
+      "date_end": null,
+      "relative_game_count": null,
+      "periods": [],
+      "season_type": null,
+      "home_away": null,
+      "game_result": null,
+      "metric": null,
+      "requires_clarification": false,
+      "clarification_reason": null,
+      "clarification_options": [],
+      "data_version": "2025-26.20260928.1"
+    }
+  },
+  "fallback": {
+    "answer": "Karl-Anthony Towns: 17.4 points per appearance across 5 observed appearances in the 2025-26 regular season.",
+    "route": "factual_fallback",
+    "warnings": [
+      "Model or budget unavailable."
+    ],
+    "claims": [
+      "points:average"
+    ]
+  }
+}

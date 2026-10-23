@@ -13,10 +13,12 @@ from __future__ import annotations
 import json
 import math
 import ssl
+import time
 import urllib.error
 import urllib.request
 import uuid
 from abc import ABC, abstractmethod
+from collections.abc import Mapping
 from typing import Any
 
 from app.core.config import get_settings
@@ -53,7 +55,7 @@ class MockLLMAdapter(LLMAdapter):
 
 
 class OpenAICompatibleLLMAdapter(LLMAdapter):
-    """Minimal OpenAI-compatible chat completions adapter."""
+    """OpenAI-compatible adapter; the wire protocol is chosen per model (see llm_wire)."""
 
     def __init__(
         self,
@@ -68,8 +70,12 @@ class OpenAICompatibleLLMAdapter(LLMAdapter):
         provider_route: str | None = None,
         max_prompt_price: float | None = None,
         max_completion_price: float | None = None,
-        model_protocols: dict[str, str] | None = None,
+        provider_order: list[str] | None = None,
+        provider_sort: str | None = "latency",
+        provider_allow_fallbacks: bool = True,
+        model_protocols: Mapping[str, str] | None = None,
         model_prices: dict[str, list[float]] | None = None,
+        user_agent: str = "knicksiq/1.0",
     ) -> None:
         self.base_url = base_url.rstrip("/")
         self.api_key = api_key
@@ -81,9 +87,16 @@ class OpenAICompatibleLLMAdapter(LLMAdapter):
         self.provider_route = provider_route
         self.max_prompt_price = max_prompt_price
         self.max_completion_price = max_completion_price
-        self.model_protocols = model_protocols or {}
-        self.model_prices = model_prices or {}
-        self.session_id = uuid.uuid4().hex
+        self.provider_order = list(provider_order or [])
+        self.provider_sort = provider_sort
+        self.provider_allow_fallbacks = provider_allow_fallbacks
+        self.model_protocols = dict(model_protocols or {})
+        self.model_prices = dict(model_prices or {})
+        self.user_agent = user_agent
+        # A random id for host-side routing and caching; never a user token. Go rejects any
+        # request without one, so every adapter starts with its own; the analyst loop
+        # replaces it with one id per turn.
+        self.session_id: str | None = uuid.uuid4().hex
         policy = (provider_route, max_prompt_price, max_completion_price)
         if any(value is not None for value in policy):
             if not isinstance(provider_route, str) or not provider_route.strip():
@@ -104,101 +117,80 @@ class OpenAICompatibleLLMAdapter(LLMAdapter):
 
         return await asyncio.to_thread(self._generate_sync, system, user)
 
-    def _request_body(self, system: str, user: str) -> dict[str, Any]:
-        if self.model_protocols.get(self.model) == "responses":
-            return PROTOCOLS["responses"][0](
-                WireRequest(
-                    model=self.model,
-                    system=system,
-                    user=user,
-                    max_tokens=self.max_tokens,
-                    reasoning_effort=self.reasoning_effort,
-                    response_schema=self.response_schema,
-                    json_object=self.response_format_json,
-                    openrouter=False,
-                    provider={},
-                )
-            )[1]
-        payload_body: dict[str, Any] = {
-            "model": self.model,
-            "messages": [
-                {"role": "system", "content": system},
-                {"role": "user", "content": user},
-            ],
-            "temperature": 0,
-            "max_tokens": self.max_tokens,
-        }
-        if "openrouter.ai" in self.base_url:
-            payload_body["provider"] = {"allow_fallbacks": True, "sort": "latency"}
-            if self.provider_route is not None:
-                # Caps use OpenRouter's USD-per-million-token units. An exact
-                # route excludes fallback providers and per-request surcharges.
-                payload_body["provider"] = {
-                    "only": [self.provider_route],
-                    "order": [self.provider_route],
-                    "allow_fallbacks": False,
-                    "require_parameters": True,
-                    "max_price": {
-                        "prompt": self.max_prompt_price,
-                        "completion": self.max_completion_price,
-                        "request": 0,
-                    },
-                }
-                if self.provider_route.endswith("/fp8"):
-                    payload_body["provider"]["quantizations"] = ["fp8"]
-            if self.reasoning_effort == "none":
-                # Optional reasoning models need not accept the "none" effort.
-                payload_body["reasoning"] = {"enabled": False}
-            elif self.reasoning_effort is not None:
-                payload_body["reasoning"] = {"effort": self.reasoning_effort}
-        elif self.reasoning_effort is not None and (
-            self.model_protocols or "opencode.ai" in self.base_url
-        ):
-            payload_body["reasoning_effort"] = self.reasoning_effort
-        if self.response_schema is not None:
-            payload_body["response_format"] = {
-                "type": "json_schema",
-                "json_schema": {"name": "analyst", "strict": True, "schema": self.response_schema},
+    def _provider(self) -> dict[str, Any]:
+        provider: dict[str, Any] = {"allow_fallbacks": self.provider_allow_fallbacks}
+        if self.provider_sort and self.provider_sort != "none":
+            provider["sort"] = self.provider_sort
+        if self.provider_order:
+            provider["order"] = self.provider_order
+        if self.provider_route is not None:
+            # Caps use OpenRouter's USD-per-million-token units. An exact route excludes
+            # fallback providers and per-request surcharges.
+            provider = {
+                "only": [self.provider_route],
+                "order": [self.provider_route],
+                "allow_fallbacks": False,
+                "require_parameters": True,
+                "max_price": {
+                    "prompt": self.max_prompt_price,
+                    "completion": self.max_completion_price,
+                    "request": 0,
+                },
             }
-            if "openrouter.ai" in self.base_url:
-                payload_body["provider"]["require_parameters"] = True
-        elif self.response_format_json:
-            payload_body["response_format"] = {"type": "json_object"}
-            if "openrouter.ai" in self.base_url:
-                payload_body["provider"]["require_parameters"] = True
-        return payload_body
+            if self.provider_route.endswith("/fp8"):
+                provider["quantizations"] = ["fp8"]
+        return provider
 
     def _generate_sync(self, system: str, user: str) -> str:
         self.last_metadata = {}
         protocol = self.model_protocols.get(self.model, "chat")
         if protocol not in PROTOCOLS:
             raise ValueError("Unsupported model wire protocol")
-        payload = json.dumps(self._request_body(system, user)).encode("utf-8")
-        endpoint = "/responses" if protocol == "responses" else "/chat/completions"
+        build, parse = PROTOCOLS[protocol]
+        openrouter = "openrouter.ai" in self.base_url
+        # OpenRouter and the Go host accept a reasoning setting; a plain compatible host
+        # must receive neither field, matching the ordinary router's transport contract.
+        reasoning_effort = self.reasoning_effort
+        if not openrouter and not (self.model_protocols or "opencode.ai" in self.base_url):
+            reasoning_effort = None
+        path, payload_body = build(
+            WireRequest(
+                model=self.model,
+                system=system,
+                user=user,
+                max_tokens=self.max_tokens,
+                reasoning_effort=reasoning_effort,
+                response_schema=self.response_schema,
+                json_object=self.response_format_json,
+                openrouter=openrouter,
+                provider=self._provider(),
+            )
+        )
+        payload = json.dumps(payload_body).encode("utf-8")
         headers = {
             "Authorization": f"Bearer {self.api_key}",
             "Content-Type": "application/json",
+            "User-Agent": self.user_agent,
         }
-        if self.model_protocols or "opencode.ai" in self.base_url:
-            headers.update(
-                {
-                    "User-Agent": "knicksiq/1.0",
-                    "x-opencode-session": self.session_id,
-                }
-            )
+        if self.session_id:
+            headers["x-opencode-session"] = self.session_id
         req = urllib.request.Request(
-            f"{self.base_url}{endpoint}",
-            data=payload,
-            headers=headers,
-            method="POST",
+            f"{self.base_url}{path}", data=payload, headers=headers, method="POST"
         )
+        sent_at = time.monotonic()
+        first_byte_at: float | None = None
         try:
             with urllib.request.urlopen(
                 req,
                 timeout=self.timeout_seconds,
                 context=_ssl_context(),
             ) as response:
-                body = json.loads(response.read().decode("utf-8"))
+                # urlopen returns once response headers arrive, which is the earliest
+                # observable byte without streaming. A non-streaming provider may send
+                # them only after generation, so treat this as an upper-bound TTFB.
+                first_byte_at = time.monotonic()
+                raw = response.read()
+                body = json.loads(raw.decode("utf-8"))
         except urllib.error.HTTPError as exc:
             detail = exc.read().decode("utf-8", errors="replace").strip()
             if not detail:
@@ -213,24 +205,56 @@ class OpenAICompatibleLLMAdapter(LLMAdapter):
         if body.get("error") is not None:
             detail = json.dumps(body["error"], ensure_ascii=False)
             raise RuntimeError(f"AI provider returned an error: {detail[:1000]}")
-        reply = PROTOCOLS[protocol][1](body)
+        reply = parse(body)
+        content = reply.content
         usage = dict(reply.usage)
         if usage.get("cost") is None:
             estimate = priced(usage, self.model, self.model_prices)
             if estimate is not None:
                 usage["cost"] = estimate
                 usage["cost_source"] = "configured_token_rates"
-        self.last_metadata = {
-            **{key: body.get(key) for key in ("id", "model", "provider")},
-            "protocol": protocol,
-            "finish_reason": reply.finish_reason,
-            "usage": usage,
-        }
+        self.last_metadata = {key: body.get(key) for key in ("id", "model", "provider")}
+        self.last_metadata.update(
+            {
+                "protocol": protocol,
+                "usage": usage,
+                "finish_reason": reply.finish_reason,
+                "content_kind": (
+                    "string"
+                    if isinstance(content, str) and content
+                    else "empty_string"
+                    if content == ""
+                    else "null"
+                    if content is None
+                    else type(content).__name__
+                ),
+                "reasoning_chars": reply.reasoning_chars,
+                "message_keys": reply.message_keys,
+                **reply.extra,
+                "request_bytes": len(payload),
+                "response_bytes": len(raw),
+                "http_ttfb_ms": round((first_byte_at - sent_at) * 1000, 1)
+                if first_byte_at is not None
+                else None,
+                "http_elapsed_ms": round((time.monotonic() - sent_at) * 1000, 1),
+                "max_tokens": self.max_tokens,
+            }
+        )
         if reply.finish_reason in {"length", "incomplete", "failed", "cancelled"}:
             raise RuntimeError("AI provider returned an incomplete response")
-        if not isinstance(reply.content, str) or not reply.content.strip():
-            raise RuntimeError("AI provider response omitted message content")
-        return reply.content
+        if not isinstance(content, str) or not content.strip():
+            # Keep the cause in the error: an empty completion is usually a token ceiling or
+            # a provider fault, and the two need different fixes.
+            raise RuntimeError(
+                "AI provider response omitted message content "
+                f"(finish_reason={reply.finish_reason}, protocol={protocol}, "
+                f"provider={self.last_metadata.get('provider')}, "
+                f"model={self.last_metadata.get('model')}, max_tokens={self.max_tokens}, "
+                f"usage={json.dumps(usage, separators=(',', ':'))[:500]}, "
+                f"content_kind={self.last_metadata['content_kind']}, "
+                f"message_keys={reply.message_keys})"
+            )
+        return content
 
 
 def get_llm_adapter(*, response_format_json: bool = True) -> LLMAdapter:
@@ -249,11 +273,15 @@ def get_llm_adapter(*, response_format_json: bool = True) -> LLMAdapter:
         response_format_json=response_format_json,
         max_tokens=getattr(settings, "rag_generation_max_output_tokens", 500),
         reasoning_effort=settings.ai_reasoning_effort,
-        provider_route=settings.openrouter_provider_route,
-        max_prompt_price=settings.openrouter_max_prompt_price,
-        max_completion_price=settings.openrouter_max_completion_price,
+        provider_route=getattr(settings, "openrouter_provider_route", None),
+        max_prompt_price=getattr(settings, "openrouter_max_prompt_price", None),
+        max_completion_price=getattr(settings, "openrouter_max_completion_price", None),
+        provider_order=getattr(settings, "openrouter_provider_order", []),
+        provider_sort=getattr(settings, "openrouter_provider_sort", "latency"),
+        provider_allow_fallbacks=getattr(settings, "openrouter_provider_allow_fallbacks", True),
         model_protocols=getattr(settings, "ai_model_protocols", {}),
         model_prices=getattr(settings, "ai_model_prices", {}),
+        user_agent=getattr(settings, "ai_user_agent", "knicksiq/1.0"),
     )
 
 

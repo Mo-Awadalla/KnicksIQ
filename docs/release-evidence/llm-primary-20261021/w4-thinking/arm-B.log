@@ -1,0 +1,197 @@
+arm=B questions=30 trials=2 ai_reasoning_effort=low analyst_reasoning_effort=low answer_max_tokens=4000 review_max_tokens=6000 redis_db=9
+{"environment": "development", "test_mode": false, "event": "knicksiq.api.starting", "level": "info", "timestamp": "2026-10-22T15:42:59.817351Z"}
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T15:43:07.400746Z"}
+trial=0 1/30 exact_statistics-001 validated 7538ms calls=2 $0.002248 ok=True
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T15:43:14.661660Z"}
+trial=0 2/30 exact_statistics-002 validated 7166ms calls=2 $0.001819 ok=True
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T15:43:30.159197Z"}
+trial=0 3/30 exact_statistics-003 validated 15462ms calls=2 $0.002388 ok=True
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T15:43:42.204248Z"}
+trial=0 4/30 date_range_last_n-001 validated 12007ms calls=2 $0.002145 ok=True
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T15:43:49.204174Z"}
+trial=0 5/30 date_range_last_n-002 validated 6959ms calls=2 $0.002207 ok=True
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T15:43:53.841009Z"}
+trial=0 6/30 date_range_last_n-003 failed:revise:ValidationError 4581ms calls=2 $0.002940 ok=True
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T15:44:02.670376Z"}
+trial=0 7/30 comparisons-001 fallback:review_rejected 8784ms calls=2 $0.003613 ok=True
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T15:44:13.530241Z"}
+trial=0 8/30 comparisons-002 failed:revise:ValidationError 10827ms calls=3 $0.004170 ok=True
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T15:44:25.571144Z"}
+trial=0 9/30 comparisons-003 validated 12008ms calls=2 $0.002291 ok=True
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T15:44:35.649087Z"}
+trial=0 10/30 single_game_narrative-001 validated 10037ms calls=2 $0.002420 ok=True
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T15:44:56.352660Z"}
+trial=0 11/30 single_game_narrative-002 validated 20600ms calls=3 $0.002520 ok=True
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T15:45:07.520166Z"}
+trial=0 12/30 single_game_narrative-003 fallback:review_rejected 11106ms calls=1 $0.002900 ok=True
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T15:45:20.178361Z"}
+trial=0 13/30 turning_points-001 fallback:review_rejected 12600ms calls=2 $0.002121 ok=True
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T15:45:36.603659Z"}
+trial=0 14/30 turning_points-002 validated_declined 16357ms calls=5 $0.004041 ok=True
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T15:45:52.556123Z"}
+trial=0 15/30 turning_points-003 validated 15896ms calls=2 $0.002527 ok=True
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T15:46:03.202039Z"}
+trial=0 16/30 aliases_typos-001 validated 10567ms calls=3 $0.002307 ok=True
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T15:46:20.778637Z"}
+trial=0 17/30 aliases_typos-002 validated 17503ms calls=3 $0.004071 ok=True
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T15:46:36.841572Z"}
+trial=0 18/30 aliases_typos-003 validated 16002ms calls=3 $0.005097 ok=True
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T15:46:42.882358Z"}
+trial=0 19/30 unsupported-001 failed:revise:ValidationError 5986ms calls=2 $0.001339 ok=True
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T15:47:00.452032Z"}
+trial=0 20/30 unsupported-002 fallback:review_rejected 17510ms calls=3 $0.002097 ok=True
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T15:47:09.106735Z"}
+trial=0 21/30 unsupported-003 failed:revise:ValidationError 8554ms calls=3 $0.002032 ok=True
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T15:47:18.880480Z"}
+trial=0 22/30 date_range_last_n-005 validated 9721ms calls=2 $0.001510 ok=True
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T15:47:42.491539Z"}
+trial=0 23/30 date_range_last_n-008 fallback:review_rejected 23565ms calls=3 $0.005566 ok=True
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T15:47:49.770129Z"}
+trial=0 24/30 comparisons-006 failed:orchestrate:RuntimeError 7226ms calls=1 $0.001324 ok=False
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T15:48:00.721068Z"}
+trial=0 25/30 comparisons-007 failed:revise:ValidationError 10859ms calls=3 $0.004375 ok=True
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T15:48:15.914435Z"}
+trial=0 26/30 comparisons-010 fallback:review_rejected 15160ms calls=3 $0.004778 ok=True
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T15:48:35.519767Z"}
+trial=0 27/30 single_game_narrative-006 fallback:review_rejected 19572ms calls=4 $0.005180 ok=True
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T15:48:45.252744Z"}
+trial=0 28/30 single_game_narrative-009 failed:revise:ValidationError 9683ms calls=2 $0.002140 ok=True
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T15:48:50.708968Z"}
+trial=0 29/30 unsupported-004 failed:revise:ValidationError 5400ms calls=2 $0.001375 ok=True
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T15:49:06.797453Z"}
+trial=0 30/30 unsupported-006 validated_declined 16037ms calls=3 $0.002123 ok=True
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T15:49:17.413119Z"}
+trial=1 1/30 exact_statistics-001 validated 10552ms calls=2 $0.002210 ok=True
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T15:49:37.465531Z"}
+trial=1 2/30 exact_statistics-002 validated 20022ms calls=2 $0.001762 ok=True
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T15:49:47.843677Z"}
+trial=1 3/30 exact_statistics-003 validated 10333ms calls=2 $0.002029 ok=True
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T15:49:56.947455Z"}
+trial=1 4/30 date_range_last_n-001 validated 9061ms calls=2 $0.002076 ok=True
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T15:50:04.910557Z"}
+trial=1 5/30 date_range_last_n-002 validated 7924ms calls=2 $0.002139 ok=True
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T15:50:14.238155Z"}
+trial=1 6/30 date_range_last_n-003 validated 9283ms calls=2 $0.002057 ok=True
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T15:50:23.350651Z"}
+trial=1 7/30 comparisons-001 fallback:review_rejected 9069ms calls=2 $0.003683 ok=True
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T15:50:50.984658Z"}
+trial=1 8/30 comparisons-002 failed:review:TimeoutError 27597ms calls=4 $0.016089 ok=True
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T15:51:10.983281Z"}
+trial=1 9/30 comparisons-003 validated 19967ms calls=3 $0.004218 ok=True
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T15:51:25.662176Z"}
+trial=1 10/30 single_game_narrative-001 validated 14640ms calls=2 $0.002697 ok=True
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T15:51:37.338613Z"}
+trial=1 11/30 single_game_narrative-002 validated 11574ms calls=3 $0.002481 ok=True
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T15:52:04.979168Z"}
+trial=1 12/30 single_game_narrative-003 failed:review:TimeoutError 27585ms calls=2 $0.013500 ok=True
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T15:52:14.610906Z"}
+trial=1 13/30 turning_points-001 validated 9564ms calls=2 $0.001838 ok=True
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T15:52:33.420291Z"}
+trial=1 14/30 turning_points-002 validated 18698ms calls=3 $0.002609 ok=True
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T15:52:49.951254Z"}
+trial=1 15/30 turning_points-003 fallback:review_rejected 16464ms calls=2 $0.002910 ok=True
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T15:53:04.905409Z"}
+trial=1 16/30 aliases_typos-001 validated 14873ms calls=3 $0.002666 ok=True
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T15:53:18.651660Z"}
+trial=1 17/30 aliases_typos-002 validated 13666ms calls=3 $0.004294 ok=True
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T15:53:44.519541Z"}
+trial=1 18/30 aliases_typos-003 validated 25795ms calls=4 $0.005726 ok=True
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T15:53:54.744765Z"}
+trial=1 19/30 unsupported-001 fallback:review_rejected 10180ms calls=3 $0.001731 ok=True
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T15:54:00.561186Z"}
+trial=1 20/30 unsupported-002 failed:revise:ValidationError 5765ms calls=2 $0.001342 ok=True
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T15:54:12.074756Z"}
+trial=1 21/30 unsupported-003 validated_declined 11435ms calls=3 $0.001727 ok=True
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T15:54:19.077721Z"}
+trial=1 22/30 date_range_last_n-005 validated 6940ms calls=2 $0.001464 ok=True
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T15:54:34.417873Z"}
+trial=1 23/30 date_range_last_n-008 fallback:review_rejected 15288ms calls=3 $0.005101 ok=True
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T15:54:51.283130Z"}
+trial=1 24/30 comparisons-006 fallback:review_rejected 16816ms calls=3 $0.003770 ok=True
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T15:54:57.541679Z"}
+trial=1 25/30 comparisons-007 failed:orchestrate:RuntimeError 6225ms calls=1 $0.001233 ok=False
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T15:55:13.907341Z"}
+trial=1 26/30 comparisons-010 validated_declined 16335ms calls=3 $0.003449 ok=True
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T15:55:30.576752Z"}
+trial=1 27/30 single_game_narrative-006 fallback:review_rejected 16628ms calls=4 $0.005398 ok=True
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T15:55:47.021351Z"}
+trial=1 28/30 single_game_narrative-009 fallback:review_rejected 16384ms calls=3 $0.002643 ok=True
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T15:56:03.604231Z"}
+trial=1 29/30 unsupported-004 fallback:review_rejected 16519ms calls=3 $0.002086 ok=True
+{"feature": "analyst", "outcome": "success", "latency_bucket": "gte_4s", "event": "aggregate.request", "level": "info", "timestamp": "2026-10-22T15:56:15.955649Z"}
+trial=1 30/30 unsupported-006 validated_declined 12300ms calls=3 $0.001923 ok=True
+{"event": "knicksiq.api.stopping", "level": "info", "timestamp": "2026-10-22T15:56:16.009615Z"}
+{
+  "arm": "B",
+  "generated_at": "2026-10-22T15:56:16.025856+00:00",
+  "calls": 152,
+  "calls_with_extra": 152,
+  "by_stage": {
+    "orchestrate": {
+      "calls": 79,
+      "reasoning_tokens": 14640,
+      "calls_with_reasoning": 79,
+      "prompt_tokens": 239057,
+      "completion_tokens": 35480,
+      "finish_reasons": {
+        "stop": 77,
+        "length": 2
+      },
+      "content_kinds": {
+        "string": 77,
+        "empty_string": 2
+      },
+      "max_tokens_seen": [
+        600,
+        4000
+      ],
+      "errors": 2
+    },
+    "review": {
+      "calls": 47,
+      "reasoning_tokens": 6556,
+      "calls_with_reasoning": 33,
+      "prompt_tokens": 109061,
+      "completion_tokens": 26430,
+      "finish_reasons": {
+        "stop": 45,
+        "None": 2
+      },
+      "content_kinds": {
+        "string": 45,
+        "None": 2
+      },
+      "max_tokens_seen": [
+        6000
+      ],
+      "errors": 0
+    },
+    "revise": {
+      "calls": 26,
+      "reasoning_tokens": 4441,
+      "calls_with_reasoning": 26,
+      "prompt_tokens": 68242,
+      "completion_tokens": 11357,
+      "finish_reasons": {
+        "stop": 26
+      },
+      "content_kinds": {
+        "string": 26
+      },
+      "max_tokens_seen": [
+        4000
+      ],
+      "errors": 0
+    }
+  },
+  "outcomes": {
+    "validated": 28,
+    "failed:revise:ValidationError": 8,
+    "fallback:review_rejected": 15,
+    "validated_declined": 5,
+    "failed:orchestrate:RuntimeError": 2,
+    "failed:review:TimeoutError": 2
+  },
+  "truncated_calls": 2,
+  "empty_output_calls": 2
+}

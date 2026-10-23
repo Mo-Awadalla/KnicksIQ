@@ -1,0 +1,1 @@
+NO-SESSION-CALL FAILED AI provider request failed (HTTP 400): {"type":"error","error":{"type":"MissingSessionID","message":"Request is missing x-opencode-session a

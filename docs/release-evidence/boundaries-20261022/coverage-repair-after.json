@@ -1,0 +1,99 @@
+{
+  "release": "2025-26.20260928.1",
+  "live": true,
+  "provider": "opencode-go",
+  "writer": "deepseek-v4.1-flash",
+  "reviewer": "gpt-6-luna",
+  "records": [
+    {
+      "question": "How many points did Brunson average in December?",
+      "resolved_metric": "points",
+      "resolved_aggregation": "average",
+      "metric_ids": [
+        "points:average"
+      ],
+      "values": [
+        30.615384615384617
+      ],
+      "game_counts": [
+        13
+      ],
+      "supporting_receipts": [
+        1
+      ],
+      "review_claims": 1,
+      "review_receipts": 1,
+      "review_payload_bytes": 5000,
+      "review_evidence_bytes": 1138,
+      "review_within_budget": true,
+      "conflicting_request_preserved_intent": true,
+      "repair": {
+        "answer": "In December (Dec 2\u201331, 2025-26 regular season), Jalen Brunson averaged 30.6 points per appearance across 13 observed appearances.",
+        "validated": true,
+        "reason": "",
+        "declared_claim_ids": [
+          "claim:82c1fef799bf4a87fb86f35f3db9d2bac307ce8d07e2c3f2da40a8da5755c540"
+        ],
+        "delivered_citations": 2
+      },
+      "model_calls": 2,
+      "trace": [
+        {
+          "stage": "revise",
+          "tool": "llm_orchestrate",
+          "schema": "ProposedAnswer",
+          "latency_ms": 1870,
+          "model": "deepseek-v4.1-flash",
+          "served_model": "deepseek-v4.1-flash",
+          "protocol": "chat",
+          "provider": null,
+          "prompt_tokens": 3152,
+          "completion_tokens": 194,
+          "total_tokens": 3346,
+          "reasoning_tokens": null,
+          "finish_reason": "stop",
+          "content_kind": "string",
+          "provider_format_echo": false,
+          "input_bytes": 10280,
+          "response_bytes": 537,
+          "max_tokens": 1600,
+          "http_ttfb_ms": 1867.3,
+          "http_elapsed_ms": 1868.2,
+          "contract_version": "analyst-evidence-v1",
+          "prompt_version": "analyst-balanced-v5",
+          "validator_version": "whole-answer-v3"
+        },
+        {
+          "stage": "review",
+          "tool": "llm_review",
+          "schema": "AnswerReview",
+          "latency_ms": 5529,
+          "model": "gpt-6-luna",
+          "served_model": "gpt-6-luna",
+          "protocol": "responses",
+          "provider": null,
+          "prompt_tokens": 1849,
+          "completion_tokens": 284,
+          "total_tokens": 2133,
+          "reasoning_tokens": 0,
+          "finish_reason": "stop",
+          "content_kind": "string",
+          "provider_format_echo": false,
+          "input_bytes": 7309,
+          "response_bytes": 977,
+          "max_tokens": 3000,
+          "http_ttfb_ms": 5525.9,
+          "http_elapsed_ms": 5527.4,
+          "contract_version": "analyst-evidence-v1",
+          "prompt_version": "analyst-balanced-v5",
+          "validator_version": "whole-answer-v3",
+          "review_spans": 1,
+          "review_empty_id_spans": 0,
+          "review_attachable_spans": 0,
+          "review_accepted": true
+        }
+      ]
+    }
+  ],
+  "passed": true
+}

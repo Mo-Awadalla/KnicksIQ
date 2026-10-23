@@ -1,0 +1,388 @@
+{
+ "responses": "head.responses.jsonl",
+ "checks": [
+  {
+   "id": "turning_points-001",
+   "oracle": {
+    "points": 17,
+    "date": "2025-10-24",
+    "opponent": "BOS"
+   },
+   "answers": [
+    {
+     "trial": 1,
+     "required": [
+      "17-0",
+      "2025-10-24",
+      "Q2"
+     ],
+     "missing": [
+      "17-0",
+      "2025-10-24",
+      "Q2"
+     ],
+     "pass": false
+    },
+    {
+     "trial": 1,
+     "required": [
+      "17-0",
+      "2025-10-24",
+      "Q2"
+     ],
+     "missing": [],
+     "pass": true
+    }
+   ]
+  },
+  {
+   "id": "turning_points-002",
+   "oracle": {
+    "dates": [
+     "2025-11-30",
+     "2025-12-09",
+     "2026-01-28",
+     "2026-03-03",
+     "2026-04-10"
+    ],
+    "offered": [
+     "2025-11-30",
+     "2025-12-09",
+     "2026-01-28",
+     "2026-03-03",
+     "2026-04-10"
+    ]
+   },
+   "answers": [
+    {
+     "trial": 1,
+     "required": [
+      "2025-11-30",
+      "2025-12-09",
+      "2026-01-28",
+      "2026-03-03",
+      "2026-04-10"
+     ],
+     "missing": [],
+     "pass": true
+    }
+   ]
+  },
+  {
+   "id": "turning_points-004",
+   "oracle": {
+    "dates": [
+     "2025-10-31",
+     "2025-11-02",
+     "2026-02-22",
+     "2026-04-03"
+    ],
+    "offered": [
+     "2025-10-31",
+     "2025-11-02",
+     "2026-02-22",
+     "2026-04-03"
+    ]
+   },
+   "answers": [
+    {
+     "trial": 1,
+     "required": [
+      "2025-10-31",
+      "2025-11-02",
+      "2026-02-22",
+      "2026-04-03"
+     ],
+     "missing": [],
+     "pass": true
+    }
+   ]
+  },
+  {
+   "id": "turning_points-006",
+   "oracle": {
+    "dates": [
+     "2025-10-24",
+     "2025-12-02",
+     "2026-02-08",
+     "2026-04-09"
+    ],
+    "offered": [
+     "2025-10-24",
+     "2025-12-02",
+     "2026-02-08",
+     "2026-04-09"
+    ]
+   },
+   "answers": [
+    {
+     "trial": 1,
+     "required": [
+      "2025-10-24",
+      "2025-12-02",
+      "2026-02-08",
+      "2026-04-09"
+     ],
+     "missing": [],
+     "pass": true
+    }
+   ]
+  },
+  {
+   "id": "turning_points-010",
+   "oracle": {
+    "dates": [
+     "2025-12-27",
+     "2026-01-02",
+     "2026-04-06",
+     "2026-04-18",
+     "2026-04-20",
+     "2026-04-23",
+     "2026-04-25",
+     "2026-04-28",
+     "2026-04-30"
+    ],
+    "offered": [
+     "2025-12-27",
+     "2026-01-02",
+     "2026-04-06",
+     "2026-04-18",
+     "2026-04-20",
+     "2026-04-23",
+     "2026-04-25",
+     "2026-04-28"
+    ]
+   },
+   "answers": [
+    {
+     "trial": 1,
+     "required": [
+      "2025-12-27",
+      "2026-01-02",
+      "2026-04-06",
+      "2026-04-18",
+      "2026-04-20",
+      "2026-04-23",
+      "2026-04-25",
+      "2026-04-28"
+     ],
+     "missing": [],
+     "pass": true
+    }
+   ]
+  },
+  {
+   "id": "turning_points-003",
+   "oracle": {
+    "lead_lost": 14,
+    "lead_lost_date": "2026-04-20",
+    "lead_lost_peak": {
+     "sequence": 283,
+     "period": 3,
+     "clock": "06:56",
+     "team_id": "NYK",
+     "points": 1,
+     "nyk_before": 77,
+     "opp_before": 64,
+     "nyk_after": 78,
+     "opp_after": 64,
+     "margin_after": 14,
+     "margin_before": 13
+    },
+    "largest_deficit": 26,
+    "largest_deficit_date": "2026-01-02"
+   },
+   "answers": [
+    {
+     "trial": 1,
+     "required": [
+      "14",
+      "2026-04-20"
+     ],
+     "missing": [],
+     "pass": true
+    }
+   ]
+  },
+  {
+   "id": "turning_points-005",
+   "oracle": {
+    "deficit": 21,
+    "date": "2026-03-15",
+    "opponent": "GSW",
+    "low": {
+     "sequence": 138,
+     "period": 2,
+     "clock": "09:30",
+     "team_id": "GSW",
+     "points": 2,
+     "nyk_before": 25,
+     "opp_before": 44,
+     "nyk_after": 25,
+     "opp_after": 46,
+     "margin_after": -21,
+     "margin_before": -19
+    },
+    "first_tie_or_lead": {
+     "sequence": 288,
+     "period": 3,
+     "clock": "03:58",
+     "team_id": "NYK",
+     "points": 2,
+     "nyk_before": 71,
+     "opp_before": 73,
+     "nyk_after": 73,
+     "opp_after": 73,
+     "margin_after": 0,
+     "margin_before": -2
+    },
+    "nyk_points": 48,
+    "opp_points": 27,
+    "run": 8,
+    "final": "110-107"
+   },
+   "answers": [
+    {
+     "trial": 1,
+     "required": [
+      "21",
+      "2026-03-15",
+      "48-27"
+     ],
+     "missing": [],
+     "pass": true
+    },
+    {
+     "trial": 2,
+     "required": [
+      "21",
+      "2026-03-15",
+      "48-27"
+     ],
+     "missing": [],
+     "pass": true
+    }
+   ]
+  },
+  {
+   "id": "turning_points-007",
+   "oracle": {
+    "overall": {
+     "points": 17,
+     "date": "2026-03-20",
+     "opponent": "BKN"
+    },
+    "in_loss": {
+     "points": 15,
+     "date": "2026-01-17",
+     "opponent": "PHX"
+    }
+   },
+   "answers": [
+    {
+     "trial": 1,
+     "required": [
+      "17-0",
+      "2026-03-20",
+      "15-0",
+      "2026-01-17"
+     ],
+     "missing": [],
+     "pass": true
+    },
+    {
+     "trial": 1,
+     "required": [
+      "17-0",
+      "2026-03-20",
+      "15-0",
+      "2026-01-17"
+     ],
+     "missing": [],
+     "pass": true
+    }
+   ]
+  },
+  {
+   "id": "turning_points-008",
+   "oracle": {
+    "deficit": 21,
+    "games": [
+     "2026-03-26",
+     "2026-04-12"
+    ],
+    "low_points": [
+     {
+      "date": "2026-03-26",
+      "low": {
+       "sequence": 320,
+       "period": 4,
+       "clock": "08:32",
+       "team_id": "CHA",
+       "points": 2,
+       "nyk_before": 83,
+       "opp_before": 102,
+       "nyk_after": 83,
+       "opp_after": 104,
+       "margin_after": -21,
+       "margin_before": -19
+      }
+     },
+     {
+      "date": "2026-04-12",
+      "low": {
+       "sequence": 407,
+       "period": 4,
+       "clock": "04:27",
+       "team_id": "CHA",
+       "points": 3,
+       "nyk_before": 84,
+       "opp_before": 102,
+       "nyk_after": 84,
+       "opp_after": 105,
+       "margin_after": -21,
+       "margin_before": -18
+      }
+     }
+    ]
+   },
+   "answers": [
+    {
+     "trial": 1,
+     "required": [
+      "21",
+      "2026-03-26",
+      "2026-04-12"
+     ],
+     "missing": [],
+     "pass": true
+    }
+   ]
+  },
+  {
+   "id": "turning_points-009",
+   "oracle": {
+    "deficit": 12,
+    "date": "2026-01-28",
+    "nyk_points": 47,
+    "opp_points": 34,
+    "run": 7
+   },
+   "answers": [
+    {
+     "trial": 1,
+     "required": [
+      "12-point",
+      "2026-01-28",
+      "7-0"
+     ],
+     "missing": [],
+     "pass": true
+    }
+   ]
+  }
+ ],
+ "questions_all_trials_verified": 9,
+ "questions_with_a_verified_answer": 10,
+ "total": 10
+}

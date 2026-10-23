@@ -1,0 +1,125 @@
+{
+  "scope": "meets_expectation now requires: not declined or clarification, validated delivery, substantive content, no unbacked number or entity, required facts present, no echo, and no unbacked causal hedge. claim_backed additionally requires cited claim values.",
+  "mode": "live",
+  "dataset": "/Users/mohamedawadalla/.local/share/knicksiq/worktrees/w4-latency/apps/api/app/evaluation/questions.jsonl",
+  "questions": 30,
+  "old_meets_expectation": 17,
+  "meets_expectation": 15,
+  "claim_backed_meets_expectation": 15,
+  "delta": 2,
+  "by_answerable": {
+    "answerable": {
+      "questions": 26,
+      "old": 14,
+      "new": 11
+    },
+    "unsupported": {
+      "questions": 4,
+      "old": 3,
+      "new": 4
+    }
+  },
+  "survived": [
+    "date_range_last_n-001",
+    "exact_statistics-001",
+    "single_game_narrative-001",
+    "turning_points-001",
+    "aliases_typos-002",
+    "date_range_last_n-002",
+    "exact_statistics-002",
+    "unsupported-002",
+    "comparisons-003",
+    "date_range_last_n-003",
+    "single_game_narrative-003",
+    "unsupported-003",
+    "unsupported-004",
+    "aliases_typos-005"
+  ],
+  "lost": [
+    {
+      "id": "exact_statistics-003",
+      "category": "exact_statistics",
+      "failures": [
+        "unbacked_numbers"
+      ],
+      "reason": "unbacked_number",
+      "answer": "In the 2025-26 regular season archive (82 games), the Knicks averaged 116.5 points per game."
+    },
+    {
+      "id": "date_range_last_n-004",
+      "category": "date_range_last_n",
+      "failures": [
+        "unbacked_numbers"
+      ],
+      "reason": "unbacked_number",
+      "answer": "In the archived regular-season games from January 1 through January 31, 2026, the Knicks went 7-8 over 15 games. They scored 1,652 total points with a cumulative margin of +44."
+    },
+    {
+      "id": "exact_statistics-004",
+      "category": "exact_statistics",
+      "failures": [
+        "unbacked_numbers"
+      ],
+      "reason": "unbacked_number",
+      "answer": "In the 2025-26 regular season, the Knicks' average margin was +6.33 points per game across 82 archived games (53-29 record)."
+    }
+  ],
+  "gained": [
+    {
+      "id": "unsupported-001",
+      "failures": []
+    }
+  ],
+  "failure_counts": {
+    "not_validated": 11,
+    "no_cited_claims": 5,
+    "clarification": 4,
+    "unbacked_numbers": 3,
+    "declined": 1,
+    "not_substantive": 1
+  },
+  "by_category": {
+    "aliases_typos": {
+      "questions": 5,
+      "old": 2,
+      "new": 2,
+      "claim_backed": 2
+    },
+    "comparisons": {
+      "questions": 5,
+      "old": 1,
+      "new": 1,
+      "claim_backed": 1
+    },
+    "date_range_last_n": {
+      "questions": 4,
+      "old": 4,
+      "new": 3,
+      "claim_backed": 3
+    },
+    "exact_statistics": {
+      "questions": 4,
+      "old": 4,
+      "new": 2,
+      "claim_backed": 2
+    },
+    "single_game_narrative": {
+      "questions": 4,
+      "old": 2,
+      "new": 2,
+      "claim_backed": 2
+    },
+    "turning_points": {
+      "questions": 4,
+      "old": 1,
+      "new": 1,
+      "claim_backed": 1
+    },
+    "unsupported": {
+      "questions": 4,
+      "old": 3,
+      "new": 4,
+      "claim_backed": 4
+    }
+  }
+}

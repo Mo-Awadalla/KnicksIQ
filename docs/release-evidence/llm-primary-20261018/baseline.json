@@ -1,0 +1,200 @@
+{
+  "questions": 35,
+  "validated": 9,
+  "validated_rate": 0.257,
+  "outcomes": {
+    "failed:orchestrate:ValidationError": 9,
+    "fallback:review_rejected": 16,
+    "failed:review:ValueError": 1,
+    "validated": 9
+  },
+  "by_category": {
+    "exact_statistics": {
+      "failed:orchestrate:ValidationError": 3,
+      "fallback:review_rejected": 2
+    },
+    "date_range_last_n": {
+      "failed:orchestrate:ValidationError": 3,
+      "fallback:review_rejected": 2
+    },
+    "comparisons": {
+      "failed:orchestrate:ValidationError": 2,
+      "failed:review:ValueError": 1,
+      "validated": 2
+    },
+    "single_game_narrative": {
+      "validated": 3,
+      "fallback:review_rejected": 2
+    },
+    "turning_points": {
+      "fallback:review_rejected": 4,
+      "validated": 1
+    },
+    "aliases_typos": {
+      "failed:orchestrate:ValidationError": 1,
+      "validated": 3,
+      "fallback:review_rejected": 1
+    },
+    "unsupported": {
+      "fallback:review_rejected": 5
+    }
+  },
+  "not_validated": [
+    {
+      "id": "exact_statistics-001",
+      "category": "exact_statistics",
+      "question": "What was the Knicks record this season?",
+      "outcome": "failed:orchestrate:ValidationError"
+    },
+    {
+      "id": "exact_statistics-002",
+      "category": "exact_statistics",
+      "question": "How many total points did the Knicks score?",
+      "outcome": "fallback:review_rejected"
+    },
+    {
+      "id": "exact_statistics-003",
+      "category": "exact_statistics",
+      "question": "What was the Knicks average score per game?",
+      "outcome": "fallback:review_rejected"
+    },
+    {
+      "id": "exact_statistics-004",
+      "category": "exact_statistics",
+      "question": "What was the Knicks average margin?",
+      "outcome": "failed:orchestrate:ValidationError"
+    },
+    {
+      "id": "exact_statistics-005",
+      "category": "exact_statistics",
+      "question": "How many home games did the Knicks win?",
+      "outcome": "failed:orchestrate:ValidationError"
+    },
+    {
+      "id": "date_range_last_n-001",
+      "category": "date_range_last_n",
+      "question": "What was the Knicks record in their last 5 games?",
+      "outcome": "failed:orchestrate:ValidationError"
+    },
+    {
+      "id": "date_range_last_n-002",
+      "category": "date_range_last_n",
+      "question": "How many points did the Knicks average in their last 10 games?",
+      "outcome": "fallback:review_rejected"
+    },
+    {
+      "id": "date_range_last_n-003",
+      "category": "date_range_last_n",
+      "question": "What was Brunson's scoring average over his last 5 games?",
+      "outcome": "fallback:review_rejected"
+    },
+    {
+      "id": "date_range_last_n-004",
+      "category": "date_range_last_n",
+      "question": "How did the Knicks perform from January 1 through January 31?",
+      "outcome": "failed:orchestrate:ValidationError"
+    },
+    {
+      "id": "date_range_last_n-005",
+      "category": "date_range_last_n",
+      "question": "What was their record after the All-Star break?",
+      "outcome": "failed:orchestrate:ValidationError"
+    },
+    {
+      "id": "comparisons-001",
+      "category": "comparisons",
+      "question": "Compare the Knicks' offense at home and on the road.",
+      "outcome": "failed:orchestrate:ValidationError"
+    },
+    {
+      "id": "comparisons-002",
+      "category": "comparisons",
+      "question": "Compare Brunson and Towns as scorers this season.",
+      "outcome": "failed:review:ValueError"
+    },
+    {
+      "id": "comparisons-003",
+      "category": "comparisons",
+      "question": "Did the Knicks play better against Boston or Toronto?",
+      "outcome": "failed:orchestrate:ValidationError"
+    },
+    {
+      "id": "single_game_narrative-002",
+      "category": "single_game_narrative",
+      "question": "What decided the Knicks game against Toronto?",
+      "outcome": "fallback:review_rejected"
+    },
+    {
+      "id": "single_game_narrative-004",
+      "category": "single_game_narrative",
+      "question": "Why did the Knicks win the Chicago game?",
+      "outcome": "fallback:review_rejected"
+    },
+    {
+      "id": "turning_points-001",
+      "category": "turning_points",
+      "question": "What was the Knicks' biggest scoring run against Boston?",
+      "outcome": "fallback:review_rejected"
+    },
+    {
+      "id": "turning_points-002",
+      "category": "turning_points",
+      "question": "Where did the Toronto game turn?",
+      "outcome": "fallback:review_rejected"
+    },
+    {
+      "id": "turning_points-003",
+      "category": "turning_points",
+      "question": "When did the Knicks collapse against Atlanta?",
+      "outcome": "fallback:review_rejected"
+    },
+    {
+      "id": "turning_points-004",
+      "category": "turning_points",
+      "question": "What run broke open the Chicago game?",
+      "outcome": "fallback:review_rejected"
+    },
+    {
+      "id": "aliases_typos-001",
+      "category": "aliases_typos",
+      "question": "How did NYK do vs BOS?",
+      "outcome": "failed:orchestrate:ValidationError"
+    },
+    {
+      "id": "aliases_typos-003",
+      "category": "aliases_typos",
+      "question": "How did JB play in that game?",
+      "outcome": "fallback:review_rejected"
+    },
+    {
+      "id": "unsupported-001",
+      "category": "unsupported",
+      "question": "What is the live score tonight?",
+      "outcome": "fallback:review_rejected"
+    },
+    {
+      "id": "unsupported-002",
+      "category": "unsupported",
+      "question": "Will the Knicks win their next game?",
+      "outcome": "fallback:review_rejected"
+    },
+    {
+      "id": "unsupported-003",
+      "category": "unsupported",
+      "question": "Who is injured today?",
+      "outcome": "fallback:review_rejected"
+    },
+    {
+      "id": "unsupported-004",
+      "category": "unsupported",
+      "question": "What trade should the Knicks make tomorrow?",
+      "outcome": "fallback:review_rejected"
+    },
+    {
+      "id": "unsupported-005",
+      "category": "unsupported",
+      "question": "Show possessions from 2099-01-01.",
+      "outcome": "fallback:review_rejected"
+    }
+  ]
+}

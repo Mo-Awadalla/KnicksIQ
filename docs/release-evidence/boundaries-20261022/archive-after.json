@@ -1,0 +1,82 @@
+{
+  "release": "2025-26.20260928.1",
+  "live": false,
+  "provider": "disabled",
+  "writer": "deepseek/deepseek-v4.1-flash",
+  "reviewer": null,
+  "records": [
+    {
+      "question": "How many points did Brunson average in December?",
+      "resolved_metric": "points",
+      "resolved_aggregation": "average",
+      "metric_ids": [
+        "points:average"
+      ],
+      "values": [
+        30.615384615384617
+      ],
+      "game_counts": [
+        13
+      ],
+      "supporting_receipts": [
+        1
+      ],
+      "review_claims": 1,
+      "review_receipts": 1,
+      "review_payload_bytes": 4843,
+      "review_evidence_bytes": 981,
+      "review_within_budget": true,
+      "conflicting_request_preserved_intent": true
+    },
+    {
+      "question": "How many total assists did Brunson have in December?",
+      "resolved_metric": "assists",
+      "resolved_aggregation": "total",
+      "metric_ids": [
+        "assists:total"
+      ],
+      "values": [
+        92
+      ],
+      "game_counts": [
+        13
+      ],
+      "supporting_receipts": [
+        1
+      ],
+      "review_claims": 1,
+      "review_receipts": 1,
+      "review_payload_bytes": 4728,
+      "review_evidence_bytes": 907,
+      "review_within_budget": true,
+      "conflicting_request_preserved_intent": true
+    },
+    {
+      "question": "What was their regular-season record?",
+      "resolved_metric": null,
+      "resolved_aggregation": null,
+      "metric_ids": [
+        "wins",
+        "losses"
+      ],
+      "values": [
+        53,
+        29
+      ],
+      "game_counts": [
+        82,
+        82
+      ],
+      "supporting_receipts": [
+        1,
+        1
+      ],
+      "review_claims": 2,
+      "review_receipts": 2,
+      "review_payload_bytes": 5685,
+      "review_evidence_bytes": 1530,
+      "review_within_budget": true
+    }
+  ],
+  "passed": true
+}

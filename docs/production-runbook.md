@@ -1,6 +1,6 @@
 # KnicksIQ production runbook
 
-Production serves one immutable 2025–26 archive release. The API never migrates, seeds, ingests, generates reports, or mutates basketball data at startup. Qdrant, Redis, and the configured model provider support the LLM-primary path. Postgres and one validated active release are the only dependencies required for deterministic answers.
+Production serves one immutable 2025-26 archive release. The API never migrates, seeds, ingests, generates reports, or mutates basketball data at startup. Qdrant, Redis, and the OpenCode Go model host are required for the LLM-primary path but remain optional for availability; Postgres and one validated active release are the only dependencies required for deterministic answers.
 
 ## Failed deployment and rollback
 
@@ -26,13 +26,17 @@ Production serves one immutable 2025–26 archive release. The API never migrate
   model calls remain blocked until accounting is conservatively reconciled.
   Never reset the ledger to zero.
 - Model provider or budget exhaustion: deterministic phrasing remains available.
-  Do not raise the $2 monthly application cutoff without owner approval.
-  The intended blueprint uses OpenCode Go with DeepSeek writing and GPT 6 Luna
-  reviewing. Set its subscription credential through `AI_API_KEY`. Do not reuse
-  the OpenRouter-bound original120 collector as proof for this configuration.
-  `AI_MODEL_PRICES` estimates subscription usage from tokens, not provider billing.
-  Verification must enforce its approved cumulative request and cost caps;
-  ordinary reservations are not provider-enforced per-call price ceilings.
+  Do not raise the $2 monthly application cutoff without owner approval. The
+  approved record's $20 target applies only during an explicitly authorized
+  deployment. A suspended or failed OpenCode Go account degrades every turn to
+  cited deterministic facts; it needs no setting change, and switching back to
+  OpenRouter is the configuration change below. The intended blueprint uses
+  OpenCode Go with DeepSeek writing and GPT 6 Luna reviewing. Set its subscription
+  credential through `AI_API_KEY`. Do not reuse the OpenRouter-bound original120
+  collector as proof for this configuration. `AI_MODEL_PRICES` estimates
+  subscription usage from tokens, not provider billing. Verification must enforce
+  its approved cumulative request and cost caps; ordinary reservations are not
+  provider-enforced per-call price ceilings.
 - Sentry: application availability is unaffected. Use Render logs and synthetic checks until restored.
 
 ### Analyst reports “Model or budget unavailable”
@@ -52,8 +56,46 @@ just HTTP 200 or `state_committed`.
 On 2026-09-22 the production ledger was absent while Redis sessions worked.
 Provider monthly usage was $0, lifetime usage was $0.00084725, and the reservation
 hash was empty. The missing ledger was restored at $0.07, covering lifetime usage
-plus a conservative six-call allowance. The $8 cutoff was not changed. Subsequent
-model validation/time-limit failures are separate from this repaired budget block.
+plus a conservative six-call allowance. The cutoff in force at that time was $8;
+the current blueprint sets $2. Subsequent model validation/time-limit failures are
+separate from this repaired budget block.
+
+## Model host
+
+Production calls models through the owner's OpenCode Go subscription at
+`https://opencode.ai/inference/go/openai/v1`. `deepseek-v4.1-flash` writes over Chat Completions
+and `gpt-6-luna` reviews over the Responses API, so the reviewer is a different model family from
+the writer. `ANALYST_REVIEW_MODEL` selects the reviewer. `AI_MODEL_PROTOCOLS` names the wire
+protocol per model (`{"gpt-6-luna":"responses"}`); a model it does not name uses Chat Completions.
+A reviewer outside `OPENROUTER_ALLOWED_MODELS` fails the review closed, and preflight reports it.
+
+Go reports no per-call cost, so `AI_MODEL_PRICES` lists USD per million input/output tokens and
+the ledger prices each call from its token usage. Without it the ledger would settle only the flat
+reservation. DeepSeek is priced at Go's peak rate, so the ledger never undercounts. Each analyst
+turn sends a random session id in `x-opencode-session`, never the user's session token, plus
+`AI_USER_AGENT` (`knicksiq/1.0`).
+
+The owner accepted the terms risk on 2026-10-22; the wording, the probe results and the switch
+back are in [the OpenCode Go decision](release-evidence/llm-primary-20261021/opencode-go/README.md).
+
+### Switch back to OpenRouter
+
+This is the rollback when Go is suspended or its terms stop fitting. It is a configuration
+change, not a code change, and it needs a funded OpenRouter key; the account was out of credits
+on 2026-10-22.
+
+1. Set `AI_PROVIDER=openrouter` and `AI_BASE_URL=https://openrouter.ai/api/v1`.
+2. Use the prefixed ids in `AI_CHAT_MODEL` (`deepseek/deepseek-v4.1-flash`),
+   `ANALYST_REVIEW_MODEL` (`openai/gpt-6-luna`) and `OPENROUTER_SUMMARY_MODEL`
+   (`deepseek/deepseek-v4.1-flash`), and list them in `OPENROUTER_ALLOWED_MODELS`.
+3. Clear `AI_MODEL_PROTOCOLS` and `AI_MODEL_PRICES`: OpenRouter reports per-call cost, and its
+   request body differs (a `reasoning` block and the `provider` routing block replace the
+   top-level `reasoning_effort`).
+4. Set the OpenRouter key as `AI_API_KEY`, redeploy the same image, and confirm one validated
+   turn, the ledger delta and `/health/ready`.
+
+Until those settings change, a suspended Go account needs no action: every answer is the cited
+deterministic fallback.
 
 ## Elevated errors
 
@@ -65,11 +107,117 @@ Correlate the public `request_id` with scrubbed API logs. Do not request or copy
    shadow stage. Pass the release readiness gate for the candidate first.
 2. Set `ANALYSIS_ANSWER_MODE=llm_primary` only after owner sign-off.
 3. Roll back instantly by setting the mode to `deterministic`; no data or index
-   rollback is required.
+   rollback is required. The drill below documents both the deterministic kill
+   switch and an optional, separately authorized shadow run.
+
+### Analyst runtime defaults
+
+- `ANALYST_REASONING_EFFORT=none` and `AI_REASONING_EFFORT=none`. Do not unset either value; the
+  provider otherwise reasons at high effort and truncates JSON.
+- `ANALYST_PREFETCH_ENABLED=true`. Prefetch runs one tool before the first model call for a clear
+  question and counts toward the loop bounds.
+- Review cap 3,000 output tokens and answer cap 1,600, matching the library defaults. Planning
+  action 600 tokens. The analyst input budget is the configured `ANALYST_INPUT_TOKENS` (16,000
+  UTF-8 bytes by default).
+- The reviewer number gate is mandatory. Do not disable it to clear latency.
+- Season-level records default to the regular season and the answer states the phase. The overall
+  record appears only when asked.
+- Typed pre-model refusals cover instruction override, wagering and out-of-archive dates. Other
+  unsupported wording reaches the analyst, which declines or explains coverage.
+
+## Capacity, cost and latency
+
+The cost and latency figures below were measured on OpenRouter, before the 2026-10-22 move to
+OpenCode Go; they are not Go measurements. At the $2 cutoff, the 16,000-byte measurement supports
+about 1,009 questions per month on the 70-question mix and about 750 on the held-out rate. Mean
+cost is $0.001981 per question on the 70-question mix and $0.002668 at the held-out rate. Capacity
+was route dependent because OpenRouter routing is unpinned and the adapter does not pin a provider
+today; Go has one upstream and no per-upstream routing. See the
+[final measurement](release-evidence/llm-primary-20261021/final/README.md).
+
+Billed provider failures settle at the provider's reported cost. A call with no HTTP response
+keeps the flat reservation. Every measured run reconciles the ledger delta to settled cost plus
+the open reservation delta. Check the ledger and provider usage separately after an incident.
+
+Measured latency on OpenRouter was p50 3,312 ms and p95 7,640 ms on 140 questions (70 questions in
+two trials) at the 16,000-byte input budget, with 2.74 provider calls per question. The owner
+relaxed the release gate from four seconds to 15 seconds on 2026-10-19, so the measured p95 meets
+the current local bound. Treat a p95 rise above the recorded baseline as a regression. Go and
+hosted latency are not yet measured. Evidence is in the
+[final measurement](release-evidence/llm-primary-20261021/final/README.md).
+
+## Rollback drill: llm_primary to deterministic or shadow
+
+Rehearse on a non-production service first. Production execution requires owner approval and two
+operators: one changes Render, one verifies from outside. This repository run documents the drill;
+it did not execute it against a deployment.
+
+Before changing anything, record the live API deployment ID and commit, `/health/ready`
+`data_version`, the current `ai-budget:YYYY-MM` total, and the Render service ID
+`srv-d9cgko8js32c73bbvu10`.
+
+### Deterministic: model-free kill switch
+
+1. Render Dashboard, `knicksiq-api`, Environment. Set `ANALYSIS_ANSWER_MODE` to `deterministic`
+   and choose **Save and deploy**. This restarts the existing image with the new value and does
+   not rebuild; **Save only** does not take effect.
+2. Wait for the deployment status `live`. Confirm its commit ID is unchanged and
+   `GET https://api.knicksiq.win/health/ready` returns 200 with the same `data_version`.
+3. From a machine outside Render, send three requests with distinct fresh `turn_id` values of at
+   least 16 characters. Reusing a turn ID replays the committed response by design.
+
+   ```sh
+   curl -sS https://api.knicksiq.win/analysis/query \
+     -H 'Content-Type: application/json' \
+     -d '{"question":"What was the Knicks record this season?","season":"2025-26",
+          "turn_id":"rollback-'"$(uuidgen | tr -d -)"'","expected_revision":0}'
+   ```
+
+   Expect HTTP 200, `"llm_validated": false`, `"degraded": true`, non-empty `citations`,
+   `warnings` containing `Model or budget unavailable.`, `"refused": false`, and 53 wins and 29
+   losses with `regular season` stated in the answer. Re-send the same question with `overall`
+   added and expect 69 wins and 32 losses. A 200 alone is not proof; check these fields. If the
+   phase or either record differs, stop.
+4. Confirm model spend stopped: the OpenCode Go subscription usage stays flat and the ledger total
+   is unchanged after the three requests. This check is operator-side, not public.
+5. If any assertion fails, do not continue. Restore `ANALYSIS_ANSWER_MODE=llm_primary` with
+   **Save and deploy**, re-verify, and alert the owner.
+
+### Shadow: delivery stays deterministic, the loop is sampled
+
+Optional shadow execution remains available for separately authorized evaluation; it is not a
+readiness or deployment prerequisite.
+
+1. Set `ANALYSIS_ANSWER_MODE=shadow` and temporarily `ANALYSIS_SHADOW_SAMPLE_RATE=1.0`.
+   Choose **Save and deploy**. Rate 1.0 makes the shadow path observable in a few requests;
+   at 0.1 three requests can all miss the sample (0.9^3 = 0.729).
+2. Wait for `live` and re-check `/health/ready`.
+3. Send three requests with distinct fresh turn IDs. Expect HTTP 200 and
+   `"llm_validated": false` on delivery. At least one response should carry the warning
+   `Shadow verification; deterministic delivery.` when the model answer validated. If all three
+   fail validation, the response carries a different warning; use Sentry event
+   `analyst_shadow_verification` (`sampled=true`) to confirm the sampled path ran.
+4. Restore `ANALYSIS_SHADOW_SAMPLE_RATE=0.1` with **Save and deploy** and send one more request.
+   Do not leave 1.0 in production: every request then spends model budget.
+5. If shadow must be the steady state, keep 0.1. Unsampled requests make no model call.
+
+### Blueprint drift and verification limits
+
+`render.yaml` declares a literal `value: llm_primary` for `ANALYSIS_ANSWER_MODE`. A later
+Blueprint sync from a push that changes that file overwrites the Dashboard value. Dashboard
+**Save and deploy** is the emergency path; make the durable value change in `render.yaml` only
+through the normal reviewed release. Until then a Blueprint sync can revert the rollback.
+
+`llm_validated=false` alone does not distinguish deterministic from shadow. The warning text and
+provider spend do. Production responses omit `route` and `tool_calls`, so verify with
+`llm_validated`, `degraded`, `warnings`, `citations`, and `data_version`. Public rate limits
+(default 10 per minute and 100 per day per client) cap how many probes one address can send.
+Render's environment variable save options are documented at
+https://render.com/docs/configure-environment-variables.
 
 ## Secret rotation
 
-Rotate one secret at a time: database, Redis, Qdrant, OpenRouter, Sentry, Formspree, then the IP-HMAC secret. The HMAC secret intentionally invalidates rate/cache keys. Redeploy the same immutable image, run smoke checks, and revoke the old secret.
+Rotate one secret at a time: database, Redis, Qdrant, the AI provider key (`AI_API_KEY`), Sentry, Formspree, then the IP-HMAC secret. The HMAC secret intentionally invalidates rate/cache keys. Redeploy the same immutable image, run smoke checks, and revoke the old secret.
 
 ## Backups and monitoring
 

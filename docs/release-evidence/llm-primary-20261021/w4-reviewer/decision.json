@@ -1,0 +1,290 @@
+{
+  "arms": [
+    {
+      "model": "gpt-6-luna",
+      "false_acceptance": "docs/release-evidence/llm-primary-20261021/w4-reviewer/false-acceptance-gpt-6-luna.json",
+      "replay": "docs/release-evidence/llm-primary-20261021/w4-reviewer/replay-gpt-6-luna.json",
+      "reviewer_max_tokens": {
+        "false_acceptance": 3000,
+        "replay": 3000,
+        "observed_false_acceptance": {
+          "3000": 58
+        },
+        "observed_replay": {
+          "3000": 51
+        }
+      },
+      "models": {
+        "requested_false_acceptance": {
+          "gpt-6-luna": 58
+        },
+        "served_false_acceptance": {
+          "gpt-6-luna": 58
+        },
+        "requested_replay": {
+          "gpt-6-luna": 51
+        },
+        "served_replay": {
+          "gpt-6-luna": 51
+        },
+        "protocols_false_acceptance": {
+          "responses": 58
+        },
+        "protocols_replay": {
+          "responses": 51
+        }
+      },
+      "wrong_accepted": {
+        "count": 3,
+        "observations": 39,
+        "rate": 0.0769,
+        "wilson_95": [
+          0.0265,
+          0.2032
+        ],
+        "mutated": {
+          "count": 0,
+          "observations": 30,
+          "rate": 0.0,
+          "wilson_95": [
+            0.0,
+            0.1135
+          ]
+        },
+        "recorded": {
+          "count": 3,
+          "observations": 9,
+          "rate": 0.3333,
+          "wilson_95": [
+            0.1206,
+            0.6458
+          ]
+        }
+      },
+      "wrong_accepted_mutations": {
+        "count": 0,
+        "observations": 30,
+        "rate": 0.0,
+        "wilson_95": [
+          0.0,
+          0.1135
+        ]
+      },
+      "mutation_cases": 21,
+      "mutation_gate_rejected": 6,
+      "controls_accepted": {
+        "count": 26,
+        "observations": 28,
+        "rate": 0.9286,
+        "wilson_95": [
+          0.7735,
+          0.9802
+        ]
+      },
+      "false_rejects": {
+        "count": 4,
+        "observations": 42,
+        "rate": 0.0952,
+        "wilson_95": [
+          0.0377,
+          0.2207
+        ]
+      },
+      "true_rejects": {
+        "count": 6,
+        "observations": 9,
+        "rate": 0.6667,
+        "wilson_95": [
+          0.3542,
+          0.8794
+        ]
+      },
+      "malformed_reviews": {
+        "count": 0,
+        "observations": 109,
+        "rate": 0.0,
+        "wilson_95": [
+          0.0,
+          0.034
+        ],
+        "provider_calls": 109
+      },
+      "latency_ms": {
+        "p50": 2828.9,
+        "p95": 4897.9,
+        "samples": 58,
+        "source": "false-acceptance provider calls"
+      },
+      "replay_latency_ms": {
+        "p50": 2878.1,
+        "p95": 4157.4,
+        "samples": 51
+      },
+      "cost_per_review": 0.00031,
+      "replay_cost_per_review": 0.00031,
+      "cost_usd": {
+        "false_acceptance": 0.017993,
+        "replay": 0.015794,
+        "total": 0.033787
+      },
+      "outcomes": {
+        "false_acceptance": {
+          "accepted": 26,
+          "verdict_rejected": 32
+        },
+        "replay": {
+          "accepted": 41,
+          "verdict_rejected": 10
+        }
+      },
+      "trials": {
+        "false_acceptance_per_case": 2,
+        "replay": 3
+      }
+    },
+    {
+      "model": "deepseek-v4.1-flash",
+      "false_acceptance": "docs/release-evidence/llm-primary-20261021/w4-reviewer/false-acceptance-deepseek-v4.1-flash.json",
+      "replay": "docs/release-evidence/llm-primary-20261021/w4-reviewer/replay-deepseek-v4.1-flash.json",
+      "reviewer_max_tokens": {
+        "false_acceptance": 3000,
+        "replay": 3000,
+        "observed_false_acceptance": {
+          "3000": 58
+        },
+        "observed_replay": {
+          "3000": 51
+        }
+      },
+      "models": {
+        "requested_false_acceptance": {
+          "deepseek-v4.1-flash": 58
+        },
+        "served_false_acceptance": {
+          "deepseek-v4.1-flash": 58
+        },
+        "requested_replay": {
+          "deepseek-v4.1-flash": 51
+        },
+        "served_replay": {
+          "deepseek-v4.1-flash": 51
+        },
+        "protocols_false_acceptance": {
+          "chat": 58
+        },
+        "protocols_replay": {
+          "chat": 51
+        }
+      },
+      "wrong_accepted": {
+        "count": 7,
+        "observations": 39,
+        "rate": 0.1795,
+        "wilson_95": [
+          0.0898,
+          0.3267
+        ],
+        "mutated": {
+          "count": 0,
+          "observations": 30,
+          "rate": 0.0,
+          "wilson_95": [
+            0.0,
+            0.1135
+          ]
+        },
+        "recorded": {
+          "count": 7,
+          "observations": 9,
+          "rate": 0.7778,
+          "wilson_95": [
+            0.4526,
+            0.9368
+          ]
+        }
+      },
+      "wrong_accepted_mutations": {
+        "count": 0,
+        "observations": 30,
+        "rate": 0.0,
+        "wilson_95": [
+          0.0,
+          0.1135
+        ]
+      },
+      "mutation_cases": 21,
+      "mutation_gate_rejected": 6,
+      "controls_accepted": {
+        "count": 28,
+        "observations": 28,
+        "rate": 1.0,
+        "wilson_95": [
+          0.8794,
+          1.0
+        ]
+      },
+      "false_rejects": {
+        "count": 0,
+        "observations": 42,
+        "rate": 0.0,
+        "wilson_95": [
+          0.0,
+          0.0838
+        ]
+      },
+      "true_rejects": {
+        "count": 2,
+        "observations": 9,
+        "rate": 0.2222,
+        "wilson_95": [
+          0.0632,
+          0.5474
+        ]
+      },
+      "malformed_reviews": {
+        "count": 0,
+        "observations": 109,
+        "rate": 0.0,
+        "wilson_95": [
+          0.0,
+          0.034
+        ],
+        "provider_calls": 109
+      },
+      "latency_ms": {
+        "p50": 2556.5,
+        "p95": 4749.9,
+        "samples": 58,
+        "source": "false-acceptance provider calls"
+      },
+      "replay_latency_ms": {
+        "p50": 2772.7,
+        "p95": 5598.4,
+        "samples": 51
+      },
+      "cost_per_review": 0.000924,
+      "replay_cost_per_review": 0.000944,
+      "cost_usd": {
+        "false_acceptance": 0.05358,
+        "replay": 0.04813,
+        "total": 0.10171
+      },
+      "outcomes": {
+        "false_acceptance": {
+          "accepted": 28,
+          "verdict_rejected": 30
+        },
+        "replay": {
+          "accepted": 49,
+          "verdict_rejected": 2
+        }
+      },
+      "trials": {
+        "false_acceptance_per_case": 2,
+        "replay": 3
+      }
+    }
+  ],
+  "recommended": "gpt-6-luna",
+  "rule": "wrong acceptances, false rejects, latency"
+}

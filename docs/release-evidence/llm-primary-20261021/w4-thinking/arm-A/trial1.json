@@ -1,0 +1,124 @@
+{
+  "scope": "meets_expectation now requires: not declined or clarification, validated delivery, substantive content, no unbacked number or entity, required facts present, no echo, and no unbacked causal hedge. claim_backed additionally requires cited claim values.",
+  "mode": "live",
+  "dataset": "/Users/mohamedawadalla/.local/share/knicksiq/worktrees/w4-thinking/apps/api/app/evaluation/questions.jsonl",
+  "questions": 30,
+  "old_meets_expectation": 18,
+  "meets_expectation": 18,
+  "claim_backed_meets_expectation": 18,
+  "delta": 0,
+  "by_answerable": {
+    "answerable": {
+      "questions": 25,
+      "old": 15,
+      "new": 13
+    },
+    "unsupported": {
+      "questions": 5,
+      "old": 3,
+      "new": 5
+    }
+  },
+  "survived": [
+    "exact_statistics-001",
+    "exact_statistics-002",
+    "exact_statistics-003",
+    "date_range_last_n-001",
+    "date_range_last_n-002",
+    "date_range_last_n-003",
+    "single_game_narrative-001",
+    "turning_points-001",
+    "turning_points-003",
+    "aliases_typos-001",
+    "aliases_typos-002",
+    "aliases_typos-003",
+    "unsupported-001",
+    "unsupported-003",
+    "comparisons-010",
+    "unsupported-004"
+  ],
+  "lost": [
+    {
+      "id": "turning_points-002",
+      "category": "turning_points",
+      "failures": [
+        "missing_turning_detail",
+        "no_cited_claims"
+      ],
+      "reason": "missing_turning_detail",
+      "answer": "The Knicks have five archived games involving Toronto, so the Toronto game is ambiguous. The matching archived games are listed by date: TOR at NYK, NYK at TOR, NYK at TOR, NYK at TOR, and TOR at NYK. Tell me which of these you mean and I can look at where it turned."
+    },
+    {
+      "id": "single_game_narrative-009",
+      "category": "single_game_narrative",
+      "failures": [
+        "clarification",
+        "no_cited_claims"
+      ],
+      "reason": "skipped_work_clarification",
+      "answer": "There are several Knicks\u2013Atlanta games in the archive. Which one do you mean?"
+    }
+  ],
+  "gained": [
+    {
+      "id": "unsupported-002",
+      "failures": []
+    },
+    {
+      "id": "unsupported-006",
+      "failures": []
+    }
+  ],
+  "failure_counts": {
+    "not_validated": 7,
+    "no_cited_claims": 7,
+    "declined": 3,
+    "not_substantive": 3,
+    "clarification": 2,
+    "missing_turning_detail": 1
+  },
+  "by_category": {
+    "aliases_typos": {
+      "questions": 3,
+      "old": 3,
+      "new": 3,
+      "claim_backed": 3
+    },
+    "comparisons": {
+      "questions": 6,
+      "old": 1,
+      "new": 1,
+      "claim_backed": 1
+    },
+    "date_range_last_n": {
+      "questions": 5,
+      "old": 3,
+      "new": 3,
+      "claim_backed": 3
+    },
+    "exact_statistics": {
+      "questions": 3,
+      "old": 3,
+      "new": 3,
+      "claim_backed": 3
+    },
+    "single_game_narrative": {
+      "questions": 5,
+      "old": 2,
+      "new": 1,
+      "claim_backed": 1
+    },
+    "turning_points": {
+      "questions": 3,
+      "old": 3,
+      "new": 2,
+      "claim_backed": 2
+    },
+    "unsupported": {
+      "questions": 5,
+      "old": 3,
+      "new": 5,
+      "claim_backed": 5
+    }
+  }
+}

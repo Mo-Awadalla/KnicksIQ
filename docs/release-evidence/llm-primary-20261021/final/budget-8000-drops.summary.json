@@ -1,0 +1,99 @@
+{
+  "label": "budget-8000-drops",
+  "generated_at": "2026-10-21T23:12:57.294100+00:00",
+  "input_tokens": "8000",
+  "redis_db": "15",
+  "questions": 56,
+  "trials": 1,
+  "by_trial": {
+    "0": {
+      "questions": 56,
+      "meets_expectation": 22,
+      "claim_backed": 22,
+      "validated": 41,
+      "p50_latency_ms": 2803.4,
+      "p95_latency_ms": 5772.5,
+      "cost_usd": 0.052514626
+    }
+  },
+  "meets_expectation": 22,
+  "claim_backed": 22,
+  "validated": 41,
+  "old_meets_expectation": 26,
+  "by_category": {
+    "aliases_typos": {
+      "questions": 8,
+      "meets_expectation": 5,
+      "validated": 7
+    },
+    "comparisons": {
+      "questions": 8,
+      "meets_expectation": 0,
+      "validated": 7
+    },
+    "date_range_last_n": {
+      "questions": 8,
+      "meets_expectation": 3,
+      "validated": 7
+    },
+    "exact_statistics": {
+      "questions": 8,
+      "meets_expectation": 6,
+      "validated": 7
+    },
+    "single_game_narrative": {
+      "questions": 8,
+      "meets_expectation": 0,
+      "validated": 4
+    },
+    "turning_points": {
+      "questions": 8,
+      "meets_expectation": 2,
+      "validated": 3
+    },
+    "unsupported": {
+      "questions": 8,
+      "meets_expectation": 6,
+      "validated": 6
+    }
+  },
+  "outcomes": {
+    "validated": 20,
+    "failed:revise:ValidationError": 1,
+    "validated_declined": 21,
+    "fallback:review_rejected": 11,
+    "failed:orchestrate:ValueError": 1,
+    "failed:review:ValueError": 1,
+    "fallback:other": 1
+  },
+  "fallback_reasons": {
+    "failed:revise:ValidationError": 1,
+    "fallback:review_rejected": 11,
+    "failed:orchestrate:ValueError": 1,
+    "failed:review:ValueError": 1,
+    "fallback:other": 1
+  },
+  "p50_latency_ms": 2803.4,
+  "p95_latency_ms": 5772.5,
+  "mean_latency_ms": 2905.9,
+  "ledger_delta_total": 0.052514626,
+  "settled_total": 0.052514626,
+  "open_delta_total": 0,
+  "mean_cost_per_question": 0.000937761,
+  "reconciles": true,
+  "unreconciled": [],
+  "budget_events": {
+    "exceeds_input_budget": 2,
+    "exceeds_messages": [
+      "Required review/action context exceeds input budget"
+    ],
+    "writer_claim_drop_events": 78,
+    "writer_claims_dropped": 459,
+    "questions_with_claim_drops": 38,
+    "max_claims_dropped_one_call": 16,
+    "review_packing_refusals": 2,
+    "review_refusal_messages": [
+      "Required review/action context exceeds input budget"
+    ]
+  }
+}
