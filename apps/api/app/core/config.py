@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from functools import lru_cache
+from math import isfinite
 from typing import Literal
 from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 
@@ -58,6 +59,11 @@ class Settings(BaseSettings):
     ai_embedding_model: str = "text-embedding-3-small"
     ai_request_timeout_seconds: float = 20.0
     ai_reasoning_effort: Literal["none", "minimal", "low", "medium", "high"] | None = None
+    ai_model_protocols: dict[str, Literal["chat", "responses"]] = Field(default_factory=dict)
+    ai_model_prices: dict[str, list[float]] = Field(default_factory=dict)
+    analyst_review_model: str | None = None
+    analyst_review_max_tokens: int = Field(default=1200, ge=256, le=8000)
+    analyst_answer_max_tokens: int = Field(default=1200, ge=256, le=8000)
 
     openrouter_api_key: str | None = None
     openrouter_summary_model: str = "deepseek/deepseek-v4.1-flash"
@@ -154,6 +160,9 @@ class Settings(BaseSettings):
             value is not None for value in policy
         ):
             raise ValueError("A pinned OpenRouter route requires both price caps (USD per million)")
+        for price in self.ai_model_prices.values():
+            if len(price) != 2 or any(not isfinite(value) or value < 0 for value in price):
+                raise ValueError("Model prices require finite nonnegative input and output rates")
         return self
 
     @property

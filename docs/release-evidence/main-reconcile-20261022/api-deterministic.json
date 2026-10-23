@@ -1,0 +1,293 @@
+{
+  "mode": "deterministic",
+  "provider": "disabled",
+  "checks": {
+    "session_continuity": true,
+    "followup_window": true,
+    "compound_metrics": true,
+    "compound_aggregations": true
+  },
+  "passed": true,
+  "rows": [
+    {
+      "question": "How many points did Brunson average in December?",
+      "answer": "Jalen Brunson: 30.6 points per appearance across 13 observed appearances in the 2025-26 all-phase Knicks archive, 2025-12-02 through 2025-12-31.",
+      "revision": 1,
+      "committed": true,
+      "same_session": true,
+      "llm_validated": false,
+      "degraded": true,
+      "warnings": [
+        "Model or budget unavailable."
+      ],
+      "claims": [
+        {
+          "metric_id": "points:average",
+          "value": 30.615384615384617,
+          "sample_size": 13,
+          "game_ids": [
+            20,
+            21,
+            22,
+            23,
+            24,
+            25,
+            26,
+            27,
+            28,
+            30,
+            31,
+            32,
+            33
+          ],
+          "window": {
+            "date_start": "2025-12-02",
+            "date_end": "2025-12-31",
+            "requested": {
+              "date_start": "2025-12-01",
+              "date_end": "2025-12-31"
+            }
+          }
+        }
+      ],
+      "models": []
+    },
+    {
+      "question": "Hello",
+      "answer": "Hi \u2014 ask me about an archived Knicks game, player stat, streak, opponent, or turning point.",
+      "revision": 2,
+      "committed": true,
+      "same_session": true,
+      "llm_validated": false,
+      "degraded": false,
+      "warnings": [],
+      "claims": [],
+      "models": []
+    },
+    {
+      "question": "Which parlay should I bet on tonight?",
+      "answer": "I don't have live, current, injury, trade, betting or future coverage. I can answer questions about games in the 2025-26 Knicks archive.",
+      "revision": 3,
+      "committed": true,
+      "same_session": true,
+      "llm_validated": false,
+      "degraded": false,
+      "warnings": [],
+      "claims": [],
+      "models": []
+    },
+    {
+      "question": "And his assists?",
+      "answer": "Jalen Brunson: 7.1 assists per appearance across 13 observed appearances in the 2025-26 all-phase Knicks archive, 2025-12-02 through 2025-12-31.",
+      "revision": 4,
+      "committed": true,
+      "same_session": true,
+      "llm_validated": false,
+      "degraded": true,
+      "warnings": [
+        "Model or budget unavailable."
+      ],
+      "claims": [
+        {
+          "metric_id": "assists:average",
+          "value": 7.076923076923077,
+          "sample_size": 13,
+          "game_ids": [
+            20,
+            21,
+            22,
+            23,
+            24,
+            25,
+            26,
+            27,
+            28,
+            30,
+            31,
+            32,
+            33
+          ],
+          "window": {
+            "date_start": "2025-12-02",
+            "date_end": "2025-12-31",
+            "requested": {
+              "date_start": "2025-12-01",
+              "date_end": "2025-12-31"
+            }
+          }
+        }
+      ],
+      "models": []
+    },
+    {
+      "question": "What were Brunson's average points, rebounds and assists in December?",
+      "answer": "Jalen Brunson: 7.1 assists per appearance across 13 observed appearances in the 2025-26 all-phase Knicks archive, 2025-12-02 through 2025-12-31. Jalen Brunson: 30.6 points per appearance across 13 observed appearances in the 2025-26 all-phase Knicks archive, 2025-12-02 through 2025-12-31. Jalen Brunson: 3.2 rebounds per appearance across 13 observed appearances in the 2025-26 all-phase Knicks archive, 2025-12-02 through 2025-12-31.",
+      "revision": 5,
+      "committed": true,
+      "same_session": true,
+      "llm_validated": false,
+      "degraded": true,
+      "warnings": [
+        "Model or budget unavailable."
+      ],
+      "claims": [
+        {
+          "metric_id": "assists:average",
+          "value": 7.076923076923077,
+          "sample_size": 13,
+          "game_ids": [
+            20,
+            21,
+            22,
+            23,
+            24,
+            25,
+            26,
+            27,
+            28,
+            30,
+            31,
+            32,
+            33
+          ],
+          "window": {
+            "date_start": "2025-12-02",
+            "date_end": "2025-12-31",
+            "requested": {
+              "date_start": "2025-12-01",
+              "date_end": "2025-12-31"
+            }
+          }
+        },
+        {
+          "metric_id": "points:average",
+          "value": 30.615384615384617,
+          "sample_size": 13,
+          "game_ids": [
+            20,
+            21,
+            22,
+            23,
+            24,
+            25,
+            26,
+            27,
+            28,
+            30,
+            31,
+            32,
+            33
+          ],
+          "window": {
+            "date_start": "2025-12-02",
+            "date_end": "2025-12-31",
+            "requested": {
+              "date_start": "2025-12-01",
+              "date_end": "2025-12-31"
+            }
+          }
+        },
+        {
+          "metric_id": "rebounds:average",
+          "value": 3.230769230769231,
+          "sample_size": 13,
+          "game_ids": [
+            20,
+            21,
+            22,
+            23,
+            24,
+            25,
+            26,
+            27,
+            28,
+            30,
+            31,
+            32,
+            33
+          ],
+          "window": {
+            "date_start": "2025-12-02",
+            "date_end": "2025-12-31",
+            "requested": {
+              "date_start": "2025-12-01",
+              "date_end": "2025-12-31"
+            }
+          }
+        }
+      ],
+      "models": []
+    },
+    {
+      "question": "What were Brunson's total and average points in December?",
+      "answer": "Jalen Brunson: 30.6 points per appearance across 13 observed appearances in the 2025-26 all-phase Knicks archive, 2025-12-02 through 2025-12-31. Jalen Brunson: 398.0 points across 13 observed appearances in the 2025-26 all-phase Knicks archive, 2025-12-02 through 2025-12-31.",
+      "revision": 6,
+      "committed": true,
+      "same_session": true,
+      "llm_validated": false,
+      "degraded": true,
+      "warnings": [
+        "Model or budget unavailable."
+      ],
+      "claims": [
+        {
+          "metric_id": "points:average",
+          "value": 30.615384615384617,
+          "sample_size": 13,
+          "game_ids": [
+            20,
+            21,
+            22,
+            23,
+            24,
+            25,
+            26,
+            27,
+            28,
+            30,
+            31,
+            32,
+            33
+          ],
+          "window": {
+            "date_start": "2025-12-02",
+            "date_end": "2025-12-31",
+            "requested": {
+              "date_start": "2025-12-01",
+              "date_end": "2025-12-31"
+            }
+          }
+        },
+        {
+          "metric_id": "points:total",
+          "value": 398,
+          "sample_size": 13,
+          "game_ids": [
+            20,
+            21,
+            22,
+            23,
+            24,
+            25,
+            26,
+            27,
+            28,
+            30,
+            31,
+            32,
+            33
+          ],
+          "window": {
+            "date_start": "2025-12-02",
+            "date_end": "2025-12-31",
+            "requested": {
+              "date_start": "2025-12-01",
+              "date_end": "2025-12-31"
+            }
+          }
+        }
+      ],
+      "models": []
+    }
+  ]
+}

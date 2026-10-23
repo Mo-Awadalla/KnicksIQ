@@ -439,18 +439,30 @@ actual captured turns, fixed membership, source/bundle/configuration and origina
 shadow validator. Transport-complete fallback stages and synthetic safety
 receipts do not satisfy these quality prerequisites.
 
-The production model is `deepseek/deepseek-v4.1-flash`, selected explicitly by the
-owner on 2026-09-22. Production uses JSON-object output with local schema checks,
-`AI_REASONING_EFFORT=none`, latency-prioritized OpenRouter routing, and required
-parameter support. On the ordinary OpenRouter adapter, `none` sends
-`"reasoning": {"enabled": false}`, not `"effort": "none"`. Other configured
-efforts are forwarded unchanged; an unspecified effort omits `reasoning` and
-preserves the model/provider default. Non-OpenRouter adapters remain unchanged
-and do not receive these OpenRouter-only fields. Disabling reasoning on a model
-that supports disabling protects the bounded visible-output allowance;
-`exclude: true` would only hide reasoning, not prevent its token use or billing.
-The independent whole-answer review remains mandatory.
-See the official [reasoning controls and metadata semantics](https://openrouter.ai/docs/guides/best-practices/reasoning-tokens).
+The intended deployment configuration uses OpenCode Go. The writer is
+`deepseek-v4.1-flash` over Chat Completions. `ANALYST_REVIEW_MODEL=gpt-6-luna`
+selects the independent whole-answer reviewer over Responses through
+`AI_MODEL_PROTOCOLS`. It is not a retrieval reranker. Set the Go credential in
+`AI_API_KEY`; no client credential is exposed.
+
+The Go blueprint explicitly allows 1,600 output tokens for writing and 3,000 for
+review. Library defaults stay at 1,200 for existing callers. Input, evidence,
+call-count and deadline limits remain unchanged. Each adapter sends a random
+`x-opencode-session` identifier unrelated to the user's bearer session token.
+`AI_MODEL_PRICES` supplies estimated USD-per-million input and output token rates
+when the subscription host omits per-call cost. Those estimates are not billing
+receipts. The existing application cutoff still limits reserved usage.
+
+The following OpenRouter notes describe the earlier deployment and the frozen
+counted evaluator. Ordinary OpenRouter routing still supports its existing pinned
+route and price caps. `none` sends `"reasoning": {"enabled": false}`.
+On Go Chat Completions, effort is a top-level `reasoning_effort`; Responses uses
+`reasoning.effort`. Automatic deployment remains disabled.
+
+The frozen original120 collector remains bound to its authorized OpenRouter
+model, key, pricing and blueprint. It fails closed after the host change and
+cannot certify this Go configuration. New provider-compatible release admission
+and quality evidence are prerequisites for public-release certification.
 
 The gateway's global effort enum is not a per-model compatibility guarantee.
 Unauthenticated [model metadata](https://openrouter.ai/api/v1/models), observed

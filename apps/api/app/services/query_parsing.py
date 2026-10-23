@@ -7,6 +7,7 @@ import unicodedata
 from collections import defaultdict
 from datetime import date
 from difflib import SequenceMatcher
+from typing import Literal
 
 from app.models.game import Game
 from app.models.player import Player
@@ -57,6 +58,9 @@ _METRICS = {
     "threes": "three_pointers_made",
     "three point percentage": "three_point_percentage",
 }
+_METRIC_PHRASE = re.compile(
+    r"\b(?:" + "|".join(re.escape(p) for p in sorted(_METRICS, key=len, reverse=True)) + r")\b"
+)
 _NAME_STOPWORDS = {
     "against",
     "average",
@@ -255,18 +259,27 @@ def _periods(question: str) -> list[int]:
     return sorted(values)
 
 
-def _metric(question: str) -> str | None:
+def requested_metrics(question: str) -> set[str]:
     q = _normalize(question)
     if re.search(r"\b(?:games?|times)\b.*\bstart(?:ed)?\b", q):
-        return "starts"
-    return next(
-        (
-            metric
-            for phrase, metric in sorted(_METRICS.items(), key=lambda item: -len(item[0]))
-            if re.search(rf"\b{re.escape(phrase)}\b", q)
-        ),
-        None,
-    )
+        return {"starts"}
+    return {_METRICS[match[0]] for match in _METRIC_PHRASE.finditer(q)}
+
+
+def requested_aggregations(question: str) -> set[Literal["average", "total"]]:
+    values: set[Literal["average", "total"]] = set()
+    if re.search(
+        r"\b(?:average|averaged|averaging|avg|per[ -](?:game|appearance)|ppg)\b", question, re.I
+    ):
+        values.add("average")
+    if re.search(r"\b(?:total|sum)\b", question, re.I):
+        values.add("total")
+    return values
+
+
+def _metric(question: str) -> str | None:
+    metrics = requested_metrics(question)
+    return next(iter(metrics)) if len(metrics) == 1 else None
 
 
 def is_record_request(question: str) -> bool:
@@ -284,7 +297,7 @@ def is_record_request(question: str) -> bool:
         or (re.search(r"\bwins?\b", q) and re.search(r"\bloss(?:es)?\b", q))
         or (
             re.search(r"^how (?:did|have|has)\b.*\b(?:perform|do|done|fare)\b", q)
-            and _metric(question) is None
+            and not requested_metrics(question)
             and not re.search(r"\b(?:scores?|margin|rating|run)\b", q)
         )
     )
