@@ -1,0 +1,245 @@
+{
+  "scoring_version": "release-review-v2",
+  "mode": "disabled",
+  "metrics": {
+    "query_count": 120,
+    "semantic_case_count": 50,
+    "missing_labels": 33,
+    "missing_ranked_traces": 1,
+    "semantic_recall_at_5": null,
+    "exact_numeric_correctness": 0.8461538461538461,
+    "canonical_entity_correctness": 0.8461538461538461,
+    "citation_correctness": 0.8461538461538461,
+    "paraphrase_success": 0.8461538461538461,
+    "correct_abstention_rate": 0.5272727272727272,
+    "correct_clarification_rate": 0.43478260869565216,
+    "correct_refusal_rate": 1.0
+  },
+  "failures": [
+    {
+      "case_id": "date_range_last_n-006",
+      "review_valid": false,
+      "outcome_correct": false,
+      "supported": false
+    },
+    {
+      "case_id": "single_game_narrative-001",
+      "review_valid": false,
+      "outcome_correct": false,
+      "supported": false
+    },
+    {
+      "case_id": "single_game_narrative-002",
+      "review_valid": false,
+      "outcome_correct": false,
+      "supported": false
+    },
+    {
+      "case_id": "single_game_narrative-003",
+      "review_valid": false,
+      "outcome_correct": false,
+      "supported": false
+    },
+    {
+      "case_id": "single_game_narrative-004",
+      "review_valid": false,
+      "outcome_correct": false,
+      "supported": false
+    },
+    {
+      "case_id": "single_game_narrative-005",
+      "review_valid": false,
+      "outcome_correct": false,
+      "supported": false
+    },
+    {
+      "case_id": "single_game_narrative-006",
+      "review_valid": true,
+      "outcome_correct": false,
+      "supported": true
+    },
+    {
+      "case_id": "single_game_narrative-007",
+      "review_valid": false,
+      "outcome_correct": false,
+      "supported": false
+    },
+    {
+      "case_id": "single_game_narrative-008",
+      "review_valid": false,
+      "outcome_correct": false,
+      "supported": false
+    },
+    {
+      "case_id": "single_game_narrative-009",
+      "review_valid": false,
+      "outcome_correct": false,
+      "supported": false
+    },
+    {
+      "case_id": "single_game_narrative-010",
+      "review_valid": false,
+      "outcome_correct": false,
+      "supported": false
+    },
+    {
+      "case_id": "single_game_narrative-012",
+      "review_valid": false,
+      "outcome_correct": false,
+      "supported": false
+    },
+    {
+      "case_id": "single_game_narrative-013",
+      "review_valid": false,
+      "outcome_correct": false,
+      "supported": false
+    },
+    {
+      "case_id": "single_game_narrative-014",
+      "review_valid": false,
+      "outcome_correct": false,
+      "supported": false
+    },
+    {
+      "case_id": "single_game_narrative-016",
+      "review_valid": false,
+      "outcome_correct": false,
+      "supported": false
+    },
+    {
+      "case_id": "single_game_narrative-017",
+      "review_valid": false,
+      "outcome_correct": false,
+      "supported": false
+    },
+    {
+      "case_id": "single_game_narrative-019",
+      "review_valid": false,
+      "outcome_correct": false,
+      "supported": false
+    },
+    {
+      "case_id": "single_game_narrative-020",
+      "review_valid": false,
+      "outcome_correct": false,
+      "supported": false
+    },
+    {
+      "case_id": "turning_points-001",
+      "review_valid": false,
+      "outcome_correct": false,
+      "supported": false
+    },
+    {
+      "case_id": "turning_points-002",
+      "review_valid": false,
+      "outcome_correct": false,
+      "supported": false
+    },
+    {
+      "case_id": "turning_points-003",
+      "review_valid": false,
+      "outcome_correct": false,
+      "supported": false
+    },
+    {
+      "case_id": "turning_points-004",
+      "review_valid": false,
+      "outcome_correct": false,
+      "supported": false
+    },
+    {
+      "case_id": "turning_points-005",
+      "review_valid": false,
+      "outcome_correct": false,
+      "supported": false
+    },
+    {
+      "case_id": "turning_points-006",
+      "review_valid": false,
+      "outcome_correct": false,
+      "supported": false
+    },
+    {
+      "case_id": "turning_points-007",
+      "review_valid": false,
+      "outcome_correct": false,
+      "supported": false
+    },
+    {
+      "case_id": "turning_points-008",
+      "review_valid": false,
+      "outcome_correct": false,
+      "supported": false
+    },
+    {
+      "case_id": "turning_points-009",
+      "review_valid": false,
+      "outcome_correct": false,
+      "supported": false
+    },
+    {
+      "case_id": "turning_points-010",
+      "review_valid": false,
+      "outcome_correct": false,
+      "supported": false
+    },
+    {
+      "case_id": "aliases_typos-002",
+      "review_valid": false,
+      "outcome_correct": false,
+      "supported": false
+    },
+    {
+      "case_id": "aliases_typos-005",
+      "review_valid": false,
+      "outcome_correct": false,
+      "supported": false
+    },
+    {
+      "case_id": "aliases_typos-007",
+      "review_valid": false,
+      "outcome_correct": false,
+      "supported": false
+    },
+    {
+      "case_id": "aliases_typos-008",
+      "review_valid": true,
+      "outcome_correct": true,
+      "supported": false
+    },
+    {
+      "case_id": "aliases_typos-009",
+      "review_valid": true,
+      "outcome_correct": true,
+      "supported": false
+    },
+    {
+      "case_id": "aliases_typos-010",
+      "review_valid": false,
+      "outcome_correct": false,
+      "supported": false
+    },
+    {
+      "case_id": "unsupported-009",
+      "review_valid": false,
+      "outcome_correct": false,
+      "supported": false
+    },
+    {
+      "case_id": "unsupported-010",
+      "review_valid": false,
+      "outcome_correct": false,
+      "supported": false
+    }
+  ],
+  "inputs": {
+    "contract": "8da8be9d68a7111919d1e8d0d18d22da8bf8d3a7da34a7fe4688117cc37119f9",
+    "approval": "8c4877d50b1aff3a58a52df720c0df3a63f415e6b161e7c28b7fc8b03ab5a289",
+    "observations": "5ddd88e6b67affc132d97c4f184982c43cd040a7c8982d5fb1330496476a3117",
+    "reviews": "05a9832f82e2a9e379e75367d570863169d6abde1ed90603313838251f40fde6",
+    "mapping": "21b0014430df4960ce94fd9a12630dce016eb4ee19c6edef188bc0e1f4d0783b"
+  },
+  "runner_sha256": "ec2d5975df637bb84c51bf72bffad6b56590f0a0b0948525b1d2fd194fff78b7",
+  "status": "scored"
+}

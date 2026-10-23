@@ -19,7 +19,7 @@ async def test_ready_distinguishes_disabled_optional_services(client, monkeypatc
         ai_api_key=None,
     )
     monkeypatch.setattr(health, "get_settings", lambda: settings)
-    monkeypatch.setattr(health, "is_qdrant_healthy", lambda: False)
+    monkeypatch.setattr(health, "qdrant_health_status", lambda: "degraded")
 
     response = await client.get("/health/ready")
 

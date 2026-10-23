@@ -322,6 +322,26 @@ def validate_bundle(
     return result
 
 
+async def _load_roster(
+    db: AsyncSession, content: dict[str, Any], *, synchronize_existing: bool
+) -> None:
+    for row in content.get("teams", []):
+        if await db.get(Team, row["id"]) is None:
+            db.add(Team(**row))
+    for row in content.get("players", []):
+        player = (
+            await db.execute(select(Player).where(Player.nba_player_id == row["nba_player_id"]))
+        ).scalar_one_or_none()
+        if player is None:
+            db.add(Player(**row))
+        elif synchronize_existing:
+            # NBA identity and foreign keys remain stable. Activation makes the
+            # approved archive authoritative over seed or older roster labels.
+            for attribute in ("full_name", "team_id", "position", "jersey_number"):
+                setattr(player, attribute, row.get(attribute))
+    await db.flush()
+
+
 async def load_release_bundle(
     db: AsyncSession,
     path: Path,
@@ -329,7 +349,7 @@ async def load_release_bundle(
     expected_sha256: str | None = None,
     activate: bool = False,
 ) -> ReleaseLoadResult:
-    """Load a release atomically; repeated loads of the same version are no-ops."""
+    """Load atomically; activation synchronizes the approved roster by NBA ID."""
     bundle = read_bundle(path, expected_sha256)
     validation = validate_bundle(bundle)
     manifest = bundle["manifest"]
@@ -341,15 +361,17 @@ async def load_release_bundle(
     if existing:
         if existing.manifest_sha256 != bundle["bundle_sha256"]:
             raise ReleaseValidationError("Version already exists with a different manifest")
-        if activate and existing.status != "active":
-            await db.execute(
-                update(DatasetRelease)
-                .where(DatasetRelease.status == "active")
-                .where(DatasetRelease.id != existing.id)
-                .values(status="superseded")
-            )
-            existing.status = "active"
-            existing.activated_at = datetime.now(UTC)
+        if activate:
+            await _load_roster(db, bundle["data"], synchronize_existing=True)
+            if existing.status != "active":
+                await db.execute(
+                    update(DatasetRelease)
+                    .where(DatasetRelease.status == "active")
+                    .where(DatasetRelease.id != existing.id)
+                    .values(status="superseded")
+                )
+                existing.status = "active"
+                existing.activated_at = datetime.now(UTC)
             await db.commit()
         return ReleaseLoadResult(
             existing.id, existing.version, False, existing.status == "active", validation["games"]
@@ -369,16 +391,7 @@ async def load_release_bundle(
     await db.flush()
     content = bundle["data"]
 
-    for row in content.get("teams", []):
-        if await db.get(Team, row["id"]) is None:
-            db.add(Team(**row))
-    for row in content.get("players", []):
-        found = (
-            await db.execute(select(Player).where(Player.nba_player_id == row["nba_player_id"]))
-        ).scalar_one_or_none()
-        if found is None:
-            db.add(Player(**row))
-    await db.flush()
+    await _load_roster(db, content, synchronize_existing=activate)
     players = {
         player.nba_player_id: player.id
         for player in (await db.execute(select(Player))).scalars().all()

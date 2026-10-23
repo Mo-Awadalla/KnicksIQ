@@ -14,7 +14,10 @@ jobs:
     runs-on: ubuntu-latest
     services:
       postgres:
-        image: postgres:16.9-alpine
+        # PostgreSQL 16.9-alpine, same OCI manifest as the Docker Hub image. Docker Hub and public
+        # ECR both failed CI on anonymous pull limits, so this uses Google's Docker Hub mirror;
+        # the digest pin keeps the content identical.
+        image: mirror.gcr.io/library/postgres@sha256:7c688148e5e156d0e86df7ba8ae5a05a2386aaec1e2ad8e6d11bdf10504b1fb7
         env:
           POSTGRES_USER: knicksiq
           POSTGRES_PASSWORD: knicksiq
@@ -37,6 +40,11 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+      - name: Install Redis for atomic integration regressions
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y redis-server
+          redis-server --version
       - run: uv sync --all-packages --all-extras --dev
       - run: uv run ruff check apps packages migrations
       - run: uv run ruff format --check apps packages migrations
@@ -44,7 +52,17 @@ jobs:
       - name: Unit and integration tests
         env:
           TEST_MODE: "true"
-        run: uv run pytest apps packages tools/report_audit --maxfail=1
+        run: |
+          mkdir -p ci-artifacts
+          uv run pytest apps packages tools/report_audit --maxfail=1 --junitxml=ci-artifacts/backend.xml --basetemp=ci-artifacts/pytest
+      - name: Preserve backend HTTP and accounting evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-http-evidence
+          path: ci-artifacts
+          if-no-files-found: error
+          retention-days: 14
       - name: Empty database migration and expand-only rollback
         run: |
           uv run alembic upgrade head
@@ -94,6 +112,14 @@ jobs:
           VITE_PUBLIC_URL: https://www.knicksiq.win
       - run: pnpm test
       - run: pnpm e2e
+      - name: Preserve synthetic browser routing evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: browser-network-evidence
+          path: apps/web/playwright-report
+          if-no-files-found: error
+          retention-days: 14
 
   containers:
     runs-on: ubuntu-latest
@@ -104,6 +130,8 @@ jobs:
         with:
           context: .
           file: Dockerfile.api
+          build-contexts: |
+            python:3.12.11-slim-bookworm=docker-image://docker.io/library/python@sha256:519591d6871b7bc437060736b9f7456b8731f1499a57e22e6c285135ae657bf7
           push: false
           load: true
           tags: knicksiq-api:ci
@@ -111,6 +139,9 @@ jobs:
         with:
           context: .
           file: Dockerfile.web
+          build-contexts: |
+            node:24.4.1-alpine3.22=docker-image://docker.io/library/node@sha256:820e86612c21d0636580206d802a726f2595366e1b867e564cbc652024151e8a
+            nginxinc/nginx-unprivileged:1.29.0-alpine3.22=docker-image://docker.io/nginxinc/nginx-unprivileged@sha256:82dcf28da5a8cd97d43e8f8a64de766658b0c5fb9072368c5f0a9048c417a934
           push: false
           load: true
           tags: knicksiq-web:ci

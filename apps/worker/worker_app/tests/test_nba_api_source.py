@@ -18,7 +18,11 @@ import responses
 from requests.exceptions import ConnectionError as RequestsConnectionError
 from requests.exceptions import Timeout
 from worker_app.adapters.nba_api_source import NbaApiDataSource
-from worker_app.adapters.nba_normalization import iso_duration_to_clock, parse_nba_game_date
+from worker_app.adapters.nba_normalization import (
+    iso_duration_to_clock,
+    parse_nba_game_date,
+    parse_pbp_v3_action,
+)
 from worker_app.core.config import NbaApiSettings
 
 STATS_BASE = "https://stats.nba.com/stats"
@@ -584,3 +588,36 @@ def test_parse_nba_game_date() -> None:
 
     assert parse_nba_game_date("OCT 22, 2024") == date(2024, 10, 22)
     assert parse_nba_game_date("APR 13, 2025") == date(2025, 4, 13)
+
+
+@pytest.mark.parametrize(
+    ("home", "away", "observed"),
+    [
+        ("0", "0", True),
+        (0, 0, True),
+        ("3", "2", True),
+        ("", "", False),
+        (None, None, False),
+    ],
+)
+def test_score_presence_survives_canonical_parsing(
+    data_source: NbaApiDataSource, home: Any, away: Any, observed: bool
+) -> None:
+    from basketball_core.parsers.play_by_play import parse_event
+
+    raw = parse_pbp_v3_action(
+        {
+            "actionType": "Jump Ball",
+            "scoreHome": home,
+            "scoreAway": away,
+            "teamTricode": "",
+            "period": 1,
+            "clock": "PT12M00.00S",
+        },
+        data_source._trigraph_to_nba_id,
+    )
+    assert raw is not None
+    assert raw["score_observed"] is observed
+    event = parse_event(1, 1, raw)
+    assert event.score_observed is observed
+    assert event.model_dump(exclude_none=True)["score_observed"] is observed

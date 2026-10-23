@@ -16,6 +16,7 @@ from fastapi import HTTPException, Request, status
 from app.api.analysis_models import AnalysisContextMessage
 from app.core.config import get_settings
 from app.services.query_classifier import classify_query
+from app.services.query_parsing import is_live_only_score_request
 from app.services.runtime_store import (
     enforce_redis_limits,
 )
@@ -305,6 +306,41 @@ def pre_model_refusal_category(question: str) -> str | None:
         if any(pattern.search(question) for pattern in category.patterns):
             return category.name
     return None
+
+
+def _requires_evidence_refusal(question: str) -> bool:
+    """Refuse unavailable coverage while preserving a separate archive request."""
+
+    def unavailable(clause: str) -> bool:
+        return bool(
+            re.search(
+                r"\b(?:202[7-9]|20[3-9]\d)(?:-\d{2}-\d{2})?\b"
+                r"|\b2026-(?:0[7-9]|1[0-2])-\d{2}\b"
+                r"|\b(?:will|today|tonight|tomorrow|yesterday|currently|current|upcoming|"
+                r"live|injur\w*|trades?|future|betting)\b"
+                r"|\b(?:right now|next game|next season)\b",
+                clause,
+                re.I,
+            )
+        )
+
+    def archive_clause(clause: str) -> bool:
+        return _is_supported_question(clause) or bool(
+            team_ids_in_text(clause)
+            and re.search(
+                r"\b(?:average|assists?|rebounds?|points?|record|wins?|loss(?:es)?|"
+                r"games?|score|quarters?|possessions?|runs?|season)\b",
+                clause,
+                re.I,
+            )
+        )
+
+    if is_live_only_score_request(question):
+        return True
+    if not unavailable(question):
+        return False
+    clauses = re.split(r"\b(?:and|but|also)\b|[;?]", question, flags=re.I)
+    return not any(archive_clause(clause) and not unavailable(clause) for clause in clauses)
 
 
 def _requires_pre_model_refusal(question: str) -> bool:

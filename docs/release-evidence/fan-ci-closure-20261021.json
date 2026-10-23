@@ -1,0 +1,64 @@
+{
+  "artifact": {
+    "path": "/tmp/kiq-integration-artifacts/fan-full-backend-reference-closure.xml",
+    "sha256": "950d64b6c8c0480e5b882c397e233eeba28260844d0f66b1d93ffe06f0918d48"
+  },
+  "fixture_changes": {
+    "added": "A verified multi-game season-statistic receipt request stays scoped and does not require one game.",
+    "no_game_anchor_capture": "All11 explicitly designated original cases assert actual clarification, no citations and no candidate/returned evidence IDs;39 other semantic cases still exercise real source ranking.",
+    "removed": [
+      "One obsolete unit expectation carrying player IDs across a superseded release",
+      "Three pure legacy copy/tool-plumbing tests",
+      "Six duplicate unanchored cases that required retrieval contrary to the new contract"
+    ],
+    "retained": [
+      "All original120 inputs and fixed50 semantic membership, unchanged question hash",
+      "Quantitative record/opponent/extreme HTTP coverage",
+      "Complete9-game ATL unit ranking and independent mapping",
+      "Discovery dependency failure/cancellation/exact retry with resolvable input"
+    ]
+  },
+  "full_backend": {
+    "errors": "0",
+    "failures": "0",
+    "hostname": "Mohameds-MBP",
+    "name": "pytest",
+    "skipped": "0",
+    "tests": "1406",
+    "time": "338.277",
+    "timestamp": "2026-10-20T20:37:46.811536-04:00"
+  },
+  "isolation": "Default providers/credentials, Qdrant, planner, Redis and Sentry explicitly disabled to match clean CI rather than copied local.env. Individual HTTP tests own their isolated SQL/Redis/provider-boundary fixtures.",
+  "limits": [
+    "One Hart10 primary control fell back correctly after failed wording review; its failed strict-model check remains recorded.",
+    "No owner approvals, deployment, alias changes or production budget changes."
+  ],
+  "observed_at": "2026-10-21T00:46:01.021761+00:00",
+  "real_runtime_evidence": [
+    "fan-opponent-count-20261021.json",
+    "reference-grammar-20261021.json"
+  ],
+  "schema_version": 1,
+  "scope": "Full local CI-equivalent backend preflight before publishing correction. Not hosted CI, model quality, deployment or release approval.",
+  "source_had_uncommitted_corrections": true,
+  "source_sha256": {
+    "apps/api/app/services/game_reference.py": "af970a1a2ae4128245accd322a08595c5668f06a825562c3140b86f7e4f3a81b",
+    "apps/api/app/services/population_facts.py": "4e55423273dd8ac18784bd98c4ccc1ae626fe6b3a73562ae99e39ecfb0497754",
+    "apps/api/app/tests/test_analysis.py": "5abbb61d11399671e4826fdfa62b0c8c18e51231f30e7e4692eaba104ae0d03e",
+    "apps/api/app/tests/test_analyst_contracts.py": "8a2fa1ece0cb49786b64c15fcdb85ef5a840355b79a7ee33c67fd4743eefe676",
+    "apps/api/app/tests/test_archive_units_http.py": "5753b9fd6a064e3337e850e42bbf81d9ec510fc4a57be241739513d3d7c72126",
+    "apps/api/app/tests/test_canonical_discovery_http.py": "a9152c1da4fb8cda5506d76d8b300e28afaa3a20667ff1390466d3c34f3515f7",
+    "apps/api/app/tests/test_game_reference_http.py": "3634636cc9d07a9c3cbd0b33451ab791d56f270df830b62644b53a212dcd8989",
+    "apps/api/app/tests/test_requested_archive_statistics_http.py": "9337c266fb17594b0ad9f813ac865b2b47cc54903857a447374ce965541b2f01"
+  },
+  "static_checks": {
+    "format": "251 files formatted",
+    "pyright": "0 errors, 0 warnings",
+    "ruff": "passed apps packages migrations"
+  },
+  "tested_worktree_head": "13dd8fef8be37ec790bd363d213e6461027ac538",
+  "warnings": {
+    "category": "Pytest record_property/xunit2 compatibility warnings retained, not suppressed",
+    "count": 343
+  }
+}

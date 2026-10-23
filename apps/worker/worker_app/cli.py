@@ -312,6 +312,7 @@ async def _build_rag_index(
     game_order: str,
     reset_qdrant: bool,
     data_version: str | None = None,
+    index_revision: str | None = None,
 ) -> dict:
     async with AsyncSessionLocal() as db:
         return await build_rag_artifacts(
@@ -323,6 +324,7 @@ async def _build_rag_index(
             game_order=game_order,
             reset_qdrant=reset_qdrant,
             data_version=data_version,
+            index_revision=index_revision,
         )
 
 
@@ -334,7 +336,11 @@ def _build_rag_index_parser() -> argparse.ArgumentParser:
     parser.add_argument("--out-dir", default="rag-artifacts")
     parser.add_argument(
         "--data-version",
-        help="Validated release version; builds a physical collection then switches the alias.",
+        help="Validated release; create/reuse inactive physical collections without alias changes.",
+    )
+    parser.add_argument(
+        "--index-revision",
+        help="Fresh immutable index namespace for changed source-unit or embedding recipes.",
     )
     parser.add_argument(
         "--game-limit",
@@ -351,7 +357,7 @@ def _build_rag_index_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--reset-qdrant",
         action="store_true",
-        help="Recreate the configured possessions collection before upserting.",
+        help="Reset unversioned possessions only; incompatible with --data-version.",
     )
     return parser
 
@@ -359,6 +365,8 @@ def _build_rag_index_parser() -> argparse.ArgumentParser:
 def build_rag_index_main() -> None:
     parser = _build_rag_index_parser()
     args = parser.parse_args()
+    if args.data_version and args.reset_qdrant:
+        parser.error("--data-version is create-only and cannot be combined with --reset-qdrant")
     result = asyncio.run(
         _build_rag_index(
             args.season,
@@ -367,6 +375,7 @@ def build_rag_index_main() -> None:
             args.game_order,
             args.reset_qdrant,
             args.data_version,
+            args.index_revision,
         )
     )
     print(json.dumps(result, indent=2, default=str))

@@ -9,7 +9,7 @@ import socket
 import subprocess
 
 import pytest
-from app.services import analyst_budget, analyst_sessions
+from app.services import analyst_budget, analyst_loop, analyst_sessions
 from app.services.analyst_tools import AnalystTools
 from app.tests.support.player_archive import _seed_release_stats
 from redis.asyncio import Redis
@@ -82,48 +82,93 @@ class ScriptedAdapter:
         payload = json.loads(user)
         self.prompts.append(payload)
         if payload["schema"]["title"] == "AnswerReview":
-            answer = payload["proposed_answer"]
+            answer = analyst_loop.payload_proposed_answer(payload)
+            assert answer is not None
             return json.dumps(
-                {
-                    "assertions": [
-                        {
-                            "text": span,
-                            "verdict": "supported",
-                            "assertion_type": "factual",
-                            "offending_text": None,
-                            "supporting_claim_ids": [c["claim_id"] for c in answer["claims"]],
-                            "supporting_evidence_ids": [],
-                            "reason": "Matches backend claims.",
-                        }
-                        for span in payload["review_spans"]
-                    ]
-                }
+                analyst_loop.encode_model_response(
+                    payload,
+                    {
+                        "assertions": [
+                            {
+                                "text": span,
+                                "verdict": "supported",
+                                "assertion_type": "factual",
+                                "offending_text": None,
+                                "supporting_claim_ids": [c["claim_id"] for c in answer["claims"]],
+                                "supporting_evidence_ids": [],
+                                "reason": "Matches backend claims.",
+                            }
+                            for span in payload["review_spans"]
+                        ]
+                    },
+                )
             )
-        if not payload["claims"]:
+        available = analyst_loop.payload_claims(payload)
+        profile_metrics = {"points", "rebounds", "assists", "game_score"}
+        scope = payload["capabilities"].get("scope", {})
+        if (
+            payload["schema"]["title"] == "Action"
+            and scope.get("player_ids")
+            and len(scope.get("game_ids", [])) == 1
+            and scope.get("metric") is None
+            and not profile_metrics <= {claim["metric_id"].partition(":")[0] for claim in available}
+        ):
             return json.dumps(
-                {
-                    "action": "call_tools",
-                    "tools": [{"name": "discover_facts", "question": payload["question"]}],
-                    "answer": None,
-                }
+                analyst_loop.encode_model_response(
+                    payload,
+                    {
+                        "action": "call_tools",
+                        "tools": [
+                            {"name": "get_player_stats", "question": payload["requested_question"]}
+                        ],
+                        "answer": None,
+                    },
+                )
             )
-        candidate = next(iter(payload["candidates"]), None)
+        if not available:
+            return json.dumps(
+                analyst_loop.encode_model_response(
+                    payload,
+                    {
+                        "action": "call_tools",
+                        "tools": [
+                            {"name": "discover_facts", "question": payload["requested_question"]}
+                        ],
+                        "answer": None,
+                    },
+                )
+            )
+        candidate = next(iter(payload.get("candidates", [])), None)
         claims = (
-            [c for c in payload["claims"] if c["claim_id"] in candidate["claim_ids"]]
+            [claim for claim in available if claim["claim_id"] in candidate["claim_ids"]]
             if candidate
-            else payload["claims"][:1]
+            else available[:1]
         )
+        if profile_metrics <= {claim["metric_id"].partition(":")[0] for claim in available}:
+            claims = [
+                claim
+                for claim in available
+                if claim["metric_id"].partition(":")[0] in profile_metrics
+            ]
+            candidate = None
+        if payload.get("required_claim_indexes"):
+            claims = [available[domain[0]] for domain in payload["required_claim_indexes"]]
+            candidate = None
+        answer = {
+            "text": " ".join(c["statement"] for c in claims),
+            "claims": [
+                {"claim_id": c["claim_id"], "displayed_value": c["value"], "decimal_places": None}
+                for c in claims
+            ],
+            "evidence_ids": [],
+            "fact_ids": [candidate["fact_id"]] if candidate else [],
+            "follow_up_questions": [],
+        }
         return json.dumps(
-            {
-                "action": "answer_from_available_evidence",
-                "tools": [],
-                "answer": {
-                    "text": " ".join(c["statement"] for c in claims),
-                    "claims": [
-                        {"claim_id": c["claim_id"], "displayed_value": c["value"]} for c in claims
-                    ],
-                    "evidence_ids": [],
-                    "fact_ids": [candidate["fact_id"]] if candidate else [],
-                },
-            }
+            analyst_loop.encode_model_response(
+                payload,
+                answer
+                if payload["schema"]["title"] == "ProposedAnswer"
+                else {"action": "answer_from_available_evidence", "tools": [], "answer": answer},
+            )
         )

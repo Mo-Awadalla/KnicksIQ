@@ -1,0 +1,107 @@
+name: knicksiq-local-staging
+
+x-api-environment: &api-environment
+  ENVIRONMENT: staging
+  TEST_MODE: "false"
+  SEED_ON_STARTUP: "false"
+  REQUIRE_ACTIVE_RELEASE: "true"
+  DB_URL: postgresql+asyncpg://knicksiq:local-staging-only@postgres:5432/knicksiq
+  REDIS_URL: redis://redis:6379/0
+  IP_HASH_SECRET: ${KNICKSIQ_STAGING_IP_HASH_SECRET:?Set a local staging IP hash secret}
+  AI_PROVIDER: mock
+  AI_API_KEY: ""
+  OPENROUTER_API_KEY: ""
+  QDRANT_URL: ""
+  QDRANT_API_KEY: ""
+  SENTRY_DSN: ""
+  ANALYSIS_ANSWER_MODE: deterministic
+  ANALYST_EVIDENCE_LOOP_ENABLED: "true"
+  RAG_QDRANT_ENABLED: "false"
+  RAG_HYBRID_ENABLED: "false"
+  RAG_LLM_PLANNER_ENABLED: "false"
+  RAG_RERANKER_ENABLED: "false"
+  OPENROUTER_MONTHLY_CUTOFF_USD: "2"
+  PUBLIC_WEB_ORIGIN: http://127.0.0.1:18080
+  CORS_ORIGINS: '["http://127.0.0.1:18080", "http://localhost:18080"]'
+  TRUSTED_HOSTS: '["localhost", "127.0.0.1", "api"]'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: knicksiq
+      POSTGRES_PASSWORD: local-staging-only
+      POSTGRES_DB: knicksiq
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U knicksiq -d knicksiq"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--appendonly", "yes", "--appendfsync", "always", "--maxmemory", "128mb", "--maxmemory-policy", "noeviction"]
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 3s
+      timeout: 2s
+      retries: 20
+
+  initialize:
+    image: knicksiq-api:local-staging
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    environment: *api-environment
+    command: ["sh", "-c", "/app/.venv/bin/alembic upgrade head && /app/.venv/bin/python /staging/initialize.py"]
+    volumes:
+      - ./tools/release/initialize_local_staging.py:/staging/initialize.py:ro
+      - ${KNICKSIQ_STAGING_BUNDLE:?Set the approved local bundle path}:/staging/archive.json.gz:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  api:
+    image: knicksiq-api:local-staging
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    environment: *api-environment
+    ports:
+      - "127.0.0.1:18000:8000"
+    networks: [default, browser]
+    depends_on:
+      initialize:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "/app/.venv/bin/python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health/ready', timeout=3)"]
+      interval: 5s
+      timeout: 4s
+      retries: 20
+
+  web:
+    image: knicksiq-web:local-staging
+    build:
+      context: .
+      dockerfile: Dockerfile.web
+    ports:
+      - "127.0.0.1:18080:8080"
+    networks: [default, browser]
+    depends_on:
+      api:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  default:
+    internal: true
+  browser: {}

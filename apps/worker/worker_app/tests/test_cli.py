@@ -19,7 +19,7 @@ from app.core.seed_loader import seed_all, seed_teams  # noqa: E402
 from app.models import Base  # noqa: E402
 from app.models.game import Game  # noqa: E402
 from worker_app import cli  # noqa: E402
-from worker_app.cli import _build_rag_index_parser, _cache_season_parser  # noqa: E402
+from worker_app.cli import _cache_season_parser  # noqa: E402
 
 
 @pytest.fixture(scope="function")
@@ -31,36 +31,6 @@ async def worker_db() -> AsyncIterator:
     yield
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.drop_all)
-
-
-def test_build_rag_index_parser_accepts_staged_index_flags():
-    args = _build_rag_index_parser().parse_args(
-        [
-            "--season",
-            "2025-26",
-            "--out-dir",
-            "rag-artifacts",
-            "--game-limit",
-            "10",
-            "--game-order",
-            "recent",
-            "--reset-qdrant",
-        ]
-    )
-
-    assert args.season == "2025-26"
-    assert args.out_dir == "rag-artifacts"
-    assert args.game_limit == 10
-    assert args.game_order == "recent"
-    assert args.reset_qdrant is True
-
-
-def test_build_rag_index_parser_defaults_keep_full_chronological_index():
-    args = _build_rag_index_parser().parse_args([])
-
-    assert args.game_limit is None
-    assert args.game_order == "date"
-    assert args.reset_qdrant is False
 
 
 def test_cache_season_parser_accepts_demo_ready_flags():

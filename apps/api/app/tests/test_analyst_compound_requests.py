@@ -6,7 +6,7 @@ from datetime import UTC, datetime
 
 import pytest
 from app.core.config import get_settings
-from app.services import analyst_provider
+from app.services import analyst_loop
 from app.services.analyst_tools import AnalystTools
 from app.services.evidence_contracts import ToolCall
 from app.tests.support.analyst_protocol import local_redis as local_redis
@@ -128,7 +128,7 @@ async def test_compound_request_keeps_all_requested_facts_when_model_fails(
         async def generate(self, *, system, user):
             raise RuntimeError("Model unavailable")
 
-    monkeypatch.setattr(analyst_provider, "get_llm_adapter", UnavailableProvider)
+    monkeypatch.setattr(analyst_loop, "get_llm_adapter", UnavailableProvider)
     response = await client.post(
         "/analysis/query",
         json={

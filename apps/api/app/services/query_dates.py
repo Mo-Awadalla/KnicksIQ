@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import calendar
 import re
 from datetime import date, timedelta
 from typing import TYPE_CHECKING, NamedTuple
@@ -112,13 +113,19 @@ def _date_mentions(
 
 def _relative_window(q: str) -> tuple[int, bool] | None:
     """A relative count and whether it selects from the beginning of the scope."""
-    count = re.search(r"\b(?:last|past|previous)\s+(\d+)\s+games?\b", q)
+    count = re.search(
+        r"\b(?:last|past|previous|final)\s+(\d+)\s+(?:regular season\s+)?"
+        r"(?:games?|appearances?)\b",
+        q,
+    )
     if count:
         return max(1, min(int(count.group(1)), 82)), False
-    opening = re.search(r"\b(?:first|opening)\s+(\d+)\s+games?\b", q)
+    opening = re.search(
+        r"\b(?:first|opening)\s+(\d+)\s+(?:regular season\s+)?(?:games?|appearances?)\b", q
+    )
     if opening:
         return max(1, min(int(opening.group(1)), 82)), True
-    if re.search(r"\b(?:last|previous)\s+game\b", q):
+    if re.search(r"\b(?:last|previous|final)\s+game\b", q):
         return 1, False
     if re.search(r"\b(?:first|opening)\s+game\b", q):
         return 1, True
@@ -203,7 +210,10 @@ def date_window(question: str, games: list[Game], latest_date: date | None) -> D
                 day for day in dates if day.month == month and (year is None or day.year == year)
             ]
             if inside:
+                # A named month is the calendar month, not only its archived games.
                 start, end = min(inside), max(inside)
+                start = start.replace(day=1)
+                end = end.replace(day=calendar.monthrange(end.year, end.month)[1])
             elif year is not None:
                 start = date(year, month, 1)
                 next_month = date(year + (month == 12), month % 12 + 1, 1)

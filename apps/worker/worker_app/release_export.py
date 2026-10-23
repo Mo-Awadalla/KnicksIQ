@@ -115,7 +115,7 @@ def _game_row(game: Game, event_hash: str) -> dict[str, Any]:
 
 
 def _event_row(event: GameEvent, nba_game_id: str, nba_player_id: int | None) -> dict[str, Any]:
-    return {
+    row = {
         "nba_game_id": nba_game_id,
         "sequence": event.sequence,
         "period": event.period,
@@ -131,6 +131,9 @@ def _event_row(event: GameEvent, nba_game_id: str, nba_player_id: int | None) ->
         "shot_result": event.shot_result,
         "shot_distance_ft": event.shot_distance_ft,
     }
+    if event.score_observed is not None:
+        row["score_observed"] = event.score_observed
+    return row
 
 
 def _draft_report(

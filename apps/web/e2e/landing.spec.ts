@@ -1,6 +1,7 @@
 import { mkdir } from 'node:fs/promises'
 import path from 'node:path'
-import { expect, test, type Page } from 'playwright/test'
+import type { Page } from 'playwright/test'
+import { expect, test } from './network-fixture'
 import AxeBuilder from '@axe-core/playwright'
 
 async function readyArchive(page: Page) {

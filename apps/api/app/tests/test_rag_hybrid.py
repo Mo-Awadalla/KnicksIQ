@@ -302,7 +302,7 @@ async def test_qdrant_failure_falls_back_to_lexical_retrieval(monkeypatch, db_se
             rag_rerank_limit=20,
         ),
     )
-    monkeypatch.setattr("app.services.rag.is_qdrant_healthy", lambda: True)
+    monkeypatch.setattr("app.services.rag.qdrant_health_status", lambda: "ok")
 
     def fail_embed(_texts):
         raise RuntimeError("embedding unavailable")
@@ -399,7 +399,7 @@ async def test_optional_retrieval_work_does_not_block_request_event_loop(monkeyp
             rag_rerank_limit=20,
         ),
     )
-    monkeypatch.setattr("app.services.rag.is_qdrant_healthy", record_provider("health", True))
+    monkeypatch.setattr("app.services.rag.qdrant_health_status", record_provider("health", "ok"))
     monkeypatch.setattr("app.services.rag.embed_texts", record_provider("embedding", [[0.0]]))
     monkeypatch.setattr("app.services.rag.search_possessions", record_provider("search", []))
     monkeypatch.setattr("app.services.rag.rerank_candidates", record_provider("rerank", []))

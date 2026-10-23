@@ -86,6 +86,7 @@ def _orm_event_to_core(event: GameEvent) -> CoreGameEvent:
         home_score=event.home_score,
         away_score=event.away_score,
         score_margin=event.score_margin,
+        score_observed=event.score_observed,
         shot_type=ShotType(event.shot_type) if event.shot_type else None,
         shot_result=ShotResult(event.shot_result) if event.shot_result else None,
         shot_distance_ft=event.shot_distance_ft,

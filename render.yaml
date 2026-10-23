@@ -53,6 +53,10 @@ services:
         value: deepseek-v4.1-flash
       - key: ANALYST_REVIEW_MODEL
         value: gpt-6-luna
+      - key: ANALYST_REVIEW_MAX_TOKENS
+        value: "3000"
+      - key: ANALYST_ANSWER_MAX_TOKENS
+        value: "1600"
       - key: AI_MODEL_PROTOCOLS
         value: '{"gpt-6-luna":"responses"}'
       # Go reports no per-call cost. List prices (DeepSeek at peak) let the monthly ledger

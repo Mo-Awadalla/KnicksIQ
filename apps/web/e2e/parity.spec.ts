@@ -1,5 +1,30 @@
-import { expect } from 'playwright/test'
-import { api, games, test } from './parity-fixtures'
+import AxeBuilder from '@axe-core/playwright'
+import { expect, test } from './network-fixture'
+import { api, games } from './parity-fixtures'
+
+test.beforeEach(async ({ page }) => {
+  // Remote artifact checks use fixtures too: never spend provider budget.
+  if (process.env.PLAYWRIGHT_BASE_URL || process.env.PLAYWRIGHT_API_URL) {
+    await page.route('https://api.knicksiq.win/**', (route) => route.abort())
+  }
+  await page.route(api('/archive/status*'), (route) => route.fulfill({ json: {
+    season: '2025-26', data_version: 'parity.1', games: 101, matching_games: 101,
+    regular_season_games: 101, postseason_games: 0, reports: 101, capabilities: [],
+  } }))
+  await page.route(api('/games?*'), (route) => {
+    const url = new URL(route.request().url())
+    const offset = Number(url.searchParams.get('offset') || 0)
+    const limit = Number(url.searchParams.get('limit') || 50)
+    return route.fulfill({ json: games.slice(offset, offset + limit) })
+  })
+  await page.route(api('/reports?*'), (route) => {
+    const url = new URL(route.request().url())
+    const offset = Number(url.searchParams.get('offset') || 0)
+    return route.fulfill({ json: games.slice(offset, offset + 50).map((game) => ({
+      id: game.id, game_id: game.id, title: `Report ${game.id}`, summary: 'Verified game.', created_at: '2026-01-01',
+    })) })
+  })
+})
 
 for (const path of ['games', 'reports']) {
   test(`${path}: extreme page URLs do not crash pagination`, async ({ page }) => {
@@ -108,6 +133,39 @@ test('away wins show the Knicks margin in the ledger and game evidence', async (
   await page.locator('.game-row').click()
   await expect(page.locator('.scoreboard-foot')).toContainText('+4 Knicks margin')
   await expect(page.getByRole('cell', { name: '+4', exact: true })).toBeVisible()
+})
+
+test('mobile play-by-play can be reached and scrolled with the keyboard', async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 900 })
+  await page.route(api('/games/101'), (route) => route.fulfill({ json: games[100] }))
+  await page.route(api('/games/101/runs'), (route) => route.fulfill({ json: [] }))
+  await page.route(api('/games/101/play-by-play'), (route) => route.fulfill({ json: [
+    { id: 1, sequence: 1, period: 4, clock: '00:07', event_type: 'free_throw',
+      description: 'Made free throw', away_score: 90, home_score: 100, score_margin: 10 },
+  ] }))
+  await page.goto('/games/101')
+  await expect(page.getByRole('table', { name: 'Play-by-play events' })).toBeVisible()
+
+  await page.getByRole('link', { name: 'Back to games' }).focus()
+  await page.keyboard.press('Tab')
+  const events = page.getByRole('region', { name: 'Play-by-play events', exact: true })
+  await expect(events).toBeFocused()
+  await expect(events.getByRole('table', { name: 'Play-by-play events' })).toBeVisible()
+  const initialScroll = await events.evaluate((element) => element.scrollLeft)
+  await page.keyboard.press('ArrowRight')
+  await expect.poll(() => events.evaluate((element) => element.scrollLeft)).toBeGreaterThan(initialScroll)
+  const focus = await events.evaluate((element) => {
+    const style = getComputedStyle(element)
+    return { style: style.outlineStyle, width: parseFloat(style.outlineWidth), offset: parseFloat(style.outlineOffset) }
+  })
+  expect(focus.style).not.toBe('none')
+  expect(focus.width).toBeGreaterThan(0)
+  expect(focus.offset).toBeLessThan(0)
+  const accessibility = await new AxeBuilder({ page })
+    .withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze()
+  expect(accessibility.violations.filter((violation) =>
+    ['serious', 'critical'].includes(violation.impact ?? '')
+  )).toEqual([])
 })
 
 for (const width of [390, 1440]) {

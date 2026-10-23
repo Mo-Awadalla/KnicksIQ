@@ -35,7 +35,11 @@ _TEAM_WINDOW = re.compile(r"\b(this season|season|per game|average|avg|total)\b"
 _AVERAGE = re.compile(r"\b(average|avg|per game)\b", re.I)
 _EXPLANATION = re.compile(r"^\s*(?:why|explain)\b|\bexplain\b", re.I)
 _BENCH = re.compile(r"\b(bench|lineup)\b", re.I)
-_COMPARATIVE = re.compile(r"\b(compare|better|worse|more productive| or )\b", re.I)
+_COMPARATIVE = re.compile(
+    r"\b(compare|comparison|better|worse|more productive|difference|differs?|differ(?:ed)?|"
+    r"change|versus|vs| or )\b",
+    re.I,
+)
 # A split route is wrong when the requested metric is not in the score-based tools.
 _NON_SCORE = re.compile(
     r"\b(turnovers?|rebounds?|assists?|steals?|blocks?|shoot\w*|shooting|percentage|percent|"
@@ -185,6 +189,10 @@ def prefetch_calls(tools: AnalystTools) -> list[ToolCall]:
         return []
     if _LIVE.search(question):
         return []
+    if _COMPARATIVE.search(question):
+        # A comparison needs its own windows or the model's tool choice; prefetching one
+        # aggregate would answer a different population.
+        return []
     if period_requested(question, scope):
         return [ToolCall(name="get_period_scoring", question=question)]
     if flow_requested(question):
@@ -282,6 +290,10 @@ def prefetch_calls(tools: AnalystTools) -> list[ToolCall]:
                     aggregation=player_aggregation,
                 )
             ]
+        if scope.metric or scope.requested_metrics:
+            # A named metric without an aggregation is the model's planning decision;
+            # a discovery prefetch here would answer an unrequested aggregate.
+            return []
         return [ToolCall(name="discover_facts", question=question)]
     if _BENCH.search(question):
         return [ToolCall(name="discover_facts", question=question)]

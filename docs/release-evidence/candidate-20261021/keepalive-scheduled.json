@@ -1,0 +1,49 @@
+{
+  "scope": "One observed scheduled liveness-only workflow success; not continuous schedule coverage, controlled first-cold-request acceptance, analyst latency or release approval. Workflow head is not the served API commit.",
+  "observed_at_utc": "2026-10-21T01:20:36.179121+00:00",
+  "run": {
+    "id": 39524904893,
+    "event": "schedule",
+    "conclusion": "success",
+    "workflow_head_sha": "976eb7c38e553844e3e992f89a3fa6e3a4560d28",
+    "created_at": "2026-10-21T01:02:01Z",
+    "url": "https://github.com/Mo-Awadalla/KnicksIQ/actions/runs/39524904893"
+  },
+  "jobs": [
+    {
+      "name": "ping",
+      "conclusion": "success",
+      "started_at": "2026-10-21T01:02:03Z",
+      "completed_at": "2026-10-21T01:02:48Z",
+      "steps": [
+        {
+          "name": "Set up job",
+          "conclusion": "success"
+        },
+        {
+          "name": "Check API liveness",
+          "conclusion": "success"
+        },
+        {
+          "name": "Complete job",
+          "conclusion": "success"
+        }
+      ]
+    }
+  ],
+  "history_observed": {
+    "total_runs": 2,
+    "scheduled_runs": 1,
+    "manual_runs": 1
+  },
+  "historical_evidence_unchanged": [
+    "hosted-health-20261020.json",
+    "keepalive-manual-20261020.json"
+  ],
+  "remaining_gates": [
+    "Continuous schedule coverage not established",
+    "Prior observed 503s retained; exact request-level cause unproven",
+    "Controlled first-cold-request, hosted analyst p95 and error rate unverified",
+    "No service upgrade, deploy, alias promotion or production budget change performed"
+  ]
+}

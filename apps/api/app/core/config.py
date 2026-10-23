@@ -3,10 +3,11 @@
 from __future__ import annotations
 
 from functools import lru_cache
+from math import isfinite
 from typing import Literal
 from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 
-from pydantic import Field
+from pydantic import Field, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -75,6 +76,11 @@ class Settings(BaseSettings):
     openrouter_provider_order: list[str] = Field(default_factory=list)
     openrouter_provider_sort: Literal["latency", "throughput", "price", "none"] = "latency"
     openrouter_provider_allow_fallbacks: bool = True
+    # Optional exact upstream plus USD-per-million caps; only guarded release verification
+    # pins a route, while production leaves all three unset and uses the router above.
+    openrouter_provider_route: str | None = Field(default=None, min_length=1)
+    openrouter_max_prompt_price: float | None = Field(default=None, gt=0, allow_inf_nan=False)
+    openrouter_max_completion_price: float | None = Field(default=None, gt=0, allow_inf_nan=False)
     qdrant_url: str | None = None
     qdrant_api_key: str | None = None
     qdrant_host: str = "localhost"
@@ -102,6 +108,7 @@ class Settings(BaseSettings):
     rag_lexical_candidate_limit: int = Field(default=30, ge=1, le=200)
     rag_dense_candidate_limit: int = Field(default=30, ge=1, le=200)
     rag_fused_candidate_limit: int = Field(default=20, ge=1, le=100)
+    rag_archive_source_units_enabled: bool = False
     rag_final_evidence_limit: int = Field(default=5, ge=1, le=20)
     rag_rrf_k: int = Field(default=60, ge=1, le=1000)
     rag_lexical_weight: float = Field(default=1.25, ge=0)
@@ -160,6 +167,22 @@ class Settings(BaseSettings):
     sentry_dsn: str | None = None
     openrouter_monthly_cutoff_usd: float = 8.0
     openrouter_allowed_models: list[str] = Field(default_factory=list)
+
+    @model_validator(mode="after")
+    def validate_openrouter_route_prices(self) -> Settings:
+        policy = (
+            self.openrouter_provider_route,
+            self.openrouter_max_prompt_price,
+            self.openrouter_max_completion_price,
+        )
+        if any(value is not None for value in policy) and not all(
+            value is not None for value in policy
+        ):
+            raise ValueError("A pinned OpenRouter route requires both price caps (USD per million)")
+        for price in self.ai_model_prices.values():
+            if len(price) != 2 or any(not isfinite(value) or value < 0 for value in price):
+                raise ValueError("Model prices require finite nonnegative input and output rates")
+        return self
 
     @property
     def effective_db_url(self) -> str:

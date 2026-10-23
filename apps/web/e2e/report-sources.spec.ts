@@ -1,5 +1,5 @@
 import { readFileSync } from 'node:fs'
-import { expect, test } from 'playwright/test'
+import { expect, test } from './network-fixture'
 import AxeBuilder from '@axe-core/playwright'
 
 // Corrected proposal serialized by the real API using an in-memory session.

@@ -14,17 +14,29 @@ Production serves one immutable 2025-26 archive release. The API never migrates,
 1. Preserve the failed database and record the active release version and bundle SHA-256.
 2. Create or reset the Neon database, run `alembic upgrade head`, then run `knicksiq-load-release <bundle> --sha256 <sha> --activate`.
 3. The loader is transactional and idempotent. It must complete without NBA.com access.
-4. Rebuild Qdrant from Postgres with `knicksiq-build-rag-index --season 2025-26 --data-version <version> --reset-qdrant`. Confirm Recall@5 before the alias switch.
+4. Prepare Qdrant from the restored, validated release with `knicksiq-build-rag-index --season 2025-26 --data-version <version>`. Never combine a versioned build with `--reset-qdrant`. All four inactive targets are preflighted before writes; complete matching candidates are reused without embeddings/upserts, and conflicting/partial or aliased resources are rejected without overwrites/deletes. Retain old collections for coordinated rollback; rebuilding them destructively is not rollback. Use an explicitly approved new release identity when source/embedding identity changes. Validate counts, source mappings, server payload indexes, release filters and Recall@5 before a separately authorized alias switch.
 5. Target core archive RPO is zero from the immutable bundle and RTO is under four hours.
 
 ## Dependency outage
 
 - Qdrant: leave the API up; responses fall back to deterministic Postgres answers with `degraded=true`. Rebuild or resume the cluster, validate counts and Recall@5, then switch aliases.
-- Redis: AI synthesis and shared caching are disabled during the outage. In-process limits protect one instance and deterministic facts remain available. A restarted free Key Value instance loses only reconstructible rate-limit, cache, and AI budget state.
-- OpenCode Go or budget exhaustion: deterministic phrasing remains available. A suspended or
-  failed Go account degrades every turn to cited deterministic facts; it needs no setting change,
-  and switching back to OpenRouter is the configuration change below. Do not raise the configured
-  application cutoff (currently $2 in `render.yaml`) without owner approval.
+- Redis: AI synthesis and shared caching are disabled during the outage.
+  In-process limits protect one instance and deterministic facts remain available.
+  A restarted free Key Value instance can lose its monthly ledger and reservations;
+  model calls remain blocked until accounting is conservatively reconciled.
+  Never reset the ledger to zero.
+- Model provider or budget exhaustion: deterministic phrasing remains available.
+  Do not raise the $2 monthly application cutoff without owner approval. The
+  approved record's $20 target applies only during an explicitly authorized
+  deployment. A suspended or failed OpenCode Go account degrades every turn to
+  cited deterministic facts; it needs no setting change, and switching back to
+  OpenRouter is the configuration change below. The intended blueprint uses
+  OpenCode Go with DeepSeek writing and GPT 6 Luna reviewing. Set its subscription
+  credential through `AI_API_KEY`. Do not reuse the OpenRouter-bound original120
+  collector as proof for this configuration. `AI_MODEL_PRICES` estimates
+  subscription usage from tokens, not provider billing. Verification must enforce
+  its approved cumulative request and cost caps; ordinary reservations are not
+  provider-enforced per-call price ceilings.
 - Sentry: application availability is unaffected. Use Render logs and synthetic checks until restored.
 
 ### Analyst reports “Model or budget unavailable”
@@ -91,16 +103,12 @@ Correlate the public `request_id` with scrubbed API logs. Do not request or copy
 
 ## Answer-mode rollout
 
-The authoritative launch configuration is
-[the release checklist](release-checklist.md#intended-launch-configuration).
-
-1. Deploy the pre-promotion verification build with `ANALYSIS_ANSWER_MODE=shadow` and
-   `ANALYSIS_SHADOW_SAMPLE_RATE=0.1`.
-2. Verify shadow validation, retrieval, cost, and latency gates without
-   inspecting or retaining prompt/evidence content.
-3. Set `ANALYSIS_ANSWER_MODE=llm_primary` only after the gates pass and the owner
-   approves the launch configuration.
-4. Roll back instantly with the drill below; no data or index rollback is required.
+1. Launch goes straight to `llm_primary` (owner decision, 2026-10-20); there is no
+   shadow stage. Pass the release readiness gate for the candidate first.
+2. Set `ANALYSIS_ANSWER_MODE=llm_primary` only after owner sign-off.
+3. Roll back instantly by setting the mode to `deterministic`; no data or index
+   rollback is required. The drill below documents both the deterministic kill
+   switch and an optional, separately authorized shadow run.
 
 ### Analyst runtime defaults
 
@@ -108,8 +116,9 @@ The authoritative launch configuration is
   provider otherwise reasons at high effort and truncates JSON.
 - `ANALYST_PREFETCH_ENABLED=true`. Prefetch runs one tool before the first model call for a clear
   question and counts toward the loop bounds.
-- Review cap 3,000 output tokens, answer cap 1,600, planning action 600 tokens. The analyst input
-  budget is `see config` (`ANALYST_INPUT_TOKENS`).
+- Review cap 3,000 output tokens and answer cap 1,600, matching the library defaults. Planning
+  action 600 tokens. The analyst input budget is the configured `ANALYST_INPUT_TOKENS` (16,000
+  UTF-8 bytes by default).
 - The reviewer number gate is mandatory. Do not disable it to clear latency.
 - Season-level records default to the regular season and the answer states the phase. The overall
   record appears only when asked.
@@ -131,9 +140,10 @@ keeps the flat reservation. Every measured run reconciles the ledger delta to se
 the open reservation delta. Check the ledger and provider usage separately after an incident.
 
 Measured latency on OpenRouter was p50 3,312 ms and p95 7,640 ms on 140 questions (70 questions in
-two trials) at the 16,000-byte input budget, with 2.74 provider calls per question. The release
-gate is p95 below four seconds and is not met. Treat a p95 rise above the recorded baseline as a
-regression. Go latency is not yet measured. Evidence is in the
+two trials) at the 16,000-byte input budget, with 2.74 provider calls per question. The owner
+relaxed the release gate from four seconds to 15 seconds on 2026-10-19, so the measured p95 meets
+the current local bound. Treat a p95 rise above the recorded baseline as a regression. Go and
+hosted latency are not yet measured. Evidence is in the
 [final measurement](release-evidence/llm-primary-20261021/final/README.md).
 
 ## Rollback drill: llm_primary to deterministic or shadow
@@ -174,6 +184,9 @@ Before changing anything, record the live API deployment ID and commit, `/health
    **Save and deploy**, re-verify, and alert the owner.
 
 ### Shadow: delivery stays deterministic, the loop is sampled
+
+Optional shadow execution remains available for separately authorized evaluation; it is not a
+readiness or deployment prerequisite.
 
 1. Set `ANALYSIS_ANSWER_MODE=shadow` and temporarily `ANALYSIS_SHADOW_SAMPLE_RATE=1.0`.
    Choose **Save and deploy**. Rate 1.0 makes the shadow path observable in a few requests;

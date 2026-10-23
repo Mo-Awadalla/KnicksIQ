@@ -16,10 +16,16 @@ _METRICS = {
     "point": "points",
     "points": "points",
     "scoring": "points",
+    "scorer": "points",
+    "scorers": "points",
     "rebound": "rebounds",
     "rebounds": "rebounds",
+    "rebounding": "rebounds",
     "assist": "assists",
     "assists": "assists",
+    "assisting": "assists",
+    "double double": "double_doubles",
+    "double doubles": "double_doubles",
     "steal": "steals",
     "steals": "steals",
     "block": "blocks",
@@ -32,6 +38,7 @@ _METRICS = {
     "scoring margin": "margin",
     "three": "three_pointers_made",
     "threes": "three_pointers_made",
+    "three point percentage": "three_point_percentage",
 }
 _METRIC_PHRASE = re.compile(
     r"\b(?:" + "|".join(re.escape(p) for p in sorted(_METRICS, key=len, reverse=True)) + r")\b"
@@ -62,11 +69,30 @@ def normalize(value: str) -> str:
 def is_record_request(question: str) -> bool:
     """A record spans both outcomes; explicit subsets still take precedence."""
     q = normalize(question.replace("–", "-").replace("—", "-"))
-    if re.search(r"\b(?:only|in)\s+(?:wins?|loss(?:es)?)\b", q):
+    if re.search(r"\b(?:only|in)\s+(?:(?:home|road|away)\s+)?(?:wins?|loss(?:es)?)\b", q):
         return False
+    all_games_outcome = bool(
+        re.search(r"\b(?:all|each)\s+(?:of\s+)?(?:those|these|the)\s+games\b", q)
+        and re.search(r"\b(?:win|wins|won|lose|loses|lost|losses)\b", q)
+    )
     return bool(
         re.search(r"\brecord\b", q)
+        or all_games_outcome
         or (re.search(r"\bwins?\b", q) and re.search(r"\bloss(?:es)?\b", q))
+        or (
+            re.search(r"^how (?:did|have|has)\b.*\b(?:perform|do|done|fare)\b", q)
+            and not metrics_in_text(question)
+            and not re.search(r"\b(?:scores?|margin|rating|run)\b", q)
+        )
+    )
+
+
+def is_game_score_request(question: str) -> bool:
+    """Detect a single game's score, not per-game player rates."""
+    q = normalize(question)
+    return bool(
+        not re.search(r"\bper\s+game\b", q)
+        and re.search(r"\b(?:the|final) score\b|\bscore (?:against|on|of)\b", q)
     )
 
 
@@ -75,7 +101,10 @@ METRIC_WORDS = frozenset(word for phrase in _METRICS for word in phrase.split())
 
 def metrics_in_text(question: str) -> set[str]:
     """All named metrics. A longer phrase owns its overlapping words."""
-    return {_METRICS[match[0]] for match in _METRIC_PHRASE.finditer(normalize(question))}
+    normalized = normalize(question)
+    if re.search(r"\b(?:games?|times)\b.*\bstart(?:ed)?\b", normalized):
+        return {"starts"}
+    return {_METRICS[match[0]] for match in _METRIC_PHRASE.finditer(normalized)}
 
 
 # Each period phrase and the periods it names. Scope checks reuse the same table, so a
@@ -116,8 +145,8 @@ def is_explanation(question: str) -> bool:
 
 def aggregations_in_text(question: str) -> set[Literal["average", "total"]]:
     values: set[Literal["average", "total"]] = set()
-    if _AVERAGE_WORDS.search(question):
+    if _AVERAGE_WORDS.search(question) or re.search(r"\bper[ -]appearance\b", question, re.I):
         values.add("average")
-    if re.search(r"\btotal\b", question, re.I):
+    if re.search(r"\b(?:total|sum)\b", question, re.I):
         values.add("total")
     return values

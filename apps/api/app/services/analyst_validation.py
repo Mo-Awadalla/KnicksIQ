@@ -5,6 +5,7 @@ from __future__ import annotations
 import logging
 from typing import TYPE_CHECKING
 
+from app.services.analyst_native import required_claim_groups
 from app.services.analyst_provider import encoded
 from app.services.analyst_review_checks import review_issues
 from app.services.answer_evidence import select_answer_evidence
@@ -16,6 +17,10 @@ from app.services.evidence_contracts import (
     split_review_spans,
     validate_review,
     validate_structure,
+)
+from app.services.population_facts import (
+    is_player_leader_request,
+    is_single_game_high_request,
 )
 
 if TYPE_CHECKING:
@@ -42,6 +47,62 @@ async def validate_answer(
             "Invalid claim value, release, baseline or reference. displayed_value must equal "
             "the claim's `value` field exactly, not the whole claim object."
         )
+    declared = [
+        loop.tools.claims[u.claim_id] for u in answer.claims if u.claim_id in loop.tools.claims
+    ]
+    requirements = required_claim_groups(loop)
+    declared_ids = {claim.claim_id for claim in declared}
+    record = requirements.get("record", [])
+    if any(not domain & declared_ids for domain in record):
+        return False, "Every requested record needs both canonical wins and losses claims."
+    if any(not domain & declared_ids for domain in requirements.get("statistics", [])):
+        return False, "Every available requested statistical population must be answered."
+    scope = loop.tools.scope
+    if "profile" in requirements:
+        groups = requirements["profile"]
+        if not groups or any(not domain & declared_ids for domain in groups):
+            return False, "Every requested player profile fact must be answered."
+    if scope is not None and not scope.player_ids:
+        if "team" in requirements:
+            groups = requirements["team"]
+            if not groups or any(not domain & declared_ids for domain in groups):
+                return False, "Every requested team comparison population must be answered."
+        elif is_player_leader_request(loop.tools.question):
+            games = loop.tools.selected_games(scope)
+            if scope.relative_game_count:
+                games = (
+                    games[: scope.relative_game_count]
+                    if scope.relative_game_order == "first"
+                    else games[-scope.relative_game_count :]
+                )
+            leader_metric_id = (
+                f"{scope.metric}:single_game_high"
+                if is_single_game_high_request(loop.tools.question)
+                else f"{scope.metric}:leaders"
+            )
+            if not any(
+                claim.subject_id == "team:NYK"
+                and claim.metric_id == leader_metric_id
+                and set(claim.game_ids or []) == {game.id for game in games}
+                for claim in declared
+            ):
+                return False, (
+                    "A team leader or single-game high requires the complete requested "
+                    "game population."
+                )
+    if "extreme" in requirements:
+        groups = requirements["extreme"]
+        if any(not domain & declared_ids for domain in groups) or len(declared) != len(groups):
+            return (
+                False,
+                "Every selected or tied game needs its complete game_score object "
+                "and every requested metric.",
+            )
+    elif loop.tools.narrative:
+        from app.services.canonical_narrative import complete_narrative_text
+
+        if not complete_narrative_text(answer.text, declared):
+            return False, "Every selected game and tied run must appear in the narrative."
     spans = split_review_spans(answer.text)
     try:
         selected = select_answer_evidence(

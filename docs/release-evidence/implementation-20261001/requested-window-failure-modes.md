@@ -1,0 +1,20 @@
+# Requested-window socket regression failure modes
+
+Recorded before the application repair. The public behavior is tested through a real Uvicorn TCP socket, SHA-pinned SQL archive loading, the real analyst orchestration/validation path, and isolated Redis replay. The only replacement is a scripted provider. No unit tests or paid calls are used.
+
+- A correct 34–12 record across all 46 post-break archive games can still fail the actual question when native claims omit the independently defined All-Star boundary. The first reviewer rejects the initially correct label, then a repaired writer inserts a false scope denial that a second reviewer accepts.
+- Adding metadata only to writer planning results does not fix the independent reviewer. Both decoded sent claim payloads and final native citations must retain `window.requested` from backend authority.
+- `requested` contains non-null authoritative `date_start`/`date_end`; relative windows also contain count, order and unit (`games` versus `appearances`). A supported single-sided All-Star boundary contains literal name `all_star_end`, date `2026-02-15`, relation `>` or `<=`, and NBA source URL. A scripted response must not invent these fields.
+- Before/after All-Star filters must keep their exact populations across all-phase, regular-season and playoff scopes. Empty combinations remain unavailable, not invented zero records.
+- Explicit January 1–31 and March 1–15 boundaries must not become observed game endpoints. A month-only December query uses December 1–31 even when no game occurs on the first/last day; road-win filtering must preserve only the independently selected winning road games.
+- Team first/last-N and complete leaders must retain relative selection meaning. Player last-N uses observed appearances, not a fixed team-game window; the player’s observed endpoint keys remain intact.
+- Adding the parent scope to grouped January/February, current-versus-season, or before/after player comparison claims can corrupt distinct populations. Existing group labels, observed dates, linked baseline IDs, nested before/after populations and the sourced All-Star boundary must remain intact.
+- Re-reading an original last-five question for a full-season baseline must not relabel that baseline as last five. Do not merge a January–February union into each separate month group.
+- Unsupported seasons, nonexistent seasons’ calendar boundaries, invalid dates, contradictory explicit dates and named windows, and ambiguous calendar definitions must not gain factual claims from a convenient default.
+- A deliberate scope denial cannot be a successful fix. The scripted independent reviewer rejects that denial once authoritative scope exists; bounded repair/fallback must not deliver it as LLM-validated truth.
+- Full native citation populations, calculation source references, exact values/denominators, and source hashes must survive independently from window metadata. Whole optional evidence omission is permitted; truncating a complete native population is not.
+- Actual transmitted response schemas and raw JSON bodies must validate. Writer/reviewer/repair input includes actual schema bytes and stays at or below 8,000; evidence remains capped at 6,000. Never raise either cap to make the regression pass.
+- Replaying an identical turn must return the committed response with zero additional model calls and unchanged isolated Redis credit.
+- Portable CI must exercise meaningful populations. The default synthetic archive has no road games, so the new test builds a temporary derived synthetic fixture by swapping teams and scores for several December wins. The opt-in approved archive is never modified. Empty supported phase combinations are asserted as guards, never skipped.
+
+Artifacts record expected populations and literals, the exact fixture digest, captured HTTP response/state, all sent schemas and raw scripted replies, input byte counts, native provenance, and replay accounting. Local green results do not approve a release or a new paid run.

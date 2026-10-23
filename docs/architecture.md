@@ -59,30 +59,54 @@ When `ANALYST_EVIDENCE_LOOP_ENABLED=true`, the request runs one bounded evidence
 loop:
 
 1. Load the active release and resolve the question scope. Season-level records
-   and stats default to the regular season. The answer states the phase.
+   and stats retain all phases unless explicitly or contextually restricted.
 2. Optionally run deterministic prefetch for a clear question: `discover_facts`,
    `get_team_stats` or `get_player_stats`. `ANALYST_PREFETCH_ENABLED` defaults to
    true.
-3. Let the model choose from nine registered tools. The backend computes every
+3. Let the model choose from eleven registered tools. The backend computes every
    number, emits an immutable `VerifiedClaim` with receipts and applies the
    resolved scope. The model can reference claim IDs, never overwrite values.
-4. Run the reviewer with prompt v4 and validator v2. A deterministic gate
-   requires every answer number to match a claim, receipt or capability value.
-   The model returns one verdict per backend-owned sentence span. One revision
-   and re-review are allowed.
+4. Run the reviewer with prompt `analyst-balanced-v6` and validator
+   `whole-answer-v3`. A deterministic gate requires every answer number to match
+   a claim, receipt or capability value. The model returns one verdict per
+   backend-owned sentence span. One revision and re-review are allowed.
 5. Deliver the validated answer with `llm_validated=true`. Any provider, budget,
    validation or deadline failure falls back to cited deterministic facts with
    `degraded=true` and `llm_validated=false`.
 
-The tools cover player and team statistics, window comparisons, fact discovery,
-archive search, evidence expansion, game flow, team splits and period scoring.
+The tools cover player and team statistics, player threshold games, window
+comparisons, fact discovery, archive search, evidence expansion, canonical game
+narratives, game flow, team splits and period scoring.
 Period and play-by-play questions are in scope. The fallback and the team tools
-apply the same regular-season default, and opponent matchups keep all phases.
+apply the same resolved population, including explicit and inherited phase restrictions.
+
+When an opponent appears in an ambiguous single-game question, the API applies
+explicit win, loss, closest, and biggest-win conditions to final scores and
+lead-change conditions to play-by-play before asking which game was meant. A
+lost lead requires the opponent to take the lead after NYK led. A comeback
+requires NYK to lead after trailing, while an erased deficit can include a
+later tie. A lost lead can still end in a Knicks win. One fit proceeds, several
+list only matches, and zero matches are reported without inventing a game.
+Missing, nonmonotonic, or unreconciled scoreboards trigger an unverified-data
+clarification instead of being counted as a match or a zero-match result.
+For a uniquely selected lead-change game, its narrative claim includes the final
+score and the first verified transition pair for each requested condition, keeping
+the evidence complete without overwhelming the writer/reviewer source budget.
+These strict-lead and tie-inclusive deficit-erasure definitions are implementation
+drafts pending owner review.
+
+With the evidence loop disabled, deterministic requests naming one opponent
+resolve lead-change conditions before generic archive retrieval. A single
+verified fit returns its canonical narrative claim and citations without
+inferring a cause beyond the observed score transitions.
 
 The deterministic modes remain. `deterministic` bypasses planning and synthesis.
 `shadow` returns the deterministic response and validates a sampled candidate in
-the same metered loop. `llm_primary` returns the validated model answer. A
-validated refusal sets `refused=true` with `llm_validated=true` and
+the same metered loop; the non-evidence path schedules its sampled candidate in
+the background. `llm_primary` returns the validated model answer. Any
+vector, model, Redis budget, timeout, parsing, validation or deadline failure
+returns cited deterministic facts with `degraded=true` and `llm_validated=false`.
+A validated refusal sets `refused=true` with `llm_validated=true` and
 `degraded=false`; the flag is not an error signal.
 
 Production routing deliberately excludes ingestion, job enqueue, run

@@ -1,0 +1,42 @@
+{
+  "tested_commit": "976eb7c38e553844e3e992f89a3fa6e3a4560d28",
+  "workflow_name": "CI",
+  "event": "push",
+  "run_id": 39524555365,
+  "run_attempt": 1,
+  "url": "https://github.com/Mo-Awadalla/KnicksIQ/actions/runs/39524555365",
+  "conclusion": "success",
+  "created_at": "2026-10-21T00:58:43Z",
+  "updated_at": "2026-10-21T01:06:02Z",
+  "jobs": [
+    {
+      "name": "backend",
+      "url": "https://github.com/Mo-Awadalla/KnicksIQ/actions/runs/39524555365/job/118976052008",
+      "conclusion": "success",
+      "started_at": "2026-10-21T00:58:46Z",
+      "completed_at": "2026-10-21T01:06:01Z"
+    },
+    {
+      "name": "frontend",
+      "url": "https://github.com/Mo-Awadalla/KnicksIQ/actions/runs/39524555365/job/118976052180",
+      "conclusion": "success",
+      "started_at": "2026-10-21T00:58:46Z",
+      "completed_at": "2026-10-21T01:00:55Z"
+    },
+    {
+      "name": "security",
+      "url": "https://github.com/Mo-Awadalla/KnicksIQ/actions/runs/39524555365/job/118976052199",
+      "conclusion": "success",
+      "started_at": "2026-10-21T00:58:46Z",
+      "completed_at": "2026-10-21T01:01:44Z"
+    },
+    {
+      "name": "containers",
+      "url": "https://github.com/Mo-Awadalla/KnicksIQ/actions/runs/39524555365/job/118976052513",
+      "conclusion": "success",
+      "started_at": "2026-10-21T00:58:45Z",
+      "completed_at": "2026-10-21T01:00:38Z"
+    }
+  ],
+  "scope": "Hosted CI on final merged code. Not official 120/50 evaluation, hosted SLO, owner approval or deployment authorization."
+}

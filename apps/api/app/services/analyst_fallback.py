@@ -12,6 +12,8 @@ from typing import TYPE_CHECKING
 from app.services.analyst_prefetch import flow_requested, period_requested, split_requested
 from app.services.analyst_tool_registry import recovery_tool
 from app.services.evidence_contracts import ToolCall, ToolResult, VerifiedClaim
+from app.services.player_threshold_games import is_player_threshold_question
+from app.services.population_facts import is_player_leader_request
 from app.services.query_text import is_record_request
 
 if TYPE_CHECKING:
@@ -104,6 +106,8 @@ def _family(tools) -> str:
         return "game"
     if re_search_discovery(question):
         return "discovery"
+    if is_player_leader_request(question):
+        return "leader"
     if _EXTREME.search(question):
         return "extreme"
     if scope.player_ids:
@@ -202,6 +206,15 @@ def fallback_claims(loop: AnalystLoop) -> list[VerifiedClaim]:
                         or (claim.season_type is not None and claim_games <= expected_games)
                     )
                 )
+            elif family == "leader":
+                relevant = (
+                    claim.subject_id == "team:NYK"
+                    and (
+                        claim.metric_id.endswith(":leaders")
+                        or claim.metric_id.endswith(":single_game_high")
+                    )
+                    and claim_games <= expected_games
+                )
             elif family == "extreme":
                 subject_ok = not scope.player_ids or claim.subject_id in {
                     f"player:{pid}" for pid in scope.player_ids
@@ -266,11 +279,33 @@ def recovery_call(tools) -> ToolCall:
     """The one tool a failed turn runs: the same question shape that picks a tool up front."""
     scope = tools.scope
     if period_requested(tools.question, scope):
-        return ToolCall(name="get_period_scoring", question=tools.question)
+        requested = set(scope.requested_aggregations) if scope is not None else set()
+        asks_total = "total" in requested or bool(
+            re.search(r"\b(?:total|sum)\b", tools.question, re.I)
+        )
+        supports_period_report = bool(
+            scope is not None
+            and scope.metric in {None, "points"}
+            and not is_record_request(tools.question)
+        )
+        if supports_period_report and not asks_total:
+            return ToolCall(name="get_period_scoring", question=tools.question)
+        # A total or a non-scoring metric is not the period tool's contract; the team
+        # handler rejects the period scope instead of returning unrequested averages.
+        return ToolCall(name="get_team_stats", question=tools.question, aggregation="total")
     if flow_requested(tools.question):
         return ToolCall(name="get_game_flow", question=tools.question)
+    if scope is not None and not scope.player_ids and is_record_request(tools.question):
+        # A record retains both outcomes; a split would answer it with bucket claims.
+        return ToolCall(name="get_team_stats", question=tools.question, aggregation="total")
+    if scope is not None and tools.requested_team_groups():
+        # Backend-selected comparison groups use the team comparison contract, not the
+        # situational split buckets (which have different metric IDs).
+        return ToolCall(name="get_team_stats", question=tools.question, aggregation="total")
     if split_requested(tools.question, scope):
         return ToolCall(name="get_team_splits", question=tools.question)
+    if scope and scope.player_ids and is_player_threshold_question(tools.question):
+        return ToolCall(name="find_player_games", question=tools.question)
     spec = recovery_tool(
         "discovery"
         if re_search_discovery(tools.question)

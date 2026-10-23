@@ -17,14 +17,17 @@ from app.api.analysis_models import AnalysisCitation, AnalysisQueryRequest, Anal
 from app.api.analysis_policy import _retrieval_limitation_note, _unknown_data_question
 from app.api.analysis_presenters import _format_answer, _possession_evidence_note, _score_line
 from app.api.analysis_retrieval import _matching_games, _schedule_shadow
+from app.models.dataset_release import DatasetRelease
 from app.models.game import Game
 from app.models.game_event import GameEvent
 from app.services.archive_retrieval import (
     ArchiveEvidence,
 )
+from app.services.canonical_narrative import build_narrative, select_narrative
 from app.services.possession_chunks import chunk_evidence
-from app.services.query_classifier import QueryClassifierResult
+from app.services.query_classifier import QueryClassifierResult, classify_query
 from app.services.rag import search_possession_chunks, search_season_docs
+from app.services.releases import restrict_to_active_release
 from app.services.retrieval_planner import (
     deterministic_retrieval_plan,
 )
@@ -316,3 +319,99 @@ async def answer_narrative_query(
             f"do not establish why the defense succeeded.\n\n{response.answer}"
         )
     return response
+
+
+async def _deterministic_lead_narrative_response(
+    db: AsyncSession,
+    question: str,
+    *,
+    season: str,
+    game_id: int | None,
+    response_metadata: dict[str, Any],
+) -> AnalysisQueryResponse:
+    def clarification(message: str) -> AnalysisQueryResponse:
+        return AnalysisQueryResponse(
+            **response_metadata,
+            answer=_format_answer(direct_answer=message),
+            route="clarification",
+            classifier=classify_query(question).as_dict(),
+            evidence=[],
+            warnings=["unverified_game_condition"],
+            citations=[],
+            tool_calls=[{"tool": "get_game_narrative", "result_count": 0}],
+        )
+
+    if game_id is None:
+        return clarification(
+            "I cannot verify the requested lead-change condition from the selected game. "
+            "Which archived game date should I use?"
+        )
+    game_stmt = restrict_to_active_release(
+        select(Game).where(Game.id == game_id, Game.season == season)
+    )
+    game = (await db.execute(game_stmt)).scalar_one_or_none()
+    if game is None:
+        return clarification(
+            "I cannot verify the selected game's lead-change condition from the active archive. "
+            "Which archived game date should I use?"
+        )
+    release = await db.get(DatasetRelease, game.release_id)
+    if release is None or release.season != season:
+        return clarification(
+            "I cannot verify the selected game's lead-change condition from the active archive. "
+            "Which archived game date should I use?"
+        )
+    selection = select_narrative(question, [game])
+    if selection is None or selection.kind != "lead_changes":
+        return clarification(
+            "I cannot verify the requested lead change from this game's canonical score sequence."
+        )
+    result = await build_narrative(db, release, selection)
+    if result.status != "ok" or len(result.claims) != 1:
+        return clarification(
+            result.message
+            or "I cannot verify the requested lead change from this game's score sequence."
+        )
+    claim = result.claims[0]
+    evidence_by_id = {item.evidence_id: item for item in result.evidence}
+    citations = []
+    for evidence_id in claim.supporting_evidence_ids[:3]:
+        evidence = evidence_by_id.get(evidence_id)
+        if evidence is None:
+            return clarification(
+                "I cannot verify the requested lead change from this game's score sequence."
+            )
+        citations.append(
+            AnalysisCitation(
+                claim=claim.statement,
+                type="verified_claim",
+                title=claim.statement,
+                game_id=evidence.game_id,
+                source_name=evidence.source_name,
+                source_url=evidence.source_url,
+                metadata={
+                    "claim": claim.model_dump(mode="json"),
+                    "evidence_id": evidence_id,
+                },
+            )
+        )
+    if not citations:
+        return clarification(
+            "I cannot verify the requested lead change from this game's score sequence."
+        )
+    return AnalysisQueryResponse(
+        **response_metadata,
+        answer=_format_answer(
+            direct_answer=claim.statement,
+            limitation_note=(
+                "The archive contains the verified scoreboard sequence, but does not "
+                "establish the cause or mechanism of the lead change."
+            ),
+        ),
+        route="retrieval_rag",
+        classifier=classify_query(question).as_dict(),
+        evidence=[item.model_dump(mode="json") for item in result.evidence],
+        warnings=[],
+        citations=citations,
+        tool_calls=[{"tool": "get_game_narrative", "result_count": len(result.claims)}],
+    )
