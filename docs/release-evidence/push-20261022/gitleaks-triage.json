@@ -1,0 +1,98 @@
+{
+  "scanned_head": "ec9b4a9",
+  "comparison_base": "b2f25cc",
+  "findings": 54,
+  "unclassified": 0,
+  "policy": "Only exact commit, path, rule and line fingerprints are exempted. No rule or path is disabled.",
+  "groups": {
+    "public_model_setting": {
+      "evidence": "The matched value is the documented reasoning configuration, not a credential.",
+      "fingerprints": [
+        "9ac178f7de94a00430d4511e83cfc06f194adef9:docs/release-evidence/llm-primary-20261021/final-go/README.md:generic-api-key:8",
+        "d840dc5505366e1f03cb3cf7df5f54e5d33669ea:docs/release-evidence/llm-primary-20261021/w4-bench/README.md:generic-api-key:16",
+        "a28cf3673f72e3b1c08138fdb0ecbcd7daa837e9:docs/release-evidence/llm-primary-20261021/w4-reviewer/README.md:generic-api-key:12"
+      ]
+    },
+    "local_test_fixture": {
+      "evidence": "A fixed IP-hashing fixture in the local adversarial test environment, not a deployed secret.",
+      "fingerprints": [
+        "556d52613813f2494df15f34081dbc54e0ca363c:tools/release/adversarial_support.py:generic-api-key:71"
+      ]
+    },
+    "artifact_sha256": {
+      "evidence": "Matches SHA-256 of the named artifact at the finding commit.",
+      "fingerprints": [
+        "aec6b583826e7835a4a7770d6295b393e92d44ad:docs/release-evidence/reconciliation-20260928/artifact-hashes.json:generic-api-key:37",
+        "aec6b583826e7835a4a7770d6295b393e92d44ad:docs/release-evidence/reconciliation-20260928/artifact-hashes.json:generic-api-key:48",
+        "aec6b583826e7835a4a7770d6295b393e92d44ad:docs/release-evidence/reconciliation-20260928/artifact-hashes.json:generic-api-key:60",
+        "aec6b583826e7835a4a7770d6295b393e92d44ad:docs/release-evidence/reconciliation-20260928/local-ci.json:generic-api-key:43"
+      ]
+    },
+    "container_tag": {
+      "evidence": "A locally built Docker image tag containing a verified Git commit abbreviation.",
+      "fingerprints": [
+        "aec6b583826e7835a4a7770d6295b393e92d44ad:docs/release-evidence/reconciliation-20260928/container-api.txt:generic-api-key:97",
+        "aec6b583826e7835a4a7770d6295b393e92d44ad:docs/release-evidence/reconciliation-20260928/container-api.txt:generic-api-key:98",
+        "aec6b583826e7835a4a7770d6295b393e92d44ad:docs/release-evidence/reconciliation-20260928/container-api.txt:generic-api-key:99",
+        "aec6b583826e7835a4a7770d6295b393e92d44ad:docs/release-evidence/reconciliation-20260928/trivy-api.json:generic-api-key:4",
+        "aec6b583826e7835a4a7770d6295b393e92d44ad:docs/release-evidence/reconciliation-20260928/trivy-api.json:generic-api-key:35",
+        "aec6b583826e7835a4a7770d6295b393e92d44ad:docs/release-evidence/reconciliation-20260928/trivy-api.json:generic-api-key:369"
+      ]
+    },
+    "render_resource_id": {
+      "evidence": "A Render service or deployment resource identifier. The recorded API requests use separate bearer authentication.",
+      "fingerprints": [
+        "aec6b583826e7835a4a7770d6295b393e92d44ad:docs/release-evidence/reconciliation-20260928/read_only_checks.py:generic-api-key:61",
+        "aec6b583826e7835a4a7770d6295b393e92d44ad:docs/release-evidence/reconciliation-20260928/release-record.json:generic-api-key:138",
+        "fc903d78d7209dcf304d27657db549fbf6ff7ca7:docs/release-evidence/release-record.json:generic-api-key:58"
+      ]
+    },
+    "public_signing_fingerprint": {
+      "evidence": "The Python base-image GPG public-key fingerprint in image metadata, not private key material.",
+      "fingerprints": [
+        "aec6b583826e7835a4a7770d6295b393e92d44ad:docs/release-evidence/reconciliation-20260928/trivy-api.json:generic-api-key:68",
+        "aec6b583826e7835a4a7770d6295b393e92d44ad:docs/release-evidence/reconciliation-20260928/trivy-api.json:generic-api-key:251"
+      ]
+    },
+    "git_blob_id": {
+      "evidence": "Matches the named source file object in the manifest candidate commit.",
+      "fingerprints": [
+        "aec6b583826e7835a4a7770d6295b393e92d44ad:docs/release-evidence/reconciliation-20260928/source-identity.json:generic-api-key:8",
+        "aec6b583826e7835a4a7770d6295b393e92d44ad:docs/release-evidence/reconciliation-20260928/source-identity.json:generic-api-key:130",
+        "aec6b583826e7835a4a7770d6295b393e92d44ad:docs/release-evidence/reconciliation-20260928/source-identity.json:generic-api-key:238",
+        "aec6b583826e7835a4a7770d6295b393e92d44ad:docs/release-evidence/reconciliation-20260928/source-identity.json:generic-api-key:239",
+        "aec6b583826e7835a4a7770d6295b393e92d44ad:docs/release-evidence/reconciliation-20260928/source-identity.json:generic-api-key:434",
+        "aec6b583826e7835a4a7770d6295b393e92d44ad:docs/release-evidence/reconciliation-20260928/source-identity.json:generic-api-key:435",
+        "aec6b583826e7835a4a7770d6295b393e92d44ad:docs/release-evidence/reconciliation-20260928/source-identity.json:generic-api-key:570",
+        "aec6b583826e7835a4a7770d6295b393e92d44ad:docs/release-evidence/reconciliation-20260928/source-identity.json:generic-api-key:697",
+        "aec6b583826e7835a4a7770d6295b393e92d44ad:docs/release-evidence/reconciliation-20260928/source-identity.json:generic-api-key:698",
+        "aec6b583826e7835a4a7770d6295b393e92d44ad:docs/release-evidence/reconciliation-20260928/source-identity.json:generic-api-key:715",
+        "aec6b583826e7835a4a7770d6295b393e92d44ad:docs/release-evidence/reconciliation-20260928/source-identity.json:generic-api-key:716",
+        "aec6b583826e7835a4a7770d6295b393e92d44ad:docs/release-evidence/reconciliation-20260928/source-identity.json:generic-api-key:831",
+        "aec6b583826e7835a4a7770d6295b393e92d44ad:docs/release-evidence/reconciliation-20260928/source-identity.json:generic-api-key:832",
+        "aec6b583826e7835a4a7770d6295b393e92d44ad:docs/release-evidence/reconciliation-20260928/source-identity.json:generic-api-key:869",
+        "aec6b583826e7835a4a7770d6295b393e92d44ad:docs/release-evidence/reconciliation-20260928/source-identity.json:generic-api-key:1050",
+        "aec6b583826e7835a4a7770d6295b393e92d44ad:docs/release-evidence/reconciliation-20260928/source-identity.json:generic-api-key:1051",
+        "aec6b583826e7835a4a7770d6295b393e92d44ad:docs/release-evidence/reconciliation-20260928/source-identity.json:generic-api-key:1604",
+        "aec6b583826e7835a4a7770d6295b393e92d44ad:docs/release-evidence/reconciliation-20260928/source-identity.json:generic-api-key:1735",
+        "aec6b583826e7835a4a7770d6295b393e92d44ad:docs/release-evidence/reconciliation-20260928/source-identity.json:generic-api-key:1779",
+        "aec6b583826e7835a4a7770d6295b393e92d44ad:docs/release-evidence/reconciliation-20260928/source-identity.json:generic-api-key:1782",
+        "aec6b583826e7835a4a7770d6295b393e92d44ad:docs/release-evidence/reconciliation-20260928/source-identity.json:generic-api-key:1877",
+        "aec6b583826e7835a4a7770d6295b393e92d44ad:docs/release-evidence/reconciliation-20260928/source-identity.json:generic-api-key:1899",
+        "aec6b583826e7835a4a7770d6295b393e92d44ad:docs/release-evidence/reconciliation-20260928/source-identity.json:generic-api-key:1974",
+        "aec6b583826e7835a4a7770d6295b393e92d44ad:docs/release-evidence/reconciliation-20260928/source-identity.json:generic-api-key:2109",
+        "aec6b583826e7835a4a7770d6295b393e92d44ad:docs/release-evidence/reconciliation-20260928/source-identity.json:generic-api-key:2132",
+        "aec6b583826e7835a4a7770d6295b393e92d44ad:docs/release-evidence/reconciliation-20260928/source-identity.json:generic-api-key:2133",
+        "aec6b583826e7835a4a7770d6295b393e92d44ad:docs/release-evidence/reconciliation-20260928/source-identity.json:generic-api-key:2137",
+        "aec6b583826e7835a4a7770d6295b393e92d44ad:docs/release-evidence/reconciliation-20260928/source-identity.json:generic-api-key:2155",
+        "aec6b583826e7835a4a7770d6295b393e92d44ad:docs/release-evidence/reconciliation-20260928/source-identity.json:generic-api-key:2179",
+        "aec6b583826e7835a4a7770d6295b393e92d44ad:docs/release-evidence/reconciliation-20260928/source-identity.json:generic-api-key:2272",
+        "aec6b583826e7835a4a7770d6295b393e92d44ad:docs/release-evidence/reconciliation-20260928/source-identity.json:generic-api-key:3138",
+        "aec6b583826e7835a4a7770d6295b393e92d44ad:docs/release-evidence/reconciliation-20260928/source-identity.json:generic-api-key:3840",
+        "aec6b583826e7835a4a7770d6295b393e92d44ad:docs/release-evidence/reconciliation-20260928/source-identity.json:generic-api-key:3850",
+        "aec6b583826e7835a4a7770d6295b393e92d44ad:docs/release-evidence/reconciliation-20260928/source-identity.json:generic-api-key:3856",
+        "aec6b583826e7835a4a7770d6295b393e92d44ad:docs/release-evidence/reconciliation-20260928/source-identity.json:netlify-access-token:163"
+      ]
+    }
+  }
+}

@@ -1,0 +1,377 @@
+{
+  "release": "2025-26.20260928.1",
+  "live": true,
+  "cases": [
+    {
+      "question": "What were Brunson's average points, rebounds and assists in December?",
+      "expected_metrics": [
+        "assists:average",
+        "points:average",
+        "rebounds:average"
+      ],
+      "direct_claims": [
+        {
+          "metric": "points:average",
+          "value": 30.615384615384617
+        },
+        {
+          "metric": "rebounds:average",
+          "value": 3.230769230769231
+        },
+        {
+          "metric": "assists:average",
+          "value": 7.076923076923077
+        }
+      ],
+      "coverage": [
+        [
+          "Only observed appearances in the available archive.",
+          "The player did not appear in some selected games; those games are excluded."
+        ],
+        [
+          "Only observed appearances in the available archive.",
+          "The player did not appear in some selected games; those games are excluded."
+        ],
+        [
+          "Only observed appearances in the available archive.",
+          "The player did not appear in some selected games; those games are excluded."
+        ]
+      ],
+      "direct_passed": true,
+      "api": {
+        "answer": "Jalen Brunson: 30.6 points per appearance across 13 observed appearances in the 2025-26 regular season.",
+        "llm_validated": false,
+        "degraded": true,
+        "refused": false,
+        "state_committed": true,
+        "delivered_metrics": [
+          "points:average"
+        ],
+        "warnings": [
+          "Proposed wording did not pass evidence review."
+        ],
+        "trace": [
+          {
+            "stage": "prepare",
+            "tool": "session_and_release",
+            "latency_ms": 9
+          },
+          {
+            "stage": "prepare",
+            "tool": "prepare_total",
+            "latency_ms": 56
+          },
+          {
+            "stage": "prepare",
+            "tool": "archive_records",
+            "latency_ms": 19,
+            "games": 101,
+            "box_score_rows": 1384
+          },
+          {
+            "stage": "prepare",
+            "tool": "query_resolution",
+            "latency_ms": 36,
+            "resolved": true
+          },
+          {
+            "stage": "orchestrate",
+            "tool": "llm_orchestrate",
+            "schema": "Action",
+            "latency_ms": 1722,
+            "model": "deepseek-v4.1-flash",
+            "served_model": "deepseek-v4.1-flash",
+            "protocol": "chat",
+            "provider": null,
+            "prompt_tokens": 1725,
+            "completion_tokens": 122,
+            "total_tokens": 1847,
+            "reasoning_tokens": 0,
+            "finish_reason": "stop",
+            "content_kind": "string",
+            "provider_format_echo": false,
+            "input_bytes": 7019,
+            "response_bytes": 501,
+            "max_tokens": 600,
+            "http_ttfb_ms": 1720.7,
+            "http_elapsed_ms": 1721.2,
+            "contract_version": "analyst-evidence-v1",
+            "prompt_version": "analyst-balanced-v5",
+            "validator_version": "whole-answer-v3",
+            "action": "call_tools",
+            "tools_requested": [
+              "get_player_stats",
+              "get_player_stats",
+              "get_player_stats"
+            ]
+          },
+          {
+            "stage": "tool",
+            "tool": "get_player_stats",
+            "latency_ms": 77,
+            "status": "ok",
+            "claims": 1,
+            "evidence": 13,
+            "candidates": 0
+          },
+          {
+            "stage": "tool",
+            "tool": "get_player_stats",
+            "latency_ms": 47,
+            "status": "ok",
+            "claims": 1,
+            "evidence": 13,
+            "candidates": 0
+          },
+          {
+            "stage": "tool",
+            "tool": "get_player_stats",
+            "latency_ms": 44,
+            "status": "ok",
+            "claims": 1,
+            "evidence": 13,
+            "candidates": 0
+          },
+          {
+            "stage": "orchestrate",
+            "tool": "llm_orchestrate",
+            "schema": "Action",
+            "latency_ms": 2654,
+            "model": "deepseek-v4.1-flash",
+            "served_model": "deepseek-v4.1-flash",
+            "protocol": "chat",
+            "provider": null,
+            "prompt_tokens": 3991,
+            "completion_tokens": 347,
+            "total_tokens": 4338,
+            "reasoning_tokens": 0,
+            "finish_reason": "stop",
+            "content_kind": "string",
+            "provider_format_echo": false,
+            "input_bytes": 14029,
+            "response_bytes": 952,
+            "max_tokens": 1600,
+            "http_ttfb_ms": 2653.0,
+            "http_elapsed_ms": 2653.8,
+            "contract_version": "analyst-evidence-v1",
+            "prompt_version": "analyst-balanced-v5",
+            "validator_version": "whole-answer-v3",
+            "action": "answer_from_available_evidence",
+            "tools_requested": []
+          },
+          {
+            "stage": "revise",
+            "tool": "llm_orchestrate",
+            "schema": "ProposedAnswer",
+            "latency_ms": 2503,
+            "model": "deepseek-v4.1-flash",
+            "served_model": "deepseek-v4.1-flash",
+            "protocol": "chat",
+            "provider": null,
+            "prompt_tokens": 3616,
+            "completion_tokens": 336,
+            "total_tokens": 3952,
+            "reasoning_tokens": 0,
+            "finish_reason": "stop",
+            "content_kind": "string",
+            "provider_format_echo": false,
+            "input_bytes": 11919,
+            "response_bytes": 908,
+            "max_tokens": 1600,
+            "http_ttfb_ms": 2501.7,
+            "http_elapsed_ms": 2502.6,
+            "contract_version": "analyst-evidence-v1",
+            "prompt_version": "analyst-balanced-v5",
+            "validator_version": "whole-answer-v3"
+          }
+        ],
+        "passed": false
+      }
+    },
+    {
+      "question": "What were Brunson's total and average points in December?",
+      "expected_metrics": [
+        "points:average",
+        "points:total"
+      ],
+      "direct_claims": [
+        {
+          "metric": "points:total",
+          "value": 398
+        },
+        {
+          "metric": "points:average",
+          "value": 30.615384615384617
+        }
+      ],
+      "coverage": [
+        [
+          "Only observed appearances in the available archive.",
+          "The player did not appear in some selected games; those games are excluded."
+        ],
+        [
+          "Only observed appearances in the available archive.",
+          "The player did not appear in some selected games; those games are excluded."
+        ]
+      ],
+      "direct_passed": true,
+      "api": {
+        "answer": "In the December 2025 window (Dec 2\u201331) of the 2025-26 regular season, Jalen Brunson scored 398 total points across 13 observed appearances. The supplied archive covers only 5 of those games individually, so a game-by-game average cannot be verified here; the claim's per-appearance average is not included in the supplied values.",
+        "llm_validated": true,
+        "degraded": false,
+        "refused": false,
+        "state_committed": true,
+        "delivered_metrics": [
+          "points:total"
+        ],
+        "warnings": [],
+        "trace": [
+          {
+            "stage": "prepare",
+            "tool": "session_and_release",
+            "latency_ms": 7
+          },
+          {
+            "stage": "prepare",
+            "tool": "prepare_total",
+            "latency_ms": 103
+          },
+          {
+            "stage": "prepare",
+            "tool": "archive_records",
+            "latency_ms": 59,
+            "games": 101,
+            "box_score_rows": 1384
+          },
+          {
+            "stage": "prepare",
+            "tool": "query_resolution",
+            "latency_ms": 43,
+            "resolved": true
+          },
+          {
+            "stage": "orchestrate",
+            "tool": "llm_orchestrate",
+            "schema": "Action",
+            "latency_ms": 1345,
+            "model": "deepseek-v4.1-flash",
+            "served_model": "deepseek-v4.1-flash",
+            "protocol": "chat",
+            "provider": null,
+            "prompt_tokens": 1721,
+            "completion_tokens": 50,
+            "total_tokens": 1771,
+            "reasoning_tokens": 0,
+            "finish_reason": "stop",
+            "content_kind": "string",
+            "provider_format_echo": false,
+            "input_bytes": 6994,
+            "response_bytes": 197,
+            "max_tokens": 600,
+            "http_ttfb_ms": 1343.8,
+            "http_elapsed_ms": 1344.6,
+            "contract_version": "analyst-evidence-v1",
+            "prompt_version": "analyst-balanced-v5",
+            "validator_version": "whole-answer-v3",
+            "action": "call_tools",
+            "tools_requested": [
+              "get_player_stats"
+            ]
+          },
+          {
+            "stage": "tool",
+            "tool": "get_player_stats",
+            "latency_ms": 69,
+            "status": "ok",
+            "claims": 1,
+            "evidence": 13,
+            "candidates": 0
+          },
+          {
+            "stage": "orchestrate",
+            "tool": "llm_orchestrate",
+            "schema": "Action",
+            "latency_ms": 2182,
+            "model": "deepseek-v4.1-flash",
+            "served_model": "deepseek-v4.1-flash",
+            "protocol": "chat",
+            "provider": null,
+            "prompt_tokens": 3736,
+            "completion_tokens": 238,
+            "total_tokens": 3974,
+            "reasoning_tokens": 0,
+            "finish_reason": "stop",
+            "content_kind": "string",
+            "provider_format_echo": false,
+            "input_bytes": 12898,
+            "response_bytes": 629,
+            "max_tokens": 1600,
+            "http_ttfb_ms": 2181.3,
+            "http_elapsed_ms": 2181.5,
+            "contract_version": "analyst-evidence-v1",
+            "prompt_version": "analyst-balanced-v5",
+            "validator_version": "whole-answer-v3",
+            "action": "answer_from_available_evidence",
+            "tools_requested": []
+          },
+          {
+            "stage": "revise",
+            "tool": "llm_orchestrate",
+            "schema": "ProposedAnswer",
+            "latency_ms": 2497,
+            "model": "deepseek-v4.1-flash",
+            "served_model": "deepseek-v4.1-flash",
+            "protocol": "chat",
+            "provider": null,
+            "prompt_tokens": 3271,
+            "completion_tokens": 299,
+            "total_tokens": 3570,
+            "reasoning_tokens": 0,
+            "finish_reason": "stop",
+            "content_kind": "string",
+            "provider_format_echo": false,
+            "input_bytes": 10535,
+            "response_bytes": 813,
+            "max_tokens": 1600,
+            "http_ttfb_ms": 2496.0,
+            "http_elapsed_ms": 2496.8,
+            "contract_version": "analyst-evidence-v1",
+            "prompt_version": "analyst-balanced-v5",
+            "validator_version": "whole-answer-v3"
+          },
+          {
+            "stage": "review",
+            "tool": "llm_review",
+            "schema": "AnswerReview",
+            "latency_ms": 6301,
+            "model": "gpt-6-luna",
+            "served_model": "gpt-6-luna",
+            "protocol": "responses",
+            "provider": null,
+            "prompt_tokens": 3533,
+            "completion_tokens": 280,
+            "total_tokens": 3813,
+            "reasoning_tokens": 0,
+            "finish_reason": "stop",
+            "content_kind": "string",
+            "provider_format_echo": false,
+            "input_bytes": 12158,
+            "response_bytes": 958,
+            "max_tokens": 3000,
+            "http_ttfb_ms": 6300.1,
+            "http_elapsed_ms": 6300.3,
+            "contract_version": "analyst-evidence-v1",
+            "prompt_version": "analyst-balanced-v5",
+            "validator_version": "whole-answer-v3",
+            "review_spans": 2,
+            "review_empty_id_spans": 0,
+            "review_attachable_spans": 0,
+            "review_accepted": true
+          }
+        ],
+        "passed": false
+      }
+    }
+  ],
+  "passed": false
+}

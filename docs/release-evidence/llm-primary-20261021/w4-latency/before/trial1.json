@@ -1,0 +1,130 @@
+{
+  "scope": "meets_expectation now requires: not declined or clarification, validated delivery, substantive content, no unbacked number or entity, required facts present, no echo, and no unbacked causal hedge. claim_backed additionally requires cited claim values.",
+  "mode": "live",
+  "dataset": "/Users/mohamedawadalla/.local/share/knicksiq/worktrees/w4-latency/apps/api/app/evaluation/questions.jsonl",
+  "questions": 30,
+  "old_meets_expectation": 18,
+  "meets_expectation": 17,
+  "claim_backed_meets_expectation": 17,
+  "delta": 1,
+  "by_answerable": {
+    "answerable": {
+      "questions": 26,
+      "old": 16,
+      "new": 13
+    },
+    "unsupported": {
+      "questions": 4,
+      "old": 2,
+      "new": 4
+    }
+  },
+  "survived": [
+    "aliases_typos-001",
+    "comparisons-001",
+    "date_range_last_n-001",
+    "exact_statistics-001",
+    "single_game_narrative-001",
+    "turning_points-001",
+    "aliases_typos-002",
+    "date_range_last_n-002",
+    "exact_statistics-002",
+    "unsupported-002",
+    "date_range_last_n-003",
+    "aliases_typos-004",
+    "comparisons-004",
+    "unsupported-004",
+    "aliases_typos-005"
+  ],
+  "lost": [
+    {
+      "id": "exact_statistics-003",
+      "category": "exact_statistics",
+      "failures": [
+        "unbacked_numbers"
+      ],
+      "reason": "unbacked_number",
+      "answer": "In the 2025-26 regular season (82 archived Knicks games), New York averaged 116.5 points per game, with a +6.3 average margin per game (53-29 record)."
+    },
+    {
+      "id": "date_range_last_n-004",
+      "category": "date_range_last_n",
+      "failures": [
+        "unbacked_numbers"
+      ],
+      "reason": "unbacked_number",
+      "answer": "Across 15 archived Knicks regular-season games from January 1\u201331, New York went 7-8, scoring 1,652 total points with a +44 aggregate margin. That is a slightly sub-.500 month with a positive total scoring margin."
+    },
+    {
+      "id": "exact_statistics-004",
+      "category": "exact_statistics",
+      "failures": [
+        "unbacked_numbers"
+      ],
+      "reason": "unbacked_number",
+      "answer": "In the 2025-26 regular season in the available archive, the Knicks' average margin was about +6.3 points per game over 82 games."
+    }
+  ],
+  "gained": [
+    {
+      "id": "unsupported-001",
+      "failures": []
+    },
+    {
+      "id": "unsupported-003",
+      "failures": []
+    }
+  ],
+  "failure_counts": {
+    "not_validated": 8,
+    "no_cited_claims": 6,
+    "clarification": 4,
+    "unbacked_numbers": 3,
+    "declined": 2,
+    "not_substantive": 1
+  },
+  "by_category": {
+    "aliases_typos": {
+      "questions": 5,
+      "old": 4,
+      "new": 4,
+      "claim_backed": 4
+    },
+    "comparisons": {
+      "questions": 5,
+      "old": 2,
+      "new": 2,
+      "claim_backed": 2
+    },
+    "date_range_last_n": {
+      "questions": 4,
+      "old": 4,
+      "new": 3,
+      "claim_backed": 3
+    },
+    "exact_statistics": {
+      "questions": 4,
+      "old": 4,
+      "new": 2,
+      "claim_backed": 2
+    },
+    "single_game_narrative": {
+      "questions": 4,
+      "old": 1,
+      "new": 1,
+      "claim_backed": 1
+    },
+    "turning_points": {
+      "questions": 4,
+      "old": 1,
+      "new": 1,
+      "claim_backed": 1
+    },
+    "unsupported": {
+      "questions": 4,
+      "old": 2,
+      "new": 4,
+      "claim_backed": 4
+    }
+  }
+}

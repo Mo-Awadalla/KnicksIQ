@@ -1,0 +1,71 @@
+F
+=================================== FAILURES ===================================
+_______ test_evidence_loop_shadow_http[shadow-0.0-True-True-False-False] _______
+
+client = <httpx.AsyncClient object at 0x10dac5fd0>
+local_redis = <redis.asyncio.client.Redis(<redis.asyncio.connection.ConnectionPool(<redis.asyncio.connection.Connection(socket_timeout=1,host=127.0.0.1,port=59465)>)>)>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10dab89d0>
+mode = 'shadow', rate = 0.0, sampled = True, budget = True, malformed = False
+calls = False
+
+    @pytest.mark.parametrize(
+        ("mode", "rate", "sampled", "budget", "malformed", "calls"),
+        [
+            ("shadow", 0.0, True, True, False, False),
+            ("shadow", 1.0, False, True, False, True),
+            ("shadow", 0.1, True, True, False, True),
+            ("shadow", 0.1, False, True, False, False),
+            ("llm_primary", 0.0, False, True, False, True),
+            ("shadow", 1.0, True, False, False, False),
+            ("shadow", 1.0, True, True, True, True),
+        ],
+    )
+    async def test_evidence_loop_shadow_http(
+        client, local_redis, monkeypatch, mode, rate, sampled, budget, malformed, calls
+    ):
+        settings = get_settings()
+        monkeypatch.setattr(settings, "analyst_evidence_loop_enabled", True)
+        monkeypatch.setattr(settings, "analysis_answer_mode", mode)
+        monkeypatch.setattr(settings, "analysis_shadow_sample_rate", rate)
+        async with AsyncSessionLocal() as db:
+            await _seed_release_stats(db)
+        if budget:
+            await local_redis.set(f"ai-budget:{datetime.now(UTC):%Y-%m}", 0)
+        adapter = ScriptedAdapter()
+        if malformed:
+            async def invalid_generate(**kwargs):
+                adapter.prompts.append(kwargs)
+                return '{"action":"invented"}'
+    
+            monkeypatch.setattr(adapter, "generate", invalid_generate)
+        monkeypatch.setattr(analyst_loop, "get_llm_adapter", lambda: adapter)
+        request_id = next(
+            f"sampling-{i}" for i in range(1000) if _sample_shadow(f"sampling-{i}", 0.1) == sampled
+        )
+        payload = {
+            "question": "What did Jalen Brunson average in his last 2 appearances?",
+            "season": "2025-26",
+            "turn_id": "shadow-sampling-first-turn",
+            "expected_revision": 0,
+        }
+        response = await client.post(
+            "/analysis/query", json=payload, headers={"x-request-id": request_id}
+        )
+        assert response.status_code == 200, response.text
+        body = response.json()
+>       assert bool(adapter.prompts) == calls
+E       AssertionError: assert True == False
+E        +  where True = bool([{'schema': {'$defs': {'ClaimUse': {'additionalProperties': False, 'properties': {'claim_id': {...}, 'displayed_value'...-26'], 'season_types': ['regular'], 'data_types': ['game_scores', 'player_box_scores', 'archive_evidence'], ...}, ...}])
+E        +    where [{'schema': {'$defs': {'ClaimUse': {'additionalProperties': False, 'properties': {'claim_id': {...}, 'displayed_value'...-26'], 'season_types': ['regular'], 'data_types': ['game_scores', 'player_box_scores', 'archive_evidence'], ...}, ...}] = <app.tests.test_analyst_contracts.ScriptedAdapter object at 0x10dac7b60>.prompts
+
+apps/api/app/tests/test_analyst_shadow.py:59: AssertionError
+---------------------------- Captured stdout setup -----------------------------
+[2m2026-09-28T21:15:07.343794Z[0m [[32m[1minfo     [0m] [1mknicksiq.api.starting         [0m [36menvironment[0m=[35mdevelopment[0m [36mtest_mode[0m=[35mTrue[0m
+----------------------------- Captured stdout call -----------------------------
+[2m2026-09-28T21:15:07.593816Z[0m [[32m[1minfo     [0m] [1maggregate.request             [0m [36mfeature[0m=[35manalyst[0m [36mlatency_bucket[0m=[35mlt_1s[0m [36moutcome[0m=[35msuccess[0m
+--------------------------- Captured stdout teardown ---------------------------
+[2m2026-09-28T21:15:07.701520Z[0m [[32m[1minfo     [0m] [1mknicksiq.api.stopping         [0m
+=========================== short test summary info ============================
+FAILED apps/api/app/tests/test_analyst_shadow.py::test_evidence_loop_shadow_http[shadow-0.0-True-True-False-False]
+!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!
+1 failed in 0.43s

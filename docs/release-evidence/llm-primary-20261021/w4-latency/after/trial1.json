@@ -1,0 +1,121 @@
+{
+  "scope": "meets_expectation now requires: not declined or clarification, validated delivery, substantive content, no unbacked number or entity, required facts present, no echo, and no unbacked causal hedge. claim_backed additionally requires cited claim values.",
+  "mode": "live",
+  "dataset": "/Users/mohamedawadalla/.local/share/knicksiq/worktrees/w4-latency/apps/api/app/evaluation/questions.jsonl",
+  "questions": 30,
+  "old_meets_expectation": 17,
+  "meets_expectation": 17,
+  "claim_backed_meets_expectation": 17,
+  "delta": 0,
+  "by_answerable": {
+    "answerable": {
+      "questions": 26,
+      "old": 15,
+      "new": 13
+    },
+    "unsupported": {
+      "questions": 4,
+      "old": 2,
+      "new": 4
+    }
+  },
+  "survived": [
+    "aliases_typos-001",
+    "date_range_last_n-001",
+    "exact_statistics-001",
+    "single_game_narrative-001",
+    "turning_points-001",
+    "aliases_typos-002",
+    "comparisons-002",
+    "date_range_last_n-002",
+    "exact_statistics-002",
+    "date_range_last_n-003",
+    "turning_points-003",
+    "unsupported-003",
+    "date_range_last_n-004",
+    "unsupported-004",
+    "aliases_typos-005"
+  ],
+  "lost": [
+    {
+      "id": "exact_statistics-003",
+      "category": "exact_statistics",
+      "failures": [
+        "unbacked_numbers"
+      ],
+      "reason": "unbacked_number",
+      "answer": "In the 2025-26 regular season (82 archived games), the Knicks averaged 116.45 points per game, with a per-game scoring margin of +6.33 (53-29 record)."
+    },
+    {
+      "id": "exact_statistics-004",
+      "category": "exact_statistics",
+      "failures": [
+        "unbacked_numbers"
+      ],
+      "reason": "unbacked_number",
+      "answer": "In the 2025-26 regular season, the Knicks' average margin was +6.33 points per game across 82 archived games (116.45 points scored per game, 53-29 record)."
+    }
+  ],
+  "gained": [
+    {
+      "id": "unsupported-001",
+      "failures": []
+    },
+    {
+      "id": "unsupported-002",
+      "failures": []
+    }
+  ],
+  "failure_counts": {
+    "not_validated": 8,
+    "clarification": 5,
+    "no_cited_claims": 5,
+    "declined": 2,
+    "unbacked_numbers": 2,
+    "not_substantive": 1
+  },
+  "by_category": {
+    "aliases_typos": {
+      "questions": 5,
+      "old": 3,
+      "new": 3,
+      "claim_backed": 3
+    },
+    "comparisons": {
+      "questions": 5,
+      "old": 1,
+      "new": 1,
+      "claim_backed": 1
+    },
+    "date_range_last_n": {
+      "questions": 4,
+      "old": 4,
+      "new": 4,
+      "claim_backed": 4
+    },
+    "exact_statistics": {
+      "questions": 4,
+      "old": 4,
+      "new": 2,
+      "claim_backed": 2
+    },
+    "single_game_narrative": {
+      "questions": 4,
+      "old": 1,
+      "new": 1,
+      "claim_backed": 1
+    },
+    "turning_points": {
+      "questions": 4,
+      "old": 2,
+      "new": 2,
+      "claim_backed": 2
+    },
+    "unsupported": {
+      "questions": 4,
+      "old": 2,
+      "new": 4,
+      "claim_backed": 4
+    }
+  }
+}

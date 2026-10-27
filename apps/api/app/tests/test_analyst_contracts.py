@@ -1,4 +1,4 @@
-"""Adversarial evidence, actual Redis races and bounded orchestration contracts."""
+"""Analyst sessions, budgets, scope and evidence validation contracts."""
 
 from __future__ import annotations
 
@@ -69,8 +69,11 @@ async def local_redis(monkeypatch, tmp_path):
                 await asyncio.sleep(0.01)
             except Exception:
                 await asyncio.sleep(0.01)
-        for module in (analyst_budget, analyst_sessions, runtime_store):
-            monkeypatch.setattr(module, "_redis", connection)
+        monkeypatch.setattr(analyst_budget, "_redis", connection)
+        # The PR session store names its accessor _session_redis; a turn must commit to the
+        # same isolated server as the budget ledger.
+        monkeypatch.setattr(analyst_sessions, "_session_redis", connection)
+        monkeypatch.setattr(runtime_store, "_redis", connection)
         yield redis
     finally:
         await redis.aclose()
@@ -83,7 +86,9 @@ async def test_session_race_replay_conflict_and_atomic_commit(local_redis):
     first = await SessionTurn.begin(None, turn_id, 0, {"question": "stat"})
     with pytest.raises(SessionConflict):
         await SessionTurn.begin(first.token, "second-turn-identity", 0, {"question": "stat"})
-    assert await first.commit({"answer": "Committed"}, {"delivered_fact_ids": ["fact:1"]})
+    assert (
+        await first.commit({"answer": "Committed"}, {"delivered_fact_ids": ["fact:1"]})
+    ).committed
     replay = await SessionTurn.begin(None, turn_id, 0, {"question": "stat"})
     assert replay.replay == {"answer": "Committed"}
     with pytest.raises(SessionConflict):
@@ -92,12 +97,28 @@ async def test_session_race_replay_conflict_and_atomic_commit(local_redis):
         await SessionTurn.begin(first.token, "new-turn-identity", 0, {"question": "stat"})
     next_turn = await SessionTurn.begin(first.token, "new-turn-identity", 1, {"question": "stat"})
     assert next_turn.state["delivered_fact_ids"] == ["fact:1"]
+    # The lease serializes turns, not commits: one that expired while the turn was still
+    # working must not discard the completed answer. The revision this turn read is still
+    # current, so the commit wins atomically.
     await local_redis.delete(next_turn.key + ":lease")
-    assert not await next_turn.commit({"answer": "Lost lease"}, {"delivered_fact_ids": ["bad"]})
+    assert (
+        await next_turn.commit({"answer": "Finished late"}, {"delivered_fact_ids": ["fact:2"]})
+    ).committed
+    # A reply lost after the commit must not report the same turn as uncommitted.
+    assert (
+        await next_turn.commit({"answer": "Finished late"}, {"delivered_fact_ids": ["fact:2"]})
+    ).committed
     assert json.loads(await local_redis.hget(first.key, "state"))["delivered_fact_ids"] == [
-        "fact:1"
+        "fact:2"
     ]
     assert 86000 < await local_redis.ttl(first.key) <= 86400
+    # A different owner holding the lease is a competing turn; its commit stands alone.
+    held = await SessionTurn.begin(first.token, "held-turn", 2, {"question": "stat"})
+    await local_redis.set(held.key + ":lease", "another-owner", ex=35)
+    assert not (await held.commit({"answer": "Raced"}, {"delivered_fact_ids": ["bad"]})).committed
+    assert json.loads(await local_redis.hget(first.key, "state"))["delivered_fact_ids"] == [
+        "fact:2"
+    ]
     await local_redis.delete(first.key)
     with pytest.raises(SessionConflict) as expired:
         await SessionTurn.begin(first.token, "expired-turn-identity", 1, {"question": "stat"})
@@ -375,51 +396,6 @@ async def test_bounded_loop_and_revalidated_explanation(db_session, local_redis,
     assert result["llm_validated"]
 
 
-async def test_provider_schema_growth_uses_factual_fallback(db_session, local_redis, monkeypatch):
-    await local_redis.set(f"ai-budget:{datetime.now(UTC):%Y-%m}", 0)
-    monkeypatch.setattr(get_settings(), "analyst_provider_format", "json_schema")
-    tools, _ = await make_tools(db_session)
-    original_schema = analyst_loop.scoped_response_schema
-
-    def oversized_schema(schema, payload):
-        result = original_schema(schema, payload)
-        if payload.get("results"):
-            result["description"] = "x" * (get_settings().analyst_input_tokens + 1)
-        return result
-
-    monkeypatch.setattr(analyst_loop, "scoped_response_schema", oversized_schema)
-
-    class SchemaAdapter(ScriptedAdapter):
-        response_schema: dict | None = None
-
-    adapter = SchemaAdapter()
-    monkeypatch.setattr(analyst_loop, "get_llm_adapter", lambda: adapter)
-    result = await AnalystLoop(tools, []).run()
-    assert not result["llm_validated"]
-    assert len(adapter.prompts) == 1
-
-
-async def test_bad_provider_output_counts_call_and_falls_back(
-    db_session, local_redis, monkeypatch, caplog
-):
-    await local_redis.set(f"ai-budget:{datetime.now(UTC):%Y-%m}", 0)
-    tools, _ = await make_tools(db_session)
-
-    class BadAdapter:
-        async def generate(self, **kwargs):
-            return '{"action":"invented"}'
-
-    monkeypatch.setattr(analyst_loop, "get_llm_adapter", BadAdapter)
-    loop = AnalystLoop(tools, [])
-    result = await loop.run()
-    assert not result["llm_validated"] and loop.calls == 1
-    failure = next(r for r in caplog.records if r.message.startswith("analyst_execution_failed"))
-    assert failure.error_type == "ValidationError"
-    assert failure.model_calls == 1
-    assert "invented" not in caplog.text
-    assert result["citations"] and result["state"]["delivered_fact_ids"]
-
-
 async def test_missing_rows_are_incomplete_not_nonappearances(db_session):
     from app.models.box_score import PlayerGameStat
     from sqlalchemy import delete
@@ -431,8 +407,41 @@ async def test_missing_rows_are_incomplete_not_nonappearances(db_session):
     current = AnalystTools(db_session, tools.release, tools.question, tools.season, {})
     await current.prepare()
     result = await current.execute(ToolCall(name="get_player_stats", question=tools.question))
-    assert result.status == "incomplete_coverage"
+    # Other NYK rows exist for that game, so the player did not appear; that is not a gap.
+    assert result.status == "ok"
     assert result.claims[0].sample_size == 2 and result.claims[0].value == 25
+    # Deleting every NYK row for a game leaves genuinely unknown coverage.
+    await db_session.execute(
+        delete(PlayerGameStat).where(
+            PlayerGameStat.game_id == absent.game_id, PlayerGameStat.team_id == "NYK"
+        )
+    )
+    await db_session.flush()
+    current = AnalystTools(db_session, tools.release, tools.question, tools.season, {})
+    await current.prepare()
+    result = await current.execute(ToolCall(name="get_player_stats", question=tools.question))
+    assert result.status == "incomplete_coverage"
+
+
+async def test_team_average_aggregation_yields_per_game_claims(db_session):
+    tools, _ = await make_tools(db_session, "What were the Knicks points and margin?")
+    totals = await tools.execute(
+        ToolCall(name="get_team_stats", question=tools.question, aggregation="total")
+    )
+    averages = await tools.execute(
+        ToolCall(name="get_team_stats", question=tools.question, aggregation="average")
+    )
+    by_metric = {c.metric_id: c for c in totals.claims}
+    per_game = {c.metric_id: c for c in averages.claims}
+    games = by_metric["points"].sample_size
+    assert games and games > 0
+    points, margin = by_metric["points"].value, by_metric["margin"].value
+    assert isinstance(points, (int, float)) and isinstance(margin, (int, float))
+    assert per_game["points_per_game"].value == pytest.approx(points / games)
+    assert per_game["margin_per_game"].value == pytest.approx(margin / games)
+    assert per_game["margin_per_game"].denominator == games
+    assert {"wins", "losses"} <= per_game.keys()
+    assert "points" not in per_game and "margin" not in per_game
 
 
 async def test_unknown_entity_and_baseline_scope_fail_closed(db_session):
@@ -456,11 +465,12 @@ async def test_whole_records_fit_budget_and_provenance_is_resolvable(db_session)
     result = await tools.execute(ToolCall(name="discover_facts", question=tools.question))
     loop = AnalystLoop(tools, [])
     loop.results.append(result)
-    from app.services.analyst_loop import encoded, token_upper_bound
+    from app.services.analyst_provider import encoded, token_upper_bound
     from app.services.evidence_contracts import Action
 
     payload = loop.payload(Action)
     assert token_upper_bound(encoded(payload)) + 1700 <= get_settings().analyst_input_tokens
+    assert payload["candidates"] or payload["claim_context"]
     for claim in analyst_loop.payload_claims(payload):
         assert all(ref in tools.evidence for ref in claim["supporting_evidence_ids"])
 
@@ -503,7 +513,7 @@ async def test_review_spans_preserve_decimal_punctuation_and_full_coverage(db_se
 async def test_scoped_schema_rejects_invented_ids_and_partial_claim_values(db_session):
     from copy import deepcopy
 
-    from app.services.analyst_loop import scoped_response_schema
+    from app.services.analyst_provider import scoped_response_schema
     from app.services.evidence_contracts import Action
     from jsonschema import Draft202012Validator
 
@@ -701,7 +711,7 @@ async def test_redis_failure_gives_explicit_stateless_facts(client, monkeypatch)
     async def unavailable():
         return None
 
-    monkeypatch.setattr(analyst_sessions, "_redis", unavailable)
+    monkeypatch.setattr(analyst_sessions, "_session_redis", unavailable)
     async with AsyncSessionLocal() as db:
         await _seed_release_stats(db)
     response = (

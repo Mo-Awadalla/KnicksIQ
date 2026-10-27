@@ -1,0 +1,7 @@
+OK  prefetch, implicit topic: 'And overall?' -> 101 games (want 101)
+OK  prefetch, explicit topic: 'And overall?' -> 101 games (want 101)
+OK  prefetch, playoffs: 'And in the playoffs?' -> 19 games (want 19)
+OK  model names old phase: 'And overall?' -> 101 games (want 101)
+OK  model names other phase: 'And in the playoffs?' -> 19 games (want 19)
+OK  model plain: 'And overall?' -> 101 games (want 101)
+FAILURES 0

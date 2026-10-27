@@ -1,0 +1,5 @@
+Before the fix (same script, commit 9fda283 + relabel merge):
+BAD How did they play in November? play_in True
+BAD How did the Knicks play in the fourth quarter against Boston? play_in True
+BAD How did they play in wins at home? play_in True
+BAD How did they play in the playoffs? (names_phase False: "playoff\b" missed the plural)

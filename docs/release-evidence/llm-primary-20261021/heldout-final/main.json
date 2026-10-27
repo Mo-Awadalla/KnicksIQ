@@ -1,0 +1,284 @@
+{
+  "frozen_sha": "51f184a23645f1d43f930a520a1cc053397a315b",
+  "scope": "meets_expectation now requires: not declined or clarification, validated delivery, substantive content, no unbacked number or entity, required facts present, no echo, and no unbacked causal hedge. claim_backed additionally requires cited claim values.",
+  "mode": "live",
+  "dataset": "apps/api/app/evaluation/heldout_v2/questions.jsonl",
+  "questions": 80,
+  "old_meets_expectation": 47,
+  "meets_expectation": 41,
+  "claim_backed_meets_expectation": 41,
+  "delta": 6,
+  "by_answerable": {
+    "answerable": {
+      "questions": 68,
+      "old": 43,
+      "new": 30
+    },
+    "unsupported": {
+      "questions": 12,
+      "old": 4,
+      "new": 11
+    }
+  },
+  "survived": [
+    "heldout2-exact_statistics-001",
+    "heldout2-exact_statistics-002",
+    "heldout2-exact_statistics-003",
+    "heldout2-exact_statistics-005",
+    "heldout2-exact_statistics-007",
+    "heldout2-exact_statistics-012",
+    "heldout2-date_range_last_n-001",
+    "heldout2-date_range_last_n-003",
+    "heldout2-date_range_last_n-004",
+    "heldout2-date_range_last_n-005",
+    "heldout2-date_range_last_n-007",
+    "heldout2-date_range_last_n-011",
+    "heldout2-date_range_last_n-012",
+    "heldout2-comparisons-001",
+    "heldout2-comparisons-007",
+    "heldout2-single_game_narrative-001",
+    "heldout2-single_game_narrative-004",
+    "heldout2-single_game_narrative-005",
+    "heldout2-single_game_narrative-006",
+    "heldout2-single_game_narrative-007",
+    "heldout2-single_game_narrative-008",
+    "heldout2-single_game_narrative-010",
+    "heldout2-single_game_narrative-011",
+    "heldout2-turning_points-001",
+    "heldout2-turning_points-011",
+    "heldout2-aliases_typos-001",
+    "heldout2-aliases_typos-002",
+    "heldout2-aliases_typos-004",
+    "heldout2-aliases_typos-005",
+    "heldout2-aliases_typos-011",
+    "heldout2-unsupported-001",
+    "heldout2-unsupported-003",
+    "heldout2-unsupported-010"
+  ],
+  "lost": [
+    {
+      "id": "heldout2-exact_statistics-006",
+      "category": "exact_statistics",
+      "failures": [
+        "required_facts"
+      ],
+      "reason": "missing_required_fact",
+      "answer": "Tyler Kolek's highest single-game three-point output in the 2025-26 regular-season archive was 4, set on 2025-12-25 against CLE. His other listed games were 3 threes vs POR (2026-01-30) and vs WAS (2026-03-22), and 2 threes vs CHA (2025-12-03), IND (2025-12-18), MIN (2025-12-23) and NOP (2025-12-29)."
+    },
+    {
+      "id": "heldout2-date_range_last_n-002",
+      "category": "date_range_last_n",
+      "failures": [
+        "required_facts"
+      ],
+      "reason": "missing_required_fact",
+      "answer": "In the 5 archived Knicks games from Oct. 22\u201331, 2025, opponents scored 111, 95, 115, 121 and 135 points. The supplied stats cover the Knicks' own scoring (113.4 points per game) and margin (-2.0 per game); the points-allowed-per-game total isn't in the supplied claims."
+    },
+    {
+      "id": "heldout2-date_range_last_n-009",
+      "category": "date_range_last_n",
+      "failures": [
+        "required_facts"
+      ],
+      "reason": "missing_required_fact",
+      "answer": "In the 2025-26 regular season, the Knicks' October record was 2-3 in 5 games. Their November record was 11-3 in 14 games."
+    },
+    {
+      "id": "heldout2-comparisons-002",
+      "category": "comparisons",
+      "failures": [
+        "required_facts",
+        "required_entities"
+      ],
+      "reason": "missing_required_fact",
+      "answer": "I can only speak to Dadiet here \u2014 the release archive scope is Pac\u00f4me Dadiet (player 470), and no rebounding figures for Yabu are in the supplied claims, so a true head-to-head on the glass isn't possible from this evidence. What the archive does show for Dadiet: 4 rebounds in the 12-point game vs CHA on 2026-04-12, 2 rebounds vs DEN on 2026-03-06, and 1 rebound in each of the DET (2026-02-06), CHI (2026-04-03) and DET (2026-01-05) games \u2014 these are single-game selections, not season averages."
+    },
+    {
+      "id": "heldout2-comparisons-004",
+      "category": "comparisons",
+      "failures": [
+        "clarification",
+        "required_facts",
+        "no_cited_claims"
+      ],
+      "reason": "skipped_work_clarification",
+      "answer": "Which Knicks player do you mean? Please give a name so I can look up that player's October and April records."
+    },
+    {
+      "id": "heldout2-comparisons-006",
+      "category": "comparisons",
+      "failures": [
+        "required_facts"
+      ],
+      "reason": "missing_required_fact",
+      "answer": "In the 2025-26 regular season archived data, Tyler Kolek averaged 4.4 points per appearance across 62 appearances, while Kevin McCullar Jr. averaged 2.4 points per appearance across 21 appearances."
+    },
+    {
+      "id": "heldout2-single_game_narrative-009",
+      "category": "single_game_narrative",
+      "failures": [
+        "required_facts"
+      ],
+      "reason": "missing_required_fact",
+      "answer": "On February 10, 2026 (regular season), Indiana beat New York 137-134 in overtime. The Knicks led 69-63 at halftime. In the second half Indiana outscored New York 61-55, and in overtime Indiana won the extra period 13-10 \u2014 matching the final three-point margin. The period data show the scoring flow; they don't establish why it happened."
+    },
+    {
+      "id": "heldout2-turning_points-002",
+      "category": "turning_points",
+      "failures": [
+        "required_facts",
+        "required_phrases"
+      ],
+      "reason": "missing_required_fact",
+      "answer": "On Nov 22, the game's decisive swing came late in the third quarter. Orlando took the lead for good with a Bane 27-foot step-back three at Q3 00:32, making it 93-96, and that go-ahead score was part of a 5-0 Orlando run (93-93 to 93-98) from Q3 00:32 to Q3 00:09.\n\nBroader flow: New York built a 10-point lead (15-5 at Q1 08:08), but Orlando's largest run was 14-0 (15-5 to 15-19, Q1 07:34 to 04:39). Orlando's largest lead reached 18 (104-122 at Q4 06:18). Final: New York 121, Orlando 133."
+    },
+    {
+      "id": "heldout2-turning_points-003",
+      "category": "turning_points",
+      "failures": [
+        "required_phrases"
+      ],
+      "reason": "missing_required_fact",
+      "answer": "Note: this was a Knicks road win over Orlando (NYK 132, ORL 120 on Dec 13, 2025), not an Orlando win. The largest quarter swing for New York was Q2, which the Knicks won 38-28 (+10). Quarter-by-quarter from the Knicks' perspective: Q1 33-36 (-3), Q2 38-28 (+10), Q3 29-28 (+1), Q4 32-28 (+4)."
+    },
+    {
+      "id": "heldout2-turning_points-004",
+      "category": "turning_points",
+      "failures": [
+        "required_facts",
+        "required_phrases"
+      ],
+      "reason": "missing_required_fact",
+      "answer": "In the Knicks' 123-114 regular-season win at Portland on January 11, the game turned late in the fourth quarter. With New York down 104-103, OG Anunoby hit a 3-pointer at Q4 04:15 to put the Knicks ahead 106-104, and that lead held for good. That score began New York's decisive 11-0 run from Q4 04:15 to Q4 02:53, moving the score from 103-104 to 114-104. The Knicks' largest lead was 11 points (123-112 at Q4 00:35)."
+    },
+    {
+      "id": "heldout2-turning_points-007",
+      "category": "turning_points",
+      "failures": [
+        "unbacked_entities"
+      ],
+      "reason": "wrong_subject",
+      "answer": "In the February 3 regular-season game at Washington, the Knicks' largest single-quarter scoring edge came in Q1, which they won 38-22 (+16). Q2 was 34-23 (+11), Q3 30-26 (+4), and Q4 was even at 30-30. So the first quarter produced the biggest margin swing, though New York built its lead across the first two quarters (72-45 halftime) in the 132-101 win."
+    },
+    {
+      "id": "heldout2-turning_points-008",
+      "category": "turning_points",
+      "failures": [
+        "required_facts",
+        "required_phrases"
+      ],
+      "reason": "missing_required_fact",
+      "answer": "In the February 10 regular-season game between the Knicks and Pacers, the teams went to overtime at 134-134, and Indiana outscored New York 13-10 in the extra period to win 137-134. The overtime period is the one that produced the final 3-point margin."
+    },
+    {
+      "id": "heldout2-turning_points-009",
+      "category": "turning_points",
+      "failures": [
+        "required_facts"
+      ],
+      "reason": "missing_required_fact",
+      "answer": "The decisive swing in the Knicks' 134-117 win at Utah on March 11 was an 8-0 New York run spanning the end of the third and start of the fourth. Trailing 94-93, Brunson hit a pull-up jumper at the Q3 00:01 mark to put New York ahead 95-94 \u2014 a lead it never surrendered \u2014 and the run extended to 101-94 by Q4 11:22. The Knicks' largest lead of the night was 22, at 127-105 in the fourth quarter."
+    },
+    {
+      "id": "heldout2-unsupported-008",
+      "category": "unsupported",
+      "failures": [
+        "decline_states_unbacked_fact"
+      ],
+      "reason": "other",
+      "answer": "I can't answer that from this archive, which covers only the 2025-26 season. It contains no data on the 1999 Finals."
+    }
+  ],
+  "gained": [
+    {
+      "id": "heldout2-unsupported-002",
+      "failures": []
+    },
+    {
+      "id": "heldout2-unsupported-004",
+      "failures": []
+    },
+    {
+      "id": "heldout2-unsupported-005",
+      "failures": []
+    },
+    {
+      "id": "heldout2-unsupported-006",
+      "failures": []
+    },
+    {
+      "id": "heldout2-unsupported-007",
+      "failures": []
+    },
+    {
+      "id": "heldout2-unsupported-009",
+      "failures": []
+    },
+    {
+      "id": "heldout2-unsupported-011",
+      "failures": []
+    },
+    {
+      "id": "heldout2-unsupported-012",
+      "failures": []
+    }
+  ],
+  "failure_counts": {
+    "required_facts": 33,
+    "not_validated": 17,
+    "required_entities": 12,
+    "no_cited_claims": 9,
+    "declined": 8,
+    "required_phrases": 8,
+    "not_substantive": 7,
+    "clarification": 2,
+    "unbacked_entities": 2,
+    "missing_turning_detail": 1,
+    "decline_states_unbacked_fact": 1
+  },
+  "by_category": {
+    "aliases_typos": {
+      "questions": 11,
+      "old": 5,
+      "new": 5,
+      "claim_backed": 5
+    },
+    "comparisons": {
+      "questions": 11,
+      "old": 5,
+      "new": 2,
+      "claim_backed": 2
+    },
+    "date_range_last_n": {
+      "questions": 12,
+      "old": 9,
+      "new": 7,
+      "claim_backed": 7
+    },
+    "exact_statistics": {
+      "questions": 12,
+      "old": 7,
+      "new": 6,
+      "claim_backed": 6
+    },
+    "single_game_narrative": {
+      "questions": 11,
+      "old": 9,
+      "new": 8,
+      "claim_backed": 8
+    },
+    "turning_points": {
+      "questions": 11,
+      "old": 8,
+      "new": 2,
+      "claim_backed": 2
+    },
+    "unsupported": {
+      "questions": 12,
+      "old": 4,
+      "new": 11,
+      "claim_backed": 11
+    }
+  },
+  "source": "live in-process API"
+}

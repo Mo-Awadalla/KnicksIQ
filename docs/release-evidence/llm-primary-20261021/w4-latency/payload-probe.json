@@ -1,0 +1,180 @@
+{
+  "cases": {
+    "default": {
+      "max_tokens": 500,
+      "messages": [
+        {
+          "content": "system",
+          "role": "system"
+        },
+        {
+          "content": "user",
+          "role": "user"
+        }
+      ],
+      "model": "deepseek/deepseek-v4.1-flash",
+      "provider": {
+        "allow_fallbacks": true,
+        "require_parameters": true,
+        "sort": "latency"
+      },
+      "reasoning": {
+        "effort": "none"
+      },
+      "response_format": {
+        "type": "json_object"
+      },
+      "temperature": 0
+    },
+    "pinned_no_fallbacks_no_sort": {
+      "max_tokens": 500,
+      "messages": [
+        {
+          "content": "system",
+          "role": "system"
+        },
+        {
+          "content": "user",
+          "role": "user"
+        }
+      ],
+      "model": "deepseek/deepseek-v4.1-flash",
+      "provider": {
+        "allow_fallbacks": false,
+        "order": [
+          "Together"
+        ],
+        "require_parameters": true
+      },
+      "reasoning": {
+        "effort": "none"
+      },
+      "response_format": {
+        "type": "json_object"
+      },
+      "temperature": 0
+    },
+    "pinned_order": {
+      "max_tokens": 500,
+      "messages": [
+        {
+          "content": "system",
+          "role": "system"
+        },
+        {
+          "content": "user",
+          "role": "user"
+        }
+      ],
+      "model": "deepseek/deepseek-v4.1-flash",
+      "provider": {
+        "allow_fallbacks": true,
+        "order": [
+          "Together",
+          "Reka"
+        ],
+        "require_parameters": true,
+        "sort": "latency"
+      },
+      "reasoning": {
+        "effort": "none"
+      },
+      "response_format": {
+        "type": "json_object"
+      },
+      "temperature": 0
+    },
+    "plain_json_object": {
+      "max_tokens": 500,
+      "messages": [
+        {
+          "content": "system",
+          "role": "system"
+        },
+        {
+          "content": "user",
+          "role": "user"
+        }
+      ],
+      "model": "deepseek/deepseek-v4.1-flash",
+      "provider": {
+        "allow_fallbacks": true,
+        "require_parameters": true,
+        "sort": "latency"
+      },
+      "reasoning": {
+        "effort": "none"
+      },
+      "response_format": {
+        "type": "json_object"
+      },
+      "temperature": 0
+    },
+    "settings_plumbing": {
+      "max_tokens": 500,
+      "messages": [
+        {
+          "content": "system",
+          "role": "system"
+        },
+        {
+          "content": "user",
+          "role": "user"
+        }
+      ],
+      "model": "deepseek/deepseek-v4.1-flash",
+      "provider": {
+        "allow_fallbacks": false,
+        "order": [
+          "Together"
+        ],
+        "require_parameters": true,
+        "sort": "latency"
+      },
+      "reasoning": {
+        "effort": "none"
+      },
+      "response_format": {
+        "type": "json_object"
+      },
+      "temperature": 0
+    },
+    "sort_none": {
+      "max_tokens": 500,
+      "messages": [
+        {
+          "content": "system",
+          "role": "system"
+        },
+        {
+          "content": "user",
+          "role": "user"
+        }
+      ],
+      "model": "deepseek/deepseek-v4.1-flash",
+      "provider": {
+        "allow_fallbacks": true,
+        "require_parameters": true
+      },
+      "reasoning": {
+        "effort": "none"
+      },
+      "response_format": {
+        "type": "json_object"
+      },
+      "temperature": 0
+    }
+  },
+  "checks": {
+    "default_provider": true,
+    "default_reasoning": true,
+    "fallbacks_false": true,
+    "order_copied": true,
+    "order_keeps_sort": true,
+    "require_parameters_with_json_object": true,
+    "settings_order_and_fallbacks": true,
+    "sort_none_omits_key": true,
+    "sort_omitted_when_none": true
+  },
+  "passed": true
+}

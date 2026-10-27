@@ -1,0 +1,829 @@
+{
+  "active_release": {
+    "id": 1,
+    "manifest_sha256": "269b0db08fd07a1dbe53e6a388a313fe6afc04ace3cd3294dc9610c981c4b9fd",
+    "version": "2025-26.20260714.1"
+  },
+  "approval": null,
+  "baseline_version_matches": true,
+  "fresh_canonical_rows_verified": false,
+  "fresh_full_report_rows_verified": false,
+  "limitation": "Stored content_sha256 values are ingestion-time metadata, not freshly recomputed hashes of current rows. This supports baseline identity but cannot prove no in-place mutation. Only Report 80 public narrative was separately compared. The complete local report audit is not a fresh production-row audit.",
+  "public_report80_narrative_matches": true,
+  "reports": [
+    {
+      "content_sha256": "ae8b2f57030b86d601dfad23b050fdc27bf608594a07c0ef0e46a953b08c6b34",
+      "game_id": 1,
+      "id": 1,
+      "matched_nba_game_ids": [
+        "0022500003"
+      ]
+    },
+    {
+      "content_sha256": "d62324a2fcf9a4ed9d3631b69ebe1e2ef49583c8a0e7977222ecbb3f752d8206",
+      "game_id": 2,
+      "id": 2,
+      "matched_nba_game_ids": [
+        "0022500018"
+      ]
+    },
+    {
+      "content_sha256": "5ddfb46ff34e839f00df6bf1404fb64f48d5ff7cacd2a195e865e2be313608e2",
+      "game_id": 3,
+      "id": 3,
+      "matched_nba_game_ids": [
+        "0022500108"
+      ]
+    },
+    {
+      "content_sha256": "e9ed214e268dfca83acd82a4853bce0a68528370aa79886802cc5a5c9e000cad",
+      "game_id": 4,
+      "id": 4,
+      "matched_nba_game_ids": [
+        "0022500125"
+      ]
+    },
+    {
+      "content_sha256": "fe39621d643d47f4fe7efa248ee38f4a847b6456fa070d0a1f372034594caa67",
+      "game_id": 5,
+      "id": 5,
+      "matched_nba_game_ids": [
+        "0022500023"
+      ]
+    },
+    {
+      "content_sha256": "706dfda79a470556c3f724b4b6a52695195128394ef42a26c3e27f01d628a5a9",
+      "game_id": 6,
+      "id": 6,
+      "matched_nba_game_ids": [
+        "0022500153"
+      ]
+    },
+    {
+      "content_sha256": "fab42da7de2be1153a5d8dc2d97a41348de92534950713d54188d13b29df3cd4",
+      "game_id": 7,
+      "id": 7,
+      "matched_nba_game_ids": [
+        "0022500159"
+      ]
+    },
+    {
+      "content_sha256": "1238297877211bc21b9077593a2bf3dabb3c96bee10850b0b18528990faa2189",
+      "game_id": 8,
+      "id": 8,
+      "matched_nba_game_ids": [
+        "0022500175"
+      ]
+    },
+    {
+      "content_sha256": "6749b148e88e2198214a0be32eb4f273411874eab1e0bc3bbe420ba984b73423",
+      "game_id": 9,
+      "id": 9,
+      "matched_nba_game_ids": [
+        "0022500192"
+      ]
+    },
+    {
+      "content_sha256": "3f31de2852cdbacf2fcaececb4e15b174077468a26c91ec8c6080afce9913251",
+      "game_id": 10,
+      "id": 10,
+      "matched_nba_game_ids": [
+        "0022500208"
+      ]
+    },
+    {
+      "content_sha256": "d5e35cc3c3e0d9b4fad82d6cff7d708999779316bf00b99240b2a4a6692013ab",
+      "game_id": 11,
+      "id": 11,
+      "matched_nba_game_ids": [
+        "0022500215"
+      ]
+    },
+    {
+      "content_sha256": "ac18ffdc28dc48d3516784a1120a05051fca2fa56d1a8fb324f5437f954b70c5",
+      "game_id": 12,
+      "id": 12,
+      "matched_nba_game_ids": [
+        "0022500039"
+      ]
+    },
+    {
+      "content_sha256": "d82220c09b2f7b94ff689459e3efb13a06549581a169236f52947c5e3042ec9a",
+      "game_id": 13,
+      "id": 13,
+      "matched_nba_game_ids": [
+        "0022500244"
+      ]
+    },
+    {
+      "content_sha256": "21912ac9cab742dc8f6af9aa1de3b476f3a871af6aec2ac626df89dbd0f74fc1",
+      "game_id": 14,
+      "id": 14,
+      "matched_nba_game_ids": [
+        "0022500262"
+      ]
+    },
+    {
+      "content_sha256": "419af1521c06d7e37a639ed25d2d9bda37f2ff7d5b43bb9b85dfb05abf64ce17",
+      "game_id": 15,
+      "id": 15,
+      "matched_nba_game_ids": [
+        "0022500269"
+      ]
+    },
+    {
+      "content_sha256": "fa17a0229f24c74a12b7ea06dc27ba78b8f709be2c9543dc8d28180634f08b8f",
+      "game_id": 16,
+      "id": 16,
+      "matched_nba_game_ids": [
+        "0022500285"
+      ]
+    },
+    {
+      "content_sha256": "eedaf160d5a2bbf2aa00010746d5bd19e5a9f5415bdd66f05a09ade9438de42f",
+      "game_id": 17,
+      "id": 17,
+      "matched_nba_game_ids": [
+        "0022500061"
+      ]
+    },
+    {
+      "content_sha256": "be36e5ff42b717167dfba723d05d070e70544e23b2fb6cf385efb4e4e0b403d7",
+      "game_id": 18,
+      "id": 18,
+      "matched_nba_game_ids": [
+        "0022500074"
+      ]
+    },
+    {
+      "content_sha256": "b4656de395ed80366a27c07a26c400d2711641fe6e0bfc71fedcaf62cb02633e",
+      "game_id": 19,
+      "id": 19,
+      "matched_nba_game_ids": [
+        "0022500303"
+      ]
+    },
+    {
+      "content_sha256": "1b019765451a61b26610ba7a4a91d454f4abd78ec8ce98dcdb46431048d0421d",
+      "game_id": 20,
+      "id": 20,
+      "matched_nba_game_ids": [
+        "0022500320"
+      ]
+    },
+    {
+      "content_sha256": "3e92a7b034a191264c3d8ae9c1eda912e066c595a6d85be80e8bcf1c0219a084",
+      "game_id": 21,
+      "id": 21,
+      "matched_nba_game_ids": [
+        "0022500328"
+      ]
+    },
+    {
+      "content_sha256": "d1b3e957362e029b1249198e3cd94715c27285a377b7be99d6b61ce883a430a0",
+      "game_id": 22,
+      "id": 22,
+      "matched_nba_game_ids": [
+        "0022500343"
+      ]
+    },
+    {
+      "content_sha256": "c7b15b487ff01a4be05c29b9cf691ba9745ac728106f35d7e658300414450da3",
+      "game_id": 23,
+      "id": 23,
+      "matched_nba_game_ids": [
+        "0022500357"
+      ]
+    },
+    {
+      "content_sha256": "3943b42c7ce0024245156860f6d3eb4229aeff18b8681a3cbf7f72f0ec0ae2f9",
+      "game_id": 24,
+      "id": 24,
+      "matched_nba_game_ids": [
+        "0022501202"
+      ]
+    },
+    {
+      "content_sha256": "0bc51f4deb35e77f14882c80dc330bbdd23fe5f156a3b5943fde644300dfc706",
+      "game_id": 25,
+      "id": 25,
+      "matched_nba_game_ids": [
+        "0022501229"
+      ]
+    },
+    {
+      "content_sha256": "56d024c91db78a1f595a5971a45acd0b65835e235514ad76c1e198849ef94588",
+      "game_id": 26,
+      "id": 26,
+      "matched_nba_game_ids": [
+        "0022500372"
+      ]
+    },
+    {
+      "content_sha256": "a186e4885bcfcbe5196eca328b2f1d6af87390b4f75dcee5e44820c397bf31c6",
+      "game_id": 27,
+      "id": 27,
+      "matched_nba_game_ids": [
+        "0022500382"
+      ]
+    },
+    {
+      "content_sha256": "505a414068c8cf5dbb95c4c50b29e2172dd5b6b6104f64171d4beac7c36d3ce1",
+      "game_id": 28,
+      "id": 28,
+      "matched_nba_game_ids": [
+        "0022500398"
+      ]
+    },
+    {
+      "content_sha256": "d78431bfe1d8f507bffa2322f336b3f643434dca809cf7679e765ad4b44de9be",
+      "game_id": 29,
+      "id": 29,
+      "matched_nba_game_ids": [
+        "0022500416"
+      ]
+    },
+    {
+      "content_sha256": "3fb5c3aab04b052a4040f5fda93d7127c31cb0f52b3a3710bf039191d8770099",
+      "game_id": 30,
+      "id": 30,
+      "matched_nba_game_ids": [
+        "0022500009"
+      ]
+    },
+    {
+      "content_sha256": "e06982ff57840b6a34cf96e87e37bbd99e5bac735734f5e191b90647a46a83df",
+      "game_id": 31,
+      "id": 31,
+      "matched_nba_game_ids": [
+        "0022500435"
+      ]
+    },
+    {
+      "content_sha256": "79c36e64b6912f87836cd9574447dad38b9229e2aa5b5b8c9bd4a25d3ed5259f",
+      "game_id": 32,
+      "id": 32,
+      "matched_nba_game_ids": [
+        "0022500454"
+      ]
+    },
+    {
+      "content_sha256": "e306ca34de35d8e6b718d58441130aeaa22cff014e045ddd58c5a8733805a0f2",
+      "game_id": 33,
+      "id": 33,
+      "matched_nba_game_ids": [
+        "0022500467"
+      ]
+    },
+    {
+      "content_sha256": "751cdf81be942b5bca61d7f9ceafd2b8c62a6d42a8ac59c4752b5a189729eca4",
+      "game_id": 34,
+      "id": 34,
+      "matched_nba_game_ids": [
+        "0022500479"
+      ]
+    },
+    {
+      "content_sha256": "cc6e3ac3fd0e709c11458c7c67f0124c7322a87597472170712213b0272f3563",
+      "game_id": 35,
+      "id": 35,
+      "matched_nba_game_ids": [
+        "0022500487"
+      ]
+    },
+    {
+      "content_sha256": "1b125634227ecccd4b71152eb26799a5ab75f1ecf84c977754ca5581484278bc",
+      "game_id": 36,
+      "id": 36,
+      "matched_nba_game_ids": [
+        "0022500502"
+      ]
+    },
+    {
+      "content_sha256": "378a42330aab09faf8c365f9da6a54579cf3c416ee62f01f24156bb7faf10b40",
+      "game_id": 37,
+      "id": 37,
+      "matched_nba_game_ids": [
+        "0022500522"
+      ]
+    },
+    {
+      "content_sha256": "1e7e05de501a2a0e322b99e2a7b55a6d055535c5d08a86f2757db8a833fbbe59",
+      "game_id": 38,
+      "id": 38,
+      "matched_nba_game_ids": [
+        "0022500538"
+      ]
+    },
+    {
+      "content_sha256": "a6002938e88ae1d7a040d7cd64bc35c9ddd125c870e78fcd3b02a672c364daa3",
+      "game_id": 39,
+      "id": 39,
+      "matched_nba_game_ids": [
+        "0022500551"
+      ]
+    },
+    {
+      "content_sha256": "d227c72f121549712ff0341d43aaf89a09637883ec68a7508982f7a903e18dc1",
+      "game_id": 40,
+      "id": 40,
+      "matched_nba_game_ids": [
+        "0022500576"
+      ]
+    },
+    {
+      "content_sha256": "e8f3deaa823df1df5cfcfb64cacc6239a7e8bb08866a190904f83836b1209519",
+      "game_id": 41,
+      "id": 41,
+      "matched_nba_game_ids": [
+        "0022500584"
+      ]
+    },
+    {
+      "content_sha256": "8870276af43fa4010b106b6b740963b6420fda85133e8be5e612d179217ba268",
+      "game_id": 42,
+      "id": 42,
+      "matched_nba_game_ids": [
+        "0022500596"
+      ]
+    },
+    {
+      "content_sha256": "ca3d3448ae3302f291482ec9e71540b006b4f6ed250f1537f6bd378ea27815c1",
+      "game_id": 43,
+      "id": 43,
+      "matched_nba_game_ids": [
+        "0022500016"
+      ]
+    },
+    {
+      "content_sha256": "a6cc372fdd35ade89fb6ed9e9cf872d6908c74587fa38d6b48c0807af78b4a93",
+      "game_id": 44,
+      "id": 44,
+      "matched_nba_game_ids": [
+        "0022500622"
+      ]
+    },
+    {
+      "content_sha256": "2788337c3a8c5816ed9ae8a0f1cbde0ea965b8c6e0c30994312e86b94857476f",
+      "game_id": 45,
+      "id": 45,
+      "matched_nba_game_ids": [
+        "0022500643"
+      ]
+    },
+    {
+      "content_sha256": "75c17a124784663e64bd6ab4ddf403f79cd9c7c8c38c6248c08623f8308b6cbd",
+      "game_id": 46,
+      "id": 46,
+      "matched_nba_game_ids": [
+        "0022500665"
+      ]
+    },
+    {
+      "content_sha256": "8e2e8cfa8520f2ee8eab74f92152d44827d0038e0175b2508096c51a9587653e",
+      "game_id": 47,
+      "id": 47,
+      "matched_nba_game_ids": [
+        "0022500675"
+      ]
+    },
+    {
+      "content_sha256": "1ec57f164c98284262e93c0a0054b644e40e8f7de1f0e785289b12682bcef282",
+      "game_id": 48,
+      "id": 48,
+      "matched_nba_game_ids": [
+        "0022500690"
+      ]
+    },
+    {
+      "content_sha256": "40bcd680bb24536f9496ed766ed1c526d2ebbc2d9c3d1fcfe3395bfbbbc7ad1e",
+      "game_id": 49,
+      "id": 49,
+      "matched_nba_game_ids": [
+        "0022500708"
+      ]
+    },
+    {
+      "content_sha256": "eccedac7222aee5e6bccac273c31d368ef127b0ad2d4f392802a33fe484c1999",
+      "game_id": 50,
+      "id": 50,
+      "matched_nba_game_ids": [
+        "0022500718"
+      ]
+    },
+    {
+      "content_sha256": "dd28e97a85132671f7fb44455d961826ef4112b1cce0ea49b7e9b586586ef905",
+      "game_id": 51,
+      "id": 51,
+      "matched_nba_game_ids": [
+        "0022500726"
+      ]
+    },
+    {
+      "content_sha256": "2b29353842aa5013d71835bfaf38179c5da990b657e936d480964bfe05cf3026",
+      "game_id": 52,
+      "id": 52,
+      "matched_nba_game_ids": [
+        "0022500742"
+      ]
+    },
+    {
+      "content_sha256": "7eff7214149177037af1be1ea1ade4416b04abfa0a97aa5df9ef5b2b2d5c63da",
+      "game_id": 53,
+      "id": 53,
+      "matched_nba_game_ids": [
+        "0022500757"
+      ]
+    },
+    {
+      "content_sha256": "641663618779b14b144f5340805a616dc96fb1d7e2b4fc77e8133d6400fa94d5",
+      "game_id": 54,
+      "id": 54,
+      "matched_nba_game_ids": [
+        "0022500771"
+      ]
+    },
+    {
+      "content_sha256": "94297b74ea5efd9f671802f9221dab719c26b3a7b94b8f6405a94e142ab9c257",
+      "game_id": 55,
+      "id": 55,
+      "matched_nba_game_ids": [
+        "0022500780"
+      ]
+    },
+    {
+      "content_sha256": "300ab21b8ac1e823bb9361f122ec22f501c782eaae85badd2fac1c79e342ed18",
+      "game_id": 56,
+      "id": 56,
+      "matched_nba_game_ids": [
+        "0022500796"
+      ]
+    },
+    {
+      "content_sha256": "893b1b71c256eccb98c4809691bd3c4f625a976c15fe255f9fbcce952820c350",
+      "game_id": 57,
+      "id": 57,
+      "matched_nba_game_ids": [
+        "0022500816"
+      ]
+    },
+    {
+      "content_sha256": "896ec8bd15789ffd4236320149a0b6746d2a1c2585fb7c079c0f80a216708717",
+      "game_id": 58,
+      "id": 58,
+      "matched_nba_game_ids": [
+        "0022500825"
+      ]
+    },
+    {
+      "content_sha256": "9a5088dca80163b5edb119709d4e5eed4195de117ba868583d0d5e514faea454",
+      "game_id": 59,
+      "id": 59,
+      "matched_nba_game_ids": [
+        "0022500835"
+      ]
+    },
+    {
+      "content_sha256": "d28d7bc06b3d1db21a973bbdde28008b6745e8c3bc6991ef94f8f44fb44882c1",
+      "game_id": 60,
+      "id": 60,
+      "matched_nba_game_ids": [
+        "0022500860"
+      ]
+    },
+    {
+      "content_sha256": "6396704eb399bbe629260206ee357da97a51553b5bbc7dc627aca46b5a8be95c",
+      "game_id": 61,
+      "id": 61,
+      "matched_nba_game_ids": [
+        "0022500868"
+      ]
+    },
+    {
+      "content_sha256": "050c8e5bde5c05a2c358440bedad494bae7f3527ebfe82b22419adbcf5fbb873",
+      "game_id": 62,
+      "id": 62,
+      "matched_nba_game_ids": [
+        "0022500887"
+      ]
+    },
+    {
+      "content_sha256": "576ab487eddab2e8c56df245de4c77882e68930f848e18a5e5d7fa72772c5b4a",
+      "game_id": 63,
+      "id": 63,
+      "matched_nba_game_ids": [
+        "0022500893"
+      ]
+    },
+    {
+      "content_sha256": "751c4d97ce5729b1478f893fe11d70b77564a398556affaf71e85c074a9f0204",
+      "game_id": 64,
+      "id": 64,
+      "matched_nba_game_ids": [
+        "0022500911"
+      ]
+    },
+    {
+      "content_sha256": "8ca31960e6bddfe0764ccb5e8bfd5f3d2d5b09c677962a463817f6934a520603",
+      "game_id": 65,
+      "id": 65,
+      "matched_nba_game_ids": [
+        "0022500922"
+      ]
+    },
+    {
+      "content_sha256": "aa36f7e30f1773e9075f98371d6ed2c201748878f64eae7a444d248a7e7b1de6",
+      "game_id": 66,
+      "id": 66,
+      "matched_nba_game_ids": [
+        "0022500935"
+      ]
+    },
+    {
+      "content_sha256": "7f8b01a454ede5fe303b95c790f7e78d0e03d692b98417769d8da6e8fa2c57d0",
+      "game_id": 67,
+      "id": 67,
+      "matched_nba_game_ids": [
+        "0022500949"
+      ]
+    },
+    {
+      "content_sha256": "cf3e935ff5a9f140ab6373ae8daf21029f52a42aec74eea8e70c742e1600cd5b",
+      "game_id": 68,
+      "id": 68,
+      "matched_nba_game_ids": [
+        "0022500962"
+      ]
+    },
+    {
+      "content_sha256": "648968055c013816f88de29d406772692534d7709773edc47af4ac5e27948e8e",
+      "game_id": 69,
+      "id": 69,
+      "matched_nba_game_ids": [
+        "0022500981"
+      ]
+    },
+    {
+      "content_sha256": "0e79be638b7b81e2db206f48198160de288cb4bb2969419d352afeb6a26f3262",
+      "game_id": 70,
+      "id": 70,
+      "matched_nba_game_ids": [
+        "0022500994"
+      ]
+    },
+    {
+      "content_sha256": "5e7e4890a3890a4c68eea3a78ccc591e6b2fbf90cdeca92e97a81a263ea91948",
+      "game_id": 71,
+      "id": 71,
+      "matched_nba_game_ids": [
+        "0022501016"
+      ]
+    },
+    {
+      "content_sha256": "131cd6a5a94dd9322e1fab18e66455832fa2d65323a7143ba5f9d679ce788abc",
+      "game_id": 72,
+      "id": 72,
+      "matched_nba_game_ids": [
+        "0022501034"
+      ]
+    },
+    {
+      "content_sha256": "8c2239bd5b3dacbed5908c04f5b6efe7e9280400fd7fe1aa6cb662f51d8117d5",
+      "game_id": 73,
+      "id": 73,
+      "matched_nba_game_ids": [
+        "0022501048"
+      ]
+    },
+    {
+      "content_sha256": "d30667d1d3f474af7a39d9106c688201a448c89869ae037153901d3be2925d36",
+      "game_id": 74,
+      "id": 74,
+      "matched_nba_game_ids": [
+        "0022501063"
+      ]
+    },
+    {
+      "content_sha256": "be6bc73139c76a92faf547a0f7d63b4b69a2d676c923ac0501bb4b440e359e3b",
+      "game_id": 75,
+      "id": 75,
+      "matched_nba_game_ids": [
+        "0022501089"
+      ]
+    },
+    {
+      "content_sha256": "5f0272091e6624fa727744a2ced374c760a9d754183cecf81b171fbafadd6ffa",
+      "game_id": 76,
+      "id": 76,
+      "matched_nba_game_ids": [
+        "0022501102"
+      ]
+    },
+    {
+      "content_sha256": "11fff6bdd272e952cd879c27d17156e84ee36a52eacf7a257d53e506ad7fa6a0",
+      "game_id": 77,
+      "id": 77,
+      "matched_nba_game_ids": [
+        "0022501003"
+      ]
+    },
+    {
+      "content_sha256": "008bd03702fb3bebf4dc428a61934d54a7feee188a1240caebad7d9d428096bc",
+      "game_id": 78,
+      "id": 78,
+      "matched_nba_game_ids": [
+        "0022501123"
+      ]
+    },
+    {
+      "content_sha256": "669b3f841647baa8b345276195f1007b282116e65098825d13b6d25793085838",
+      "game_id": 79,
+      "id": 79,
+      "matched_nba_game_ids": [
+        "0022501143"
+      ]
+    },
+    {
+      "content_sha256": "47534c890950bcbf64c8e1278d00560c72c5eaa2807dc149297936d5ba9f2c78",
+      "game_id": 80,
+      "id": 80,
+      "matched_nba_game_ids": [
+        "0022501168"
+      ]
+    },
+    {
+      "content_sha256": "679d944f884b998eb66df74814c256560e7a028e68c1fae40c156f803e93c6e3",
+      "game_id": 81,
+      "id": 81,
+      "matched_nba_game_ids": [
+        "0022501176"
+      ]
+    },
+    {
+      "content_sha256": "e65296e7cf63df522c5b387d98ddecf0f7e350ce5fe9cef4cfe2aef8a9259f63",
+      "game_id": 82,
+      "id": 82,
+      "matched_nba_game_ids": [
+        "0022501190"
+      ]
+    },
+    {
+      "content_sha256": "d76e36ecb3116fb1f12344c97933940f3d2b50b578a75d56bb2a57854da764c7",
+      "game_id": 83,
+      "id": 83,
+      "matched_nba_game_ids": [
+        "0042500121"
+      ]
+    },
+    {
+      "content_sha256": "014547219b1df01a70a4d9eb91e39781d7ec6438e5a5c9f967cb1ab9bae7708c",
+      "game_id": 84,
+      "id": 84,
+      "matched_nba_game_ids": [
+        "0042500122"
+      ]
+    },
+    {
+      "content_sha256": "006153608410853059db2a2ca6e5350eb17b3def943b177b7c89bf4dd90f8280",
+      "game_id": 85,
+      "id": 85,
+      "matched_nba_game_ids": [
+        "0042500123"
+      ]
+    },
+    {
+      "content_sha256": "3cef8128e54a965d97308752567bbac5155ff29885a06cbb64d6bcb5d4e5ac3c",
+      "game_id": 86,
+      "id": 86,
+      "matched_nba_game_ids": [
+        "0042500124"
+      ]
+    },
+    {
+      "content_sha256": "25fd7d98909fddc6ba5ffe72132cc492d0ee4413f498b603e9593eb2eff2f60e",
+      "game_id": 87,
+      "id": 87,
+      "matched_nba_game_ids": [
+        "0042500125"
+      ]
+    },
+    {
+      "content_sha256": "078dbc5b4d386fda95eef8706313ed520b4e7cd48b118c97d0eca2b97999bf29",
+      "game_id": 88,
+      "id": 88,
+      "matched_nba_game_ids": [
+        "0042500126"
+      ]
+    },
+    {
+      "content_sha256": "e7d01b6465422748e34eb5139b9884e66a88559fae1d539f43428b1db07f313b",
+      "game_id": 89,
+      "id": 89,
+      "matched_nba_game_ids": [
+        "0042500211"
+      ]
+    },
+    {
+      "content_sha256": "d5f5c2ad074b200079ad316df6ca54c2af297f8e2d5aba05972cff3b31359f9e",
+      "game_id": 90,
+      "id": 90,
+      "matched_nba_game_ids": [
+        "0042500212"
+      ]
+    },
+    {
+      "content_sha256": "f04f1fb0e965bfee4574e6eeca533cd6287f3bb13c5fb34fbd15e8150f0224c2",
+      "game_id": 91,
+      "id": 91,
+      "matched_nba_game_ids": [
+        "0042500213"
+      ]
+    },
+    {
+      "content_sha256": "3811eca400488d1745bf218db7985e3ee2fd0db6502d69e4a019a7efb2d1dee7",
+      "game_id": 92,
+      "id": 92,
+      "matched_nba_game_ids": [
+        "0042500214"
+      ]
+    },
+    {
+      "content_sha256": "39ba086ff536247aed5506d9d74e0adf8e5f72f3c734e95c0d9e9936aa11ab77",
+      "game_id": 93,
+      "id": 93,
+      "matched_nba_game_ids": [
+        "0042500301"
+      ]
+    },
+    {
+      "content_sha256": "8bc29c78e91861cfa0406f99a382316d7454a097cbde0c73d6fa4c1bc6df843f",
+      "game_id": 94,
+      "id": 94,
+      "matched_nba_game_ids": [
+        "0042500302"
+      ]
+    },
+    {
+      "content_sha256": "2d04623c2aa1473accbac60549becf864e751ac54c131af2c592e46b7b1d3bfd",
+      "game_id": 95,
+      "id": 95,
+      "matched_nba_game_ids": [
+        "0042500303"
+      ]
+    },
+    {
+      "content_sha256": "4eea6ed90c6e4b25f66424eb179321ae2a43c0214c24c4ad99e68a9980506a86",
+      "game_id": 96,
+      "id": 96,
+      "matched_nba_game_ids": [
+        "0042500304"
+      ]
+    },
+    {
+      "content_sha256": "0c117340776327d529f915c2cf8a3700af56554fb7db223411fd39a13499b0cf",
+      "game_id": 97,
+      "id": 97,
+      "matched_nba_game_ids": [
+        "0042500401"
+      ]
+    },
+    {
+      "content_sha256": "4f8591788252e5b8a82c331d3d59d422a8e25c6582650df887ed066de9f9d029",
+      "game_id": 98,
+      "id": 98,
+      "matched_nba_game_ids": [
+        "0042500402"
+      ]
+    },
+    {
+      "content_sha256": "a8e77d3e15c72a494143cd6d99f29d2920c49477e8a2194cc74452d2fcc0e9ff",
+      "game_id": 99,
+      "id": 99,
+      "matched_nba_game_ids": [
+        "0042500403"
+      ]
+    },
+    {
+      "content_sha256": "d5e9c623bca4df49156f3029c14aced637e16259a5418884a49a8b521d13421c",
+      "game_id": 100,
+      "id": 100,
+      "matched_nba_game_ids": [
+        "0042500404"
+      ]
+    },
+    {
+      "content_sha256": "c36d87a5e8ed4105d7ee8bdff35fdfb497b85b10d09323fae3eb4cc4c223a62d",
+      "game_id": 101,
+      "id": 101,
+      "matched_nba_game_ids": [
+        "0042500405"
+      ]
+    }
+  ],
+  "source_files": {
+    "docs/release-evidence/reliability-20260928/live-before.json": "8340bb9a3cf4d2e2e603fafd69c12d0b72bb417117b53b1dde51bd3642aeb8ab",
+    "release-artifacts/2025-26/release-candidate.json": "b7dd67ed7838d68cc05ee5c25a217465238eadf5a3489e7834c1045a0df031e9"
+  },
+  "status": "partial_binding_only_no_new_production_reads",
+  "stored_hash_inventory_matches": true
+}

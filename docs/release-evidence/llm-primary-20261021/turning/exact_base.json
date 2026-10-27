@@ -1,0 +1,42 @@
+{
+ "category": "exact_statistics",
+ "trials": 2,
+ "questions": 4,
+ "responses": 8,
+ "meets_expectation": 7,
+ "meets_all_trials": 3,
+ "outcomes": {
+  "validated": 7,
+  "fallback:review_rejected": 1
+ },
+ "by_question": {
+  "exact_statistics-001": {
+   "meets": 2,
+   "outcomes": [
+    "validated",
+    "validated"
+   ]
+  },
+  "exact_statistics-003": {
+   "meets": 1,
+   "outcomes": [
+    "validated",
+    "fallback:review_rejected"
+   ]
+  },
+  "exact_statistics-007": {
+   "meets": 2,
+   "outcomes": [
+    "validated",
+    "validated"
+   ]
+  },
+  "exact_statistics-014": {
+   "meets": 2,
+   "outcomes": [
+    "validated",
+    "validated"
+   ]
+  }
+ }
+}

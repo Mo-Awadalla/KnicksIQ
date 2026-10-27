@@ -35,6 +35,42 @@ def test_render_blueprint_uses_only_free_tier_supported_fields():
     assert "databases" not in blueprint
 
 
+def test_render_blueprint_enables_the_grounded_ai_configuration():
+    blueprint_path = Path(__file__).parents[4] / "render.yaml"
+    blueprint = yaml.safe_load(blueprint_path.read_text())
+    api = next(service for service in blueprint["services"] if service["name"] == "knicksiq-api")
+    env = {item["key"]: item.get("value") for item in api["envVars"]}
+
+    import json
+
+    allowed = json.loads(env["OPENROUTER_ALLOWED_MODELS"])
+    writer, reviewer = env["AI_CHAT_MODEL"], env["ANALYST_REVIEW_MODEL"]
+    # Every model the site can call is allowlisted, and the reviewer is a different model.
+    assert {writer, reviewer, env["OPENROUTER_SUMMARY_MODEL"]} <= set(allowed)
+    assert reviewer != writer
+    protocols = json.loads(env.get("AI_MODEL_PROTOCOLS") or "{}")
+    prices = json.loads(env.get("AI_MODEL_PRICES") or "{}")
+    # A host that reports no cost needs a price for every model, or the ledger overcharges.
+    if env["AI_PROVIDER"] != "openrouter":
+        assert {writer, reviewer} <= set(prices)
+    assert set(protocols.values()) <= {"chat", "responses"}
+    assert env["RAG_LLM_PLANNER_ENABLED"] == "true"
+    assert env["RAG_QDRANT_ENABLED"] == "true"
+    assert env["RAG_QDRANT_CLOUD_INFERENCE"] == "true"
+    assert env["RAG_HYBRID_ENABLED"] == "true"
+    assert env["RAG_RERANKER_ENABLED"] == "false"
+    assert env["ANALYSIS_ANSWER_MODE"] == "llm_primary"
+    assert env["ANALYST_EVIDENCE_LOOP_ENABLED"] == "true"
+    assert env["ANALYST_PROVIDER_FORMAT"] == "json_object"
+    assert env["AI_REASONING_EFFORT"] == "none"
+    assert env["OPENROUTER_MONTHLY_CUTOFF_USD"] == "2"
+    assert env["ANALYSIS_SHADOW_SAMPLE_RATE"] == "0.1"
+    assert env["ANALYSIS_PROMPT_VERSION"] == "v1"
+    for secret in ("QDRANT_URL", "QDRANT_API_KEY"):
+        item = next(entry for entry in api["envVars"] if entry["key"] == secret)
+        assert item == {"key": secret, "sync": False}
+
+
 def test_render_blueprint_provisions_the_optional_runtime_store():
     blueprint_path = Path(__file__).parents[4] / "render.yaml"
     blueprint = yaml.safe_load(blueprint_path.read_text())

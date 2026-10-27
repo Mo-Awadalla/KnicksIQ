@@ -1,0 +1,44 @@
+{
+  "tested_commit": "62948bab49896bd0687686e0170b6d193dbdc52f",
+  "status": "code_verified_content_approved_deployment_gated",
+  "backend_tests": 400,
+  "frontend_unit_tests": 47,
+  "production_build_browser_tests": 38,
+  "production_api_url_browser_tests": 25,
+  "typecheck": "passed",
+  "ruff": "passed",
+  "format": "passed",
+  "frontend_lint": {
+    "errors": 0,
+    "existing_warnings": 2
+  },
+  "persistence_source": "PR #1 storage and recovery reused; delayed-answer focus guard added, without persistence changes",
+  "active_release": "2025-26.20260714.1",
+  "production_code_commit": "98d21753910b16440970d9081a2e352a4aacdb8d",
+  "production_regular_season_database_record": {
+    "wins": 53,
+    "losses": 29,
+    "games": 82
+  },
+  "live_record_bug_still_present": true,
+  "candidate_readonly_production_data_verified": true,
+  "content_approved": true,
+  "content_activated": false,
+  "live_provider_check_authorized": false,
+  "fresh_full_production_report_export": "approved by user; completed read-only; all rows match baseline",
+  "staging_failure_check": "isolated ASGI/Redis fixture checks passed; no hosted staging service found",
+  "ci": "All five checks passed: backend, frontend, containers, security, CodeQL",
+  "served_frontend_checks": {
+    "initial_seven_scenarios": "passed",
+    "expanded_run": "7 passed; New chat input-focus assertion failed before refresh assertion",
+    "provider_responses": "mocked; no live-provider verification",
+    "retry": "New chat passed in isolation; all eight scenarios passed across runs, with focus flake retained"
+  },
+  "code_only_pr": "https://github.com/Mo-Awadalla/KnicksIQ/pull/2",
+  "code_only_candidate": "62948bab49896bd0687686e0170b6d193dbdc52f",
+  "production_evidence_published": false,
+  "qdrant_connectivity": "reachable; four aliases captured; no mutations",
+  "merge_commit": "e003db2d7f179c8d490d90155f260ec0eeb31620",
+  "ci_url": "https://github.com/Mo-Awadalla/KnicksIQ/actions/runs/36471716238",
+  "focus_regression": "Deterministic held-animation-frame tests failed before fix and pass on both chat surfaces"
+}

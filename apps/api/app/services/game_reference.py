@@ -24,6 +24,11 @@ _CLAIM_REFERENCE = re.compile(r"\b(?:receipts?|sources?|evidence)\s+for\s+(?:tha
 _DATES = re.compile(r"\b20\d{2}-\d{2}-\d{2}\b")
 
 
+def references_recent_game(question: str) -> bool:
+    """True when the turn asks to reuse a game/receipt from the conversation."""
+    return bool(_REFERENCE.search(question) or _CLAIM_REFERENCE.search(question))
+
+
 _ACKNOWLEDGEMENT = re.compile(
     r"^\s*(?:thanks|thank you|okay|ok|got it|cool|great|sure)[.!]*\s*$", re.I
 )

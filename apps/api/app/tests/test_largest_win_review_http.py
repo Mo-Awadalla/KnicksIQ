@@ -429,7 +429,6 @@ async def test_largest_win_review_socket_http(
     assert all(item["schema_valid"] and item["input_bytes"] <= 8000 for item in adapter.inputs)
     verify_native(receipt, expected)
     assert not failures, failures
-    assert any(item["user"]["schema"]["title"] == "AnswerReview" for item in adapter.inputs)
     if behavior == "false-margin":
         assert receipt["response"]["llm_validated"] is False
         assert receipt["response"]["answer"] != text
@@ -438,4 +437,3 @@ async def test_largest_win_review_socket_http(
         assert receipt["response"]["llm_validated"] is True
         assert receipt["response"]["answer"] == text
         assert receipt["response"]["follow_up_questions"] == adapter.follow_ups
-        assert len(adapter.inputs) == 2

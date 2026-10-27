@@ -1,0 +1,21 @@
+{
+  "candidate": "e003db2d7f179c8d490d90155f260ec0eeb31620",
+  "observed_main": "e003db2d7f179c8d490d90155f260ec0eeb31620",
+  "main_checked_at": "2026-09-28T19:59:02.704525+00:00",
+  "ci_run": 36472142614,
+  "candidate_tree": "fc3d57ca04e759f370baca0611dc8afca092941f",
+  "prior_tested_commit": "62948bab49896bd0687686e0170b6d193dbdc52f",
+  "prior_tree": "fc3d57ca04e759f370baca0611dc8afca092941f",
+  "trees_identical": true,
+  "local_inspected_modules_match_candidate": {
+    "tools/report_audit/audit.py": "f129cafcf58082c55374264e7d0ece5981e28bc427d9f330d60bae7574984980",
+    "tools/report_audit/repair.py": "18f1ddadd675d3f468425b70d8f0d8efcf34ae9bf0837c115212b3aa9e7cadf2",
+    "tools/release/draft_labels.py": "1c19ba9bdf969b8486964fab66cb2c43d3900d3075f09009ed7e3fe59a7b6b50",
+    "apps/api/app/services/release_bundle.py": "7b54921fee350f770270423486db1bfb91067796e24c638e7055d26857e5f7c4",
+    "apps/api/app/evaluation/harness.py": "50408ab173c16daf00975b4b1df843bb95087c8da1bfadb50fe396664468b512",
+    "apps/api/app/evaluation/analyst_probe.py": "8d71eda251cdc1dd139b8a587b149ceb65ab31f0243029f8ab64b80c9b3c07ac",
+    "apps/api/app/services/report_llm.py": "3fd4b8163cb086980e8be9c6a667643718f2d8b8676e213c4478b73daa4e790c",
+    "apps/api/app/services/analyst_budget.py": "a4b8506056bf15e492ebb467893fa054ccd4446f30322c17fb1015dce8160f59"
+  },
+  "prior_evidence_policy": "Historical evidence remains labeled with its original commit; identical trees justify reuse only for source-dependent checks, not environment/runtime freshness."
+}

@@ -1,0 +1,497 @@
+{
+  "units": 17,
+  "trials": 2,
+  "mutations": {
+    "rows": [
+      {
+        "unit": "exact_statistics-001#0",
+        "id": "exact_statistics-001",
+        "kind": "text_number_swap",
+        "original": "69",
+        "replacement": "70",
+        "base": [
+          "verdict_rejected",
+          "verdict_rejected"
+        ],
+        "head": [
+          "deterministic_rejected",
+          "deterministic_rejected"
+        ]
+      },
+      {
+        "unit": "exact_statistics-001#0",
+        "id": "exact_statistics-001",
+        "kind": "claim_value_mismatch",
+        "original": 69,
+        "replacement": 72,
+        "base": [
+          "structure_rejected",
+          "structure_rejected"
+        ],
+        "head": [
+          "structure_rejected",
+          "structure_rejected"
+        ]
+      },
+      {
+        "unit": "exact_statistics-002#0",
+        "id": "exact_statistics-002",
+        "kind": "text_number_swap",
+        "original": "11,750",
+        "replacement": "11751",
+        "base": [
+          "verdict_rejected",
+          "verdict_rejected"
+        ],
+        "head": [
+          "deterministic_rejected",
+          "deterministic_rejected"
+        ]
+      },
+      {
+        "unit": "exact_statistics-002#0",
+        "id": "exact_statistics-002",
+        "kind": "claim_value_mismatch",
+        "original": 11750,
+        "replacement": 11753,
+        "base": [
+          "structure_rejected",
+          "structure_rejected"
+        ],
+        "head": [
+          "structure_rejected",
+          "structure_rejected"
+        ]
+      },
+      {
+        "unit": "exact_statistics-003#0",
+        "id": "exact_statistics-003",
+        "kind": "text_number_swap",
+        "original": "116.34",
+        "replacement": "116.35",
+        "base": [
+          "verdict_rejected",
+          "verdict_rejected"
+        ],
+        "head": [
+          "deterministic_rejected",
+          "deterministic_rejected"
+        ]
+      },
+      {
+        "unit": "exact_statistics-003#0",
+        "id": "exact_statistics-003",
+        "kind": "claim_value_mismatch",
+        "original": 116.33663366336634,
+        "replacement": 119.33663366336634,
+        "base": [
+          "structure_rejected",
+          "structure_rejected"
+        ],
+        "head": [
+          "structure_rejected",
+          "structure_rejected"
+        ]
+      },
+      {
+        "unit": "exact_statistics-004#0",
+        "id": "exact_statistics-004",
+        "kind": "text_number_swap",
+        "original": "7.94",
+        "replacement": "7.95",
+        "base": [
+          "accepted",
+          "accepted"
+        ],
+        "head": [
+          "deterministic_rejected",
+          "deterministic_rejected"
+        ]
+      },
+      {
+        "unit": "exact_statistics-004#0",
+        "id": "exact_statistics-004",
+        "kind": "claim_value_mismatch",
+        "original": 7.9405940594059405,
+        "replacement": 10.94059405940594,
+        "base": [
+          "structure_rejected",
+          "structure_rejected"
+        ],
+        "head": [
+          "structure_rejected",
+          "structure_rejected"
+        ]
+      },
+      {
+        "unit": "exact_statistics-005#0",
+        "id": "exact_statistics-005",
+        "kind": "text_number_swap",
+        "original": "37",
+        "replacement": "38",
+        "base": [
+          "verdict_rejected",
+          "verdict_rejected"
+        ],
+        "head": [
+          "deterministic_rejected",
+          "deterministic_rejected"
+        ]
+      },
+      {
+        "unit": "exact_statistics-005#0",
+        "id": "exact_statistics-005",
+        "kind": "claim_value_mismatch",
+        "original": 37,
+        "replacement": 40,
+        "base": [
+          "structure_rejected",
+          "structure_rejected"
+        ],
+        "head": [
+          "structure_rejected",
+          "structure_rejected"
+        ]
+      },
+      {
+        "unit": "exact_statistics-006#0",
+        "id": "exact_statistics-006",
+        "kind": "text_number_swap",
+        "original": "32",
+        "replacement": "33",
+        "base": [
+          "verdict_rejected",
+          "verdict_rejected"
+        ],
+        "head": [
+          "deterministic_rejected",
+          "deterministic_rejected"
+        ]
+      },
+      {
+        "unit": "exact_statistics-006#0",
+        "id": "exact_statistics-006",
+        "kind": "claim_value_mismatch",
+        "original": 32,
+        "replacement": 35,
+        "base": [
+          "structure_rejected",
+          "structure_rejected"
+        ],
+        "head": [
+          "structure_rejected",
+          "structure_rejected"
+        ]
+      },
+      {
+        "unit": "exact_statistics-007#0",
+        "id": "exact_statistics-007",
+        "kind": "text_number_swap",
+        "original": "32",
+        "replacement": "33",
+        "base": [
+          "verdict_rejected",
+          "verdict_rejected"
+        ],
+        "head": [
+          "deterministic_rejected",
+          "deterministic_rejected"
+        ]
+      },
+      {
+        "unit": "exact_statistics-007#0",
+        "id": "exact_statistics-007",
+        "kind": "claim_value_mismatch",
+        "original": 32,
+        "replacement": 35,
+        "base": [
+          "structure_rejected",
+          "structure_rejected"
+        ],
+        "head": [
+          "structure_rejected",
+          "structure_rejected"
+        ]
+      },
+      {
+        "unit": "exact_statistics-008#0",
+        "id": "exact_statistics-008",
+        "kind": "text_number_swap",
+        "original": "54",
+        "replacement": "55",
+        "base": [
+          "verdict_rejected",
+          "verdict_rejected"
+        ],
+        "head": [
+          "deterministic_rejected",
+          "deterministic_rejected"
+        ]
+      },
+      {
+        "unit": "exact_statistics-008#0",
+        "id": "exact_statistics-008",
+        "kind": "claim_value_mismatch",
+        "original": 1,
+        "replacement": 4,
+        "base": [
+          "structure_rejected",
+          "structure_rejected"
+        ],
+        "head": [
+          "structure_rejected",
+          "structure_rejected"
+        ]
+      },
+      {
+        "unit": "exact_statistics-010#0",
+        "id": "exact_statistics-010",
+        "kind": "text_number_swap",
+        "original": "47",
+        "replacement": "48",
+        "base": [
+          "verdict_rejected",
+          "verdict_rejected"
+        ],
+        "head": [
+          "deterministic_rejected",
+          "deterministic_rejected"
+        ]
+      },
+      {
+        "unit": "exact_statistics-010#0",
+        "id": "exact_statistics-010",
+        "kind": "claim_value_mismatch",
+        "original": 47,
+        "replacement": 50,
+        "base": [
+          "structure_rejected",
+          "structure_rejected"
+        ],
+        "head": [
+          "structure_rejected",
+          "structure_rejected"
+        ]
+      },
+      {
+        "unit": "date_range_last_n-001#0",
+        "id": "date_range_last_n-001",
+        "kind": "text_number_swap",
+        "original": "4",
+        "replacement": "6",
+        "base": [
+          "verdict_rejected",
+          "verdict_rejected"
+        ],
+        "head": [
+          "deterministic_rejected",
+          "deterministic_rejected"
+        ]
+      },
+      {
+        "unit": "date_range_last_n-001#0",
+        "id": "date_range_last_n-001",
+        "kind": "claim_value_mismatch",
+        "original": 4,
+        "replacement": 7,
+        "base": [
+          "structure_rejected",
+          "structure_rejected"
+        ],
+        "head": [
+          "structure_rejected",
+          "structure_rejected"
+        ]
+      },
+      {
+        "unit": "date_range_last_n-002#0",
+        "id": "date_range_last_n-002",
+        "kind": "text_number_swap",
+        "original": "114.1",
+        "replacement": "114.2",
+        "base": [
+          "verdict_rejected",
+          "verdict_rejected"
+        ],
+        "head": [
+          "deterministic_rejected",
+          "deterministic_rejected"
+        ]
+      },
+      {
+        "unit": "date_range_last_n-002#0",
+        "id": "date_range_last_n-002",
+        "kind": "claim_value_mismatch",
+        "original": 9,
+        "replacement": 12,
+        "base": [
+          "structure_rejected",
+          "structure_rejected"
+        ],
+        "head": [
+          "structure_rejected",
+          "structure_rejected"
+        ]
+      },
+      {
+        "unit": "date_range_last_n-003#0",
+        "id": "date_range_last_n-003",
+        "kind": "text_number_swap",
+        "original": "32.6",
+        "replacement": "32.7",
+        "base": [
+          "verdict_rejected",
+          "verdict_rejected"
+        ],
+        "head": [
+          "deterministic_rejected",
+          "deterministic_rejected"
+        ]
+      },
+      {
+        "unit": "date_range_last_n-003#0",
+        "id": "date_range_last_n-003",
+        "kind": "claim_value_mismatch",
+        "original": 32.6,
+        "replacement": 35.6,
+        "base": [
+          "structure_rejected",
+          "structure_rejected"
+        ],
+        "head": [
+          "structure_rejected",
+          "structure_rejected"
+        ]
+      },
+      {
+        "unit": "date_range_last_n-004#0",
+        "id": "date_range_last_n-004",
+        "kind": "text_number_swap",
+        "original": "7",
+        "replacement": "9",
+        "base": [
+          "verdict_rejected",
+          "verdict_rejected"
+        ],
+        "head": [
+          "deterministic_rejected",
+          "deterministic_rejected"
+        ]
+      },
+      {
+        "unit": "date_range_last_n-004#0",
+        "id": "date_range_last_n-004",
+        "kind": "claim_value_mismatch",
+        "original": 7,
+        "replacement": 10,
+        "base": [
+          "structure_rejected",
+          "structure_rejected"
+        ],
+        "head": [
+          "structure_rejected",
+          "structure_rejected"
+        ]
+      },
+      {
+        "unit": "date_range_last_n-006#0",
+        "id": "date_range_last_n-006",
+        "kind": "text_number_swap",
+        "original": "5",
+        "replacement": "6",
+        "base": [
+          "verdict_rejected",
+          "verdict_rejected"
+        ],
+        "head": [
+          "deterministic_rejected",
+          "deterministic_rejected"
+        ]
+      },
+      {
+        "unit": "date_range_last_n-006#0",
+        "id": "date_range_last_n-006",
+        "kind": "claim_value_mismatch",
+        "original": 5,
+        "replacement": 8,
+        "base": [
+          "structure_rejected",
+          "structure_rejected"
+        ],
+        "head": [
+          "structure_rejected",
+          "structure_rejected"
+        ]
+      },
+      {
+        "unit": "date_range_last_n-008#0",
+        "id": "date_range_last_n-008",
+        "kind": "text_number_swap",
+        "original": "45",
+        "replacement": "46",
+        "base": [
+          "verdict_rejected",
+          "verdict_rejected"
+        ],
+        "head": [
+          "deterministic_rejected",
+          "deterministic_rejected"
+        ]
+      },
+      {
+        "unit": "date_range_last_n-008#0",
+        "id": "date_range_last_n-008",
+        "kind": "claim_value_mismatch",
+        "original": 45,
+        "replacement": 48,
+        "base": [
+          "structure_rejected",
+          "structure_rejected"
+        ],
+        "head": [
+          "structure_rejected",
+          "structure_rejected"
+        ]
+      },
+      {
+        "unit": "comparisons-002#0",
+        "id": "comparisons-002",
+        "kind": "text_number_swap",
+        "original": "26.5",
+        "replacement": "26.6",
+        "base": [
+          "structure_rejected",
+          "structure_rejected"
+        ],
+        "head": [
+          "deterministic_rejected",
+          "deterministic_rejected"
+        ]
+      },
+      {
+        "unit": "comparisons-002#0",
+        "id": "comparisons-002",
+        "kind": "claim_value_mismatch",
+        "original": 19.21276595744681,
+        "replacement": 22.21276595744681,
+        "base": [
+          "structure_rejected",
+          "structure_rejected"
+        ],
+        "head": [
+          "structure_rejected",
+          "structure_rejected"
+        ]
+      }
+    ],
+    "wrong_number_observations": {
+      "base": 64,
+      "head": 64
+    },
+    "wrong_number_acceptances": {
+      "base": 2,
+      "head": 0
+    },
+    "zero_head_acceptances": true
+  }
+}

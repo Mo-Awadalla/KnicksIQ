@@ -328,12 +328,13 @@ async def test_play_by_play_retains_source_score_presence_through_normalization_
     from basketball_core.parsers.play_by_play import parse_events
     from sqlalchemy import delete, select
     from worker_app.adapters.nba_api_source import NbaApiDataSource
+    from worker_app.adapters.nba_normalization import parse_pbp_v3_action
     from worker_app.core.config import NbaApiSettings
 
     source = NbaApiDataSource(NbaApiSettings(), SEED_DIR)
     raw_scores = [("0", "0"), ("3", "2"), ("", ""), ("0", "0"), ("", ""), ("0", "2")]
     raw_events = [
-        source._parse_pbp_v3_action(
+        parse_pbp_v3_action(
             {
                 "actionType": "Jump Ball",
                 "period": 1,
@@ -343,7 +344,8 @@ async def test_play_by_play_retains_source_score_presence_through_normalization_
                 "description": f"Score observation {sequence}",
                 "scoreHome": home,
                 "scoreAway": away,
-            }
+            },
+            source._trigraph_to_nba_id,
         )
         for sequence, (home, away) in enumerate(raw_scores, start=1)
     ]

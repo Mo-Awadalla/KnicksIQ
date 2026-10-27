@@ -35,6 +35,14 @@ services:
         value: "true"
       - key: IP_HASH_SECRET
         generateValue: true
+      # Render terminates TLS at its edge and forwards over HTTP from its private network.
+      # Trusting these ranges lets uvicorn resolve the client IP and scheme without
+      # trusting client-supplied X-Forwarded-For values from the public internet.
+      - key: FORWARDED_ALLOW_IPS
+        value: "127.0.0.1,::1,10.0.0.0/8,172.16.0.0/12,192.168.0.0/16"
+      # OpenCode Go subscription: DeepSeek writes, GPT 6 Luna (a different model family)
+      # reviews. Go serves Luna only on the Responses API. The key is a personal
+      # subscription key; set it in the dashboard, never here.
       - key: AI_PROVIDER
         value: opencode-go
       - key: AI_BASE_URL
@@ -51,6 +59,8 @@ services:
         value: "1600"
       - key: AI_MODEL_PROTOCOLS
         value: '{"gpt-6-luna":"responses"}'
+      # Go reports no per-call cost. List prices (DeepSeek at peak) let the monthly ledger
+      # settle real usage; the cutoff also caps how much of the Go allowance the site uses.
       - key: AI_MODEL_PRICES
         value: '{"deepseek-v4.1-flash":[0.30,1.20],"gpt-6-luna":[0.10,0.50]}'
       - key: AI_REASONING_EFFORT

@@ -1,0 +1,110 @@
+{
+  "scope": "meets_expectation now requires: not declined or clarification, validated delivery, substantive content, no unbacked number or entity, required facts present, no echo, and no unbacked causal hedge. claim_backed additionally requires cited claim values.",
+  "mode": "offline",
+  "dataset": "apps/api/app/evaluation/heldout_questions.jsonl",
+  "questions": 60,
+  "old_meets_expectation": 6,
+  "meets_expectation": 4,
+  "claim_backed_meets_expectation": 4,
+  "delta": 2,
+  "by_answerable": {
+    "answerable": {
+      "questions": 50,
+      "old": 5,
+      "new": 3
+    },
+    "unsupported": {
+      "questions": 10,
+      "old": 1,
+      "new": 1
+    }
+  },
+  "survived": [
+    "heldout-exact_statistics-001",
+    "heldout-date_range_last_n-003",
+    "heldout-single_game_narrative-001",
+    "heldout-unsupported-009"
+  ],
+  "lost": [
+    {
+      "id": "heldout-exact_statistics-004",
+      "category": "exact_statistics",
+      "failures": [
+        "required_facts"
+      ],
+      "reason": "missing_required_fact",
+      "answer": "The Knicks lost 12 home games in the available archive (49 archived home games)."
+    },
+    {
+      "id": "heldout-turning_points-002",
+      "category": "turning_points",
+      "failures": [
+        "clarification",
+        "required_facts",
+        "required_phrases",
+        "no_cited_claims"
+      ],
+      "reason": "skipped_work_clarification",
+      "answer": "I found several Knicks\u2013Spurs games in scope, so I need to know which one you mean by \"Game 5.\" Did you mean 2026-03-01 (SAS at NYK), 2026-06-03 (NYK at SAS), 2026-06-05 (NYK at SAS), 2026-06-10 (SAS at NYK), or 2026-06-13 (NYK at SAS)?"
+    }
+  ],
+  "gained": [],
+  "failure_counts": {
+    "not_validated": 44,
+    "required_facts": 41,
+    "not_declined": 9,
+    "required_phrases": 8,
+    "missing_turning_detail": 7,
+    "no_cited_claims": 5,
+    "required_entities": 4,
+    "clarification": 3,
+    "not_substantive": 1,
+    "declined": 1,
+    "unbacked_numbers": 1
+  },
+  "by_category": {
+    "aliases_typos": {
+      "questions": 8,
+      "old": 0,
+      "new": 0,
+      "claim_backed": 0
+    },
+    "comparisons": {
+      "questions": 8,
+      "old": 0,
+      "new": 0,
+      "claim_backed": 0
+    },
+    "date_range_last_n": {
+      "questions": 9,
+      "old": 1,
+      "new": 1,
+      "claim_backed": 1
+    },
+    "exact_statistics": {
+      "questions": 9,
+      "old": 2,
+      "new": 1,
+      "claim_backed": 1
+    },
+    "single_game_narrative": {
+      "questions": 8,
+      "old": 1,
+      "new": 1,
+      "claim_backed": 1
+    },
+    "turning_points": {
+      "questions": 8,
+      "old": 1,
+      "new": 0,
+      "claim_backed": 0
+    },
+    "unsupported": {
+      "questions": 10,
+      "old": 1,
+      "new": 1,
+      "claim_backed": 1
+    }
+  },
+  "source": "docs/release-evidence/llm-primary-20261021/scoring/heldout-60.responses.jsonl"
+}

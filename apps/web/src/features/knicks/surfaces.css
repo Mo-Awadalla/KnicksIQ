@@ -1,165 +1,4 @@
-.surface-app {
-  --signal-orange-deep: #a2470b;
-  min-height: 100svh;
-  background: var(--surface-paper);
-  color: var(--text-ink);
-}
-
-.surface-container {
-  width: min(100% - 2.5rem, 80rem);
-  margin-inline: auto;
-}
-
-.surface-topbar {
-  border-bottom: 1px solid var(--line-on-ink);
-  background: var(--surface-ink);
-  color: var(--text-on-ink);
-}
-
-.surface-topbar-inner {
-  display: flex;
-  min-height: 5rem;
-  align-items: center;
-  justify-content: space-between;
-  gap: 2rem;
-}
-
-.surface-brand {
-  display: inline-flex;
-  min-height: 2.75rem;
-  align-items: center;
-  gap: 0.7rem;
-  color: inherit;
-  text-decoration: none;
-}
-
-.surface-brand-mark {
-  display: grid;
-  width: 2.5rem;
-  height: 2.5rem;
-  place-items: center;
-  overflow: hidden;
-  border: 1px solid rgb(255 255 255 / 35%);
-  border-radius: 50%;
-  background: var(--surface-ink-raised);
-}
-
-.surface-brand-mark img {
-  width: 4rem;
-  max-width: none;
-}
-
-.surface-brand strong,
-.surface-brand small {
-  display: block;
-}
-
-.surface-brand strong {
-  font-size: 0.82rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-.surface-brand small {
-  margin-top: 0.12rem;
-  color: rgb(255 255 255 / 58%);
-  font-family: var(--type-stats);
-  font-size: 0.59rem;
-  letter-spacing: 0.04em;
-}
-
-.surface-nav {
-  display: flex;
-  align-items: center;
-  gap: clamp(0.8rem, 2vw, 2rem);
-}
-
-.surface-nav a,
-.surface-footer a {
-  min-height: 2.75rem;
-  align-content: center;
-  color: rgb(255 255 255 / 62%);
-  font-size: 0.77rem;
-  font-weight: 700;
-  text-decoration: none;
-  transition: color var(--motion-press);
-}
-
-.surface-nav a:hover,
-.surface-nav a.is-active,
-.surface-footer a:hover {
-  color: var(--signal-orange);
-}
-
-.surface-season {
-  color: var(--signal-orange);
-  font-family: var(--type-stats);
-  font-size: 0.65rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-.surface-main {
-  padding-block: clamp(2.5rem, 6vw, 5.5rem) 7rem;
-}
-
-.surface-page-heading {
-  display: flex;
-  align-items: end;
-  justify-content: space-between;
-  gap: 2rem;
-  margin-bottom: 3rem;
-}
-
-.surface-page-heading h1 {
-  max-width: 14ch;
-  margin-top: 0.55rem;
-  font-size: clamp(3rem, 7vw, 6.4rem);
-  font-weight: 760;
-  letter-spacing: -0.075em;
-  line-height: 0.88;
-  text-wrap: balance;
-}
-
-.surface-kicker {
-  color: var(--signal-orange-deep);
-  font-family: var(--type-stats);
-  font-size: 0.67rem;
-  font-weight: 700;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-}
-
-.surface-description {
-  max-width: 42rem;
-  margin-top: 1.25rem;
-  color: var(--text-muted);
-  font-size: 1rem;
-  line-height: 1.65;
-}
-
-.surface-heading-actions {
-  flex: 0 0 auto;
-}
-
-.surface-heading-actions .inline-flex,
-.surface-back-link {
-  min-height: 2.75rem;
-}
-
-.surface-back-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.45rem;
-  color: var(--signal-blue-deep);
-  font-size: 0.78rem;
-  font-weight: 750;
-  text-decoration: none;
-}
-
-.surface-back-link svg {
-  width: 1rem;
-}
+@import './surface-layout.css';
 
 .metric-strip {
   display: grid;
@@ -882,6 +721,12 @@
   display: grid;
   gap: 0.9rem;
   min-width: 0;
+}
+
+.analyst-thread-content {
+  display: grid;
+  min-width: 0;
+  gap: 0.9rem;
 }
 
 .analyst-empty {

@@ -58,15 +58,26 @@ class Settings(BaseSettings):
     ai_chat_model: str = "deepseek/deepseek-v4.1-flash"
     ai_embedding_model: str = "text-embedding-3-small"
     ai_request_timeout_seconds: float = 20.0
-    ai_reasoning_effort: Literal["none", "minimal", "low", "medium", "high"] | None = None
+    # Matches production. Unset, the model spends max_tokens on reasoning and returns no JSON.
+    ai_reasoning_effort: Literal["none", "minimal", "low", "medium", "high"] | None = "none"
+    # Wire protocol per model when it is not Chat Completions, e.g. {"gpt-6-luna": "responses"}.
     ai_model_protocols: dict[str, Literal["chat", "responses"]] = Field(default_factory=dict)
+    # USD per million [input, output] tokens, used only when the host reports no cost, so the
+    # monthly ledger settles real usage instead of the flat reservation.
     ai_model_prices: dict[str, list[float]] = Field(default_factory=dict)
-    analyst_review_model: str | None = None
-    analyst_review_max_tokens: int = Field(default=1200, ge=256, le=8000)
-    analyst_answer_max_tokens: int = Field(default=1200, ge=256, le=8000)
+    ai_user_agent: str = "knicksiq/1.0"
 
     openrouter_api_key: str | None = None
     openrouter_summary_model: str = "deepseek/deepseek-v4.1-flash"
+    # OpenRouter routes one model across upstreams with a wide price and latency spread.
+    # The owner decision for llm_primary is recorded in
+    # docs/release-evidence/llm-primary-20261021/w3-routing/README.md. An empty order keeps
+    # the router's own choice; a non-empty order is tried first when fallbacks are allowed.
+    openrouter_provider_order: list[str] = Field(default_factory=list)
+    openrouter_provider_sort: Literal["latency", "throughput", "price", "none"] = "latency"
+    openrouter_provider_allow_fallbacks: bool = True
+    # Optional exact upstream plus USD-per-million caps; only guarded release verification
+    # pins a route, while production leaves all three unset and uses the router above.
     openrouter_provider_route: str | None = Field(default=None, min_length=1)
     openrouter_max_prompt_price: float | None = Field(default=None, gt=0, allow_inf_nan=False)
     openrouter_max_completion_price: float | None = Field(default=None, gt=0, allow_inf_nan=False)
@@ -135,8 +146,16 @@ class Settings(BaseSettings):
     analyst_investigation_seconds: float = Field(default=20, gt=0, le=20)
     analyst_max_model_calls: int = Field(default=6, ge=2, le=6)
     analyst_max_tool_rounds: int = Field(default=2, ge=1, le=2)
+    analyst_prefetch_enabled: bool = True
+    # The configured model reasons at high effort by default, and reasoning tokens consume
+    # max_tokens before any visible JSON. These bounded calls need no chain of thought.
+    analyst_reasoning_effort: Literal["none", "minimal", "low", "medium", "high"] | None = "none"
+    analyst_review_max_tokens: int = Field(default=3000, ge=256, le=8000)
+    # A reviewer from a different model family than the writer; unset reuses ai_chat_model.
+    analyst_review_model: str | None = None
+    analyst_answer_max_tokens: int = Field(default=1600, ge=256, le=8000)
     analyst_evidence_tokens: int = Field(default=6000, ge=100, le=6000)
-    analyst_input_tokens: int = Field(default=8000, ge=1000, le=8000)
+    analyst_input_tokens: int = Field(default=16000, ge=1000, le=32000)
     analyst_call_reservation_usd: float = Field(default=0.01, gt=0)
 
     public_chat_rate_limit_per_minute: int = 10

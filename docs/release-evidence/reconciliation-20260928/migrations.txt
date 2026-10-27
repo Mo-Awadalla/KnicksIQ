@@ -1,0 +1,7 @@
+INFO  [alembic.runtime.migration] Context impl PostgresqlImpl.
+INFO  [alembic.runtime.migration] Will assume transactional DDL.
+INFO  [alembic.runtime.migration] Running upgrade  -> 0001_release_archive, Create the release-scoped public archive schema.
+INFO  [alembic.runtime.migration] Running upgrade 0001_release_archive -> 0002_release_game_identity, Make game identity release-scoped on upgraded legacy databases.
+INFO  [alembic.runtime.migration] Running upgrade 0002_release_game_identity -> 0003_generated_stat_facts, Add expand-only generated player fact catalog.
+INFO  [alembic.runtime.migration] Running upgrade 0003_generated_stat_facts -> 0004_archive_full_text, Add PostgreSQL archive full-text and player-name trigram indexes.
+INFO  [alembic.runtime.migration] Running upgrade 0004_archive_full_text -> 0005_player_analytics_views, Add authoritative structured player analytics views.

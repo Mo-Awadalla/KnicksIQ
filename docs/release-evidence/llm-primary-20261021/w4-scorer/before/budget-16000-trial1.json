@@ -1,0 +1,177 @@
+{
+  "scope": "meets_expectation now requires: not declined or clarification, validated delivery, substantive content, no unbacked number or entity, required facts present, no echo, and no unbacked causal hedge. claim_backed additionally requires cited claim values.",
+  "mode": "offline",
+  "dataset": "/Users/mohamedawadalla/.local/share/knicksiq/worktrees/w4-scorer/apps/api/app/evaluation/questions.jsonl",
+  "questions": 70,
+  "old_meets_expectation": 37,
+  "meets_expectation": 35,
+  "claim_backed_meets_expectation": 35,
+  "delta": 2,
+  "by_answerable": {
+    "answerable": {
+      "questions": 62,
+      "old": 33,
+      "new": 31
+    },
+    "unsupported": {
+      "questions": 8,
+      "old": 4,
+      "new": 4
+    }
+  },
+  "survived": [
+    "exact_statistics-001",
+    "exact_statistics-002",
+    "exact_statistics-003",
+    "exact_statistics-005",
+    "exact_statistics-006",
+    "exact_statistics-007",
+    "exact_statistics-008",
+    "exact_statistics-009",
+    "exact_statistics-010",
+    "date_range_last_n-001",
+    "date_range_last_n-002",
+    "date_range_last_n-003",
+    "date_range_last_n-004",
+    "date_range_last_n-006",
+    "date_range_last_n-007",
+    "comparisons-001",
+    "comparisons-002",
+    "comparisons-007",
+    "comparisons-008",
+    "comparisons-009",
+    "single_game_narrative-001",
+    "single_game_narrative-003",
+    "turning_points-007",
+    "turning_points-008",
+    "turning_points-009",
+    "aliases_typos-001",
+    "aliases_typos-002",
+    "aliases_typos-004",
+    "aliases_typos-006",
+    "unsupported-003",
+    "unsupported-004",
+    "unsupported-008"
+  ],
+  "lost": [
+    {
+      "id": "exact_statistics-004",
+      "category": "exact_statistics",
+      "failures": [
+        "unbacked_numbers"
+      ],
+      "reason": "unbacked_number",
+      "answer": "In the 2025-26 regular season, the Knicks' average margin was 6.33 points per game across 82 archived games."
+    },
+    {
+      "id": "single_game_narrative-002",
+      "category": "single_game_narrative",
+      "failures": [
+        "clarification",
+        "no_cited_claims"
+      ],
+      "reason": "skipped_work_clarification",
+      "answer": "There are five Knicks-Toronto games in the archive. Which one do you mean?"
+    },
+    {
+      "id": "single_game_narrative-005",
+      "category": "single_game_narrative",
+      "failures": [
+        "clarification",
+        "no_cited_claims"
+      ],
+      "reason": "skipped_work_clarification",
+      "answer": "Which game against Charlotte do you mean? The archive has four Knicks\u2013Hornets regular-season games: 2025-11-26 (NYK at CHA), 2025-12-03 (CHA at NYK), 2026-03-26 (NYK at CHA), and 2026-04-12 (CHA at NYK)."
+    },
+    {
+      "id": "aliases_typos-007",
+      "category": "aliases_typos",
+      "failures": [
+        "clarification",
+        "no_cited_claims"
+      ],
+      "reason": "skipped_work_clarification",
+      "answer": "There are four archived Knicks\u2013CHI games in the 2025-26 regular season. Which one do you mean for the 4Q?\n\n- 2025-10-31: NYK at CHI (CHI won 135-125)\n- 2025-11-02: CHI at NYK (NYK won 128-116)\n- 2026-02-22: NYK at CHI (NYK won 105-99)\n- 2026-04-03: CHI at NYK (NYK won 136-96)"
+    },
+    {
+      "id": "unsupported-007",
+      "category": "unsupported",
+      "failures": [
+        "decline_states_unbacked_fact"
+      ],
+      "reason": "other",
+      "answer": "I can't answer whether the Knicks won yesterday: the archive has no live or current-date data, and its coverage ends 2026-06-13, so \"yesterday\" is outside the available range. The archive does contain single-game box-score facts, such as Jalen Brunson's 47 points, 3 rebounds, 8 assists and 0 turnovers on 2025-12-21 against MIA, and Karl-Anthony Towns' 35 points, 18 rebounds, 5 assists and 1 turnover on 2025-12-03 against CHA, but these are individual player lines, not a Knicks win/loss result for yesterday."
+    }
+  ],
+  "gained": [
+    {
+      "id": "single_game_narrative-008",
+      "failures": []
+    },
+    {
+      "id": "turning_points-005",
+      "failures": []
+    },
+    {
+      "id": "unsupported-002",
+      "failures": []
+    }
+  ],
+  "failure_counts": {
+    "no_cited_claims": 18,
+    "not_validated": 16,
+    "clarification": 12,
+    "declined": 10,
+    "not_substantive": 5,
+    "unbacked_numbers": 4,
+    "unbacked_entities": 3,
+    "not_declined": 3,
+    "missing_turning_detail": 1,
+    "decline_states_unbacked_fact": 1
+  },
+  "by_category": {
+    "aliases_typos": {
+      "questions": 10,
+      "old": 5,
+      "new": 4,
+      "claim_backed": 4
+    },
+    "comparisons": {
+      "questions": 10,
+      "old": 5,
+      "new": 5,
+      "claim_backed": 5
+    },
+    "date_range_last_n": {
+      "questions": 10,
+      "old": 6,
+      "new": 6,
+      "claim_backed": 6
+    },
+    "exact_statistics": {
+      "questions": 10,
+      "old": 10,
+      "new": 9,
+      "claim_backed": 9
+    },
+    "single_game_narrative": {
+      "questions": 10,
+      "old": 4,
+      "new": 3,
+      "claim_backed": 3
+    },
+    "turning_points": {
+      "questions": 10,
+      "old": 3,
+      "new": 4,
+      "claim_backed": 4
+    },
+    "unsupported": {
+      "questions": 10,
+      "old": 4,
+      "new": 4,
+      "claim_backed": 4
+    }
+  },
+  "source": "docs/release-evidence/llm-primary-20261021/final/budget-16000.trial1.responses.jsonl"
+}

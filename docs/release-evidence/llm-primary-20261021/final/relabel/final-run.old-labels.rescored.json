@@ -1,0 +1,375 @@
+{
+  "scope": "meets_expectation now requires: not declined or clarification, validated delivery, substantive content, no unbacked number or entity, required facts present, no echo, and no unbacked causal hedge. claim_backed additionally requires cited claim values.",
+  "mode": "offline",
+  "dataset": "/tmp/heldout-labels-before.jsonl",
+  "questions": 60,
+  "old_meets_expectation": 45,
+  "meets_expectation": 21,
+  "claim_backed_meets_expectation": 21,
+  "delta": 24,
+  "by_answerable": {
+    "answerable": {
+      "questions": 50,
+      "old": 40,
+      "new": 12
+    },
+    "unsupported": {
+      "questions": 10,
+      "old": 5,
+      "new": 9
+    }
+  },
+  "survived": [
+    "heldout-exact_statistics-001",
+    "heldout-date_range_last_n-003",
+    "heldout-date_range_last_n-004",
+    "heldout-date_range_last_n-006",
+    "heldout-turning_points-001",
+    "heldout-turning_points-003",
+    "heldout-turning_points-007",
+    "heldout-aliases_typos-001",
+    "heldout-aliases_typos-004",
+    "heldout-aliases_typos-006",
+    "heldout-aliases_typos-007",
+    "heldout-aliases_typos-008",
+    "heldout-unsupported-003",
+    "heldout-unsupported-004",
+    "heldout-unsupported-007",
+    "heldout-unsupported-009",
+    "heldout-unsupported-010"
+  ],
+  "lost": [
+    {
+      "id": "heldout-exact_statistics-002",
+      "category": "exact_statistics",
+      "failures": [
+        "required_facts"
+      ],
+      "reason": "missing_required_fact",
+      "answer": "New York averaged 116.45 points per game in the 2025-26 regular season (82 archived games)."
+    },
+    {
+      "id": "heldout-exact_statistics-003",
+      "category": "exact_statistics",
+      "failures": [
+        "unbacked_numbers"
+      ],
+      "reason": "unbacked_number",
+      "answer": "In the 2025-26 regular season, the Knicks' average margin was +6.33 points per game across 82 archived games (53-29)."
+    },
+    {
+      "id": "heldout-exact_statistics-004",
+      "category": "exact_statistics",
+      "failures": [
+        "required_facts"
+      ],
+      "reason": "missing_required_fact",
+      "answer": "In the 2025-26 regular season, the Knicks lost 10 home games, across 40 archived home games (30 wins, 10 losses)."
+    },
+    {
+      "id": "heldout-exact_statistics-005",
+      "category": "exact_statistics",
+      "failures": [
+        "required_facts"
+      ],
+      "reason": "missing_required_fact",
+      "answer": "The archive's candidate facts for Mitchell Robinson's rebounds are single-game highs, not a season total. His largest observed single-game rebound totals in the 2025-26 regular season were 22 (2026-03-13 vs IND), 16 (2025-12-19 vs PHI and 2026-02-24 vs CLE), 15 (2025-11-30 vs TOR), and 14 (2026-01-09 vs PHX and 2026-01-19 vs DAL). A cumulative season total is not available in these results."
+    },
+    {
+      "id": "heldout-exact_statistics-006",
+      "category": "exact_statistics",
+      "failures": [
+        "required_facts"
+      ],
+      "reason": "missing_required_fact",
+      "answer": "Miles McBride averaged 2.6 assists per appearance across 41 observed appearances in the 2025-26 regular season."
+    },
+    {
+      "id": "heldout-exact_statistics-007",
+      "category": "exact_statistics",
+      "failures": [
+        "required_facts"
+      ],
+      "reason": "missing_required_fact",
+      "answer": "The archive's candidate facts for Landry Shamet's 2025-26 regular season show single-game three-point totals, not a season total. His highest games were three outings with 6 three-pointers (2025-11-14 vs MIA, 2026-01-21 vs BKN, 2026-02-01 vs LAL), one with 5 (2026-02-27 vs MIL), and four with 4 (2025-10-28 vs MIL, 2026-02-03 vs WAS, 2026-02-04 vs DEN, 2026-02-10 vs IND). A full-season aggregate is not available in the returned evidence."
+    },
+    {
+      "id": "heldout-exact_statistics-008",
+      "category": "exact_statistics",
+      "failures": [
+        "required_facts"
+      ],
+      "reason": "missing_required_fact",
+      "answer": "Jordan Clarkson averaged 8.6 points per appearance across 72 observed appearances in the 2025-26 regular season."
+    },
+    {
+      "id": "heldout-date_range_last_n-001",
+      "category": "date_range_last_n",
+      "failures": [
+        "required_facts",
+        "required_entities"
+      ],
+      "reason": "missing_required_fact",
+      "answer": "The archive's team totals cover the full 82-game regular season (53-29), not a final-8-game split, so a record for only the last 8 regular-season games isn't available from the returned evidence. The full-season record is 53 wins and 29 losses across 82 archived regular-season games."
+    },
+    {
+      "id": "heldout-date_range_last_n-002",
+      "category": "date_range_last_n",
+      "failures": [
+        "required_facts"
+      ],
+      "reason": "missing_required_fact",
+      "answer": "In the 12 archived February 2026 regular-season games, the Knicks scored 115.5 points per game and had a margin of 7.25 points per game. The archive's team-stat claims for this window cover Knicks points scored and margin, not points allowed per game, so a direct points-allowed figure is not available from the supplied claims."
+    },
+    {
+      "id": "heldout-date_range_last_n-009",
+      "category": "date_range_last_n",
+      "failures": [
+        "unbacked_numbers"
+      ],
+      "reason": "unbacked_number",
+      "answer": "Over their last 7 archived games (2025-26 playoffs), the Knicks' average margin was 8.86 points per game. They went 6-1 in that span, scoring 110.43 points per game."
+    },
+    {
+      "id": "heldout-comparisons-001",
+      "category": "comparisons",
+      "failures": [
+        "required_facts"
+      ],
+      "reason": "missing_required_fact",
+      "answer": "In the 2025-26 regular season, Miles McBride averaged more points per appearance than Landry Shamet: 12.0 to 9.3. McBride's mark came across 41 observed appearances, while Shamet's came across 51."
+    },
+    {
+      "id": "heldout-comparisons-002",
+      "category": "comparisons",
+      "failures": [
+        "required_facts"
+      ],
+      "reason": "missing_required_fact",
+      "answer": "In the 2025-26 regular season, Mitchell Robinson averaged 8.8 rebounds per appearance across 60 observed appearances, while Ariel Hukporti averaged 2.9 rebounds per appearance across 54 observed appearances. Robinson's per-appearance rebounding rate was roughly three times Hukporti's in this archive."
+    },
+    {
+      "id": "heldout-comparisons-004",
+      "category": "comparisons",
+      "failures": [
+        "required_facts"
+      ],
+      "reason": "missing_required_fact",
+      "answer": "In the 2025-26 archive, the Knicks' playoff record is 16-3 over 19 games, with 2,201 total points and a +283 point margin. The regular-season record is not present in the available evidence, so a full regular-season vs. playoff comparison cannot be made from this archive."
+    },
+    {
+      "id": "heldout-comparisons-005",
+      "category": "comparisons",
+      "failures": [
+        "required_facts"
+      ],
+      "reason": "missing_required_fact",
+      "answer": "Miles McBride had the higher assists average in the 2025-26 regular season: 2.6 assists per appearance across 41 observed appearances, compared with Landry Shamet's 1.4 assists per appearance across 51 observed appearances."
+    },
+    {
+      "id": "heldout-comparisons-006",
+      "category": "comparisons",
+      "failures": [
+        "required_facts"
+      ],
+      "reason": "missing_required_fact",
+      "answer": "The archive for this release covers only the 2025-26 playoffs for Jordan Clarkson, so a regular-season vs. playoff scoring comparison isn't possible \u2014 no regular-season rows are present. In the playoff sample, his scoring games observed were: 10 points (2026-06-08 vs SAS), 9 (2026-04-28 vs ATL), 8 (2026-04-18 vs ATL), 8 (2026-04-23 vs ATL), 7 (2026-04-20 vs ATL), 7 (2026-04-25 vs ATL), and 7 (2026-04-30 vs ATL). These are single-game observations, not a season average, and the archive is not necessarily the complete season."
+    },
+    {
+      "id": "heldout-comparisons-007",
+      "category": "comparisons",
+      "failures": [
+        "unbacked_numbers",
+        "required_facts"
+      ],
+      "reason": "unbacked_number",
+      "answer": "In the 2025-26 regular season, the Knicks' average margin in the 40 archived home games was +10.03 points per game (30-10 record, 119.0 points per game). The archive scope for this question covers only home games, so a road average margin is not available here for comparison."
+    },
+    {
+      "id": "heldout-single_game_narrative-001",
+      "category": "single_game_narrative",
+      "failures": [
+        "required_facts"
+      ],
+      "reason": "missing_required_fact",
+      "answer": "On December 21, 2025, the Knicks beat Miami 132-125 at home in the regular season. New York trailed early: Miami's largest lead was 10 points at Q1 03:32 (16-26). The Knicks took the lead for good at Q2 02:43, when Brunson's pullup jumper made it 58-57. New York's largest lead reached 11 points at Q4 09:50 (111-100), and the Knicks closed out a 7-point win."
+    },
+    {
+      "id": "heldout-single_game_narrative-003",
+      "category": "single_game_narrative",
+      "failures": [
+        "required_facts"
+      ],
+      "reason": "missing_required_fact",
+      "answer": "On May 25, 2026, the Knicks won on the road in Cleveland, 130-93, in a playoff game. That was the larger of their two archived road playoff wins over the Cavaliers: they also won 121-108 in Cleveland on May 23. Across those two road playoff games against Cleveland, the Knicks averaged 125.5 points and a +25.0 margin per game, going 2-0."
+    },
+    {
+      "id": "heldout-single_game_narrative-005",
+      "category": "single_game_narrative",
+      "failures": [
+        "required_facts"
+      ],
+      "reason": "missing_required_fact",
+      "answer": "On February 6, 2026, the Knicks lost at Detroit 80-118. That game is one of two archived Knicks-Detroit regular-season meetings in this release; the Knicks went 0-2 in those games, averaging 95.5 points and a -26.5 margin. The archive holds the final score and play-by-play for this game, but it does not establish why the loss unfolded as it did."
+    },
+    {
+      "id": "heldout-single_game_narrative-006",
+      "category": "single_game_narrative",
+      "failures": [
+        "required_facts"
+      ],
+      "reason": "missing_required_fact",
+      "answer": "On February 27, 2026, the Knicks beat Milwaukee 127-98 on the road in a regular-season game. New York won by 29 points, scoring 127 while holding the Bucks to 98."
+    },
+    {
+      "id": "heldout-single_game_narrative-007",
+      "category": "single_game_narrative",
+      "failures": [
+        "required_facts"
+      ],
+      "reason": "missing_required_fact",
+      "answer": "On March 6, 2026 (regular season), the Knicks won at Denver 142-103, a 39-point margin."
+    },
+    {
+      "id": "heldout-single_game_narrative-008",
+      "category": "single_game_narrative",
+      "failures": [
+        "required_facts"
+      ],
+      "reason": "missing_required_fact",
+      "answer": "On February 1, 2026, the Knicks beat the Lakers 112-100 in a regular-season game. New York's largest lead was 13 points, reached at Q4 00:59 with the score 112-99. The Lakers' largest lead was 9 points, at Q1 00:18 when it was 24-33. The Knicks took the lead for good at Q3 02:18, when Anunoby's running dunk made it 79-77. Across the archive, this was the Knicks' only regular-season meeting with the Lakers, giving them 1 win, 0 losses, 112.0 points per game and a +12.0 margin per game in that matchup."
+    },
+    {
+      "id": "heldout-turning_points-004",
+      "category": "turning_points",
+      "failures": [
+        "required_facts",
+        "required_phrases"
+      ],
+      "reason": "missing_required_fact",
+      "answer": "On May 10 (NYK at PHI, playoffs), the Knicks' decisive separation came in the third quarter: a 10-0 run from Q3 05:45 to Q3 02:01 turned a 102-75 lead into 112-75. New York went on to win 144-114. Across the two archived road playoff games against Philadelphia, the Knicks averaged a 22.0-point margin."
+    },
+    {
+      "id": "heldout-turning_points-005",
+      "category": "turning_points",
+      "failures": [
+        "required_phrases"
+      ],
+      "reason": "missing_required_fact",
+      "answer": "In the Knicks' 80-118 loss at Detroit on 2026-02-06, the largest single-quarter deficit was Q1: New York was outscored 17-28 (-11). The other quarters were Q2 25-35 (-10), Q3 18-27 (-9) and Q4 20-28 (-8). The Knicks trailed 42-63 at halftime (-21)."
+    },
+    {
+      "id": "heldout-turning_points-006",
+      "category": "turning_points",
+      "failures": [
+        "required_facts",
+        "required_phrases"
+      ],
+      "reason": "missing_required_fact",
+      "answer": "The Knicks' February 27, 2026 regular-season win at Milwaukee finished 127-98. New York took the lead for good at Q1 03:24 on a Shamet 3-pointer that made it 27-24, and did not trail again. Milwaukee's largest lead of the night was 5 points (3-8 at Q1 09:12), while the Knicks' largest lead reached 32 points (122-90 at Q4 06:14). The lead change occurred in the first quarter; the largest margin came in the fourth."
+    },
+    {
+      "id": "heldout-turning_points-008",
+      "category": "turning_points",
+      "failures": [
+        "required_facts"
+      ],
+      "reason": "missing_required_fact",
+      "answer": "The Knicks' 112-100 win over the Lakers on 2026-02-01 (regular season) turned in the third quarter. New York trailed 77-75, then went on a 6-0 run from Q3 02:37 to Q3 01:51 to move ahead 81-77. The go-ahead basket came at Q3 02:18, when OG Anunoby's running dunk made it 79-77 \u2014 a lead the Knicks never surrendered. They later stretched the margin to 13 points (112-99) at Q4 00:59."
+    },
+    {
+      "id": "heldout-aliases_typos-002",
+      "category": "aliases_typos",
+      "failures": [
+        "unbacked_numbers"
+      ],
+      "reason": "unbacked_number",
+      "answer": "Against Cleveland in the 2025-26 archive, the Knicks went 6-1 across 7 games, averaging 116.3 points per game with a +10.3 margin. That splits into 2-1 in the regular season (3 games) and 4-0 in the playoffs (4 games)."
+    },
+    {
+      "id": "heldout-aliases_typos-003",
+      "category": "aliases_typos",
+      "failures": [
+        "required_facts"
+      ],
+      "reason": "missing_required_fact",
+      "answer": "Mitchell Robinson averaged 7.6 rebounds per appearance across 7 observed appearances versus the Sixers in the 2025-26 regular season and playoffs."
+    }
+  ],
+  "gained": [
+    {
+      "id": "heldout-unsupported-001",
+      "failures": []
+    },
+    {
+      "id": "heldout-unsupported-002",
+      "failures": []
+    },
+    {
+      "id": "heldout-unsupported-005",
+      "failures": []
+    },
+    {
+      "id": "heldout-unsupported-006",
+      "failures": []
+    }
+  ],
+  "failure_counts": {
+    "required_facts": 34,
+    "unbacked_numbers": 6,
+    "not_validated": 6,
+    "declined": 4,
+    "no_cited_claims": 4,
+    "required_phrases": 4,
+    "clarification": 3,
+    "required_entities": 2,
+    "not_substantive": 1,
+    "unbacked_entities": 1,
+    "not_declined": 1
+  },
+  "by_category": {
+    "aliases_typos": {
+      "questions": 8,
+      "old": 7,
+      "new": 5,
+      "claim_backed": 5
+    },
+    "comparisons": {
+      "questions": 8,
+      "old": 6,
+      "new": 0,
+      "claim_backed": 0
+    },
+    "date_range_last_n": {
+      "questions": 9,
+      "old": 6,
+      "new": 3,
+      "claim_backed": 3
+    },
+    "exact_statistics": {
+      "questions": 9,
+      "old": 8,
+      "new": 1,
+      "claim_backed": 1
+    },
+    "single_game_narrative": {
+      "questions": 8,
+      "old": 6,
+      "new": 0,
+      "claim_backed": 0
+    },
+    "turning_points": {
+      "questions": 8,
+      "old": 7,
+      "new": 3,
+      "claim_backed": 3
+    },
+    "unsupported": {
+      "questions": 10,
+      "old": 5,
+      "new": 9,
+      "claim_backed": 9
+    }
+  },
+  "source": "docs/release-evidence/llm-primary-20261021/final/heldout-60.responses.jsonl"
+}

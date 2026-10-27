@@ -14,18 +14,41 @@ from app.models.game import Game
 from app.models.game_event import GameEvent
 from app.models.player import Player
 from app.services.opponent_narrowing import narrow_by_condition, requires_lead_change
-from app.services.query_parsing import (
-    _MONTHS,
-    _explicit_dates,
-    _metric,
+from app.services.query_dates import (
+    _MONTH_ALIASES,
+    MONTH_WORDS,
+    date_window,
+)
+from app.services.query_game_scope import (
+    InheritedScope,
+    names_season_scope,
+    referenced_game,
+)
+from app.services.query_names import (
     _name_candidates,
-    _normalize,
-    _periods,
-    _resolve_player_mentions,
+    unique_given_names,
+)
+from app.services.query_names import (
+    resolve_player_mentions as _resolve_player_mentions,
+)
+from app.services.query_parsing import _explicit_dates
+from app.services.query_policy import (
+    Phase,
+    SeasonType,
+    is_outcome_subset,
+    names_phase,
+    resolve_phase,
+)
+from app.services.query_text import (
+    METRIC_WORDS,
+    aggregations_in_text,
+    is_explanation,
     is_game_score_request,
     is_record_request,
-    requested_aggregations,
-    requested_metrics,
+    metrics_in_text,
+    normalize,
+    periods_in_text,
+    without_period_phrases,
 )
 from app.services.team_aliases import team_ids_in_text
 from app.services.team_scope import scores
@@ -60,18 +83,33 @@ class ResolvedQuery(BaseModel):
     date_end: date | None = None
     calendar_boundary: CalendarBoundary | None = None
     relative_game_count: int | None = None
+    # "First 10 games" counts from the start of the scope; "last 10" from the end.
+    relative_from_start: bool = False
     relative_game_order: Literal["first", "last"] = "last"
     periods: list[int] = Field(default_factory=list)
     season_type: Literal["regular", "play_in", "playoffs"] | None = None
+    # The user asked for every phase; distinguishes None from "unspecified" for merges.
+    all_phases: bool = False
     home_away: Literal["home", "away"] | None = None
     game_result: Literal["W", "L"] | None = None
     metric: str | None = None
+    aggregation: Literal["average", "total"] | None = None
     requested_metrics: list[str] = Field(default_factory=list)
     requested_aggregations: list[Literal["average", "total"]] = Field(default_factory=list)
     requires_clarification: bool = False
     clarification_reason: str | None = None
     clarification_options: list[str] = Field(default_factory=list)
     data_version: str
+
+    def _first_window(self) -> bool:
+        return self.relative_from_start or self.relative_game_order == "first"
+
+    def window[T](self, ordered: list[T]) -> list[T]:
+        """Apply the relative game window to a chronologically ordered list."""
+        count = self.relative_game_count
+        if not count:
+            return ordered
+        return ordered[:count] if self._first_window() else ordered[-count:]
 
     def requested_window(
         self, *, relative_unit: Literal["games", "appearances"]
@@ -84,7 +122,7 @@ class ResolvedQuery(BaseModel):
         if self.relative_game_count:
             window.update(
                 relative_game_count=self.relative_game_count,
-                relative_game_order=self.relative_game_order,
+                relative_game_order="first" if self._first_window() else "last",
                 relative_unit=relative_unit,
             )
         if self.calendar_boundary:
@@ -145,11 +183,17 @@ async def resolve_query(
     intent: str,
     data_version: str | None = None,
     typo_threshold: float = 0.86,
+    default_season_type: SeasonType | None = None,
+    default_all_phases: bool = False,
+    inherit: InheritedScope | None = None,
     select_extrema: bool = True,
 ) -> ResolvedQuery:
     """Resolve canonical entities and filters without model inference.
 
-    Narrative computation retains the comparison population with select_extrema=False;
+    ``inherit`` supplies the previous accepted turn's scope and topic as the default
+    values for everything this question does not name, before candidate selection, so
+    the resolved game ids and phase stay consistent with each other. Narrative
+    computation retains the comparison population with ``select_extrema=False``;
     archive retrieval and conversation references retain the selected targets.
     """
     release_id, resolved_version = await _active_release(db, data_version)
@@ -172,6 +216,7 @@ async def resolve_query(
         question,
         players,
         typo_threshold=typo_threshold,
+        unique_givens=unique_given_names(players),
         allow_fuzzy=not postgres,
     )
     if not player_ids and not ambiguous_players and postgres:
@@ -196,45 +241,56 @@ async def resolve_query(
                 typo_threshold=typo_threshold,
             )
 
-    q = _normalize(question)
+    q = normalize(question)
     team_ids = sorted(team_ids_in_text(question) - {"NYK"})
-    opponent_id = team_ids[0] if len(team_ids) == 1 else None
-    explicit_dates, date_error = _explicit_dates(question, games)
-    date_start = explicit_dates[0] if explicit_dates else None
-    date_end = explicit_dates[-1] if explicit_dates else None
+    if team_ids:
+        opponent_id = team_ids[0] if len(team_ids) == 1 else None
+    else:
+        opponent_id = inherit.opponent_id if inherit else None
     latest_date = games[-1].game_date if games else None
-    named_months = {month for name, month in _MONTHS.items() if re.search(rf"\b{name}\b", q)}
+    window = date_window(question, games, latest_date)
+    date_start, date_end = window.start, window.end
+    explicit_dates = window.dates
+    relative_count = window.relative_count
+    relative_from_start = window.relative_from_start
+    main_dates, date_error = _explicit_dates(question, games)
+    if date_error:
+        explicit_dates = []
+        date_start = date_end = None
+    elif "christmas day" in q and main_dates:
+        explicit_dates = main_dates
+        date_start = date_end = main_dates[0]
+    elif (
+        main_dates
+        and not window.dates
+        and not re.search(r"\b(?:to|through|thru|until|between|from)\b", q)
+    ):
+        # Named days without a range connector are that day's games, not the span
+        # between them (for example "January 10 and January 20").
+        explicit_dates = main_dates
+        date_start, date_end = min(main_dates), max(main_dates)
+
+    named_months = {month for name, month in _MONTH_ALIASES.items() if re.search(rf"\b{name}\b", q)}
     comparison = bool(
         re.search(r"\b(?:compare|comparison|versus|vs|better|stronger)\b", q)
         or re.search(r"\b(?:home or away|eastern or western)\b", q)
     )
     month_comparison = comparison and len(named_months) > 1 and not explicit_dates
-    relative_count: int | None = None
-    count_match = re.search(r"\b(?:last|final|first)\s+(\d+)\s+(?:regular season\s+)?games?\b", q)
-    if count_match:
-        relative_count = max(1, min(int(count_match.group(1)), 82))
-    elif re.search(r"\b(?:last|previous)\s+game\b", q):
-        relative_count = 1
+    if month_comparison:
+        # A comparison needs every requested month, not the first named one.
+        month_dates = [game.game_date for game in games if game.game_date.month in named_months]
+        if month_dates:
+            first, last = min(month_dates), max(month_dates)
+            date_start = first.replace(day=1)
+            date_end = last.replace(day=calendar.monthrange(last.year, last.month)[1])
+    if (
+        comparison
+        and len(re.findall(r"\b(?:last|final|first)\s+\d+\s+games?\b", q)) > 1
+        and not player_ids
+    ):
+        relative_count = None
+        relative_from_start = False
 
-    if not explicit_dates and not date_error and latest_date and "this month" in q:
-        date_start = latest_date.replace(day=1)
-        date_end = latest_date
-    elif not explicit_dates and not date_error:
-        if named_months and games:
-            # A comparison needs every requested month, not the first named one.
-            selected_months = named_months if month_comparison else {min(named_months)}
-            month_dates = [
-                game.game_date for game in games if game.game_date.month in selected_months
-            ]
-            if month_dates:
-                first, last = min(month_dates), max(month_dates)
-                date_start = first.replace(day=1)
-                date_end = last.replace(day=calendar.monthrange(last.year, last.month)[1])
-    if explicit_dates and "since" in q:
-        date_end = latest_date
-    elif explicit_dates and "before" in q and "all star" not in q:
-        date_start = games[0].game_date if games else None
-        date_end = explicit_dates[0]
     calendar_error = None
     calendar_boundary = None
     if "all star" in q:
@@ -251,44 +307,110 @@ async def resolve_query(
                 date_start = max(date_start, start) if date_start else start
                 calendar_boundary = CalendarBoundary(date=boundary, relation=">")
 
-    season_type = (
-        "playoffs"
-        if "playoff" in q or "postseason" in q
-        else "play_in"
-        if re.search(r"\bplay[-_]in\b", question, re.I)
-        or re.search(r"\b(?:the|nba) play in\b|\bplay in (?:tournament|round)\b", q)
-        else "regular"
-        if "regular season" in q
-        else None
-    )
-    home_away = (
+    named_phase = names_phase(question)
+    named_site = (
         "home"
         if re.search(r"\bhome\b", q)
         else "away"
         if re.search(r"\b(?:road|away)\b", q)
         else None
     )
-    game_result = (
-        None
-        if is_record_request(question)
-        else "W"
-        if re.search(r"\bwins?\b", q)
-        else "L"
-        if re.search(r"\bloss(?:es)?\b", q)
-        else None
+    # A follow-up that names the season asks for the season population: the inherited
+    # game/date window is replaced while the topic's subject and metric survive.
+    season_scope = inherit is not None and not named_phase and names_season_scope(question)
+    reference = referenced_game(question, inherit, games)
+    named_window = bool(
+        window.explicit
+        or explicit_dates
+        or reference
+        or season_scope
+        or month_comparison
+        or "all star" in q
+        or date_error
     )
+    # Game ids are the prior window's output, not an input: they may bound an elliptical
+    # turn only when it names no opponent, site or outcome of its own.
+    inherited_games: list[int] = []
+    if reference:
+        # A deictic game reference names the whole window, not only one filter.
+        date_start = date_end = reference.game_date
+        relative_count = None
+        relative_from_start = False
+    elif season_scope:
+        date_start = date_end = None
+        relative_count = None
+        relative_from_start = False
+    elif inherit is not None and not named_window and not named_phase:
+        relative_count = inherit.relative_game_count
+        relative_from_start = inherit.relative_from_start or inherit.relative_game_order == "first"
+        date_start = inherit.date_start
+        date_end = inherit.date_end
+        if not team_ids and named_site is None and not is_outcome_subset(question):
+            inherited_games = inherit.game_ids
+    season_level = not (opponent_id or explicit_dates or relative_count or date_start or date_end)
+    if season_scope:
+        phase = Phase(
+            named=True,
+            season_type=(inherit.season_type if inherit is not None else None) or "regular",
+            all_phases=False,
+        )
+    elif inherit is not None and not named_phase:
+        phase = Phase(named=False, season_type=inherit.season_type, all_phases=inherit.all_phases)
+    else:
+        phase = resolve_phase(
+            question,
+            season_level=season_level,
+            default=default_season_type,
+            default_all_phases=default_all_phases,
+        )
+    named_phase, season_type = phase.named, phase.season_type
+    home_away = named_site or (inherit.home_away if inherit else None)
+    if is_record_request(question):
+        game_result = None
+    else:
+        wins = bool(re.search(r"\bwins?\b|\bwon\b|\bwinning\b", q))
+        losses = bool(re.search(r"\bloss(?:es)?\b|\blost\b|\blosing\b", q))
+        if wins and not losses:
+            game_result = "W"
+        elif losses and not wins:
+            game_result = "L"
+        elif wins and losses:
+            game_result = None
+        else:
+            game_result = inherit.game_result if inherit else None
     if comparison and re.search(r"\bhome\b", q) and re.search(r"\b(?:road|away)\b", q):
         home_away = None
     if comparison and re.search(r"\bwins?\b", q) and re.search(r"\bloss(?:es)?\b", q):
         game_result = None
-    if (
-        comparison
-        and len(re.findall(r"\b(?:last|final|first)\s+\d+\s+games?\b", q)) > 1
-        and not player_ids
-    ):
-        relative_count = None
 
-    candidates = games
+    if player_ids or ambiguous_players:
+        resolved_player_ids = player_ids
+    elif inherit is not None:
+        resolved_player_ids = inherit.player_ids
+    else:
+        resolved_player_ids = []
+    periods = periods_in_text(question)
+    if not periods and inherit is not None:
+        periods = inherit.periods
+    named_metrics = metrics_in_text(question)
+    if is_record_request(question) or is_explanation(question):
+        named_metrics = set()
+    elif not named_metrics and inherit is not None:
+        named_metrics = set(inherit.requested_metrics) or (
+            {inherit.metric} if inherit.metric else set()
+        )
+    metric = next(iter(named_metrics)) if len(named_metrics) == 1 else None
+    named_aggregations = aggregations_in_text(question)
+    if not named_aggregations and inherit is not None:
+        named_aggregations = set(inherit.requested_aggregations) or (
+            {inherit.aggregation} if inherit.aggregation else set()
+        )
+    aggregation = next(iter(named_aggregations)) if len(named_aggregations) == 1 else None
+
+    candidates = [reference] if reference else games
+    if inherited_games:
+        inherited_ids = set(inherited_games)
+        candidates = [game for game in candidates if game.id in inherited_ids]
     if opponent_id:
         candidates = [
             game for game in candidates if opponent_id in {game.home_team_id, game.away_team_id}
@@ -307,19 +429,18 @@ async def resolve_query(
         candidates = [game for game in candidates if game.game_date >= date_start]
     if date_end:
         candidates = [game for game in candidates if game.game_date <= date_end]
-    if game_result:
-        if game_result == "W":
-            candidates = [
-                game
-                for game in candidates
-                if game.status == "final" and scores(game)[0] > scores(game)[1]
-            ]
-        else:
-            candidates = [
-                game
-                for game in candidates
-                if game.status == "final" and scores(game)[0] < scores(game)[1]
-            ]
+    if game_result == "W":
+        candidates = [
+            game
+            for game in candidates
+            if game.status == "final" and scores(game)[0] > scores(game)[1]
+        ]
+    elif game_result == "L":
+        candidates = [
+            game
+            for game in candidates
+            if game.status == "final" and scores(game)[0] < scores(game)[1]
+        ]
     lead_narrowing = bool(opponent_id and requires_lead_change(question))
     verified_lead_games: list[Game] = []
     unverified_lead_games: list[Game] = []
@@ -337,13 +458,14 @@ async def resolve_query(
     descriptive_reference = bool(
         is_game_score_request(question)
         or (bool(explicit_dates) and not re.search(r"\b(between|from|through|until)\b", q))
-        or "overtime game" in q
+        or re.search(r"\bovertime game\b", q)
         or re.search(r"\bgame where\b", q)
         or (
             opponent_id
+            # per/each/a game count a population, not one game.
+            and not re.search(r"\b(?:per|each|a)\s+game\b", q)
             and re.search(r"\b(?:the|that|most recent)?\s*game\b", q)
             and "games" not in q
-            and not re.search(r"\bper\s+game\b", q)
         )
     )
     all_tied_games = False
@@ -383,15 +505,17 @@ async def resolve_query(
         descriptive_reference = True
 
     resolved_game_ids: list[int] = []
-    if lead_narrowing and len(candidates) == 1 and not unverified_lead_games:
-        resolved_game_ids = [candidates[0].id]
-    if relative_count and not player_ids:
+    if reference:
+        resolved_game_ids = [reference.id]
+    elif relative_count and not resolved_player_ids:
         selected = (
-            candidates[:relative_count]
-            if count_match and "first" in count_match[0]
-            else candidates[-relative_count:]
+            candidates[:relative_count] if relative_from_start else candidates[-relative_count:]
         )
         resolved_game_ids = [game.id for game in selected]
+    elif inherited_games:
+        resolved_game_ids = [game.id for game in candidates]
+    elif lead_narrowing and len(candidates) == 1 and not unverified_lead_games:
+        resolved_game_ids = [candidates[0].id]
     elif all_tied_games:
         resolved_game_ids = [game.id for game in candidates]
     elif descriptive_reference:
@@ -399,7 +523,7 @@ async def resolve_query(
             resolved_game_ids = [candidates[-1].id]
         elif len(candidates) == 1:
             resolved_game_ids = [candidates[0].id]
-    elif any((opponent_id, date_start, date_end, season_type, home_away, game_result)):
+    elif any((opponent_id, date_start, date_end, home_away, game_result)) or named_phase:
         resolved_game_ids = [game.id for game in candidates]
 
     clarification_options = ambiguous_players
@@ -471,7 +595,7 @@ async def resolve_query(
 
     return ResolvedQuery(
         intent=intent,
-        player_ids=player_ids,
+        player_ids=resolved_player_ids,
         team_ids=team_ids,
         opponent_id=opponent_id,
         game_ids=resolved_game_ids,
@@ -479,16 +603,51 @@ async def resolve_query(
         date_end=date_end,
         calendar_boundary=calendar_boundary,
         relative_game_count=relative_count,
-        relative_game_order="first" if count_match and "first" in count_match[0] else "last",
-        periods=_periods(question),
+        relative_from_start=bool(relative_count) and relative_from_start,
+        relative_game_order="first" if relative_count and relative_from_start else "last",
+        periods=periods,
         season_type=season_type,
+        all_phases=phase.all_phases,
         home_away=home_away,
         game_result=game_result,
-        metric=_metric(question),
-        requested_metrics=sorted(requested_metrics(question)),
-        requested_aggregations=sorted(requested_aggregations(question)),
+        metric=metric,
+        aggregation=aggregation,
+        requested_metrics=sorted(named_metrics),
+        requested_aggregations=sorted(named_aggregations),
         requires_clarification=clarification_reason is not None,
         clarification_reason=clarification_reason,
         clarification_options=clarification_options,
         data_version=resolved_version,
     )
+
+
+# Words a scope-only phrase may contain besides metric words, months and numbers.
+_SCOPE_WORDS = frozenset(
+    "a an and at the their them they his her its s on in of for during vs versus against "
+    "home road away playoff playoffs postseason regular season overall all phases phase "
+    "including play first last opening final next previous recent games game stretch "
+    "wins win losses loss won lost record per average total quarter quarters half halves "
+    "overtime ot 1st 2nd 3rd 4th third fourth before after since between from through "
+    "to until star break christmas month week weeks".split()
+)
+
+
+async def phrase_names_scope(db: AsyncSession, phrase: str, data_version: str | None) -> bool:
+    """True when "what about <phrase>" names a known subject or only moves scope.
+
+    A phrase that names a resolved player or opponent is a known subject. Otherwise every
+    word must be scope vocabulary, so "Nobody McFake's points" still counts as an
+    unknown subject even though "points" is a recognised metric.
+    """
+    named = await resolve_query(db, phrase, intent="analyst", data_version=data_version)
+    if named.player_ids or named.opponent_id:
+        return True
+    leftover = {
+        word
+        for word in without_period_phrases(phrase).split()
+        if not word.isdigit()
+        and word not in _SCOPE_WORDS
+        and word not in METRIC_WORDS
+        and word not in MONTH_WORDS
+    }
+    return not leftover

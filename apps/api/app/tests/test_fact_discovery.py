@@ -4,7 +4,7 @@ import pytest
 from app.core.db import AsyncSessionLocal
 from app.services import fact_discovery
 from app.services.fact_discovery import discover_fact
-from app.tests.test_player_intelligence import _seed_release_stats
+from app.tests.support.player_archive import _seed_release_stats
 
 
 @pytest.mark.parametrize(

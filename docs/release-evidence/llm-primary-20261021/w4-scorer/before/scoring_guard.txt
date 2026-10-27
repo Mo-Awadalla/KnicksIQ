@@ -1,0 +1,31 @@
+FAIL expected=True  got=False round 116.3 backs 116.28571428571429
+FAIL expected=True  got=False round +2.8 backs 2.8333333333333335
+FAIL expected=True  got=False round 6.33 backs 6.329268292682927
+FAIL expected=True  got=False round 116.45 backs 116.45121951219512
+FAIL expected=True  got=False round 116.5 backs 116.45121951219512
+PASS expected=True  got=True  both written raws keep the min-precision rule
+FAIL expected=True  got=False sentence-final 69-32.
+PASS expected=True  got=True  comma-terminated 69-32,
+PASS expected=True  got=True  bare 69-32
+FAIL expected=True  got=False expectation_checks sees sentence-final 69-32.
+PASS expected=False got=False wrong rounding 116.4
+PASS expected=False got=False wrong rounding 116.28 at 2dp
+PASS expected=False got=False wrong rounding 6.34
+PASS expected=False got=False truncation 116.3 against 116.381
+PASS expected=False got=False integer answer gets no slack (116 vs 116.2857)
+PASS expected=False got=False integer answer gets no slack (54 vs 53.6)
+PASS expected=False got=False hundredth 0.54 does not match 1.0
+PASS expected=False got=False answer 54 is not backed by an unrelated claim 1.0
+PASS expected=False got=False answer 2.8 is not backed by a claim 0.0 through /100
+FAIL expected=False got=True  plain answer 45 is not backed by a rate claim 0.45
+PASS expected=False got=False reversed record 32-69.
+PASS expected=False got=False reversed record 32-69, done.
+PASS expected=False got=False reversed record via wins/losses wording
+FAIL expected=False got=True  date 2026-01-21 is not record 1-21
+FAIL expected=False got=True  date in a sentence is not record 1-21
+PASS expected=False got=False season 2025-26 is not record 25-26
+PASS expected=False got=False decimal tail 69-32.5 is not a record
+PASS expected=False got=False domain tail 69-32.txt is not a record
+PASS expected=False got=False record must add up to the population
+
+19/29 checks agree with the intended rule

@@ -1,0 +1,9 @@
+OK  'What was the margin?': 1 games, prior game=True (want True)
+OK  'Who scored the most?': 1 games, prior game=True (want True)
+OK  'How many points did Brunson have in that game?': 1 games, prior game=True (want True)
+OK  'How many threes did they make?': 1 games, prior game=True (want True)
+BAD 'How many points did Brunson average?': 1 games, prior game=True (want False)
+BAD 'What was their best scoring game?': 1 games, prior game=True (want False)
+OK  'What was their biggest win?': 1 games, prior game=False (want False)
+BAD 'How many rebounds per game did Towns get?': 1 games, prior game=True (want False)
+FAILURES 3

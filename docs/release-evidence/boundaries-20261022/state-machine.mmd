@@ -1,0 +1,27 @@
+stateDiagram-v2
+    [*] --> Admission
+    Admission --> Session: valid request
+    Session --> Delivered: stored turn replay
+    Session --> Conflict: stale revision or active turn
+    Session --> ImmediateReply: greeting or policy refusal
+    ImmediateReply --> Commit: preserve prior topic and scope
+    Session --> Resolve: archive question
+    Resolve --> Calculate: prefetch or model tool choice
+    Calculate --> Draft: authoritative metric and aggregation
+    Draft --> SelectEvidence: ProposedAnswer references
+    SelectEvidence --> Gate: declared claims, baselines and receipts
+    Gate --> Review: same selected evidence
+    Gate --> Repair: validation feedback and capacity
+    Review --> Deliver: accepted
+    Review --> Repair: rejected and capacity remains
+    Repair --> SelectEvidence: flat ProposedAnswer
+    Repair --> Fallback: invalid or out of time
+    Review --> Fallback: no remaining repair capacity
+    Fallback --> Deliver: selected facts or explicit limitation
+    Deliver --> Commit: session available
+    Deliver --> Uncommitted: storage unavailable
+    Commit --> Delivered: committed or canonical replay
+    Commit --> Uncommitted: commit failed
+    Delivered --> [*]
+    Uncommitted --> [*]
+    Conflict --> [*]

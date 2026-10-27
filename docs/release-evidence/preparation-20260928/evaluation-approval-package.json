@@ -1,0 +1,948 @@
+{
+  "status": "prepared_owner_approval_missing",
+  "candidate": "e003db2d7f179c8d490d90155f260ec0eeb31620",
+  "labels_path": "docs/release-evidence/evaluation-label-review-20260907/labels.jsonl",
+  "labels_sha256": "7c3c549e6a540f4ce03a3fa4ba38821ddc6f7641c9d081270cff8607ec9b007e",
+  "review_path": "docs/release-evidence/evaluation-label-review-20260907/review.md",
+  "review_sha256": "dd82353da549a1da88b63c87e658e10797dc8007bb5589cf70de9183f9774d67",
+  "source_review_json_sha256": "dc9b1a6712f43a0af9d7b4b1f64a342b5dfa37a0ab4976dd748e72d943284a62",
+  "questions_sha256": "a546b99c36fedb59a475479016b0338fe113c4478d5165c4a5073d144ffdf482",
+  "canonical_data_sha256": "b2ad21c69175600c3192ef6133f8c11fd63890609a8204f92508a5fb04d05170",
+  "target_content_version": "2025-26.20260928.1",
+  "target_bundle_sha256": "549af2edd0d195eff60bb318bdc58a8c8e217ea0359c0684d492d5292dcb595b",
+  "case_count": 120,
+  "proposed_dispositions": {
+    "answer": 58,
+    "clarify": 53,
+    "refuse": 9
+  },
+  "original_category_counts": {
+    "exact_statistics": 25,
+    "date_range_last_n": 15,
+    "comparisons": 15,
+    "single_game_narrative": 20,
+    "turning_points": 10,
+    "follow_ups": 10,
+    "aliases_typos": 10,
+    "unsupported": 15
+  },
+  "source_refs_verified": 4160,
+  "decisions": [
+    {
+      "id": "date_range_last_n-014",
+      "question": "How many back-to-backs did they win in February?",
+      "original_answerable": true,
+      "original_route": "table_rag",
+      "proposed_disposition": "clarify",
+      "proposed_route": null,
+      "notes": [
+        "Back-to-back wins may mean winning the second night or sweeping both games. Both canonical counts supplied; ask which definition is intended."
+      ],
+      "disagreements": [
+        "original_answerability_requires_adjudication",
+        "original_route_requires_adjudication",
+        "question_requires_scope_or_definition"
+      ]
+    },
+    {
+      "id": "comparisons-007",
+      "question": "Compare the two Knicks games against Boston.",
+      "original_answerable": true,
+      "original_route": "table_rag",
+      "proposed_disposition": "clarify",
+      "proposed_route": null,
+      "notes": [
+        "Archive contains 4 Boston games, not two. Request the intended dates or compare all four explicitly."
+      ],
+      "disagreements": [
+        "original_answerability_requires_adjudication",
+        "original_route_requires_adjudication",
+        "question_requires_scope_or_definition"
+      ]
+    },
+    {
+      "id": "comparisons-012",
+      "question": "Which was stronger: the Knicks offense or defense?",
+      "original_answerable": true,
+      "original_route": "table_rag",
+      "proposed_disposition": "clarify",
+      "proposed_route": null,
+      "notes": [
+        "Define strength against a league benchmark or rating; archive points alone do not establish relative offense versus defense strength."
+      ],
+      "disagreements": [
+        "original_answerability_requires_adjudication",
+        "original_route_requires_adjudication",
+        "question_requires_scope_or_definition"
+      ]
+    },
+    {
+      "id": "comparisons-013",
+      "question": "Compare close games with blowouts.",
+      "original_answerable": true,
+      "original_route": "table_rag",
+      "proposed_disposition": "clarify",
+      "proposed_route": null,
+      "notes": [
+        "Define close-game and blowout margin thresholds before comparing; no threshold is stated in the question."
+      ],
+      "disagreements": [
+        "original_answerability_requires_adjudication",
+        "original_route_requires_adjudication",
+        "question_requires_scope_or_definition"
+      ]
+    },
+    {
+      "id": "single_game_narrative-001",
+      "question": "How did the Knicks lose the lead against Boston?",
+      "original_answerable": true,
+      "original_route": "retrieval_rag",
+      "proposed_disposition": "clarify",
+      "proposed_route": null,
+      "notes": [
+        "No unique game/date is identified. Request a date and avoid treating a narrative premise as proven."
+      ],
+      "disagreements": [
+        "original_answerability_requires_adjudication",
+        "original_route_requires_adjudication",
+        "question_requires_scope_or_definition"
+      ]
+    },
+    {
+      "id": "single_game_narrative-002",
+      "question": "What decided the Knicks game against Toronto?",
+      "original_answerable": true,
+      "original_route": "retrieval_rag",
+      "proposed_disposition": "clarify",
+      "proposed_route": null,
+      "notes": [
+        "No unique game/date is identified. Request a date and avoid treating a narrative premise as proven."
+      ],
+      "disagreements": [
+        "original_answerability_requires_adjudication",
+        "original_route_requires_adjudication",
+        "question_requires_scope_or_definition"
+      ]
+    },
+    {
+      "id": "single_game_narrative-003",
+      "question": "Walk me through the fourth quarter against Atlanta.",
+      "original_answerable": true,
+      "original_route": "retrieval_rag",
+      "proposed_disposition": "clarify",
+      "proposed_route": null,
+      "notes": [
+        "No unique game/date is identified. Request a date and avoid treating a narrative premise as proven."
+      ],
+      "disagreements": [
+        "original_answerability_requires_adjudication",
+        "original_route_requires_adjudication",
+        "question_requires_scope_or_definition"
+      ]
+    },
+    {
+      "id": "single_game_narrative-004",
+      "question": "Why did the Knicks win the Chicago game?",
+      "original_answerable": true,
+      "original_route": "retrieval_rag",
+      "proposed_disposition": "clarify",
+      "proposed_route": null,
+      "notes": [
+        "No unique game/date is identified. Request a date and avoid treating a narrative premise as proven."
+      ],
+      "disagreements": [
+        "original_answerability_requires_adjudication",
+        "original_route_requires_adjudication",
+        "question_requires_scope_or_definition"
+      ]
+    },
+    {
+      "id": "single_game_narrative-005",
+      "question": "What changed after halftime against Charlotte?",
+      "original_answerable": true,
+      "original_route": "retrieval_rag",
+      "proposed_disposition": "clarify",
+      "proposed_route": null,
+      "notes": [
+        "No unique game/date is identified. Request a date and avoid treating a narrative premise as proven."
+      ],
+      "disagreements": [
+        "original_answerability_requires_adjudication",
+        "original_route_requires_adjudication",
+        "question_requires_scope_or_definition"
+      ]
+    },
+    {
+      "id": "single_game_narrative-006",
+      "question": "Tell the story of the closest Knicks game.",
+      "original_answerable": true,
+      "original_route": "retrieval_rag",
+      "proposed_disposition": "clarify",
+      "proposed_route": null,
+      "notes": [
+        "Multiple games tie for smallest final margin; ask which date."
+      ],
+      "disagreements": [
+        "original_answerability_requires_adjudication",
+        "original_route_requires_adjudication",
+        "question_requires_scope_or_definition"
+      ]
+    },
+    {
+      "id": "single_game_narrative-007",
+      "question": "How did Brunson influence the Boston game?",
+      "original_answerable": true,
+      "original_route": "retrieval_rag",
+      "proposed_disposition": "clarify",
+      "proposed_route": null,
+      "notes": [
+        "No unique game/date is identified. Request a date and avoid treating a narrative premise as proven."
+      ],
+      "disagreements": [
+        "original_answerability_requires_adjudication",
+        "original_route_requires_adjudication",
+        "question_requires_scope_or_definition"
+      ]
+    },
+    {
+      "id": "single_game_narrative-008",
+      "question": "What were the decisive possessions against Toronto?",
+      "original_answerable": true,
+      "original_route": "retrieval_rag",
+      "proposed_disposition": "clarify",
+      "proposed_route": null,
+      "notes": [
+        "No unique game/date is identified. Request a date and avoid treating a narrative premise as proven."
+      ],
+      "disagreements": [
+        "original_answerability_requires_adjudication",
+        "original_route_requires_adjudication",
+        "question_requires_scope_or_definition"
+      ]
+    },
+    {
+      "id": "single_game_narrative-009",
+      "question": "How did the Knicks close the Atlanta game?",
+      "original_answerable": true,
+      "original_route": "retrieval_rag",
+      "proposed_disposition": "clarify",
+      "proposed_route": null,
+      "notes": [
+        "No unique game/date is identified. Request a date and avoid treating a narrative premise as proven."
+      ],
+      "disagreements": [
+        "original_answerability_requires_adjudication",
+        "original_route_requires_adjudication",
+        "question_requires_scope_or_definition"
+      ]
+    },
+    {
+      "id": "single_game_narrative-010",
+      "question": "Why did the Knicks offense stall against Chicago?",
+      "original_answerable": true,
+      "original_route": "retrieval_rag",
+      "proposed_disposition": "clarify",
+      "proposed_route": null,
+      "notes": [
+        "No unique game/date is identified. Request a date and avoid treating a narrative premise as proven."
+      ],
+      "disagreements": [
+        "original_answerability_requires_adjudication",
+        "original_route_requires_adjudication",
+        "question_requires_scope_or_definition"
+      ]
+    },
+    {
+      "id": "single_game_narrative-012",
+      "question": "Which plays swung the Charlotte game?",
+      "original_answerable": true,
+      "original_route": "retrieval_rag",
+      "proposed_disposition": "clarify",
+      "proposed_route": null,
+      "notes": [
+        "No unique game/date is identified. Request a date and avoid treating a narrative premise as proven."
+      ],
+      "disagreements": [
+        "original_answerability_requires_adjudication",
+        "original_route_requires_adjudication",
+        "question_requires_scope_or_definition"
+      ]
+    },
+    {
+      "id": "single_game_narrative-013",
+      "question": "How did the bench affect the Toronto game?",
+      "original_answerable": true,
+      "original_route": "retrieval_rag",
+      "proposed_disposition": "clarify",
+      "proposed_route": null,
+      "notes": [
+        "No unique game/date is identified. Request a date and avoid treating a narrative premise as proven."
+      ],
+      "disagreements": [
+        "original_answerability_requires_adjudication",
+        "original_route_requires_adjudication",
+        "question_requires_scope_or_definition"
+      ]
+    },
+    {
+      "id": "single_game_narrative-014",
+      "question": "What happened in the final two minutes against Boston?",
+      "original_answerable": true,
+      "original_route": "retrieval_rag",
+      "proposed_disposition": "clarify",
+      "proposed_route": null,
+      "notes": [
+        "No unique game/date is identified. Request a date and avoid treating a narrative premise as proven."
+      ],
+      "disagreements": [
+        "original_answerability_requires_adjudication",
+        "original_route_requires_adjudication",
+        "question_requires_scope_or_definition"
+      ]
+    },
+    {
+      "id": "single_game_narrative-016",
+      "question": "How did turnovers shape the Atlanta game?",
+      "original_answerable": true,
+      "original_route": "retrieval_rag",
+      "proposed_disposition": "clarify",
+      "proposed_route": null,
+      "notes": [
+        "No unique game/date is identified. Request a date and avoid treating a narrative premise as proven."
+      ],
+      "disagreements": [
+        "original_answerability_requires_adjudication",
+        "original_route_requires_adjudication",
+        "question_requires_scope_or_definition"
+      ]
+    },
+    {
+      "id": "single_game_narrative-017",
+      "question": "What happened immediately after the Knicks took the lead against Chicago?",
+      "original_answerable": true,
+      "original_route": "retrieval_rag",
+      "proposed_disposition": "clarify",
+      "proposed_route": null,
+      "notes": [
+        "No unique game/date is identified. Request a date and avoid treating a narrative premise as proven."
+      ],
+      "disagreements": [
+        "original_answerability_requires_adjudication",
+        "original_route_requires_adjudication",
+        "question_requires_scope_or_definition"
+      ]
+    },
+    {
+      "id": "single_game_narrative-018",
+      "question": "Describe the Knicks' worst third quarter.",
+      "original_answerable": true,
+      "original_route": "retrieval_rag",
+      "proposed_disposition": "clarify",
+      "proposed_route": null,
+      "notes": [
+        "Worst third quarter may mean fewest scored or worst net margin. Specify the metric before calling one worst."
+      ],
+      "disagreements": [
+        "original_answerability_requires_adjudication",
+        "original_route_requires_adjudication",
+        "question_requires_scope_or_definition"
+      ]
+    },
+    {
+      "id": "single_game_narrative-019",
+      "question": "How did the Knicks answer Toronto's late run?",
+      "original_answerable": true,
+      "original_route": "retrieval_rag",
+      "proposed_disposition": "clarify",
+      "proposed_route": null,
+      "notes": [
+        "No unique game/date is identified. Request a date and avoid treating a narrative premise as proven."
+      ],
+      "disagreements": [
+        "original_answerability_requires_adjudication",
+        "original_route_requires_adjudication",
+        "question_requires_scope_or_definition"
+      ]
+    },
+    {
+      "id": "single_game_narrative-020",
+      "question": "What was the key sequence in the Boston loss?",
+      "original_answerable": true,
+      "original_route": "retrieval_rag",
+      "proposed_disposition": "clarify",
+      "proposed_route": null,
+      "notes": [
+        "Game identity is unique, but causal/decisive premise needs qualification. Use corrected report interval as a descriptive example, not causal proof."
+      ],
+      "disagreements": [
+        "original_answerability_requires_adjudication",
+        "original_route_requires_adjudication",
+        "question_requires_scope_or_definition"
+      ]
+    },
+    {
+      "id": "turning_points-001",
+      "question": "What was the Knicks' biggest scoring run against Boston?",
+      "original_answerable": true,
+      "original_route": "retrieval_rag",
+      "proposed_disposition": "clarify",
+      "proposed_route": null,
+      "notes": [
+        "Specify the game and scoring-run definition. A selected bounded scoreboard interval does not prove a causal turning point, collapse or drought that cost the game."
+      ],
+      "disagreements": [
+        "original_answerability_requires_adjudication",
+        "original_route_requires_adjudication",
+        "question_requires_scope_or_definition"
+      ]
+    },
+    {
+      "id": "turning_points-002",
+      "question": "Where did the Toronto game turn?",
+      "original_answerable": true,
+      "original_route": "retrieval_rag",
+      "proposed_disposition": "clarify",
+      "proposed_route": null,
+      "notes": [
+        "Specify the game and scoring-run definition. A selected bounded scoreboard interval does not prove a causal turning point, collapse or drought that cost the game."
+      ],
+      "disagreements": [
+        "original_answerability_requires_adjudication",
+        "original_route_requires_adjudication",
+        "question_requires_scope_or_definition"
+      ]
+    },
+    {
+      "id": "turning_points-003",
+      "question": "When did the Knicks collapse against Atlanta?",
+      "original_answerable": true,
+      "original_route": "retrieval_rag",
+      "proposed_disposition": "clarify",
+      "proposed_route": null,
+      "notes": [
+        "Specify the game and scoring-run definition. A selected bounded scoreboard interval does not prove a causal turning point, collapse or drought that cost the game."
+      ],
+      "disagreements": [
+        "original_answerability_requires_adjudication",
+        "original_route_requires_adjudication",
+        "question_requires_scope_or_definition"
+      ]
+    },
+    {
+      "id": "turning_points-004",
+      "question": "What run broke open the Chicago game?",
+      "original_answerable": true,
+      "original_route": "retrieval_rag",
+      "proposed_disposition": "clarify",
+      "proposed_route": null,
+      "notes": [
+        "Specify the game and scoring-run definition. A selected bounded scoreboard interval does not prove a causal turning point, collapse or drought that cost the game."
+      ],
+      "disagreements": [
+        "original_answerability_requires_adjudication",
+        "original_route_requires_adjudication",
+        "question_requires_scope_or_definition"
+      ]
+    },
+    {
+      "id": "turning_points-005",
+      "question": "How did the Knicks erase their largest deficit?",
+      "original_answerable": true,
+      "original_route": "retrieval_rag",
+      "proposed_disposition": "clarify",
+      "proposed_route": null,
+      "notes": [
+        "Specify comeback/run boundaries and whether biggest means unanswered points, net margin or duration. Corrected report intervals use an explicit three-minute bound and cannot establish an unrestricted season superlative."
+      ],
+      "disagreements": [
+        "original_answerability_requires_adjudication",
+        "original_route_requires_adjudication",
+        "question_requires_scope_or_definition"
+      ]
+    },
+    {
+      "id": "turning_points-006",
+      "question": "Which drought cost the Knicks the Boston game?",
+      "original_answerable": true,
+      "original_route": "retrieval_rag",
+      "proposed_disposition": "clarify",
+      "proposed_route": null,
+      "notes": [
+        "Specify the game and scoring-run definition. A selected bounded scoreboard interval does not prove a causal turning point, collapse or drought that cost the game."
+      ],
+      "disagreements": [
+        "original_answerability_requires_adjudication",
+        "original_route_requires_adjudication",
+        "question_requires_scope_or_definition"
+      ]
+    },
+    {
+      "id": "turning_points-007",
+      "question": "What was the most damaging opponent run this season?",
+      "original_answerable": true,
+      "original_route": "retrieval_rag",
+      "proposed_disposition": "clarify",
+      "proposed_route": null,
+      "notes": [
+        "Specify comeback/run boundaries and whether biggest means unanswered points, net margin or duration. Corrected report intervals use an explicit three-minute bound and cannot establish an unrestricted season superlative."
+      ],
+      "disagreements": [
+        "original_answerability_requires_adjudication",
+        "original_route_requires_adjudication",
+        "question_requires_scope_or_definition"
+      ]
+    },
+    {
+      "id": "turning_points-008",
+      "question": "When did the Knicks lose control against Charlotte?",
+      "original_answerable": true,
+      "original_route": "retrieval_rag",
+      "proposed_disposition": "clarify",
+      "proposed_route": null,
+      "notes": [
+        "Specify the game and scoring-run definition. A selected bounded scoreboard interval does not prove a causal turning point, collapse or drought that cost the game."
+      ],
+      "disagreements": [
+        "original_answerability_requires_adjudication",
+        "original_route_requires_adjudication",
+        "question_requires_scope_or_definition"
+      ]
+    },
+    {
+      "id": "turning_points-009",
+      "question": "What sequence started the comeback against Toronto?",
+      "original_answerable": true,
+      "original_route": "retrieval_rag",
+      "proposed_disposition": "clarify",
+      "proposed_route": null,
+      "notes": [
+        "Specify the game and scoring-run definition. A selected bounded scoreboard interval does not prove a causal turning point, collapse or drought that cost the game."
+      ],
+      "disagreements": [
+        "original_answerability_requires_adjudication",
+        "original_route_requires_adjudication",
+        "question_requires_scope_or_definition"
+      ]
+    },
+    {
+      "id": "turning_points-010",
+      "question": "Which late-game possessions were the turning point against Atlanta?",
+      "original_answerable": true,
+      "original_route": "retrieval_rag",
+      "proposed_disposition": "clarify",
+      "proposed_route": null,
+      "notes": [
+        "Specify the game and scoring-run definition. A selected bounded scoreboard interval does not prove a causal turning point, collapse or drought that cost the game."
+      ],
+      "disagreements": [
+        "original_answerability_requires_adjudication",
+        "original_route_requires_adjudication",
+        "question_requires_scope_or_definition"
+      ]
+    },
+    {
+      "id": "follow_ups-001",
+      "question": "What happened next?",
+      "original_answerable": true,
+      "original_route": "retrieval_rag",
+      "proposed_disposition": "clarify",
+      "proposed_route": null,
+      "notes": [
+        "Supplied conversation does not pin a game, event interval or valid evidence. The assistant's asserted decisive Boston run is not canonical proof. Ask for a game/date or cited interval."
+      ],
+      "disagreements": [
+        "original_answerability_requires_adjudication",
+        "original_route_requires_adjudication",
+        "question_requires_scope_or_definition"
+      ]
+    },
+    {
+      "id": "follow_ups-002",
+      "question": "Why was that stretch decisive?",
+      "original_answerable": true,
+      "original_route": "retrieval_rag",
+      "proposed_disposition": "clarify",
+      "proposed_route": null,
+      "notes": [
+        "Supplied conversation does not pin a game, event interval or valid evidence. The assistant's asserted decisive Boston run is not canonical proof. Ask for a game/date or cited interval."
+      ],
+      "disagreements": [
+        "original_answerability_requires_adjudication",
+        "original_route_requires_adjudication",
+        "question_requires_scope_or_definition"
+      ]
+    },
+    {
+      "id": "follow_ups-003",
+      "question": "Who was on the floor then?",
+      "original_answerable": true,
+      "original_route": "retrieval_rag",
+      "proposed_disposition": "clarify",
+      "proposed_route": null,
+      "notes": [
+        "Supplied conversation does not pin a game, event interval or valid evidence. The assistant's asserted decisive Boston run is not canonical proof. Ask for a game/date or cited interval.",
+        "Exact on-court lineup needs validated substitution reconstruction; player box-score participation is not lineup evidence."
+      ],
+      "disagreements": [
+        "original_answerability_requires_adjudication",
+        "original_route_requires_adjudication",
+        "question_requires_scope_or_definition"
+      ]
+    },
+    {
+      "id": "follow_ups-004",
+      "question": "How long did that run last?",
+      "original_answerable": true,
+      "original_route": "retrieval_rag",
+      "proposed_disposition": "clarify",
+      "proposed_route": null,
+      "notes": [
+        "Supplied conversation does not pin a game, event interval or valid evidence. The assistant's asserted decisive Boston run is not canonical proof. Ask for a game/date or cited interval."
+      ],
+      "disagreements": [
+        "original_answerability_requires_adjudication",
+        "original_route_requires_adjudication",
+        "question_requires_scope_or_definition"
+      ]
+    },
+    {
+      "id": "follow_ups-005",
+      "question": "Did they recover after that?",
+      "original_answerable": true,
+      "original_route": "retrieval_rag",
+      "proposed_disposition": "clarify",
+      "proposed_route": null,
+      "notes": [
+        "Supplied conversation does not pin a game, event interval or valid evidence. The assistant's asserted decisive Boston run is not canonical proof. Ask for a game/date or cited interval."
+      ],
+      "disagreements": [
+        "original_answerability_requires_adjudication",
+        "original_route_requires_adjudication",
+        "question_requires_scope_or_definition"
+      ]
+    },
+    {
+      "id": "follow_ups-006",
+      "question": "What did Brunson do during it?",
+      "original_answerable": true,
+      "original_route": "retrieval_rag",
+      "proposed_disposition": "clarify",
+      "proposed_route": null,
+      "notes": [
+        "Supplied conversation does not pin a game, event interval or valid evidence. The assistant's asserted decisive Boston run is not canonical proof. Ask for a game/date or cited interval."
+      ],
+      "disagreements": [
+        "original_answerability_requires_adjudication",
+        "original_route_requires_adjudication",
+        "question_requires_scope_or_definition"
+      ]
+    },
+    {
+      "id": "follow_ups-007",
+      "question": "Show me the receipts for that.",
+      "original_answerable": true,
+      "original_route": "retrieval_rag",
+      "proposed_disposition": "clarify",
+      "proposed_route": null,
+      "notes": [
+        "Supplied conversation does not pin a game, event interval or valid evidence. The assistant's asserted decisive Boston run is not canonical proof. Ask for a game/date or cited interval."
+      ],
+      "disagreements": [
+        "original_answerability_requires_adjudication",
+        "original_route_requires_adjudication",
+        "question_requires_scope_or_definition"
+      ]
+    },
+    {
+      "id": "follow_ups-008",
+      "question": "Was that their worst stretch?",
+      "original_answerable": true,
+      "original_route": "retrieval_rag",
+      "proposed_disposition": "clarify",
+      "proposed_route": null,
+      "notes": [
+        "Supplied conversation does not pin a game, event interval or valid evidence. The assistant's asserted decisive Boston run is not canonical proof. Ask for a game/date or cited interval."
+      ],
+      "disagreements": [
+        "original_answerability_requires_adjudication",
+        "original_route_requires_adjudication",
+        "question_requires_scope_or_definition"
+      ]
+    },
+    {
+      "id": "follow_ups-009",
+      "question": "Compare that with the other Boston game.",
+      "original_answerable": true,
+      "original_route": "retrieval_rag",
+      "proposed_disposition": "clarify",
+      "proposed_route": null,
+      "notes": [
+        "Supplied conversation does not pin a game, event interval or valid evidence. The assistant's asserted decisive Boston run is not canonical proof. Ask for a game/date or cited interval."
+      ],
+      "disagreements": [
+        "original_answerability_requires_adjudication",
+        "original_route_requires_adjudication",
+        "question_requires_scope_or_definition"
+      ]
+    },
+    {
+      "id": "follow_ups-010",
+      "question": "Tell me more about the final possession.",
+      "original_answerable": true,
+      "original_route": "retrieval_rag",
+      "proposed_disposition": "clarify",
+      "proposed_route": null,
+      "notes": [
+        "Supplied conversation does not pin a game, event interval or valid evidence. The assistant's asserted decisive Boston run is not canonical proof. Ask for a game/date or cited interval."
+      ],
+      "disagreements": [
+        "original_answerability_requires_adjudication",
+        "original_route_requires_adjudication",
+        "question_requires_scope_or_definition"
+      ]
+    },
+    {
+      "id": "aliases_typos-001",
+      "question": "How did NYK do vs BOS?",
+      "original_answerable": true,
+      "original_route": "retrieval_rag",
+      "proposed_disposition": "answer",
+      "proposed_route": "table_rag",
+      "notes": [
+        "Alias resolves an aggregate opponent record; original retrieval_rag route recommendation should be table_rag."
+      ],
+      "disagreements": [
+        "original_route_requires_adjudication"
+      ]
+    },
+    {
+      "id": "aliases_typos-002",
+      "question": "What happened agianst the Celts?",
+      "original_answerable": true,
+      "original_route": "retrieval_rag",
+      "proposed_disposition": "clarify",
+      "proposed_route": null,
+      "notes": [
+        "Typo/alias is understandable, but multiple matching opponent games require a date."
+      ],
+      "disagreements": [
+        "original_answerability_requires_adjudication",
+        "original_route_requires_adjudication",
+        "question_requires_scope_or_definition"
+      ]
+    },
+    {
+      "id": "aliases_typos-003",
+      "question": "How did JB play in that game?",
+      "original_answerable": true,
+      "original_route": "retrieval_rag",
+      "proposed_disposition": "clarify",
+      "proposed_route": null,
+      "notes": [
+        "JB resolves to Jalen Brunson, but 'that game' has no provided context."
+      ],
+      "disagreements": [
+        "original_answerability_requires_adjudication",
+        "original_route_requires_adjudication",
+        "question_requires_scope_or_definition"
+      ]
+    },
+    {
+      "id": "aliases_typos-004",
+      "question": "Tell me about KAT vs the Raps.",
+      "original_answerable": true,
+      "original_route": "retrieval_rag",
+      "proposed_disposition": "answer",
+      "proposed_route": "table_rag",
+      "notes": [
+        "Offer canonical scoring average for all games against this opponent, explicitly name the aggregate scope; subjective played-well language is not a factual label."
+      ],
+      "disagreements": [
+        "original_route_requires_adjudication"
+      ]
+    },
+    {
+      "id": "aliases_typos-005",
+      "question": "What was the Knics biggest run?",
+      "original_answerable": true,
+      "original_route": "retrieval_rag",
+      "proposed_disposition": "clarify",
+      "proposed_route": null,
+      "notes": [
+        "Typo is understandable; define scoring run or collapse before choosing a season-wide superlative."
+      ],
+      "disagreements": [
+        "original_answerability_requires_adjudication",
+        "original_route_requires_adjudication",
+        "question_requires_scope_or_definition"
+      ]
+    },
+    {
+      "id": "aliases_typos-006",
+      "question": "How did they do v ATL?",
+      "original_answerable": true,
+      "original_route": "retrieval_rag",
+      "proposed_disposition": "answer",
+      "proposed_route": "table_rag",
+      "notes": [
+        "Alias resolves an aggregate opponent record; original retrieval_rag route recommendation should be table_rag."
+      ],
+      "disagreements": [
+        "original_route_requires_adjudication"
+      ]
+    },
+    {
+      "id": "aliases_typos-007",
+      "question": "What happened in the 4Q against CHI?",
+      "original_answerable": true,
+      "original_route": "retrieval_rag",
+      "proposed_disposition": "clarify",
+      "proposed_route": null,
+      "notes": [
+        "Typo/alias is understandable, but multiple matching opponent games require a date."
+      ],
+      "disagreements": [
+        "original_answerability_requires_adjudication",
+        "original_route_requires_adjudication",
+        "question_requires_scope_or_definition"
+      ]
+    },
+    {
+      "id": "aliases_typos-008",
+      "question": "Did Mikal play well aginst Toronto?",
+      "original_answerable": true,
+      "original_route": "retrieval_rag",
+      "proposed_disposition": "answer",
+      "proposed_route": "table_rag",
+      "notes": [
+        "Offer canonical scoring average for all games against this opponent, explicitly name the aggregate scope; subjective played-well language is not a factual label."
+      ],
+      "disagreements": [
+        "original_route_requires_adjudication"
+      ]
+    },
+    {
+      "id": "aliases_typos-009",
+      "question": "How did OG look vs the C's?",
+      "original_answerable": true,
+      "original_route": "retrieval_rag",
+      "proposed_disposition": "answer",
+      "proposed_route": "table_rag",
+      "notes": [
+        "Offer canonical scoring average for all games against this opponent, explicitly name the aggregate scope; subjective played-well language is not a factual label."
+      ],
+      "disagreements": [
+        "original_route_requires_adjudication"
+      ]
+    },
+    {
+      "id": "aliases_typos-010",
+      "question": "What was NY's worst collpase?",
+      "original_answerable": true,
+      "original_route": "retrieval_rag",
+      "proposed_disposition": "clarify",
+      "proposed_route": null,
+      "notes": [
+        "Typo is understandable; define scoring run or collapse before choosing a season-wide superlative."
+      ],
+      "disagreements": [
+        "original_answerability_requires_adjudication",
+        "original_route_requires_adjudication",
+        "question_requires_scope_or_definition"
+      ]
+    },
+    {
+      "id": "unsupported-009",
+      "question": "What happened in the Lakers game?",
+      "original_answerable": false,
+      "original_route": null,
+      "proposed_disposition": "clarify",
+      "proposed_route": null,
+      "notes": [
+        "Lakers is an archived opponent with two games. This is ambiguous, not unsupported solely because it names Lakers."
+      ],
+      "disagreements": [
+        "question_requires_scope_or_definition"
+      ]
+    },
+    {
+      "id": "unsupported-010",
+      "question": "Which Boston game do you mean?",
+      "original_answerable": false,
+      "original_route": null,
+      "proposed_disposition": "clarify",
+      "proposed_route": null,
+      "notes": [
+        "No prior game selection exists in the supplied context. List the archived Boston dates and ask which."
+      ],
+      "disagreements": [
+        "question_requires_scope_or_definition"
+      ]
+    },
+    {
+      "id": "unsupported-011",
+      "question": "Was that a good game?",
+      "original_answerable": false,
+      "original_route": null,
+      "proposed_disposition": "clarify",
+      "proposed_route": null,
+      "notes": [
+        "Missing game, player, time period or evaluation metric. Ask for the intended scope; generic language alone does not prove an out-of-archive request."
+      ],
+      "disagreements": [
+        "question_requires_scope_or_definition"
+      ]
+    },
+    {
+      "id": "unsupported-012",
+      "question": "What was the score?",
+      "original_answerable": false,
+      "original_route": null,
+      "proposed_disposition": "clarify",
+      "proposed_route": null,
+      "notes": [
+        "Missing game, player, time period or evaluation metric. Ask for the intended scope; generic language alone does not prove an out-of-archive request."
+      ],
+      "disagreements": [
+        "question_requires_scope_or_definition"
+      ]
+    },
+    {
+      "id": "unsupported-013",
+      "question": "Who was better?",
+      "original_answerable": false,
+      "original_route": null,
+      "proposed_disposition": "clarify",
+      "proposed_route": null,
+      "notes": [
+        "Missing game, player, time period or evaluation metric. Ask for the intended scope; generic language alone does not prove an out-of-archive request."
+      ],
+      "disagreements": [
+        "question_requires_scope_or_definition"
+      ]
+    },
+    {
+      "id": "unsupported-014",
+      "question": "Explain their defense.",
+      "original_answerable": false,
+      "original_route": null,
+      "proposed_disposition": "clarify",
+      "proposed_route": null,
+      "notes": [
+        "Missing game, player, time period or evaluation metric. Ask for the intended scope; generic language alone does not prove an out-of-archive request."
+      ],
+      "disagreements": [
+        "question_requires_scope_or_definition"
+      ]
+    }
+  ],
+  "scope": "Approve canonical facts, denominators, scope and explicit proposed dispositions only. No runtime results, deployment, paid calls, or promotion are approved. Labels remain unchanged. Runtime ID mapping and scoring rubric must be verified/reviewed before they become executable gold.",
+  "integration_blockers": [
+    "Canonical NBA IDs must map to verified candidate retrieval evidence IDs; current runtime IDs may differ.",
+    "Accepted phrase variants must be batch-reviewed. Exact English strings and numeric rounding cannot be inferred from a dry-run answer.",
+    "Do not treat clarified questions as removed semantic tests or claim Recall@5 from a smaller replacement set.",
+    "Original question, category, answerable and route fields are preserved. Proposed adjudications do not silently rewrite the evaluation set.",
+    "The evaluation harness currently treats all answerable=false cases as refused and cannot distinguish correct clarification from inappropriate refusal."
+  ],
+  "owner_approval": null
+}

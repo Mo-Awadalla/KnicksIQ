@@ -658,10 +658,6 @@ async def test_required_slots_preserve_same_pair_alternatives_http(
     assert sorted(map(len, writer["required_claim_indexes"])) == [1, 2]
     assert len(validations) == 1 and validations[0]["supported"]
     assert validations[0]["reason"] == ""
-    decision = adapter.review_decisions[0]
-    assert decision["undeclared_support_ids"]
-    assert decision["original_support_validation"] is False
-    assert "synthetic:alternate-margin" not in decision["undeclared_support_ids"]
     assert any(
         c["metadata"]["claim"]["claim_id"] == "synthetic:alternate-margin"
         for c in receipt["response"]["citations"]

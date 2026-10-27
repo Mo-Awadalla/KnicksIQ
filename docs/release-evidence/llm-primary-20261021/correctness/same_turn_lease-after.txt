@@ -1,0 +1,2 @@
+{"stored": "B answer", "a_reply": "B answer", "b_reply": "B answer", "checks": {"b_committed": true, "a_not_a_fresh_commit": true, "a_returns_stored_answer": true, "b_returns_stored_answer": true}}
+PASS

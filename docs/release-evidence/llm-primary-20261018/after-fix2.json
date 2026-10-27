@@ -1,0 +1,129 @@
+{
+  "questions": 35,
+  "validated": 21,
+  "validated_rate": 0.6,
+  "outcomes": {
+    "validated": 21,
+    "fallback:review_rejected": 9,
+    "failed:review:ValueError": 3,
+    "failed:orchestrate:ValueError": 2
+  },
+  "by_category": {
+    "exact_statistics": {
+      "validated": 4,
+      "fallback:review_rejected": 1
+    },
+    "date_range_last_n": {
+      "validated": 5
+    },
+    "comparisons": {
+      "validated": 3,
+      "failed:review:ValueError": 1,
+      "failed:orchestrate:ValueError": 1
+    },
+    "single_game_narrative": {
+      "failed:review:ValueError": 1,
+      "fallback:review_rejected": 1,
+      "validated": 3
+    },
+    "turning_points": {
+      "validated": 2,
+      "failed:orchestrate:ValueError": 1,
+      "failed:review:ValueError": 1,
+      "fallback:review_rejected": 1
+    },
+    "aliases_typos": {
+      "validated": 4,
+      "fallback:review_rejected": 1
+    },
+    "unsupported": {
+      "fallback:review_rejected": 5
+    }
+  },
+  "not_validated": [
+    {
+      "id": "exact_statistics-003",
+      "category": "exact_statistics",
+      "question": "What was the Knicks average score per game?",
+      "outcome": "fallback:review_rejected"
+    },
+    {
+      "id": "comparisons-003",
+      "category": "comparisons",
+      "question": "Did the Knicks play better against Boston or Toronto?",
+      "outcome": "failed:review:ValueError"
+    },
+    {
+      "id": "comparisons-004",
+      "category": "comparisons",
+      "question": "Compare their first 10 games with their last 10 games.",
+      "outcome": "failed:orchestrate:ValueError"
+    },
+    {
+      "id": "single_game_narrative-001",
+      "category": "single_game_narrative",
+      "question": "How did the Knicks lose the lead against Boston?",
+      "outcome": "failed:review:ValueError"
+    },
+    {
+      "id": "single_game_narrative-002",
+      "category": "single_game_narrative",
+      "question": "What decided the Knicks game against Toronto?",
+      "outcome": "fallback:review_rejected"
+    },
+    {
+      "id": "turning_points-002",
+      "category": "turning_points",
+      "question": "Where did the Toronto game turn?",
+      "outcome": "failed:orchestrate:ValueError"
+    },
+    {
+      "id": "turning_points-003",
+      "category": "turning_points",
+      "question": "When did the Knicks collapse against Atlanta?",
+      "outcome": "failed:review:ValueError"
+    },
+    {
+      "id": "turning_points-004",
+      "category": "turning_points",
+      "question": "What run broke open the Chicago game?",
+      "outcome": "fallback:review_rejected"
+    },
+    {
+      "id": "aliases_typos-003",
+      "category": "aliases_typos",
+      "question": "How did JB play in that game?",
+      "outcome": "fallback:review_rejected"
+    },
+    {
+      "id": "unsupported-001",
+      "category": "unsupported",
+      "question": "What is the live score tonight?",
+      "outcome": "fallback:review_rejected"
+    },
+    {
+      "id": "unsupported-002",
+      "category": "unsupported",
+      "question": "Will the Knicks win their next game?",
+      "outcome": "fallback:review_rejected"
+    },
+    {
+      "id": "unsupported-003",
+      "category": "unsupported",
+      "question": "Who is injured today?",
+      "outcome": "fallback:review_rejected"
+    },
+    {
+      "id": "unsupported-004",
+      "category": "unsupported",
+      "question": "What trade should the Knicks make tomorrow?",
+      "outcome": "fallback:review_rejected"
+    },
+    {
+      "id": "unsupported-005",
+      "category": "unsupported",
+      "question": "Show possessions from 2099-01-01.",
+      "outcome": "fallback:review_rejected"
+    }
+  ]
+}
