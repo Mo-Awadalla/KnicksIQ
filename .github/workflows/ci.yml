@@ -99,7 +99,7 @@ jobs:
           version: 11.9.0
       - uses: actions/setup-node@v4
         with:
-          node-version: "24.4.1"
+          node-version: "24.22.1"
           cache: pnpm
           cache-dependency-path: apps/web/pnpm-lock.yaml
       - run: pnpm install --frozen-lockfile
@@ -140,7 +140,7 @@ jobs:
           context: .
           file: Dockerfile.web
           build-contexts: |
-            node:24.4.1-alpine3.22=docker-image://docker.io/library/node@sha256:820e86612c21d0636580206d802a726f2595366e1b867e564cbc652024151e8a
+            node:24.22.1-alpine3.23=docker-image://docker.io/library/node@sha256:0468540aa58203ff9e40c2aab3907c52644ab818af6176b1c70a026137dc92a2
             nginxinc/nginx-unprivileged:1.29.0-alpine3.22=docker-image://docker.io/nginxinc/nginx-unprivileged@sha256:82dcf28da5a8cd97d43e8f8a64de766658b0c5fb9072368c5f0a9048c417a934
           push: false
           load: true
