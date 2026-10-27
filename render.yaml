@@ -106,7 +106,7 @@ services:
       - www.knicksiq.win
     envVars:
       - key: NODE_VERSION
-        value: 24.4.1
+        value: 24.22.1
       - key: VITE_API_URL
         value: https://api.knicksiq.win
       - key: VITE_PUBLIC_URL
