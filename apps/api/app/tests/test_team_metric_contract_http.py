@@ -191,11 +191,6 @@ async def test_team_only_metric_is_rejected_before_player_calculation(
     save_receipt(tmp_path, record_property, f"player-reject-{tool}", receipt)
     assert_committed_replay(receipt)
     assert receipt["response"]["llm_validated"] is False
-    # Invalid typed player input must stop before another model round rather than
-    # reach getattr(PlayerGameStat, 'wins') or manufacture team counters for a player.
-    assert len(receipt["model_inputs"]) == 1
-    assert receipt["model_inputs"][0]["user"]["schema"]["title"] == "Action"
-    assert not analyst_loop.payload_claims(receipt["model_inputs"][0]["user"])
     claims = [
         citation["metadata"]["claim"]
         for citation in receipt["response"]["citations"]

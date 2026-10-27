@@ -1,0 +1,414 @@
+{
+  "before": {
+    "questions": 60,
+    "by_trial": {
+      "1": {
+        "p50_latency_ms": 7703.8,
+        "p95_latency_ms": 15809.2,
+        "meets_expectation": 17,
+        "validated": 19
+      },
+      "2": {
+        "p50_latency_ms": 8032.6,
+        "p95_latency_ms": 20171.8,
+        "meets_expectation": 15,
+        "validated": 17
+      }
+    },
+    "overall": {
+      "p50_ms": 8032.6,
+      "p95_ms": 15809.2,
+      "mean_ms": 9253.9
+    },
+    "calls": 151,
+    "calls_per_question": 2.52,
+    "outcomes": {
+      "failed:orchestrate:ValidationError": 1,
+      "failed:revise:ValidationError": 11,
+      "fallback:review_rejected": 12,
+      "validated": 30,
+      "validated_declined": 6
+    },
+    "stages": {
+      "plan": {
+        "calls": 10,
+        "p50_ms": 1674,
+        "p95_ms": 2734,
+        "mean_ms": 1702.4,
+        "share": 0.032,
+        "completion_p50": 46,
+        "ms_per_output_token": 33.34
+      },
+      "answer": {
+        "calls": 62,
+        "p50_ms": 2940,
+        "p95_ms": 5408,
+        "mean_ms": 3202.2,
+        "share": 0.368,
+        "completion_p50": 284,
+        "ms_per_output_token": 10.56
+      },
+      "review": {
+        "calls": 47,
+        "p50_ms": 4789,
+        "p95_ms": 9602,
+        "mean_ms": 5081.7,
+        "share": 0.442,
+        "completion_p50": 449,
+        "ms_per_output_token": 10.35
+      },
+      "repair": {
+        "calls": 32,
+        "p50_ms": 2437,
+        "p95_ms": 4476,
+        "mean_ms": 2682.2,
+        "share": 0.159,
+        "completion_p50": 237,
+        "ms_per_output_token": 9.67
+      }
+    },
+    "by_hour": {
+      "2026-10-22T15:00Z": {
+        "calls": 151,
+        "p50_ms": 3162,
+        "p95_ms": 6788,
+        "answer": 2940,
+        "plan": 1674,
+        "repair": 2437,
+        "review": 4789
+      }
+    },
+    "regression": {
+      "plan": {
+        "intercept_ms": 1785,
+        "ms_per_prompt_token": -0.068,
+        "ms_per_completion_token": 0.836,
+        "r2": 0.02
+      },
+      "answer": {
+        "intercept_ms": 2521,
+        "ms_per_prompt_token": -0.241,
+        "ms_per_completion_token": 4.535,
+        "r2": 0.42
+      },
+      "review": {
+        "intercept_ms": 1941,
+        "ms_per_prompt_token": -0.02,
+        "ms_per_completion_token": 6.544,
+        "r2": 0.95
+      },
+      "repair": {
+        "intercept_ms": 2079,
+        "ms_per_prompt_token": -0.137,
+        "ms_per_completion_token": 3.356,
+        "r2": 0.44
+      }
+    }
+  },
+  "after": {
+    "questions": 60,
+    "by_trial": {
+      "1": {
+        "p50_latency_ms": 7367.0,
+        "p95_latency_ms": 13395.4,
+        "meets_expectation": 17,
+        "validated": 20
+      },
+      "2": {
+        "p50_latency_ms": 8625.5,
+        "p95_latency_ms": 16872.2,
+        "meets_expectation": 16,
+        "validated": 20
+      }
+    },
+    "overall": {
+      "p50_ms": 7828.0,
+      "p95_ms": 15272.2,
+      "mean_ms": 8580.3
+    },
+    "calls": 147,
+    "calls_per_question": 2.45,
+    "outcomes": {
+      "failed:revise:ValidationError": 11,
+      "fallback:review_rejected": 9,
+      "validated": 33,
+      "validated_declined": 7
+    },
+    "stages": {
+      "plan": {
+        "calls": 11,
+        "p50_ms": 1729,
+        "p95_ms": 2619,
+        "mean_ms": 1701.5,
+        "share": 0.037,
+        "completion_p50": 55,
+        "ms_per_output_token": 25.18
+      },
+      "answer": {
+        "calls": 63,
+        "p50_ms": 2579,
+        "p95_ms": 4855,
+        "mean_ms": 2842.3,
+        "share": 0.358,
+        "completion_p50": 327,
+        "ms_per_output_token": 8.93
+      },
+      "review": {
+        "calls": 44,
+        "p50_ms": 5088,
+        "p95_ms": 8261,
+        "mean_ms": 5181.9,
+        "share": 0.456,
+        "completion_p50": 359,
+        "ms_per_output_token": 14.28
+      },
+      "repair": {
+        "calls": 29,
+        "p50_ms": 2336,
+        "p95_ms": 4610,
+        "mean_ms": 2569.1,
+        "share": 0.149,
+        "completion_p50": 276,
+        "ms_per_output_token": 10.43
+      }
+    },
+    "by_hour": {
+      "2026-10-22T15:00Z": {
+        "calls": 147,
+        "p50_ms": 3050,
+        "p95_ms": 6519,
+        "answer": 2579,
+        "plan": 1729,
+        "repair": 2336,
+        "review": 5088
+      }
+    },
+    "regression": {
+      "plan": {
+        "intercept_ms": 1908,
+        "ms_per_prompt_token": 0.03,
+        "ms_per_completion_token": -4.491,
+        "r2": 0.03
+      },
+      "answer": {
+        "intercept_ms": 1382,
+        "ms_per_prompt_token": 0.166,
+        "ms_per_completion_token": 2.788,
+        "r2": 0.42
+      },
+      "review": {
+        "intercept_ms": 2315,
+        "ms_per_prompt_token": -0.159,
+        "ms_per_completion_token": 9.133,
+        "r2": 0.82
+      },
+      "repair": {
+        "intercept_ms": 1128,
+        "ms_per_prompt_token": 0.282,
+        "ms_per_completion_token": 2.019,
+        "r2": 0.62
+      }
+    }
+  },
+  "probe": {
+    "payloads": {
+      "reviewer|keep+new": {
+        "n": 2,
+        "p50_ms": 5153.1,
+        "completion_tokens": [
+          513,
+          429
+        ],
+        "request_bytes": [
+          9962,
+          9962
+        ]
+      },
+      "reviewer|keep+stable": {
+        "n": 2,
+        "p50_ms": 4606.6,
+        "completion_tokens": [
+          424,
+          426
+        ],
+        "request_bytes": [
+          9962,
+          9962
+        ]
+      },
+      "reviewer|new+new": {
+        "n": 2,
+        "p50_ms": 4859.9,
+        "completion_tokens": [
+          461,
+          562
+        ],
+        "request_bytes": [
+          9962,
+          9962
+        ]
+      },
+      "reviewer|new+stable": {
+        "n": 2,
+        "p50_ms": 4827.0,
+        "completion_tokens": [
+          518,
+          437
+        ],
+        "request_bytes": [
+          9962,
+          9962
+        ]
+      },
+      "reviewer-model-option|keep+stable": {
+        "n": 6,
+        "p50_ms": 2598.1,
+        "completion_tokens": [
+          526,
+          427,
+          464,
+          471,
+          464,
+          477
+        ],
+        "request_bytes": [
+          9979,
+          9979,
+          9979,
+          9979,
+          9977,
+          9977
+        ]
+      },
+      "reviewer-size-14000|keep+stable": {
+        "n": 2,
+        "p50_ms": 4214.7,
+        "completion_tokens": [
+          430,
+          427
+        ],
+        "request_bytes": [
+          16937,
+          16937
+        ]
+      },
+      "reviewer-size-16000|keep+stable": {
+        "n": 2,
+        "p50_ms": 4575.5,
+        "completion_tokens": [
+          430,
+          346
+        ],
+        "request_bytes": [
+          18883,
+          18883
+        ]
+      },
+      "reviewer-size-20000|keep+stable": {
+        "n": 2,
+        "p50_ms": 4057.3,
+        "completion_tokens": [
+          462,
+          358
+        ],
+        "request_bytes": [
+          22914,
+          22914
+        ]
+      },
+      "reviewer-size-24000|keep+stable": {
+        "n": 2,
+        "p50_ms": 3662.1,
+        "completion_tokens": [
+          345,
+          433
+        ],
+        "request_bytes": [
+          26945,
+          26945
+        ]
+      },
+      "reviewer-size-32000|keep+stable": {
+        "n": 2,
+        "p50_ms": 4144.3,
+        "completion_tokens": [
+          426,
+          424
+        ],
+        "request_bytes": [
+          34868,
+          34868
+        ]
+      },
+      "writer|keep+new": {
+        "n": 2,
+        "p50_ms": 3227.1,
+        "completion_tokens": [
+          401,
+          446
+        ],
+        "request_bytes": [
+          13110,
+          13110
+        ]
+      },
+      "writer|keep+stable": {
+        "n": 2,
+        "p50_ms": 2227.3,
+        "completion_tokens": [
+          392,
+          394
+        ],
+        "request_bytes": [
+          13110,
+          13110
+        ]
+      },
+      "writer|new+new": {
+        "n": 2,
+        "p50_ms": 2601.2,
+        "completion_tokens": [
+          396,
+          389
+        ],
+        "request_bytes": [
+          13110,
+          13110
+        ]
+      },
+      "writer|new+stable": {
+        "n": 2,
+        "p50_ms": 2180.2,
+        "completion_tokens": [
+          393,
+          392
+        ],
+        "request_bytes": [
+          13110,
+          13110
+        ]
+      }
+    },
+    "ping": {
+      "deepseek-v4.1-flash|keep": {
+        "n": 6,
+        "p50_ms": 1216.1
+      },
+      "deepseek-v4.1-flash|new": {
+        "n": 6,
+        "p50_ms": 1181.0
+      },
+      "gpt-6-luna|keep": {
+        "n": 6,
+        "p50_ms": 998.4
+      },
+      "gpt-6-luna|new": {
+        "n": 6,
+        "p50_ms": 1222.3
+      }
+    },
+    "hours": [
+      "2026-10-22T15:00Z"
+    ]
+  }
+}

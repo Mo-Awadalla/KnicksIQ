@@ -1,0 +1,163 @@
+# Machine-managed dependency metadata.
+*.lock linguist-generated=true
+package-lock.json linguist-generated=true
+npm-shrinkwrap.json linguist-generated=true
+pnpm-lock.yaml linguist-generated=true
+yarn.lock linguist-generated=true
+bun.lockb linguist-generated=true
+go.sum linguist-generated=true
+
+# Codegen output. Keep generator source subject to the size limit.
+*.generated.* linguist-generated=true
+*.gen.* linguist-generated=true
+*_pb2.py linguist-generated=true
+*_pb2_grpc.py linguist-generated=true
+generated/** linguist-generated=true
+**/generated/** linguist-generated=true
+graphify-out/** linguist-generated=true
+rag-artifacts/** linguist-generated=true
+release-artifacts/** linguist-generated=true
+*.tsbuildinfo linguist-generated=true
+*.map linguist-generated=true
+dist/** linguist-generated=true
+**/dist/** linguist-generated=true
+build/** linguist-generated=true
+**/build/** linguist-generated=true
+
+# Third-party dependencies.
+vendor/** linguist-vendored=true
+**/vendor/** linguist-vendored=true
+node_modules/** linguist-vendored=true
+**/node_modules/** linguist-vendored=true
+
+# Reproducible evaluation queue; authored questions live in build_candidate_set.py.
+apps/api/app/evaluation/questions.jsonl linguist-generated=true
+
+# Archived machine output. Exact paths keep authored policies and notes checked.
+docs/release-evidence/**/browser-report/** linguist-generated=true
+docs/release-evidence/**/local-index/** linguist-generated=true
+docs/release-evidence/answer-review-20260907.json linguist-generated=true
+docs/release-evidence/evaluation-label-drafts.jsonl linguist-generated=true
+docs/release-evidence/evaluation-label-review-20260907/labels.jsonl linguist-generated=true
+docs/release-evidence/evaluation-label-review-20260907/player-runtime-verification.json linguist-generated=true
+docs/release-evidence/evaluation-label-review-20260907/review.json linguist-generated=true
+docs/release-evidence/evaluation-label-review-20260907/review.md linguist-generated=true
+docs/release-evidence/preparation-20260928/evaluation-approval-package.json linguist-generated=true
+docs/release-evidence/reconciliation-20260928/backend.xml linguist-generated=true
+docs/release-evidence/reconciliation-20260928/expectation-review.json linguist-generated=true
+docs/release-evidence/reconciliation-20260928/frontend-e2e-origin-mismatch.txt linguist-generated=true
+docs/release-evidence/reconciliation-20260928/local-index-checks.json linguist-generated=true
+docs/release-evidence/reconciliation-20260928/local-index-payloads.json linguist-generated=true
+docs/release-evidence/reconciliation-20260928/report-audit.json linguist-generated=true
+docs/release-evidence/reconciliation-20260928/runtime-document-mapping.json linguist-generated=true
+docs/release-evidence/reconciliation-20260928/runtime-mapping.json linguist-generated=true
+docs/release-evidence/reconciliation-20260928/source-identity.json linguist-generated=true
+docs/release-evidence/reconciliation-20260928/trivy-api.json linguist-generated=true
+docs/release-evidence/reconciliation-20260928/trivy-web.json linguist-generated=true
+docs/release-evidence/report-audit-20260904/audit.json linguist-generated=true
+docs/release-evidence/report-audit-20260907/audit.json linguist-generated=true
+docs/release-evidence/report-audit-20260907/report-repairs.json linguist-generated=true
+docs/release-evidence/report-review-20260928/observed-production-binding.json linguist-generated=true
+docs/release-evidence/report-review-20260928/production-binding.json linguist-generated=true
+docs/release-evidence/report-review-20260928/production-rollback-reports.json linguist-generated=true
+docs/release-evidence/report-review-20260928/replacement-reports.json linguist-generated=true
+docs/release-evidence/report-review-20260928/reports.diff linguist-generated=true
+docs/release-evidence/report-review-20260928/review.json linguist-generated=true
+docs/release-evidence/report-review-20260928/rollback-reports.json linguist-generated=true
+
+# Fetched NBA game/event snapshot, including original source hash and fetch time.
+tools/report_audit/report80_fixture.json linguist-generated=true
+
+# Generated live analyst E2E responses
+docs/release-evidence/llm-primary-*/*.responses.jsonl linguist-generated=true
+
+# Machine-generated adversarial evidence; regenerate with tools/release/analyst_adversarial_e2e.py.
+docs/release-evidence/llm-primary-20261021/safety/*.json linguist-generated=true
+# Reviewer replay output: machine-recorded provider responses and derived tables.
+docs/release-evidence/llm-primary-20261021/reviewer/*.jsonl linguist-generated=true
+docs/release-evidence/llm-primary-20261021/reviewer/replay.json linguist-generated=true
+docs/release-evidence/llm-primary-20261021/reviewer/mutations.json linguist-generated=true
+# Scorer output for the 2026-10-21 llm_primary evidence run.
+docs/release-evidence/llm-primary-20261021/scoring/*.jsonl linguist-generated=true
+docs/release-evidence/llm-primary-20261021/scoring/*.json linguist-generated=true
+
+# Generated web E2E screenshots and live latency evidence.
+apps/web/e2e/screenshots/** linguist-generated=true
+docs/release-evidence/llm-primary-20261021/latency/*.jsonl linguist-generated=true
+docs/release-evidence/llm-primary-20261021/latency/*.json linguist-generated=true
+docs/release-evidence/llm-primary-20261021/quarters/*.jsonl linguist-generated=true
+docs/release-evidence/llm-primary-20261021/prefetch/*.jsonl linguist-generated=true
+docs/release-evidence/llm-primary-20261021/prefetch/*.json linguist-generated=true
+
+# Per-call cost reconciliation output from tools/release/measure_llm_cost.py.
+docs/release-evidence/llm-primary-20261021/cost/*/*.jsonl linguist-generated=true
+docs/release-evidence/llm-primary-20261021/cost/*/*.json linguist-generated=true
+
+# Final-phase A/B, audit, held-out and preflight machine output.
+docs/release-evidence/llm-primary-20261021/final/*.jsonl linguist-generated=true
+docs/release-evidence/llm-primary-20261021/final/*.json linguist-generated=true
+docs/release-evidence/llm-primary-20261021/final/audit-*/verdicts/*.jsonl linguist-generated=true
+docs/release-evidence/llm-primary-20261021/factual-audit/*/rows.jsonl linguist-generated=true
+docs/release-evidence/llm-primary-20261021/reviewer/gate-mutations-*.json linguist-generated=true
+docs/release-evidence/llm-primary-20261021/reviewer/gate-recorded-attempts.json linguist-generated=true
+docs/release-evidence/llm-primary-20261021/correctness/overall_followup_session*.json linguist-generated=true
+docs/release-evidence/llm-primary-20261021/w3-routing/*.json linguist-generated=true
+docs/release-evidence/llm-primary-20261021/w3-routing/*.jsonl linguist-generated=true
+
+# Reviewer false-acceptance measurement output from tools/release/reviewer_false_acceptance.py.
+docs/release-evidence/llm-primary-20261021/w3-revmeasure/*.json linguist-generated=true
+docs/release-evidence/llm-primary-20261021/w3-revmeasure/summary.md linguist-generated=true
+
+# Follow-up session benchmark machine output.
+docs/release-evidence/llm-primary-20261021/w3-followups/*.json linguist-generated=true
+docs/release-evidence/llm-primary-20261021/w3-followups/*.txt linguist-generated=true
+
+# Reviewer citation probe: live/replay records and offline evaluation output.
+docs/release-evidence/llm-primary-20261021/revids/*.jsonl linguist-generated=true
+docs/release-evidence/llm-primary-20261021/revids/*.json linguist-generated=true
+
+# Generated measurement artifacts for this evidence directory.
+docs/release-evidence/llm-primary-20261021/w3-declines/*.json linguist-generated=true
+docs/release-evidence/llm-primary-20261021/w3-declines/*.jsonl linguist-generated=true
+
+# Resolution sweep machine output.
+docs/release-evidence/llm-primary-20261021/w3-resolve/*.json linguist-generated=true
+docs/release-evidence/llm-primary-20261021/opencode-go/*.json* linguist-generated=true
+
+# OpenCode Go documentation pass machine output.
+docs/release-evidence/llm-primary-20261021/w4-docs/*.json linguist-generated=true
+# Reviewer model decision machine output.
+docs/release-evidence/llm-primary-20261021/w4-reviewer/*.json* linguist-generated=true
+# Live multi-turn follow-up benchmark output (w4, OpenCode Go).
+docs/release-evidence/llm-primary-20261021/w4-followups/*.json linguist-generated=true
+docs/release-evidence/llm-primary-20261021/w4-followups/*.txt linguist-generated=true
+# Scorer false-negative rescore output (w4).
+docs/release-evidence/llm-primary-20261021/w4-scorer/**/*.json linguist-generated=true
+docs/release-evidence/llm-primary-20261021/w4-scorer/**/*.jsonl linguist-generated=true
+docs/release-evidence/llm-primary-20261021/w4-scorer/**/*.txt linguist-generated=true
+# Follow-up state/topic fixes: live session output and offline transcripts.
+docs/release-evidence/llm-primary-20261021/w4-state/*.json linguist-generated=true
+docs/release-evidence/llm-primary-20261021/w4-state/*.txt linguist-generated=true
+
+# w4-failed machine output (raw provider replies, response sets).
+docs/release-evidence/llm-primary-20261021/w4-failed/**/*.json linguist-generated=true
+docs/release-evidence/llm-primary-20261021/w4-failed/**/*.jsonl linguist-generated=true
+
+# Generated measurement artifacts (wave 4 latency).
+docs/release-evidence/llm-primary-20261021/w4-latency/**/*.jsonl linguist-generated=true
+docs/release-evidence/llm-primary-20261021/w4-latency/**/*.json linguist-generated=true
+
+# Held-out v2 generated evaluation artifacts.
+apps/api/app/evaluation/heldout_v2/*.jsonl linguist-generated=true
+apps/api/app/evaluation/heldout_v2/*.json linguist-generated=true
+
+# Held-out final live run machine output (w4).
+docs/release-evidence/llm-primary-20261021/heldout-final/**/*.jsonl linguist-generated=true
+docs/release-evidence/llm-primary-20261021/heldout-final/**/*.json linguist-generated=true
+
+# Full factual-audit summary and diff are generated from the recorded response rows.
+docs/release-evidence/llm-primary-20261021/heldout-final/audit-main/summary.md linguist-generated=true
+docs/release-evidence/llm-primary-20261021/heldout-final/audit-main/diff.md linguist-generated=true
+
+# Generated benchmark and audit output.
+docs/release-evidence/llm-primary-20261021/w4-gamefollow/*.json linguist-generated=true

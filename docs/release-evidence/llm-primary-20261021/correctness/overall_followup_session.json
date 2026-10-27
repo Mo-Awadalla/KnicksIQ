@@ -1,0 +1,701 @@
+{
+  "summary": {
+    "implicit_then_overall": "2/2",
+    "explicit_then_overall": "2/2",
+    "overall_then_playoffs": "2/2"
+  },
+  "sessions": {
+    "implicit_then_overall": [
+      {
+        "same_session": true,
+        "pass": true,
+        "turns": [
+          {
+            "question": "What was the Knicks' record?",
+            "status": 200,
+            "want": "53-29",
+            "records_in_answer": [
+              "53-29"
+            ],
+            "ok": true,
+            "llm_validated": true,
+            "warnings": [],
+            "stages": [
+              {
+                "stage": "orchestrate",
+                "tool": "llm_orchestrate",
+                "action": "call_tools",
+                "tools_requested": [
+                  "get_team_stats"
+                ],
+                "status": null
+              },
+              {
+                "stage": "tool",
+                "tool": "get_team_stats",
+                "action": null,
+                "tools_requested": null,
+                "status": "ok"
+              },
+              {
+                "stage": "orchestrate",
+                "tool": "llm_orchestrate",
+                "action": "answer_from_available_evidence",
+                "tools_requested": [],
+                "status": null
+              },
+              {
+                "stage": "review",
+                "tool": "llm_review",
+                "action": null,
+                "tools_requested": null,
+                "status": null
+              }
+            ],
+            "revision": 1,
+            "answer": "In the 2025-26 regular season, the Knicks went 53-29 over 82 archived games. They scored 9,549 total points with a cumulative margin of +519."
+          },
+          {
+            "question": "And overall?",
+            "status": 200,
+            "want": "69-32",
+            "records_in_answer": [
+              "69-32"
+            ],
+            "ok": true,
+            "llm_validated": false,
+            "warnings": [
+              "Proposed wording did not pass evidence review."
+            ],
+            "stages": [
+              {
+                "stage": "tool",
+                "tool": "get_team_stats",
+                "action": null,
+                "tools_requested": null,
+                "status": "ok"
+              },
+              {
+                "stage": "orchestrate",
+                "tool": "llm_orchestrate",
+                "action": "answer_from_available_evidence",
+                "tools_requested": [],
+                "status": null
+              },
+              {
+                "stage": "review",
+                "tool": "llm_review",
+                "action": null,
+                "tools_requested": null,
+                "status": null
+              },
+              {
+                "stage": "revise",
+                "tool": "llm_orchestrate",
+                "action": null,
+                "tools_requested": null,
+                "status": null
+              },
+              {
+                "stage": "review",
+                "tool": "llm_review",
+                "action": null,
+                "tools_requested": null,
+                "status": null
+              }
+            ],
+            "revision": 2,
+            "answer": "Knicks (all phases) wins: 69 over 101 archived games. Knicks (all phases) losses: 32 over 101 archived games."
+          }
+        ]
+      },
+      {
+        "same_session": true,
+        "pass": true,
+        "turns": [
+          {
+            "question": "What was the Knicks' record?",
+            "status": 200,
+            "want": "53-29",
+            "records_in_answer": [
+              "53-29"
+            ],
+            "ok": true,
+            "llm_validated": false,
+            "warnings": [
+              "Proposed wording did not pass evidence review."
+            ],
+            "stages": [
+              {
+                "stage": "orchestrate",
+                "tool": "llm_orchestrate",
+                "action": "call_tools",
+                "tools_requested": [
+                  "get_team_stats"
+                ],
+                "status": null
+              },
+              {
+                "stage": "tool",
+                "tool": "get_team_stats",
+                "action": null,
+                "tools_requested": null,
+                "status": "ok"
+              },
+              {
+                "stage": "orchestrate",
+                "tool": "llm_orchestrate",
+                "action": "answer_from_available_evidence",
+                "tools_requested": [],
+                "status": null
+              },
+              {
+                "stage": "review",
+                "tool": "llm_review",
+                "action": null,
+                "tools_requested": null,
+                "status": null
+              },
+              {
+                "stage": "revise",
+                "tool": "llm_orchestrate",
+                "action": null,
+                "tools_requested": null,
+                "status": null
+              },
+              {
+                "stage": "review",
+                "tool": "llm_review",
+                "action": null,
+                "tools_requested": null,
+                "status": null
+              }
+            ],
+            "revision": 1,
+            "answer": "Knicks regular season wins: 53 over 82 archived games. Knicks regular season losses: 29 over 82 archived games."
+          },
+          {
+            "question": "And overall?",
+            "status": 200,
+            "want": "69-32",
+            "records_in_answer": [
+              "69-32"
+            ],
+            "ok": true,
+            "llm_validated": false,
+            "warnings": [
+              "Proposed wording did not pass evidence review."
+            ],
+            "stages": [
+              {
+                "stage": "tool",
+                "tool": "get_team_stats",
+                "action": null,
+                "tools_requested": null,
+                "status": "ok"
+              },
+              {
+                "stage": "orchestrate",
+                "tool": "llm_orchestrate",
+                "action": "answer_from_available_evidence",
+                "tools_requested": [],
+                "status": null
+              },
+              {
+                "stage": "review",
+                "tool": "llm_review",
+                "action": null,
+                "tools_requested": null,
+                "status": null
+              },
+              {
+                "stage": "revise",
+                "tool": "llm_orchestrate",
+                "action": null,
+                "tools_requested": null,
+                "status": null
+              },
+              {
+                "stage": "review",
+                "tool": "llm_review",
+                "action": null,
+                "tools_requested": null,
+                "status": null
+              }
+            ],
+            "revision": 2,
+            "answer": "Knicks (all phases) wins: 69 over 101 archived games. Knicks (all phases) losses: 32 over 101 archived games."
+          }
+        ]
+      }
+    ],
+    "explicit_then_overall": [
+      {
+        "same_session": true,
+        "pass": true,
+        "turns": [
+          {
+            "question": "What was their regular-season record?",
+            "status": 200,
+            "want": "53-29",
+            "records_in_answer": [
+              "53-29"
+            ],
+            "ok": true,
+            "llm_validated": false,
+            "warnings": [
+              "Proposed wording did not pass evidence review."
+            ],
+            "stages": [
+              {
+                "stage": "tool",
+                "tool": "get_team_stats",
+                "action": null,
+                "tools_requested": null,
+                "status": "ok"
+              },
+              {
+                "stage": "orchestrate",
+                "tool": "llm_orchestrate",
+                "action": "answer_from_available_evidence",
+                "tools_requested": [],
+                "status": null
+              },
+              {
+                "stage": "review",
+                "tool": "llm_review",
+                "action": null,
+                "tools_requested": null,
+                "status": null
+              },
+              {
+                "stage": "revise",
+                "tool": "llm_orchestrate",
+                "action": null,
+                "tools_requested": null,
+                "status": null
+              },
+              {
+                "stage": "review",
+                "tool": "llm_review",
+                "action": null,
+                "tools_requested": null,
+                "status": null
+              }
+            ],
+            "revision": 1,
+            "answer": "Knicks regular season wins: 53 over 82 archived games. Knicks regular season losses: 29 over 82 archived games."
+          },
+          {
+            "question": "And overall?",
+            "status": 200,
+            "want": "69-32",
+            "records_in_answer": [
+              "69-32"
+            ],
+            "ok": true,
+            "llm_validated": false,
+            "warnings": [
+              "Proposed wording did not pass evidence review."
+            ],
+            "stages": [
+              {
+                "stage": "tool",
+                "tool": "get_team_stats",
+                "action": null,
+                "tools_requested": null,
+                "status": "ok"
+              },
+              {
+                "stage": "orchestrate",
+                "tool": "llm_orchestrate",
+                "action": "answer_from_available_evidence",
+                "tools_requested": [],
+                "status": null
+              },
+              {
+                "stage": "review",
+                "tool": "llm_review",
+                "action": null,
+                "tools_requested": null,
+                "status": null
+              },
+              {
+                "stage": "revise",
+                "tool": "llm_orchestrate",
+                "action": null,
+                "tools_requested": null,
+                "status": null
+              },
+              {
+                "stage": "review",
+                "tool": "llm_review",
+                "action": null,
+                "tools_requested": null,
+                "status": null
+              }
+            ],
+            "revision": 2,
+            "answer": "Knicks (all phases) wins: 69 over 101 archived games. Knicks (all phases) losses: 32 over 101 archived games."
+          }
+        ]
+      },
+      {
+        "same_session": true,
+        "pass": true,
+        "turns": [
+          {
+            "question": "What was their regular-season record?",
+            "status": 200,
+            "want": "53-29",
+            "records_in_answer": [
+              "53-29"
+            ],
+            "ok": true,
+            "llm_validated": true,
+            "warnings": [],
+            "stages": [
+              {
+                "stage": "tool",
+                "tool": "get_team_stats",
+                "action": null,
+                "tools_requested": null,
+                "status": "ok"
+              },
+              {
+                "stage": "orchestrate",
+                "tool": "llm_orchestrate",
+                "action": "answer_from_available_evidence",
+                "tools_requested": [],
+                "status": null
+              },
+              {
+                "stage": "review",
+                "tool": "llm_review",
+                "action": null,
+                "tools_requested": null,
+                "status": null
+              }
+            ],
+            "revision": 1,
+            "answer": "In the 2025-26 regular season, the Knicks went 53-29 over 82 archived games."
+          },
+          {
+            "question": "And overall?",
+            "status": 200,
+            "want": "69-32",
+            "records_in_answer": [
+              "69-32"
+            ],
+            "ok": true,
+            "llm_validated": true,
+            "warnings": [],
+            "stages": [
+              {
+                "stage": "tool",
+                "tool": "get_team_stats",
+                "action": null,
+                "tools_requested": null,
+                "status": "ok"
+              },
+              {
+                "stage": "orchestrate",
+                "tool": "llm_orchestrate",
+                "action": "answer_from_available_evidence",
+                "tools_requested": [],
+                "status": null
+              },
+              {
+                "stage": "review",
+                "tool": "llm_review",
+                "action": null,
+                "tools_requested": null,
+                "status": null
+              }
+            ],
+            "revision": 2,
+            "answer": "Across all phases in the 2025-26 archive (regular season plus playoffs), the Knicks went 69-32 over 101 games, scoring 11,750 points with a cumulative margin of +802."
+          }
+        ]
+      }
+    ],
+    "overall_then_playoffs": [
+      {
+        "same_session": true,
+        "pass": true,
+        "turns": [
+          {
+            "question": "What was their regular-season record?",
+            "status": 200,
+            "want": "53-29",
+            "records_in_answer": [
+              "53-29"
+            ],
+            "ok": true,
+            "llm_validated": false,
+            "warnings": [
+              "Proposed wording did not pass evidence review."
+            ],
+            "stages": [
+              {
+                "stage": "tool",
+                "tool": "get_team_stats",
+                "action": null,
+                "tools_requested": null,
+                "status": "ok"
+              },
+              {
+                "stage": "orchestrate",
+                "tool": "llm_orchestrate",
+                "action": "answer_from_available_evidence",
+                "tools_requested": [],
+                "status": null
+              },
+              {
+                "stage": "review",
+                "tool": "llm_review",
+                "action": null,
+                "tools_requested": null,
+                "status": null
+              },
+              {
+                "stage": "revise",
+                "tool": "llm_orchestrate",
+                "action": null,
+                "tools_requested": null,
+                "status": null
+              },
+              {
+                "stage": "review",
+                "tool": "llm_review",
+                "action": null,
+                "tools_requested": null,
+                "status": null
+              }
+            ],
+            "revision": 1,
+            "answer": "Knicks regular season wins: 53 over 82 archived games. Knicks regular season losses: 29 over 82 archived games."
+          },
+          {
+            "question": "And overall?",
+            "status": 200,
+            "want": "69-32",
+            "records_in_answer": [
+              "69-32"
+            ],
+            "ok": true,
+            "llm_validated": false,
+            "warnings": [
+              "Proposed wording did not pass evidence review."
+            ],
+            "stages": [
+              {
+                "stage": "tool",
+                "tool": "get_team_stats",
+                "action": null,
+                "tools_requested": null,
+                "status": "ok"
+              },
+              {
+                "stage": "orchestrate",
+                "tool": "llm_orchestrate",
+                "action": "answer_from_available_evidence",
+                "tools_requested": [],
+                "status": null
+              },
+              {
+                "stage": "review",
+                "tool": "llm_review",
+                "action": null,
+                "tools_requested": null,
+                "status": null
+              },
+              {
+                "stage": "revise",
+                "tool": "llm_orchestrate",
+                "action": null,
+                "tools_requested": null,
+                "status": null
+              },
+              {
+                "stage": "review",
+                "tool": "llm_review",
+                "action": null,
+                "tools_requested": null,
+                "status": null
+              }
+            ],
+            "revision": 2,
+            "answer": "Knicks (all phases) wins: 69 over 101 archived games. Knicks (all phases) losses: 32 over 101 archived games."
+          },
+          {
+            "question": "And in the playoffs?",
+            "status": 200,
+            "want": "16-3",
+            "records_in_answer": [
+              "16-3"
+            ],
+            "ok": true,
+            "llm_validated": false,
+            "warnings": [
+              "Proposed wording did not pass evidence review."
+            ],
+            "stages": [
+              {
+                "stage": "tool",
+                "tool": "get_team_stats",
+                "action": null,
+                "tools_requested": null,
+                "status": "ok"
+              },
+              {
+                "stage": "orchestrate",
+                "tool": "llm_orchestrate",
+                "action": "answer_from_available_evidence",
+                "tools_requested": [],
+                "status": null
+              },
+              {
+                "stage": "review",
+                "tool": "llm_review",
+                "action": null,
+                "tools_requested": null,
+                "status": null
+              },
+              {
+                "stage": "revise",
+                "tool": "llm_orchestrate",
+                "action": null,
+                "tools_requested": null,
+                "status": null
+              },
+              {
+                "stage": "review",
+                "tool": "llm_review",
+                "action": null,
+                "tools_requested": null,
+                "status": null
+              }
+            ],
+            "revision": 3,
+            "answer": "Knicks playoffs wins: 16 over 19 archived games. Knicks playoffs losses: 3 over 19 archived games."
+          }
+        ]
+      },
+      {
+        "same_session": true,
+        "pass": true,
+        "turns": [
+          {
+            "question": "What was their regular-season record?",
+            "status": 200,
+            "want": "53-29",
+            "records_in_answer": [
+              "53-29"
+            ],
+            "ok": true,
+            "llm_validated": true,
+            "warnings": [],
+            "stages": [
+              {
+                "stage": "tool",
+                "tool": "get_team_stats",
+                "action": null,
+                "tools_requested": null,
+                "status": "ok"
+              },
+              {
+                "stage": "orchestrate",
+                "tool": "llm_orchestrate",
+                "action": "answer_from_available_evidence",
+                "tools_requested": [],
+                "status": null
+              },
+              {
+                "stage": "review",
+                "tool": "llm_review",
+                "action": null,
+                "tools_requested": null,
+                "status": null
+              }
+            ],
+            "revision": 1,
+            "answer": "In the 2025-26 regular season, the Knicks went 53-29 over 82 archived games."
+          },
+          {
+            "question": "And overall?",
+            "status": 200,
+            "want": "69-32",
+            "records_in_answer": [
+              "69-32"
+            ],
+            "ok": true,
+            "llm_validated": true,
+            "warnings": [],
+            "stages": [
+              {
+                "stage": "tool",
+                "tool": "get_team_stats",
+                "action": null,
+                "tools_requested": null,
+                "status": "ok"
+              },
+              {
+                "stage": "orchestrate",
+                "tool": "llm_orchestrate",
+                "action": "answer_from_available_evidence",
+                "tools_requested": [],
+                "status": null
+              },
+              {
+                "stage": "review",
+                "tool": "llm_review",
+                "action": null,
+                "tools_requested": null,
+                "status": null
+              }
+            ],
+            "revision": 2,
+            "answer": "Across all phases in the 2025-26 archive (regular season plus playoffs), the Knicks went 69-32 over 101 games, scoring 11,750 points with a +802 margin."
+          },
+          {
+            "question": "And in the playoffs?",
+            "status": 200,
+            "want": "16-3",
+            "records_in_answer": [
+              "16-3"
+            ],
+            "ok": true,
+            "llm_validated": true,
+            "warnings": [],
+            "stages": [
+              {
+                "stage": "tool",
+                "tool": "get_team_stats",
+                "action": null,
+                "tools_requested": null,
+                "status": "ok"
+              },
+              {
+                "stage": "orchestrate",
+                "tool": "llm_orchestrate",
+                "action": "answer_from_available_evidence",
+                "tools_requested": [],
+                "status": null
+              },
+              {
+                "stage": "review",
+                "tool": "llm_review",
+                "action": null,
+                "tools_requested": null,
+                "status": null
+              }
+            ],
+            "revision": 3,
+            "answer": "In the 2025-26 playoffs, the Knicks went 16-3 over 19 archived games, scoring 2,201 points with a +283 margin."
+          }
+        ]
+      }
+    ]
+  }
+}

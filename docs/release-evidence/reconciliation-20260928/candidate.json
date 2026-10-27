@@ -1,0 +1,16 @@
+{
+  "candidate": "91ada687ec6e6a3c4bb2ac2a561e91f6c8ea8cc3",
+  "parent": "e003db2d7f179c8d490d90155f260ec0eeb31620",
+  "tree": "beccf193d8fe009a39d4d11e418d7963e75d9dda",
+  "branch": "codex/release-reconciliation-20260928",
+  "included_paths": [
+    "apps/api/app/api/analysis.py",
+    "apps/api/app/tests/test_analyst_shadow.py",
+    "docs/release-policy-proposal.md"
+  ],
+  "local_only": true,
+  "historical_ci_run": 36472142614,
+  "historical_ci_commit": "e003db2d7f179c8d490d90155f260ec0eeb31620",
+  "candidate_hosted_ci": "not_run_remote_writes_not_authorized",
+  "superseded_local_candidate": "2274d1eec6bbbc0f9df203206141ca9c525bbe18"
+}

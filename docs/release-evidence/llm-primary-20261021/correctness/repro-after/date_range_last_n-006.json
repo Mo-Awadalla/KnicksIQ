@@ -1,0 +1,100 @@
+{
+  "id": "date_range_last_n-006",
+  "question": "How many road games did they win in December?",
+  "resolved_scope": {
+    "intent": "analyst",
+    "player_ids": [],
+    "team_ids": [],
+    "opponent_id": null,
+    "game_ids": 8,
+    "date_start": "2025-12-02",
+    "date_end": "2025-12-31",
+    "relative_game_count": null,
+    "periods": [],
+    "season_type": null,
+    "home_away": "away",
+    "game_result": null,
+    "metric": null,
+    "requires_clarification": false,
+    "clarification_reason": null,
+    "clarification_options": [],
+    "data_version": "2025-26.20260928.1"
+  },
+  "tool": {
+    "status": "ok",
+    "message": "Archive team totals.",
+    "claims": [
+      {
+        "metric_id": "wins",
+        "value": 5,
+        "season_type": "regular",
+        "sample_size": 8,
+        "statement": "Knicks regular season wins: 5 over 8 archived games.",
+        "limitations": [
+          "Available archive only; no causal inference."
+        ]
+      },
+      {
+        "metric_id": "losses",
+        "value": 3,
+        "season_type": "regular",
+        "sample_size": 8,
+        "statement": "Knicks regular season losses: 3 over 8 archived games.",
+        "limitations": [
+          "Available archive only; no causal inference."
+        ]
+      },
+      {
+        "metric_id": "points_per_game",
+        "value": 121.75,
+        "season_type": "regular",
+        "sample_size": 8,
+        "statement": "Knicks regular season points per game: 121.75 over 8 archived games.",
+        "limitations": [
+          "Available archive only; no causal inference."
+        ]
+      },
+      {
+        "metric_id": "margin_per_game",
+        "value": 2.25,
+        "season_type": "regular",
+        "sample_size": 8,
+        "statement": "Knicks regular season margin per game: 2.25 over 8 archived games.",
+        "limitations": [
+          "Available archive only; no causal inference."
+        ]
+      }
+    ],
+    "evidence": 8,
+    "scope": {
+      "intent": "get_team_stats",
+      "player_ids": [],
+      "team_ids": [],
+      "opponent_id": null,
+      "game_ids": 8,
+      "date_start": "2025-12-02",
+      "date_end": "2025-12-31",
+      "relative_game_count": null,
+      "periods": [],
+      "season_type": null,
+      "home_away": "away",
+      "game_result": null,
+      "metric": null,
+      "requires_clarification": false,
+      "clarification_reason": null,
+      "clarification_options": [],
+      "data_version": "2025-26.20260928.1"
+    }
+  },
+  "fallback": {
+    "answer": "Knicks regular season wins: 5 over 8 archived games. Knicks regular season losses: 3 over 8 archived games.",
+    "route": "factual_fallback",
+    "warnings": [
+      "Model or budget unavailable."
+    ],
+    "claims": [
+      "wins",
+      "losses"
+    ]
+  }
+}

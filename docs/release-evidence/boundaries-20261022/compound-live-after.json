@@ -1,0 +1,304 @@
+{
+  "release": "2025-26.20260928.1",
+  "live": true,
+  "cases": [
+    {
+      "question": "What were Brunson's average points, rebounds and assists in December?",
+      "expected_metrics": [
+        "assists:average",
+        "points:average",
+        "rebounds:average"
+      ],
+      "direct_claims": [
+        {
+          "metric": "points:average",
+          "value": 30.615384615384617
+        },
+        {
+          "metric": "rebounds:average",
+          "value": 3.230769230769231
+        },
+        {
+          "metric": "assists:average",
+          "value": 7.076923076923077
+        }
+      ],
+      "coverage": [
+        [
+          "Only observed appearances in the available archive.",
+          "The player did not appear in some selected games; those games are excluded."
+        ],
+        [
+          "Only observed appearances in the available archive.",
+          "The player did not appear in some selected games; those games are excluded."
+        ],
+        [
+          "Only observed appearances in the available archive.",
+          "The player did not appear in some selected games; those games are excluded."
+        ]
+      ],
+      "direct_passed": true,
+      "api": {
+        "answer": "Jalen Brunson: 7.1 assists per appearance across 13 observed appearances in the 2025-26 regular season. Jalen Brunson: 30.6 points per appearance across 13 observed appearances in the 2025-26 regular season. Jalen Brunson: 3.2 rebounds per appearance across 13 observed appearances in the 2025-26 regular season.",
+        "llm_validated": false,
+        "degraded": true,
+        "refused": false,
+        "state_committed": true,
+        "delivered_metrics": [
+          "assists:average",
+          "points:average",
+          "rebounds:average"
+        ],
+        "warnings": [
+          "Proposed wording did not pass evidence review."
+        ],
+        "trace": [
+          {
+            "stage": "prepare",
+            "tool": "session_and_release",
+            "latency_ms": 8
+          },
+          {
+            "stage": "prepare",
+            "tool": "prepare_total",
+            "latency_ms": 57
+          },
+          {
+            "stage": "prepare",
+            "tool": "archive_records",
+            "latency_ms": 21,
+            "games": 101,
+            "box_score_rows": 1384
+          },
+          {
+            "stage": "prepare",
+            "tool": "query_resolution",
+            "latency_ms": 35,
+            "resolved": true
+          },
+          {
+            "stage": "tool",
+            "tool": "get_player_stats",
+            "latency_ms": 37,
+            "status": "ok",
+            "claims": 1,
+            "evidence": 13,
+            "candidates": 0
+          },
+          {
+            "stage": "tool",
+            "tool": "get_player_stats",
+            "latency_ms": 42,
+            "status": "ok",
+            "claims": 1,
+            "evidence": 13,
+            "candidates": 0
+          },
+          {
+            "stage": "tool",
+            "tool": "get_player_stats",
+            "latency_ms": 41,
+            "status": "ok",
+            "claims": 1,
+            "evidence": 13,
+            "candidates": 0
+          },
+          {
+            "stage": "orchestrate",
+            "tool": "llm_orchestrate",
+            "schema": "Action",
+            "latency_ms": 2413,
+            "model": "deepseek-v4.1-flash",
+            "served_model": "deepseek-v4.1-flash",
+            "protocol": "chat",
+            "provider": null,
+            "prompt_tokens": 4110,
+            "completion_tokens": 330,
+            "total_tokens": 4440,
+            "reasoning_tokens": 0,
+            "finish_reason": "stop",
+            "content_kind": "string",
+            "provider_format_echo": false,
+            "input_bytes": 14467,
+            "response_bytes": 885,
+            "max_tokens": 1600,
+            "http_ttfb_ms": 2409.3,
+            "http_elapsed_ms": 2411.3,
+            "contract_version": "analyst-evidence-v1",
+            "prompt_version": "analyst-balanced-v5",
+            "validator_version": "whole-answer-v3",
+            "action": "answer_from_available_evidence",
+            "tools_requested": []
+          },
+          {
+            "stage": "revise",
+            "tool": "llm_orchestrate",
+            "schema": "ProposedAnswer",
+            "latency_ms": 2327,
+            "model": "deepseek-v4.1-flash",
+            "served_model": "deepseek-v4.1-flash",
+            "protocol": "chat",
+            "provider": null,
+            "prompt_tokens": 3718,
+            "completion_tokens": 318,
+            "total_tokens": 4036,
+            "reasoning_tokens": 0,
+            "finish_reason": "stop",
+            "content_kind": "string",
+            "provider_format_echo": false,
+            "input_bytes": 12288,
+            "response_bytes": 832,
+            "max_tokens": 1600,
+            "http_ttfb_ms": 2322.9,
+            "http_elapsed_ms": 2324.7,
+            "contract_version": "analyst-evidence-v1",
+            "prompt_version": "analyst-balanced-v5",
+            "validator_version": "whole-answer-v3"
+          }
+        ],
+        "passed": true
+      }
+    },
+    {
+      "question": "What were Brunson's total and average points in December?",
+      "expected_metrics": [
+        "points:average",
+        "points:total"
+      ],
+      "direct_claims": [
+        {
+          "metric": "points:total",
+          "value": 398
+        },
+        {
+          "metric": "points:average",
+          "value": 30.615384615384617
+        }
+      ],
+      "coverage": [
+        [
+          "Only observed appearances in the available archive.",
+          "The player did not appear in some selected games; those games are excluded."
+        ],
+        [
+          "Only observed appearances in the available archive.",
+          "The player did not appear in some selected games; those games are excluded."
+        ]
+      ],
+      "direct_passed": true,
+      "api": {
+        "answer": "In the 2025-26 regular season for the December window (Dec 2\u201331), Jalen Brunson scored 398 total points across 13 appearances, averaging 30.6 points per appearance.",
+        "llm_validated": true,
+        "degraded": false,
+        "refused": false,
+        "state_committed": true,
+        "delivered_metrics": [
+          "points:average",
+          "points:total"
+        ],
+        "warnings": [],
+        "trace": [
+          {
+            "stage": "prepare",
+            "tool": "session_and_release",
+            "latency_ms": 6
+          },
+          {
+            "stage": "prepare",
+            "tool": "prepare_total",
+            "latency_ms": 106
+          },
+          {
+            "stage": "prepare",
+            "tool": "archive_records",
+            "latency_ms": 69,
+            "games": 101,
+            "box_score_rows": 1384
+          },
+          {
+            "stage": "prepare",
+            "tool": "query_resolution",
+            "latency_ms": 36,
+            "resolved": true
+          },
+          {
+            "stage": "tool",
+            "tool": "get_player_stats",
+            "latency_ms": 37,
+            "status": "ok",
+            "claims": 1,
+            "evidence": 13,
+            "candidates": 0
+          },
+          {
+            "stage": "tool",
+            "tool": "get_player_stats",
+            "latency_ms": 42,
+            "status": "ok",
+            "claims": 1,
+            "evidence": 13,
+            "candidates": 0
+          },
+          {
+            "stage": "orchestrate",
+            "tool": "llm_orchestrate",
+            "schema": "Action",
+            "latency_ms": 2189,
+            "model": "deepseek-v4.1-flash",
+            "served_model": "deepseek-v4.1-flash",
+            "protocol": "chat",
+            "provider": null,
+            "prompt_tokens": 3940,
+            "completion_tokens": 292,
+            "total_tokens": 4232,
+            "reasoning_tokens": null,
+            "finish_reason": "stop",
+            "content_kind": "string",
+            "provider_format_echo": false,
+            "input_bytes": 13709,
+            "response_bytes": 809,
+            "max_tokens": 1600,
+            "http_ttfb_ms": 2187.3,
+            "http_elapsed_ms": 2188.1,
+            "contract_version": "analyst-evidence-v1",
+            "prompt_version": "analyst-balanced-v5",
+            "validator_version": "whole-answer-v3",
+            "action": "answer_from_available_evidence",
+            "tools_requested": []
+          },
+          {
+            "stage": "review",
+            "tool": "llm_review",
+            "schema": "AnswerReview",
+            "latency_ms": 5387,
+            "model": "gpt-6-luna",
+            "served_model": "gpt-6-luna",
+            "protocol": "responses",
+            "provider": null,
+            "prompt_tokens": 3580,
+            "completion_tokens": 284,
+            "total_tokens": 3864,
+            "reasoning_tokens": 0,
+            "finish_reason": "stop",
+            "content_kind": "string",
+            "provider_format_echo": false,
+            "input_bytes": 12381,
+            "response_bytes": 992,
+            "max_tokens": 3000,
+            "http_ttfb_ms": 5385.9,
+            "http_elapsed_ms": 5386.6,
+            "contract_version": "analyst-evidence-v1",
+            "prompt_version": "analyst-balanced-v5",
+            "validator_version": "whole-answer-v3",
+            "review_spans": 1,
+            "review_empty_id_spans": 0,
+            "review_attachable_spans": 0,
+            "review_accepted": true
+          }
+        ],
+        "passed": true
+      }
+    }
+  ],
+  "passed": true
+}

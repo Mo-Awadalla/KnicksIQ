@@ -1,0 +1,3301 @@
+{
+  "mode": "offline_backend_fallback",
+  "release": "2025-26.20260928.1",
+  "sessions": [
+    {
+      "id": "margin_hawks_jan2",
+      "category": "game_single_stat",
+      "turns": [
+        {
+          "turn": 1,
+          "question": "How many points did the Knicks score against the Hawks on January 2?",
+          "kind": "team_total",
+          "expected_fact": "99",
+          "expected_scope": {
+            "season_type": null,
+            "all_phases": false,
+            "game_count": 1,
+            "game_ids": [
+              34
+            ],
+            "player_ids": [],
+            "metric": "points",
+            "home_away": null,
+            "opponent_id": "ATL",
+            "relative_game_count": null,
+            "date_start": "2026-01-02",
+            "date_end": "2026-01-02"
+          },
+          "actual_scope": {
+            "intent": "analyst",
+            "player_ids": [],
+            "team_ids": [
+              "ATL"
+            ],
+            "opponent_id": "ATL",
+            "game_ids": [
+              34
+            ],
+            "date_start": "2026-01-02",
+            "date_end": "2026-01-02",
+            "relative_game_count": null,
+            "relative_from_start": false,
+            "periods": [],
+            "season_type": null,
+            "all_phases": false,
+            "home_away": null,
+            "game_result": null,
+            "metric": "points",
+            "requires_clarification": false,
+            "clarification_reason": null,
+            "clarification_options": [],
+            "data_version": "2025-26.20260928.1"
+          },
+          "scope_issues": [],
+          "carried_claims": [],
+          "prefetch": [
+            {
+              "tool": "get_team_stats",
+              "aggregation": "total",
+              "status": "ok",
+              "claims": 4
+            }
+          ],
+          "recovery": null,
+          "fallback_text": "Knicks regular season points: 99 over 1 archived games against Hawks (99-111 vs Hawks on 2026-01-02).",
+          "fallback_checks": {
+            "fact": "99",
+            "value": 99.0,
+            "value_ok": true
+          },
+          "fallback_score": {
+            "id": "How many points did the Knicks score against the Hawks on January 2?",
+            "category": "follow_ups",
+            "question": "How many points did the Knicks score against the Hawks on January 2?",
+            "answerable": true,
+            "outcome": null,
+            "old_meets_expectation": false,
+            "meets_expectation": true,
+            "failures": [],
+            "checks": {
+              "validated": true,
+              "decline_signal": null,
+              "decline_signals": [],
+              "declined": false,
+              "clarification": false,
+              "substantive": true,
+              "evidence_mode": "claims",
+              "claim_citations": 1,
+              "archive_receipts": 0,
+              "numbers_total": 4,
+              "unbacked_numbers": [],
+              "detected_entities": [
+                "Hawks",
+                "Knicks"
+              ],
+              "unbacked_entities": [],
+              "required_facts": [
+                "99"
+              ],
+              "required_facts_ok": true,
+              "required_entities_ok": true,
+              "required_phrases_ok": null,
+              "echo_question": false,
+              "hedged_causal": false,
+              "missing_turning_detail": false
+            }
+          },
+          "fallback_ok": true,
+          "cause": "ok"
+        },
+        {
+          "turn": 2,
+          "question": "What was the margin?",
+          "kind": "team_average",
+          "expected_fact": "-12.00",
+          "expected_scope": {
+            "season_type": null,
+            "all_phases": false,
+            "game_count": 1,
+            "game_ids": [
+              34
+            ],
+            "player_ids": [],
+            "metric": "margin",
+            "home_away": null,
+            "opponent_id": "ATL",
+            "relative_game_count": null,
+            "date_start": "2026-01-02",
+            "date_end": "2026-01-02"
+          },
+          "actual_scope": {
+            "intent": "analyst",
+            "player_ids": [],
+            "team_ids": [],
+            "opponent_id": "ATL",
+            "game_ids": [
+              34
+            ],
+            "date_start": "2026-01-02",
+            "date_end": "2026-01-02",
+            "relative_game_count": null,
+            "relative_from_start": false,
+            "periods": [],
+            "season_type": null,
+            "all_phases": false,
+            "home_away": null,
+            "game_result": null,
+            "metric": "margin",
+            "requires_clarification": false,
+            "clarification_reason": null,
+            "clarification_options": [],
+            "data_version": "2025-26.20260928.1"
+          },
+          "scope_issues": [],
+          "carried_claims": [
+            {
+              "metric": "points",
+              "season_type": "regular",
+              "games": 1
+            }
+          ],
+          "prefetch": [
+            {
+              "tool": "get_team_stats",
+              "aggregation": "total",
+              "status": "ok",
+              "claims": 4
+            }
+          ],
+          "recovery": null,
+          "fallback_text": "Knicks regular season margin: -12 over 1 archived games against Hawks (99-111 vs Hawks on 2026-01-02).",
+          "fallback_checks": {
+            "fact": "-12.00",
+            "value": -12.0,
+            "value_ok": true
+          },
+          "fallback_score": {
+            "id": "What was the margin?",
+            "category": "follow_ups",
+            "question": "What was the margin?",
+            "answerable": true,
+            "outcome": null,
+            "old_meets_expectation": false,
+            "meets_expectation": true,
+            "failures": [],
+            "checks": {
+              "validated": true,
+              "decline_signal": null,
+              "decline_signals": [],
+              "declined": false,
+              "clarification": false,
+              "substantive": true,
+              "evidence_mode": "claims",
+              "claim_citations": 1,
+              "archive_receipts": 0,
+              "numbers_total": 4,
+              "unbacked_numbers": [],
+              "detected_entities": [
+                "Hawks",
+                "Knicks"
+              ],
+              "unbacked_entities": [],
+              "required_facts": [
+                "-12.00"
+              ],
+              "required_facts_ok": true,
+              "required_entities_ok": true,
+              "required_phrases_ok": null,
+              "echo_question": false,
+              "hedged_causal": false,
+              "missing_turning_detail": false
+            }
+          },
+          "fallback_ok": true,
+          "cause": "ok"
+        }
+      ],
+      "pass": true,
+      "scope_clean": true
+    },
+    {
+      "id": "margin_celtics_feb8",
+      "category": "game_single_stat",
+      "turns": [
+        {
+          "turn": 1,
+          "question": "How many points did the Knicks score against the Celtics on February 8?",
+          "kind": "team_total",
+          "expected_fact": "111",
+          "expected_scope": {
+            "season_type": null,
+            "all_phases": false,
+            "game_count": 1,
+            "game_ids": [
+              53
+            ],
+            "player_ids": [],
+            "metric": "points",
+            "home_away": null,
+            "opponent_id": "BOS",
+            "relative_game_count": null,
+            "date_start": "2026-02-08",
+            "date_end": "2026-02-08"
+          },
+          "actual_scope": {
+            "intent": "analyst",
+            "player_ids": [],
+            "team_ids": [
+              "BOS"
+            ],
+            "opponent_id": "BOS",
+            "game_ids": [
+              53
+            ],
+            "date_start": "2026-02-08",
+            "date_end": "2026-02-08",
+            "relative_game_count": null,
+            "relative_from_start": false,
+            "periods": [],
+            "season_type": null,
+            "all_phases": false,
+            "home_away": null,
+            "game_result": null,
+            "metric": "points",
+            "requires_clarification": false,
+            "clarification_reason": null,
+            "clarification_options": [],
+            "data_version": "2025-26.20260928.1"
+          },
+          "scope_issues": [],
+          "carried_claims": [],
+          "prefetch": [
+            {
+              "tool": "get_team_stats",
+              "aggregation": "total",
+              "status": "ok",
+              "claims": 4
+            }
+          ],
+          "recovery": null,
+          "fallback_text": "Knicks regular season points: 111 over 1 archived games against Celtics (111-89 at Celtics on 2026-02-08).",
+          "fallback_checks": {
+            "fact": "111",
+            "value": 111.0,
+            "value_ok": true
+          },
+          "fallback_score": {
+            "id": "How many points did the Knicks score against the Celtics on February 8?",
+            "category": "follow_ups",
+            "question": "How many points did the Knicks score against the Celtics on February 8?",
+            "answerable": true,
+            "outcome": null,
+            "old_meets_expectation": false,
+            "meets_expectation": true,
+            "failures": [],
+            "checks": {
+              "validated": true,
+              "decline_signal": null,
+              "decline_signals": [],
+              "declined": false,
+              "clarification": false,
+              "substantive": true,
+              "evidence_mode": "claims",
+              "claim_citations": 1,
+              "archive_receipts": 0,
+              "numbers_total": 4,
+              "unbacked_numbers": [],
+              "detected_entities": [
+                "Celtics",
+                "Knicks"
+              ],
+              "unbacked_entities": [],
+              "required_facts": [
+                "111"
+              ],
+              "required_facts_ok": true,
+              "required_entities_ok": true,
+              "required_phrases_ok": null,
+              "echo_question": false,
+              "hedged_causal": false,
+              "missing_turning_detail": false
+            }
+          },
+          "fallback_ok": true,
+          "cause": "ok"
+        },
+        {
+          "turn": 2,
+          "question": "How big was the final margin?",
+          "kind": "team_average",
+          "expected_fact": "22.00",
+          "expected_scope": {
+            "season_type": null,
+            "all_phases": false,
+            "game_count": 1,
+            "game_ids": [
+              53
+            ],
+            "player_ids": [],
+            "metric": "margin",
+            "home_away": null,
+            "opponent_id": "BOS",
+            "relative_game_count": null,
+            "date_start": "2026-02-08",
+            "date_end": "2026-02-08"
+          },
+          "actual_scope": {
+            "intent": "analyst",
+            "player_ids": [],
+            "team_ids": [],
+            "opponent_id": "BOS",
+            "game_ids": [
+              53
+            ],
+            "date_start": "2026-02-08",
+            "date_end": "2026-02-08",
+            "relative_game_count": null,
+            "relative_from_start": false,
+            "periods": [],
+            "season_type": null,
+            "all_phases": false,
+            "home_away": null,
+            "game_result": null,
+            "metric": "margin",
+            "requires_clarification": false,
+            "clarification_reason": null,
+            "clarification_options": [],
+            "data_version": "2025-26.20260928.1"
+          },
+          "scope_issues": [],
+          "carried_claims": [
+            {
+              "metric": "points",
+              "season_type": "regular",
+              "games": 1
+            }
+          ],
+          "prefetch": [
+            {
+              "tool": "get_team_stats",
+              "aggregation": "total",
+              "status": "ok",
+              "claims": 4
+            }
+          ],
+          "recovery": null,
+          "fallback_text": "Knicks regular season margin: 22 over 1 archived games against Celtics (111-89 at Celtics on 2026-02-08).",
+          "fallback_checks": {
+            "fact": "22.00",
+            "value": 22.0,
+            "value_ok": true
+          },
+          "fallback_score": {
+            "id": "How big was the final margin?",
+            "category": "follow_ups",
+            "question": "How big was the final margin?",
+            "answerable": true,
+            "outcome": null,
+            "old_meets_expectation": false,
+            "meets_expectation": true,
+            "failures": [],
+            "checks": {
+              "validated": true,
+              "decline_signal": null,
+              "decline_signals": [],
+              "declined": false,
+              "clarification": false,
+              "substantive": true,
+              "evidence_mode": "claims",
+              "claim_citations": 1,
+              "archive_receipts": 0,
+              "numbers_total": 4,
+              "unbacked_numbers": [],
+              "detected_entities": [
+                "Celtics",
+                "Knicks"
+              ],
+              "unbacked_entities": [],
+              "required_facts": [
+                "22.00"
+              ],
+              "required_facts_ok": true,
+              "required_entities_ok": true,
+              "required_phrases_ok": null,
+              "echo_question": false,
+              "hedged_causal": false,
+              "missing_turning_detail": false
+            }
+          },
+          "fallback_ok": true,
+          "cause": "ok"
+        }
+      ],
+      "pass": true,
+      "scope_clean": true
+    },
+    {
+      "id": "margin_heat_dec21",
+      "category": "game_single_stat",
+      "turns": [
+        {
+          "turn": 1,
+          "question": "How many points did the Knicks score against the Heat on December 21?",
+          "kind": "team_total",
+          "expected_fact": "132",
+          "expected_scope": {
+            "season_type": null,
+            "all_phases": false,
+            "game_count": 1,
+            "game_ids": [
+              28
+            ],
+            "player_ids": [],
+            "metric": "points",
+            "home_away": null,
+            "opponent_id": "MIA",
+            "relative_game_count": null,
+            "date_start": "2025-12-21",
+            "date_end": "2025-12-21"
+          },
+          "actual_scope": {
+            "intent": "analyst",
+            "player_ids": [],
+            "team_ids": [
+              "MIA"
+            ],
+            "opponent_id": "MIA",
+            "game_ids": [
+              28
+            ],
+            "date_start": "2025-12-21",
+            "date_end": "2025-12-21",
+            "relative_game_count": null,
+            "relative_from_start": false,
+            "periods": [],
+            "season_type": null,
+            "all_phases": false,
+            "home_away": null,
+            "game_result": null,
+            "metric": "points",
+            "requires_clarification": false,
+            "clarification_reason": null,
+            "clarification_options": [],
+            "data_version": "2025-26.20260928.1"
+          },
+          "scope_issues": [],
+          "carried_claims": [],
+          "prefetch": [
+            {
+              "tool": "get_team_stats",
+              "aggregation": "total",
+              "status": "ok",
+              "claims": 4
+            }
+          ],
+          "recovery": null,
+          "fallback_text": "Knicks regular season points: 132 over 1 archived games against Heat (132-125 vs Heat on 2025-12-21).",
+          "fallback_checks": {
+            "fact": "132",
+            "value": 132.0,
+            "value_ok": true
+          },
+          "fallback_score": {
+            "id": "How many points did the Knicks score against the Heat on December 21?",
+            "category": "follow_ups",
+            "question": "How many points did the Knicks score against the Heat on December 21?",
+            "answerable": true,
+            "outcome": null,
+            "old_meets_expectation": false,
+            "meets_expectation": true,
+            "failures": [],
+            "checks": {
+              "validated": true,
+              "decline_signal": null,
+              "decline_signals": [],
+              "declined": false,
+              "clarification": false,
+              "substantive": true,
+              "evidence_mode": "claims",
+              "claim_citations": 1,
+              "archive_receipts": 0,
+              "numbers_total": 4,
+              "unbacked_numbers": [],
+              "detected_entities": [
+                "Heat",
+                "Knicks"
+              ],
+              "unbacked_entities": [],
+              "required_facts": [
+                "132"
+              ],
+              "required_facts_ok": true,
+              "required_entities_ok": true,
+              "required_phrases_ok": null,
+              "echo_question": false,
+              "hedged_causal": false,
+              "missing_turning_detail": false
+            }
+          },
+          "fallback_ok": true,
+          "cause": "ok"
+        },
+        {
+          "turn": 2,
+          "question": "What was the margin of victory?",
+          "kind": "team_average",
+          "expected_fact": "7.00",
+          "expected_scope": {
+            "season_type": null,
+            "all_phases": false,
+            "game_count": 1,
+            "game_ids": [
+              28
+            ],
+            "player_ids": [],
+            "metric": "margin",
+            "home_away": null,
+            "opponent_id": "MIA",
+            "relative_game_count": null,
+            "date_start": "2025-12-21",
+            "date_end": "2025-12-21"
+          },
+          "actual_scope": {
+            "intent": "analyst",
+            "player_ids": [],
+            "team_ids": [],
+            "opponent_id": "MIA",
+            "game_ids": [
+              28
+            ],
+            "date_start": "2025-12-21",
+            "date_end": "2025-12-21",
+            "relative_game_count": null,
+            "relative_from_start": false,
+            "periods": [],
+            "season_type": null,
+            "all_phases": false,
+            "home_away": null,
+            "game_result": null,
+            "metric": "margin",
+            "requires_clarification": false,
+            "clarification_reason": null,
+            "clarification_options": [],
+            "data_version": "2025-26.20260928.1"
+          },
+          "scope_issues": [],
+          "carried_claims": [
+            {
+              "metric": "points",
+              "season_type": "regular",
+              "games": 1
+            }
+          ],
+          "prefetch": [
+            {
+              "tool": "get_team_stats",
+              "aggregation": "total",
+              "status": "ok",
+              "claims": 4
+            }
+          ],
+          "recovery": null,
+          "fallback_text": "Knicks regular season margin: 7 over 1 archived games against Heat (132-125 vs Heat on 2025-12-21).",
+          "fallback_checks": {
+            "fact": "7.00",
+            "value": 7.0,
+            "value_ok": true
+          },
+          "fallback_score": {
+            "id": "What was the margin of victory?",
+            "category": "follow_ups",
+            "question": "What was the margin of victory?",
+            "answerable": true,
+            "outcome": null,
+            "old_meets_expectation": false,
+            "meets_expectation": true,
+            "failures": [],
+            "checks": {
+              "validated": true,
+              "decline_signal": null,
+              "decline_signals": [],
+              "declined": false,
+              "clarification": false,
+              "substantive": true,
+              "evidence_mode": "claims",
+              "claim_citations": 1,
+              "archive_receipts": 0,
+              "numbers_total": 4,
+              "unbacked_numbers": [],
+              "detected_entities": [
+                "Heat",
+                "Knicks"
+              ],
+              "unbacked_entities": [],
+              "required_facts": [
+                "7.00"
+              ],
+              "required_facts_ok": true,
+              "required_entities_ok": true,
+              "required_phrases_ok": null,
+              "echo_question": false,
+              "hedged_causal": false,
+              "missing_turning_detail": false
+            }
+          },
+          "fallback_ok": true,
+          "cause": "ok"
+        }
+      ],
+      "pass": true,
+      "scope_clean": true
+    },
+    {
+      "id": "team_nets_jan21",
+      "category": "game_single_stat",
+      "turns": [
+        {
+          "turn": 1,
+          "question": "How many points did the Knicks score against the Nets on January 21?",
+          "kind": "team_total",
+          "expected_fact": "120",
+          "expected_scope": {
+            "season_type": null,
+            "all_phases": false,
+            "game_count": 1,
+            "game_ids": [
+              44
+            ],
+            "player_ids": [],
+            "metric": "points",
+            "home_away": null,
+            "opponent_id": "BKN",
+            "relative_game_count": null,
+            "date_start": "2026-01-21",
+            "date_end": "2026-01-21"
+          },
+          "actual_scope": {
+            "intent": "analyst",
+            "player_ids": [],
+            "team_ids": [
+              "BKN"
+            ],
+            "opponent_id": "BKN",
+            "game_ids": [
+              44
+            ],
+            "date_start": "2026-01-21",
+            "date_end": "2026-01-21",
+            "relative_game_count": null,
+            "relative_from_start": false,
+            "periods": [],
+            "season_type": null,
+            "all_phases": false,
+            "home_away": null,
+            "game_result": null,
+            "metric": "points",
+            "requires_clarification": false,
+            "clarification_reason": null,
+            "clarification_options": [],
+            "data_version": "2025-26.20260928.1"
+          },
+          "scope_issues": [],
+          "carried_claims": [],
+          "prefetch": [
+            {
+              "tool": "get_team_stats",
+              "aggregation": "total",
+              "status": "ok",
+              "claims": 4
+            }
+          ],
+          "recovery": null,
+          "fallback_text": "Knicks regular season points: 120 over 1 archived games against Nets (120-66 vs Nets on 2026-01-21).",
+          "fallback_checks": {
+            "fact": "120",
+            "value": 120.0,
+            "value_ok": true
+          },
+          "fallback_score": {
+            "id": "How many points did the Knicks score against the Nets on January 21?",
+            "category": "follow_ups",
+            "question": "How many points did the Knicks score against the Nets on January 21?",
+            "answerable": true,
+            "outcome": null,
+            "old_meets_expectation": false,
+            "meets_expectation": true,
+            "failures": [],
+            "checks": {
+              "validated": true,
+              "decline_signal": null,
+              "decline_signals": [],
+              "declined": false,
+              "clarification": false,
+              "substantive": true,
+              "evidence_mode": "claims",
+              "claim_citations": 1,
+              "archive_receipts": 0,
+              "numbers_total": 4,
+              "unbacked_numbers": [],
+              "detected_entities": [
+                "Knicks",
+                "Nets"
+              ],
+              "unbacked_entities": [],
+              "required_facts": [
+                "120"
+              ],
+              "required_facts_ok": true,
+              "required_entities_ok": true,
+              "required_phrases_ok": null,
+              "echo_question": false,
+              "hedged_causal": false,
+              "missing_turning_detail": false
+            }
+          },
+          "fallback_ok": true,
+          "cause": "ok"
+        },
+        {
+          "turn": 2,
+          "question": "How many points did they put up?",
+          "kind": "team_total",
+          "expected_fact": "120",
+          "expected_scope": {
+            "season_type": null,
+            "all_phases": false,
+            "game_count": 1,
+            "game_ids": [
+              44
+            ],
+            "player_ids": [],
+            "metric": "points",
+            "home_away": null,
+            "opponent_id": "BKN",
+            "relative_game_count": null,
+            "date_start": "2026-01-21",
+            "date_end": "2026-01-21"
+          },
+          "actual_scope": {
+            "intent": "analyst",
+            "player_ids": [],
+            "team_ids": [],
+            "opponent_id": "BKN",
+            "game_ids": [
+              44
+            ],
+            "date_start": "2026-01-21",
+            "date_end": "2026-01-21",
+            "relative_game_count": null,
+            "relative_from_start": false,
+            "periods": [],
+            "season_type": null,
+            "all_phases": false,
+            "home_away": null,
+            "game_result": null,
+            "metric": "points",
+            "requires_clarification": false,
+            "clarification_reason": null,
+            "clarification_options": [],
+            "data_version": "2025-26.20260928.1"
+          },
+          "scope_issues": [],
+          "carried_claims": [
+            {
+              "metric": "points",
+              "season_type": "regular",
+              "games": 1
+            }
+          ],
+          "prefetch": [
+            {
+              "tool": "get_team_stats",
+              "aggregation": "total",
+              "status": "ok",
+              "claims": 4
+            }
+          ],
+          "recovery": null,
+          "fallback_text": "Knicks regular season points: 120 over 1 archived games against Nets (120-66 vs Nets on 2026-01-21).",
+          "fallback_checks": {
+            "fact": "120",
+            "value": 120.0,
+            "value_ok": true
+          },
+          "fallback_score": {
+            "id": "How many points did they put up?",
+            "category": "follow_ups",
+            "question": "How many points did they put up?",
+            "answerable": true,
+            "outcome": null,
+            "old_meets_expectation": false,
+            "meets_expectation": true,
+            "failures": [],
+            "checks": {
+              "validated": true,
+              "decline_signal": null,
+              "decline_signals": [],
+              "declined": false,
+              "clarification": false,
+              "substantive": true,
+              "evidence_mode": "claims",
+              "claim_citations": 1,
+              "archive_receipts": 0,
+              "numbers_total": 4,
+              "unbacked_numbers": [],
+              "detected_entities": [
+                "Knicks",
+                "Nets"
+              ],
+              "unbacked_entities": [],
+              "required_facts": [
+                "120"
+              ],
+              "required_facts_ok": true,
+              "required_entities_ok": true,
+              "required_phrases_ok": null,
+              "echo_question": false,
+              "hedged_causal": false,
+              "missing_turning_detail": false
+            }
+          },
+          "fallback_ok": true,
+          "cause": "ok"
+        }
+      ],
+      "pass": true,
+      "scope_clean": true
+    },
+    {
+      "id": "team_bulls_apr3",
+      "category": "game_single_stat",
+      "turns": [
+        {
+          "turn": 1,
+          "question": "How many points did the Knicks score versus the Bulls on April 3?",
+          "kind": "team_total",
+          "expected_fact": "136",
+          "expected_scope": {
+            "season_type": null,
+            "all_phases": false,
+            "game_count": 1,
+            "game_ids": [
+              78
+            ],
+            "player_ids": [],
+            "metric": "points",
+            "home_away": null,
+            "opponent_id": "CHI",
+            "relative_game_count": null,
+            "date_start": "2026-04-03",
+            "date_end": "2026-04-03"
+          },
+          "actual_scope": {
+            "intent": "analyst",
+            "player_ids": [],
+            "team_ids": [
+              "CHI"
+            ],
+            "opponent_id": "CHI",
+            "game_ids": [
+              78
+            ],
+            "date_start": "2026-04-03",
+            "date_end": "2026-04-03",
+            "relative_game_count": null,
+            "relative_from_start": false,
+            "periods": [],
+            "season_type": null,
+            "all_phases": false,
+            "home_away": null,
+            "game_result": null,
+            "metric": "points",
+            "requires_clarification": false,
+            "clarification_reason": null,
+            "clarification_options": [],
+            "data_version": "2025-26.20260928.1"
+          },
+          "scope_issues": [],
+          "carried_claims": [],
+          "prefetch": [
+            {
+              "tool": "get_team_stats",
+              "aggregation": "total",
+              "status": "ok",
+              "claims": 4
+            }
+          ],
+          "recovery": null,
+          "fallback_text": "Knicks regular season points: 136 over 1 archived games against Bulls (136-96 vs Bulls on 2026-04-03).",
+          "fallback_checks": {
+            "fact": "136",
+            "value": 136.0,
+            "value_ok": true
+          },
+          "fallback_score": {
+            "id": "How many points did the Knicks score versus the Bulls on April 3?",
+            "category": "follow_ups",
+            "question": "How many points did the Knicks score versus the Bulls on April 3?",
+            "answerable": true,
+            "outcome": null,
+            "old_meets_expectation": false,
+            "meets_expectation": true,
+            "failures": [],
+            "checks": {
+              "validated": true,
+              "decline_signal": null,
+              "decline_signals": [],
+              "declined": false,
+              "clarification": false,
+              "substantive": true,
+              "evidence_mode": "claims",
+              "claim_citations": 1,
+              "archive_receipts": 0,
+              "numbers_total": 4,
+              "unbacked_numbers": [],
+              "detected_entities": [
+                "Bulls",
+                "Knicks"
+              ],
+              "unbacked_entities": [],
+              "required_facts": [
+                "136"
+              ],
+              "required_facts_ok": true,
+              "required_entities_ok": true,
+              "required_phrases_ok": null,
+              "echo_question": false,
+              "hedged_causal": false,
+              "missing_turning_detail": false
+            }
+          },
+          "fallback_ok": true,
+          "cause": "ok"
+        },
+        {
+          "turn": 2,
+          "question": "What was the final score?",
+          "kind": "narrative",
+          "expected_fact": "136-96",
+          "expected_scope": {
+            "season_type": null,
+            "all_phases": false,
+            "game_count": 1,
+            "game_ids": [
+              78
+            ],
+            "player_ids": [],
+            "metric": "points",
+            "home_away": null,
+            "opponent_id": "CHI",
+            "relative_game_count": null,
+            "date_start": "2026-04-03",
+            "date_end": "2026-04-03"
+          },
+          "actual_scope": {
+            "intent": "analyst",
+            "player_ids": [],
+            "team_ids": [],
+            "opponent_id": "CHI",
+            "game_ids": [
+              78
+            ],
+            "date_start": "2026-04-03",
+            "date_end": "2026-04-03",
+            "relative_game_count": null,
+            "relative_from_start": false,
+            "periods": [],
+            "season_type": null,
+            "all_phases": false,
+            "home_away": null,
+            "game_result": null,
+            "metric": "points",
+            "requires_clarification": false,
+            "clarification_reason": null,
+            "clarification_options": [],
+            "data_version": "2025-26.20260928.1"
+          },
+          "scope_issues": [],
+          "carried_claims": [
+            {
+              "metric": "points",
+              "season_type": "regular",
+              "games": 1
+            }
+          ],
+          "prefetch": [
+            {
+              "tool": "get_team_stats",
+              "aggregation": "total",
+              "status": "ok",
+              "claims": 4
+            }
+          ],
+          "recovery": null,
+          "fallback_text": "Knicks regular season points: 136 over 1 archived games against Bulls (136-96 vs Bulls on 2026-04-03).",
+          "fallback_checks": {
+            "fact": "136-96",
+            "fact_ok": true
+          },
+          "fallback_score": {
+            "id": "What was the final score?",
+            "category": "follow_ups",
+            "question": "What was the final score?",
+            "answerable": true,
+            "outcome": null,
+            "old_meets_expectation": false,
+            "meets_expectation": true,
+            "failures": [],
+            "checks": {
+              "validated": true,
+              "decline_signal": null,
+              "decline_signals": [],
+              "declined": false,
+              "clarification": false,
+              "substantive": true,
+              "evidence_mode": "claims",
+              "claim_citations": 1,
+              "archive_receipts": 0,
+              "numbers_total": 4,
+              "unbacked_numbers": [],
+              "detected_entities": [
+                "Bulls",
+                "Knicks"
+              ],
+              "unbacked_entities": [],
+              "required_facts": [
+                "136-96"
+              ],
+              "required_facts_ok": true,
+              "required_entities_ok": null,
+              "required_phrases_ok": null,
+              "echo_question": false,
+              "hedged_causal": false,
+              "missing_turning_detail": false
+            }
+          },
+          "fallback_ok": true,
+          "cause": "ok"
+        }
+      ],
+      "pass": true,
+      "scope_clean": true
+    },
+    {
+      "id": "team_raptors_jan28",
+      "category": "game_single_stat",
+      "turns": [
+        {
+          "turn": 1,
+          "question": "How many points did the Knicks score against the Raptors on January 28?",
+          "kind": "team_total",
+          "expected_fact": "119",
+          "expected_scope": {
+            "season_type": null,
+            "all_phases": false,
+            "game_count": 1,
+            "game_ids": [
+              47
+            ],
+            "player_ids": [],
+            "metric": "points",
+            "home_away": null,
+            "opponent_id": "TOR",
+            "relative_game_count": null,
+            "date_start": "2026-01-28",
+            "date_end": "2026-01-28"
+          },
+          "actual_scope": {
+            "intent": "analyst",
+            "player_ids": [],
+            "team_ids": [
+              "TOR"
+            ],
+            "opponent_id": "TOR",
+            "game_ids": [
+              47
+            ],
+            "date_start": "2026-01-28",
+            "date_end": "2026-01-28",
+            "relative_game_count": null,
+            "relative_from_start": false,
+            "periods": [],
+            "season_type": null,
+            "all_phases": false,
+            "home_away": null,
+            "game_result": null,
+            "metric": "points",
+            "requires_clarification": false,
+            "clarification_reason": null,
+            "clarification_options": [],
+            "data_version": "2025-26.20260928.1"
+          },
+          "scope_issues": [],
+          "carried_claims": [],
+          "prefetch": [
+            {
+              "tool": "get_team_stats",
+              "aggregation": "total",
+              "status": "ok",
+              "claims": 4
+            }
+          ],
+          "recovery": null,
+          "fallback_text": "Knicks regular season points: 119 over 1 archived games against Raptors (119-92 at Raptors on 2026-01-28).",
+          "fallback_checks": {
+            "fact": "119",
+            "value": 119.0,
+            "value_ok": true
+          },
+          "fallback_score": {
+            "id": "How many points did the Knicks score against the Raptors on January 28?",
+            "category": "follow_ups",
+            "question": "How many points did the Knicks score against the Raptors on January 28?",
+            "answerable": true,
+            "outcome": null,
+            "old_meets_expectation": false,
+            "meets_expectation": true,
+            "failures": [],
+            "checks": {
+              "validated": true,
+              "decline_signal": null,
+              "decline_signals": [],
+              "declined": false,
+              "clarification": false,
+              "substantive": true,
+              "evidence_mode": "claims",
+              "claim_citations": 1,
+              "archive_receipts": 0,
+              "numbers_total": 4,
+              "unbacked_numbers": [],
+              "detected_entities": [
+                "Knicks",
+                "Raptors"
+              ],
+              "unbacked_entities": [],
+              "required_facts": [
+                "119"
+              ],
+              "required_facts_ok": true,
+              "required_entities_ok": true,
+              "required_phrases_ok": null,
+              "echo_question": false,
+              "hedged_causal": false,
+              "missing_turning_detail": false
+            }
+          },
+          "fallback_ok": true,
+          "cause": "ok"
+        },
+        {
+          "turn": 2,
+          "question": "What was their final point total?",
+          "kind": "team_total",
+          "expected_fact": "119",
+          "expected_scope": {
+            "season_type": null,
+            "all_phases": false,
+            "game_count": 1,
+            "game_ids": [
+              47
+            ],
+            "player_ids": [],
+            "metric": "points",
+            "home_away": null,
+            "opponent_id": "TOR",
+            "relative_game_count": null,
+            "date_start": "2026-01-28",
+            "date_end": "2026-01-28"
+          },
+          "actual_scope": {
+            "intent": "analyst",
+            "player_ids": [],
+            "team_ids": [],
+            "opponent_id": "TOR",
+            "game_ids": [
+              47
+            ],
+            "date_start": "2026-01-28",
+            "date_end": "2026-01-28",
+            "relative_game_count": null,
+            "relative_from_start": false,
+            "periods": [],
+            "season_type": null,
+            "all_phases": false,
+            "home_away": null,
+            "game_result": null,
+            "metric": "points",
+            "requires_clarification": false,
+            "clarification_reason": null,
+            "clarification_options": [],
+            "data_version": "2025-26.20260928.1"
+          },
+          "scope_issues": [],
+          "carried_claims": [
+            {
+              "metric": "points",
+              "season_type": "regular",
+              "games": 1
+            }
+          ],
+          "prefetch": [
+            {
+              "tool": "get_team_stats",
+              "aggregation": "total",
+              "status": "ok",
+              "claims": 4
+            }
+          ],
+          "recovery": null,
+          "fallback_text": "Knicks regular season points: 119 over 1 archived games against Raptors (119-92 at Raptors on 2026-01-28).",
+          "fallback_checks": {
+            "fact": "119",
+            "value": 119.0,
+            "value_ok": true
+          },
+          "fallback_score": {
+            "id": "What was their final point total?",
+            "category": "follow_ups",
+            "question": "What was their final point total?",
+            "answerable": true,
+            "outcome": null,
+            "old_meets_expectation": false,
+            "meets_expectation": true,
+            "failures": [],
+            "checks": {
+              "validated": true,
+              "decline_signal": null,
+              "decline_signals": [],
+              "declined": false,
+              "clarification": false,
+              "substantive": true,
+              "evidence_mode": "claims",
+              "claim_citations": 1,
+              "archive_receipts": 0,
+              "numbers_total": 4,
+              "unbacked_numbers": [],
+              "detected_entities": [
+                "Knicks",
+                "Raptors"
+              ],
+              "unbacked_entities": [],
+              "required_facts": [
+                "119"
+              ],
+              "required_facts_ok": true,
+              "required_entities_ok": true,
+              "required_phrases_ok": null,
+              "echo_question": false,
+              "hedged_causal": false,
+              "missing_turning_detail": false
+            }
+          },
+          "fallback_ok": true,
+          "cause": "ok"
+        }
+      ],
+      "pass": true,
+      "scope_clean": true
+    },
+    {
+      "id": "quarter_hawks_jan2_q3",
+      "category": "game_quarter",
+      "turns": [
+        {
+          "turn": 1,
+          "question": "How many points did the Knicks score against the Hawks on January 2?",
+          "kind": "team_total",
+          "expected_fact": "99",
+          "expected_scope": {
+            "season_type": null,
+            "all_phases": false,
+            "game_count": 1,
+            "game_ids": [
+              34
+            ],
+            "player_ids": [],
+            "metric": "points",
+            "home_away": null,
+            "opponent_id": "ATL",
+            "relative_game_count": null,
+            "date_start": "2026-01-02",
+            "date_end": "2026-01-02"
+          },
+          "actual_scope": {
+            "intent": "analyst",
+            "player_ids": [],
+            "team_ids": [
+              "ATL"
+            ],
+            "opponent_id": "ATL",
+            "game_ids": [
+              34
+            ],
+            "date_start": "2026-01-02",
+            "date_end": "2026-01-02",
+            "relative_game_count": null,
+            "relative_from_start": false,
+            "periods": [],
+            "season_type": null,
+            "all_phases": false,
+            "home_away": null,
+            "game_result": null,
+            "metric": "points",
+            "requires_clarification": false,
+            "clarification_reason": null,
+            "clarification_options": [],
+            "data_version": "2025-26.20260928.1"
+          },
+          "scope_issues": [],
+          "carried_claims": [],
+          "prefetch": [
+            {
+              "tool": "get_team_stats",
+              "aggregation": "total",
+              "status": "ok",
+              "claims": 4
+            }
+          ],
+          "recovery": null,
+          "fallback_text": "Knicks regular season points: 99 over 1 archived games against Hawks (99-111 vs Hawks on 2026-01-02).",
+          "fallback_checks": {
+            "fact": "99",
+            "value": 99.0,
+            "value_ok": true
+          },
+          "fallback_score": {
+            "id": "How many points did the Knicks score against the Hawks on January 2?",
+            "category": "follow_ups",
+            "question": "How many points did the Knicks score against the Hawks on January 2?",
+            "answerable": true,
+            "outcome": null,
+            "old_meets_expectation": false,
+            "meets_expectation": true,
+            "failures": [],
+            "checks": {
+              "validated": true,
+              "decline_signal": null,
+              "decline_signals": [],
+              "declined": false,
+              "clarification": false,
+              "substantive": true,
+              "evidence_mode": "claims",
+              "claim_citations": 1,
+              "archive_receipts": 0,
+              "numbers_total": 4,
+              "unbacked_numbers": [],
+              "detected_entities": [
+                "Hawks",
+                "Knicks"
+              ],
+              "unbacked_entities": [],
+              "required_facts": [
+                "99"
+              ],
+              "required_facts_ok": true,
+              "required_entities_ok": true,
+              "required_phrases_ok": null,
+              "echo_question": false,
+              "hedged_causal": false,
+              "missing_turning_detail": false
+            }
+          },
+          "fallback_ok": true,
+          "cause": "ok"
+        },
+        {
+          "turn": 2,
+          "question": "What was the third-quarter score?",
+          "kind": "narrative",
+          "expected_fact": null,
+          "expected_scope": {
+            "season_type": null,
+            "all_phases": false,
+            "game_count": 1,
+            "game_ids": [
+              34
+            ],
+            "player_ids": [],
+            "metric": "points",
+            "home_away": null,
+            "opponent_id": "ATL",
+            "relative_game_count": null,
+            "date_start": "2026-01-02",
+            "date_end": "2026-01-02"
+          },
+          "actual_scope": {
+            "intent": "analyst",
+            "player_ids": [],
+            "team_ids": [],
+            "opponent_id": "ATL",
+            "game_ids": [
+              34
+            ],
+            "date_start": "2026-01-02",
+            "date_end": "2026-01-02",
+            "relative_game_count": null,
+            "relative_from_start": false,
+            "periods": [
+              3
+            ],
+            "season_type": null,
+            "all_phases": false,
+            "home_away": null,
+            "game_result": null,
+            "metric": "points",
+            "requires_clarification": false,
+            "clarification_reason": null,
+            "clarification_options": [],
+            "data_version": "2025-26.20260928.1"
+          },
+          "scope_issues": [],
+          "carried_claims": [
+            {
+              "metric": "points",
+              "season_type": "regular",
+              "games": 1
+            }
+          ],
+          "prefetch": [
+            {
+              "tool": "get_period_scoring",
+              "aggregation": "average",
+              "status": "ok",
+              "claims": 1
+            }
+          ],
+          "recovery": null,
+          "fallback_text": "Regular season period report, 1 of 1 games.",
+          "fallback_checks": {
+            "fact": null,
+            "fact_ok": true
+          },
+          "fallback_score": {
+            "id": "What was the third-quarter score?",
+            "category": "follow_ups",
+            "question": "What was the third-quarter score?",
+            "answerable": true,
+            "outcome": null,
+            "old_meets_expectation": false,
+            "meets_expectation": true,
+            "failures": [],
+            "checks": {
+              "validated": true,
+              "decline_signal": null,
+              "decline_signals": [],
+              "declined": false,
+              "clarification": false,
+              "substantive": true,
+              "evidence_mode": "claims",
+              "claim_citations": 1,
+              "archive_receipts": 0,
+              "numbers_total": 2,
+              "unbacked_numbers": [],
+              "detected_entities": [],
+              "unbacked_entities": [],
+              "required_facts": [],
+              "required_facts_ok": null,
+              "required_entities_ok": null,
+              "required_phrases_ok": null,
+              "echo_question": false,
+              "hedged_causal": false,
+              "missing_turning_detail": false
+            }
+          },
+          "fallback_ok": true,
+          "cause": "ok"
+        }
+      ],
+      "pass": true,
+      "scope_clean": true
+    },
+    {
+      "id": "quarter_raptors_jan28_half",
+      "category": "game_quarter",
+      "turns": [
+        {
+          "turn": 1,
+          "question": "How many points did the Knicks score against the Raptors on January 28?",
+          "kind": "team_total",
+          "expected_fact": "119",
+          "expected_scope": {
+            "season_type": null,
+            "all_phases": false,
+            "game_count": 1,
+            "game_ids": [
+              47
+            ],
+            "player_ids": [],
+            "metric": "points",
+            "home_away": null,
+            "opponent_id": "TOR",
+            "relative_game_count": null,
+            "date_start": "2026-01-28",
+            "date_end": "2026-01-28"
+          },
+          "actual_scope": {
+            "intent": "analyst",
+            "player_ids": [],
+            "team_ids": [
+              "TOR"
+            ],
+            "opponent_id": "TOR",
+            "game_ids": [
+              47
+            ],
+            "date_start": "2026-01-28",
+            "date_end": "2026-01-28",
+            "relative_game_count": null,
+            "relative_from_start": false,
+            "periods": [],
+            "season_type": null,
+            "all_phases": false,
+            "home_away": null,
+            "game_result": null,
+            "metric": "points",
+            "requires_clarification": false,
+            "clarification_reason": null,
+            "clarification_options": [],
+            "data_version": "2025-26.20260928.1"
+          },
+          "scope_issues": [],
+          "carried_claims": [],
+          "prefetch": [
+            {
+              "tool": "get_team_stats",
+              "aggregation": "total",
+              "status": "ok",
+              "claims": 4
+            }
+          ],
+          "recovery": null,
+          "fallback_text": "Knicks regular season points: 119 over 1 archived games against Raptors (119-92 at Raptors on 2026-01-28).",
+          "fallback_checks": {
+            "fact": "119",
+            "value": 119.0,
+            "value_ok": true
+          },
+          "fallback_score": {
+            "id": "How many points did the Knicks score against the Raptors on January 28?",
+            "category": "follow_ups",
+            "question": "How many points did the Knicks score against the Raptors on January 28?",
+            "answerable": true,
+            "outcome": null,
+            "old_meets_expectation": false,
+            "meets_expectation": true,
+            "failures": [],
+            "checks": {
+              "validated": true,
+              "decline_signal": null,
+              "decline_signals": [],
+              "declined": false,
+              "clarification": false,
+              "substantive": true,
+              "evidence_mode": "claims",
+              "claim_citations": 1,
+              "archive_receipts": 0,
+              "numbers_total": 4,
+              "unbacked_numbers": [],
+              "detected_entities": [
+                "Knicks",
+                "Raptors"
+              ],
+              "unbacked_entities": [],
+              "required_facts": [
+                "119"
+              ],
+              "required_facts_ok": true,
+              "required_entities_ok": true,
+              "required_phrases_ok": null,
+              "echo_question": false,
+              "hedged_causal": false,
+              "missing_turning_detail": false
+            }
+          },
+          "fallback_ok": true,
+          "cause": "ok"
+        },
+        {
+          "turn": 2,
+          "question": "What was the halftime score?",
+          "kind": "narrative",
+          "expected_fact": null,
+          "expected_scope": {
+            "season_type": null,
+            "all_phases": false,
+            "game_count": 1,
+            "game_ids": [
+              47
+            ],
+            "player_ids": [],
+            "metric": "points",
+            "home_away": null,
+            "opponent_id": "TOR",
+            "relative_game_count": null,
+            "date_start": "2026-01-28",
+            "date_end": "2026-01-28"
+          },
+          "actual_scope": {
+            "intent": "analyst",
+            "player_ids": [],
+            "team_ids": [],
+            "opponent_id": "TOR",
+            "game_ids": [
+              47
+            ],
+            "date_start": "2026-01-28",
+            "date_end": "2026-01-28",
+            "relative_game_count": null,
+            "relative_from_start": false,
+            "periods": [],
+            "season_type": null,
+            "all_phases": false,
+            "home_away": null,
+            "game_result": null,
+            "metric": "points",
+            "requires_clarification": false,
+            "clarification_reason": null,
+            "clarification_options": [],
+            "data_version": "2025-26.20260928.1"
+          },
+          "scope_issues": [],
+          "carried_claims": [
+            {
+              "metric": "points",
+              "season_type": "regular",
+              "games": 1
+            }
+          ],
+          "prefetch": [
+            {
+              "tool": "get_period_scoring",
+              "aggregation": "average",
+              "status": "ok",
+              "claims": 1
+            }
+          ],
+          "recovery": null,
+          "fallback_text": "Regular season period report, 1 of 1 games.",
+          "fallback_checks": {
+            "fact": null,
+            "fact_ok": true
+          },
+          "fallback_score": {
+            "id": "What was the halftime score?",
+            "category": "follow_ups",
+            "question": "What was the halftime score?",
+            "answerable": true,
+            "outcome": null,
+            "old_meets_expectation": false,
+            "meets_expectation": true,
+            "failures": [],
+            "checks": {
+              "validated": true,
+              "decline_signal": null,
+              "decline_signals": [],
+              "declined": false,
+              "clarification": false,
+              "substantive": true,
+              "evidence_mode": "claims",
+              "claim_citations": 1,
+              "archive_receipts": 0,
+              "numbers_total": 2,
+              "unbacked_numbers": [],
+              "detected_entities": [],
+              "unbacked_entities": [],
+              "required_facts": [],
+              "required_facts_ok": null,
+              "required_entities_ok": null,
+              "required_phrases_ok": null,
+              "echo_question": false,
+              "hedged_causal": false,
+              "missing_turning_detail": false
+            }
+          },
+          "fallback_ok": true,
+          "cause": "ok"
+        }
+      ],
+      "pass": true,
+      "scope_clean": true
+    },
+    {
+      "id": "quarter_bulls_apr3_q4",
+      "category": "game_quarter",
+      "turns": [
+        {
+          "turn": 1,
+          "question": "How many points did the Knicks score against the Bulls on April 3?",
+          "kind": "team_total",
+          "expected_fact": "136",
+          "expected_scope": {
+            "season_type": null,
+            "all_phases": false,
+            "game_count": 1,
+            "game_ids": [
+              78
+            ],
+            "player_ids": [],
+            "metric": "points",
+            "home_away": null,
+            "opponent_id": "CHI",
+            "relative_game_count": null,
+            "date_start": "2026-04-03",
+            "date_end": "2026-04-03"
+          },
+          "actual_scope": {
+            "intent": "analyst",
+            "player_ids": [],
+            "team_ids": [
+              "CHI"
+            ],
+            "opponent_id": "CHI",
+            "game_ids": [
+              78
+            ],
+            "date_start": "2026-04-03",
+            "date_end": "2026-04-03",
+            "relative_game_count": null,
+            "relative_from_start": false,
+            "periods": [],
+            "season_type": null,
+            "all_phases": false,
+            "home_away": null,
+            "game_result": null,
+            "metric": "points",
+            "requires_clarification": false,
+            "clarification_reason": null,
+            "clarification_options": [],
+            "data_version": "2025-26.20260928.1"
+          },
+          "scope_issues": [],
+          "carried_claims": [],
+          "prefetch": [
+            {
+              "tool": "get_team_stats",
+              "aggregation": "total",
+              "status": "ok",
+              "claims": 4
+            }
+          ],
+          "recovery": null,
+          "fallback_text": "Knicks regular season points: 136 over 1 archived games against Bulls (136-96 vs Bulls on 2026-04-03).",
+          "fallback_checks": {
+            "fact": "136",
+            "value": 136.0,
+            "value_ok": true
+          },
+          "fallback_score": {
+            "id": "How many points did the Knicks score against the Bulls on April 3?",
+            "category": "follow_ups",
+            "question": "How many points did the Knicks score against the Bulls on April 3?",
+            "answerable": true,
+            "outcome": null,
+            "old_meets_expectation": false,
+            "meets_expectation": true,
+            "failures": [],
+            "checks": {
+              "validated": true,
+              "decline_signal": null,
+              "decline_signals": [],
+              "declined": false,
+              "clarification": false,
+              "substantive": true,
+              "evidence_mode": "claims",
+              "claim_citations": 1,
+              "archive_receipts": 0,
+              "numbers_total": 4,
+              "unbacked_numbers": [],
+              "detected_entities": [
+                "Bulls",
+                "Knicks"
+              ],
+              "unbacked_entities": [],
+              "required_facts": [
+                "136"
+              ],
+              "required_facts_ok": true,
+              "required_entities_ok": true,
+              "required_phrases_ok": null,
+              "echo_question": false,
+              "hedged_causal": false,
+              "missing_turning_detail": false
+            }
+          },
+          "fallback_ok": true,
+          "cause": "ok"
+        },
+        {
+          "turn": 2,
+          "question": "How many points did they score in the fourth quarter?",
+          "kind": "narrative",
+          "expected_fact": null,
+          "expected_scope": {
+            "season_type": null,
+            "all_phases": false,
+            "game_count": 1,
+            "game_ids": [
+              78
+            ],
+            "player_ids": [],
+            "metric": "points",
+            "home_away": null,
+            "opponent_id": "CHI",
+            "relative_game_count": null,
+            "date_start": "2026-04-03",
+            "date_end": "2026-04-03"
+          },
+          "actual_scope": {
+            "intent": "analyst",
+            "player_ids": [],
+            "team_ids": [],
+            "opponent_id": "CHI",
+            "game_ids": [
+              78
+            ],
+            "date_start": "2026-04-03",
+            "date_end": "2026-04-03",
+            "relative_game_count": null,
+            "relative_from_start": false,
+            "periods": [
+              4
+            ],
+            "season_type": null,
+            "all_phases": false,
+            "home_away": null,
+            "game_result": null,
+            "metric": "points",
+            "requires_clarification": false,
+            "clarification_reason": null,
+            "clarification_options": [],
+            "data_version": "2025-26.20260928.1"
+          },
+          "scope_issues": [],
+          "carried_claims": [
+            {
+              "metric": "points",
+              "season_type": "regular",
+              "games": 1
+            }
+          ],
+          "prefetch": [
+            {
+              "tool": "get_period_scoring",
+              "aggregation": "average",
+              "status": "ok",
+              "claims": 1
+            }
+          ],
+          "recovery": null,
+          "fallback_text": "Regular season period report, 1 of 1 games.",
+          "fallback_checks": {
+            "fact": null,
+            "fact_ok": true
+          },
+          "fallback_score": {
+            "id": "How many points did they score in the fourth quarter?",
+            "category": "follow_ups",
+            "question": "How many points did they score in the fourth quarter?",
+            "answerable": true,
+            "outcome": null,
+            "old_meets_expectation": false,
+            "meets_expectation": true,
+            "failures": [],
+            "checks": {
+              "validated": true,
+              "decline_signal": null,
+              "decline_signals": [],
+              "declined": false,
+              "clarification": false,
+              "substantive": true,
+              "evidence_mode": "claims",
+              "claim_citations": 1,
+              "archive_receipts": 0,
+              "numbers_total": 2,
+              "unbacked_numbers": [],
+              "detected_entities": [],
+              "unbacked_entities": [],
+              "required_facts": [],
+              "required_facts_ok": null,
+              "required_entities_ok": null,
+              "required_phrases_ok": null,
+              "echo_question": false,
+              "hedged_causal": false,
+              "missing_turning_detail": false
+            }
+          },
+          "fallback_ok": true,
+          "cause": "ok"
+        }
+      ],
+      "pass": true,
+      "scope_clean": true
+    },
+    {
+      "id": "player_heat_dec21_brunson_points",
+      "category": "game_player",
+      "turns": [
+        {
+          "turn": 1,
+          "question": "How many points did the Knicks score against the Heat on December 21?",
+          "kind": "team_total",
+          "expected_fact": "132",
+          "expected_scope": {
+            "season_type": null,
+            "all_phases": false,
+            "game_count": 1,
+            "game_ids": [
+              28
+            ],
+            "player_ids": [],
+            "metric": "points",
+            "home_away": null,
+            "opponent_id": "MIA",
+            "relative_game_count": null,
+            "date_start": "2025-12-21",
+            "date_end": "2025-12-21"
+          },
+          "actual_scope": {
+            "intent": "analyst",
+            "player_ids": [],
+            "team_ids": [
+              "MIA"
+            ],
+            "opponent_id": "MIA",
+            "game_ids": [
+              28
+            ],
+            "date_start": "2025-12-21",
+            "date_end": "2025-12-21",
+            "relative_game_count": null,
+            "relative_from_start": false,
+            "periods": [],
+            "season_type": null,
+            "all_phases": false,
+            "home_away": null,
+            "game_result": null,
+            "metric": "points",
+            "requires_clarification": false,
+            "clarification_reason": null,
+            "clarification_options": [],
+            "data_version": "2025-26.20260928.1"
+          },
+          "scope_issues": [],
+          "carried_claims": [],
+          "prefetch": [
+            {
+              "tool": "get_team_stats",
+              "aggregation": "total",
+              "status": "ok",
+              "claims": 4
+            }
+          ],
+          "recovery": null,
+          "fallback_text": "Knicks regular season points: 132 over 1 archived games against Heat (132-125 vs Heat on 2025-12-21).",
+          "fallback_checks": {
+            "fact": "132",
+            "value": 132.0,
+            "value_ok": true
+          },
+          "fallback_score": {
+            "id": "How many points did the Knicks score against the Heat on December 21?",
+            "category": "follow_ups",
+            "question": "How many points did the Knicks score against the Heat on December 21?",
+            "answerable": true,
+            "outcome": null,
+            "old_meets_expectation": false,
+            "meets_expectation": true,
+            "failures": [],
+            "checks": {
+              "validated": true,
+              "decline_signal": null,
+              "decline_signals": [],
+              "declined": false,
+              "clarification": false,
+              "substantive": true,
+              "evidence_mode": "claims",
+              "claim_citations": 1,
+              "archive_receipts": 0,
+              "numbers_total": 4,
+              "unbacked_numbers": [],
+              "detected_entities": [
+                "Heat",
+                "Knicks"
+              ],
+              "unbacked_entities": [],
+              "required_facts": [
+                "132"
+              ],
+              "required_facts_ok": true,
+              "required_entities_ok": true,
+              "required_phrases_ok": null,
+              "echo_question": false,
+              "hedged_causal": false,
+              "missing_turning_detail": false
+            }
+          },
+          "fallback_ok": true,
+          "cause": "ok"
+        },
+        {
+          "turn": 2,
+          "question": "How many points did Brunson score?",
+          "kind": "player_total",
+          "expected_fact": "47",
+          "expected_scope": {
+            "season_type": null,
+            "all_phases": false,
+            "game_count": 1,
+            "game_ids": [
+              28
+            ],
+            "player_ids": [
+              134
+            ],
+            "metric": "points",
+            "home_away": null,
+            "opponent_id": "MIA",
+            "relative_game_count": null,
+            "date_start": "2025-12-21",
+            "date_end": "2025-12-21"
+          },
+          "actual_scope": {
+            "intent": "analyst",
+            "player_ids": [
+              134
+            ],
+            "team_ids": [],
+            "opponent_id": "MIA",
+            "game_ids": [
+              28
+            ],
+            "date_start": "2025-12-21",
+            "date_end": "2025-12-21",
+            "relative_game_count": null,
+            "relative_from_start": false,
+            "periods": [],
+            "season_type": null,
+            "all_phases": false,
+            "home_away": null,
+            "game_result": null,
+            "metric": "points",
+            "requires_clarification": false,
+            "clarification_reason": null,
+            "clarification_options": [],
+            "data_version": "2025-26.20260928.1"
+          },
+          "scope_issues": [],
+          "carried_claims": [],
+          "prefetch": [
+            {
+              "tool": "discover_facts",
+              "aggregation": "average",
+              "status": "ok",
+              "claims": 1
+            }
+          ],
+          "recovery": null,
+          "fallback_text": "Jalen Brunson: 47.0 points per appearance across 1 observed appearances in the 2025-26 regular season.",
+          "fallback_checks": {
+            "fact": "47",
+            "value": 47.0,
+            "value_ok": true
+          },
+          "fallback_score": {
+            "id": "How many points did Brunson score?",
+            "category": "follow_ups",
+            "question": "How many points did Brunson score?",
+            "answerable": true,
+            "outcome": null,
+            "old_meets_expectation": false,
+            "meets_expectation": true,
+            "failures": [],
+            "checks": {
+              "validated": true,
+              "decline_signal": null,
+              "decline_signals": [],
+              "declined": false,
+              "clarification": false,
+              "substantive": true,
+              "evidence_mode": "claims",
+              "claim_citations": 1,
+              "archive_receipts": 0,
+              "numbers_total": 2,
+              "unbacked_numbers": [],
+              "detected_entities": [
+                "Jalen Brunson"
+              ],
+              "unbacked_entities": [],
+              "required_facts": [
+                "47"
+              ],
+              "required_facts_ok": true,
+              "required_entities_ok": true,
+              "required_phrases_ok": null,
+              "echo_question": false,
+              "hedged_causal": false,
+              "missing_turning_detail": false
+            }
+          },
+          "fallback_ok": true,
+          "cause": "ok"
+        }
+      ],
+      "pass": true,
+      "scope_clean": true
+    },
+    {
+      "id": "player_spurs_dec31_brunson_assists",
+      "category": "game_player",
+      "turns": [
+        {
+          "turn": 1,
+          "question": "How many points did the Knicks score against the Spurs on December 31?",
+          "kind": "team_total",
+          "expected_fact": "132",
+          "expected_scope": {
+            "season_type": null,
+            "all_phases": false,
+            "game_count": 1,
+            "game_ids": [
+              33
+            ],
+            "player_ids": [],
+            "metric": "points",
+            "home_away": null,
+            "opponent_id": "SAS",
+            "relative_game_count": null,
+            "date_start": "2025-12-31",
+            "date_end": "2025-12-31"
+          },
+          "actual_scope": {
+            "intent": "analyst",
+            "player_ids": [],
+            "team_ids": [
+              "SAS"
+            ],
+            "opponent_id": "SAS",
+            "game_ids": [
+              33
+            ],
+            "date_start": "2025-12-31",
+            "date_end": "2025-12-31",
+            "relative_game_count": null,
+            "relative_from_start": false,
+            "periods": [],
+            "season_type": null,
+            "all_phases": false,
+            "home_away": null,
+            "game_result": null,
+            "metric": "points",
+            "requires_clarification": false,
+            "clarification_reason": null,
+            "clarification_options": [],
+            "data_version": "2025-26.20260928.1"
+          },
+          "scope_issues": [],
+          "carried_claims": [],
+          "prefetch": [
+            {
+              "tool": "get_team_stats",
+              "aggregation": "total",
+              "status": "ok",
+              "claims": 4
+            }
+          ],
+          "recovery": null,
+          "fallback_text": "Knicks regular season points: 132 over 1 archived games against Spurs (132-134 at Spurs on 2025-12-31).",
+          "fallback_checks": {
+            "fact": "132",
+            "value": 132.0,
+            "value_ok": true
+          },
+          "fallback_score": {
+            "id": "How many points did the Knicks score against the Spurs on December 31?",
+            "category": "follow_ups",
+            "question": "How many points did the Knicks score against the Spurs on December 31?",
+            "answerable": true,
+            "outcome": null,
+            "old_meets_expectation": false,
+            "meets_expectation": true,
+            "failures": [],
+            "checks": {
+              "validated": true,
+              "decline_signal": null,
+              "decline_signals": [],
+              "declined": false,
+              "clarification": false,
+              "substantive": true,
+              "evidence_mode": "claims",
+              "claim_citations": 1,
+              "archive_receipts": 0,
+              "numbers_total": 4,
+              "unbacked_numbers": [],
+              "detected_entities": [
+                "Knicks",
+                "Spurs"
+              ],
+              "unbacked_entities": [],
+              "required_facts": [
+                "132"
+              ],
+              "required_facts_ok": true,
+              "required_entities_ok": true,
+              "required_phrases_ok": null,
+              "echo_question": false,
+              "hedged_causal": false,
+              "missing_turning_detail": false
+            }
+          },
+          "fallback_ok": true,
+          "cause": "ok"
+        },
+        {
+          "turn": 2,
+          "question": "How many assists did Brunson have?",
+          "kind": "player_total",
+          "expected_fact": "8",
+          "expected_scope": {
+            "season_type": null,
+            "all_phases": false,
+            "game_count": 1,
+            "game_ids": [
+              33
+            ],
+            "player_ids": [
+              134
+            ],
+            "metric": "assists",
+            "home_away": null,
+            "opponent_id": "SAS",
+            "relative_game_count": null,
+            "date_start": "2025-12-31",
+            "date_end": "2025-12-31"
+          },
+          "actual_scope": {
+            "intent": "analyst",
+            "player_ids": [
+              134
+            ],
+            "team_ids": [],
+            "opponent_id": "SAS",
+            "game_ids": [
+              33
+            ],
+            "date_start": "2025-12-31",
+            "date_end": "2025-12-31",
+            "relative_game_count": null,
+            "relative_from_start": false,
+            "periods": [],
+            "season_type": null,
+            "all_phases": false,
+            "home_away": null,
+            "game_result": null,
+            "metric": "assists",
+            "requires_clarification": false,
+            "clarification_reason": null,
+            "clarification_options": [],
+            "data_version": "2025-26.20260928.1"
+          },
+          "scope_issues": [],
+          "carried_claims": [],
+          "prefetch": [
+            {
+              "tool": "discover_facts",
+              "aggregation": "average",
+              "status": "ok",
+              "claims": 1
+            }
+          ],
+          "recovery": null,
+          "fallback_text": "Jalen Brunson: 8.0 assists per appearance across 1 observed appearances in the 2025-26 regular season.",
+          "fallback_checks": {
+            "fact": "8",
+            "value": 8.0,
+            "value_ok": true
+          },
+          "fallback_score": {
+            "id": "How many assists did Brunson have?",
+            "category": "follow_ups",
+            "question": "How many assists did Brunson have?",
+            "answerable": true,
+            "outcome": null,
+            "old_meets_expectation": false,
+            "meets_expectation": true,
+            "failures": [],
+            "checks": {
+              "validated": true,
+              "decline_signal": null,
+              "decline_signals": [],
+              "declined": false,
+              "clarification": false,
+              "substantive": true,
+              "evidence_mode": "claims",
+              "claim_citations": 1,
+              "archive_receipts": 0,
+              "numbers_total": 2,
+              "unbacked_numbers": [],
+              "detected_entities": [
+                "Jalen Brunson"
+              ],
+              "unbacked_entities": [],
+              "required_facts": [
+                "8"
+              ],
+              "required_facts_ok": true,
+              "required_entities_ok": true,
+              "required_phrases_ok": null,
+              "echo_question": false,
+              "hedged_causal": false,
+              "missing_turning_detail": false
+            }
+          },
+          "fallback_ok": true,
+          "cause": "ok"
+        }
+      ],
+      "pass": true,
+      "scope_clean": true
+    },
+    {
+      "id": "player_sixers_jan24_towns_rebounds",
+      "category": "game_player",
+      "turns": [
+        {
+          "turn": 1,
+          "question": "How many points did the Knicks score against the Sixers on January 24?",
+          "kind": "team_total",
+          "expected_fact": "112",
+          "expected_scope": {
+            "season_type": null,
+            "all_phases": false,
+            "game_count": 1,
+            "game_ids": [
+              45
+            ],
+            "player_ids": [],
+            "metric": "points",
+            "home_away": null,
+            "opponent_id": "PHI",
+            "relative_game_count": null,
+            "date_start": "2026-01-24",
+            "date_end": "2026-01-24"
+          },
+          "actual_scope": {
+            "intent": "analyst",
+            "player_ids": [],
+            "team_ids": [
+              "PHI"
+            ],
+            "opponent_id": "PHI",
+            "game_ids": [
+              45
+            ],
+            "date_start": "2026-01-24",
+            "date_end": "2026-01-24",
+            "relative_game_count": null,
+            "relative_from_start": false,
+            "periods": [],
+            "season_type": null,
+            "all_phases": false,
+            "home_away": null,
+            "game_result": null,
+            "metric": "points",
+            "requires_clarification": false,
+            "clarification_reason": null,
+            "clarification_options": [],
+            "data_version": "2025-26.20260928.1"
+          },
+          "scope_issues": [],
+          "carried_claims": [],
+          "prefetch": [
+            {
+              "tool": "get_team_stats",
+              "aggregation": "total",
+              "status": "ok",
+              "claims": 4
+            }
+          ],
+          "recovery": null,
+          "fallback_text": "Knicks regular season points: 112 over 1 archived games against 76ers (112-109 at 76ers on 2026-01-24).",
+          "fallback_checks": {
+            "fact": "112",
+            "value": 112.0,
+            "value_ok": true
+          },
+          "fallback_score": {
+            "id": "How many points did the Knicks score against the Sixers on January 24?",
+            "category": "follow_ups",
+            "question": "How many points did the Knicks score against the Sixers on January 24?",
+            "answerable": true,
+            "outcome": null,
+            "old_meets_expectation": false,
+            "meets_expectation": true,
+            "failures": [],
+            "checks": {
+              "validated": true,
+              "decline_signal": null,
+              "decline_signals": [],
+              "declined": false,
+              "clarification": false,
+              "substantive": true,
+              "evidence_mode": "claims",
+              "claim_citations": 1,
+              "archive_receipts": 0,
+              "numbers_total": 4,
+              "unbacked_numbers": [],
+              "detected_entities": [
+                "76ers",
+                "Knicks"
+              ],
+              "unbacked_entities": [],
+              "required_facts": [
+                "112"
+              ],
+              "required_facts_ok": true,
+              "required_entities_ok": true,
+              "required_phrases_ok": null,
+              "echo_question": false,
+              "hedged_causal": false,
+              "missing_turning_detail": false
+            }
+          },
+          "fallback_ok": true,
+          "cause": "ok"
+        },
+        {
+          "turn": 2,
+          "question": "How many rebounds did Towns grab?",
+          "kind": "player_total",
+          "expected_fact": "6",
+          "expected_scope": {
+            "season_type": null,
+            "all_phases": false,
+            "game_count": 1,
+            "game_ids": [
+              45
+            ],
+            "player_ids": [
+              75
+            ],
+            "metric": "rebounds",
+            "home_away": null,
+            "opponent_id": "PHI",
+            "relative_game_count": null,
+            "date_start": "2026-01-24",
+            "date_end": "2026-01-24"
+          },
+          "actual_scope": {
+            "intent": "analyst",
+            "player_ids": [
+              75
+            ],
+            "team_ids": [],
+            "opponent_id": "PHI",
+            "game_ids": [
+              45
+            ],
+            "date_start": "2026-01-24",
+            "date_end": "2026-01-24",
+            "relative_game_count": null,
+            "relative_from_start": false,
+            "periods": [],
+            "season_type": null,
+            "all_phases": false,
+            "home_away": null,
+            "game_result": null,
+            "metric": "rebounds",
+            "requires_clarification": false,
+            "clarification_reason": null,
+            "clarification_options": [],
+            "data_version": "2025-26.20260928.1"
+          },
+          "scope_issues": [],
+          "carried_claims": [],
+          "prefetch": [
+            {
+              "tool": "discover_facts",
+              "aggregation": "average",
+              "status": "ok",
+              "claims": 1
+            }
+          ],
+          "recovery": null,
+          "fallback_text": "Karl-Anthony Towns: 6.0 rebounds per appearance across 1 observed appearances in the 2025-26 regular season.",
+          "fallback_checks": {
+            "fact": "6",
+            "value": 6.0,
+            "value_ok": true
+          },
+          "fallback_score": {
+            "id": "How many rebounds did Towns grab?",
+            "category": "follow_ups",
+            "question": "How many rebounds did Towns grab?",
+            "answerable": true,
+            "outcome": null,
+            "old_meets_expectation": false,
+            "meets_expectation": true,
+            "failures": [],
+            "checks": {
+              "validated": true,
+              "decline_signal": null,
+              "decline_signals": [],
+              "declined": false,
+              "clarification": false,
+              "substantive": true,
+              "evidence_mode": "claims",
+              "claim_citations": 1,
+              "archive_receipts": 0,
+              "numbers_total": 2,
+              "unbacked_numbers": [],
+              "detected_entities": [
+                "Anthony",
+                "Karl-Anthony Towns"
+              ],
+              "unbacked_entities": [],
+              "required_facts": [
+                "6"
+              ],
+              "required_facts_ok": true,
+              "required_entities_ok": true,
+              "required_phrases_ok": null,
+              "echo_question": false,
+              "hedged_causal": false,
+              "missing_turning_detail": false
+            }
+          },
+          "fallback_ok": true,
+          "cause": "ok"
+        }
+      ],
+      "pass": true,
+      "scope_clean": true
+    },
+    {
+      "id": "that_game_hawks_jan2_brunson",
+      "category": "game_deictic",
+      "turns": [
+        {
+          "turn": 1,
+          "question": "How many points did the Knicks score against the Hawks on January 2?",
+          "kind": "team_total",
+          "expected_fact": "99",
+          "expected_scope": {
+            "season_type": null,
+            "all_phases": false,
+            "game_count": 1,
+            "game_ids": [
+              34
+            ],
+            "player_ids": [],
+            "metric": "points",
+            "home_away": null,
+            "opponent_id": "ATL",
+            "relative_game_count": null,
+            "date_start": "2026-01-02",
+            "date_end": "2026-01-02"
+          },
+          "actual_scope": {
+            "intent": "analyst",
+            "player_ids": [],
+            "team_ids": [
+              "ATL"
+            ],
+            "opponent_id": "ATL",
+            "game_ids": [
+              34
+            ],
+            "date_start": "2026-01-02",
+            "date_end": "2026-01-02",
+            "relative_game_count": null,
+            "relative_from_start": false,
+            "periods": [],
+            "season_type": null,
+            "all_phases": false,
+            "home_away": null,
+            "game_result": null,
+            "metric": "points",
+            "requires_clarification": false,
+            "clarification_reason": null,
+            "clarification_options": [],
+            "data_version": "2025-26.20260928.1"
+          },
+          "scope_issues": [],
+          "carried_claims": [],
+          "prefetch": [
+            {
+              "tool": "get_team_stats",
+              "aggregation": "total",
+              "status": "ok",
+              "claims": 4
+            }
+          ],
+          "recovery": null,
+          "fallback_text": "Knicks regular season points: 99 over 1 archived games against Hawks (99-111 vs Hawks on 2026-01-02).",
+          "fallback_checks": {
+            "fact": "99",
+            "value": 99.0,
+            "value_ok": true
+          },
+          "fallback_score": {
+            "id": "How many points did the Knicks score against the Hawks on January 2?",
+            "category": "follow_ups",
+            "question": "How many points did the Knicks score against the Hawks on January 2?",
+            "answerable": true,
+            "outcome": null,
+            "old_meets_expectation": false,
+            "meets_expectation": true,
+            "failures": [],
+            "checks": {
+              "validated": true,
+              "decline_signal": null,
+              "decline_signals": [],
+              "declined": false,
+              "clarification": false,
+              "substantive": true,
+              "evidence_mode": "claims",
+              "claim_citations": 1,
+              "archive_receipts": 0,
+              "numbers_total": 4,
+              "unbacked_numbers": [],
+              "detected_entities": [
+                "Hawks",
+                "Knicks"
+              ],
+              "unbacked_entities": [],
+              "required_facts": [
+                "99"
+              ],
+              "required_facts_ok": true,
+              "required_entities_ok": true,
+              "required_phrases_ok": null,
+              "echo_question": false,
+              "hedged_causal": false,
+              "missing_turning_detail": false
+            }
+          },
+          "fallback_ok": true,
+          "cause": "ok"
+        },
+        {
+          "turn": 2,
+          "question": "How many points did Brunson score in that game?",
+          "kind": "player_total",
+          "expected_fact": "24",
+          "expected_scope": {
+            "season_type": null,
+            "all_phases": false,
+            "game_count": 1,
+            "game_ids": [
+              34
+            ],
+            "player_ids": [
+              134
+            ],
+            "metric": "points",
+            "home_away": null,
+            "opponent_id": "ATL",
+            "relative_game_count": null,
+            "date_start": "2026-01-02",
+            "date_end": "2026-01-02"
+          },
+          "actual_scope": {
+            "intent": "analyst",
+            "player_ids": [
+              134
+            ],
+            "team_ids": [],
+            "opponent_id": "ATL",
+            "game_ids": [
+              34
+            ],
+            "date_start": "2026-01-02",
+            "date_end": "2026-01-02",
+            "relative_game_count": null,
+            "relative_from_start": false,
+            "periods": [],
+            "season_type": null,
+            "all_phases": false,
+            "home_away": null,
+            "game_result": null,
+            "metric": "points",
+            "requires_clarification": false,
+            "clarification_reason": null,
+            "clarification_options": [],
+            "data_version": "2025-26.20260928.1"
+          },
+          "scope_issues": [],
+          "carried_claims": [],
+          "prefetch": [
+            {
+              "tool": "discover_facts",
+              "aggregation": "average",
+              "status": "ok",
+              "claims": 1
+            }
+          ],
+          "recovery": null,
+          "fallback_text": "Jalen Brunson: 24.0 points per appearance across 1 observed appearances in the 2025-26 regular season.",
+          "fallback_checks": {
+            "fact": "24",
+            "value": 24.0,
+            "value_ok": true
+          },
+          "fallback_score": {
+            "id": "How many points did Brunson score in that game?",
+            "category": "follow_ups",
+            "question": "How many points did Brunson score in that game?",
+            "answerable": true,
+            "outcome": null,
+            "old_meets_expectation": false,
+            "meets_expectation": true,
+            "failures": [],
+            "checks": {
+              "validated": true,
+              "decline_signal": null,
+              "decline_signals": [],
+              "declined": false,
+              "clarification": false,
+              "substantive": true,
+              "evidence_mode": "claims",
+              "claim_citations": 1,
+              "archive_receipts": 0,
+              "numbers_total": 2,
+              "unbacked_numbers": [],
+              "detected_entities": [
+                "Jalen Brunson"
+              ],
+              "unbacked_entities": [],
+              "required_facts": [
+                "24"
+              ],
+              "required_facts_ok": true,
+              "required_entities_ok": true,
+              "required_phrases_ok": null,
+              "echo_question": false,
+              "hedged_causal": false,
+              "missing_turning_detail": false
+            }
+          },
+          "fallback_ok": true,
+          "cause": "ok"
+        }
+      ],
+      "pass": true,
+      "scope_clean": true
+    },
+    {
+      "id": "that_game_last_margin",
+      "category": "game_deictic",
+      "turns": [
+        {
+          "turn": 1,
+          "question": "How many points did the Knicks score in their last game?",
+          "kind": "team_total",
+          "expected_fact": "94",
+          "expected_scope": {
+            "season_type": null,
+            "all_phases": false,
+            "game_count": 1,
+            "game_ids": null,
+            "player_ids": [],
+            "metric": "points",
+            "home_away": null,
+            "opponent_id": null,
+            "relative_game_count": 1,
+            "date_start": null,
+            "date_end": null
+          },
+          "actual_scope": {
+            "intent": "analyst",
+            "player_ids": [],
+            "team_ids": [],
+            "opponent_id": null,
+            "game_ids": [
+              101
+            ],
+            "date_start": null,
+            "date_end": null,
+            "relative_game_count": 1,
+            "relative_from_start": false,
+            "periods": [],
+            "season_type": null,
+            "all_phases": false,
+            "home_away": null,
+            "game_result": null,
+            "metric": "points",
+            "requires_clarification": false,
+            "clarification_reason": null,
+            "clarification_options": [],
+            "data_version": "2025-26.20260928.1"
+          },
+          "scope_issues": [],
+          "carried_claims": [],
+          "prefetch": [
+            {
+              "tool": "get_team_stats",
+              "aggregation": "total",
+              "status": "ok",
+              "claims": 4
+            }
+          ],
+          "recovery": null,
+          "fallback_text": "Knicks playoffs points: 94 over 1 archived games (94-90 at Spurs on 2026-06-13).",
+          "fallback_checks": {
+            "fact": "94",
+            "value": 94.0,
+            "value_ok": true
+          },
+          "fallback_score": {
+            "id": "How many points did the Knicks score in their last game?",
+            "category": "follow_ups",
+            "question": "How many points did the Knicks score in their last game?",
+            "answerable": true,
+            "outcome": null,
+            "old_meets_expectation": false,
+            "meets_expectation": true,
+            "failures": [],
+            "checks": {
+              "validated": true,
+              "decline_signal": null,
+              "decline_signals": [],
+              "declined": false,
+              "clarification": false,
+              "substantive": true,
+              "evidence_mode": "claims",
+              "claim_citations": 1,
+              "archive_receipts": 0,
+              "numbers_total": 4,
+              "unbacked_numbers": [],
+              "detected_entities": [
+                "Knicks",
+                "Spurs"
+              ],
+              "unbacked_entities": [],
+              "required_facts": [
+                "94"
+              ],
+              "required_facts_ok": true,
+              "required_entities_ok": true,
+              "required_phrases_ok": null,
+              "echo_question": false,
+              "hedged_causal": false,
+              "missing_turning_detail": false
+            }
+          },
+          "fallback_ok": true,
+          "cause": "ok"
+        },
+        {
+          "turn": 2,
+          "question": "What was the margin in that game?",
+          "kind": "team_average",
+          "expected_fact": "4.00",
+          "expected_scope": {
+            "season_type": null,
+            "all_phases": false,
+            "game_count": 1,
+            "game_ids": [
+              101
+            ],
+            "player_ids": [],
+            "metric": "margin",
+            "home_away": null,
+            "opponent_id": null,
+            "relative_game_count": null,
+            "date_start": "2026-06-13",
+            "date_end": "2026-06-13"
+          },
+          "actual_scope": {
+            "intent": "analyst",
+            "player_ids": [],
+            "team_ids": [],
+            "opponent_id": null,
+            "game_ids": [
+              101
+            ],
+            "date_start": "2026-06-13",
+            "date_end": "2026-06-13",
+            "relative_game_count": null,
+            "relative_from_start": false,
+            "periods": [],
+            "season_type": null,
+            "all_phases": false,
+            "home_away": null,
+            "game_result": null,
+            "metric": "margin",
+            "requires_clarification": false,
+            "clarification_reason": null,
+            "clarification_options": [],
+            "data_version": "2025-26.20260928.1"
+          },
+          "scope_issues": [],
+          "carried_claims": [
+            {
+              "metric": "points",
+              "season_type": "playoffs",
+              "games": 1
+            }
+          ],
+          "prefetch": [
+            {
+              "tool": "get_team_stats",
+              "aggregation": "total",
+              "status": "ok",
+              "claims": 4
+            }
+          ],
+          "recovery": null,
+          "fallback_text": "Knicks playoffs margin: 4 over 1 archived games (94-90 at Spurs on 2026-06-13).",
+          "fallback_checks": {
+            "fact": "4.00",
+            "value": 4.0,
+            "value_ok": true
+          },
+          "fallback_score": {
+            "id": "What was the margin in that game?",
+            "category": "follow_ups",
+            "question": "What was the margin in that game?",
+            "answerable": true,
+            "outcome": null,
+            "old_meets_expectation": false,
+            "meets_expectation": true,
+            "failures": [],
+            "checks": {
+              "validated": true,
+              "decline_signal": null,
+              "decline_signals": [],
+              "declined": false,
+              "clarification": false,
+              "substantive": true,
+              "evidence_mode": "claims",
+              "claim_citations": 1,
+              "archive_receipts": 0,
+              "numbers_total": 4,
+              "unbacked_numbers": [],
+              "detected_entities": [
+                "Knicks",
+                "Spurs"
+              ],
+              "unbacked_entities": [],
+              "required_facts": [
+                "4.00"
+              ],
+              "required_facts_ok": true,
+              "required_entities_ok": true,
+              "required_phrases_ok": null,
+              "echo_question": false,
+              "hedged_causal": false,
+              "missing_turning_detail": false
+            }
+          },
+          "fallback_ok": true,
+          "cause": "ok"
+        }
+      ],
+      "pass": true,
+      "scope_clean": true
+    },
+    {
+      "id": "season_widen_jan2",
+      "category": "game_widen",
+      "turns": [
+        {
+          "turn": 1,
+          "question": "How many points did the Knicks score in the game on January 2?",
+          "kind": "team_total",
+          "expected_fact": "99",
+          "expected_scope": {
+            "season_type": null,
+            "all_phases": false,
+            "game_count": 1,
+            "game_ids": [
+              34
+            ],
+            "player_ids": [],
+            "metric": "points",
+            "home_away": null,
+            "opponent_id": null,
+            "relative_game_count": null,
+            "date_start": "2026-01-02",
+            "date_end": "2026-01-02"
+          },
+          "actual_scope": {
+            "intent": "analyst",
+            "player_ids": [],
+            "team_ids": [],
+            "opponent_id": null,
+            "game_ids": [
+              34
+            ],
+            "date_start": "2026-01-02",
+            "date_end": "2026-01-02",
+            "relative_game_count": null,
+            "relative_from_start": false,
+            "periods": [],
+            "season_type": null,
+            "all_phases": false,
+            "home_away": null,
+            "game_result": null,
+            "metric": "points",
+            "requires_clarification": false,
+            "clarification_reason": null,
+            "clarification_options": [],
+            "data_version": "2025-26.20260928.1"
+          },
+          "scope_issues": [],
+          "carried_claims": [],
+          "prefetch": [
+            {
+              "tool": "get_team_stats",
+              "aggregation": "total",
+              "status": "ok",
+              "claims": 4
+            }
+          ],
+          "recovery": null,
+          "fallback_text": "Knicks regular season points: 99 over 1 archived games (99-111 vs Hawks on 2026-01-02).",
+          "fallback_checks": {
+            "fact": "99",
+            "value": 99.0,
+            "value_ok": true
+          },
+          "fallback_score": {
+            "id": "How many points did the Knicks score in the game on January 2?",
+            "category": "follow_ups",
+            "question": "How many points did the Knicks score in the game on January 2?",
+            "answerable": true,
+            "outcome": null,
+            "old_meets_expectation": false,
+            "meets_expectation": true,
+            "failures": [],
+            "checks": {
+              "validated": true,
+              "decline_signal": null,
+              "decline_signals": [],
+              "declined": false,
+              "clarification": false,
+              "substantive": true,
+              "evidence_mode": "claims",
+              "claim_citations": 1,
+              "archive_receipts": 0,
+              "numbers_total": 4,
+              "unbacked_numbers": [],
+              "detected_entities": [
+                "Hawks",
+                "Knicks"
+              ],
+              "unbacked_entities": [],
+              "required_facts": [
+                "99"
+              ],
+              "required_facts_ok": true,
+              "required_entities_ok": true,
+              "required_phrases_ok": null,
+              "echo_question": false,
+              "hedged_causal": false,
+              "missing_turning_detail": false
+            }
+          },
+          "fallback_ok": true,
+          "cause": "ok"
+        },
+        {
+          "turn": 2,
+          "question": "And for the season?",
+          "kind": "team_total",
+          "expected_fact": "9549",
+          "expected_scope": {
+            "season_type": "regular",
+            "all_phases": false,
+            "game_count": 82,
+            "game_ids": null,
+            "player_ids": [],
+            "metric": "points",
+            "home_away": null,
+            "opponent_id": null,
+            "relative_game_count": null,
+            "date_start": null,
+            "date_end": null
+          },
+          "actual_scope": {
+            "intent": "analyst",
+            "player_ids": [],
+            "team_ids": [],
+            "opponent_id": null,
+            "game_ids": [
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              8,
+              9,
+              10,
+              11,
+              12,
+              13,
+              14,
+              15,
+              16,
+              17,
+              18,
+              19,
+              20,
+              21,
+              22,
+              23,
+              24,
+              25,
+              26,
+              27,
+              28,
+              29,
+              30,
+              31,
+              32,
+              33,
+              34,
+              35,
+              36,
+              37,
+              38,
+              39,
+              40,
+              41,
+              42,
+              43,
+              44,
+              45,
+              46,
+              47,
+              48,
+              49,
+              50,
+              51,
+              52,
+              53,
+              54,
+              55,
+              56,
+              57,
+              58,
+              59,
+              60,
+              61,
+              62,
+              63,
+              64,
+              65,
+              66,
+              67,
+              68,
+              69,
+              70,
+              71,
+              72,
+              73,
+              74,
+              75,
+              76,
+              77,
+              78,
+              79,
+              80,
+              81,
+              82
+            ],
+            "date_start": null,
+            "date_end": null,
+            "relative_game_count": null,
+            "relative_from_start": false,
+            "periods": [],
+            "season_type": "regular",
+            "all_phases": false,
+            "home_away": null,
+            "game_result": null,
+            "metric": "points",
+            "requires_clarification": false,
+            "clarification_reason": null,
+            "clarification_options": [],
+            "data_version": "2025-26.20260928.1"
+          },
+          "scope_issues": [],
+          "carried_claims": [
+            {
+              "metric": "points",
+              "season_type": "regular",
+              "games": 1
+            }
+          ],
+          "prefetch": [
+            {
+              "tool": "get_team_stats",
+              "aggregation": "total",
+              "status": "ok",
+              "claims": 4
+            }
+          ],
+          "recovery": null,
+          "fallback_text": "Knicks regular season points: 9549 over 82 archived games.",
+          "fallback_checks": {
+            "fact": "9549",
+            "value": 9549.0,
+            "value_ok": true
+          },
+          "fallback_score": {
+            "id": "And for the season?",
+            "category": "follow_ups",
+            "question": "And for the season?",
+            "answerable": true,
+            "outcome": null,
+            "old_meets_expectation": false,
+            "meets_expectation": true,
+            "failures": [],
+            "checks": {
+              "validated": true,
+              "decline_signal": null,
+              "decline_signals": [],
+              "declined": false,
+              "clarification": false,
+              "substantive": true,
+              "evidence_mode": "claims",
+              "claim_citations": 1,
+              "archive_receipts": 0,
+              "numbers_total": 2,
+              "unbacked_numbers": [],
+              "detected_entities": [
+                "Knicks"
+              ],
+              "unbacked_entities": [],
+              "required_facts": [
+                "9549"
+              ],
+              "required_facts_ok": true,
+              "required_entities_ok": true,
+              "required_phrases_ok": null,
+              "echo_question": false,
+              "hedged_causal": false,
+              "missing_turning_detail": false
+            }
+          },
+          "fallback_ok": true,
+          "cause": "ok"
+        }
+      ],
+      "pass": true,
+      "scope_clean": true
+    }
+  ],
+  "summary": {
+    "sessions": 15,
+    "sessions_pass": 15,
+    "sessions_scope_clean": 15,
+    "turns": 30,
+    "turns_pass": 30,
+    "turns_scope_clean": 30
+  },
+  "causes": {}
+}

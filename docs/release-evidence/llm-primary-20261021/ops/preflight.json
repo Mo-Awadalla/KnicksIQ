@@ -1,0 +1,331 @@
+{
+  "checks": [
+    {
+      "detail": "all required variables are present",
+      "evidence": {
+        "missing": [],
+        "required": [
+          "DB_URL",
+          "REDIS_URL",
+          "ENVIRONMENT",
+          "REQUIRE_ACTIVE_RELEASE",
+          "IP_HASH_SECRET",
+          "AI_PROVIDER",
+          "AI_BASE_URL",
+          "AI_API_KEY",
+          "AI_CHAT_MODEL",
+          "AI_REQUEST_TIMEOUT_SECONDS",
+          "OPENROUTER_ALLOWED_MODELS",
+          "OPENROUTER_MONTHLY_CUTOFF_USD",
+          "ANALYSIS_ANSWER_MODE",
+          "ANALYST_EVIDENCE_LOOP_ENABLED",
+          "ANALYSIS_SHADOW_SAMPLE_RATE",
+          "CORS_ORIGINS",
+          "PUBLIC_WEB_ORIGIN",
+          "TRUSTED_HOSTS",
+          "SENTRY_DSN"
+        ]
+      },
+      "id": "env.required",
+      "status": "pass"
+    },
+    {
+      "detail": "settings parsed",
+      "evidence": {},
+      "id": "env.parse",
+      "status": "pass"
+    },
+    {
+      "detail": "configured llm_primary, expected llm_primary",
+      "evidence": {
+        "configured": "llm_primary",
+        "expected": "llm_primary"
+      },
+      "id": "env.mode",
+      "status": "pass"
+    },
+    {
+      "detail": "evidence loop enabled",
+      "evidence": {
+        "enabled": true
+      },
+      "id": "env.evidence_loop",
+      "status": "pass"
+    },
+    {
+      "detail": "OpenRouter provider configured with a key",
+      "evidence": {
+        "api_key_present": true,
+        "base_url_host": "openrouter.ai",
+        "chat_model": "deepseek/deepseek-v4.1-flash",
+        "provider": "openrouter"
+      },
+      "id": "env.provider",
+      "status": "pass"
+    },
+    {
+      "detail": "chat and summary models are allowlisted",
+      "evidence": {
+        "allowed_models": [
+          "deepseek/deepseek-v4.1-flash"
+        ],
+        "chat_model": "deepseek/deepseek-v4.1-flash"
+      },
+      "id": "env.allowlist",
+      "status": "pass"
+    },
+    {
+      "detail": "request timeout 20s within deadline 30s",
+      "evidence": {
+        "analyst_deadline_seconds": 30.0,
+        "request_timeout_seconds": 20.0
+      },
+      "id": "env.timeouts",
+      "status": "pass"
+    },
+    {
+      "detail": "monthly cutoff 2 USD",
+      "evidence": {
+        "cutoff_usd": 2.0,
+        "expected_usd": 2.0
+      },
+      "id": "env.cutoff",
+      "status": "pass"
+    },
+    {
+      "detail": "sample rate 0.1",
+      "evidence": {
+        "mode": "llm_primary",
+        "rate": 0.1
+      },
+      "id": "env.shadow_rate",
+      "status": "pass"
+    },
+    {
+      "detail": "public origin is the only configured origin",
+      "evidence": {
+        "origins": [
+          "https://www.knicksiq.win"
+        ],
+        "public_web_origin": "https://www.knicksiq.win"
+      },
+      "id": "env.cors",
+      "status": "pass"
+    },
+    {
+      "detail": "api.knicksiq.win is trusted",
+      "evidence": {
+        "api_host": "api.knicksiq.win",
+        "trusted_hosts": [
+          "api.knicksiq.win",
+          "127.0.0.1",
+          "localhost"
+        ]
+      },
+      "id": "env.trusted_hosts",
+      "status": "pass"
+    },
+    {
+      "detail": "DSN is present and format-valid",
+      "evidence": {
+        "format_valid": true,
+        "present": true
+      },
+      "id": "env.sentry",
+      "status": "pass"
+    },
+    {
+      "detail": "non-default secret of sufficient length",
+      "evidence": {
+        "is_default": false,
+        "length": 41
+      },
+      "id": "env.ip_hash_secret",
+      "status": "pass"
+    },
+    {
+      "detail": "production environment",
+      "evidence": {
+        "environment": "production"
+      },
+      "id": "env.environment",
+      "status": "pass"
+    },
+    {
+      "detail": "active release required",
+      "evidence": {
+        "require_active_release": true
+      },
+      "id": "env.require_release",
+      "status": "pass"
+    },
+    {
+      "detail": "ai-budget:2026-10 is present",
+      "evidence": {
+        "key": "ai-budget:2026-10",
+        "present": true
+      },
+      "id": "ledger.present",
+      "status": "pass"
+    },
+    {
+      "detail": "key ai-budget:2026-10, current month ai-budget:2026-10",
+      "evidence": {
+        "expected_key": "ai-budget:2026-10",
+        "key": "ai-budget:2026-10"
+      },
+      "id": "ledger.month",
+      "status": "pass"
+    },
+    {
+      "detail": "ledger total and reservations are consistent",
+      "evidence": {
+        "key": "ai-budget:2026-10",
+        "reservation_total_usd": 0.0,
+        "reservations": 0,
+        "total_usd": 0.210606406,
+        "ttl_seconds": -1
+      },
+      "id": "ledger.consistent",
+      "status": "pass"
+    },
+    {
+      "detail": "spend 0.210606406 of cutoff 2 USD",
+      "evidence": {
+        "cutoff_usd": 2.0,
+        "total_usd": 0.210606406
+      },
+      "id": "ledger.capacity",
+      "status": "pass"
+    },
+    {
+      "detail": "HTTP 200, status 'ok'",
+      "evidence": {
+        "status_code": 200
+      },
+      "id": "target.live",
+      "status": "pass"
+    },
+    {
+      "detail": "HTTP 200, status 'ready', data_version '2025-26.20260928.1', required_failures []",
+      "evidence": {
+        "data_version": "2025-26.20260928.1",
+        "db_active_version": "2025-26.20260928.1",
+        "optional_dependencies": {
+          "openrouter": "configured",
+          "qdrant": "disabled",
+          "redis": "configured"
+        },
+        "required_failures": [],
+        "status_code": 200
+      },
+      "id": "target.ready",
+      "status": "pass"
+    },
+    {
+      "detail": "HTTP 200, allow-origin 'https://www.knicksiq.win', expected 'https://www.knicksiq.win'",
+      "evidence": {
+        "allow_origin": "https://www.knicksiq.win",
+        "expected": "https://www.knicksiq.win",
+        "status_code": 200
+      },
+      "id": "target.cors",
+      "status": "pass"
+    },
+    {
+      "detail": "untrusted host returned HTTP 400",
+      "evidence": {
+        "status_code": 400
+      },
+      "id": "target.trusted_host",
+      "status": "pass"
+    },
+    {
+      "detail": "provider exception degraded to cited facts for both record scopes",
+      "evidence": {
+        "answer": "Knicks regular season wins: 53 over 82 archived games. Knicks regular season losses: 29 over 82 archived games.",
+        "citations": 2,
+        "claim_metrics": {
+          "losses": 29,
+          "wins": 53
+        },
+        "db_overall_record": {
+          "losses": 32,
+          "season_type": "all phases",
+          "wins": 69
+        },
+        "db_record": {
+          "losses": 29,
+          "season_type": "regular",
+          "wins": 53
+        },
+        "latency_ms": 163.0,
+        "llm_validated": false,
+        "overall_answer": "Knicks wins: 69 over 101 archived games. Knicks losses: 32 over 101 archived games.",
+        "overall_claim_metrics": {
+          "losses": 32,
+          "wins": 69
+        },
+        "overall_latency_ms": 152.4,
+        "overall_status_code": 200,
+        "provider_attempts": 2,
+        "status_code": 200,
+        "warnings": [
+          "Model or budget unavailable."
+        ]
+      },
+      "id": "provider_failure",
+      "status": "pass"
+    },
+    {
+      "detail": "deterministic mode returned cited facts for both record scopes",
+      "evidence": {
+        "answer": "Knicks regular season wins: 53 over 82 archived games. Knicks regular season losses: 29 over 82 archived games.",
+        "citations": 2,
+        "claim_metrics": {
+          "losses": 29,
+          "wins": 53
+        },
+        "db_overall_record": {
+          "losses": 32,
+          "season_type": "all phases",
+          "wins": 69
+        },
+        "db_record": {
+          "losses": 29,
+          "season_type": "regular",
+          "wins": 53
+        },
+        "degraded": true,
+        "latency_ms": 222.7,
+        "llm_validated": false,
+        "overall_answer": "Knicks wins: 69 over 101 archived games. Knicks losses: 32 over 101 archived games.",
+        "overall_claim_metrics": {
+          "losses": 32,
+          "wins": 69
+        },
+        "overall_latency_ms": 144.5,
+        "overall_status_code": 200,
+        "status_code": 200,
+        "warnings": [
+          "Model or budget unavailable."
+        ]
+      },
+      "id": "kill_switch",
+      "status": "pass"
+    }
+  ],
+  "expected_cutoff_usd": 2.0,
+  "expected_mode": "llm_primary",
+  "generated_at": "2026-10-21T23:23:17.227640+00:00",
+  "mode": "in-process",
+  "schema_version": 1,
+  "secrets_printed": false,
+  "summary": {
+    "fail": 0,
+    "pass": 25,
+    "skip": 0,
+    "status": "pass"
+  },
+  "target": "in-process ASGI api.knicksiq.win"
+}

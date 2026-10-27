@@ -1,0 +1,25 @@
+{
+  "old": {
+    "release_id": 1,
+    "version": "2025-26.20260714.1",
+    "report_count": 101
+  },
+  "candidate": {
+    "release_id": 2,
+    "version": "2025-26.20260928.1",
+    "inserted": true,
+    "activated": true,
+    "games": 101
+  },
+  "repeat": {
+    "release_id": 2,
+    "version": "2025-26.20260928.1",
+    "inserted": false,
+    "activated": true,
+    "games": 101
+  },
+  "approved_report_hashes_match": true,
+  "source_rows_verified": 3867,
+  "report_count": 101,
+  "local_only": true
+}

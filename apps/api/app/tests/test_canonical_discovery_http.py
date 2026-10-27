@@ -12,7 +12,7 @@ from app.core.config import get_settings
 from app.core.db import AsyncSessionLocal
 from app.evaluation.trace_capture import capture_turn
 from app.models.game import Game
-from app.services import analyst_loop, analyst_tools
+from app.services import analyst_loop, analyst_tool_archive, analyst_tools
 from app.services.archive_units import build_archive_units
 from app.services.comparison_sources import import_comparison_source
 from app.services.release_bundle import load_release_bundle
@@ -61,7 +61,7 @@ def configure(monkeypatch, mode):
         raise AssertionError("Pre-admission discovery cannot reserve paid requests")
 
     monkeypatch.setattr(analyst_loop, "get_llm_adapter", provider_denied)
-    monkeypatch.setattr(analyst_tools, "search_archive_vectors", dense_denied)
+    monkeypatch.setattr(analyst_tool_archive, "search_archive_vectors", dense_denied)
     monkeypatch.setattr(analyst_loop.AnalystLoop, "reserve", reserve_denied)
     return attempts
 

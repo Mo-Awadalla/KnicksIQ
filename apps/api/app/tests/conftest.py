@@ -15,6 +15,14 @@ os.environ["TEST_MODE"] = "false" if os.environ.get("KNICKSIQ_POSTGRES_TEST") ==
 os.environ["LOG_JSON"] = "false"
 os.environ["DEBUG"] = "true"
 
+# ruff: noqa: E402
+# A developer `.env` carries live provider keys and ANALYSIS_ANSWER_MODE=llm_primary,
+# which changes tool calls and could reach real services. Tests read only the process env.
+# This must run before `app.core.db` builds the cached Settings.
+from app.core.config import Settings
+
+Settings.model_config["env_file"] = None
+
 import pytest
 from app.core.db import engine
 from app.core.seed_loader import seed_all

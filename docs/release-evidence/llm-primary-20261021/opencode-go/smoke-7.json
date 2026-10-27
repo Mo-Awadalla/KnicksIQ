@@ -1,0 +1,79 @@
+{
+  "scope": "meets_expectation now requires: not declined or clarification, validated delivery, substantive content, no unbacked number or entity, required facts present, no echo, and no unbacked causal hedge. claim_backed additionally requires cited claim values.",
+  "mode": "live",
+  "dataset": "/Users/mohamedawadalla/.local/share/knicksiq/worktrees/integration/apps/api/app/evaluation/questions.jsonl",
+  "questions": 7,
+  "old_meets_expectation": 5,
+  "meets_expectation": 5,
+  "claim_backed_meets_expectation": 5,
+  "delta": 0,
+  "by_answerable": {
+    "answerable": {
+      "questions": 6,
+      "old": 4,
+      "new": 4
+    },
+    "unsupported": {
+      "questions": 1,
+      "old": 1,
+      "new": 1
+    }
+  },
+  "survived": [
+    "exact_statistics-001",
+    "date_range_last_n-001",
+    "single_game_narrative-001",
+    "aliases_typos-001",
+    "unsupported-001"
+  ],
+  "lost": [],
+  "gained": [],
+  "failure_counts": {
+    "not_validated": 2
+  },
+  "by_category": {
+    "aliases_typos": {
+      "questions": 1,
+      "old": 1,
+      "new": 1,
+      "claim_backed": 1
+    },
+    "comparisons": {
+      "questions": 1,
+      "old": 0,
+      "new": 0,
+      "claim_backed": 0
+    },
+    "date_range_last_n": {
+      "questions": 1,
+      "old": 1,
+      "new": 1,
+      "claim_backed": 1
+    },
+    "exact_statistics": {
+      "questions": 1,
+      "old": 1,
+      "new": 1,
+      "claim_backed": 1
+    },
+    "single_game_narrative": {
+      "questions": 1,
+      "old": 1,
+      "new": 1,
+      "claim_backed": 1
+    },
+    "turning_points": {
+      "questions": 1,
+      "old": 0,
+      "new": 0,
+      "claim_backed": 0
+    },
+    "unsupported": {
+      "questions": 1,
+      "old": 1,
+      "new": 1,
+      "claim_backed": 1
+    }
+  },
+  "source": "live in-process API"
+}

@@ -320,7 +320,8 @@ async def collect(
     execution: CountedRun | None = None,
 ) -> dict:
     """No paid mode is possible without an installed counted verification wrapper."""
-    from app.api import analysis
+    from app.api import analysis_generation
+    from app.api.analysis_retrieval import _sample_shadow
     from app.core.config import get_settings
     from app.main import create_app
     from app.services import analyst_loop, analytics_planner, llm_planner, retrieval_planner
@@ -339,9 +340,7 @@ async def collect(
         raise ValueError("Unknown execution mode")
     request_ids = [evaluation_request_id(initial, mode, c["id"]) for c in contract["cases"]]
     shadow_membership = (
-        [analysis._sample_shadow(request_id, 0.1) for request_id in request_ids]
-        if mode == "shadow"
-        else []
+        [_sample_shadow(request_id, 0.1) for request_id in request_ids] if mode == "shadow" else []
     )
     identity = {
         "mode": mode,
@@ -393,7 +392,7 @@ async def collect(
         raise RuntimeError("Paid call forbidden in disabled evaluation")
 
     original_adapter = analyst_loop.get_llm_adapter
-    original_analysis_adapter = analysis.get_llm_adapter
+    original_analysis_adapter = analysis_generation.get_llm_adapter
     original_llm_planner_adapter = llm_planner.get_llm_adapter
     original_retrieval_planner_adapter = retrieval_planner.get_llm_adapter
     original_analytics_planner_adapter = analytics_planner.get_llm_adapter
@@ -531,7 +530,7 @@ async def collect(
 
     try:
         analyst_loop.get_llm_adapter = counted if execution is not None else denied
-        analysis.get_llm_adapter = denied
+        analysis_generation.get_llm_adapter = denied
         llm_planner.get_llm_adapter = counted_planner if execution is not None else denied
         retrieval_planner.get_llm_adapter = counted_planner if execution is not None else denied
         analytics_planner.get_llm_adapter = counted_planner if execution is not None else denied
@@ -594,7 +593,7 @@ async def collect(
         raise
     finally:
         analyst_loop.get_llm_adapter = original_adapter
-        analysis.get_llm_adapter = original_analysis_adapter
+        analysis_generation.get_llm_adapter = original_analysis_adapter
         llm_planner.get_llm_adapter = original_llm_planner_adapter
         retrieval_planner.get_llm_adapter = original_retrieval_planner_adapter
         analytics_planner.get_llm_adapter = original_analytics_planner_adapter

@@ -1,0 +1,198 @@
+{
+  "scope": "meets_expectation now requires: not declined or clarification, validated delivery, substantive content, no unbacked number or entity, required facts present, no echo, and no unbacked causal hedge. claim_backed additionally requires cited claim values.",
+  "mode": "offline",
+  "dataset": "/Users/mohamedawadalla/.local/share/knicksiq/worktrees/w4-scorer/apps/api/app/evaluation/questions.jsonl",
+  "questions": 70,
+  "old_meets_expectation": 42,
+  "meets_expectation": 35,
+  "claim_backed_meets_expectation": 35,
+  "delta": 7,
+  "by_answerable": {
+    "answerable": {
+      "questions": 62,
+      "old": 37,
+      "new": 30
+    },
+    "unsupported": {
+      "questions": 8,
+      "old": 5,
+      "new": 5
+    }
+  },
+  "survived": [
+    "exact_statistics-001",
+    "exact_statistics-002",
+    "exact_statistics-005",
+    "exact_statistics-006",
+    "exact_statistics-007",
+    "exact_statistics-008",
+    "exact_statistics-009",
+    "exact_statistics-010",
+    "date_range_last_n-001",
+    "date_range_last_n-002",
+    "date_range_last_n-003",
+    "date_range_last_n-004",
+    "date_range_last_n-006",
+    "date_range_last_n-007",
+    "comparisons-001",
+    "comparisons-002",
+    "comparisons-007",
+    "comparisons-008",
+    "comparisons-009",
+    "single_game_narrative-001",
+    "single_game_narrative-003",
+    "turning_points-001",
+    "turning_points-007",
+    "turning_points-009",
+    "aliases_typos-001",
+    "aliases_typos-002",
+    "aliases_typos-004",
+    "aliases_typos-006",
+    "aliases_typos-010",
+    "unsupported-002",
+    "unsupported-003",
+    "unsupported-004",
+    "unsupported-006",
+    "unsupported-008"
+  ],
+  "lost": [
+    {
+      "id": "exact_statistics-003",
+      "category": "exact_statistics",
+      "failures": [
+        "unbacked_numbers"
+      ],
+      "reason": "unbacked_number",
+      "answer": "In the 2025-26 regular season, the Knicks averaged 116.45 points per game across 82 archived games. They went 53-29 with an average margin of +6.33 points per game."
+    },
+    {
+      "id": "exact_statistics-004",
+      "category": "exact_statistics",
+      "failures": [
+        "unbacked_numbers"
+      ],
+      "reason": "unbacked_number",
+      "answer": "In the 2025-26 regular season, the Knicks' average margin was +6.33 points per game across 82 archived games."
+    },
+    {
+      "id": "comparisons-004",
+      "category": "comparisons",
+      "failures": [
+        "clarification",
+        "no_cited_claims"
+      ],
+      "reason": "skipped_work_clarification",
+      "answer": "Which Knicks player would you like me to compare across their first 10 games and last 10 games?"
+    },
+    {
+      "id": "comparisons-010",
+      "category": "comparisons",
+      "failures": [
+        "unbacked_numbers"
+      ],
+      "reason": "unbacked_number",
+      "answer": "The archive for this release contains only Knicks wins in the regular season (53 games, 0 losses), so there is no loss sample to compare shooting against. In those 53 wins, the Knicks averaged 121.75 points per game with a +16.25 average margin. Because no losses are present in the available data, a wins-vs-losses shooting comparison cannot be made."
+    },
+    {
+      "id": "single_game_narrative-002",
+      "category": "single_game_narrative",
+      "failures": [
+        "clarification",
+        "no_cited_claims"
+      ],
+      "reason": "skipped_work_clarification",
+      "answer": "There are five Knicks-Toronto games in the archive. Which one do you mean?"
+    },
+    {
+      "id": "single_game_narrative-004",
+      "category": "single_game_narrative",
+      "failures": [
+        "clarification",
+        "no_cited_claims"
+      ],
+      "reason": "skipped_work_clarification",
+      "answer": "There are four Knicks-Bulls games in the archive. Which one do you mean?"
+    },
+    {
+      "id": "single_game_narrative-005",
+      "category": "single_game_narrative",
+      "failures": [
+        "clarification",
+        "no_cited_claims"
+      ],
+      "reason": "skipped_work_clarification",
+      "answer": "Which Knicks\u2013Hornets game do you mean? The archive has four 2025-26 regular-season meetings: 2025-11-26 (NYK at CHA), 2025-12-03 (CHA at NYK), 2026-03-26 (NYK at CHA), and 2026-04-12 (CHA at NYK)."
+    },
+    {
+      "id": "single_game_narrative-010",
+      "category": "single_game_narrative",
+      "failures": [
+        "declined:phrase:decline"
+      ],
+      "reason": "declined_answerable",
+      "answer": "The archive doesn't support a causal explanation for why the Knicks offense stalled against Chicago. Across the four archived 2025-26 regular-season meetings, the Knicks actually scored well: 123.5 points per game and a +12.0 average margin, going 3-1. Their only loss was the Oct. 31 game (125-135 at Chicago), when they scored 125 \u2014 not a low output. The lowest Knicks total in the set was 105 in a win on Feb. 22. So the available game scores don't show an offensive stall, and box scores can't establish causation in any case."
+    }
+  ],
+  "gained": [
+    {
+      "id": "turning_points-005",
+      "failures": []
+    }
+  ],
+  "failure_counts": {
+    "no_cited_claims": 15,
+    "not_validated": 14,
+    "clarification": 13,
+    "declined": 10,
+    "unbacked_numbers": 5,
+    "not_declined": 3,
+    "unbacked_entities": 2,
+    "not_substantive": 2,
+    "missing_turning_detail": 1
+  },
+  "by_category": {
+    "aliases_typos": {
+      "questions": 10,
+      "old": 5,
+      "new": 5,
+      "claim_backed": 5
+    },
+    "comparisons": {
+      "questions": 10,
+      "old": 7,
+      "new": 5,
+      "claim_backed": 5
+    },
+    "date_range_last_n": {
+      "questions": 10,
+      "old": 6,
+      "new": 6,
+      "claim_backed": 6
+    },
+    "exact_statistics": {
+      "questions": 10,
+      "old": 10,
+      "new": 8,
+      "claim_backed": 8
+    },
+    "single_game_narrative": {
+      "questions": 10,
+      "old": 6,
+      "new": 2,
+      "claim_backed": 2
+    },
+    "turning_points": {
+      "questions": 10,
+      "old": 3,
+      "new": 4,
+      "claim_backed": 4
+    },
+    "unsupported": {
+      "questions": 10,
+      "old": 5,
+      "new": 5,
+      "claim_backed": 5
+    }
+  },
+  "source": "docs/release-evidence/llm-primary-20261021/final/budget-16000.trial2.responses.jsonl"
+}

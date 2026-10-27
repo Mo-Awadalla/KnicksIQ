@@ -1,0 +1,245 @@
+{
+  "new_set": {
+    "main_questions": 80,
+    "follow_up_sessions": 10,
+    "follow_up_turns": 20
+  },
+  "checked_files": {
+    "apps/api/app/evaluation/questions.jsonl": "f407988ce282b982c20bd87bcd714d32fed8dfface8dd174c804ddcbb5401182",
+    "apps/api/app/evaluation/heldout_questions.jsonl": "7717914cbb7d786ad87f8d084a4a9b12a7abe1bbf72df55789a16e69bbc29a85",
+    "apps/api/app/evaluation/heldout_v2/questions.jsonl": "ebebe069481afa6dc85830e9e65ce28abdc4c623c4db2b2d3d7ab3321518a9fd",
+    "apps/api/app/evaluation/heldout_v2/follow_ups.jsonl": "6a95c8511b43c1f1270ff1c7df98f3d1a4aa78d641459bfb2db0cde70ac676c3"
+  },
+  "question_text": {
+    "normalized_exact_matches": [],
+    "max_token_jaccard": 0.6667,
+    "pairs_at_or_above_0_8": 0,
+    "pairs_at_or_above_0_6": 5,
+    "top_pairs": [
+      {
+        "new_id": "heldout2-exact_statistics-002",
+        "existing_id": "questions:date_range_last_n-007",
+        "similarity": 0.6667
+      },
+      {
+        "new_id": "heldout2-date_range_last_n-011",
+        "existing_id": "questions:date_range_last_n-007",
+        "similarity": 0.6667
+      },
+      {
+        "new_id": "heldout2-date_range_last_n-007",
+        "existing_id": "questions:date_range_last_n-010",
+        "similarity": 0.6667
+      },
+      {
+        "new_id": "heldout2-date_range_last_n-002",
+        "existing_id": "questions:exact_statistics-025",
+        "similarity": 0.6667
+      },
+      {
+        "new_id": "heldout2-date_range_last_n-006",
+        "existing_id": "heldout:heldout-exact_statistics-003",
+        "similarity": 0.6
+      },
+      {
+        "new_id": "heldout2-exact_statistics-004",
+        "existing_id": "heldout:heldout-exact_statistics-005",
+        "similarity": 0.5714
+      },
+      {
+        "new_id": "heldout2-date_range_last_n-002",
+        "existing_id": "heldout:heldout-date_range_last_n-002",
+        "similarity": 0.5714
+      },
+      {
+        "new_id": "heldout2-unsupported-001",
+        "existing_id": "questions:unsupported-001",
+        "similarity": 0.5
+      },
+      {
+        "new_id": "heldout2-follow_ups-009",
+        "existing_id": "questions:exact_statistics-002",
+        "similarity": 0.5
+      },
+      {
+        "new_id": "heldout2-exact_statistics-009",
+        "existing_id": "questions:exact_statistics-013",
+        "similarity": 0.5
+      }
+    ]
+  },
+  "entity_overlap": {
+    "game_ids": {
+      "new": [
+        9,
+        14,
+        15,
+        22,
+        25,
+        29,
+        32,
+        37,
+        39,
+        40,
+        42,
+        43,
+        44,
+        50,
+        54,
+        57,
+        67,
+        68,
+        71,
+        77
+      ],
+      "existing": [
+        28,
+        49,
+        52,
+        59,
+        60,
+        64,
+        92,
+        96,
+        101
+      ],
+      "overlap": []
+    },
+    "players": {
+      "new": [
+        "Guerschon Yabusele",
+        "Jeremy Sochan",
+        "Jose Alvarado",
+        "Kevin McCullar Jr.",
+        "Mohamed Diawara",
+        "Pacôme Dadiet",
+        "Trey Jemison III",
+        "Tyler Kolek"
+      ],
+      "existing": [
+        "Ariel Hukporti",
+        "Jalen Brunson",
+        "Jordan Clarkson",
+        "Josh Hart",
+        "Karl-Anthony Towns",
+        "Landry Shamet",
+        "Mikal Bridges",
+        "Miles McBride",
+        "Mitchell Robinson",
+        "OG Anunoby"
+      ],
+      "overlap": []
+    },
+    "opponents": {
+      "new": [
+        "BKN",
+        "DAL",
+        "HOU",
+        "IND",
+        "LAC",
+        "MEM",
+        "MIN",
+        "NOP",
+        "ORL",
+        "PHX",
+        "POR",
+        "SAC",
+        "UTA",
+        "WAS"
+      ],
+      "existing": [
+        "ATL",
+        "BOS",
+        "CHA",
+        "CHI",
+        "CLE",
+        "DEN",
+        "DET",
+        "LAL",
+        "MIA",
+        "MIL",
+        "OKC",
+        "PHI",
+        "SAS",
+        "TOR"
+      ],
+      "overlap": []
+    },
+    "months_in_text": {
+      "new": [
+        "april",
+        "december",
+        "february",
+        "january",
+        "march",
+        "november",
+        "october"
+      ],
+      "existing": [
+        "december",
+        "february",
+        "january",
+        "june",
+        "march",
+        "may",
+        "november"
+      ],
+      "overlap": [
+        "december",
+        "february",
+        "january",
+        "march",
+        "november"
+      ]
+    },
+    "month_scoped_questions": {
+      "new": [
+        "2025-10",
+        "2026-04"
+      ],
+      "existing": [
+        "2025-11",
+        "2026-01",
+        "2026-02",
+        "2026-03"
+      ],
+      "overlap": []
+    }
+  },
+  "unresolved_existing_game_questions": [
+    "follow_ups-009",
+    "single_game_narrative-001",
+    "single_game_narrative-002",
+    "single_game_narrative-003",
+    "single_game_narrative-004",
+    "single_game_narrative-005",
+    "single_game_narrative-006",
+    "single_game_narrative-007",
+    "single_game_narrative-008",
+    "single_game_narrative-009",
+    "single_game_narrative-010",
+    "single_game_narrative-012",
+    "single_game_narrative-013",
+    "single_game_narrative-014",
+    "single_game_narrative-015",
+    "single_game_narrative-016",
+    "single_game_narrative-017",
+    "single_game_narrative-018",
+    "single_game_narrative-019",
+    "single_game_narrative-020",
+    "turning_points-001",
+    "turning_points-002",
+    "turning_points-003",
+    "turning_points-004",
+    "turning_points-005",
+    "turning_points-006",
+    "turning_points-008",
+    "turning_points-009",
+    "turning_points-010"
+  ],
+  "notes": [
+    "Entity extraction reads question text, filters, required facts/entities and context.",
+    "Game ids come from filters; for the public set a month-day is mapped to a game only when the question does not contain a window marker. Opponent-only narratives cannot be mapped to a single game id and are listed as unresolved.",
+    "No held-out question text is written to this report."
+  ]
+}

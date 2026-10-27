@@ -10,8 +10,8 @@ from app.models.game import Game
 from app.services.analyst_loop import AnalystLoop
 from app.services.analyst_tools import AnalystTools
 from app.services.evidence_contracts import ToolCall
-from app.tests.test_analyst_contracts import local_redis  # noqa: F401
-from app.tests.test_player_intelligence import _seed_release_stats
+from app.tests.support.analyst_protocol import local_redis  # noqa: F401
+from app.tests.support.player_archive import _seed_release_stats
 from sqlalchemy import select
 
 
@@ -195,7 +195,7 @@ async def test_budget_denial_and_exhausted_deadline(db_session, monkeypatch):
 
 def test_regular_season_is_not_a_fuzzy_player_name():
     from app.models.player import Player
-    from app.services.query_parsing import _resolve_player_mentions
+    from app.services.query_names import resolve_player_mentions as _resolve_player_mentions
 
     player = Player(id=314, full_name="Tari Eason", team_id="HOU", nba_player_id=314)
     resolved, _ = _resolve_player_mentions(

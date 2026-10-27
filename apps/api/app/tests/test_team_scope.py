@@ -4,7 +4,7 @@ from datetime import date
 
 import pytest
 from app.models.game import Game
-from app.services.table_rag import _answer_from_games
+from app.services.table_rag_games import _answer_from_games
 from app.services.team_scope import comparison_groups, scope_games
 
 

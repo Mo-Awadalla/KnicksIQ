@@ -1,0 +1,41 @@
+{
+  "scope": "llm_validated is reviewer acceptance. meets_expectation also requires a substantive answer for answerable questions and a decline for unsupported ones. Expectations come from unreviewed draft labels.",
+  "questions": 7,
+  "meets_expectation": 1,
+  "meets_expectation_rate": 0.143,
+  "outcomes": {
+    "validated": 1,
+    "fallback:review_rejected": 4,
+    "failed:orchestrate:RuntimeError": 2
+  },
+  "by_category": {
+    "exact_statistics": {
+      "meets_expectation": 1,
+      "questions": 1
+    },
+    "date_range_last_n": {
+      "meets_expectation": 0,
+      "questions": 1
+    },
+    "comparisons": {
+      "meets_expectation": 0,
+      "questions": 1
+    },
+    "single_game_narrative": {
+      "meets_expectation": 0,
+      "questions": 1
+    },
+    "turning_points": {
+      "meets_expectation": 0,
+      "questions": 1
+    },
+    "aliases_typos": {
+      "meets_expectation": 0,
+      "questions": 1
+    },
+    "unsupported": {
+      "meets_expectation": 0,
+      "questions": 1
+    }
+  }
+}

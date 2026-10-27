@@ -1,0 +1,8 @@
+Before the fix (commit f66b4b6), same script:
+OK  prefetch, implicit topic: 'And overall?' -> 101 games (want 101)
+BAD prefetch, explicit topic: 'And overall?' -> 82 games (want 101)
+OK  prefetch, playoffs: 'And in the playoffs?' -> 19 games (want 19)
+BAD model names old phase: 'And overall?' -> 82 games (want 101)
+OK  model names other phase: 'And in the playoffs?' -> 19 games (want 19)
+OK  model plain: 'And overall?' -> 101 games (want 101)
+FAILURES 2

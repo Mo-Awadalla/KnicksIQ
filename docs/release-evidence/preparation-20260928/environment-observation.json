@@ -1,0 +1,91 @@
+{
+  "observed_at": "2026-09-28T19:56:07.256502+00:00",
+  "method": "read-only Render GET; environment output restricted to nonsecret allowlist",
+  "services": {
+    "api": {
+      "id": "srv-d9cgko8js32c73bbvu10",
+      "autoDeploy": "no",
+      "environment": {
+        "OPENROUTER_MONTHLY_CUTOFF_USD": "2",
+        "ANALYSIS_ANSWER_MODE": "llm_primary",
+        "ANALYST_EVIDENCE_LOOP_ENABLED": "true",
+        "ANALYST_PROVIDER_FORMAT": "json_object",
+        "AI_REASONING_EFFORT": "none",
+        "OPENROUTER_ALLOWED_MODELS": "[\"deepseek/deepseek-v4.1-flash\"]",
+        "AI_CHAT_MODEL": "deepseek/deepseek-v4.1-flash",
+        "AI_REQUEST_TIMEOUT_SECONDS": "20",
+        "ANALYSIS_SHADOW_SAMPLE_RATE": "0.1",
+        "RAG_LLM_PLANNER_ENABLED": "true",
+        "RAG_RERANKER_ENABLED": "false",
+        "RAG_HYBRID_ENABLED": "true",
+        "RAG_QDRANT_CLOUD_INFERENCE": "true",
+        "RAG_QDRANT_ENABLED": "true",
+        "AI_BASE_URL": "https://openrouter.ai/api/v1",
+        "AI_PROVIDER": "openrouter",
+        "REQUIRE_ACTIVE_RELEASE": "true"
+      },
+      "deployments": [
+        {
+          "id": "dep-datb8759fdbs73b2gsq0",
+          "status": "live",
+          "commit": "98d21753910b16440970d9081a2e352a4aacdb8d"
+        },
+        {
+          "id": "dep-dap8d7qd0e5s73f2p4ng",
+          "status": "deactivated",
+          "commit": "fa21e1137729b59ae9e04ecc83429ae903f1f72d"
+        },
+        {
+          "id": "dep-dap89lv1rjqs73d61l4g",
+          "status": "deactivated",
+          "commit": "e50ea4988ed95c3c0877d93777987264c35e4659"
+        },
+        {
+          "id": "dep-dap89h5g1s2s739phrp0",
+          "status": "deactivated",
+          "commit": "e50ea4988ed95c3c0877d93777987264c35e4659"
+        },
+        {
+          "id": "dep-daor53uk1f9s738elqsg",
+          "status": "deactivated",
+          "commit": "7c373c7263bb05d10aeee048a2d6d1e433579aed"
+        }
+      ]
+    },
+    "web": {
+      "id": "srv-d9cgko8js32c73bbvu1g",
+      "autoDeploy": "no",
+      "environment": {
+        "VITE_PUBLIC_URL": "https://www.knicksiq.win",
+        "VITE_API_URL": "https://api.knicksiq.win"
+      },
+      "deployments": [
+        {
+          "id": "dep-datb8r67bikc73csq7l0",
+          "status": "live",
+          "commit": "98d21753910b16440970d9081a2e352a4aacdb8d"
+        },
+        {
+          "id": "dep-daoqtun40ujc738bh540",
+          "status": "deactivated",
+          "commit": "7c373c7263bb05d10aeee048a2d6d1e433579aed"
+        },
+        {
+          "id": "dep-daook2g0cd8s73ejj36g",
+          "status": "deactivated",
+          "commit": "2f2659bfe05a78caf4ef4a89b32066cf106d9952"
+        },
+        {
+          "id": "dep-d9f7aun7f7vs73c340d0",
+          "status": "deactivated",
+          "commit": "d3002336b62a24b96c26bf14e1fe50c05ba2386d"
+        },
+        {
+          "id": "dep-d9drsd6rnols73d32li0",
+          "status": "deactivated",
+          "commit": "b5845f632741e91cd4f88fe7d0116bf0a4a7cd00"
+        }
+      ]
+    }
+  }
+}

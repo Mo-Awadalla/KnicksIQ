@@ -1,0 +1,12 @@
+OK  'What about at home?' asks=False (want False)
+OK  'What about on the road?' asks=False (want False)
+OK  'What about in March?' asks=False (want False)
+OK  'What about the last 5 games?' asks=False (want False)
+OK  'What about the Celtics?' asks=False (want False)
+OK  "What about Brunson's assists?" asks=False (want False)
+OK  'What about their points?' asks=False (want False)
+OK  'What about Nobody McFake?' asks=True (want True)
+OK  "What about Nobody McFake's points?" asks=True (want True)
+OK  'What about nobody mcfake at home?' asks=True (want True)
+OK  'What about Zorblax in the playoffs?' asks=True (want True)
+FAILURES 0

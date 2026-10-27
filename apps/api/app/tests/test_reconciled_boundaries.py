@@ -104,8 +104,10 @@ async def test_same_turn_execution_returns_canonical_committed_answer(local_redi
     await local_redis.delete(first.key + ":lease")
     second = await SessionTurn.begin(None, "same-turn-reconciled", 0, {"question": "stat"})
     assert await second.commit({"answer": "Canonical"}, {"intent": "canonical"})
-    assert await first.commit({"answer": "Stale"}, {"intent": "stale"})
-    assert first.replay == {"answer": "Canonical"}
+    # The PR commit contract returns the canonical stored turn through CommitResult; it
+    # deliberately does not mutate first.replay behind the caller's back.
+    outcome = await first.commit({"answer": "Stale"}, {"intent": "stale"})
+    assert outcome.committed and outcome.response == {"answer": "Canonical"}
 
 
 @pytest.mark.parametrize(

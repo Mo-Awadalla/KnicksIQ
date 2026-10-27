@@ -1,0 +1,608 @@
+{
+  "checks": [
+    {
+      "check": "route",
+      "id": "date_range_last_n-005",
+      "expected": "get_team_splits",
+      "actual": null,
+      "pass": false
+    },
+    {
+      "check": "facts",
+      "id": "date_range_last_n-005",
+      "expected": [
+        "18-9 in 27 games"
+      ],
+      "actual": "",
+      "pass": false
+    },
+    {
+      "check": "fallback",
+      "id": "date_range_last_n-005",
+      "expected": [
+        "18-9 in 27 games"
+      ],
+      "actual": "I can't answer that: verified archive facts are unavailable on this turn.",
+      "pass": false
+    },
+    {
+      "check": "route",
+      "id": "date_range_last_n-010",
+      "expected": "get_team_splits",
+      "actual": null,
+      "pass": false
+    },
+    {
+      "check": "facts",
+      "id": "date_range_last_n-010",
+      "expected": [
+        "7-3 in 10 games"
+      ],
+      "actual": "",
+      "pass": false
+    },
+    {
+      "check": "fallback",
+      "id": "date_range_last_n-010",
+      "expected": [
+        "7-3 in 10 games"
+      ],
+      "actual": "I can't answer that: verified archive facts are unavailable on this turn.",
+      "pass": false
+    },
+    {
+      "check": "route",
+      "id": "comparisons-001",
+      "expected": "get_team_splits",
+      "actual": null,
+      "pass": false
+    },
+    {
+      "check": "facts",
+      "id": "comparisons-001",
+      "expected": [
+        "119.00 for",
+        "114.02 for"
+      ],
+      "actual": "",
+      "pass": false
+    },
+    {
+      "check": "fallback",
+      "id": "comparisons-001",
+      "expected": [
+        "119.00 for",
+        "114.02 for"
+      ],
+      "actual": "I can't answer that: verified archive facts are unavailable on this turn.",
+      "pass": false
+    },
+    {
+      "check": "route",
+      "id": "comparisons-003",
+      "expected": "get_team_splits",
+      "actual": null,
+      "pass": false
+    },
+    {
+      "check": "facts",
+      "id": "comparisons-003",
+      "expected": [
+        "3-1 in 4 games",
+        "5-0 in 5 games"
+      ],
+      "actual": "",
+      "pass": false
+    },
+    {
+      "check": "fallback",
+      "id": "comparisons-003",
+      "expected": [
+        "3-1 in 4 games",
+        "5-0 in 5 games"
+      ],
+      "actual": "I can't answer that: verified archive facts are unavailable on this turn.",
+      "pass": false
+    },
+    {
+      "check": "route",
+      "id": "comparisons-004",
+      "expected": "get_team_splits",
+      "actual": null,
+      "pass": false
+    },
+    {
+      "check": "facts",
+      "id": "comparisons-004",
+      "expected": [
+        "first 10 games",
+        "6-4 in 10 games"
+      ],
+      "actual": "",
+      "pass": false
+    },
+    {
+      "check": "fallback",
+      "id": "comparisons-004",
+      "expected": [
+        "first 10 games",
+        "6-4 in 10 games"
+      ],
+      "actual": "I can't answer that: verified archive facts are unavailable on this turn.",
+      "pass": false
+    },
+    {
+      "check": "route",
+      "id": "comparisons-009",
+      "expected": "get_period_scoring",
+      "actual": null,
+      "pass": false
+    },
+    {
+      "check": "facts",
+      "id": "comparisons-009",
+      "expected": [
+        "Q3",
+        "Q4"
+      ],
+      "actual": "",
+      "pass": false
+    },
+    {
+      "check": "fallback",
+      "id": "comparisons-009",
+      "expected": [
+        "Q3",
+        "Q4"
+      ],
+      "actual": "I can't answer that: verified archive facts are unavailable on this turn.",
+      "pass": false
+    },
+    {
+      "check": "route",
+      "id": "single_game_narrative-001",
+      "expected": "get_game_flow",
+      "actual": "discover_facts",
+      "pass": false
+    },
+    {
+      "check": "facts",
+      "id": "single_game_narrative-001",
+      "expected": [
+        "largest lead lost",
+        "14 points"
+      ],
+      "actual": "Knicks regular season wins: 3 over 4 archived games against BOS.\nKnicks regular season losses: 1 over 4 archived games against BOS.\nKnicks regular season points per game: 111.25 over 4 archived games against BOS.\nKnicks regular season margin per game: 8.0 over 4 archived games against BOS.",
+      "pass": false
+    },
+    {
+      "check": "fallback",
+      "id": "single_game_narrative-001",
+      "expected": [
+        "largest lead lost",
+        "14 points"
+      ],
+      "actual": "Knicks regular season wins: 3 over 4 archived games against BOS. Knicks regular season losses: 1 over 4 archived games against BOS.",
+      "pass": false
+    },
+    {
+      "check": "route",
+      "id": "single_game_narrative-003",
+      "expected": "get_period_scoring",
+      "actual": "discover_facts",
+      "pass": false
+    },
+    {
+      "check": "facts",
+      "id": "single_game_narrative-003",
+      "expected": [
+        "Q4 30-28",
+        "Q4 15-28"
+      ],
+      "actual": "",
+      "pass": false
+    },
+    {
+      "check": "fallback",
+      "id": "single_game_narrative-003",
+      "expected": [
+        "Q4 30-28",
+        "Q4 15-28"
+      ],
+      "actual": "This calculation does not support period-level scope. Period-capable tools: search_archive, get_game_flow, get_period_scoring.",
+      "pass": false
+    },
+    {
+      "check": "route",
+      "id": "single_game_narrative-005",
+      "expected": "get_period_scoring",
+      "actual": "discover_facts",
+      "pass": false
+    },
+    {
+      "check": "facts",
+      "id": "single_game_narrative-005",
+      "expected": [
+        "half 53-47",
+        "half 72-47"
+      ],
+      "actual": "Knicks regular season wins: 2 over 4 archived games against CHA.\nKnicks regular season losses: 2 over 4 archived games against CHA.\nKnicks regular season points per game: 111.75 over 4 archived games against CHA.\nKnicks regular season margin per game: 4.5 over 4 archived games against CHA.",
+      "pass": false
+    },
+    {
+      "check": "fallback",
+      "id": "single_game_narrative-005",
+      "expected": [
+        "half 53-47",
+        "half 72-47"
+      ],
+      "actual": "Knicks regular season wins: 2 over 4 archived games against CHA. Knicks regular season losses: 2 over 4 archived games against CHA.",
+      "pass": false
+    },
+    {
+      "check": "route",
+      "id": "single_game_narrative-008",
+      "expected": "get_game_flow",
+      "actual": "discover_facts",
+      "pass": false
+    },
+    {
+      "check": "facts",
+      "id": "single_game_narrative-008",
+      "expected": [
+        "13-0 run"
+      ],
+      "actual": "Knicks regular season wins: 5 over 5 archived games against TOR.\nKnicks regular season losses: 0 over 5 archived games against TOR.\nKnicks regular season points per game: 115.0 over 5 archived games against TOR.\nKnicks regular season margin per game: 19.6 over 5 archived games against TOR.",
+      "pass": false
+    },
+    {
+      "check": "fallback",
+      "id": "single_game_narrative-008",
+      "expected": [
+        "13-0 run"
+      ],
+      "actual": "Knicks regular season wins: 5 over 5 archived games against TOR. Knicks regular season losses: 0 over 5 archived games against TOR.",
+      "pass": false
+    },
+    {
+      "check": "route",
+      "id": "aliases_typos-005",
+      "expected": "get_game_flow",
+      "actual": "discover_facts",
+      "pass": false
+    },
+    {
+      "check": "facts",
+      "id": "aliases_typos-005",
+      "expected": [
+        "20-0 run"
+      ],
+      "actual": "Jalen Brunson recorded 47 points, 3 rebounds, 8 assists and 0 turnovers on 2025-12-21 against MIA.\nKarl-Anthony Towns recorded 35 points, 18 rebounds, 5 assists and 1 turnovers on 2025-12-03 against CHA.\nJalen Brunson recorded 42 points, 8 rebounds, 9 assists and 5 turnovers on 2026-02-04 against DEN.\nKarl-Anthony Towns recorded 39 points, 11 rebounds, 4 assists and 0 turnovers on 2025-11-14 against MIA.\nJalen Brunson recorded 40 points, 5 rebounds, 8 assists and 1 turnovers on 2026-02-10 against IND.\nKarl-Anthony Towns recorded 35 points, 12 rebounds, 7 assists and 3 turnovers on 2026-03-09 against LAC.\nJalen Brunson recorded 40 points, 4 rebounds, 8 assists and 2 turnovers on 2025-12-13 against ORL.\nKarl-Anthony Towns recorded 37 points, 12 rebounds, 3 assists and 1 turnovers on 2025-11-24 against BKN.\nJalen Brunson recorded 33 points, 3 rebounds, 11 assists and 2 turnovers on 2025-11-22 against ORL.\nKarl-Anthony Towns recorded 36 points, 15 rebounds, 1 assists and 2 turnovers on 2025-12-27 against ATL.",
+      "pass": false
+    },
+    {
+      "check": "fallback",
+      "id": "aliases_typos-005",
+      "expected": [
+        "20-0 run"
+      ],
+      "actual": "I can't answer that: verified archive facts are unavailable on this turn.",
+      "pass": false
+    },
+    {
+      "check": "route",
+      "id": "aliases_typos-007",
+      "expected": "get_period_scoring",
+      "actual": "get_team_stats",
+      "pass": false
+    },
+    {
+      "check": "facts",
+      "id": "aliases_typos-007",
+      "expected": [
+        "Q4 23-27"
+      ],
+      "actual": "Knicks regular season wins: 3 over 4 archived games against CHI.\nKnicks regular season losses: 1 over 4 archived games against CHI.\nKnicks regular season points: 494 over 4 archived games against CHI.\nKnicks regular season margin: 48 over 4 archived games against CHI.",
+      "pass": false
+    },
+    {
+      "check": "fallback",
+      "id": "aliases_typos-007",
+      "expected": [
+        "Q4 23-27"
+      ],
+      "actual": "Knicks regular season wins: 3 over 4 archived games against CHI. Knicks regular season losses: 1 over 4 archived games against CHI.",
+      "pass": false
+    },
+    {
+      "check": "route",
+      "id": "aliases_typos-010",
+      "expected": "get_game_flow",
+      "actual": "discover_facts",
+      "pass": false
+    },
+    {
+      "check": "facts",
+      "id": "aliases_typos-010",
+      "expected": [
+        "19 points"
+      ],
+      "actual": "Jalen Brunson recorded 47 points, 3 rebounds, 8 assists and 0 turnovers on 2025-12-21 against MIA.\nKarl-Anthony Towns recorded 35 points, 18 rebounds, 5 assists and 1 turnovers on 2025-12-03 against CHA.\nJalen Brunson recorded 42 points, 8 rebounds, 9 assists and 5 turnovers on 2026-02-04 against DEN.\nKarl-Anthony Towns recorded 39 points, 11 rebounds, 4 assists and 0 turnovers on 2025-11-14 against MIA.\nJalen Brunson recorded 40 points, 5 rebounds, 8 assists and 1 turnovers on 2026-02-10 against IND.\nKarl-Anthony Towns recorded 35 points, 12 rebounds, 7 assists and 3 turnovers on 2026-03-09 against LAC.\nJalen Brunson recorded 40 points, 4 rebounds, 8 assists and 2 turnovers on 2025-12-13 against ORL.\nKarl-Anthony Towns recorded 37 points, 12 rebounds, 3 assists and 1 turnovers on 2025-11-24 against BKN.\nJalen Brunson recorded 33 points, 3 rebounds, 11 assists and 2 turnovers on 2025-11-22 against ORL.\nKarl-Anthony Towns recorded 36 points, 15 rebounds, 1 assists and 2 turnovers on 2025-12-27 against ATL.",
+      "pass": false
+    },
+    {
+      "check": "fallback",
+      "id": "aliases_typos-010",
+      "expected": [
+        "19 points"
+      ],
+      "actual": "I can't answer that: verified archive facts are unavailable on this turn.",
+      "pass": false
+    },
+    {
+      "check": "route",
+      "id": "turning_points-001",
+      "expected": "get_game_flow",
+      "actual": "discover_facts",
+      "pass": false
+    },
+    {
+      "check": "facts",
+      "id": "turning_points-001",
+      "expected": [
+        "17-0 run"
+      ],
+      "actual": "Knicks regular season wins: 3 over 4 archived games against BOS.\nKnicks regular season losses: 1 over 4 archived games against BOS.\nKnicks regular season points per game: 111.25 over 4 archived games against BOS.\nKnicks regular season margin per game: 8.0 over 4 archived games against BOS.",
+      "pass": false
+    },
+    {
+      "check": "fallback",
+      "id": "turning_points-001",
+      "expected": [
+        "17-0 run"
+      ],
+      "actual": "I can't answer that: verified archive facts are unavailable on this turn.",
+      "pass": false
+    },
+    {
+      "check": "route",
+      "id": "turning_points-003",
+      "expected": "get_game_flow",
+      "actual": "discover_facts",
+      "pass": false
+    },
+    {
+      "check": "facts",
+      "id": "turning_points-003",
+      "expected": [
+        "largest lead lost",
+        "14 points"
+      ],
+      "actual": "Knicks (all phases) wins: 6 over 9 archived games against ATL (regular season 2-1, playoffs 4-2).\nKnicks (all phases) losses: 3 over 9 archived games against ATL (regular season 2-1, playoffs 4-2).\nKnicks (all phases) points per game: 115.77777777777777 over 9 archived games against ATL (regular season 2-1, playoffs 4-2).\nKnicks (all phases) margin per game: 11.0 over 9 archived games against ATL (regular season 2-1, playoffs 4-2).\nKnicks regular season wins: 2 over 3 archived games against ATL.\nKnicks regular season losses: 1 over 3 archived games against ATL.\nKnicks playoffs wins: 4 over 6 archived games against ATL.\nKnicks playoffs losses: 2 over 6 archived games against ATL.",
+      "pass": false
+    },
+    {
+      "check": "fallback",
+      "id": "turning_points-003",
+      "expected": [
+        "largest lead lost",
+        "14 points"
+      ],
+      "actual": "I can't answer that: verified archive facts are unavailable on this turn.",
+      "pass": false
+    },
+    {
+      "check": "route",
+      "id": "turning_points-005",
+      "expected": "get_game_flow",
+      "actual": "discover_facts",
+      "pass": false
+    },
+    {
+      "check": "facts",
+      "id": "turning_points-005",
+      "expected": [
+        "21 points"
+      ],
+      "actual": "Jalen Brunson recorded 47 points, 3 rebounds, 8 assists and 0 turnovers on 2025-12-21 against MIA.\nKarl-Anthony Towns recorded 35 points, 18 rebounds, 5 assists and 1 turnovers on 2025-12-03 against CHA.\nJalen Brunson recorded 42 points, 8 rebounds, 9 assists and 5 turnovers on 2026-02-04 against DEN.\nKarl-Anthony Towns recorded 39 points, 11 rebounds, 4 assists and 0 turnovers on 2025-11-14 against MIA.\nJalen Brunson recorded 40 points, 5 rebounds, 8 assists and 1 turnovers on 2026-02-10 against IND.\nKarl-Anthony Towns recorded 35 points, 12 rebounds, 7 assists and 3 turnovers on 2026-03-09 against LAC.\nJalen Brunson recorded 40 points, 4 rebounds, 8 assists and 2 turnovers on 2025-12-13 against ORL.\nKarl-Anthony Towns recorded 37 points, 12 rebounds, 3 assists and 1 turnovers on 2025-11-24 against BKN.\nJalen Brunson recorded 33 points, 3 rebounds, 11 assists and 2 turnovers on 2025-11-22 against ORL.\nKarl-Anthony Towns recorded 36 points, 15 rebounds, 1 assists and 2 turnovers on 2025-12-27 against ATL.",
+      "pass": false
+    },
+    {
+      "check": "fallback",
+      "id": "turning_points-005",
+      "expected": [
+        "21 points"
+      ],
+      "actual": "I can't answer that: verified archive facts are unavailable on this turn.",
+      "pass": false
+    },
+    {
+      "check": "route",
+      "id": "turning_points-007",
+      "expected": "get_game_flow",
+      "actual": null,
+      "pass": false
+    },
+    {
+      "check": "facts",
+      "id": "turning_points-007",
+      "expected": [
+        "15-0 run"
+      ],
+      "actual": "",
+      "pass": false
+    },
+    {
+      "check": "fallback",
+      "id": "turning_points-007",
+      "expected": [
+        "15-0 run"
+      ],
+      "actual": "I can't answer that: verified archive facts are unavailable on this turn.",
+      "pass": false
+    },
+    {
+      "check": "route",
+      "id": "turning_points-008",
+      "expected": "get_game_flow",
+      "actual": "discover_facts",
+      "pass": false
+    },
+    {
+      "check": "facts",
+      "id": "turning_points-008",
+      "expected": [
+        "21 points"
+      ],
+      "actual": "Knicks regular season wins: 2 over 4 archived games against CHA.\nKnicks regular season losses: 2 over 4 archived games against CHA.\nKnicks regular season points per game: 111.75 over 4 archived games against CHA.\nKnicks regular season margin per game: 4.5 over 4 archived games against CHA.",
+      "pass": false
+    },
+    {
+      "check": "fallback",
+      "id": "turning_points-008",
+      "expected": [
+        "21 points"
+      ],
+      "actual": "Knicks regular season wins: 2 over 4 archived games against CHA. Knicks regular season losses: 2 over 4 archived games against CHA.",
+      "pass": false
+    },
+    {
+      "check": "route",
+      "id": "turning_points-009",
+      "expected": "get_game_flow",
+      "actual": "discover_facts",
+      "pass": false
+    },
+    {
+      "check": "facts",
+      "id": "turning_points-009",
+      "expected": [
+        "12 points"
+      ],
+      "actual": "Knicks regular season wins: 5 over 5 archived games against TOR.\nKnicks regular season losses: 0 over 5 archived games against TOR.\nKnicks regular season points per game: 115.0 over 5 archived games against TOR.\nKnicks regular season margin per game: 19.6 over 5 archived games against TOR.",
+      "pass": false
+    },
+    {
+      "check": "fallback",
+      "id": "turning_points-009",
+      "expected": [
+        "12 points"
+      ],
+      "actual": "I can't answer that: verified archive facts are unavailable on this turn.",
+      "pass": false
+    },
+    {
+      "check": "unchanged",
+      "id": "exact_statistics-001",
+      "expected": "get_team_stats",
+      "actual": "get_team_stats",
+      "pass": true
+    },
+    {
+      "check": "unchanged",
+      "id": "date_range_last_n-001",
+      "expected": "get_team_stats",
+      "actual": "get_team_stats",
+      "pass": true
+    },
+    {
+      "check": "unchanged",
+      "id": "date_range_last_n-007",
+      "expected": "get_team_stats",
+      "actual": "get_team_stats",
+      "pass": true
+    },
+    {
+      "check": "unchanged",
+      "id": "aliases_typos-002",
+      "expected": "get_team_stats",
+      "actual": "get_team_stats",
+      "pass": true
+    },
+    {
+      "check": "unchanged",
+      "id": "unsupported-001",
+      "expected": null,
+      "actual": null,
+      "pass": true
+    },
+    {
+      "check": "unchanged",
+      "id": "unsupported-006",
+      "expected": null,
+      "actual": "discover_facts",
+      "pass": false
+    },
+    {
+      "check": "unchanged",
+      "id": "unsupported-007",
+      "expected": null,
+      "actual": "discover_facts",
+      "pass": false
+    },
+    {
+      "check": "unchanged",
+      "id": "unsupported-009",
+      "expected": null,
+      "actual": null,
+      "pass": true
+    },
+    {
+      "check": "metric-gate",
+      "id": "comparisons-005",
+      "expected": false,
+      "actual": false,
+      "pass": true
+    },
+    {
+      "check": "metric-gate",
+      "id": "comparisons-006",
+      "expected": false,
+      "actual": false,
+      "pass": true
+    },
+    {
+      "check": "metric-gate",
+      "id": "comparisons-010",
+      "expected": false,
+      "actual": false,
+      "pass": true
+    },
+    {
+      "check": "metric-gate",
+      "id": "aliases_typos-008",
+      "expected": false,
+      "actual": false,
+      "pass": true
+    },
+    {
+      "check": "prompt",
+      "id": "get_team_splits",
+      "expected": true,
+      "actual": true,
+      "pass": true
+    },
+    {
+      "check": "prompt",
+      "id": "observed maximum",
+      "expected": true,
+      "actual": false,
+      "pass": false
+    },
+    {
+      "check": "prompt",
+      "id": "list the matching archived games",
+      "expected": true,
+      "actual": false,
+      "pass": false
+    },
+    {
+      "check": "prompt",
+      "id": "must not add specific numbers",
+      "expected": true,
+      "actual": false,
+      "pass": false
+    }
+  ],
+  "failed": 62
+}

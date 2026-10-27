@@ -1,0 +1,184 @@
+{
+  "generated_at": "2026-10-22T16:48:55.843330+00:00",
+  "redis_db": "10",
+  "questions": 140,
+  "trials": 2,
+  "by_trial": {
+    "1": {
+      "questions": 70,
+      "meets_expectation": 42,
+      "claim_backed": 42,
+      "validated": 45,
+      "p50_latency_ms": 8818.5,
+      "p95_latency_ms": 18767.9,
+      "mean_latency_ms": 10296.2,
+      "ledger_delta_usd": 0.1861849,
+      "mean_cost_per_question_usd": 0.002659784,
+      "provider_calls": 191,
+      "mean_calls_per_question": 2.73,
+      "unsupported_declined": 4,
+      "unsupported_questions": 8,
+      "reconciles": true
+    },
+    "2": {
+      "questions": 70,
+      "meets_expectation": 40,
+      "claim_backed": 40,
+      "validated": 41,
+      "p50_latency_ms": 9444.5,
+      "p95_latency_ms": 20203.9,
+      "mean_latency_ms": 10800.7,
+      "ledger_delta_usd": 0.1857033,
+      "mean_cost_per_question_usd": 0.002652904,
+      "provider_calls": 179,
+      "mean_calls_per_question": 2.56,
+      "unsupported_declined": 5,
+      "unsupported_questions": 8,
+      "reconciles": true
+    }
+  },
+  "spread_meets_expectation": 2,
+  "by_category": {
+    "aliases_typos": {
+      "trial1": "8/10",
+      "trial2": "4/10"
+    },
+    "comparisons": {
+      "trial1": "3/10",
+      "trial2": "5/10"
+    },
+    "date_range_last_n": {
+      "trial1": "7/10",
+      "trial2": "7/10"
+    },
+    "exact_statistics": {
+      "trial1": "10/10",
+      "trial2": "10/10"
+    },
+    "single_game_narrative": {
+      "trial1": "2/10",
+      "trial2": "2/10"
+    },
+    "turning_points": {
+      "trial1": "4/10",
+      "trial2": "4/10"
+    },
+    "unsupported": {
+      "trial1": "8/10",
+      "trial2": "8/10"
+    }
+  },
+  "latency": {
+    "p50_ms": 9260.7,
+    "p95_ms": 19832.9,
+    "mean_ms": 10548.5,
+    "by_stage": {
+      "session_and_release": {
+        "calls": 138,
+        "p50_ms": 4.0,
+        "p95_ms": 7.0,
+        "mean_ms": 4.6,
+        "share_of_stage_total": 0.0
+      },
+      "archive_records": {
+        "calls": 138,
+        "p50_ms": 21.0,
+        "p95_ms": 54.0,
+        "mean_ms": 26.7,
+        "share_of_stage_total": 0.003
+      },
+      "query_resolution": {
+        "calls": 138,
+        "p50_ms": 56.0,
+        "p95_ms": 75.0,
+        "mean_ms": 55.3,
+        "share_of_stage_total": 0.005
+      },
+      "plan": {
+        "calls": 44,
+        "p50_ms": 1658.0,
+        "p95_ms": 2208.0,
+        "mean_ms": 1744.6,
+        "share_of_stage_total": 0.052
+      },
+      "tool": {
+        "calls": 121,
+        "p50_ms": 77.0,
+        "p95_ms": 597.0,
+        "mean_ms": 132.8,
+        "share_of_stage_total": 0.011
+      },
+      "answer": {
+        "calls": 139,
+        "p50_ms": 3073.0,
+        "p95_ms": 5770.0,
+        "mean_ms": 3474.2,
+        "share_of_stage_total": 0.329
+      },
+      "review": {
+        "calls": 113,
+        "p50_ms": 5459.0,
+        "p95_ms": 11128.0,
+        "mean_ms": 6027.3,
+        "share_of_stage_total": 0.465
+      },
+      "repair": {
+        "calls": 74,
+        "p50_ms": 2492.0,
+        "p95_ms": 4232.0,
+        "mean_ms": 2664.7,
+        "share_of_stage_total": 0.135
+      },
+      "other": {
+        "calls": 0,
+        "p50_ms": null,
+        "p95_ms": null,
+        "mean_ms": null,
+        "share_of_stage_total": 0.0
+      }
+    }
+  },
+  "calls": {
+    "total": 370,
+    "mean_per_question": 2.64,
+    "p50_per_question": 2.0,
+    "p95_per_question": 4.0,
+    "max_per_question": 6,
+    "by_stage": {
+      "orchestrate": 183,
+      "review": 113,
+      "revise": 74
+    },
+    "by_model": {
+      "deepseek-v4.1-flash": 257,
+      "gpt-6-luna": 113
+    },
+    "by_protocol": {
+      "None": 0,
+      "chat": 255,
+      "responses": 112
+    },
+    "errors": 0
+  },
+  "cost": {
+    "ledger_delta_total_usd": 0.3718882,
+    "per_call_charged_total_usd": 0.3718882,
+    "settled_total_usd": 0.3718882,
+    "open_delta_total_usd": 0,
+    "reconciled_total_usd": 0.3718882,
+    "reconciles": true,
+    "unreconciled_questions": [],
+    "mean_per_question_usd": 0.002656344,
+    "p50_per_question_usd": 0.0022291,
+    "p95_per_question_usd": 0.0048155,
+    "monthly_capacity_at_2_usd": 752
+  },
+  "outcomes": {
+    "failed:orchestrate:TimeoutError": 4,
+    "failed:review:TimeoutError": 1,
+    "fallback:other": 2,
+    "fallback:review_rejected": 47,
+    "validated": 74,
+    "validated_declined": 12
+  }
+}

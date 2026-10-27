@@ -1,13 +1,52 @@
 # Evidence-led analyst implementation
 
-The opt-in `ANALYST_EVIDENCE_LOOP_ENABLED=true` route replaces the discovery early
-return and legacy planner/generator chain with one bounded orchestrator. It uses
-the existing configured model, controlled tools, immutable backend claims,
-a separate whole-answer reviewer, and one optional revision/re-review. The default
-local default remains **false**. The production Blueprint enables the loop and
-`llm_primary` following the owner’s explicit production activation request.
-`ANALYSIS_ANSWER_MODE=deterministic` provides immediate model-free rollback with
-the flag enabled. `shadow` exercises the same metered loop and delivers facts.
+The analyst is the launch answer path: `POST /analysis/query` with
+`ANALYST_EVIDENCE_LOOP_ENABLED=true` and `ANALYSIS_ANSWER_MODE=llm_primary`. The intended launch
+configuration is stated once in
+[the release checklist](release-checklist.md#intended-launch-configuration). Other documents link
+there instead of restating it.
+
+The opt-in route replaces the discovery early return and legacy planner/generator chain with one
+bounded orchestrator. It uses the existing configured model, controlled tools, immutable backend
+claims, a separate whole-answer reviewer, and one optional revision/re-review. The default local
+default remains **false**. The production Blueprint enables the loop and `llm_primary` following
+the owner’s explicit production activation request. `ANALYSIS_ANSWER_MODE=deterministic` provides
+immediate model-free rollback with the flag enabled. `shadow` exercises the same metered loop and
+delivers facts.
+
+The loop allows two tool rounds, three tool calls per round and six model calls, including
+malformed output. Normal lookup uses choose, write, review; a prior evidence explanation uses
+write, review; repairs reserve capacity for both calls. Replies remain buffered. No prompt logging
+is introduced.
+
+## Tools
+
+Eleven tools are registered in `analyst_tool_registry.py`. The prompt tool list, the `ToolCall.name`
+Literal, dispatch, capabilities and fallback recovery all derive from that tuple.
+
+| Tool | Answers |
+| --- | --- |
+| `get_player_stats` | Player box-score metrics as totals or per-game averages over a resolved window. |
+| `get_team_stats` | Knicks wins, losses, points and margin over a population. |
+| `compare_windows` | Two player populations compared on one metric. |
+| `discover_facts` | Observed facts and narrative leads; leads the prompt. |
+| `search_archive` | Narrative examples, reports and play-by-play evidence. |
+| `get_evidence` | Expands returned references without adding a population. |
+| `find_player_games` | Counts a player's games meeting an explicit per-game stat threshold and lists the matching archived games. |
+| `get_game_narrative` | Canonical game narratives, tied game stories, comebacks and lost leads selected from the archive. |
+| `get_game_flow` | Runs, lead changes, comebacks, lost leads, clutch windows and period net. |
+| `get_team_splits` | Home/road, phase and opponent splits. |
+| `get_period_scoring` | Quarter, half, overtime and per-game period scoring for both teams. |
+
+Capabilities are derived: a tool with `supports_periods` adds period scores and play-by-play
+events to the model-facing data list. Quarter, period, play-by-play and split questions are
+answerable. Dispatch names the period tools when a full-game tool cannot serve a period scope.
+
+`ResolvedQuery` owns the requested statistics and game population. `requested_metrics` and
+`requested_aggregations` preserve compound requests. The scalar `metric` and `aggregation`
+identify an unambiguous selection, not an arbitrary first member. Dispatch keeps single
+selections authoritative and restricts compound tool calls to a requested member. Session
+scope retains both sets for follow-ups. Unspecified fields remain model-selectable.
 
 ## Contracts and limitations
 
@@ -22,14 +61,6 @@ Player leader calculations use canonical Knicks box-score rows inside that same
 scope. Explicit single-game highs rank individual appearances, preserve every tie,
 and retain evidence for the complete candidate population; scoped leaders otherwise
 sum each player's rows only within the requested window.
-
-Discovery starts with observed box scores and the existing catalog, recomputed
-from complete release rows under its existing eligibility policies. It introduces
-no new automatic window families. Catalog leaders retain the complete qualifier
-population. Recent comparisons have distinct recent/prior claims, denominators,
-and source windows. Candidate metadata records extreme selection, family, subject,
-metric, window, baseline and selection reason. Committed responses alone advance
-novelty state. A single-game candidate does not assert a season ranking.
 
 Canonical discovery verifies its complete SQL-bound source corpus before lexical
 retrieval. Integrity preparation uses the configured investigation budget (20 seconds
@@ -74,8 +105,8 @@ classification replays diagnose failures but do not qualify a live answer.
 Input packing admits or drops whole records and preserves their server-side
 references. At each mandatory-context, claim-group and evidence boundary, UTF-8
 bytes account for the actual system instructions, serialized user payload and,
-in `json_schema` mode, the actual scoped provider schema. The existing 8000-byte
-input cap and evidence allowance are unchanged. Strict mode retains only the
+in `json_schema` mode, the actual scoped provider schema. The 16,000-byte input
+cap and 6,000-byte evidence allowance apply. Strict mode retains only the
 protocol title in the user's `schema` field; validation constraints appear once,
 in the provider schema. Nonsemantic schema titles, descriptions and defaults are
 compacted without changing native allowed values, reference enums, exact review
@@ -137,8 +168,8 @@ coverage, supporting IDs and independent instructions are unchanged. All answer
 properties are explicitly required in the scoped writer/provider schema.
 Answer text contains the requested answer and limitations, not packet metadata,
 schemas, IDs or packing instructions; suggestions belong only in their dedicated
-array. The output cap remains 1,200 tokens. Malformed or length-terminated JSON
-is never treated as a validated model answer.
+array. The answer output cap is 1,600 tokens and the review cap is 3,000.
+Malformed or length-terminated JSON is never treated as a validated model answer.
 
 Planning, writer and reviewer instructions remove redundant wording to leave room
 for complete claim bundles within the existing byte budget. They retain every
@@ -237,8 +268,9 @@ plus comparison inputs when needed.
 An unresolved conversational game reference stops canonical discovery before
 archive-unit construction or retrieval. It clarifies with no candidate or returned
 evidence IDs and no model call, including in primary and sampled-shadow modes.
-Shared parsing helpers live in `query_parsing`; callers import them there rather
-than through resolver compatibility re-exports.
+Shared parsing helpers live in `query_text`, `query_names`, `query_dates`, `query_policy` and
+`query_game_scope`; `query_resolution` does not re-export them. `query_parsing` remains only for
+main-side archive-unit, threshold-game and population-fact modules.
 
 Scoped ambiguous game questions offer actual archived dates without asserting
 a matching-game count. Explicit win, loss, closest, and biggest-win conditions
@@ -260,10 +292,84 @@ Ambiguous scoring sequences ask for both the game and the run
 measure/time-window definition. A request for two games does not silently expand
 to all matching games.
 
+## Deterministic prefetch
+
+`ANALYST_PREFETCH_ENABLED` defaults to true. Deterministic prefetch runs the tools a clear
+question requires before the first model call. Simple single-player compound requests fetch
+each requested metric and aggregation within the existing six-tool limit. Fallback retains
+all requested statistics already fetched, rather than treating a compound metric as points.
+Other routes use `discover_facts` for narrative and single-player facts, `get_team_stats` for
+team records and `get_player_stats` for single-player aggregates. Prefetch skips
+clarifications, live, future, injury and trade questions, multi-player comparisons,
+player-versus-opponent questions, comparative metric questions and two-population comparisons.
+Prefetch passes the current question and selected metric and aggregation. Dispatch applies scope.
+Prefetched tools count toward the tool and model call bounds.
+
+## Answer evidence selection and repair
+
+`answer_evidence.py` selects the answer's declared claims, their baseline claims and supporting
+receipts, plus explicitly cited receipts. Validation, reviewer input and delivery use that
+selection. A factual statement cannot borrow a different, undeclared claim to pass the numeric
+check. Unknown or unsupplied references fail before review.
+
+Player coverage text describes non-appearances and missing data without internal game ids.
+The reviewer receives those coverage limitations with the selected claim. Numeric validation
+does not whitelist identifiers or arbitrary numbers from coverage prose.
+
+The backend owns the sentence spans and requires one verdict per span in order. Before the model
+call, deterministic checks run:
+
+- every number in the answer must match a selected claim value within rounding tolerance, a
+  selected receipt or a curated capability number;
+- numbers from the question are accepted only in decline, coverage, date-window or clarification
+  spans where they are criteria, not asserted facts;
+- identifier hashes and game ids are never whitelisted.
+
+Malformed review output is retried once, then the turn falls back. A supported verdict is
+authoritative for its span. The reviewer is not proof of truth; human calibration remains a
+release gate.
+
+Repair requests use a separate prompt matching the flat `ProposedAnswer` schema. They return
+`text`, `claims`, `evidence_ids`, `fact_ids` and `follow_up_questions`, without an action or
+answer wrapper. Repairs cannot investigate or change the requested metric or aggregation.
+
+## Refusals and the `refused` flag
+
+Two layers decide a refusal.
+
+The pre-model gate is a typed table in `analysis_policy.py`. It refuses only text with no archive
+reading, before any provider call:
+
+| Category | Catches |
+| --- | --- |
+| `instruction_override` | Ignoring or revealing prompts and instructions, jailbreak, persona changes. |
+| `wagering` | Bets, wagers, parlays, moneylines, sportsbooks, spreads and betting lines. |
+| `out_of_archive_date` | 2027 to 2099 years and 2026-07 through 2026-12 dates. |
+
+Live, injury, trade, prediction and bare `odds` words are not pre-model refusals. Fans use them
+with archive meanings. Those questions reach the analyst, which answers the archive part, declines
+or explains coverage. The same applies to a question that mixes an archive request with one of the
+ambiguous words.
+
+`refused` is true when the delivered answer declines or explains coverage. A validated model
+refusal sets it from the `decline` or `explain_coverage` action and returns
+`llm_validated=true`, `refused=true`, `degraded=false`. A pre-model refusal returns
+`llm_validated=false`, `refused=true`, `degraded=false`, no citations and the refusal warning.
+A mixed archive/live question can still deliver supported archive facts without refusing the turn.
+`ask_clarification` is not a refusal. `refused=true` never means the request failed; the browser
+renders a decline, not an error.
+
+## Season phase policy
+
+Season-level records and stats preserve the resolved population: without an explicit or inherited
+phase restriction, they include every archived phase. An explicit phase in the question wins;
+an elliptical follow-up retains its accepted phase until the user widens the scope. Answers and
+claims state their population, and fallback and team tools use that same population. Phase
+resolution lives in `query_policy.py`, `query_resolution.py` and `query_game_scope.py`.
 
 ## Session API
 
-Send previous user/assistant messages as context, plus:
+Send previous user and assistant messages as context, plus:
 
 ```json
 {"question":"Give me an interesting stat", "turn_id":"client-generated-uuid",
@@ -271,55 +377,39 @@ Send previous user/assistant messages as context, plus:
 ```
 
 Replies preserve `answer` and `citations` and add `follow_up_questions` (zero to two),
-`session_token`, `revision`, `session_expires_at`, `state_committed`, and
-`llm_validated`. The opaque token is a bearer secret; do not
-log it. Redis owns subject/scope origins, intent, claims/receipts, delivered facts,
-families, release and revision. Client `conversation_state` is ignored by the new
-route. Active release identity is pinned and prior references are revalidated
-against the newly resolved scope. A changed release clears old evidence.
+`session_token`, `revision`, `session_expires_at`, `state_committed`, `llm_validated`, `refused`,
+`degraded` and `warnings`. The opaque token is a bearer secret; do not log it. Redis owns subject
+and scope origins, intent, claims and receipts, delivered facts, families, release and revision.
+Client `conversation_state` is ignored by this route. Active release identity is pinned and prior
+references are revalidated against the newly resolved scope. A changed release clears old
+evidence.
 
-Lua scripts serialize turns using an owner-checked lease, check revisions, and
-atomically commit the response and state. Identical turn retries replay the exact
-committed reply, including first-turn retries. Different input under the same ID,
-stale revisions and concurrent execution return 409. Sessions and replay records
-expire after 24 hours of inactivity. Redis loss gives an explicitly stateless
-factual response; a failed commit never claims a committed revision. The browser
-retains turn IDs for retry and prevents synchronous duplicate submission.
+Lua scripts serialize turns with an owner-checked lease, check revisions, and atomically commit
+the response and state. Identical turn retries replay the exact committed reply, including
+first-turn retries. Different input under the same ID, stale revisions and concurrent execution
+return 409. Sessions and replay records expire after 24 hours of inactivity. Redis loss gives an
+explicitly stateless factual response; a failed commit never claims a committed revision. The
+browser retains turn IDs for retry and prevents synchronous duplicate submission.
 
-Both chat surfaces share a transcript that remains fully visible. Each request sends
-the ten previous individual messages, excluding the current question. The API keeps
-at least a UTF-8-safe opening excerpt of every retained message, then restores
-newest detail within a 2,000-byte serialized history allowance. Server session
-state separately retains topic, scope, and verified claims. Transcript text has no
-evidence authority and is absent from the independent answer reviewer. The writer
-returns short answers by default and can offer two follow-up questions in the same
-call. The reviewer checks suggestions in its existing call; rejected suggestions
-are omitted while a valid answer survives.
+Greetings and pre-model refusals use the same session revision, replay and commit path. Their
+reply is committed without changing the prior topic or scope and without a model call. A
+following pronoun or metric question therefore still refers to the earlier archive question.
 
-The browser stores a versioned transcript, session identity, expiry, archive version,
-and exact pending turn in `sessionStorage`. Reload exposes Retry for an interrupted
-turn. New chat aborts in-flight work and clears the active conversation. A 409 with
-`session_expired` starts a visible new-conversation boundary, keeps older messages
-readable, and leaves the submitted question ready for Retry or editing. Archive
-changes similarly invalidate the old context. Storage failure leaves the in-memory
-chat usable and displays a refresh-recovery notice.
+Both chat surfaces share a transcript that remains fully visible. Each request sends the ten
+previous individual messages, excluding the current question. The API keeps at least a UTF-8-safe
+opening excerpt of every retained message, then restores newest detail within a 2,000-byte
+serialized history allowance. Server session state separately retains topic, scope and verified
+claims. Transcript text has no evidence authority and is absent from the independent answer
+reviewer. The writer returns short answers by default and can offer two follow-up questions in the
+same call. The reviewer checks suggestions; rejected suggestions are omitted while a valid answer
+survives.
 
-## Budget operations
-
-The configured production cutoff remains $2. Reservations, cutoff checks and settlement are
-atomic. The expected three-call path is reserved before generation; further
-investigation/repair reserves remaining capacity before execution. Unknown usage
-and uncertain timeouts retain conservative charges. Reported cost settles actual
-usage. Shadow uses the same ledger. OpenRouter requests currently allow provider
-data collection and fallbacks; deployments that require zero data retention must
-restore those routing constraints before enabling the model path.
-
-An absent `ai-budget:YYYY-MM` key blocks all model paths, including legacy callers.
-**Do not initialize a lost production ledger to zero.** Reconcile provider billing,
-previous reservations and uncertain in-flight requests, then restore the
-conservative amount through the existing administrator-controlled Redis access.
-The ledger has no automatic expiry. A new month also requires reconciliation.
-Local test Redis uses a separate, disposable ledger and never alters production.
+The browser stores a versioned transcript, session identity, expiry, archive version and exact
+pending turn in `sessionStorage`. Reload exposes Retry for an interrupted turn. New chat aborts
+in-flight work and clears the active conversation. A 409 with `session_expired` starts a visible
+new-conversation boundary, keeps older messages readable and leaves the submitted question ready
+for Retry or editing. Archive changes invalidate the old context. Storage failure leaves the
+in-memory chat usable and displays a refresh-recovery notice.
 
 ## Verification and promotion
 
@@ -336,7 +426,7 @@ These tests are synthetic protocol evidence, not live-model quality evidence.
 
 For the private captured-wire dry diagnostic, rebuild payload selection with the
 new packer and a recording, no-network adapter; count the actual system/user/scoped
-schema bytes at dispatch, confirm every input is at most 8000 UTF-8 bytes, and
+schema bytes at dispatch, confirm every input is at most 16000 UTF-8 bytes, and
 compare retained claims with their immutable registry objects. Check complete
 requested record/narrative groups, admitted evidence/fact/review reference enums,
 exact review spans and the unchanged follow-up bound. Capture any over-budget
@@ -349,21 +439,17 @@ configured provider. `ANALYST_PROVIDER_FORMAT=json_schema` enables strict schema
 and OpenRouter `require_parameters`; the explicit default `json_object` still
 requires local schema validation. No model substitution occurs.
 
-Run the repeated conversation harness against a private API:
+The live harness scores the committed questions with the honest scorer:
 
 ```sh
-uv run --package knicksiq-api python -m app.evaluation.analyst_evaluation \
-  --base-url http://127.0.0.1:8000 --repetitions 5 \
-  --output docs/release-evidence/analyst-evidence-v1/conversations.json
+uv run --package knicksiq-api python tools/release/analyst_live_e2e.py \
+  --per-category 2 --out docs/release-evidence/analyst-live/latest.json
 ```
 
-The harness stops if provider capability fails. Automated protocol tests use
-scripted models and actual local Redis; they do not measure provider answer
-quality or count toward LLM release success. Human review, held-out reviewer
-calibration, search Recall@5 on labelled top-five-satisfiable tasks, answerable
-completion, naturalness and latency classifications must be supplied separately.
-Missing measurements fail the gate helper. Existing release approvals remain
-required; this implementation does not automatically promote or deploy.
+The scorer reads structure first, then cited claim values. It records `refused`, `degraded`,
+`llm_validated` and warning fallbacks before any phrase check. A refused answer counts as a pass
+only for an unanswerable question. Numbers in an answer must appear in a cited claim or receipt.
+See `docs/evaluation.md` and the `scoring` evidence directory.
 
 The private original120 runner is `app.evaluation.guarded_release`: `admit` verifies
 current key credit, model/provider parameters and prices, exact archive/index
@@ -445,9 +531,9 @@ selects the independent whole-answer reviewer over Responses through
 `AI_MODEL_PROTOCOLS`. It is not a retrieval reranker. Set the Go credential in
 `AI_API_KEY`; no client credential is exposed.
 
-The Go blueprint explicitly allows 1,600 output tokens for writing and 3,000 for
-review. Library defaults stay at 1,200 for existing callers. Input, evidence,
-call-count and deadline limits remain unchanged. Each adapter sends a random
+The blueprint and library defaults allow 1,600 output tokens for writing and
+3,000 for review. The input cap is 16,000 UTF-8 bytes with a 6,000-byte evidence
+allowance; call-count and deadline limits are unchanged. Each adapter sends a random
 `x-opencode-session` identifier unrelated to the user's bearer session token.
 `AI_MODEL_PRICES` supplies estimated USD-per-million input and output token rates
 when the subscription host omits per-call cost. Those estimates are not billing

@@ -1,0 +1,56 @@
+{
+  "questions": 35,
+  "validated": 32,
+  "validated_rate": 0.914,
+  "outcomes": {
+    "validated": 32,
+    "failed:orchestrate:ValidationError": 2,
+    "failed:orchestrate:ValueError": 1
+  },
+  "by_category": {
+    "exact_statistics": {
+      "validated": 4,
+      "failed:orchestrate:ValidationError": 1
+    },
+    "date_range_last_n": {
+      "validated": 4,
+      "failed:orchestrate:ValidationError": 1
+    },
+    "comparisons": {
+      "validated": 5
+    },
+    "single_game_narrative": {
+      "validated": 4,
+      "failed:orchestrate:ValueError": 1
+    },
+    "turning_points": {
+      "validated": 5
+    },
+    "aliases_typos": {
+      "validated": 5
+    },
+    "unsupported": {
+      "validated": 5
+    }
+  },
+  "not_validated": [
+    {
+      "id": "exact_statistics-003",
+      "category": "exact_statistics",
+      "question": "What was the Knicks average score per game?",
+      "outcome": "failed:orchestrate:ValidationError"
+    },
+    {
+      "id": "date_range_last_n-004",
+      "category": "date_range_last_n",
+      "question": "How did the Knicks perform from January 1 through January 31?",
+      "outcome": "failed:orchestrate:ValidationError"
+    },
+    {
+      "id": "single_game_narrative-004",
+      "category": "single_game_narrative",
+      "question": "Why did the Knicks win the Chicago game?",
+      "outcome": "failed:orchestrate:ValueError"
+    }
+  ]
+}

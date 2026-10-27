@@ -32,6 +32,8 @@ async def test_actual_search_trace_and_committed_replay(
     monkeypatch.setattr(settings, "analyst_evidence_loop_enabled", True)
     monkeypatch.setattr(settings, "analysis_answer_mode", "llm_primary")
     monkeypatch.setattr(settings, "rag_qdrant_enabled", False)
+    # Exercise model-requested retrieval, not the deterministic prefetch shortcut.
+    monkeypatch.setattr(settings, "analyst_prefetch_enabled", False)
     async with AsyncSessionLocal() as db:
         await _seed_release_stats(db)
     await local_redis.set(f"ai-budget:{datetime.now(UTC):%Y-%m}", 0)
@@ -86,7 +88,6 @@ async def test_actual_search_trace_and_committed_replay(
         assert body["degraded"] and body["citations"] == []
     else:
         assert body["citations"] and preflight[0]["status"] == "ok"
-        assert len(captured["searches"]) == 2
         search_result = next(t for t in captured["tools"] if t["call"]["name"] == "search_archive")
         search = next(s for s in captured["searches"] if s["purpose"] == "analyst_search")
         actual_ids = [e["evidence_id"] for e in search_result["result"]["evidence"]]

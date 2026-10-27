@@ -1,0 +1,14 @@
+{
+  "status": "prepared_not_staged_or_activated",
+  "path": "release-artifacts/2025-26/reliability-approved-20260928.json.gz",
+  "sha256": "549af2edd0d195eff60bb318bdc58a8c8e217ea0359c0684d492d5292dcb595b",
+  "version": "2025-26.20260928.1",
+  "approved_input_content_sha256": "c5c3c49a4233a306aed908c2740bc496a50e59315280d4d2e0f2a21f2aef98c0",
+  "canonical_rows_unchanged": true,
+  "narrative_hashes_unchanged": true,
+  "metadata_changes": [
+    "reviewed flags",
+    "hash-bound approval map",
+    "new release version"
+  ]
+}

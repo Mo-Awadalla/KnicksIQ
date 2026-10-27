@@ -1,0 +1,4 @@
+BAD 'And overall?' -> "I can't answer that: verified archive facts are unavailable on this turn." (want 'wins: 69 over 101')
+BAD 'And in the playoffs?' -> "I can't answer that: verified archive facts are unavailable on this turn." (want 'wins: 16 over 19')
+BAD 'And at home?' -> "I can't answer that: verified archive facts are unavailable on this turn." (want 'wins: 30 over 40')
+FAILURES 3

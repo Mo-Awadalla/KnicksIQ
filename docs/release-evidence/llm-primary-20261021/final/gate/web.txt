@@ -1,0 +1,7 @@
+commit 4c6af51
+✖ 2 problems (0 errors, 2 warnings)
+
+All matched files use Prettier code style!
+✓ built in 426ms
+      Tests  47 passed (47)
+  48 passed (23.2s)

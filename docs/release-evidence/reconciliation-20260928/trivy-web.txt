@@ -1,0 +1,14 @@
+2026-09-28T21:31:30Z	INFO	[vuln] Vulnerability scanning is enabled
+2026-09-28T21:31:30Z	INFO	[secret] Secret scanning is enabled
+2026-09-28T21:31:30Z	INFO	[secret] If your scanning is slow, please try '--scanners vuln' to disable secret scanning
+2026-09-28T21:31:30Z	INFO	[secret] Please see https://trivy.dev/v0.67/docs/scanner/secret#recommendation for faster secret detection
+2026-09-28T21:31:31Z	INFO	Detected OS	family="alpine" version="3.22.1"
+2026-09-28T21:31:31Z	INFO	[alpine] Detecting vulnerabilities...	os_version="3.22" repository="3.22" pkg_num=70
+2026-09-28T21:31:31Z	INFO	Number of language-specific files	num=0
+2026-09-28T21:31:31Z	WARN	Using severities from other vendors for some vulnerabilities. Read https://trivy.dev/v0.67/docs/scanner/vulnerability#severity-selection for details.
+
+📣 [34mNotices:[0m
+  - Version 0.74.0 of Trivy is now available, current version is 0.67.2
+
+To suppress version checks, run Trivy scans with the --skip-version-check flag
+
