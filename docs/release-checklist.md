@@ -20,7 +20,7 @@ The owner removed the required shadow stage on 2026-10-20; launch goes straight 
 `ANALYST_EVIDENCE_LOOP_ENABLED=true`, `ANALYSIS_SHADOW_SAMPLE_RATE=0.1` retained only for
 explicit shadow drills (primary turns are never sampled), and a configured Sentry DSN. The
 approved record's pending `openrouter_monthly_cutoff_usd` target is $20, applied only during an
-explicitly authorized deployment; `render.yaml` still declares $2 until that authorized change.
+explicitly authorized deployment. `render.yaml` declares `OPENROUTER_MONTHLY_CUTOFF_USD=2` until that authorized change.
 Models run on the owner's OpenCode Go subscription: `AI_PROVIDER=opencode-go`,
 `AI_CHAT_MODEL=deepseek-v4.1-flash` writes over Chat Completions, and
 `ANALYST_REVIEW_MODEL=gpt-6-luna` reviews over the Responses API
@@ -84,3 +84,30 @@ these rebuilt artifacts are not asserted identical to CI artifacts. Capture both
 application deployments, active data version and alias mapping before promotion. Smoke-test
 both resulting services. Restore every changed component on failure; coordinated restoration
 is not atomic. Stop promotion and alert the owner if any restoration fails.
+
+## Prepare the current candidate
+
+Create a review package from the current checkout and the release record:
+
+```sh
+uv run --package knicksiq-api python tools/release/prepare_llm_primary.py \
+  --output-dir release-artifacts/llm-primary-preparation
+```
+
+Use a new or empty output directory for each run. Use `--record PATH` for a separately
+assembled candidate record. The package preserves that record byte for byte and includes
+readiness blockers, original evidence commits, artifact hashes, launch consistency and rerun
+commands. Historical passing checks cannot establish readiness for a different commit.
+A dirty checkout blocks readiness. Only untracked output files are excluded from that check.
+Tracked deletions inside the output directory still block readiness.
+
+Exit 1 means readiness is blocked. Exit 2 means the inputs were rejected before package
+creation. Exit 0 means the preparation checks pass. It does not approve deployment or verify
+live rollback targets. Preparation runs no provider traffic and changes no production settings.
+
+Verify the command through its CLI and save the receipt:
+
+```sh
+uv run --package knicksiq-api python tools/release/verify_prepare_llm_primary.py \
+  --output release-artifacts/llm-primary-preparation-e2e.json
+```
