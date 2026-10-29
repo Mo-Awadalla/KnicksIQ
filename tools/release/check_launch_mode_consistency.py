@@ -2,8 +2,8 @@
 """Check that the launch mode and model host are stated once and not contradicted.
 
 Render is the deployed declaration. The release checklist's intended-launch section is the
-authoritative document. The analyst implementation document must link there and must not assert a
-different mode or an obsolete tool count.
+authoritative document. The analyst implementation opens with the launch statement and links
+there. Later operational examples may describe other modes. The tool count must remain current.
 
 Exits 1 on any mismatch. Writes the observations to stdout and, with --json-out, to a file.
 """
@@ -89,7 +89,15 @@ def main(argv: list[str] | None = None) -> int:
         if key in render and key in checklist and render[key] != checklist[key]:
             mismatches.append(f"{key}: render.yaml={render[key]!r} checklist={checklist[key]!r}")
 
-    doc_modes = re.findall(r"ANALYSIS_ANSWER_MODE\s*=\s*([A-Za-z_]+)", analyst)
+    launch_statement = next(
+        (
+            part
+            for part in analyst.split("\n\n")
+            if part.strip() and not part.lstrip().startswith("#")
+        ),
+        "",
+    )
+    doc_modes = re.findall(r"ANALYSIS_ANSWER_MODE\s*=\s*([A-Za-z_]+)", launch_statement)
     expected_mode = render.get("ANALYSIS_ANSWER_MODE", "")
     for mode in doc_modes:
         if mode != expected_mode:
