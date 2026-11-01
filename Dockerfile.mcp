@@ -4,7 +4,7 @@ ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
     PIP_NO_CACHE_DIR=1 \
     UV_LINK_MODE=copy \
-    PYTHONPATH=/app/apps/api:/app/apps/mcp/mcp_app:/app/packages/basketball-core/src
+    PYTHONPATH=/app/apps/api:/app/apps/mcp:/app/packages/basketball-core/src
 
 RUN pip install --no-cache-dir uv
 
@@ -16,14 +16,20 @@ COPY apps/worker/pyproject.toml ./apps/worker/pyproject.toml
 COPY apps/mcp/pyproject.toml ./apps/mcp/pyproject.toml
 COPY packages/basketball-core/pyproject.toml ./packages/basketball-core/pyproject.toml
 
-RUN uv sync --package knicksiq-mcp 2>/dev/null || uv sync --package knicksiq-mcp
+RUN uv sync --frozen --package knicksiq-mcp
 
 COPY apps/api/app ./apps/api/app
 COPY apps/mcp/mcp_app ./apps/mcp/mcp_app
 COPY packages/basketball-core/src ./packages/basketball-core/src
 
-RUN uv sync --package knicksiq-mcp
+RUN uv sync --frozen --package knicksiq-mcp
+RUN addgroup --system knicksiq && adduser --system --ingroup knicksiq knicksiq \
+    && chown -R knicksiq:knicksiq /app
+USER knicksiq
+
+HEALTHCHECK --interval=30s --timeout=5s --retries=3 CMD ["/app/.venv/bin/python", "-c", "from urllib.request import urlopen; response=urlopen('http://127.0.0.1:8001/sse', timeout=3); response.close()"]
+
 
 EXPOSE 8001
 
-CMD ["uv", "run", "--package", "knicksiq-mcp", "python", "-m", "mcp_app.server", "--transport", "sse"]
+CMD ["/app/.venv/bin/python", "-m", "mcp_app.server", "--transport", "sse"]

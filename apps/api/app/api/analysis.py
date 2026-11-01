@@ -17,16 +17,14 @@ from app.api.analysis_models import (
     AnalysisQueryResponse,
     AnswerQueryContext,
 )
-from app.api.analysis_narrative_response import (
-    _deterministic_lead_narrative_response,
-    answer_narrative_query,
-)
+from app.api.analysis_narrative_response import answer_narrative_query
 from app.api.analysis_player_response import answer_player_query
 from app.api.analysis_policy import (
     _client_id as _client_id,
 )
 from app.api.analysis_policy import (
     _contextual_question,
+    _is_greeting,
     _is_supported_question,
     _looks_like_follow_up,
     _rate_limit,
@@ -38,7 +36,6 @@ from app.api.analysis_policy import (
     _requests_by_client as _requests_by_client,
 )
 from app.api.analysis_presenters import _format_answer
-from app.api.analysis_refusals import immediate_reply
 from app.api.analysis_retrieval import (
     _active_data_version,
     _execute_archive_retrieval,
@@ -57,7 +54,7 @@ from app.core.db import get_db
 from app.services.archive_retrieval import (
     ArchiveEvidence,
 )
-from app.services.conversation_memory import HISTORY_MESSAGES, bounded_history
+from app.services.conversation_memory import bounded_history
 from app.services.conversation_state import (
     ConversationState,
     resolve_conversation_delta,
@@ -66,7 +63,6 @@ from app.services.conversation_state import (
 from app.services.fact_discovery import discover_fact, is_discovery
 from app.services.llm_planner import maybe_plan_query
 from app.services.narrative_scope import narrative_clarification
-from app.services.opponent_narrowing import requires_lead_change
 from app.services.query_classifier import classify_query
 from app.services.query_resolution import ResolvedQuery, resolve_query
 from app.services.retrieval_planner import (
@@ -92,8 +88,6 @@ async def query_analysis(
     db: Annotated[AsyncSession, Depends(get_db)],
 ) -> AnalysisQueryResponse:
     settings = runtime.get_settings()
-    # Resolve identity from all ten validated messages; only model context is shortened.
-    reference_context = [message.model_dump() for message in req.context[-HISTORY_MESSAGES:]]
     req.context = [
         AnalysisContextMessage.model_validate(item) for item in bounded_history(req.context)
     ]
@@ -104,30 +98,27 @@ async def query_analysis(
         "degraded": redis_degraded,
     }
     question = req.question.strip()
-    if len(question) > settings.public_chat_max_prompt_chars:
-        raise HTTPException(
-            status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
-            detail="Question is too long",
+    if _is_greeting(question):
+        return AnalysisQueryResponse(
+            **response_metadata,
+            route="greeting",
+            answer=(
+                "Hi — ask me about an archived Knicks game, player stat, streak, "
+                "opponent, or turning point."
+            ),
+            citations=[],
+            tool_calls=[],
         )
-    immediate_response = immediate_reply(question, response_metadata)
     if getattr(settings, "analyst_evidence_loop_enabled", False):
         try:
             async with asyncio.timeout(settings.analyst_deadline_seconds):
-                return await _query_evidence_analyst(
-                    req,
-                    request,
-                    db,
-                    reference_context=reference_context,
-                    immediate_response=immediate_response,
-                )
+                return await _query_evidence_analyst(req, request, db, background_tasks)
         except TimeoutError:
             return AnalysisQueryResponse(
                 answer="The archive could not be verified within this turn's deadline.",
                 citations=[],
                 degraded=True,
             )
-    if immediate_response is not None:
-        return immediate_response
     structured_conversation_enabled = getattr(
         settings,
         "rag_structured_conversation_state_enabled",
@@ -136,6 +127,11 @@ async def query_analysis(
     context_question = (
         question if structured_conversation_enabled else _contextual_question(question, req.context)
     )
+    if len(question) > settings.public_chat_max_prompt_chars:
+        raise HTTPException(
+            status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+            detail="Question is too long",
+        )
     if _requires_explicit_refusal(question):
         return AnalysisQueryResponse(
             **response_metadata,
@@ -170,14 +166,8 @@ async def query_analysis(
             tool_calls=[{"tool": "discover_fact", "result_count": len(discovery.citations)}],
         )
     resolved_query: ResolvedQuery | None = None
-    if (
-        getattr(settings, "rag_query_resolution_v2_enabled", False)
-        or structured_conversation_enabled
-        or (
-            getattr(settings, "analysis_answer_mode", "deterministic") == "deterministic"
-            and requires_lead_change(question)
-            and len(team_ids_in_text(question) - {"NYK"}) == 1
-        )
+    if getattr(settings, "rag_query_resolution_v2_enabled", False) or (
+        structured_conversation_enabled
     ):
         initial_classifier = classify_query(question)
         resolved_query = await resolve_query(
@@ -213,17 +203,6 @@ async def query_analysis(
             )
         if resolved_query.requires_clarification:
             choices = "; ".join(resolved_query.clarification_options)
-            if resolved_query.clarification_reason == "unverified_game_condition":
-                answer = (
-                    "Short answer\n"
-                    "I cannot verify the requested lead-change condition for every candidate "
-                    "because some play-by-play score sequences are missing, malformed, or do "
-                    "not reconcile with the final score. Which archived game date should I use?"
-                )
-            else:
-                answer = "Short answer\nI found more than one valid match. Which one did you mean?"
-            if choices:
-                answer += f"\n\nOptions\n{choices}"
             return AnalysisQueryResponse(
                 **response_metadata,
                 route="clarification",
@@ -231,7 +210,11 @@ async def query_analysis(
                 resolved_query=resolved_query.model_dump(mode="json"),
                 conversation_state=conversation_state,
                 warnings=[resolved_query.clarification_reason or "ambiguous_reference"],
-                answer=answer,
+                answer=(
+                    "Short answer\n"
+                    "I found more than one valid match. Which one did you mean?"
+                    + (f"\n\nOptions\n{choices}" if choices else "")
+                ),
                 citations=[],
                 tool_calls=[
                     {
@@ -266,6 +249,7 @@ async def query_analysis(
         req,
         db,
         background_tasks,
+        request_id=request.state.request_id,
         settings=settings,
         question=question,
         context_question=context_question,
@@ -298,20 +282,6 @@ async def query_analysis(
             selected_narrative_game = defensive_games[0]
             question = f"{question} on {selected_narrative_game.game_date}"
     answer_mode = getattr(settings, "analysis_answer_mode", "deterministic")
-    if (
-        answer_mode == "deterministic"
-        and requires_lead_change(question)
-        and len(team_ids_in_text(question) - {"NYK"}) == 1
-    ):
-        game_ids = resolved_query.game_ids if resolved_query is not None else []
-        return await _deterministic_lead_narrative_response(
-            db,
-            question,
-            season=req.season,
-            game_id=game_ids[0] if len(game_ids) == 1 else None,
-            response_metadata=response_metadata,
-        )
-
     preplanned_retrieval_plan: RetrievalPlan | None = None
     preplan_latency_ms = 0
     resolved_supported = bool(
@@ -485,6 +455,7 @@ async def query_analysis(
             db=db,
             data_version=response_metadata["data_version"],
             settings=settings,
+            request_id=request.state.request_id,
         )
         tool_calls.append(vector_call)
         response_metadata = {
@@ -532,6 +503,7 @@ async def query_analysis(
             req,
             db,
             background_tasks,
+            request_id=request.state.request_id,
             selected_narrative_game=selected_narrative_game,
             **response_args,
         )

@@ -31,5 +31,8 @@ RUN addgroup --system knicksiq && adduser --system --ingroup knicksiq knicksiq \
     && chown -R knicksiq:knicksiq /app
 USER knicksiq
 EXPOSE 8000
-HEALTHCHECK --interval=30s --timeout=3s --retries=3 CMD ["python", "-c", "import os,urllib.request; urllib.request.urlopen('http://127.0.0.1:'+os.getenv('PORT','8000')+'/health/live', timeout=2)"]
+# Production redirects plaintext HTTP to HTTPS. The probe runs on the container's own
+# loopback port, where no TLS terminator exists, so it presents the trusted-edge scheme
+# header (see app/api/health_probe.py). The public HTTPS redirect is unchanged.
+HEALTHCHECK --interval=30s --timeout=3s --retries=3 CMD ["python", "-m", "app.api.health_probe"]
 CMD ["sh", "-c", "exec /app/.venv/bin/uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000} --no-access-log"]

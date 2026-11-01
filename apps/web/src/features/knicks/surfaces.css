@@ -458,10 +458,6 @@
   border-top: 1px solid var(--line-subtle);
 }
 
-.table-scroll:focus-visible {
-  outline-offset: -3px;
-}
-
 .data-table {
   width: 100%;
   min-width: 40rem;
@@ -505,6 +501,28 @@
   margin-top: 0.25rem;
   color: var(--text-muted);
   line-height: 1.45;
+}
+
+.box-score-table {
+  white-space: nowrap;
+}
+
+.box-score-table caption {
+  padding: 1rem 1.5rem;
+  text-align: left;
+  font-weight: 600;
+}
+
+.box-score-table th[scope='row'] {
+  color: inherit;
+  font-family: inherit;
+  font-size: inherit;
+  letter-spacing: normal;
+  text-transform: none;
+}
+
+.box-score-table td:nth-child(2) {
+  min-width: 0;
 }
 
 .report-row {
@@ -721,12 +739,6 @@
   display: grid;
   gap: 0.9rem;
   min-width: 0;
-}
-
-.analyst-thread-content {
-  display: grid;
-  min-width: 0;
-  gap: 0.9rem;
 }
 
 .analyst-empty {

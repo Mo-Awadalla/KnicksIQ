@@ -11,20 +11,22 @@ from pydantic import BaseModel, ConfigDict, Field
 
 
 class ConversationState(BaseModel):
+    """Browser-carried conversation scope with bounded collections."""
+
     model_config = ConfigDict(extra="forbid")
 
-    player_ids: list[int] = Field(default_factory=list)
-    game_ids: list[int] = Field(default_factory=list)
-    opponent_id: str | None = None
+    player_ids: list[int] = Field(default_factory=list, max_length=200)
+    game_ids: list[int] = Field(default_factory=list, max_length=200)
+    opponent_id: str | None = Field(default=None, max_length=16)
     date_start: date | None = None
     date_end: date | None = None
-    periods: list[int] = Field(default_factory=list)
+    periods: list[int] = Field(default_factory=list, max_length=16)
     season_type: Literal["regular", "play_in", "playoffs"] | None = None
     home_away: Literal["home", "away"] | None = None
     game_result: Literal["W", "L"] | None = None
-    metric: str | None = None
-    route: str | None = None
-    data_version: str | None = None
+    metric: str | None = Field(default=None, max_length=64)
+    route: str | None = Field(default=None, max_length=64)
+    data_version: str | None = Field(default=None, max_length=64)
     discovery_question: str | None = Field(default=None, max_length=1200)
     seen_fact_ids: list[str] = Field(default_factory=list, max_length=200)
 

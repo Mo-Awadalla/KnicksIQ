@@ -1,5 +1,5 @@
 import { readFileSync } from 'node:fs'
-import { expect, test } from './network-fixture'
+import { expect, test } from 'playwright/test'
 import AxeBuilder from '@axe-core/playwright'
 
 // Corrected proposal serialized by the real API using an in-memory session.
@@ -10,6 +10,9 @@ test('corrected report sources expose exact intervals and use internal game IDs'
   expect(fixture.candidate_reviewed).toBe(false)
   await page.route(`**/api/reports/${fixture.report.id}`, (route) => route.fulfill({ json: fixture.report }))
   await page.route(`**/api/games/${fixture.game.id}`, (route) => route.fulfill({ json: fixture.game }))
+  await page.route(`**/api/games/${fixture.game.id}/box-score`, (route) =>
+    route.fulfill({ json: { game_id: fixture.game.id, periods: [], teams: [], players: [] } })
+  )
   await page.route(`**/api/games/${fixture.game.id}/runs`, (route) => route.fulfill({ json: [] }))
   await page.route(`**/api/games/${fixture.game.id}/play-by-play`, (route) => route.fulfill({ json: fixture.events }))
   await page.goto(`/reports/${fixture.report.id}`)

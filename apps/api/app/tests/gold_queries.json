@@ -89,6 +89,9 @@
   {
     "question": "What happened in Q4 of a Knicks game?",
     "route": "clarification",
+    "answer_contains": [
+      "Which game"
+    ],
     "forbidden_tools": [
       "search_possession_chunks",
       "llm_generate"
@@ -107,6 +110,9 @@
   {
     "question": "How did the lineup with Brunson look in the Knicks game?",
     "route": "clarification",
+    "answer_contains": [
+      "Which game"
+    ],
     "forbidden_tools": [
       "search_possession_chunks",
       "llm_generate"
@@ -115,6 +121,9 @@
   {
     "question": "What if the Knicks made two more threes in that game?",
     "route": "clarification",
+    "answer_contains": [
+      "Which game"
+    ],
     "forbidden_tools": [
       "search_possession_chunks",
       "llm_generate"

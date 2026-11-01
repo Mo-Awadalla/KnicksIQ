@@ -13,7 +13,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.config import get_settings
 from app.core.db import get_db
 from app.models.dataset_release import DatasetRelease
-from app.services.qdrant_client import qdrant_health_status
+from app.services.qdrant_client import is_qdrant_healthy
 
 router = APIRouter(tags=["health"])
 
@@ -52,22 +52,23 @@ async def ready(db: Annotated[AsyncSession, Depends(get_db)]):
             failures.append("ip_hash_secret")
         if settings.public_web_origin not in settings.cors_origins:
             failures.append("cors_origin")
-        model_provider = settings.ai_provider.lower() not in {"mock", "none", "disabled"}
-        if model_provider and not settings.openrouter_allowed_models:
-            failures.append("model_allowlist")
+        if settings.ai_provider == "openrouter" and not settings.openrouter_allowed_models:
+            failures.append("openrouter_model_allowlist")
 
     optional = {
         "qdrant": (
             "disabled"
             if not settings.rag_qdrant_enabled
-            else await asyncio.to_thread(qdrant_health_status)
+            else "ok"
+            if await asyncio.to_thread(is_qdrant_healthy)
+            else "degraded"
         ),
         "redis": "configured" if settings.redis_url else "disabled",
-        "model_provider": (
+        "openrouter": (
             "disabled"
-            if settings.ai_provider.lower() in {"mock", "none", "disabled"}
+            if settings.ai_provider.lower() != "openrouter"
             else "configured"
-            if settings.ai_api_key
+            if settings.openrouter_api_key or settings.ai_api_key
             else "degraded"
         ),
     }
@@ -83,11 +84,11 @@ async def ready(db: Annotated[AsyncSession, Depends(get_db)]):
 @router.get("/health/rag")
 async def rag_health() -> dict[str, object]:
     settings = get_settings()
-    status = await asyncio.to_thread(qdrant_health_status)
+    healthy = await asyncio.to_thread(is_qdrant_healthy)
     return {
-        "status": status,
+        "status": "ok" if healthy else "degraded",
         "qdrant_enabled": settings.rag_qdrant_enabled,
-        "qdrant_healthy": status == "ok",
+        "qdrant_healthy": healthy,
     }
 
 

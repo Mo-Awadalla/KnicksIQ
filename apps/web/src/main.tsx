@@ -10,6 +10,7 @@ import { RouterProvider, createRouter } from '@tanstack/react-router'
 import * as Sentry from '@sentry/react'
 import { toast } from 'sonner'
 import { handleServerError } from '@/lib/handle-server-error'
+import { scrubTelemetryEvent } from '@/lib/telemetry'
 import { DirectionProvider } from './context/direction-provider'
 import { FontProvider } from './context/font-provider'
 // Generated Routes
@@ -30,12 +31,8 @@ if (import.meta.env.VITE_SENTRY_DSN) {
       delete breadcrumb.data
       return breadcrumb
     },
-    beforeSend(event) {
-      delete event.user
-      delete event.request
-      if (event.breadcrumbs) event.breadcrumbs = []
-      return event
-    },
+    beforeSend: scrubTelemetryEvent,
+    beforeSendTransaction: scrubTelemetryEvent,
   })
 }
 

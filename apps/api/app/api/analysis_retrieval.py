@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import hashlib
+import hmac
 import logging
 import re
 import time
@@ -19,7 +20,9 @@ from app.models.dataset_release import DatasetRelease
 from app.models.game import Game
 from app.services.archive_retrieval import (
     ArchiveEvidence,
+    RetrievalTrace,
     fuse_archive_evidence,
+    ranked_evidence,
     search_archive_lexical,
     search_archive_vectors,
 )
@@ -33,6 +36,8 @@ from app.services.retrieval_planner import (
 from app.services.team_scope import scope_games, scores
 
 logger = logging.getLogger(__name__)
+
+_SHADOW_SAMPLE_DOMAIN = "analysis-shadow-sample:"
 
 
 async def _matching_games(db: AsyncSession, question: str, season: str) -> list[Game]:
@@ -72,8 +77,12 @@ async def _execute_archive_retrieval(
     db: AsyncSession | None = None,
     data_version: str,
     settings: Any,
+    request_id: str,
 ) -> tuple[list[ArchiveEvidence], dict[str, Any], bool]:
     started = time.perf_counter()
+    if not request_id:
+        raise ValueError("Archive retrieval requires the actual request identity for its trace")
+    traces: list[RetrievalTrace] = []
     base_call = {
         "tool": "archive_vector_search",
         "mode": "hybrid",
@@ -99,6 +108,7 @@ async def _execute_archive_retrieval(
                 extra={"error_type": type(exc).__name__},
             )
             errors.append("lexical")
+    dense_status = "disabled"
     if getattr(settings, "rag_qdrant_enabled", False):
         try:
             dense = await asyncio.to_thread(
@@ -110,7 +120,9 @@ async def _execute_archive_retrieval(
                 limit=getattr(settings, "rag_dense_candidate_limit", 30),
                 candidate_limit=getattr(settings, "rag_dense_candidate_limit", 30),
             )
+            dense_status = "ok"
         except Exception as exc:  # noqa: BLE001
+            dense_status = "failed"
             logger.warning(
                 "archive_vector_search_failed",
                 extra={"error_type": type(exc).__name__},
@@ -119,16 +131,35 @@ async def _execute_archive_retrieval(
     else:
         errors.append("dense")
     if not true_hybrid:
+        selected = dense[: getattr(settings, "rag_retrieval_limit", 5)]
+        traces.append(
+            RetrievalTrace(
+                request_id=request_id,
+                data_version=data_version,
+                lexical=ranked_evidence(lexical),
+                dense=ranked_evidence(dense),
+                candidates=ranked_evidence(dense),
+                selected=ranked_evidence(selected),
+                errors=tuple(errors),
+                latency_ms=int((time.perf_counter() - started) * 1000),
+                candidate_limit=getattr(settings, "rag_dense_candidate_limit", 30),
+                candidate_limit_applied=True,
+                lexical_limit=getattr(settings, "rag_lexical_candidate_limit", 30),
+                dense_limit=getattr(settings, "rag_dense_candidate_limit", 30),
+                dense_status=dense_status,
+            )
+        )
         return (
-            dense[: getattr(settings, "rag_retrieval_limit", 5)],
+            selected,
             {
                 **base_call,
                 "mode": "dense",
                 "latency_ms": int((time.perf_counter() - started) * 1000),
-                "result_count": len(dense),
+                "result_count": len(selected),
                 "lexical_candidate_count": 0,
                 "dense_candidate_count": len(dense),
                 "errors": errors,
+                "retrieval_trace": traces[-1].as_trace(),
             },
             "dense" in errors,
         )
@@ -147,6 +178,13 @@ async def _execute_archive_retrieval(
         ),
         filters=plan.filters.model_dump(mode="json"),
         weighted=getattr(settings, "rag_weighted_fusion_enabled", False),
+        trace=traces,
+        request_id=request_id,
+        data_version=data_version,
+        errors=tuple(errors),
+        dense_status=dense_status,
+        lexical_limit=getattr(settings, "rag_lexical_candidate_limit", 30),
+        dense_limit=getattr(settings, "rag_dense_candidate_limit", 30),
     )
     return (
         evidence,
@@ -157,18 +195,30 @@ async def _execute_archive_retrieval(
             "lexical_candidate_count": len(lexical),
             "dense_candidate_count": len(dense),
             "errors": errors,
+            "retrieval_trace": traces[-1].as_trace(),
         },
         len(errors) == 2,
     )
 
 
 def _sample_shadow(request_id: str, rate: float) -> bool:
+    """Deterministic, pre-countable sampling draw the caller cannot choose.
+
+    The request id is client supplied, so hashing it alone let a caller enumerate ids
+    that land inside the sampled bucket and force every request into the paid trial.
+    The draw is now an HMAC over a domain-separated server secret: still deterministic
+    per environment (so replays and the configured 10% policy are unchanged), but not
+    computable from client input.
+    """
     if rate <= 0:
         return False
     if rate >= 1:
         return True
-    digest = hashlib.sha256(request_id.encode()).digest()
-    bucket = int.from_bytes(digest[:4], "big") / (2**32 - 1)
+    secret = runtime.get_settings().ip_hash_secret.encode()
+    digest = hmac.new(
+        secret, (_SHADOW_SAMPLE_DOMAIN + request_id).encode(), hashlib.sha256
+    ).digest()
+    bucket = int.from_bytes(digest[:4], "big") / (2**32)
     return bucket < rate
 
 
@@ -190,6 +240,7 @@ async def _run_shadow_candidate(
             plan,
             data_version=data_version,
             settings=settings,
+            request_id=request_id,
         )
         if vector_degraded:
             logger.info(

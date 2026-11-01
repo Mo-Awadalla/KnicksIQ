@@ -91,11 +91,6 @@
   color: var(--signal-orange);
 }
 
-.surface-disclosure {
-  max-width: 65ch;
-  line-height: 1.5;
-}
-
 .surface-season {
   color: var(--signal-orange);
   font-family: var(--type-stats);

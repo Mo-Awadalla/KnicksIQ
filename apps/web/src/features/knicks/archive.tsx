@@ -9,7 +9,6 @@ import { AnswerPanel } from './answer-panel'
 import { ArchiveFooter } from './archive-footer'
 import { MEMORY_NOTE } from './conversation'
 import './landing.css'
-import { QuestionProgress } from './surface-layout'
 import { useAnalyst } from './use-analyst'
 
 const KNICKS_SEASON = '2025-26'
@@ -38,8 +37,6 @@ export function SeasonArchivePage() {
     archiveChecking,
     slow,
     retryReadiness,
-    cancel,
-    elapsedSeconds,
   } = useAnalyst()
   const resultsRef = useRef<HTMLDivElement>(null)
 
@@ -214,7 +211,7 @@ export function SeasonArchivePage() {
             <form
               className='archive-console'
               aria-labelledby='ask-title'
-              aria-busy={archiveChecking || analyst.isPending}
+              aria-busy={archiveChecking}
               onSubmit={(event) => {
                 event.preventDefault()
                 submit()
@@ -368,26 +365,30 @@ export function SeasonArchivePage() {
               </p>
             </header>
 
-            <div ref={resultsRef} className='archive-result-stack'>
+            <div
+              ref={resultsRef}
+              className='archive-result-stack'
+              aria-busy={analyst.isPending}
+            >
               <span className='sr-only' role='status' aria-live='polite'>
                 {analyst.isSuccess ? 'Answer ready. Review it below.' : ''}
               </span>
               {analyst.isPending ? (
-                <QuestionProgress
-                  elapsedSeconds={elapsedSeconds}
-                  onCancel={() => {
-                    cancel()
-                    requestAnimationFrame(() =>
-                      document.getElementById('archive-question')?.focus()
-                    )
-                  }}
-                />
+                <div className='archive-state' role='status'>
+                  <Loader2
+                    className='archive-blue-text size-4 animate-spin'
+                    aria-hidden='true'
+                  />
+                  Searching the season archive…
+                </div>
               ) : null}
               {analyst.error ? (
                 <Alert variant='destructive'>
                   <AlertTitle>That question couldn’t be answered.</AlertTitle>
                   <AlertDescription>
-                    {analyst.error}
+                    {navigator.onLine
+                      ? 'The archive could not answer that request. It may have timed out or reached a rate limit; try again shortly.'
+                      : 'You are offline. Reconnect to search the archive.'}
                     <Button
                       disabled={!archiveReady || analyst.isPending}
                       onClick={retry}
@@ -399,10 +400,7 @@ export function SeasonArchivePage() {
                 </Alert>
               ) : null}
               {messages.length > 0 ? (
-                <ol
-                  className='archive-message-list'
-                  aria-busy={analyst.isPending}
-                >
+                <ol className='archive-message-list'>
                   {messages.map((message, index) =>
                     message.boundary ? (
                       <li

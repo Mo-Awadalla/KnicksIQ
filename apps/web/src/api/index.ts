@@ -3,6 +3,7 @@ import type {
   AnalysisResponse,
   AnalysisContextMessage,
   ArchiveStatus,
+  BoxScore,
   GameDetail,
   GameEvent,
   GameSummary,
@@ -52,6 +53,11 @@ export async function fetchArchiveStatus(opts?: {
 export async function fetchGame(id: number): Promise<GameDetail> {
   const r = await api.get<GameDetail>(`/games/${id}`)
   return r.data
+}
+
+export async function fetchBoxScore(id: number): Promise<BoxScore> {
+  const response = await api.get<BoxScore>(`/games/${id}/box-score`)
+  return response.data
 }
 
 export async function fetchPlayByPlay(id: number): Promise<GameEvent[]> {

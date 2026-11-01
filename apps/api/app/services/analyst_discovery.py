@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import re
 from typing import TYPE_CHECKING, Any
 
 from app.models.box_score import PlayerGameStat
@@ -14,37 +13,10 @@ from basketball_core.analytics.registry import STAT_REGISTRY
 
 if TYPE_CHECKING:
     from app.services.analyst_tools import AnalystTools
+from app.services.analyst_player_stats import METRICS
 
 
 def discover(tools: AnalystTools, scope: ResolvedQuery, games: list[Game]) -> ToolResult:
-    if scope.opponent_id and not scope.player_ids:
-        # Single-game highlights cannot answer a matchup question; force the record tools.
-        return ToolResult(
-            status="no_matching_results",
-            message="Single-game examples do not summarize a matchup. Call get_team_stats "
-            "for the opponent record and phase breakdown.",
-            scope=scope.model_dump(mode="json"),
-        )
-    if scope.opponent_id and scope.player_ids:
-        # A player-vs-opponent question needs every appearance, not the best single line.
-        return ToolResult(
-            status="no_matching_results",
-            message="Single-game examples do not summarize a player matchup. Call "
-            "get_player_stats for the full opponent population.",
-            scope=scope.model_dump(mode="json"),
-        )
-    if re.search(
-        r"\b(?:biggest|best|largest|worst|heaviest)\s+(?:win|victory|loss|defeat|blowout)\b"
-        r"|\b(?:highest|most)[- ]scoring\b|\bmost points (?:in a game|scored)\b",
-        tools.question,
-        re.I,
-    ):
-        # Single-game highlights are not the team extreme the question asks for.
-        return ToolResult(
-            status="no_matching_results",
-            message="Single-game highlights do not answer a team extreme. Call get_team_stats.",
-            scope=scope.model_dump(mode="json"),
-        )
     game_map = {g.id: g for g in games}
     seen = set(tools.state.get("delivered_fact_ids", []))
     excluded = set(tools.state.get("last_subjects", [])) if tools.different else set()
@@ -61,13 +33,7 @@ def discover(tools: AnalystTools, scope: ResolvedQuery, games: list[Game]) -> To
         if fact_id in seen:
             continue
         receipt = tools.receipt(game, stat, player)
-        requested_metric = scope.metric
-        # Derived metrics (starts, percentages, double-doubles) have no stored column;
-        # discovery reports the observed box-score line instead of inventing one.
-        metric = "box_score"
-        if requested_metric is not None and hasattr(stat, requested_metric):
-            metric = requested_metric
-        metrics = [metric]
+        metrics = [scope.metric] if scope.metric in METRICS else ["box_score"]
         claims = []
         for metric in metrics:
             values = {
@@ -119,8 +85,8 @@ def discover(tools: AnalystTools, scope: ResolvedQuery, games: list[Game]) -> To
             extreme_selected=True,
         )
         score = (
-            getattr(stat, metric)
-            if metric != "box_score"
+            getattr(stat, scope.metric)
+            if scope.metric in METRICS
             else stat.points + 1.5 * stat.assists + stat.rebounds - stat.turnovers
         )
         pool.append((score, candidate, claims, [receipt]))
@@ -272,6 +238,15 @@ def discover(tools: AnalystTools, scope: ResolvedQuery, games: list[Game]) -> To
                 if p.id in qualified
             ]
             value = fact["result"]["value"]
+            denominator: float | int = len(selected)
+            if metric == "true_shooting_percentage":
+                # A weighted TS% divides by shot opportunities, not appearances, so the
+                # claim states that denominator and the receipt records the same one.
+                subject_rows = [row for row, p in population_rows if p.id == player.id]
+                denominator = 2 * (
+                    sum(row.field_goals_attempted for row in subject_rows)
+                    + 0.44 * sum(row.free_throws_attempted for row in subject_rows)
+                )
             average = tools.claim(
                 **common,
                 metric=metric + ":average",
@@ -279,23 +254,11 @@ def discover(tools: AnalystTools, scope: ResolvedQuery, games: list[Game]) -> To
                 games=selected,
                 evidence=receipts,
                 sample=len(selected),
-                denominator=len(selected),
+                denominator=denominator,
                 window=fact["timeframe"],
                 statement=f"{player.full_name}: {value:.1f} {unit} across "
                 f"{len(selected)} appearances in {fact['timeframe']['label']}.",
             )
-            # Percentage calculations use shot opportunities, not appearances, as denominator.
-            if metric == "true_shooting_percentage":
-                subject_rows = [row for row, p in population_rows if p.id == player.id]
-                denominator = 2 * (
-                    sum(row.field_goals_attempted for row in subject_rows)
-                    + 0.44 * sum(row.free_throws_attempted for row in subject_rows)
-                )
-                values = average.model_dump(exclude={"claim_id"})
-                values["denominator"] = denominator
-                tools.claims.pop(average.claim_id)
-                average = VerifiedClaim.create(**values)
-                tools.claims[average.claim_id] = average
             rank = tools.claim(
                 subject=subject,
                 metric=metric + ":qualifier_rank",

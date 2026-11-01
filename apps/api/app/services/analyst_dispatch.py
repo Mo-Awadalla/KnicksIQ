@@ -1,44 +1,48 @@
-"""Analyst dispatch. Pre-checks are driven by registry capability flags, never tool names."""
+"""Analyst dispatch. The request's operation decides the calculation."""
 
 from __future__ import annotations
 
 import re
 from typing import TYPE_CHECKING
 
-from app.services.analyst_calculations import METRICS
-from app.services.analyst_tool_registry import TOOLS_BY_NAME, period_tool_names
-from app.services.evidence_contracts import PLAYER_METRICS, ToolResult
+from app.services.evidence_contracts import ToolCall, ToolResult
+from app.services.query_operations import TEAM_OPERATIONS
 from app.services.query_resolution import resolve_query
 
 if TYPE_CHECKING:
     from app.services.analyst_tools import AnalystTools
-    from app.services.evidence_contracts import ToolCall
-
-
-def _split_definition_call(name: str, reason: str | None) -> bool:
-    """A split tool resolves its own undefined back-to-back/close-game buckets.
-
-    User-facing HTTP still raises the clarification before any tool runs; a direct
-    typed call may ask the split handler for those definitional buckets.
-    """
-    return name == "get_team_splits" and reason in {
-        "undefined_back_to_back_leg",
-        "undefined_comparison_threshold",
-    }
+from app.services.analyst_calculations import team
+from app.services.analyst_comparisons import compare
+from app.services.analyst_discovery import discover
+from app.services.analyst_game_summary import game_summary
+from app.services.analyst_player_stats import leaderboard, player, player_threshold
 
 
 async def execute_call(tools: AnalystTools, call: ToolCall) -> ToolResult:
     assert tools.scope is not None
-    spec = TOOLS_BY_NAME[call.name]
-    if not spec.needs_scope:
-        return await spec.resolve_handler()(tools, call, None, [])
-    if tools.scope.requires_clarification and not _split_definition_call(
-        call.name, tools.scope.clarification_reason
-    ):
+    if call.name == "get_evidence":
+        if not all(ref in tools.issued_evidence_ids for ref in call.evidence_ids):
+            return ToolResult(
+                status="unsupported_metric_or_scope",
+                message="Only previously returned release references are allowed.",
+            )
+        return ToolResult(
+            status="ok",
+            message="Additional receipt detail.",
+            evidence=[tools.evidence[ref] for ref in call.evidence_ids],
+        )
+    if tools.scope.requires_clarification:
         return ToolResult(
             status="ambiguous_entity",
-            message="Which subject did you mean?",
+            message=tools.scope.clarification_question or "Which subject did you mean?",
             choices=tools.scope.clarification_options,
+        )
+    if tools.scope.operation_reason:
+        # An unsupported ranking never becomes season totals.
+        return ToolResult(
+            status="unsupported_metric_or_scope",
+            message=tools.scope.operation_reason,
+            scope=tools.scope.model_dump(mode="json"),
         )
     if (
         tools.season != tools.release.season
@@ -54,92 +58,85 @@ async def execute_call(tools: AnalystTools, call: ToolCall) -> ToolResult:
         )
     # Resolve model suggestions locally, but they may only narrow the user's scope.
     scope = await resolve_query(
-        tools.db,
-        call.question,
-        intent=call.name,
-        data_version=tools.release.version,
-        default_season_type=tools.scope.season_type,
-        default_all_phases=tools.scope.all_phases,
+        tools.db, call.question, intent=call.name, data_version=tools.release.version
     )
-    if scope.requires_clarification and not _split_definition_call(
-        call.name, scope.clarification_reason
-    ):
+    if scope.requires_clarification:
         return ToolResult(
             status="ambiguous_entity",
             message="Ambiguous entity.",
             choices=scope.clarification_options,
         )
-    if spec.reads_metric and call.metric is not None and call.metric not in PLAYER_METRICS:
-        # A typed player metric cannot be a team metric; reject it before authoritative
-        # scope values can overwrite the model's suggestion.
-        return ToolResult(
-            status="unsupported_metric_or_scope",
-            message="Player calculations require a supported player metric.",
-            scope=tools.scope.model_dump(mode="json"),
-        )
-    # The turn's resolved scope is authoritative: a call may add a subject the turn left
-    # unnamed, but it may not change the phase, window, site or game reference the turn
-    # resolved. Any-phase and all-phase turns are authoritative states too, so a call
-    # phrase that defaults to the regular season cannot leak in.
-    update: dict[str, object] = {
-        "season_type": tools.scope.season_type,
-        "all_phases": tools.scope.all_phases,
-    }
     for key in (
         "player_ids",
         "game_ids",
+        "season_type",
         "opponent_id",
         "home_away",
         "game_result",
         "date_start",
         "date_end",
         "periods",
-        "relative_game_count",
-        "metric",
-        "aggregation",
-        "requested_metrics",
-        "requested_aggregations",
     ):
         authoritative = getattr(tools.scope, key)
         if authoritative:
-            update[key] = authoritative
-    if (
-        spec.reads_metric
-        and len(tools.scope.requested_metrics) > 1
-        and (call.metric is not None or tools.scope.metric is not None)
-    ):
-        selected_metric = call.metric or scope.metric
-        if selected_metric not in tools.scope.requested_metrics:
-            return ToolResult(
-                status="unsupported_metric_or_scope",
-                message="Choose one of the requested player metrics for this calculation.",
-                scope=tools.scope.model_dump(mode="json"),
-            )
-        update["metric"] = selected_metric
-    if len(tools.scope.requested_aggregations) > 1:
-        update["aggregation"] = call.aggregation
-    if tools.scope.relative_game_count:
-        # Size and direction are one window; never take one from the model's rephrasing.
-        update["relative_from_start"] = tools.scope.relative_from_start
-    if not tools.scope.game_ids and scope.season_type != tools.scope.season_type:
-        # The call's game ids were selected inside a phase the user did not ask for.
-        update["game_ids"] = []
-    scope = scope.model_copy(update=update)
-    if spec.reads_metric and scope.metric is not None and scope.metric not in METRICS:
+            scope = scope.model_copy(update={key: authoritative})
+    # Calculation fields belong to the user's request even when the request has no value
+    # for them: a model paraphrase can neither add nor replace a stat, threshold, metric,
+    # aggregation, window direction or comparison.
+    scope = scope.model_copy(
+        update={
+            "operation": tools.scope.operation,
+            "operation_reason": tools.scope.operation_reason,
+            "clarification_question": tools.scope.clarification_question,
+            "comparison": tools.scope.comparison,
+            "requested_measures": tools.scope.requested_measures,
+            **{
+                key: getattr(tools.scope, key)
+                for key in (
+                    "metric",
+                    "stat",
+                    "threshold",
+                    "aggregation",
+                    "relative_game_count",
+                    "relative_game_position",
+                )
+            },
+        }
+    )
+    # A requested aggregation is authoritative; when the request states none, the tool
+    # call's documented default chooses the presentation (never a different stat/window).
+    aggregation = scope.aggregation or call.aggregation
+    if scope.periods and call.name != "search_archive" and scope.operation != "period_scoring":
         return ToolResult(
             status="unsupported_metric_or_scope",
-            message="The requested metric is not a player box-score calculation.",
+            message="These calculations support full-game box scores only.",
+        )
+    if scope.operation == "player_leaderboard":
+        # A leaderboard ranks every game its filters admit; a scope the model narrowed
+        # must not shrink that population.
+        return leaderboard(tools, scope, aggregation)
+    if scope.operation == "player_threshold":
+        return player_threshold(tools, scope)
+    if scope.comparison is not None:
+        # A recognized grouped comparison answers from its own groups, never from a
+        # generic aggregate over the union.
+        return await compare(tools, scope)
+    games = tools.selected_games(scope)
+    if scope.operation == "player_game_summary":
+        # The operation decides that a broad performance ask is one pinned game's own
+        # statline: neither the tool the model picked nor a paraphrase can widen it to a
+        # population, and a scope without exactly one game clarifies instead of guessing.
+        return game_summary(tools, scope, games)
+    if not games and call.name != "get_team_stats":
+        return ToolResult(
+            status="no_matching_results",
+            message="No archived games match this scope; this is not evidence "
+            "that no such games occurred.",
             scope=scope.model_dump(mode="json"),
         )
-    if scope.periods and not spec.supports_periods:
-        capable = [name for name in period_tool_names() if name != call.name]
-        message = "This calculation does not support period-level scope."
-        if capable:
-            message += " Period-capable tools: " + ", ".join(capable) + "."
-        return ToolResult(status="unsupported_metric_or_scope", message=message)
-    games = []
-    if spec.needs_games:
-        games = tools.selected_games(scope)
+    if call.name == "search_archive":
+        return await tools.search(call, scope, games)
+    if call.name == "discover_facts":
         if not games:
             return ToolResult(
                 status="no_matching_results",
@@ -147,31 +144,75 @@ async def execute_call(tools: AnalystTools, call: ToolCall) -> ToolResult:
                 "that no such games occurred.",
                 scope=scope.model_dump(mode="json"),
             )
-    if spec.needs_player and not scope.player_ids:
+        return discover(tools, scope, games)
+    if call.name == "get_team_stats" or scope.operation in TEAM_OPERATIONS:
+        # A team operation is answered from the complete population even when the model
+        # reached for a player tool, and a generic team question keeps the documented
+        # aggregate rather than asking which player was meant.
+        return await team(tools, scope, aggregation)
+    if not scope.player_ids:
         return ToolResult(
             status="ambiguous_entity",
             message="Which Knicks player?",
             choices=sorted({p.full_name for _, p in tools.rows}),
         )
-    result = await spec.resolve_handler()(tools, call, scope, games)
-    if (
-        spec.name == "discover_facts"
-        and result.status == "no_matching_results"
-        and (scope.opponent_id or _team_extreme(call.question))
-    ):
-        # Single-game highlights cannot answer a matchup or a team extreme; run the
-        # population tool the discovery result points at instead of leaving the model to.
-        follow = "get_player_stats" if scope.player_ids else "get_team_stats"
-        return await TOOLS_BY_NAME[follow].resolve_handler()(tools, call, scope, games)
-    return result
-
-
-def _team_extreme(question: str) -> bool:
-    return bool(
-        re.search(
-            r"\b(?:biggest|best|largest|worst|heaviest)\s+(?:win|victory|loss|defeat|blowout)\b"
-            r"|\b(?:highest|most)[- ]scoring\b|\bmost points (?:in a game|scored)\b",
-            question,
-            re.I,
+    metric = scope.metric or "points"
+    if call.name == "compare_windows":
+        if not call.baseline_question:
+            return ToolResult(
+                status="unsupported_metric_or_scope",
+                message="Comparison requires an explicit baseline window.",
+            )
+        requested_seasons = re.findall(r"\b20\d{2}-\d{2}(?!-\d{2})\b", call.baseline_question)
+        if any(season != tools.release.season for season in requested_seasons):
+            return ToolResult(
+                status="unsupported_metric_or_scope",
+                message="The baseline season is unavailable in this release.",
+            )
+        baseline_scope = await resolve_query(
+            tools.db, call.baseline_question, intent=call.name, data_version=tools.release.version
         )
-    )
+        # A baseline may intentionally use a different phase/window, never another release.
+        baseline_scope = baseline_scope.model_copy(update={"player_ids": scope.player_ids})
+        baseline_games = tools.selected_games(baseline_scope)
+        first = player(tools, scope, games, metric, aggregation)
+        second = player(tools, baseline_scope, baseline_games, metric, aggregation)
+        if not first.claims or not second.claims:
+            return ToolResult(
+                status="incomplete_coverage",
+                message="One comparison population is unavailable.",
+                claims=first.claims + second.claims,
+                evidence=first.evidence + second.evidence,
+            )
+        comparisons = []
+        for a in first.claims:
+            b = next((b for b in second.claims if b.subject_id == a.subject_id), None)
+            if (
+                b is None
+                or not isinstance(a.value, (int, float))
+                or not isinstance(b.value, (int, float))
+            ):
+                continue
+            comparisons.append(
+                tools.claim(
+                    subject=a.subject_id or "",
+                    metric=f"{metric}:delta",
+                    value=float(a.value) - float(b.value),
+                    unit=a.unit or "",
+                    games=list({g.id: g for g in games + baseline_games}.values()),
+                    evidence=first.evidence + second.evidence,
+                    statement=(f"{a.statement} Baseline: {b.statement}"),
+                    scope=scope,
+                    sample=a.sample_size or 0,
+                    denominator=a.denominator,
+                    baseline=[a.claim_id, b.claim_id],
+                    window={"current": a.game_ids, "baseline": b.game_ids},
+                )
+            )
+        return ToolResult(
+            status="ok",
+            message="Both complete applicable archive populations.",
+            claims=first.claims + second.claims + comparisons,
+            evidence=first.evidence + second.evidence,
+        )
+    return player(tools, scope, games, metric, aggregation)

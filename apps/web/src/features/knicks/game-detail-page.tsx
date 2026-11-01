@@ -1,9 +1,10 @@
 import { useEffect } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Link, useLocation } from '@tanstack/react-router'
-import { fetchGame, fetchPlayByPlay, fetchRuns } from '@/api'
+import { fetchBoxScore, fetchGame, fetchPlayByPlay, fetchRuns } from '@/api'
 import type { GameEvent, ScoringRun } from '@/types'
 import { ArrowLeft, TrendingUp } from 'lucide-react'
+import { BoxScorePanel } from './box-score-panel'
 import { formatDate, shortTeamLabel, teamLabel } from './game-formatting'
 import { AppShell, SurfaceState } from './surface-layout'
 
@@ -119,12 +120,7 @@ function PlayByPlayPanel({
           No play-by-play events were returned for this game.
         </p>
       ) : (
-        <div
-          className='table-scroll'
-          role='region'
-          aria-label='Play-by-play events'
-          tabIndex={0}
-        >
+        <div className='table-scroll'>
           <table className='data-table'>
             <caption className='sr-only'>Play-by-play events</caption>
             <thead>
@@ -181,6 +177,11 @@ export function GameDetailPage({ gameId }: { gameId: string }) {
     queryKey: ['game', id],
     queryFn: () => fetchGame(id),
     enabled: Number.isSafeInteger(id) && id > 0,
+  })
+  const boxScore = useQuery({
+    queryKey: ['game', id, 'box-score'],
+    queryFn: () => fetchBoxScore(id),
+    enabled: Number.isSafeInteger(id) && id > 0 && game.isSuccess,
   })
   const events = useQuery({
     queryKey: ['game', id, 'play-by-play'],
@@ -255,6 +256,17 @@ export function GameDetailPage({ gameId }: { gameId: string }) {
       }
     >
       <Scoreboard game={game.data} />
+      {boxScore.isError ? (
+        <SurfaceState
+          kind='error'
+          message='Box score could not be loaded.'
+          onRetry={() => void boxScore.refetch()}
+        />
+      ) : boxScore.isPending ? (
+        <SurfaceState kind='loading' message='Loading box score…' />
+      ) : (
+        <BoxScorePanel boxScore={boxScore.data} />
+      )}
       <div className='detail-grid'>
         {game.data.data_status === 'summary_only' ? (
           <SurfaceState

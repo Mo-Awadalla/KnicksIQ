@@ -16,12 +16,17 @@ COPY apps/worker/pyproject.toml ./apps/worker/pyproject.toml
 COPY apps/mcp/pyproject.toml ./apps/mcp/pyproject.toml
 COPY packages/basketball-core/pyproject.toml ./packages/basketball-core/pyproject.toml
 
-RUN uv sync --package knicksiq-worker
+RUN uv sync --frozen --package knicksiq-worker
 
 COPY apps/api/app ./apps/api/app
 COPY apps/worker/worker_app ./apps/worker/worker_app
 COPY packages/basketball-core/src ./packages/basketball-core/src
 
-RUN uv sync --package knicksiq-worker
+RUN uv sync --frozen --package knicksiq-worker
+RUN addgroup --system knicksiq && adduser --system --ingroup knicksiq knicksiq \
+    && chown -R knicksiq:knicksiq /app
+USER knicksiq
 
-CMD ["uv", "run", "--package", "knicksiq-worker", "rq", "worker", "--url", "redis://redis:6379/0", "default"]
+HEALTHCHECK --interval=30s --timeout=5s --retries=3 CMD ["/app/.venv/bin/python", "-c", "import socket; from redis import Redis; from rq import Worker; raise SystemExit(not any(w.hostname == socket.gethostname() and w.pid == 1 for w in Worker.all(connection=Redis.from_url('redis://redis:6379/0'))))"]
+
+CMD ["/app/.venv/bin/rq", "worker", "--url", "redis://redis:6379/0", "default"]

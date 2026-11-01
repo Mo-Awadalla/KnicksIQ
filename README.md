@@ -10,39 +10,13 @@ are declined rather than invented.
 - `apps/web`: anonymous React archive and analyst experience.
 - `apps/api`: read-only production FastAPI service.
 - Neon Free Postgres: authoritative factual data and active release metadata.
-- Render Free Key Value: ephemeral shared rate limits, response caching, and AI budget state.
+- Render Free Key Value: ephemeral shared rate limits, response caching, and AI budget state. A lost monthly ledger restarts at zero under a recorded owner decision. The `$2` application cutoff applies while that ledger survives. Repeated losses can reopen spending, so a verified provider-side limit must bound total monthly charges.
 - Qdrant Cloud provides optional hybrid retrieval; Postgres/lexical retrieval remains authoritative when it is unavailable.
-- OpenCode Go, the owner's subscription, is the model host. `deepseek-v4.1-flash` writes over
-  Chat Completions and `gpt-6-luna` reviews over the Responses API. Both compose answers from
-  backend-computed claims; deterministic cited facts remain the fallback. The owner accepted the
-  terms risk described in [the architecture note](docs/architecture.md#production-system).
+- OpenRouter: optional phrasing of already-computed facts.
 - Sentry: scrubbed exception, trace, alert, and uptime monitoring.
 
 Workers, ingestion, report generation, MCP, admin routes, Swagger, and runtime data mutations are
 not part of the production deployment. NBA ingestion and release construction are offline tools.
-
-## Analyst
-
-The default answer path is the bounded evidence loop described in
-[docs/analyst-evidence-loop.md](docs/analyst-evidence-loop.md). Nine tools are registered:
-`get_player_stats`, `get_team_stats`, `compare_windows`, `discover_facts`, `search_archive`,
-`get_evidence`, `get_game_flow`, `get_team_splits` and `get_period_scoring`. Quarter,
-period, play-by-play and split questions are supported. Season-level records default to the
-regular season and the answer states the phase; the overall record appears only when asked.
-
-The backend computes every number as an immutable claim with a receipt. Prompt v4 and validator
-v2 add a deterministic number gate before the independent reviewer. `ANALYST_REASONING_EFFORT=none`
-is the default, token caps are enforced, and deterministic prefetch (`ANALYST_PREFETCH_ENABLED`)
-runs one clear tool before the first model call. Typed pre-model refusals cover instruction
-override, wagering and out-of-archive dates; other unsupported wording reaches the analyst, which
-declines or explains coverage. `refused=true` marks a decline or coverage explanation, not an
-error.
-
-At the $2 cutoff, measured capacity is about 1,009 questions per month on the 70-question mix
-and about 750 on the held-out rate. Mean cost is $0.001981 per question on the 70-question mix.
-Capacity is route dependent. Measured latency on 140 questions at the 16,000-byte input budget is
-p50 3,312 ms and p95 7,640 ms; the four second p95 gate is not met. The final measurement is in
-[docs/release-evidence/llm-primary-20261021/final/README.md](docs/release-evidence/llm-primary-20261021/final/README.md).
 
 `apps/web` is the only maintained frontend. The retired frontend remains available
 in Git history; historical release evidence is kept unchanged. Install frontend
@@ -160,16 +134,13 @@ uv run --package knicksiq-worker knicksiq-load-release \
 
 ## Verification
 
-For an isolated Docker stack with the approved archive, persistent Redis, and
-real HTTP verification, see [Local Docker staging](docs/local-docker-staging.md).
-
 Backend:
 
 ```bash
 uv run ruff format --check apps packages migrations
 uv run ruff check apps packages migrations
 uv run pyright apps packages migrations
-TEST_MODE=true uv run pytest apps packages tools/report_audit
+uv run pytest
 ```
 
 Frontend:
@@ -188,6 +159,44 @@ Production images:
 ```bash
 docker compose build api web
 ```
+
+Production behavior scenarios. The first command starts isolated Postgres, Redis, a
+production-profile API, and the built web app on fresh ports `19430`–`19433` and saves
+its evidence under `release-artifacts/production-completion/`; it uses no provider
+traffic. The second runs the release-membership, container health-probe, real local
+HTTP, and rate-limit memory scenarios.
+
+```bash
+uv run --frozen --all-packages python tools/release/production_e2e.py
+
+uv run pytest \
+  apps/api/app/tests/test_live_release_scenarios.py \
+  apps/api/app/tests/test_directory_release_scope.py \
+  apps/api/app/tests/test_rate_limit_state.py
+```
+
+Liveness is not a go-live gate. Confirm `GET /health/ready` returns 200 with the
+expected data version, and confirm the container reports healthy from inside itself:
+
+```bash
+docker exec <api-container> python -m app.api.health_probe
+```
+
+Check a running local production-profile API against the approved archive:
+
+```bash
+uv run --package knicksiq-api python tools/release/readiness.py \
+  --base-url http://127.0.0.1:8000 --local-https-proxy \
+  --bundle release-artifacts/2025-26/reliability-approved-20260928.json.gz \
+  --sha256 549af2edd0d195eff60bb318bdc58a8c8e217ea0359c0684d492d5292dcb595b \
+  --output release-artifacts/readiness.json
+```
+
+Use empty provider keys, disabled Qdrant, and a dedicated Redis database.
+The command compares every game score and the main text of all approved reports.
+It checks a box score, cited season record, session replay and conflicts,
+private routes, and security headers. It never approves or deploys a release.
+Omit `--local-https-proxy` when an actual local proxy supplies the HTTPS header.
 
 Local embedding and reranking dependencies are an explicit offline extra:
 

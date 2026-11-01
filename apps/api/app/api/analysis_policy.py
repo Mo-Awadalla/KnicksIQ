@@ -8,7 +8,6 @@ import logging
 import re
 import time
 from collections import defaultdict, deque
-from dataclasses import dataclass
 from datetime import UTC, datetime
 
 from fastapi import HTTPException, Request, status
@@ -16,7 +15,6 @@ from fastapi import HTTPException, Request, status
 from app.api.analysis_models import AnalysisContextMessage
 from app.core.config import get_settings
 from app.services.query_classifier import classify_query
-from app.services.query_parsing import is_live_only_score_request
 from app.services.runtime_store import (
     enforce_redis_limits,
 )
@@ -25,63 +23,85 @@ from app.services.team_aliases import team_ids_in_text
 logger = logging.getLogger(__name__)
 
 _WINDOW_SECONDS = 60
+_DAY_WINDOW_SECONDS = 86_400
+_DEFAULT_DAY_LIMIT = 100
+# One instance can only hold a bounded number of client windows in memory. Live
+# windows are never evicted, because dropping one would forgive that client's accrued
+# minute and day debt and hand an address-varying source a fresh budget. Capacity is
+# spent at admission instead: once the table is full, an untracked identity is refused
+# with the public 429 and allocates nothing, while tracked identities keep being
+# charged. Expired windows are reclaimed by amortized sweeps.
+_MAX_TRACKED_CLIENTS = 10_000
+_PRUNE_INTERVAL_REQUESTS = 256
+# A full table also sweeps on a clock, so a sustained flood cannot turn every rejected
+# request into a scan of the whole identity map.
+_CAPACITY_SWEEP_SECONDS = 1.0
+
 _requests_by_client: dict[str, deque[float]] = defaultdict(deque)
 _daily_requests_by_client: dict[str, deque[float]] = defaultdict(deque)
+_requests_since_prune = 0
+_next_capacity_sweep = 0.0
 
 
-@dataclass(frozen=True, slots=True)
-class PreModelRefusalCategory:
-    """One category no archive tool can answer, keyed only on unambiguous text."""
-
-    name: str
-    patterns: tuple[re.Pattern[str], ...]
+def _monotonic() -> float:
+    return time.monotonic()
 
 
-# Instruction extraction and persona changes have no archive reading at all.
-_INSTRUCTION_OVERRIDE_PATTERNS: tuple[re.Pattern[str], ...] = (
-    re.compile(
-        r"\b(?:ignore|disregard|forget|override|bypass|disable|break)\s+"
-        r"(?:all\s+|any\s+|the\s+|your\s+)*(?:previous\s+|prior\s+|above\s+|safety\s+|system\s+)*"
-        r"(?:instructions?|rules?|prompts?|guidelines?|guardrails?|polic(?:y|ies))\b",
-        re.IGNORECASE,
-    ),
-    re.compile(
-        r"\b(?:system|developer)\s+(?:prompt|instructions?|message)\b"
-        r"|\bjailbreak\b"
-        r"|\bdeveloper mode\b"
-        r"|\breveal\s+(?:your|the)\s+(?:system\s+)?(?:prompt|instructions?)\b"
-        r"|\b(?:tell|show|give|repeat|print|output)\s+(?:me\s+)?your\s+"
-        r"(?:system\s+)?(?:prompt|instructions?|rules)\b"
-        r"|\byou are now\b"
-        r"|\bpretend\s+(?:to\s+be|you\s+are)\b"
-        r"|\bact as\s+(?:an?\s+)?(?:developer|admin|administrator|system|assistant|bot|ai)\b",
-        re.IGNORECASE,
-    ),
-)
+def reset_rate_limit_state() -> None:
+    """Clear every in-process window. Used by tests and never by request handling."""
+    global _requests_since_prune, _next_capacity_sweep
+    _requests_by_client.clear()
+    _daily_requests_by_client.clear()
+    _requests_since_prune = 0
+    _next_capacity_sweep = 0.0
 
-# Wagering vocabulary is the narrow set that has no archive reading. Bare "odds" is
-# deliberately absent: "odds of winning when leading at half" is an archive question.
-_WAGERING_PATTERNS: tuple[re.Pattern[str], ...] = (
-    re.compile(
-        r"\b(?:bet|bets|betting|wager|wagers|wagering|gamble|gambling|parlay|parlays|"
-        r"moneyline|sportsbook|bookmaker|over/under|prop bet|point spread|"
-        r"betting line|against the spread)\b",
-        re.IGNORECASE,
-    ),
-)
 
-# A calendar date outside the archived season is unambiguous even when a fan uses it
-# next to archive words.
-_OUT_OF_ARCHIVE_DATE_PATTERNS: tuple[re.Pattern[str], ...] = (
-    re.compile(r"\b(?:202[7-9]|20[3-9]\d)(?:-\d{2}-\d{2})?\b", re.IGNORECASE),
-    re.compile(r"\b2026-(?:0[7-9]|1[0-2])-\d{2}\b", re.IGNORECASE),
-)
+def _trim_window(bucket: deque[float], now: float, window_seconds: float) -> None:
+    while bucket and now - bucket[0] > window_seconds:
+        bucket.popleft()
 
-PRE_MODEL_REFUSAL_CATEGORIES: tuple[PreModelRefusalCategory, ...] = (
-    PreModelRefusalCategory("instruction_override", _INSTRUCTION_OVERRIDE_PATTERNS),
-    PreModelRefusalCategory("wagering", _WAGERING_PATTERNS),
-    PreModelRefusalCategory("out_of_archive_date", _OUT_OF_ARCHIVE_DATE_PATTERNS),
-)
+
+def prune_rate_limit_state(now: float | None = None) -> int:
+    """Drop identities whose minute and day windows have both expired.
+
+    A day-rotating HMAC identity is abandoned as soon as both windows are empty, so an
+    old-day key is dropped at the next sweep instead of accumulating. An identity with
+    any live window is kept: its bucket holds the minute or day debt the public limits
+    are enforced against, and resetting it would admit a client that has already spent
+    its budget. ``_MAX_TRACKED_CLIENTS`` therefore bounds the table only because
+    admission refuses untracked identities once it is reached.
+    """
+    moment = _monotonic() if now is None else now
+    removed = 0
+    for client in set(_requests_by_client) | set(_daily_requests_by_client):
+        minute = _requests_by_client.get(client)
+        if minute is not None:
+            _trim_window(minute, moment, _WINDOW_SECONDS)
+        day = _daily_requests_by_client.get(client)
+        if day is not None:
+            _trim_window(day, moment, _DAY_WINDOW_SECONDS)
+        if not minute and not day:
+            _requests_by_client.pop(client, None)
+            _daily_requests_by_client.pop(client, None)
+            removed += 1
+    return removed
+
+
+def _maybe_prune(now: float) -> None:
+    global _requests_since_prune, _next_capacity_sweep
+    _requests_since_prune += 1
+    interval_due = _requests_since_prune >= _PRUNE_INTERVAL_REQUESTS
+    capacity_due = len(_requests_by_client) >= _MAX_TRACKED_CLIENTS and now >= _next_capacity_sweep
+    if not (interval_due or capacity_due):
+        return
+    prune_rate_limit_state(now)
+    _requests_since_prune = 0
+    _next_capacity_sweep = now + _CAPACITY_SWEEP_SECONDS
+    if len(_requests_by_client) >= _MAX_TRACKED_CLIENTS:
+        logger.warning(
+            "rate limit identity table at capacity (%d); refusing new clients",
+            _MAX_TRACKED_CLIENTS,
+        )
 
 
 def _client_id(request: Request) -> str:
@@ -102,10 +122,15 @@ async def _rate_limit(request: Request) -> bool:
     if getattr(settings, "test_mode", False):
         return False
     client = _client_id(request)
-    now = time.monotonic()
+    now = _monotonic()
+    _maybe_prune(now)
+    if client not in _requests_by_client and len(_requests_by_client) >= _MAX_TRACKED_CLIENTS:
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail="Rate limit exceeded",
+        )
     bucket = _requests_by_client[client]
-    while bucket and now - bucket[0] > _WINDOW_SECONDS:
-        bucket.popleft()
+    _trim_window(bucket, now, _WINDOW_SECONDS)
     if len(bucket) >= settings.public_chat_rate_limit_per_minute:
         raise HTTPException(
             status_code=status.HTTP_429_TOO_MANY_REQUESTS,
@@ -113,9 +138,8 @@ async def _rate_limit(request: Request) -> bool:
         )
     bucket.append(now)
     day_bucket = _daily_requests_by_client[client]
-    while day_bucket and now - day_bucket[0] > 86_400:
-        day_bucket.popleft()
-    if len(day_bucket) >= getattr(settings, "public_chat_rate_limit_per_day", 100):
+    _trim_window(day_bucket, now, _DAY_WINDOW_SECONDS)
+    if len(day_bucket) >= getattr(settings, "public_chat_rate_limit_per_day", _DEFAULT_DAY_LIMIT):
         raise HTTPException(
             status_code=status.HTTP_429_TOO_MANY_REQUESTS,
             detail="Daily rate limit exceeded",
@@ -298,60 +322,6 @@ def _requires_explicit_refusal(question: str) -> bool:
             )
         )
     )
-
-
-def pre_model_refusal_category(question: str) -> str | None:
-    """Return the unambiguous refusal category that caught the question, if any."""
-    for category in PRE_MODEL_REFUSAL_CATEGORIES:
-        if any(pattern.search(question) for pattern in category.patterns):
-            return category.name
-    return None
-
-
-def _requires_evidence_refusal(question: str) -> bool:
-    """Refuse unavailable coverage while preserving a separate archive request."""
-
-    def unavailable(clause: str) -> bool:
-        return bool(
-            re.search(
-                r"\b(?:202[7-9]|20[3-9]\d)(?:-\d{2}-\d{2})?\b"
-                r"|\b2026-(?:0[7-9]|1[0-2])-\d{2}\b"
-                r"|\b(?:will|today|tonight|tomorrow|yesterday|currently|current|upcoming|"
-                r"live|injur\w*|trades?|future|betting)\b"
-                r"|\b(?:right now|next game|next season)\b",
-                clause,
-                re.I,
-            )
-        )
-
-    def archive_clause(clause: str) -> bool:
-        return _is_supported_question(clause) or bool(
-            team_ids_in_text(clause)
-            and re.search(
-                r"\b(?:average|assists?|rebounds?|points?|record|wins?|loss(?:es)?|"
-                r"games?|score|quarters?|possessions?|runs?|season)\b",
-                clause,
-                re.I,
-            )
-        )
-
-    if is_live_only_score_request(question):
-        return True
-    if not unavailable(question):
-        return False
-    clauses = re.split(r"\b(?:and|but|also)\b|[;?]", question, flags=re.I)
-    return not any(archive_clause(clause) and not unavailable(clause) for clause in clauses)
-
-
-def _requires_pre_model_refusal(question: str) -> bool:
-    """Refuse only unambiguous non-archive requests before spending provider budget.
-
-    Fan phrasing makes live, injury, trade and prediction words ambiguous: "will",
-    "live", "hurt", "current", "next" and "odds" all have archive readings. Those
-    questions reach the analyst, which answers the archive portion and states the
-    coverage gap, or declines. Only text with no archive reading is refused here.
-    """
-    return pre_model_refusal_category(question) is not None
 
 
 def _is_greeting(question: str) -> bool:

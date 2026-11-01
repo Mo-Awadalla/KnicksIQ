@@ -1,5 +1,4 @@
-import type { Page } from 'playwright/test'
-import { expect, test } from './network-fixture'
+import { expect, test, type Page } from 'playwright/test'
 import AxeBuilder from '@axe-core/playwright'
 
 async function mockReadyArchive(page: Page) {

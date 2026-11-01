@@ -16,21 +16,22 @@ from app.models.dataset_release import DatasetRelease
 from app.models.document import Document
 from app.models.game import Game
 from app.models.game_event import GameEvent
+from app.services.archive_retrieval import RankedEvidence, RetrievalTrace
 from app.services.embeddings import embed_texts
 from app.services.possession_chunks import (
     PossessionChunk,
     build_possession_chunks,
     expand_neighboring_sequences,
 )
-from app.services.qdrant_client import qdrant_health_status, search_possessions
+from app.services.qdrant_client import is_qdrant_healthy, search_possessions
 from app.services.rag_ranking import (
     RetrievalFilters,
     _chunk_from_payload,
     _clip_temporal_chunk,
     _knicks_result,
-    _lexical_rank_chunks,
     _passes_filters,
     _tokens,
+    lexical_rank_chunks,
     reciprocal_rank_fusion,
 )
 from app.services.rag_ranking import build_metadata_filters as build_metadata_filters
@@ -175,13 +176,22 @@ async def search_possession_chunks(
     season: str = "2025-26",
     limit: int = 5,
     trace: list[dict[str, Any]] | None = None,
+    request_id: str | None = None,
+    data_version: str | None = None,
 ) -> tuple[list[PossessionChunk], RetrievalFilters]:
     """Search possession chunks derived from cached play-by-play rows.
 
     Dense vector/Qdrant and cross-encoder providers can replace the local
     scoring later. The shape here already enforces the required route: metadata
     filters first, then lexical/semantic rankings merged with RRF.
+
+    When ``trace`` is given the actual lexical, dense, fused and emitted orderings
+    are recorded together with the request and release they belong to; an
+    uncorrelated trace is rejected rather than recorded anonymously.
     """
+    if trace is not None and not (request_id and data_version):
+        raise ValueError("A retrieval trace requires the actual request_id and data_version")
+    started = time.perf_counter()
     filters = build_metadata_filters(query)
     game_stmt = (
         select(Game)
@@ -246,7 +256,7 @@ async def search_possession_chunks(
     ]
 
     t0 = time.perf_counter()
-    lexical, player_rank = _lexical_rank_chunks(query, chunks)
+    lexical, player_rank = lexical_rank_chunks(query, chunks)
     if trace is not None:
         trace.append(
             {
@@ -268,9 +278,11 @@ async def search_possession_chunks(
     if active_version:
         qdrant_filters["data_version"] = active_version
     dense_rank: list[tuple[PossessionChunk, float]] = []
+    dense_status = "disabled"
     if settings.rag_hybrid_enabled and settings.rag_qdrant_enabled:
+        dense_status = "failed"
         try:
-            if await asyncio.to_thread(qdrant_health_status) != "degraded":
+            if await asyncio.to_thread(is_qdrant_healthy):
                 t0 = time.perf_counter()
                 query_embedding: list[float] | str = (
                     query
@@ -296,6 +308,7 @@ async def search_possession_chunks(
                     qdrant_filters,
                     max(limit * 10, settings.rag_rerank_limit, 20),
                 )
+                dense_status = "ok"
                 dense_rank = [
                     (clipped, result.score)
                     for result in dense_results
@@ -318,6 +331,7 @@ async def search_possession_chunks(
                         }
                     )
         except Exception as exc:  # noqa: BLE001
+            dense_status = "failed"
             logger.warning("hybrid_vector_search_failed", exc_info=exc)
             if trace is not None:
                 trace.append(
@@ -347,9 +361,6 @@ async def search_possession_chunks(
                 "tool": "rrf",
                 "result_count": len(fused_ids),
                 "rankings": 3 if dense_rank else 2,
-                "candidate_evidence_ids": [
-                    f"possession:{chunk_id}" for chunk_id, _score in fused_ids[:20]
-                ],
             }
         )
     merged = [
@@ -407,12 +418,64 @@ async def search_possession_chunks(
                     "vector_search_calls": 0,
                 }
             )
-    if trace is not None:
+    if trace is not None and request_id and data_version:
+        candidate_limit = max(limit, settings.rag_rerank_limit)
         trace.append(
-            {
-                "tool": "retrieval_result",
-                "result_count": len(merged),
-                "returned_evidence_ids": [f"possession:{chunk.chunk_id}" for chunk in merged[:5]],
-            }
+            RetrievalTrace(
+                request_id=request_id,
+                data_version=data_version,
+                lexical=_ranked_chunks(lexical),
+                dense=_ranked_chunks(dense_rank),
+                candidates=_ranked_chunk_ids(fused_ids, candidate_map),
+                selected=_ranked_chunks([(chunk, 0.0) for chunk in merged]),
+                errors=() if dense_status == "ok" else ("dense",),
+                latency_ms=int((time.perf_counter() - started) * 1000),
+                candidate_limit=candidate_limit,
+                candidate_limit_applied=True,
+                lexical_limit=None,
+                dense_limit=max(limit * 10, settings.rag_rerank_limit, 20),
+                dense_status=dense_status,
+            ).as_trace()
         )
     return merged, filters
+
+
+def _ranked_chunks(items: list[tuple[PossessionChunk, float]]) -> tuple[RankedEvidence, ...]:
+    return tuple(
+        RankedEvidence(
+            evidence_id=f"possession:{chunk.chunk_id}",
+            collection="possessions",
+            game_id=chunk.game_id,
+            player_ids=(),
+            team_ids=tuple(str(team) for team in chunk.metadata.get("team_ids") or []),
+            source_row_id=None,
+            sequence_id=None,
+            score=float(score),
+            rank=rank,
+        )
+        for rank, (chunk, score) in enumerate(items, start=1)
+    )
+
+
+def _ranked_chunk_ids(
+    fused_ids: list[tuple[str, float]], candidates: dict[str, PossessionChunk]
+) -> tuple[RankedEvidence, ...]:
+    ranked: list[RankedEvidence] = []
+    for chunk_id, score in fused_ids:
+        chunk = candidates.get(chunk_id)
+        if chunk is None:
+            continue
+        ranked.append(
+            RankedEvidence(
+                evidence_id=f"possession:{chunk_id}",
+                collection="possessions",
+                game_id=chunk.game_id,
+                player_ids=(),
+                team_ids=tuple(str(team) for team in chunk.metadata.get("team_ids") or []),
+                source_row_id=None,
+                sequence_id=None,
+                score=float(score),
+                rank=len(ranked) + 1,
+            )
+        )
+    return tuple(ranked)

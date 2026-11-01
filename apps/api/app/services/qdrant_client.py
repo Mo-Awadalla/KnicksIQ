@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import logging
-import math
 import time
 import uuid
 from concurrent.futures import ThreadPoolExecutor, TimeoutError
@@ -22,23 +21,6 @@ GAMES_COLLECTION = "knicks_games"
 POSSESSIONS_COLLECTION = "knicks_possessions"
 ROSTER_COLLECTION = "knicks_roster"
 QDRANT_NAMESPACE = uuid.UUID("f5af0efd-b2f7-4f7c-b0fd-09d2e5166c90")
-PAYLOAD_INDEX_TYPES = {
-    "data_version": "keyword",
-    "date": "keyword",
-    "team_ids": "keyword",
-    "season_type": "keyword",
-    "game_id": "integer",
-    "player_ids": "integer",
-    "player_names": "keyword",
-    "start_period": "integer",
-    "end_period": "integer",
-}
-UNIT_PAYLOAD_INDEX_TYPES = {
-    "game_ids": "integer",
-    "dates": "keyword",
-    "season_types": "keyword",
-    "unit_type": "keyword",
-}
 
 
 @dataclass(frozen=True)
@@ -106,9 +88,7 @@ def ensure_collections(client: Any | None = None) -> None:
         create_collection(collection, client=resolved)
 
 
-def create_collection(
-    collection_name: str, *, client: Any | None = None, include_archive_units: bool = False
-) -> None:
+def create_collection(collection_name: str, *, client: Any | None = None) -> None:
     """Create a collection with the configured dense-vector schema."""
     from qdrant_client import models
 
@@ -120,25 +100,26 @@ def create_collection(
             distance=models.Distance.COSINE,
         ),
     )
-    create_payload_indexes(
-        collection_name, client=resolved, include_archive_units=include_archive_units
-    )
+    create_payload_indexes(collection_name, client=resolved)
 
 
-def create_payload_indexes(
-    collection_name: str, *, client: Any | None = None, include_archive_units: bool = False
-) -> None:
+def create_payload_indexes(collection_name: str, *, client: Any | None = None) -> None:
     """Create indexes required by Qdrant Cloud for strict metadata filters."""
     from qdrant_client import models
 
     resolved: Any = client or get_qdrant_client()
-    fields = {**PAYLOAD_INDEX_TYPES, **(UNIT_PAYLOAD_INDEX_TYPES if include_archive_units else {})}
-    for field_name, field_type in fields.items():
-        field_schema = (
-            models.PayloadSchemaType.KEYWORD
-            if field_type == "keyword"
-            else models.PayloadSchemaType.INTEGER
-        )
+    schemas = {
+        "data_version": models.PayloadSchemaType.KEYWORD,
+        "date": models.PayloadSchemaType.KEYWORD,
+        "team_ids": models.PayloadSchemaType.KEYWORD,
+        "season_type": models.PayloadSchemaType.KEYWORD,
+        "game_id": models.PayloadSchemaType.INTEGER,
+        "player_ids": models.PayloadSchemaType.INTEGER,
+        "player_names": models.PayloadSchemaType.KEYWORD,
+        "start_period": models.PayloadSchemaType.INTEGER,
+        "end_period": models.PayloadSchemaType.INTEGER,
+    }
+    for field_name, field_schema in schemas.items():
         resolved.create_payload_index(
             collection_name=collection_name,
             field_name=field_name,
@@ -213,32 +194,25 @@ def inspect_retrieval_targets(client: Any | None = None) -> dict[str, Any]:
     return result
 
 
-def validate_candidate_collection(
-    collection: str,
-    data_version: str,
-    expected_count: int,
-    *,
-    client: Any | None = None,
-) -> None:
+def validate_candidate_collection(collection: str, data_version: str, expected_count: int) -> None:
     """Verify stored counts and release isolation, not only write acknowledgements."""
     from qdrant_client import models
 
-    resolved: Any = client or get_qdrant_client()
-    info = resolved.get_collection(collection)
+    client = get_qdrant_client()
+    info = client.get_collection(collection)
     vector = info.config.params.vectors
-    distance = getattr(vector, "distance", "")
     if (
         getattr(vector, "size", None) != get_settings().rag_qdrant_vector_size
-        or str(getattr(distance, "value", distance)).lower() != "cosine"
+        or str(getattr(vector, "distance", "")).lower() != "cosine"
     ):
         raise RuntimeError("Candidate vector configuration mismatch")
-    count = resolved.count(collection_name=collection, exact=True).count
-    scoped = resolved.count(
+    count = client.count(collection_name=collection, exact=True).count
+    scoped = client.count(
         collection_name=collection,
         exact=True,
         count_filter=build_qdrant_filter({"data_version": data_version}),
     ).count
-    other = resolved.count(
+    other = client.count(
         collection_name=collection,
         exact=True,
         count_filter=models.Filter(
@@ -254,141 +228,40 @@ def validate_candidate_collection(
         raise RuntimeError("Candidate stored count or release payload mismatch")
 
 
-def preflight_candidate_collections(
-    collections: dict[str, list[dict[str, Any]]],
-    data_version: str,
-    *,
-    client: Any,
-) -> set[str]:
-    """Check every target before writes; complete matching candidates are immutable."""
-    aliases = client.get_aliases().aliases
+def ensure_candidate_not_serving(collection: str) -> None:
+    """Never reset a physical collection that is reachable through a live alias."""
     if any(
-        alias.collection_name in collections or alias.alias_name in collections for alias in aliases
+        alias.collection_name == collection for alias in get_qdrant_client().get_aliases().aliases
     ):
-        raise RuntimeError("Candidate collection is already serving an alias")
-    existing = {item.name for item in client.get_collections().collections}
-    reusable = set()
-    settings = get_settings()
-    for collection, records in collections.items():
-        if not records or any(
-            record["payload"].get("data_version") != data_version for record in records
-        ):
-            raise RuntimeError(
-                f"Candidate source records are empty or outside release: {collection}"
-            )
-        if len({str(qdrant_point_id(str(record["id"]))) for record in records}) != len(records):
-            raise RuntimeError(f"Duplicate candidate source IDs: {collection}")
-        for record in records:
-            identity = record["payload"].get("_index_embedding", {})
-            if (
-                not isinstance(identity, dict)
-                or identity.get("model") != settings.rag_embedding_model
-                or identity.get("mode")
-                != ("cloud" if settings.rag_qdrant_cloud_inference else "local")
-                or not identity.get("document_sha256")
-            ):
-                raise RuntimeError(
-                    f"Candidate embedding identity is missing or mismatched: {collection}"
-                )
-        if collection in existing:
-            validate_candidate_identity(collection, data_version, records, client=client)
-            reusable.add(collection)
-    return reusable
+        raise RuntimeError("Candidate collection is already serving an alias; use a new version")
 
 
-def validate_candidate_identity(
-    collection: str,
-    data_version: str,
-    records: list[dict[str, Any]],
-    *,
-    client: Any,
-) -> None:
-    """Require full source/payload/embedding identity and usable dense vectors/indexes."""
-    validate_candidate_collection(collection, data_version, len(records), client=client)
-    info = client.get_collection(collection)
-    fields = dict(PAYLOAD_INDEX_TYPES)
-    if any(r["payload"].get("_index_embedding", {}).get("source_unit_schema") for r in records):
-        fields.update(UNIT_PAYLOAD_INDEX_TYPES)
-    for field, field_type in fields.items():
-        index = info.payload_schema.get(field)
-        data_type = getattr(index, "data_type", None)
-        if index is None or getattr(data_type, "value", data_type) != field_type:
-            raise RuntimeError(f"Candidate payload index mismatch: {collection}/{field}")
-    expected = {
-        str(qdrant_point_id(str(record["id"]))): {
-            **record["payload"],
-            "chunk_id": record["id"],
-        }
-        for record in records
-    }
-    settings = get_settings()
-    offset = None
-    seen = set()
-    while True:
-        points, next_offset = client.scroll(
-            collection_name=collection,
-            offset=offset,
-            limit=512,
-            with_payload=True,
-            with_vectors=True,
-        )
-        for point in points:
-            point_id = str(point.id)
-            vector = point.vector
-            if (
-                point_id in seen
-                or point_id not in expected
-                or point.payload != expected[point_id]
-                or not isinstance(vector, list)
-                or len(vector) != settings.rag_qdrant_vector_size
-                or any(
-                    not isinstance(value, (int, float)) or not math.isfinite(value)
-                    for value in vector
-                )
-                or not any(vector)
-            ):
-                raise RuntimeError(f"Candidate source, payload or vector mismatch: {collection}")
-            seen.add(point_id)
-        if next_offset is None:
-            break
-        if next_offset == offset or not points:
-            raise RuntimeError(f"Candidate scroll did not advance: {collection}")
-        offset = next_offset
-    if seen != expected.keys():
-        raise RuntimeError(f"Candidate source IDs are incomplete: {collection}")
+def is_qdrant_healthy(client: Any | None = None) -> bool:
+    """Cache usable-target checks for 30s; cap caller waiting at 250ms.
 
-
-def qdrant_health_status(client: Any | None = None) -> str:
-    """Return "ok", "degraded" or "checking"; cache results for 30s, wait at most 250ms.
-
-    A single shared in-flight probe prevents request-time probe amplification. A probe
-    that outlives the wait reports the last completed result, or "checking" before the
-    first one, so a cold cache is never mistaken for a failure.
+    A single shared in-flight probe prevents request-time probe amplification.
+    Optional retrieval failure never prevents deterministic archive answers.
     """
     global _health_future, _health_checked_at, _health_result
     if not get_settings().rag_qdrant_enabled:
-        return "degraded"
+        return False
     with _health_lock:
         if client is None and time.monotonic() - _health_checked_at < 30:
-            return "ok" if _health_result else "degraded"
+            return _health_result
         if _health_future is None:
             _health_future = _health_pool.submit(inspect_retrieval_targets, client)
         future = _health_future
-        known = _health_checked_at > 0
-        last = _health_result
     try:
         result = bool(future.result(timeout=0.25)["usable"])
     except TimeoutError:
-        if not known:
-            return "checking"
-        return "ok" if last else "degraded"
+        return False
     except Exception:
         result = False
     with _health_lock:
         _health_result = result
         _health_checked_at = time.monotonic()
         _health_future = None
-    return "ok" if result else "degraded"
+    return result
 
 
 def _match_any(values: set[Any] | list[Any]):
@@ -404,21 +277,13 @@ def build_qdrant_filter(filters: dict[str, Any] | None):
     """Translate retrieval filters to Qdrant payload filters."""
     if not filters:
         return None
+    from app.services.archive_clock import GameMoment
     from qdrant_client import models
 
     must: list[Any] = []
-    archive_units = get_settings().rag_archive_source_units_enabled
     dates = set(filters.get("dates") or [])
     if dates:
-        condition = models.FieldCondition(key="date", match=_match_any(dates))
-        if archive_units:
-            must.append(
-                models.Filter(
-                    should=[condition, models.FieldCondition(key="dates", match=_match_any(dates))]
-                )
-            )
-        else:
-            must.append(condition)
+        must.append(models.FieldCondition(key="date", match=_match_any(dates)))
     team_ids = set(filters.get("team_ids") or [])
     if team_ids:
         must.append(models.FieldCondition(key="team_ids", match=_match_any(team_ids)))
@@ -435,12 +300,28 @@ def build_qdrant_filter(filters: dict[str, Any] | None):
                 )
             )
         must.append(models.Filter(should=should))
+    moment = GameMoment.from_filter(filters.get("event_clock"))
+    if moment is not None:
+        must.append(
+            models.NestedCondition(
+                nested=models.Nested(
+                    key="raw_rows",
+                    filter=models.Filter(
+                        must=[
+                            models.FieldCondition(
+                                key="period", match=models.MatchValue(value=moment.period)
+                            ),
+                            models.FieldCondition(
+                                key="clock", match=models.MatchAny(any=list(moment.clock_variants))
+                            ),
+                        ]
+                    ),
+                )
+            )
+        )
     game_ids = set(filters.get("game_ids") or [])
     if game_ids:
-        if not archive_units:
-            must.append(models.FieldCondition(key="game_id", match=_match_any(game_ids)))
-        else:
-            must.append(_unit_game_filter(models, game_ids, filters))
+        must.append(models.FieldCondition(key="game_id", match=_match_any(game_ids)))
     data_version = filters.get("data_version")
     if data_version:
         must.append(
@@ -448,18 +329,7 @@ def build_qdrant_filter(filters: dict[str, Any] | None):
         )
     season_types = set(filters.get("season_types") or [])
     if season_types:
-        condition = models.FieldCondition(key="season_type", match=_match_any(season_types))
-        if archive_units:
-            must.append(
-                models.Filter(
-                    should=[
-                        condition,
-                        models.FieldCondition(key="season_types", match=_match_any(season_types)),
-                    ]
-                )
-            )
-        else:
-            must.append(condition)
+        must.append(models.FieldCondition(key="season_type", match=_match_any(season_types)))
     player_names = set(filters.get("player_names") or [])
     if player_names:
         must.append(models.FieldCondition(key="player_names", match=_match_any(player_names)))
@@ -467,27 +337,6 @@ def build_qdrant_filter(filters: dict[str, Any] | None):
     if player_ids:
         must.append(models.FieldCondition(key="player_ids", match=_match_any(player_ids)))
     return models.Filter(must=must) if must else None
-
-
-def _unit_game_filter(models: Any, game_ids: set[Any], filters: dict[str, Any]):
-    alternatives = [
-        models.FieldCondition(key="game_id", match=_match_any(game_ids)),
-        models.FieldCondition(key="game_ids", match=_match_any(game_ids)),
-    ]
-    if filters.get("player_ids"):
-        alternatives.append(
-            models.Filter(
-                must=[
-                    models.FieldCondition(
-                        key="unit_type", match=models.MatchValue(value="player_identity")
-                    ),
-                    models.FieldCondition(
-                        key="player_ids", match=_match_any(set(filters["player_ids"]))
-                    ),
-                ]
-            )
-        )
-    return models.Filter(should=alternatives)
 
 
 def upsert_points(

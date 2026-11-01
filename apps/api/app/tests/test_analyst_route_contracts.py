@@ -6,7 +6,7 @@ import json
 from datetime import UTC, datetime
 
 from app.core.config import get_settings
-from app.services import analyst_loop, analyst_sessions
+from app.services import analyst_provider, analyst_sessions
 from app.tests.support.analyst_protocol import (
     ScriptedAdapter,
 )
@@ -26,7 +26,7 @@ async def test_route_commits_replays_and_ignores_client_authority(client, local_
     async with AsyncSessionLocal() as db:
         await _seed_release_stats(db)
     adapter = ScriptedAdapter()
-    monkeypatch.setattr(analyst_loop, "get_llm_adapter", lambda: adapter)
+    monkeypatch.setattr(analyst_provider, "get_llm_adapter", lambda: adapter)
     request = {
         "question": "Give me an interesting stat",
         "turn_id": "integration-turn-0001",
@@ -40,8 +40,7 @@ async def test_route_commits_replays_and_ignores_client_authority(client, local_
     assert response["llm_validated"]
     replay = await client.post("/analysis/query", json=request)
     assert replay.json() == response
-    first_calls = len(adapter.prompts)
-    assert first_calls <= 3
+    assert len(adapter.prompts) == 3
     conflict = await client.post("/analysis/query", json={**request, "question": "Different input"})
     assert conflict.status_code == 409
     second = await client.post(
@@ -54,9 +53,7 @@ async def test_route_commits_replays_and_ignores_client_authority(client, local_
         },
     )
     assert second.json()["llm_validated"] and second.json()["revision"] == 2
-    # The second turn answers from committed claims: at most answer + review, and never
-    # more than the original two-turn bound.
-    assert first_calls < len(adapter.prompts) <= 5
+    assert len(adapter.prompts) == 5
 
 
 async def test_redis_failure_gives_explicit_stateless_facts(client, monkeypatch):
@@ -67,7 +64,7 @@ async def test_redis_failure_gives_explicit_stateless_facts(client, monkeypatch)
     async def unavailable():
         return None
 
-    monkeypatch.setattr(analyst_sessions, "_session_redis", unavailable)
+    monkeypatch.setattr(analyst_sessions, "_redis", unavailable)
     async with AsyncSessionLocal() as db:
         await _seed_release_stats(db)
     response = (
@@ -105,22 +102,19 @@ async def test_six_turn_conversation_protocol(client, local_redis, monkeypatch):
     class ConversationAdapter(ScriptedAdapter):
         async def generate(self, *, system, user):
             raw = await super().generate(system=system, user=user)
-            payload = json.loads(user)
-            value = analyst_loop.decode_model_response(payload, json.loads(raw))
-            if payload["schema"]["title"] in {"Action", "ProposedAnswer"}:
-                answer = value.get("answer") if payload["schema"]["title"] == "Action" else value
-                if answer:
-                    question = payload["requested_question"]
-                    if "prove" in question:
-                        answer["text"] += (
-                            " A single observation does not prove overall improvement."
-                        )
-                    if "injured" in question:
-                        answer["text"] += " I don't have live injury updates."
-            return json.dumps(analyst_loop.encode_model_response(payload, value))
+            payload, value = json.loads(user), json.loads(raw)
+            if payload["schema"]["title"] == "Action" and value.get("answer"):
+                question = payload["question"]
+                if "prove" in question:
+                    value["answer"]["text"] += (
+                        " A single observation does not prove overall improvement."
+                    )
+                if "injured" in question:
+                    value["answer"]["text"] += " I don't have live injury updates."
+            return json.dumps(value)
 
     adapter = ConversationAdapter()
-    monkeypatch.setattr(analyst_loop, "get_llm_adapter", lambda: adapter)
+    monkeypatch.setattr(analyst_provider, "get_llm_adapter", lambda: adapter)
     questions = [
         "Give me an interesting stat.",
         "Why is that interesting?",

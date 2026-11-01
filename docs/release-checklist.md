@@ -7,71 +7,62 @@ release status. Historical local preflight results do not establish current depl
 Generate the view and run the fail-closed gate from the repository root:
 
 ```sh
-uv run --package knicksiq-api python -m app.services.release_evidence docs/release-evidence/release-record.json --readiness --render
+uv run --package knicksiq-api python -m app.services.release_evidence docs/release-evidence/release-record.json --render
 ```
 
-## Intended launch configuration
+The launch configuration is 10% shadow with deterministic answers delivered to users. Automatic
+Render deployments stay disabled. Both NOW workstreams block deployment. NEXT and LATER are
+outside this release gate and hosting remains unchanged.
 
-This section is the single authoritative statement of the intended launch. Other documents link
-here instead of restating the mode.
+The gate validates `ANALYSIS_ANSWER_MODE` and `ANALYSIS_SHADOW_SAMPLE_RATE`
+in `render.yaml`, not just the record. The deployment command reads that blueprint
+from `--tested-root` while resolving evidence artifacts from the evidence checkout.
+A missing or invalid blueprint blocks promotion.
 
-The owner removed the required shadow stage on 2026-10-20; launch goes straight to
-`llm_primary`. The launch serves `ANALYSIS_ANSWER_MODE=llm_primary` with
-`ANALYST_EVIDENCE_LOOP_ENABLED=true`, `ANALYSIS_SHADOW_SAMPLE_RATE=0.1` retained only for
-explicit shadow drills (primary turns are never sampled), and a configured Sentry DSN. The
-approved record's pending `openrouter_monthly_cutoff_usd` target is $20, applied only during an
-explicitly authorized deployment. `render.yaml` declares `OPENROUTER_MONTHLY_CUTOFF_USD=2` until that authorized change.
-Models run on the owner's OpenCode Go subscription: `AI_PROVIDER=opencode-go`,
-`AI_CHAT_MODEL=deepseek-v4.1-flash` writes over Chat Completions, and
-`ANALYST_REVIEW_MODEL=gpt-6-luna` reviews over the Responses API
-(`AI_MODEL_PROTOCOLS={"gpt-6-luna":"responses"}`). `AI_MODEL_PRICES` prices each call because Go
-reports no per-call cost, and `OPENROUTER_ALLOWED_MODELS` contains exactly the writer and the
-reviewer. Users receive validated evidence-loop answers. Any provider, budget, validation or
-optional-dependency failure degrades to deterministic cited facts, and a suspended Go account
-needs no action. Switching back to OpenRouter is the configuration change in
-[the runbook](production-runbook.md#switch-back-to-openrouter). The mode, evidence loop, provider
-and model values are declared by `render.yaml` and asserted by
-`test_render_blueprint_enables_the_grounded_ai_configuration`; the blueprint cutoff remains $2
-until the authorized change.
+The published October 28 observations remain in
+[the historical readiness snapshot](release-evidence/readiness-20261028.json).
+They do not replace current-worktree checks, exact-commit CI or owner approval.
 
-Readiness requires no shadow configuration, `shadow_dependencies` or `shadow_evaluation`
-evidence. The record's `configuration` block is the historical tested-commit configuration, not
-the launch target. Readiness does not supply final launch approval or the owner-controlled record
-digest required by the deployment coordinator.
+The complete provider-disabled evaluation is a candidate diagnostic, not a release pass.
+Its 120-case denominators remain fixed. The 302-fact enriched proposal is still
+unapproved and unfrozen, and all 50 original semantic targets are unresolved.
+The recorded owner decision keeps unresolved semantic cases release-blocking.
+Local signed-service tests use a fake upstream and never establish provider quality.
+Do not create approval or freeze records, set semantic targets, or promote the answer mode.
 
-### Analyst behavior at launch
+The October 30 public-source check recalculates all 302 proposed factual values.
+It uses ESPN box scores for 100 games and Basketball Reference for the remaining game,
+with fresh NBA pages recorded separately as same-origin consistency checks.
+The turnover comparison needs its player-attributed definition stated explicitly because
+Basketball Reference team totals also include unassigned team turnovers.
+Local evidence is saved in
+`release-artifacts/production-completion-20261030/independent-web-label-validation.json`.
+This verifies values over declared source populations, not every question interpretation,
+semantic relevance target, owner approval or candidate whole-answer review.
 
-The evidence loop exposes eleven registered tools: `get_player_stats`, `get_team_stats`,
-`compare_windows`, `discover_facts`, `search_archive`, `get_evidence`, `find_player_games`,
-`get_game_narrative`, `get_game_flow`, `get_team_splits` and `get_period_scoring`. Quarter, period,
-play-by-play and split questions are answerable. Season-level records and stats include all
-archived phases unless the question or inherited scope restricts them; answers state the scope. Typed
-pre-model refusals cover instruction override, wagering and out-of-archive dates. Other unsupported
-wording reaches the analyst, which declines or explains coverage through the `refused` flag. Prompt
-`analyst-balanced-v6` and validator `whole-answer-v3` run the deterministic number gate. Reasoning
-effort is `none` by default, token caps are enforced and deterministic prefetch is enabled. As a
-historical OpenRouter measurement at the 16,000-byte input budget, the $2 cutoff supported about
-1,009 questions per month on the 70-question mix and about 750 on the held-out rate, at mean costs
-of $0.001981 and $0.002668 per question, respectively; measured p95 latency was 7,640 ms on 140
-questions. The owner relaxed the latency gate from four seconds to 15 seconds on 2026-10-19, so
-that measurement meets the current local bound. Capacity was route dependent. OpenCode Go latency
-and capacity are not yet measured. Full behavior is in
-[the analyst implementation](analyst-evidence-loop.md). Evidence is in the
-[final measurement](release-evidence/llm-primary-20261021/final/README.md).
+Repeatable production scenario (isolated Postgres, Redis, production-profile API, and
+built web app on ports `19430`–`19433`, no provider traffic):
 
-Owner-only decisions:
+```sh
+uv run --frozen --all-packages python tools/release/production_e2e.py
+```
 
-- Authorize real-provider spend and the approved monthly cutoff. The blueprint currently declares
-  $2; the approved record's $20 target applies only during an explicitly authorized deployment.
-- Approve any exception to a failed quantitative release gate.
-- Approve evaluation labels, the scoring rubric, the exact frozen evaluation contract hash, the
-  release record digest and any exception.
-- Authorize deploy and activation, and any production settings change, including a rollback
-  drill against production.
+Still owed as environment verification, not merely code review:
 
-Everything else in this document is agent-verifiable and does not require owner sign-off.
-Automatic Render deployments stay disabled. Both NOW workstreams block deployment. NEXT and LATER
-are outside this release gate and hosting remains unchanged.
+- An independent provider-side monthly limit exists and is consistent with the $2
+  `OPENROUTER_MONTHLY_CUTOFF_USD` application cutoff. A missing Redis ledger restarts
+  at zero by recorded owner decision, so the provider limit is the only independent stop.
+- The Render edge's forwarded scheme and client address reach the container: without
+  the scheme every public request is redirected, and without the address every user
+  shares one rate-limit identity.
+- The runtime database role holds only `SELECT` on application tables and views.
+- The deployed container reports healthy through its own health probe, and
+  `/health/ready` returns 200 with the expected data version. Liveness alone is not a
+  go-live gate.
+- Public directory endpoints serve only active validated release membership; staged-only
+  players and teams are absent and detail requests 404.
+
+See `docs/production-runbook.md` for the exact commands and procedures.
 
 Agents verify all reports against canonical evidence. The owner approves the corrected template,
 exceptions and final hash-bound audit summary rather than each write-up. A reviewed flag alone
@@ -84,30 +75,3 @@ these rebuilt artifacts are not asserted identical to CI artifacts. Capture both
 application deployments, active data version and alias mapping before promotion. Smoke-test
 both resulting services. Restore every changed component on failure; coordinated restoration
 is not atomic. Stop promotion and alert the owner if any restoration fails.
-
-## Prepare the current candidate
-
-Create a review package from the current checkout and the release record:
-
-```sh
-uv run --package knicksiq-api python tools/release/prepare_llm_primary.py \
-  --output-dir release-artifacts/llm-primary-preparation
-```
-
-Use a new or empty output directory for each run. Use `--record PATH` for a separately
-assembled candidate record. The package preserves that record byte for byte and includes
-readiness blockers, original evidence commits, artifact hashes, launch consistency and rerun
-commands. Historical passing checks cannot establish readiness for a different commit.
-A dirty checkout blocks readiness. Only untracked output files are excluded from that check.
-Tracked deletions inside the output directory still block readiness.
-
-Exit 1 means readiness is blocked. Exit 2 means the inputs were rejected before package
-creation. Exit 0 means the preparation checks pass. It does not approve deployment or verify
-live rollback targets. Preparation runs no provider traffic and changes no production settings.
-
-Verify the command through its CLI and save the receipt:
-
-```sh
-uv run --package knicksiq-api python tools/release/verify_prepare_llm_primary.py \
-  --output release-artifacts/llm-primary-preparation-e2e.json
-```
