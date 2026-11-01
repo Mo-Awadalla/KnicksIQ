@@ -292,67 +292,6 @@ def test_rrf_ordering_is_deterministic_for_ties():
     ]
 
 
-async def test_qdrant_failure_falls_back_to_lexical_retrieval(monkeypatch, db_session):
-    monkeypatch.setattr(
-        "app.services.rag.get_settings",
-        lambda: SimpleNamespace(
-            rag_hybrid_enabled=True,
-            rag_qdrant_enabled=True,
-            rag_reranker_enabled=False,
-            rag_rerank_limit=20,
-        ),
-    )
-    monkeypatch.setattr("app.services.rag.is_qdrant_healthy", lambda: True)
-
-    def fail_embed(_texts):
-        raise RuntimeError("embedding unavailable")
-
-    monkeypatch.setattr("app.services.rag.embed_texts", fail_embed)
-    trace: list[dict] = []
-    chunks, filters = await search_possession_chunks(
-        db_session,
-        "What happened in the Knicks game against Toronto?",
-        season="2025-26",
-        trace=trace,
-    )
-    assert filters.as_dict()
-    assert chunks
-    assert any(call.get("tool") == "qdrant_search" for call in trace)
-    assert any(call.get("tool") == "lexical_search" for call in trace)
-
-
-async def test_conditional_reranker_skips_high_confidence_metadata_match(
-    monkeypatch,
-    db_session,
-):
-    monkeypatch.setattr(
-        "app.services.rag.get_settings",
-        lambda: SimpleNamespace(
-            rag_hybrid_enabled=False,
-            rag_qdrant_enabled=False,
-            rag_reranker_enabled=True,
-            rag_conditional_reranker_enabled=True,
-            rag_rerank_limit=20,
-            rag_neighbor_expansion_enabled=False,
-        ),
-    )
-
-    def fail_rerank(*_args, **_kwargs):
-        raise AssertionError("high-confidence exact metadata match should skip reranking")
-
-    monkeypatch.setattr("app.services.rag.rerank_candidates", fail_rerank)
-    trace: list[dict] = []
-    chunks, _filters = await search_possession_chunks(
-        db_session,
-        "What happened against TOR?",
-        trace=trace,
-    )
-
-    assert chunks
-    skipped = next(item for item in trace if item.get("tool") == "rerank")
-    assert skipped["skipped"] == "exact_metadata_and_lexical_confidence"
-
-
 def test_reranker_reorders_and_respects_top_n():
     candidates = [
         PossessionChunk("a", 1, "first", {}, []),

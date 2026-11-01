@@ -79,6 +79,9 @@ async def test_evidence_loop_shadow_http(
     assert body["answer"] and "25" in body["answer"] and body["citations"]
     assert body["state_committed"] and body["revision"] == 1
     assert body["llm_validated"] == (mode == "llm_primary")
+    if mode == "shadow":
+        assert body["degraded"] is False
+        assert body["warnings"] == []
     count = len(adapter.prompts)
     replay = await client.post(
         "/analysis/query", json=payload, headers={"x-request-id": "different-replay-request"}

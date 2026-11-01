@@ -10,6 +10,7 @@ from typing import Any
 
 from app.core.config import get_settings
 from app.services.analyst_budget import BudgetReservation
+from app.services.analyst_citations import citation_gap
 from app.services.analyst_fallback import fallback_claims, re_search_discovery
 from app.services.analyst_provider import (
     Schema,
@@ -17,12 +18,19 @@ from app.services.analyst_provider import (
     encoded,
     request_model,
 )
+from app.services.analyst_render import (
+    citations,
+    coverage_gap,
+    deterministic_text,
+    disposition,
+)
 from app.services.analyst_tools import AnalystTools
 from app.services.conversation_memory import bounded_history
 from app.services.evidence_contracts import (
     Action,
     AnswerReview,
     Candidate,
+    ClaimUse,
     Evidence,
     ProposedAnswer,
     ToolCall,
@@ -48,6 +56,7 @@ class AnalystLoop:
         self.rounds = 0
         self.tool_count = 0
         self.trace: list[dict[str, Any]] = []
+        self._traces_seen = 0
         self.results: list[ToolResult] = []
         self.sent_claims: dict[str, VerifiedClaim] = {}
         self.sent_evidence: dict[str, Evidence] = {}
@@ -58,6 +67,15 @@ class AnalystLoop:
         self.accepted_suggestions: list[str] = []
         self.recovery_ran = False
         self.request_id = ""
+
+    @property
+    def request_id(self) -> str:
+        """The route's request id, shared with the tool layer for retrieval traces."""
+        return self.tools.request_id or ""
+
+    @request_id.setter
+    def request_id(self, value: str) -> None:
+        self.tools.request_id = value
 
     def payload(
         self,
@@ -117,14 +135,24 @@ class AnalystLoop:
             await reservation.settle(amount)
             offset += slots
 
+    def _record_traces(self) -> None:
+        """Append the retrieval traces issued since the last read, in order."""
+        pending = self.tools.retrieval_traces[self._traces_seen :]
+        self.trace.extend({**item, "stage": "retrieval"} for item in pending)
+        self._traces_seen += len(pending)
+
     async def run(self, *, allow_model: bool = True) -> dict[str, Any]:
+        if not allow_model:
+            # The configured answer mode intentionally delivers backend facts. That is a
+            # complete answer, not an outage, so it is neither degraded nor warned.
+            return await self.fallback("", degraded=False)
         failure = None
         try:
             # Leave recovery and response finalization inside the overall request budget.
             investigation_budget = max(0.001, self.remaining() - 2.5)
             try:
                 async with asyncio.timeout(investigation_budget):
-                    if allow_model and await self.reserve(3):
+                    if await self.reserve(3):
                         return await self.investigate()
             except Exception as exc:
                 failure = exc
@@ -199,6 +227,7 @@ class AnalystLoop:
                         break
                     self.tool_count += 1
                     self.results.append(await self.tools.execute(call))
+                    self._record_traces()
                 continue
             answer = action.answer
             if answer is None:  # next_action guarantees this; narrows the type
@@ -207,14 +236,17 @@ class AnalystLoop:
             supported, reason = await self.validate(answer)
             if supported:
                 return self.render(answer, llm=True)
-            # Only one repair, with capacity and time for both revision and review.
-            # Split remaining time between the calls instead of demanding two full
-            # 20-second provider timeouts inside a 30-second application deadline.
+            # One repair; split the remaining time between revision and review.
             repair_timeout = min(
                 self.settings.ai_request_timeout_seconds, (self.remaining() - 0.5) / 2
             )
             observed_call_seconds = max(
-                (item["latency_ms"] / 1000 for item in self.trace), default=1.0
+                (
+                    item["latency_ms"] / 1000
+                    for item in self.trace
+                    if item.get("stage") in {"orchestrate", "revise", "review"}
+                ),
+                default=1.0,
             )
             if self.calls + 2 <= self.settings.analyst_max_model_calls and (
                 repair_timeout >= max(1.0, observed_call_seconds)
@@ -246,14 +278,16 @@ class AnalystLoop:
                 "Invalid claim value, release, baseline or reference. displayed_value must equal "
                 "the claim's `value` field exactly, not the whole claim object."
             )
+        gap = citation_gap(self.tools.question, answer, self.sent_evidence)
+        if gap:
+            return False, gap
         try:
             review = await self.model(
                 AnswerReview, review=True, answer=answer, timeout_seconds=timeout_seconds
             )
         except (ValueError, RuntimeError):
             return False, "Reviewer failed or returned malformed output."
-        # A reviewer sees each claim's supporting_evidence_ids, so those backend-issued
-        # receipts are legitimate citations even when the payload omitted their details.
+        # Claims' backend-issued receipts are legitimate citations even when omitted.
         reviewable = dict(self.sent_evidence)
         for claim in self.sent_claims.values():
             for ref in claim.supporting_evidence_ids:
@@ -269,37 +303,41 @@ class AnalystLoop:
     def fallback_claims(self) -> list[VerifiedClaim]:
         return fallback_claims(self)
 
-    async def fallback(self, reason: str) -> dict[str, Any]:
+    async def fallback(self, reason: str, *, degraded: bool = True) -> dict[str, Any]:
         if not self.fallback_claims() and not self.recovery_ran and self.remaining() > 0.5:
             self.recovery_ran = True
             question = self.tools.question
+            comparison = bool(self.tools.scope and self.tools.scope.comparison)
             name = (
                 "discover_facts"
                 if re_search_discovery(question)
+                else "get_team_stats"
+                if comparison
                 else "get_player_stats"
                 if self.tools.scope and self.tools.scope.player_ids
                 else "get_team_stats"
             )
             try:
                 async with asyncio.timeout(max(0.001, self.remaining() - 0.5)):
-                    # Team recovery shows totals; the default "average" is for player stats.
+                    # Team recovery honours the resolved operation, not just the scope.
                     aggregation = "total" if name == "get_team_stats" else "average"
                     self.results.append(
                         await self.tools.execute(
                             ToolCall(name=name, question=question, aggregation=aggregation)
                         )
                     )
+                    self._record_traces()
             except Exception:
                 # Cancellation is a BaseException and intentionally propagates.
                 pass
-        return self.render_fallback(reason)
+        return self.render_fallback(reason, degraded=degraded)
 
-    def render_fallback(self, reason: str) -> dict[str, Any]:
-        from app.services.evidence_contracts import ClaimUse
-
+    def render_fallback(self, reason: str, *, degraded: bool = True) -> dict[str, Any]:
         claims = self.fallback_claims()
-        claims = claims[:3]
-        text = " ".join(c.statement for c in claims)
+        partial, coverage = coverage_gap(self.results, claims)
+        text = deterministic_text(claims, reserve=(len(coverage) + 1) if coverage else 0)
+        if coverage:
+            text = f"{text} {coverage}".strip()
         if not text:
             text = next(
                 (
@@ -310,42 +348,49 @@ class AnalystLoop:
             )
         if re_search_live(self.tools.question):
             text += " I don't have live injury or current-status updates."
+        # The 30-claim cap belongs to a model-authored answer. Deterministic delivery is
+        # trusted backend output, so every verified claim is delivered (citations and
+        # committed state) while `ProposedAnswer` keeps the model-facing shape unchanged.
         answer = ProposedAnswer(
             text=text,
-            claims=[ClaimUse(claim_id=c.claim_id, displayed_value=c.value) for c in claims],
+            claims=[ClaimUse(claim_id=c.claim_id, displayed_value=c.value) for c in claims[:30]],
         )
-        return self.render(answer, llm=False, warning=reason)
-
-    def render(self, answer: ProposedAnswer, *, llm: bool, warning: str = "") -> dict[str, Any]:
-        claims = [self.tools.claims[u.claim_id] for u in answer.claims]
-        citations = []
-        for claim in claims:
-            for ref in claim.supporting_evidence_ids[:3]:
-                e = self.tools.evidence[ref]
-                citations.append(
-                    {
-                        "claim": claim.statement,
-                        "type": "verified_claim",
-                        "title": claim.statement,
-                        "game_id": e.game_id,
-                        "source_name": e.source_name,
-                        "source_url": e.source_url,
-                        "metadata": {"claim": claim.model_dump(mode="json"), "evidence_id": ref},
-                    }
-                )
-        for ref in answer.evidence_ids:
-            e = self.tools.evidence[ref]
-            citations.append(
-                {
-                    "claim": e.text,
-                    "type": "archive",
-                    "title": "Archive receipt",
-                    "game_id": e.game_id,
-                    "source_name": e.source_name,
-                    "source_url": e.source_url,
-                    "metadata": {"evidence_id": ref},
-                }
+        dependency = any(r.status == "dependency_failure" for r in self.results)
+        # An intentional deterministic delivery is only complete when it carries verified
+        # facts; a dependency failure, an uncovered group or a turn that never ran is a
+        # real degradation, while a complete deterministic answer is not an outage.
+        degraded = degraded or dependency or partial or (not claims and not self.results)
+        if degraded and not reason:
+            reason = (
+                "Part of this answer's requested coverage could not be reported from the archive."
+                if partial
+                else "Some archive facts were unavailable on this turn."
             )
+        return self.render(
+            answer,
+            llm=False,
+            warning=reason if degraded else "",
+            degraded=degraded,
+            delivered=claims,
+        )
+
+    def render(
+        self,
+        answer: ProposedAnswer,
+        *,
+        llm: bool,
+        warning: str = "",
+        degraded: bool | None = None,
+        delivered: list[VerifiedClaim] | None = None,
+    ) -> dict[str, Any]:
+        # Trusted deterministic delivery may carry every verified claim, independent of the
+        # model-facing `ProposedAnswer.claims` cap.
+        claims = (
+            delivered
+            if delivered is not None
+            else [self.tools.claims[u.claim_id] for u in answer.claims]
+        )
+        receipts = citations(claims, answer, self.tools.evidence)
         # Only the route's atomic commit makes these proposed state changes authoritative.
         state = self.tools.state.copy()
         candidates = [self.tools.candidates[ref] for ref in answer.fact_ids]
@@ -380,20 +425,45 @@ class AnalystLoop:
         )
         state["claims"] = [c.model_dump(mode="json") for c in stored_claims]
         state["evidence"] = [self.tools.evidence[ref].model_dump(mode="json") for ref in references]
+        # The private response registry is the committed evidence plus the actual rows
+        # each receipt was built from. Production never builds it: its schema excludes it.
+        registry = (
+            self.tools.provenance.registry(state["evidence"])
+            if self.tools.provenance.enabled
+            else []
+        )
+        if degraded is None:
+            degraded = not llm
+        outcome = self.outcome(answered=bool(claims or (llm and answer.evidence_ids)))
         return {
             "answer": answer.text,
             "follow_up_questions": self.accepted_suggestions if llm else [],
-            "citations": citations,
+            "citations": receipts,
             "warnings": [warning] if warning else [],
-            "degraded": not llm,
+            "degraded": degraded,
             "route": "llm_analyst" if llm else "factual_fallback",
             "data_version": self.tools.release.version,
             "state": state,
             "tool_calls": self.trace,
+            "evidence": registry,
             "llm_validated": llm,
+            "outcome": outcome,
+            # The public flag is the structured disposition, never inferred from wording.
+            "refused": outcome == "refuse",
         }
+
+    def outcome(self, *, answered: bool) -> str | None:
+        outcome = disposition(self.results, answered=answered)
+        if outcome is not None:
+            return outcome
+        scope = self.tools.scope
+        if scope is not None:
+            if scope.operation_reason:
+                return "refuse"
+            if scope.requires_clarification:
+                return "clarify"
+        return None
 
 
 def re_search_live(question: str) -> bool:
-
     return bool(re.search(r"\b(injur\w*|today|current|live|tonight)\b", question, re.I))

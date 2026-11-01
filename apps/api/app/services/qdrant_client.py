@@ -277,6 +277,7 @@ def build_qdrant_filter(filters: dict[str, Any] | None):
     """Translate retrieval filters to Qdrant payload filters."""
     if not filters:
         return None
+    from app.services.archive_clock import GameMoment
     from qdrant_client import models
 
     must: list[Any] = []
@@ -299,6 +300,25 @@ def build_qdrant_filter(filters: dict[str, Any] | None):
                 )
             )
         must.append(models.Filter(should=should))
+    moment = GameMoment.from_filter(filters.get("event_clock"))
+    if moment is not None:
+        must.append(
+            models.NestedCondition(
+                nested=models.Nested(
+                    key="raw_rows",
+                    filter=models.Filter(
+                        must=[
+                            models.FieldCondition(
+                                key="period", match=models.MatchValue(value=moment.period)
+                            ),
+                            models.FieldCondition(
+                                key="clock", match=models.MatchAny(any=list(moment.clock_variants))
+                            ),
+                        ]
+                    ),
+                )
+            )
+        )
     game_ids = set(filters.get("game_ids") or [])
     if game_ids:
         must.append(models.FieldCondition(key="game_id", match=_match_any(game_ids)))

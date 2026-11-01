@@ -226,7 +226,7 @@ def main() -> None:
     parser.add_argument("--tested-root", type=Path, default=Path.cwd())
     args = parser.parse_args()
     record = json.loads(args.record.read_text())
-    failures = validate_record(record, Path.cwd())
+    failures = validate_record(record, Path.cwd(), tested_root=args.tested_root)
     if sha256(args.record) != os.environ.get("RELEASE_OWNER_APPROVAL_SHA256"):
         failures.append("owner-controlled approval digest does not match record")
     commit = subprocess.check_output(

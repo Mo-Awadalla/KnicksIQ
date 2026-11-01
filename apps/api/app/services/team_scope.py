@@ -7,6 +7,7 @@ import re
 from datetime import date
 from typing import Any
 
+from app.services.query_comparisons import all_star_break
 from app.services.team_aliases import team_ids_in_text
 
 _MONTHS = {name.lower(): index for index, name in enumerate(calendar.month_name) if name}
@@ -87,14 +88,8 @@ def scope_games(question: str, games: list[Any], *, window: bool = True) -> list
         ]
     if "all star" in q and games:
         # The archive's mid-February schedule gap separates pre/post-break games.
-        february = sorted({g.game_date for g in games if g.game_date.month == 2})
-        gaps = [
-            (b - a, a, b)
-            for a, b in zip(february, february[1:], strict=False)
-            if 8 <= a.day <= 18 and 14 <= b.day <= 25
-        ]
-        if gaps:
-            _, before, after = max(gaps)
+        before, after = all_star_break(games)
+        if before is not None and after is not None:
             if "after" in q and "before" not in q:
                 selected = [g for g in selected if g.game_date >= after]
             elif "before" in q and "after" not in q:

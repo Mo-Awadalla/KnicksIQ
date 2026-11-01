@@ -17,12 +17,16 @@ hybrid retrieval enabled. Qdrant, Redis, OpenRouter, and Sentry remain optional
 for availability: deterministic Postgres-backed answers remain available when
 they fail. The free Key Value instance is intentionally non-persistent because
 every stored rate-limit, cache, and budget entry is reconstructible runtime
-state.
+state. A lost monthly budget ledger restarts at zero under a recorded owner
+decision. The `$2` application cutoff applies while that ledger survives.
+Repeated restarts or LRU evictions can reopen spending within the same month.
+A separately verified provider-side limit must bound total monthly charges.
+See `docs/production-runbook.md`.
 
 ## Before creating the blueprint
 
 1. Complete every owner gate in `docs/release-checklist.md`.
-2. Confirm the `knicksiq.win` DNS values, Formspree endpoint, and Nemotron
+2. Confirm the `knicksiq.win` DNS values, Formspree endpoint, and configured model
    allowlist in the blueprint and public files.
 3. Create a Neon Free project and Qdrant Cloud cluster. In Render, set `DB_URL`
    to Neon's direct connection string and set `QDRANT_URL`, `QDRANT_API_KEY`,
@@ -57,11 +61,29 @@ state.
 5. Activate the matching Postgres release and Qdrant aliases.
 6. Manually deploy the immutable API and web artifacts in `shadow` mode.
 7. Render uses `GET /health/live` for deploy health checks so the first deploy
-   can complete before release data is loaded. Before go-live, require
-   `GET /health/ready` to return
-   200 with the expected data version. Run one archive and one deterministic
-analyst synthetic before go-live. Promote to `llm_primary` only after the
-shadow gates in `docs/evaluation.md` pass.
+   can complete before release data is loaded. That probe is liveness only:
+   before go-live, require `GET /health/ready` to return 200 with the expected data
+   version, and require the container to report healthy from inside the container
+   (`docker exec <container> python -m app.api.health_probe`). Run one archive and
+   one deterministic analyst synthetic before go-live. Promote to `llm_primary`
+   only after the shadow gates in `docs/evaluation.md` pass.
+
+Production redirects plaintext HTTP to HTTPS. Confirm the Render edge's
+`X-Forwarded-Proto` reaches the container and that `request.client.host` resolves to
+the end-user address; both depend on the edge being a trusted forwarded-for peer, and
+without the first every public request would be redirected. Without the second, every
+user shares one rate-limit identity. Record the observed behavior; do not infer it.
+
+The runtime database role is expected to hold only `SELECT` on application tables and
+views. Verify the actual grants on the Neon role; the API never writes data or schema.
+
+Before promotion, also run the repeatable local production scenario, which starts
+isolated Postgres, Redis, the production-profile API, and the built web app on ports
+`19430`–`19433` without provider traffic:
+
+```bash
+uv run --frozen --all-packages python tools/release/production_e2e.py
+```
 
 When migrating an existing Blueprint, Render does not delete the old managed
 Postgres instance or replace an existing `sync: false` value automatically.
@@ -90,6 +112,8 @@ Keep code and evidence commits distinct: the workflow checks out the selected te
 commit under `tested/` and the workflow's evidence commit under `evidence/`. This avoids
 asking a record committed inside Git to contain its own commit hash. Every passing check
 must reference the tested code commit and a hashed artifact in the evidence checkout.
+The gate reads the deployment blueprint from the tested checkout. Changing only
+the evidence checkout's blueprint cannot authorize a different serving mode.
 
 The coordinator sends Render the exact tested `commitId`, records both returned deployment
 IDs, verifies the deployed commits, then optionally promotes a previously validated staged

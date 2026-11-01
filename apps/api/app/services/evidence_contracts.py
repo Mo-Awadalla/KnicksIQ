@@ -148,7 +148,7 @@ class ProposedAnswer(Contract):
     claims: list[ClaimUse] = Field(default_factory=list, max_length=30)
     evidence_ids: list[str] = Field(default_factory=list, max_length=20)
     fact_ids: list[str] = Field(default_factory=list, max_length=10)
-    follow_up_questions: list[str] = Field(default_factory=list, max_length=2)
+    follow_up_questions: list[str] = Field(default_factory=list, max_length=4)
 
 
 class Action(Contract):
@@ -183,7 +183,7 @@ class FollowUpReview(Contract):
 class AnswerReview(Contract):
     # Ordered, exact substrings must concatenate to the ENTIRE proposed text.
     assertions: list[AssertionReview] = Field(min_length=1, max_length=40)
-    follow_up_reviews: list[FollowUpReview] = Field(default_factory=list, max_length=2)
+    follow_up_reviews: list[FollowUpReview] = Field(default_factory=list, max_length=4)
 
 
 def accepted_follow_ups(
@@ -211,7 +211,7 @@ def accepted_follow_ups(
         ):
             continue
         accepted.append(normalized)
-    return accepted
+    return accepted[:2]
 
 
 def validate_structure(

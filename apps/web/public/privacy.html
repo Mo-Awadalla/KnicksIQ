@@ -1,1 +1,29 @@
-<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>Privacy — KnicksIQ</title><main><h1>Privacy</h1><p>KnicksIQ has no accounts and sets no cookies. Analyst conversations remain in browser memory and disappear on reload. The service records only anonymous aggregate events: feature or page, intent category, retrieval route, outcome, latency bucket, and citation click. It does not retain prompts, IP addresses, headers, tokens, evidence bodies, or provider payloads.</p><p>Feedback is handled by Formspree. If you submit feedback, Formspree receives the fields you choose to send and may retain free-tier submissions for 30 days. Reply email is optional and requires consent.</p><p><a href="/">Return to archive</a></p></main><style>main{max-width:48rem;margin:4rem auto;padding:0 1rem;font:16px/1.7 system-ui;color:#172a3d}a{color:#006bb6}</style></html>
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width">
+<title>Privacy - KnicksIQ</title>
+<main>
+<h1>Privacy</h1>
+<p>KnicksIQ has no accounts and sets no application cookies. It does not load advertising scripts. The archive pages call the KnicksIQ API to answer questions.</p>
+<h2>Your conversation in this browser</h2>
+<p>The browser keeps analyst messages, draft questions, an opaque session token, and a revision number in <code>sessionStorage</code> under <code>knicksiq-conversation-v1</code>. Reloading the page restores that copy. Your browser controls the lifetime of this tab storage. <strong>New chat</strong> clears the application's browser copy. It does not erase records already held by the server.</p>
+<h2>Server records</h2>
+<p>The API uses Redis to hold verified conversation scope, claims, supporting evidence, revision numbers, and replayable responses. State or cached responses can also contain question text or follow-up context. A conversation record expires 24 hours after its most recent accepted turn or replay. Continuous use renews that period. After expiry, old browser messages can remain readable, but the next accepted turn needs a fresh server session.</p>
+<p>Abuse limits use secret-keyed hashes of the connecting IP address and the current UTC day. These application counters do not save the raw IP address. The fallback limiter keeps a bounded set of identities in process memory. Expired entries can remain there until later requests trigger cleanup or the process exits. Response caching uses hashed question keys and can retain answer content and cited evidence.</p>
+<h2>Model providers</h2>
+<p>When model wording is enabled, the API sends your question, bounded recent conversation messages, and retrieved archive evidence to a model provider through an inference gateway, currently OpenRouter. The request does not include your browser's IP address, cookies, HTTP headers, or session token. Provider routing can permit data collection. KnicksIQ does not control the gateway's or provider's retention policies and cannot promise a retention period for their copies.</p>
+<p>A sampled share of turns can also go to a model for comparison when the answer shown to you uses deterministic archive facts. The configured launch sample rate is one in ten. Sampling does not mean that a provider processes every question.</p>
+<h2>Archive search</h2>
+<p>When hybrid archive search and cloud inference are enabled, the API sends search query text, which can contain your question, to Qdrant Cloud to compute a search embedding. Qdrant's policies govern retention of that text. Local embedding mode does not send that query to Qdrant for embedding.</p>
+<h2>Logs and error monitoring</h2>
+<p>The application records usage summaries and operational diagnostics. These include request identifiers, outcomes, latency categories, and redacted stack traces. Configured exception rendering removes exception messages and local variables. The application does not intentionally log raw questions, session tokens, evidence bodies, or provider payloads.</p>
+<p>If Sentry is configured, the application removes request bodies, headers, cookies, query strings, exception messages, and frame variables from error events and transactions before sending them. Hosting and network providers receive connection information needed to deliver requests. Their own logging and retention are outside the application's storage controls.</p>
+<h2>Fonts</h2>
+<p>The archive loads font files from Google Fonts. Those requests disclose ordinary connection information to Google, not the content of your analyst messages. Google's policies govern its retention.</p>
+<h2>Feedback</h2>
+<p>Formspree receives the fields you submit through the feedback form. Its own policies govern retention. A reply email is optional and requires the consent box.</p>
+<p><a href="/">Return to archive</a></p>
+</main>
+<style>main{max-width:48rem;margin:4rem auto;padding:0 1rem;font:16px/1.7 system-ui;color:#172a3d}h2{font-size:1.05rem;margin-top:2rem}code{background:#eef3f8;padding:0 .2rem;border-radius:3px}a{color:#006bb6}</style>
+</html>

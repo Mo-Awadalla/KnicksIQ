@@ -106,9 +106,7 @@ async def run(per_category: int) -> dict:
                 )
                 body = response.json() if response.status_code == 200 else {}
                 outcome = (
-                    classify(body, capture.records)
-                    if body
-                    else f"http_{response.status_code}"
+                    classify(body, capture.records) if body else f"http_{response.status_code}"
                 )
                 results.append(
                     {

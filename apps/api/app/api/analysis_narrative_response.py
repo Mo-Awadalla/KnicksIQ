@@ -39,6 +39,7 @@ async def answer_narrative_query(
     settings: Any,
     question: str,
     effective_question: str,
+    request_id: str,
     response_metadata: dict[str, Any],
     tool_calls: list[dict[str, Any]],
     classifier: QueryClassifierResult,
@@ -82,6 +83,8 @@ async def answer_narrative_query(
         season=req.season,
         limit=getattr(settings, "rag_retrieval_limit", 5),
         trace=retrieval_trace,
+        request_id=request_id,
+        data_version=str(response_metadata["data_version"]),
     )
     possession_evidence = [chunk_evidence(chunk) for chunk in possession_chunks]
     if retrieval_filters.periods or retrieval_filters.last_minutes is not None:

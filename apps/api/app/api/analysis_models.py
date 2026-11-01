@@ -6,7 +6,7 @@ import re
 from datetime import date, datetime
 from typing import Any, Literal, TypedDict
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from app.core.config import Settings, get_settings
 from app.schemas.analytics import AnalyticsPayload
@@ -42,6 +42,8 @@ def _validate_calendar_dates(value: str) -> str:
 
 
 class AnalysisContextMessage(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
     role: Literal["user", "assistant"]
     content: str = Field(..., min_length=1, max_length=2000)
 
@@ -49,9 +51,11 @@ class AnalysisContextMessage(BaseModel):
 
 
 class AnalysisQueryRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
     question: str = Field(..., min_length=1, max_length=1200)
-    season: str = "2025-26"
-    context: list[AnalysisContextMessage] = Field(default_factory=list, max_length=100)
+    season: str = Field(default="2025-26", pattern=r"^20\d{2}-\d{2}$", max_length=7)
+    context: list[AnalysisContextMessage] = Field(default_factory=list, max_length=12)
     conversation_state: ConversationState | None = None
     session_token: str | None = Field(default=None, pattern=r"^[a-f0-9]{64}$")
     turn_id: str | None = Field(
@@ -81,6 +85,9 @@ class AnalysisCitation(BaseModel):
 
 class AnalysisQueryResponse(BaseModel):
     answer: str
+    outcome: Literal["answer", "clarify", "refuse"] | None = Field(
+        default=None, exclude=get_settings().is_production
+    )
     follow_up_questions: list[str] = Field(default_factory=list, max_length=2)
     route: str | None = Field(default=None, exclude=get_settings().is_production)
     classifier: dict[str, Any] = Field(default_factory=dict, exclude=get_settings().is_production)

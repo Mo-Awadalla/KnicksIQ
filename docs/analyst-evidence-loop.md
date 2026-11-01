@@ -4,10 +4,13 @@ The opt-in `ANALYST_EVIDENCE_LOOP_ENABLED=true` route replaces the discovery ear
 return and legacy planner/generator chain with one bounded orchestrator. It uses
 the existing configured model, six controlled tools, immutable backend claims,
 a separate whole-answer reviewer, and one optional revision/re-review. The default
-local default remains **false**. The production Blueprint enables the loop and
-`llm_primary` following the owner’s explicit production activation request.
+local default remains **false**. The production Blueprint enables the loop in
+`shadow` mode with a 0.1 comparison sample. It does not enable `llm_primary`.
 `ANALYSIS_ANSWER_MODE=deterministic` provides immediate model-free rollback with
-the flag enabled. `shadow` exercises the same metered loop and delivers facts.
+the flag enabled. `shadow` delivers backend facts and commits the turn first, then runs
+the same metered loop once per committed new turn as a post-response verification in
+`app/api/analysis_shadow.py`; its result is diagnostics only and never rewrites the
+committed answer.
 
 ## Contracts and limitations
 
@@ -30,6 +33,116 @@ coverage, unsupported scope, dependency failure and success. Search results are
 examples, never season denominators. Qdrant failure does not disable SQL claims.
 Causal language requires explicit supporting source material and attribution;
 hedging, reviewed reports and connected events do not create blanket permission.
+
+## Operations
+
+`resolve_query` returns one explicit `operation` with the scope, and the operation —
+not the model's tool choice — decides the calculation. Supported team operations are
+record, win/loss/game counts, points totals and averages, points allowed, average
+margin, highest/lowest scoring game, best defensive game, largest win/loss margin,
+longest losing/winning streak, score-margin swings, numeric-cutoff game counts
+(`score_threshold` with a typed subject, comparator and cutoff), period scoring and the
+win/loss result split. Player operations are the per-appearance metric, the leaderboard
+(`player_leaderboard`) and the canonical derived stats: shooting percentages, double and
+triple doubles and games started. Percentages read made and attempted columns together,
+so a three-point percentage is never delivered as a total of made threes.
+
+A grouped comparison resolves to a typed `comparison` on the resolved scope, before the
+single-valued filters can collapse its populations. Every group carries the rule that
+selects its games, so the request never becomes one summed aggregate: home and away;
+two named opponents; first and last N games; the two sides of the All-Star break; the
+Eastern and Western conferences, read from the stored team conference rather than a
+hardcoded list; two named months, when the question compares them; and a recent window
+against the whole season. Each
+group reports its own games, record, points per game, points allowed and average margin
+inside one claim whose eligibility names the group, its kind, the measure and the
+coverage, and whose receipts are the games that group actually used. Bench productivity
+divides observed non-starter points by every team game in the group, so a game where the
+bench scored nothing still counts and a zero-minute row is not an appearance. A player
+group divides points by observed appearances only, and the recent-versus-season pair
+counts the last N appearances, not the last N team games. The default coverage is the
+whole release, so a post-break group includes playoff games; a request that names the
+regular season or the playoffs narrows it explicitly. A stated number of games that the
+archive contradicts ("the two games against Boston" when four exist) resolves to a
+clarification listing the archived games instead of a wrong population.
+
+A comparison splits one population, so only the split axis leaves the scope. Every other
+constraint the request states — the opponent, the interval, the phase, the requested
+result — is carried as typed shared filters that each group applies before its own rule,
+so "compare home and away scoring against Boston in January" compares Boston games in
+January instead of every home and away game in the release. The requested statistic and
+aggregation travel with the comparison, so a three-point percentage stays made over
+attempted and a requested total is not delivered as a per-appearance mean. A window is
+applied exactly once, at the basis the comparison declares: a team-game window truncates
+the group pool, while a player window truncates appearances after zero-minute rows are
+dropped, per player, so a missed team game never consumes one of the N slots.
+
+Windows outside a comparison are a property of the filtered population rather than a
+pre-selected list of game IDs: the filters run first and the direction-and-count window
+runs once over their result, so a first-N average, a first-N player metric and a
+first-N record all read the same first N games. "Between January and March" is one
+calendar interval with calendar bounds, a named month honours an explicitly written
+year, and an out-of-archive year asks which archived dates to use instead; several
+months named without a comparison resolve to a question about interval versus
+comparison rather than a silent first-month answer. A follow-up inherits a committed
+scope only while the stored release is the active one: a new interval or window replaces
+the previous population anchor instead of combining with it, inherited game IDs must
+exist in the current release, and a player subject is kept across a release change only
+when that player is observed in it.
+
+Windows resolve before any season default: a named month with day endpoints is one
+inclusive interval rather than the whole month, "after the All-Star break" starts at the
+archive's own mid-February schedule gap, and "How did … do/perform/fare" asks for the
+record of the resolved population. A points-average or points-total request emits only
+the requested metric, so points allowed is never volunteered.
+
+A follow-up that points back at an earlier game ("in that game", "that stretch", "what
+happened next") is answered only from a verified anchor: inherited game IDs, a bounded
+date window, or a period set from the server-side session. Without an anchor it clarifies
+which game is meant, and the transcript is never treated as evidence.
+
+Three outcomes are decided from the question, never from its wording alone. A supported
+ask answers. An ask the archive cannot serve (live, current, future, injury, trade,
+standings or betting coverage) resolves to `operation_reason` and refuses with that
+reason. An ask whose measurement is undefined (an unsupported ranking, a scoring run, a
+close-game cutoff, a quarter superlative) resolves to a typed clarification question and
+its options, and never refuses or collapses into season totals because it said "over",
+"under", "who led" or "shooting".
+
+Numeric thresholds carry their own metadata: the subject is the Knicks' points, the
+opponent's points, the win margin or the loss deficit, the comparator is `>=`, `>`, `<`
+or `<=`, and the counted population is reported with the complete denominator. A
+leaderboard ranks every player with observed appearances in the complete considered
+population, reports every tied leader, and excludes zero-minute rows from appearances.
+
+Each team claim records the operation that produced it and the complete considered
+population in `eligibility`, so a selected game is never confused with the population
+it was selected from. Counts and rankings consider every game their filters admit:
+a descriptive single-game reference resolved earlier in the same question does not
+shrink the population, counting wins keeps the losses that form the denominator, and
+streak scans run over wins and losses together because a win breaks a losing streak.
+Every tied extreme and every tied streak is reported, not only the first.
+
+Swings rank games by the observed range of the Knicks' score margin including a zero
+anchor, so a game the Knicks trailed throughout is measured from its largest deficit
+to a tie, exactly like the archive's existing swing ranking. Games without play-by-play
+margins are not ranked, and the ranking states its own coverage.
+
+## Delivery outcome
+
+The public `refused` flag is derived from the structured outcome, so a delivered answer
+can never look like a refusal, and a refusal can never be reported as an answer.
+
+`llm_validated` records whether a reviewed model answer was used, and `degraded`
+records whether the turn lost something it expected. They are independent: a
+deterministic delivery intended by `ANALYSIS_ANSWER_MODE` is a complete answer with
+`llm_validated` false, `degraded` false and no warning, while a primary model, budget
+or dependency failure stays `degraded` with a warning. A delivery that produced no
+verified facts because a dependency failed is degraded even in a deterministic mode.
+`outcome` states the decision in structured form — `answer` when at least one verified
+claim is delivered, `clarify` when the turn paused on an ambiguous subject, `refuse`
+when the archive explicitly declines the requested ranking — and stays absent when no
+decision was reached, so an availability failure is never reported as an abstention.
 
 The reviewer receives a fresh context with the complete proposed answer, backend
 claims, selected receipts, capabilities and interpretation policy. Its ordered
@@ -57,18 +170,25 @@ Send previous user/assistant messages as context, plus:
 ```
 
 Replies preserve `answer` and `citations` and add `follow_up_questions` (zero to two),
-`session_token`, `revision`, `session_expires_at`, `state_committed`, and
-`llm_validated`. The opaque token is a bearer secret; do not
-log it. Redis owns subject/scope origins, intent, claims/receipts, delivered facts,
-families, release and revision. Client `conversation_state` is ignored by the new
+`session_token`, `revision`, `session_expires_at`, `state_committed`,
+`llm_validated`, `degraded` and `outcome`. The opaque token is a bearer secret; do not
+log it. Redis owns subject/scope origins, the resolved operation, claims/receipts,
+delivered facts, families, release and revision; the raw question is not stored as
+conversation authority, and a legacy `intent` entry is dropped at admission. Client
+`conversation_state` is ignored by the new
 route. Active release identity is pinned and prior references are revalidated
 against the newly resolved scope. A changed release clears old evidence.
 
 Lua scripts serialize turns using an owner-checked lease, check revisions, and
 atomically commit the response and state. Identical turn retries replay the exact
 committed reply, including first-turn retries. Different input under the same ID,
-stale revisions and concurrent execution return 409. Sessions and replay records
-expire after 24 hours of inactivity. Redis loss gives an explicitly stateless
+stale revisions and concurrent execution return 409 in the shared error envelope
+with `error.code` set to `turn_id_reused`, `revision_conflict` or
+`turn_in_progress`; `revision_conflict` also carries the authoritative
+`error.current_revision`. Sessions and replay records
+expire after 24 hours of inactivity, and a request carrying an unknown session
+token returns `error.code` `session_expired`. The envelope never reflects the
+session token or turn identity. Redis loss gives an explicitly stateless
 factual response; a failed commit never claims a committed revision. The browser
 retains turn IDs for retry and prevents synchronous duplicate submission.
 
@@ -77,16 +197,25 @@ the ten previous individual messages, excluding the current question. The API ke
 at least a UTF-8-safe opening excerpt of every retained message, then restores
 newest detail within a 2,000-byte serialized history allowance. Server session
 state separately retains topic, scope, and verified claims. Transcript text has no
-evidence authority and is absent from the independent answer reviewer. The writer
-returns short answers by default and can offer two follow-up questions in the same
-call. The reviewer checks suggestions in its existing call; rejected suggestions
-are omitted while a valid answer survives.
+evidence authority and is absent from the independent answer reviewer. Model-facing
+receipts carry only their evidence ID, source type, game ID and text; provenance stays
+in the server registry. When a question asks for a game report or play-by-play, the
+top retrieved receipt of that type is placed before claims fill the input budget, and an
+answer that cites none of the provided ones is sent back for repair before review.
+Archive citations are titled by source type (play-by-play, game report, game record).
+The writer returns short answers and may propose up to four follow-up candidates.
+The reviewer checks each candidate in its existing call. Only the first two approved
+suggestions reach the browser. Rejected suggestions do not discard a valid answer.
 
 The browser stores a versioned transcript, session identity, expiry, archive version,
 and exact pending turn in `sessionStorage`. Reload exposes Retry for an interrupted
 turn. New chat aborts in-flight work and clears the active conversation. A 409 with
-`session_expired` starts a visible new-conversation boundary, keeps older messages
-readable, and leaves the submitted question ready for Retry or editing. Archive
+`error.code` `session_expired` starts a visible new-conversation boundary, keeps older
+messages readable, retains the submitted question, and replays it tokenless at
+revision zero on Retry. `revision_conflict` keeps the same pending turn and adopts
+`error.current_revision`; `turn_in_progress` keeps the identical request replayable;
+`turn_id_reused` retries the same question under a fresh turn identity without
+duplicating it in the transcript. Archive
 changes similarly invalidate the old context. Storage failure leaves the in-memory
 chat usable and displays a refresh-recovery notice.
 
@@ -107,7 +236,17 @@ conservative amount through the existing administrator-controlled Redis access.
 The ledger has no automatic expiry. A new month also requires reconciliation.
 Local test Redis uses a separate, disposable ledger and never alters production.
 
+Model admission is checked before every provider request: when
+`OPENROUTER_ALLOWED_MODELS` is non-empty, a configured chat model outside it fails the
+call locally and the turn degrades, so an unadmitted model is never sent off-host.
+Mock, keyless and test configurations make no provider request and are not gated.
+
 ## Verification and promotion
+
+`search_archive` records the fused ranking it actually emitted, bound to the request id
+and release, in the same `tool_calls` trace with `stage: "retrieval"`. Recovery searches
+record it too. The recorded ordering is not truncated to flatter a metric, and provider
+call timing is read only from the `orchestrate`, `revise` and `review` stages.
 
 Run `uv run --package knicksiq-api python -m app.evaluation.analyst_probe` against the
 configured provider. `ANALYST_PROVIDER_FORMAT=json_schema` enables strict schema

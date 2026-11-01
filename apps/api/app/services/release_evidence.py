@@ -13,14 +13,9 @@ import re
 from pathlib import Path
 from typing import Any
 
-MINIMUMS = {
-    "semantic_recall_at_5": 0.95,
-    "exact_numeric_correctness": 1.0,
-    "canonical_entity_correctness": 1.0,
-    "citation_correctness": 0.95,
-    "paraphrase_success": 0.95,
-    "correct_abstention_rate": 1.0,
-}
+import yaml
+from app.evaluation.scoring_metrics import GATE_THRESHOLDS
+
 REQUIRED_CHECKS = (
     "active_archive_identity",
     "report_audit",
@@ -45,7 +40,9 @@ def sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
-def validate_record(record: dict[str, Any], root: Path) -> list[str]:
+def validate_record(
+    record: dict[str, Any], root: Path, *, tested_root: Path | None = None
+) -> list[str]:
     failures = []
     commit = record.get("tested_commit")
     if not isinstance(commit, str) or not re.fullmatch(r"[0-9a-f]{40}", commit):
@@ -55,6 +52,19 @@ def validate_record(record: dict[str, Any], root: Path) -> list[str]:
         or record.get("configuration", {}).get("shadow_sample_rate") != 0.1
     ):
         failures.append("requires 10% shadow mode with deterministic delivered answers")
+    try:
+        blueprint = yaml.safe_load(((tested_root or root) / "render.yaml").read_text())
+        api = next(
+            service for service in blueprint["services"] if service["name"] == "knicksiq-api"
+        )
+        deployed = {item["key"]: item.get("value") for item in api["envVars"]}
+        if (
+            deployed.get("ANALYSIS_ANSWER_MODE") != "shadow"
+            or float(deployed.get("ANALYSIS_SHADOW_SAMPLE_RATE", "")) != 0.1
+        ):
+            failures.append("deployment blueprint requires 10% shadow mode")
+    except (OSError, ValueError, TypeError, KeyError, StopIteration, yaml.YAMLError):
+        failures.append("deployment blueprint missing or invalid")
     for name in ("data", "bundle", "evaluation"):
         if not re.fullmatch(r"[0-9a-f]{64}", str(record.get("hashes", {}).get(name, ""))):
             failures.append(f"missing {name} hash")
@@ -69,17 +79,23 @@ def validate_record(record: dict[str, Any], root: Path) -> list[str]:
             failures.append(f"{name}: evidence content hash mismatch or missing file")
     for mode in ("evaluation", "evaluation_services_disabled"):
         metrics = evidence.get(mode, {}).get("metrics", {})
-        for name, minimum in MINIMUMS.items():
-            # Semantic retrieval is deliberately unavailable in service-disabled evaluation.
-            if mode == "evaluation_services_disabled" and name == "semantic_recall_at_5":
-                continue
+        for name, minimum in GATE_THRESHOLDS.items():
             value = metrics.get(name)
-            if not isinstance(value, (int, float)) or not minimum <= value <= 1:
+            if type(value) not in (int, float) or not minimum <= value <= 1:
                 failures.append(f"{mode}: {name} must be >= {minimum}")
         if metrics.get("query_count") != 120 or metrics.get("missing_labels") != 0:
             failures.append(f"{mode}: all 120 reviewed labels required")
-        if mode == "evaluation" and metrics.get("missing_ranked_traces") != 0:
-            failures.append("evaluation: missing ranked retrieval traces")
+        if metrics.get("original_semantic_case_count") != 50:
+            failures.append(f"{mode}: all 50 original semantic cases required")
+        if (
+            metrics.get("narrative_query_count") != 20
+            or metrics.get("narrative_missing_cases") != 0
+            or metrics.get("narrative_duplicate_cases") != 0
+            or metrics.get("narrative_invalid_cases") != 0
+        ):
+            failures.append(
+                f"{mode}: 20 complete, distinct, valid narrative retrieval cases required"
+            )
     load = evidence.get("warm_load", {}).get("metrics", {})
     if not (
         load.get("concurrency") == 10

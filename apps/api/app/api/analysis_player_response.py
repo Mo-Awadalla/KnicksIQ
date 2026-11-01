@@ -30,6 +30,7 @@ async def answer_player_query(
     db: AsyncSession,
     background_tasks: BackgroundTasks,
     *,
+    request_id: str,
     settings: Any,
     question: str,
     context_question: str,
@@ -96,6 +97,7 @@ async def answer_player_query(
                 db=db,
                 data_version=response_metadata["data_version"],
                 settings=settings,
+                request_id=request_id,
             )
             player_tool_calls.append(vector_call)
             player_degraded = player_degraded or vector_degraded

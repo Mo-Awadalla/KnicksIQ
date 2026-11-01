@@ -112,7 +112,7 @@ async def query_analysis(
     if getattr(settings, "analyst_evidence_loop_enabled", False):
         try:
             async with asyncio.timeout(settings.analyst_deadline_seconds):
-                return await _query_evidence_analyst(req, request, db)
+                return await _query_evidence_analyst(req, request, db, background_tasks)
         except TimeoutError:
             return AnalysisQueryResponse(
                 answer="The archive could not be verified within this turn's deadline.",
@@ -249,6 +249,7 @@ async def query_analysis(
         req,
         db,
         background_tasks,
+        request_id=request.state.request_id,
         settings=settings,
         question=question,
         context_question=context_question,
@@ -454,6 +455,7 @@ async def query_analysis(
             db=db,
             data_version=response_metadata["data_version"],
             settings=settings,
+            request_id=request.state.request_id,
         )
         tool_calls.append(vector_call)
         response_metadata = {
@@ -501,6 +503,7 @@ async def query_analysis(
             req,
             db,
             background_tasks,
+            request_id=request.state.request_id,
             selected_narrative_game=selected_narrative_game,
             **response_args,
         )

@@ -27,6 +27,7 @@ class LLMAdapter(ABC):
     timeout_seconds: float = 20
     response_schema: dict[str, Any] | None = None
     last_metadata: dict[str, Any] = {}
+    stage: str = "report_llm"
 
     @abstractmethod
     async def generate(self, *, system: str, user: str) -> str:
@@ -77,6 +78,9 @@ class OpenAICompatibleLLMAdapter(LLMAdapter):
         return await asyncio.to_thread(self._generate_sync, system, user)
 
     def _generate_sync(self, system: str, user: str) -> str:
+        from app.evaluation.provider_guard import require_run_guard
+
+        guard = require_run_guard()
         payload_body: dict[str, Any] = {
             "model": self.model,
             "messages": [
@@ -93,6 +97,12 @@ class OpenAICompatibleLLMAdapter(LLMAdapter):
             payload_body["provider"] = {"allow_fallbacks": True, "sort": "latency"}
             if self.reasoning_effort is not None:
                 payload_body["reasoning"] = {"effort": self.reasoning_effort}
+        elif self.reasoning_effort is not None and self.model.startswith("deepseek-"):
+            payload_body["thinking"] = {
+                "type": "disabled" if self.reasoning_effort == "none" else "enabled"
+            }
+            if self.reasoning_effort != "none":
+                payload_body["reasoning_effort"] = self.reasoning_effort
         if self.response_schema is not None:
             payload_body["response_format"] = {
                 "type": "json_schema",
@@ -104,6 +114,8 @@ class OpenAICompatibleLLMAdapter(LLMAdapter):
             payload_body["response_format"] = {"type": "json_object"}
             if "openrouter.ai" in self.base_url:
                 payload_body["provider"]["require_parameters"] = True
+        if guard is not None:
+            guard.prepare(payload_body)
         payload = json.dumps(payload_body).encode("utf-8")
         req = urllib.request.Request(
             f"{self.base_url}/chat/completions",
@@ -114,11 +126,14 @@ class OpenAICompatibleLLMAdapter(LLMAdapter):
             },
             method="POST",
         )
+        admitted_seq = 0
+        if guard is not None:
+            admitted_seq = guard.admit(
+                stage=self.stage, model=self.model, base_url=self.base_url, request=payload
+            )
         try:
-            with urllib.request.urlopen(
-                req,
-                timeout=self.timeout_seconds,
-                context=_ssl_context(),
+            with _open_provider(
+                req, guarded=guard is not None, timeout=self.timeout_seconds
             ) as response:
                 body = json.loads(response.read().decode("utf-8"))
         except urllib.error.HTTPError as exc:
@@ -132,6 +147,8 @@ class OpenAICompatibleLLMAdapter(LLMAdapter):
             raise RuntimeError(f"AI provider request failed: {exc}") from exc
         if not isinstance(body, dict):
             raise RuntimeError("AI provider returned a non-object response")
+        if guard is not None:
+            guard.settle(admitted_seq, body.get("usage"))
         if body.get("error") is not None:
             detail = json.dumps(body["error"], ensure_ascii=False)
             raise RuntimeError(f"AI provider returned an error: {detail[:1000]}")
@@ -145,6 +162,31 @@ class OpenAICompatibleLLMAdapter(LLMAdapter):
             raise RuntimeError("AI provider response omitted message content")
         self.last_metadata = {key: body.get(key) for key in ("id", "model", "provider", "usage")}
         return content
+
+
+class _RefuseRedirects(urllib.request.HTTPRedirectHandler):
+    """A guarded run never follows a redirect: it could leave the approved origin."""
+
+    def redirect_request(self, req: Any, fp: Any, code: int, msg: str, headers: Any, newurl: str):
+        raise RuntimeError(
+            f"AI provider answered {code} redirect to {newurl}; a guarded run never follows it"
+        )
+
+
+def _guarded_opener() -> urllib.request.OpenerDirector:
+    """Guarded calls reject every redirect class and ignore inherited proxy settings."""
+    return urllib.request.build_opener(
+        urllib.request.ProxyHandler({}),
+        urllib.request.HTTPSHandler(context=_ssl_context()),
+        _RefuseRedirects(),
+    )
+
+
+def _open_provider(request: urllib.request.Request, *, guarded: bool, timeout: float):
+    """The only provider transport. Ordinary production keeps its current defaults."""
+    if not guarded:
+        return urllib.request.urlopen(request, timeout=timeout, context=_ssl_context())
+    return _guarded_opener().open(request, timeout=timeout)
 
 
 def get_llm_adapter(*, response_format_json: bool = True) -> LLMAdapter:

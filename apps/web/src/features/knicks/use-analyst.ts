@@ -17,6 +17,26 @@ type Turn = {
   expected_revision: number
   session_token?: string
 }
+type Conflict = { code: string; current_revision?: number }
+function conflictOf(error: unknown): Conflict | undefined {
+  if (!isAxiosError(error) || error.response?.status !== 409) return undefined
+  const body: unknown = error.response.data
+  if (!body || typeof body !== 'object' || !('error' in body)) return undefined
+  const payload = body.error
+  if (!payload || typeof payload !== 'object' || !('code' in payload))
+    return undefined
+  const code = payload.code
+  if (typeof code !== 'string') return undefined
+  const revision =
+    'current_revision' in payload ? payload.current_revision : undefined
+  if (
+    typeof revision !== 'number' ||
+    !Number.isInteger(revision) ||
+    revision < 0
+  )
+    return { code }
+  return { code, current_revision: revision }
+}
 type Chat = {
   messages: Message[]
   activeStart: number
@@ -377,34 +397,41 @@ export function useAnalyst() {
       })
       .catch((error: unknown) => {
         if (generation !== chat.generation || signal.aborted) return
-        if (isAxiosError(error) && error.response?.status === 409) {
-          const reason = String(error.response.data?.detail?.reason ?? '')
-          if (reason === 'session_expired') {
-            boundary('Session expired. Previous messages remain readable.', {
-              ...turn,
-              context: [],
-              expected_revision: 0,
-              session_token: undefined,
-            })
-            change({
-              pending: false,
-              question: turn.question,
-              error: 'Your question is ready to retry or edit.',
-            })
-            return
-          }
-          if (/^\d+$/.test(reason)) {
-            change({
-              revision: Number(reason),
-              retry: {
-                ...turn,
-                expected_revision: Number(reason),
-              },
-            })
-          } else if (reason === 'turn_id_reused') {
-            change({ retry: undefined })
-          }
+        const conflict = conflictOf(error)
+        if (conflict?.code === 'session_expired') {
+          boundary('Session expired. Previous messages remain readable.', {
+            ...turn,
+            context: [],
+            expected_revision: 0,
+            session_token: undefined,
+          })
+          change({
+            pending: false,
+            question: turn.question,
+            error: 'Your question is ready to retry or edit.',
+          })
+          return
         }
+        if (
+          conflict?.code === 'revision_conflict' &&
+          conflict.current_revision !== undefined
+        ) {
+          change({
+            revision: conflict.current_revision,
+            retry: { ...turn, expected_revision: conflict.current_revision },
+          })
+        } else if (conflict?.code === 'turn_id_reused') {
+          change({
+            retry: {
+              question: turn.question,
+              context: turn.context,
+              turn_id: crypto.randomUUID(),
+              expected_revision: chat.revision,
+              session_token: chat.sessionToken,
+            },
+          })
+        }
+        // turn_in_progress leaves the identical request replayable through UI retry.
         change({
           pending: false,
           error: navigator.onLine

@@ -6,7 +6,9 @@ from unittest.mock import AsyncMock
 
 import pytest
 from app.core.config import get_settings
+from app.models.box_score import PlayerGameStat
 from app.models.game import Game
+from app.models.player import Player
 from app.services.analyst_loop import AnalystLoop
 from app.services.analyst_tools import AnalystTools
 from app.services.evidence_contracts import ToolCall
@@ -195,10 +197,10 @@ async def test_budget_denial_and_exhausted_deadline(db_session, monkeypatch):
 
 def test_regular_season_is_not_a_fuzzy_player_name():
     from app.models.player import Player
-    from app.services.query_resolution import _resolve_player_mentions
+    from app.services.query_players import resolve_player_mentions
 
     player = Player(id=314, full_name="Tari Eason", team_id="HOU", nba_player_id=314)
-    resolved, _ = _resolve_player_mentions(
+    resolved, _ = resolve_player_mentions(
         "What was the Knicks record in the 2025-26 regular season?",
         [player],
         typo_threshold=0.86,
@@ -271,3 +273,58 @@ async def test_prior_record_cannot_answer_unsupported_current_scope(db_session, 
     result = await AnalystLoop(current, []).run(allow_model=False)
     assert not result["citations"]
     assert "wins: 2" not in result["answer"]
+
+
+@pytest.mark.parametrize(
+    "question,expected",
+    [
+        ("Will the Knicks win their next game?", "refuse"),
+        ("How will Brunson play next season?", "refuse"),
+        ("Who was better?", "clarify"),
+        ("Will he win that game tomorrow?", "refuse"),
+        ("Who will win in 2028?", "refuse"),
+        ("How many points did Will Richard score in this archive?", "answer"),
+    ],
+)
+async def test_fallback_capability_precedes_name_and_comparison_ambiguity(
+    db_session, question, expected
+):
+    """Modal names, future dates and unanchored pronouns cannot override refusal.
+
+    A vague comparison must not return unrelated team totals. A real full player
+    name must remain answerable instead of losing the name to a word blacklist.
+    """
+    release = await seed_record(db_session)
+    game = (
+        await db_session.execute(
+            select(Game).where(Game.release_id == release.id).order_by(Game.id).limit(1)
+        )
+    ).scalar_one()
+    players = [
+        Player(nba_player_id=999_990 + index, full_name=name, team_id="NYK")
+        for index, name in enumerate(("Will Richard", "Will Riley"))
+    ]
+    db_session.add_all(players)
+    await db_session.flush()
+    db_session.add_all(
+        [
+            PlayerGameStat(
+                release_id=release.id,
+                game_id=game.id,
+                player_id=player.id,
+                team_id="NYK",
+                minutes=1,
+            )
+            for player in players
+        ]
+    )
+    await db_session.commit()
+    tools = await record_tools(db_session, release, question)
+    result = await AnalystLoop(tools, []).run(allow_model=False)
+    assert result["outcome"] == expected
+    if expected == "answer":
+        assert {item["metadata"]["claim"]["subject_id"] for item in result["citations"]} == {
+            f"player:{players[0].id}"
+        }
+    else:
+        assert result["citations"] == []

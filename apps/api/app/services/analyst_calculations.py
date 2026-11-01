@@ -1,139 +1,206 @@
-"""Analyst calculations."""
+"""Analyst calculations. Each claim names the operation and population it used.
+
+Team aggregates live here; player aggregates, rankings and splits are cohesive
+operation modules the dispatcher in `team` composes.
+"""
 
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Literal
 
 from app.models.game import Game
+from app.services.analyst_claim_support import team_claim
+from app.services.analyst_rankings import (
+    DEFENSIVE_EXTREME,
+    MARGIN_EXTREMES,
+    SCORING_EXTREMES,
+    extremes,
+    streaks,
+    swings,
+)
+from app.services.analyst_team_splits import period_scoring, result_split, threshold_count
 from app.services.evidence_contracts import ToolResult
-from app.services.query_resolution import ResolvedQuery, is_record_request
+from app.services.query_operations import STREAK_OPERATIONS
+from app.services.query_resolution import ResolvedQuery
 
 if TYPE_CHECKING:
     from app.services.analyst_tools import AnalystTools
 
-METRICS = (
-    "points",
-    "rebounds",
-    "assists",
-    "turnovers",
-    "steals",
-    "blocks",
-    "three_pointers_made",
-    "plus_minus",
-    "minutes",
+__all__ = ["team"]
+
+
+_AGGREGATE_OPERATIONS = frozenset(
+    {
+        None,
+        "team_record",
+        "win_count",
+        "loss_count",
+        "game_count",
+        "points_total",
+        "points_average",
+        "points_allowed",
+        "average_margin",
+    }
 )
 
 
-def player(
-    tools: AnalystTools, scope: ResolvedQuery, games: list[Game], metric: str, aggregation: str
-) -> ToolResult:
-    if scope.relative_game_count and "appearance" not in tools.question.lower():
-        games = games[-scope.relative_game_count :]
-    game_map = {g.id: g for g in games}
-    claims, evidence = [], []
-    missing = False
-    for player_id in scope.player_ids:
-        all_rows = [
-            (s, p) for s, p in tools.rows if s.player_id == player_id and s.game_id in game_map
+def _measure_values(
+    operation: str | None,
+    *,
+    per_game: bool,
+    wins: int,
+    losses: int,
+    game_total: int,
+    points: int,
+    allowed: int,
+    margin_total: int,
+    average_points: float,
+    average_allowed: float,
+    average_margin: float,
+) -> list[tuple[str, float | int, str, float | int | None]]:
+    """The claim values one operation contributes from the same final scores."""
+    if operation == "team_record":
+        return [("wins", wins, "wins", None), ("losses", losses, "losses", None)]
+    if operation == "win_count":
+        return [("wins", wins, "wins", None)]
+    if operation == "loss_count":
+        return [("losses", losses, "losses", None)]
+    if operation == "game_count":
+        return [("games", game_total, "games", None)]
+    if operation == "points_total":
+        # Only the requested total is emitted; points allowed answers another question.
+        return (
+            [("points_per_game", average_points, "points per game", points)]
+            if per_game
+            else [("points", points, "points", None)]
+        )
+    if operation == "points_allowed":
+        return (
+            [("points_allowed_per_game", average_allowed, "points per game", allowed)]
+            if per_game
+            else [("points_allowed", allowed, "points", None)]
+        )
+    if operation == "points_average":
+        return [("points_per_game", average_points, "points per game", points)]
+    if operation == "average_margin":
+        return [("margin_per_game", average_margin, "points per game", margin_total)]
+    if per_game:
+        # No operation was requested; honour the aggregation the caller documented.
+        return [
+            ("wins", wins, "wins", None),
+            ("losses", losses, "losses", None),
+            ("points_per_game", average_points, "points per game", points),
+            ("margin_per_game", average_margin, "points per game", margin_total),
         ]
-        # Zero minutes means observed DNP, not an appearance; missing rows remain unknown.
-        absent = sorted(set(game_map) - {s.game_id for s, _ in all_rows})
-        rows = [(s, p) for s, p in all_rows if s.minutes > 0]
-        if scope.relative_game_count:
-            rows = rows[-scope.relative_game_count :]
-        if not rows:
-            continue
-        count = len(rows)
-        value = sum(getattr(s, metric) for s, _ in rows)
-        if aggregation == "average":
-            value /= count
-        receipts = [tools.receipt(game_map[s.game_id], s, p) for s, p in rows]
-        evidence.extend(receipts)
-        limitations = ["Only observed appearances in the available archive."]
-        if absent:
-            missing = True
-            limitations.append(f"Missing player rows for archived game IDs: {absent}.")
-        name = rows[0][1].full_name
-        unit = f"{metric} per appearance" if aggregation == "average" else metric
-        statement = (
-            f"{name}: {value:.1f} {unit} across {count} observed appearances "
-            f"in the {tools.release.season} {scope.season_type or 'all-phase'} archive."
-        )
-        claims.append(
-            tools.claim(
-                subject=f"player:{player_id}",
-                metric=f"{metric}:{aggregation}",
-                value=value,
-                unit=unit,
-                games=[game_map[s.game_id] for s, _ in rows],
-                evidence=receipts,
-                statement=statement,
-                scope=scope,
-                sample=count,
-                denominator=count if aggregation == "average" else None,
-                limitations=limitations,
-                window={
-                    "date_start": str(games[0].game_date),
-                    "date_end": str(games[-1].game_date),
-                }
-                if games
-                else None,
-            )
-        )
-    return ToolResult(
-        status=("incomplete_coverage" if missing else "ok") if claims else "no_matching_results",
-        message="Calculated from all applicable database rows; retrieval is not the denominator."
-        if claims
-        else "No observed appearances.",
-        claims=claims,
-        evidence=evidence,
-        scope=scope.model_dump(mode="json"),
-    )
+    return [
+        ("wins", wins, "wins", None),
+        ("losses", losses, "losses", None),
+        ("points", points, "points", None),
+        ("margin", margin_total, "points", None),
+    ]
 
 
-def team(
+def _aggregate(
     tools: AnalystTools,
     scope: ResolvedQuery,
-    games: list[Game],
-    aggregation: Literal["average", "total"] = "total",
+    population: list[Game],
+    aggregation: Literal["average", "total"],
 ) -> ToolResult:
-    if is_record_request(tools.question):
-        games = [g for g in games if g.status == "final" and g.home_score != g.away_score]
-    if scope.relative_game_count:
-        games = games[-scope.relative_game_count :]
+    requested = scope.requested_measures
+    operations: tuple[str | None, ...] = (
+        tuple(measure.operation for measure in requested) if requested else (scope.operation,)
+    )
+    if any(operation not in _AGGREGATE_OPERATIONS for operation in operations):
+        return ToolResult(
+            status="unsupported_metric_or_scope",
+            message="That operation is not computed from final scores.",
+            scope=scope.model_dump(mode="json"),
+        )
+    games = population
     evidence = [tools.receipt(g) for g in games]
     wins = sum(tools.score(g)[0] > tools.score(g)[1] for g in games)
+    losses = len(games) - wins
     points = sum(tools.score(g)[0] for g in games)
-    margin = sum(tools.score(g)[0] - tools.score(g)[1] for g in games)
-    values: dict[str, float | int] = {"wins": wins, "losses": len(games) - wins}
-    if aggregation == "average":
-        values["points_per_game"] = points / len(games)
-        values["margin_per_game"] = margin / len(games)
-    else:
-        values["points"] = points
-        values["margin"] = margin
-    claims = [
-        tools.claim(
-            subject="team:NYK",
-            metric=metric,
-            value=value,
-            unit=metric.replace("_", " "),
-            games=games,
-            evidence=evidence,
-            scope=scope,
-            sample=len(games),
-            denominator=len(games) if metric.endswith("_per_game") else None,
-            eligibility={"game": "archived Knicks game"},
-            statement=(
-                f"Knicks {metric.replace('_', ' ')}: {value} over {len(games)} archived games."
-            ),
+    allowed = sum(tools.score(g)[1] for g in games)
+    margin_total = points - allowed
+    average_points = round(points / len(games), 1)
+    average_allowed = round(allowed / len(games), 1)
+    average_margin = round(margin_total / len(games), 1)
+    claims = []
+    for index, operation in enumerate(operations):
+        measure_aggregation = (
+            requested[index].aggregation or aggregation if requested else aggregation
         )
-        for metric, value in values.items()
-    ]
+        per_game = measure_aggregation == "average"
+        for metric, value, unit, numerator in _measure_values(
+            operation,
+            per_game=per_game,
+            wins=wins,
+            losses=losses,
+            game_total=len(games),
+            points=points,
+            allowed=allowed,
+            margin_total=margin_total,
+            average_points=average_points,
+            average_allowed=average_allowed,
+            average_margin=average_margin,
+        ):
+            claims.append(
+                team_claim(
+                    tools,
+                    scope,
+                    population=population,
+                    metric=metric,
+                    value=value,
+                    unit=unit,
+                    statement=(
+                        f"Knicks {metric.replace('_', ' ')}: {value} over {len(games)} "
+                        "archived games."
+                    ),
+                    games=games,
+                    evidence=evidence,
+                    numerator=numerator,
+                    decimals=1 if metric.endswith("_per_game") else None,
+                    operation=operation,
+                )
+            )
     return ToolResult(
         status="ok",
-        message="Archive team totals.",
+        message=(
+            f"Computed from all {len(games)} games this scope admits; "
+            "retrieval is not the denominator."
+        ),
         claims=claims,
         evidence=evidence,
         scope=scope.model_dump(mode="json"),
     )
+
+
+async def team(
+    tools: AnalystTools,
+    scope: ResolvedQuery,
+    aggregation: Literal["average", "total"] = "total",
+) -> ToolResult:
+    """Answer the request's operation from the complete considered population."""
+    operation = scope.operation
+    if operation == "game_swings":
+        return await swings(tools, scope)
+    if operation == "period_scoring":
+        return await period_scoring(tools, scope)
+    if operation == "result_split":
+        return await result_split(tools, scope)
+    population = tools.considered_games(scope)
+    if not population:
+        return ToolResult(
+            status="no_matching_results",
+            message="No archived games match this scope; this is not evidence that no such "
+            "games occurred.",
+            scope=scope.model_dump(mode="json"),
+        )
+    if operation == "score_threshold":
+        return threshold_count(tools, scope, population)
+    if operation in STREAK_OPERATIONS:
+        return streaks(tools, scope, population)
+    if operation in SCORING_EXTREMES | MARGIN_EXTREMES | DEFENSIVE_EXTREME:
+        return extremes(tools, scope, population)
+    return _aggregate(tools, scope, population, aggregation)

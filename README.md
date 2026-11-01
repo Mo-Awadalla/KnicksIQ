@@ -10,7 +10,7 @@ are declined rather than invented.
 - `apps/web`: anonymous React archive and analyst experience.
 - `apps/api`: read-only production FastAPI service.
 - Neon Free Postgres: authoritative factual data and active release metadata.
-- Render Free Key Value: ephemeral shared rate limits, response caching, and AI budget state.
+- Render Free Key Value: ephemeral shared rate limits, response caching, and AI budget state. A lost monthly ledger restarts at zero under a recorded owner decision. The `$2` application cutoff applies while that ledger survives. Repeated losses can reopen spending, so a verified provider-side limit must bound total monthly charges.
 - Qdrant Cloud provides optional hybrid retrieval; Postgres/lexical retrieval remains authoritative when it is unavailable.
 - OpenRouter: optional phrasing of already-computed facts.
 - Sentry: scrubbed exception, trace, alert, and uptime monitoring.
@@ -159,6 +159,44 @@ Production images:
 ```bash
 docker compose build api web
 ```
+
+Production behavior scenarios. The first command starts isolated Postgres, Redis, a
+production-profile API, and the built web app on fresh ports `19430`–`19433` and saves
+its evidence under `release-artifacts/production-completion/`; it uses no provider
+traffic. The second runs the release-membership, container health-probe, real local
+HTTP, and rate-limit memory scenarios.
+
+```bash
+uv run --frozen --all-packages python tools/release/production_e2e.py
+
+uv run pytest \
+  apps/api/app/tests/test_live_release_scenarios.py \
+  apps/api/app/tests/test_directory_release_scope.py \
+  apps/api/app/tests/test_rate_limit_state.py
+```
+
+Liveness is not a go-live gate. Confirm `GET /health/ready` returns 200 with the
+expected data version, and confirm the container reports healthy from inside itself:
+
+```bash
+docker exec <api-container> python -m app.api.health_probe
+```
+
+Check a running local production-profile API against the approved archive:
+
+```bash
+uv run --package knicksiq-api python tools/release/readiness.py \
+  --base-url http://127.0.0.1:8000 --local-https-proxy \
+  --bundle release-artifacts/2025-26/reliability-approved-20260928.json.gz \
+  --sha256 549af2edd0d195eff60bb318bdc58a8c8e217ea0359c0684d492d5292dcb595b \
+  --output release-artifacts/readiness.json
+```
+
+Use empty provider keys, disabled Qdrant, and a dedicated Redis database.
+The command compares every game score and the main text of all approved reports.
+It checks a box score, cited season record, session replay and conflicts,
+private routes, and security headers. It never approves or deploys a release.
+Omit `--local-https-proxy` when an actual local proxy supplies the HTTPS header.
 
 Local embedding and reranking dependencies are an explicit offline extra:
 

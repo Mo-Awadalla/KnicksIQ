@@ -189,3 +189,35 @@ def test_resolved_filters_replace_model_invented_internal_ids():
     assert safe.filters.player_ids == [11]
     assert safe.filters.game_ids == [22]
     assert safe.filters.team_ids == ["BOS"]
+
+
+async def test_explicit_rebounding_comparison_is_not_an_undefined_quality_judgment(db_session):
+    players = list(
+        (
+            await db_session.execute(
+                select(Player).where(Player.full_name.in_(["Karl-Anthony Towns", "Josh Hart"]))
+            )
+        ).scalars()
+    )
+    resolved = await resolve_query(
+        db_session,
+        "Who had the better rebounding season, Towns or Hart?",
+        intent="player_comparison",
+    )
+    assert resolved.requires_clarification is False
+    assert resolved.metric == "rebounds"
+    assert set(resolved.player_ids) == {player.id for player in players}
+
+
+async def test_single_initial_does_not_turn_an_article_into_a_player_filter(db_session):
+    player = Player(nba_player_id=999_993, full_name="A.J. Lawson", team_id="NYK")
+    db_session.add(player)
+    await db_session.flush()
+    search = await resolve_query(
+        db_session,
+        "Search the archive for the Knicks game against Cleveland on 2025-10-22. Cite a report.",
+        intent="analyst",
+    )
+    named = await resolve_query(db_session, "What did A.J. Lawson score?", intent="player_stat")
+    assert search.player_ids == []
+    assert named.player_ids == [player.id]

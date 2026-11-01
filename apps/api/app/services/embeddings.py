@@ -55,3 +55,21 @@ def embed_texts(texts: list[str]) -> list[list[float]]:
     if hasattr(vectors, "tolist"):
         return vectors.tolist()
     return [list(map(float, vector)) for vector in vectors]
+
+
+def embedding_profile() -> dict[str, str | int]:
+    settings = get_settings()
+    model = _load_model()
+    first = model[0]
+    config = getattr(first.auto_model, "config", None)
+    revision = getattr(config, "_commit_hash", None)
+    dimension = model.get_sentence_embedding_dimension()
+    sequence_length = model.max_seq_length
+    if not revision or not isinstance(dimension, int) or not isinstance(sequence_length, int):
+        raise ValueError("Resolved embedding revision, dimension and sequence length are required")
+    return {
+        "model": settings.rag_embedding_model,
+        "revision": str(revision),
+        "dimension": dimension,
+        "max_sequence_length": sequence_length,
+    }

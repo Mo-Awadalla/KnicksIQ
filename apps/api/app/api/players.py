@@ -11,6 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.db import get_db
 from app.models.player import Player
 from app.schemas.player import PlayerRead
+from app.services.releases import restrict_players_to_active_release
 
 router = APIRouter(prefix="/players", tags=["players"])
 
@@ -23,7 +24,7 @@ async def list_players(
     limit: int = Query(50, ge=1, le=200),
     offset: int = Query(0, ge=0),
 ) -> list[PlayerRead]:
-    stmt = select(Player)
+    stmt = restrict_players_to_active_release(select(Player))
     if team_id:
         stmt = stmt.where(Player.team_id == team_id)
     if search:
@@ -39,7 +40,11 @@ async def get_player(
     player_id: int,
     db: Annotated[AsyncSession, Depends(get_db)],
 ) -> PlayerRead:
-    player = await db.get(Player, player_id)
+    player = (
+        await db.execute(
+            restrict_players_to_active_release(select(Player).where(Player.id == player_id))
+        )
+    ).scalar_one_or_none()
     if not player:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Player not found")
     return PlayerRead.model_validate(player)

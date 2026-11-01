@@ -1,3 +1,10 @@
+## Unreleased
+
+### Fix
+
+- recover expired analyst sessions through the retry control
+- redact question content from browser error telemetry before transmission
+
 ## v2.2.1 (2025-11-06)
 
 ### Fix

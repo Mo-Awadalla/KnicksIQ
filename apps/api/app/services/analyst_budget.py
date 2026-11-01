@@ -1,8 +1,8 @@
-"""Atomic reservations against a monthly ledger that starts at zero when absent.
+"""Atomic reservations against a resettable monthly Redis ledger.
 
-A new month, or a free Redis instance that restarted, has no ledger. Starting at zero keeps
-the analyst available; the loss is bounded by one month's cutoff. Owner-approved: the model is
-near-free, so an outage costs more than an over-count.
+The recorded owner policy starts a missing ledger at zero for availability.
+Restarts or LRU eviction can reopen spending within the same month, so the
+application cutoff is not a durable monthly billing limit.
 """
 
 from __future__ import annotations

@@ -503,6 +503,28 @@
   line-height: 1.45;
 }
 
+.box-score-table {
+  white-space: nowrap;
+}
+
+.box-score-table caption {
+  padding: 1rem 1.5rem;
+  text-align: left;
+  font-weight: 600;
+}
+
+.box-score-table th[scope='row'] {
+  color: inherit;
+  font-family: inherit;
+  font-size: inherit;
+  letter-spacing: normal;
+  text-transform: none;
+}
+
+.box-score-table td:nth-child(2) {
+  min-width: 0;
+}
+
 .report-row {
   display: grid;
   grid-template-columns: 3.5rem minmax(13rem, 0.55fr) minmax(15rem, 1fr) 1rem;

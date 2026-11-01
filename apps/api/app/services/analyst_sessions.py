@@ -47,8 +47,12 @@ return 0
 
 
 class SessionConflict(Exception):
-    def __init__(self, reason: str):
+    """A public conflict reason and, for stale revisions, the authoritative revision."""
+
+    def __init__(self, reason: str, current_revision: int | None = None):
+        super().__init__(reason)
         self.reason = reason
+        self.current_revision = current_revision
 
 
 class SessionUnavailable(Exception):
@@ -99,6 +103,9 @@ class SessionTurn:
             )
             status, value = status.decode(), value.decode()
             if status == "conflict":
+                # The atomic script reports a stale revision as its numeric authority.
+                if value.isascii() and value.isdigit():
+                    raise SessionConflict("revision_conflict", int(value))
                 raise SessionConflict(value)
             if status == "replay":
                 turn.replay = json.loads(value)

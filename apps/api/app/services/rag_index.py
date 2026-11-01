@@ -14,7 +14,14 @@ from app.models.dataset_release import DatasetRelease
 from app.models.game import Game
 from app.models.game_event import GameEvent
 from app.models.report import Report
-from app.services.embeddings import embed_texts
+from app.services.archive_documents import (
+    game_document,
+    player_box_document,
+    possession_document,
+    report_document,
+    team_box_document,
+)
+from app.services.embeddings import embed_texts, embedding_profile
 from app.services.possession_chunks import build_possession_chunks
 from app.services.qdrant_client import (
     ensure_candidate_not_serving,
@@ -34,12 +41,6 @@ GAME_ORDER_RECENT = "recent"
 GAME_ORDER_CHOICES = (GAME_ORDER_DATE, GAME_ORDER_RECENT)
 
 logger = logging.getLogger(__name__)
-
-
-def _semantic_summary(text: str, *, max_chars: int = 360) -> str:
-    """Deterministic local summary fallback for possession payloads."""
-    compact = " ".join(line.strip() for line in text.splitlines() if line.strip())
-    return compact[:max_chars]
 
 
 def _embedding_text(record: dict[str, Any]) -> str:
@@ -166,26 +167,14 @@ async def build_rag_artifacts(
                     False,
                 ),
             ):
-                # Index construction is offline, deterministic, and provider-free.
-                # OpenRouter is reserved for optional runtime phrasing only.
-                summary = _semantic_summary(chunk.text)
+                qdrant_record = possession_document(chunk, data_version).record()
+                summary = qdrant_record["payload"]["semantic_summary"]
                 record = {
                     "id": chunk.chunk_id,
                     "text": chunk.text,
                     "semantic_summary": summary,
                     "summary_model": "deterministic-extractive-v1",
                     "payload": {**chunk.metadata, "raw_rows": chunk.rows},
-                }
-                qdrant_record = {
-                    "id": chunk.chunk_id,
-                    "payload": {
-                        **chunk.metadata,
-                        "data_version": data_version,
-                        "chunk_id": chunk.chunk_id,
-                        "text": chunk.text,
-                        "semantic_summary": summary,
-                        "raw_rows": chunk.rows,
-                    },
                 }
                 possession_records.append(qdrant_record)
                 chunks_file.write(json.dumps(record, default=str) + "\n")
@@ -294,6 +283,11 @@ async def build_rag_artifacts(
         "qdrant_reset": qdrant_reset,
         "qdrant_upserted": qdrant_upserted,
         "qdrant_supporting_counts": supporting_counts,
+        "embedding_profile": (
+            embedding_profile()
+            if qdrant_upserted and not settings.rag_qdrant_cloud_inference
+            else None
+        ),
         "data_version": data_version,
         "candidate_aliases": candidate_aliases,
         "aliases_promoted": False,
@@ -343,79 +337,17 @@ async def _build_release_supporting_collections(
         .scalars()
         .all()
     )
-    game_records = [
-        {
-            "id": f"game:{game.id}:summary",
-            "payload": {
-                "game_id": game.id,
-                "data_version": data_version,
-                "date": str(game.game_date),
-                "season": game.season,
-                "team_ids": [game.home_team_id, game.away_team_id],
-                "semantic_summary": (
-                    f"{game.away_team_id} {game.away_score} at "
-                    f"{game.home_team_id} {game.home_score} on {game.game_date}"
-                ),
-            },
-        }
-        for game in games
-    ]
+    game_records = [game_document(game, data_version).record() for game in games]
     box_records = [
-        {
-            "id": f"team-box:{row.game_id}:{row.team_id}",
-            "payload": {
-                "game_id": row.game_id,
-                "data_version": data_version,
-                "date": str(games_by_id[row.game_id].game_date),
-                "season": games_by_id[row.game_id].season,
-                "season_type": games_by_id[row.game_id].season_type,
-                "team_ids": [row.team_id],
-                "semantic_summary": (
-                    f"{row.team_id} team box: {row.points} points, "
-                    f"{row.rebounds} rebounds, {row.assists} assists, "
-                    f"{row.turnovers} turnovers"
-                ),
-            },
-        }
+        team_box_document(row, games_by_id[row.game_id], data_version).record()
         for row in team_stats
     ]
     box_records.extend(
-        {
-            "id": f"player-box:{row.game_id}:{row.player_id}",
-            "payload": {
-                "game_id": row.game_id,
-                "data_version": data_version,
-                "date": str(games_by_id[row.game_id].game_date),
-                "season": games_by_id[row.game_id].season,
-                "season_type": games_by_id[row.game_id].season_type,
-                "team_ids": [row.team_id],
-                "player_ids": [row.player_id],
-                "semantic_summary": (
-                    f"Player {row.player_id}: {row.points} points, "
-                    f"{row.rebounds} rebounds, {row.assists} assists, "
-                    f"{row.turnovers} turnovers"
-                ),
-            },
-        }
+        player_box_document(row, games_by_id[row.game_id], data_version).record()
         for row in player_stats
     )
     report_records = [
-        {
-            "id": f"report:{row.id}",
-            "payload": {
-                "game_id": row.game_id,
-                "data_version": data_version,
-                "date": str(games_by_id[row.game_id].game_date),
-                "season": games_by_id[row.game_id].season,
-                "season_type": games_by_id[row.game_id].season_type,
-                "team_ids": [
-                    games_by_id[row.game_id].home_team_id,
-                    games_by_id[row.game_id].away_team_id,
-                ],
-                "semantic_summary": f"{row.title}. {row.summary}",
-            },
-        }
-        for row in reports
+        report_document(row, games_by_id[row.game_id], data_version).record() for row in reports
     ]
     collections = {
         settings.rag_qdrant_games_collection: game_records,

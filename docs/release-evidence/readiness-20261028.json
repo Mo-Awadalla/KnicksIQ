@@ -1,0 +1,163 @@
+{
+  "observed_at": "2026-10-28T15:38:37.145250+00:00",
+  "base_url": "http://127.0.0.1:18128",
+  "scope": "Local production-profile HTTP smoke with optional providers disabled. Not a retrieval evaluation, provider evaluation, or deployment approval.",
+  "base_commit": "d5800118b497e92e5e5609c7b66404d930e1e2fb",
+  "worktree_sha256": "34a263794a6b2a560b6bb4a81f368d59585d0b0c9b9be9552af44f32b589d104",
+  "verifier_sha256": "db115e62323ef540e99f030521eca802c2d914045b2c410b381a199697eb9327",
+  "bundle_sha256": "549af2edd0d195eff60bb318bdc58a8c8e217ea0359c0684d492d5292dcb595b",
+  "checks": [
+    {
+      "name": "bundle_identity",
+      "passed": true,
+      "evidence": "release-artifacts/2025-26/reliability-approved-20260928.json.gz"
+    },
+    {
+      "name": "ready",
+      "passed": true,
+      "evidence": {
+        "status": "ready",
+        "data_version": "2025-26.20260928.1",
+        "required_failures": [],
+        "optional_dependencies": {
+          "qdrant": "disabled",
+          "redis": "configured",
+          "openrouter": "degraded"
+        }
+      }
+    },
+    {
+      "name": "providers_disabled",
+      "passed": true,
+      "evidence": {
+        "qdrant": "disabled",
+        "redis": "configured",
+        "openrouter": "degraded"
+      }
+    },
+    {
+      "name": "archive_identity",
+      "passed": true,
+      "evidence": {
+        "season": "2025-26",
+        "data_version": "2025-26.20260928.1",
+        "games": 101,
+        "regular_season_games": 82,
+        "postseason_games": 19,
+        "reports": 101,
+        "activated_at": "2026-10-20T21:12:15.674728Z",
+        "capabilities": [
+          "records",
+          "scores_and_margins",
+          "opponents",
+          "player_and_team_box_scores",
+          "shooting_splits",
+          "quarter_scoring",
+          "play_by_play",
+          "scoring_runs",
+          "reviewed_postgame_reports"
+        ],
+        "matching_games": 101
+      }
+    },
+    {
+      "name": "canonical_schedule",
+      "passed": true,
+      "evidence": {
+        "games_compared": 101
+      }
+    },
+    {
+      "name": "box_score",
+      "passed": true,
+      "evidence": {
+        "CLE": 111,
+        "NYK": 119
+      }
+    },
+    {
+      "name": "report_population",
+      "passed": true,
+      "evidence": {
+        "reports": 101
+      }
+    },
+    {
+      "name": "approved_report_content",
+      "passed": true,
+      "evidence": {
+        "reports_compared": 101
+      }
+    },
+    {
+      "name": "private_route:/docs",
+      "passed": true,
+      "evidence": 404
+    },
+    {
+      "name": "private_route:/openapi.json",
+      "passed": true,
+      "evidence": 404
+    },
+    {
+      "name": "private_route:/jobs",
+      "passed": true,
+      "evidence": 404
+    },
+    {
+      "name": "private_route:/health/rag",
+      "passed": true,
+      "evidence": 404
+    },
+    {
+      "name": "write_route_disabled",
+      "passed": true,
+      "evidence": 405
+    },
+    {
+      "name": "canonical_analyst_record",
+      "passed": true,
+      "evidence": {
+        "answer": "Knicks wins: 69 over 101 archived games. Knicks losses: 32 over 101 archived games.",
+        "cited_values": {
+          "wins": 69,
+          "losses": 32
+        }
+      }
+    },
+    {
+      "name": "session_committed",
+      "passed": true,
+      "evidence": {
+        "revision": 1
+      }
+    },
+    {
+      "name": "turn_replay",
+      "passed": true,
+      "evidence": {
+        "status": 200
+      }
+    },
+    {
+      "name": "turn_conflict",
+      "passed": true,
+      "evidence": 409
+    },
+    {
+      "name": "invalid_request",
+      "passed": true,
+      "evidence": 422
+    },
+    {
+      "name": "security_headers",
+      "passed": true,
+      "evidence": {
+        "x-content-type-options": "nosniff",
+        "x-frame-options": "DENY",
+        "strict-transport-security": "max-age=31536000; includeSubDomains"
+      }
+    }
+  ],
+  "passed": true
+}

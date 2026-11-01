@@ -16,6 +16,9 @@ class ArchiveEvidence:
 
 
 def _canonical_key(collection: str, metadata: dict[str, Any], fallback: str) -> str:
+    document_id = metadata.get("document_id")
+    if document_id:
+        return f"{collection}:{document_id}"
     game_id = metadata.get("game_id", "archive")
     if collection == "games":
         source_id = game_id

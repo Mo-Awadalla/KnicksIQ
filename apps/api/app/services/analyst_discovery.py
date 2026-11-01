@@ -13,7 +13,7 @@ from basketball_core.analytics.registry import STAT_REGISTRY
 
 if TYPE_CHECKING:
     from app.services.analyst_tools import AnalystTools
-from app.services.analyst_calculations import METRICS
+from app.services.analyst_player_stats import METRICS
 
 
 def discover(tools: AnalystTools, scope: ResolvedQuery, games: list[Game]) -> ToolResult:
@@ -238,6 +238,15 @@ def discover(tools: AnalystTools, scope: ResolvedQuery, games: list[Game]) -> To
                 if p.id in qualified
             ]
             value = fact["result"]["value"]
+            denominator: float | int = len(selected)
+            if metric == "true_shooting_percentage":
+                # A weighted TS% divides by shot opportunities, not appearances, so the
+                # claim states that denominator and the receipt records the same one.
+                subject_rows = [row for row, p in population_rows if p.id == player.id]
+                denominator = 2 * (
+                    sum(row.field_goals_attempted for row in subject_rows)
+                    + 0.44 * sum(row.free_throws_attempted for row in subject_rows)
+                )
             average = tools.claim(
                 **common,
                 metric=metric + ":average",
@@ -245,23 +254,11 @@ def discover(tools: AnalystTools, scope: ResolvedQuery, games: list[Game]) -> To
                 games=selected,
                 evidence=receipts,
                 sample=len(selected),
-                denominator=len(selected),
+                denominator=denominator,
                 window=fact["timeframe"],
                 statement=f"{player.full_name}: {value:.1f} {unit} across "
                 f"{len(selected)} appearances in {fact['timeframe']['label']}.",
             )
-            # Percentage calculations use shot opportunities, not appearances, as denominator.
-            if metric == "true_shooting_percentage":
-                subject_rows = [row for row, p in population_rows if p.id == player.id]
-                denominator = 2 * (
-                    sum(row.field_goals_attempted for row in subject_rows)
-                    + 0.44 * sum(row.free_throws_attempted for row in subject_rows)
-                )
-                values = average.model_dump(exclude={"claim_id"})
-                values["denominator"] = denominator
-                tools.claims.pop(average.claim_id)
-                average = VerifiedClaim.create(**values)
-                tools.claims[average.claim_id] = average
             rank = tools.claim(
                 subject=subject,
                 metric=metric + ":qualifier_rank",

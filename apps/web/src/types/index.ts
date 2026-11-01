@@ -31,6 +31,41 @@ export interface GameDetail extends GameSummary {
   away_team: Team | null
 }
 
+export interface TeamGameStat {
+  team_id: string
+  points: number
+  rebounds: number
+  offensive_rebounds: number
+  defensive_rebounds: number
+  assists: number
+  steals: number
+  blocks: number
+  turnovers: number
+  personal_fouls: number
+  field_goals_made: number
+  field_goals_attempted: number
+  three_pointers_made: number
+  three_pointers_attempted: number
+  free_throws_made: number
+  free_throws_attempted: number
+  plus_minus: number
+}
+
+export interface PlayerGameStat extends TeamGameStat {
+  player_id: number
+  player_name: string
+  starter: boolean
+  position: string | null
+  minutes: number
+}
+
+export interface BoxScore {
+  game_id: number
+  periods: { period: number; team_id: string; points: number }[]
+  teams: TeamGameStat[]
+  players: PlayerGameStat[]
+}
+
 export interface Team {
   id: string
   name: string

@@ -137,7 +137,8 @@
     "report_audit": "docs/release-evidence/report-audit-20260907/audit.json",
     "live_dependencies": "docs/release-evidence/live-observation.json",
     "label_drafts": "docs/release-evidence/evaluation-label-drafts.jsonl",
-    "note": "Only explicit check entries establish exact-commit gate evidence. Other observations retain their stated scope and limitations.",
+    "note": "Only explicit check entries establish exact-commit gate evidence. Local smoke results are not evaluations, hosted evidence, or approval.",
+    "local_readiness_20261028": "docs/release-evidence/readiness-20261028.json",
     "frontend_dependency_audit": "docs/release-evidence/frontend-dependency-audit.json",
     "local_validation": "docs/release-evidence/local-validation.json",
     "report_baseline_binding": "docs/release-evidence/report-baseline-binding-20260907.json",
@@ -206,13 +207,14 @@
     "evaluation_approval_package": "docs/release-evidence/preparation-20260928/evaluation-approval-package.json"
   },
   "remaining_external_checks": [
-    "Resolve policy/configuration conflict: observed llm_primary vs required 10% shadow; no settings changed",
-    "Approve evaluation-label proposals and executable scoring rubric; verify runtime ID mapping and original semantic coverage",
-    "Complete candidate-content local retrieval/filter evaluation, disabled-services evaluation, production-profile failure rehearsal, and warm load",
-    "Authorize and execute bounded real-provider plan separately; budget_unavailable/mock response is not success",
-    "Authorize any remote bundle/index staging separately; keep all production-derived artifacts local until then",
-    "Finalize fresh coordinated rollback/environment checks and obtain launch approval bound to final release-record digest",
-    "Deploy exact e003db2 and activate exact approved content only after gates; verify live API, reports/index copies and served frontend"
+    "Reconcile the live production API identity and mode. Its ready endpoint reported 2025-26.20260714.1, while the candidate bundle is 2025-26.20260928.1; the live analyst failed to discover local archive facts.",
+    "Review and adjudicate the 120 proposed evaluation labels, scoring rubric and runtime ID mapping; owner approval remains missing.",
+    "Run candidate-content and services-disabled evaluation, ranked retrieval checks, production-profile dependency failure rehearsal and warm-load acceptance against the exact tested commit.",
+    "Authorize a bounded real-provider evaluation separately; one analyst request was already sent from the hosted UI during verification, and any provider charge remains unverified.",
+    "Reconcile provider billing and the production conversation ledger for that hosted request before running any further provider test.",
+    "Authorize staging the approved bundle and matching retrieval indexes, then validate them without activating them.",
+    "Refresh live rollback identities, deployments, database version and vector aliases. Bind the launch approval to the final release record.",
+    "Commit and test the final candidate, obtain owner approval, deploy exact code and data only after every gate passes, and verify both hosted services."
   ],
   "services": {
     "api": {

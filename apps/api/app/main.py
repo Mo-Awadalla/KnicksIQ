@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import time
-import uuid
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, HTTPException, Request
@@ -11,13 +10,17 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from fastapi.responses import JSONResponse
-from sentry_sdk.types import Event, Hint
 from starlette.middleware.httpsredirect import HTTPSRedirectMiddleware
 
 from app.api.router import api_router
 from app.core.config import get_settings
 from app.core.db import engine
 from app.core.logging import configure_logging, get_logger
+from app.core.public_boundary import (
+    SENTRY_INIT_OPTIONS,
+    RequestBodyLimitMiddleware,
+    request_id_for,
+)
 
 
 @asynccontextmanager
@@ -51,9 +54,7 @@ def create_app() -> FastAPI:
             dsn=settings.sentry_dsn,
             environment=settings.environment,
             traces_sample_rate=0.05,
-            send_default_pii=False,
-            max_request_body_size="never",
-            before_send=_scrub_sentry_event,
+            **SENTRY_INIT_OPTIONS,
         )
     app = FastAPI(
         title="KnicksIQ API",
@@ -64,6 +65,7 @@ def create_app() -> FastAPI:
         redoc_url=None if settings.is_production else "/redoc",
         openapi_url=None if settings.is_production else "/openapi.json",
     )
+    app.add_middleware(RequestBodyLimitMiddleware)
     app.add_middleware(TrustedHostMiddleware, allowed_hosts=settings.trusted_hosts)
     if settings.is_production:
         app.add_middleware(HTTPSRedirectMiddleware)
@@ -77,7 +79,7 @@ def create_app() -> FastAPI:
 
     @app.middleware("http")
     async def production_headers(request: Request, call_next):
-        request_id = request.headers.get("x-request-id") or uuid.uuid4().hex
+        request_id = request_id_for(request.scope)
         started = time.monotonic()
         request.state.request_id = request_id
         response = await call_next(request)
@@ -130,10 +132,27 @@ def create_app() -> FastAPI:
     @app.exception_handler(HTTPException)
     async def http_error(request: Request, exc: HTTPException):
         message = str(exc.detail) if isinstance(exc.detail, str) else "Request failed"
+        error: dict[str, str | int] = {
+            "code": f"http_{exc.status_code}",
+            "message": message,
+        }
+        conflict_messages = {
+            "session_expired": "The conversation expired. Retry your question.",
+            "revision_conflict": "The conversation changed. Retry your question.",
+            "turn_id_reused": "This turn identity belongs to a different question.",
+            "turn_in_progress": "This conversation turn is still in progress.",
+        }
+        if exc.status_code == 409 and isinstance(exc.detail, dict):
+            code = exc.detail.get("code")
+            if isinstance(code, str) and code in conflict_messages:
+                error = {"code": code, "message": conflict_messages[code]}
+                revision = exc.detail.get("current_revision")
+                if code == "revision_conflict" and type(revision) is int and revision >= 0:
+                    error["current_revision"] = revision
         return JSONResponse(
             status_code=exc.status_code,
             content={
-                "error": {"code": f"http_{exc.status_code}", "message": message},
+                "error": error,
                 "request_id": getattr(request.state, "request_id", None),
             },
             headers=exc.headers,
@@ -156,25 +175,6 @@ def create_app() -> FastAPI:
 
     app.include_router(api_router)
     return app
-
-
-def _scrub_sentry_event(event: Event, hint: Hint) -> Event:  # noqa: ARG001
-    request = event.get("request")
-    if isinstance(request, dict):
-        request.pop("data", None)
-        request.pop("headers", None)
-        request.pop("cookies", None)
-        request.pop("env", None)
-    event.pop("user", None)
-    breadcrumbs = event.get("breadcrumbs")
-    if isinstance(breadcrumbs, dict):
-        values = breadcrumbs.get("values")
-        if isinstance(values, list):
-            for breadcrumb in values:
-                if isinstance(breadcrumb, dict):
-                    breadcrumb.pop("data", None)
-                    breadcrumb.pop("message", None)
-    return event
 
 
 app = create_app()

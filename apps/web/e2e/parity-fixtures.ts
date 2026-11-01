@@ -47,6 +47,9 @@ export const test = base.extend({
       const limit = Number(url.searchParams.get('limit') || 50)
       return route.fulfill({ json: games.slice(offset, offset + limit) })
     })
+    await page.route(api('/games/*/box-score'), (route) =>
+      route.fulfill({ json: { game_id: 101, periods: [], teams: [], players: [] } })
+    )
     await page.route(api('/reports?*'), (route) => {
       const url = new URL(route.request().url())
       const offset = Number(url.searchParams.get('offset') || 0)

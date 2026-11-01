@@ -76,7 +76,7 @@ services:
       - key: RAG_LLM_PLANNER_ENABLED
         value: "true"
       - key: ANALYSIS_ANSWER_MODE
-        value: llm_primary
+        value: shadow
       - key: ANALYST_EVIDENCE_LOOP_ENABLED
         value: "true"
       - key: ANALYST_PROVIDER_FORMAT

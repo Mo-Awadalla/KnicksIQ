@@ -207,7 +207,7 @@ def _rrf_merge(
     return [chunks[chunk_id] for chunk_id in ordered_ids[:limit]]
 
 
-def _lexical_rank_chunks(
+def lexical_rank_chunks(
     query: str,
     chunks: list[PossessionChunk],
 ) -> tuple[list[tuple[PossessionChunk, float]], list[tuple[PossessionChunk, float]]]:

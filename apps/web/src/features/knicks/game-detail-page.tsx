@@ -1,9 +1,10 @@
 import { useEffect } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Link, useLocation } from '@tanstack/react-router'
-import { fetchGame, fetchPlayByPlay, fetchRuns } from '@/api'
+import { fetchBoxScore, fetchGame, fetchPlayByPlay, fetchRuns } from '@/api'
 import type { GameEvent, ScoringRun } from '@/types'
 import { ArrowLeft, TrendingUp } from 'lucide-react'
+import { BoxScorePanel } from './box-score-panel'
 import { formatDate, shortTeamLabel, teamLabel } from './game-formatting'
 import { AppShell, SurfaceState } from './surface-layout'
 
@@ -177,6 +178,11 @@ export function GameDetailPage({ gameId }: { gameId: string }) {
     queryFn: () => fetchGame(id),
     enabled: Number.isSafeInteger(id) && id > 0,
   })
+  const boxScore = useQuery({
+    queryKey: ['game', id, 'box-score'],
+    queryFn: () => fetchBoxScore(id),
+    enabled: Number.isSafeInteger(id) && id > 0 && game.isSuccess,
+  })
   const events = useQuery({
     queryKey: ['game', id, 'play-by-play'],
     queryFn: () => fetchPlayByPlay(id),
@@ -250,6 +256,17 @@ export function GameDetailPage({ gameId }: { gameId: string }) {
       }
     >
       <Scoreboard game={game.data} />
+      {boxScore.isError ? (
+        <SurfaceState
+          kind='error'
+          message='Box score could not be loaded.'
+          onRetry={() => void boxScore.refetch()}
+        />
+      ) : boxScore.isPending ? (
+        <SurfaceState kind='loading' message='Loading box score…' />
+      ) : (
+        <BoxScorePanel boxScore={boxScore.data} />
+      )}
       <div className='detail-grid'>
         {game.data.data_status === 'summary_only' ? (
           <SurfaceState

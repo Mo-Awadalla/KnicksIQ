@@ -177,8 +177,25 @@ async def test_missing_rows_are_incomplete_not_nonappearances(db_session):
     assert "Missing player rows" in " ".join(result.claims[0].coverage_limitations)
 
 
-async def test_team_average_aggregation_yields_per_game_claims(db_session):
+async def test_average_margin_question_yields_the_requested_margin_claim(db_session):
     tools, _ = await make_tools(db_session, "What was the Knicks average margin?")
+    result = await tools.execute(
+        ToolCall(name="get_team_stats", question=tools.question, aggregation="average")
+    )
+    by_metric = {c.metric_id: c for c in result.claims}
+    assert set(by_metric) == {"margin_per_game"}
+    claim = by_metric["margin_per_game"]
+    scope = tools.scope
+    assert scope is not None
+    games = tools.selected_games(scope)
+    margins = [tools.score(g)[0] - tools.score(g)[1] for g in games]
+    assert claim.value == pytest.approx(sum(margins) / len(games), rel=1e-3)
+    assert claim.denominator == len(games)
+    assert scope.operation == "average_margin"
+
+
+async def test_generic_season_aggregation_yields_per_game_claims(db_session):
+    tools, _ = await make_tools(db_session, "How are the Knicks doing this season?")
     totals = await tools.execute(
         ToolCall(name="get_team_stats", question=tools.question, aggregation="total")
     )

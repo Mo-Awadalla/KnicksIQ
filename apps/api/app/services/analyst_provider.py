@@ -8,6 +8,7 @@ import re
 import time
 from typing import TYPE_CHECKING, Any, TypeVar
 
+from app.services.analyst_citations import evidence_view, priority, scope_view
 from app.services.evidence_contracts import (
     CONTRACT_VERSION,
     INTERPRETATION_POLICY,
@@ -25,6 +26,19 @@ if TYPE_CHECKING:
     from app.services.analyst_loop import AnalystLoop
 
 Schema = TypeVar("Schema", bound=BaseModel)
+
+
+def _model_admitted(settings: Any) -> bool:
+    """Apply a configured allowlist before a real provider call.
+
+    An empty allowlist is deliberately permissive; keyless and mock modes make no call.
+    """
+    if getattr(settings, "test_mode", False):
+        return True
+    if str(settings.ai_provider).lower() in {"mock", "none", "disabled"} or not settings.ai_api_key:
+        return True
+    allowed = list(getattr(settings, "openrouter_allowed_models", []) or [])
+    return not allowed or settings.ai_chat_model in allowed
 
 
 def encoded(value: Any) -> str:
@@ -174,7 +188,7 @@ def build_payload(
                     "status": r.status,
                     "message": r.message,
                     "choices": r.choices,
-                    "scope": r.scope,
+                    "scope": scope_view(r.scope),
                 }
                 for r in loop.results
             ],
@@ -196,6 +210,23 @@ def build_payload(
         raise ValueError("Required review/action context exceeds input budget")
     sent_claims, sent_evidence, sent_candidates = {}, {}, {}
     evidence_size = 0
+
+    def admit(item: Any) -> None:
+        nonlocal payload, evidence_size
+        data = evidence_view(item)
+        size = token_upper_bound(encoded(data))
+        candidate_payload = {**payload, "evidence": payload["evidence"] + [data]}
+        if evidence_size + size <= loop.settings.analyst_evidence_tokens and (
+            token_upper_bound(encoded(candidate_payload)) <= limit
+        ):
+            payload = candidate_payload
+            evidence_size += size
+            sent_evidence[item.evidence_id] = item
+
+    if not review:
+        # A source type the question asks for is admitted before claims fill the budget.
+        for item in priority(loop.tools.question, evidence):
+            admit(item)
     for claim in claims:
         # Claim + all baseline claims are an indivisible record group. Evidence details
         # can be omitted, since complete IDs remain resolvable in the server registry.
@@ -233,19 +264,19 @@ def build_payload(
         evidence_size += size
         sent_claims.update({c.claim_id: c for c in group})
         sent_candidates.update({c.fact_id: c for c in related})
-    # Prioritize evidence supporting the retained claims.
+    # Prioritize evidence the reviewed answer cites, then evidence supporting retained claims.
+    cited = set(answer.evidence_ids) if review and answer else set()
     refs = {ref for c in sent_claims.values() for ref in c.supporting_evidence_ids}
-    evidence.sort(key=lambda e: e.evidence_id not in refs)
+    evidence.sort(
+        key=lambda item: (
+            item.evidence_id not in cited,
+            item.evidence_id not in refs,
+            item.metadata.get("document_collection") not in {"games", "reports"},
+        )
+    )
     for item in evidence:
-        data = item.model_dump(mode="json")
-        size = token_upper_bound(encoded(data))
-        candidate_payload = {**payload, "evidence": payload["evidence"] + [data]}
-        if evidence_size + size <= loop.settings.analyst_evidence_tokens and (
-            token_upper_bound(encoded(candidate_payload)) <= limit
-        ):
-            payload = candidate_payload
-            evidence_size += size
-            sent_evidence[item.evidence_id] = item
+        if item.evidence_id not in sent_evidence:
+            admit(item)
     if not review:
         loop.sent_claims, loop.sent_evidence = sent_claims, sent_evidence
         loop.sent_candidates = sent_candidates
@@ -263,6 +294,9 @@ async def request_model[Schema: BaseModel](
 ) -> Schema:
     if loop.calls >= loop.settings.analyst_max_model_calls or loop.remaining() <= 0:
         raise TimeoutError("Model-call or deadline limit")
+    if not _model_admitted(loop.settings):
+        # No provider request is made for a model this deployment did not admit.
+        raise RuntimeError("Configured chat model is not admitted by the deployment allowlist")
     if loop.calls >= sum(slots for _, slots in loop.reservations):
         if not await loop.reserve(1):
             raise RuntimeError("Budget unavailable")
@@ -296,9 +330,12 @@ async def request_model[Schema: BaseModel](
             "You are KnicksIQ. Return JSON matching schema, using backend evidence only. "
             "For interesting stats or another player, call discover_facts FIRST with the "
             "user's question unchanged. Empty claims means call a tool before stating stats. "
-            "get_player_stats calculates player metrics; get_team_stats gives team wins and "
-            "losses plus points and margin, as totals (aggregation total) or per-game averages "
-            "(aggregation average), so choose the aggregation the user asked for; "
+            "get_player_stats calculates player metrics; get_team_stats answers the "
+            "operation in capabilities.operation for the whole scope: record, win/loss or "
+            "game counts, points totals and averages, largest win or loss margin, a "
+            "losing/winning streak, or a score-margin swing ranking, never a substitute "
+            "for the requested operation. Aggregate results as totals (aggregation total) or "
+            "per-game averages (aggregation average) only when the operation is generic; "
             "compare_windows compares populations; search_archive finds narrative examples; "
             "get_evidence expands returned references. Answer once evidence is sufficient. "
             "call_tools requires tools and null answer. Answer actions require an answer "
@@ -327,6 +364,7 @@ async def request_model[Schema: BaseModel](
         instruction_bytes=token_upper_bound(system),
     )
     adapter = get_llm_adapter()
+    adapter.stage = "review" if review else "revise" if repair else "orchestrate"
     # Action schemas include final answers, which need the answer cap. Tool-only followups
     # are additionally checked below against the 600-token conservative bound.
     adapter.max_tokens = 600 if schema is Action and not loop.tools.claims else 1200

@@ -107,7 +107,10 @@ test('session expiry keeps the question and retries with fresh context', async (
       revision: 1, state_committed: true, session_expires_at: '2099-01-01T00:00:00Z',
     } })
     if (requests.length === 2) return route.fulfill({ status: 409,
-      json: { detail: { reason: 'session_expired' } } })
+      json: { error: {
+        code: 'session_expired',
+        message: 'The conversation expired. Retry your question.',
+      } } })
     expect(body.session_token).toBeUndefined()
     expect(body.expected_revision).toBe(0)
     expect(body.context).toEqual([])
@@ -130,6 +133,7 @@ test('session expiry keeps the question and retries with fresh context', async (
   await expect(page.getByText('Fresh answer.')).toBeVisible()
   await expect(page.getByText('Second question', { exact: true })).toHaveCount(1)
 })
+
 
 test('late response cannot restore a chat after New chat', async ({ page }) => {
   let finish: (() => void) | undefined

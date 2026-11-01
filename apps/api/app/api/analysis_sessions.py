@@ -3,26 +3,25 @@
 from __future__ import annotations
 
 import asyncio
-import logging
 import time
 from datetime import UTC, datetime, timedelta
 
-from fastapi import HTTPException, Request
+from fastapi import BackgroundTasks, HTTPException, Request
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api import analysis_policy as runtime
 from app.api.analysis_models import AnalysisQueryRequest, AnalysisQueryResponse
 from app.api.analysis_retrieval import _sample_shadow
+from app.api.analysis_shadow import _schedule_shadow_verification
 from app.models.dataset_release import DatasetRelease
-
-logger = logging.getLogger(__name__)
 
 
 async def _query_evidence_analyst(
     req: AnalysisQueryRequest,
     request: Request,
     db: AsyncSession,
+    background_tasks: BackgroundTasks,
 ) -> AnalysisQueryResponse:
     from app.services.analyst_loop import AnalystLoop
     from app.services.analyst_sessions import SessionConflict, SessionTurn, SessionUnavailable
@@ -57,14 +56,10 @@ async def _query_evidence_analyst(
                 },
             )
         except SessionConflict as exc:
-            raise HTTPException(
-                status_code=409,
-                detail={
-                    "reason": exc.reason,
-                    "session_token": req.session_token,
-                    "turn_id": req.turn_id,
-                },
-            ) from exc
+            detail: dict[str, object] = {"code": exc.reason}
+            if exc.current_revision is not None:
+                detail["current_revision"] = exc.current_revision
+            raise HTTPException(status_code=409, detail=detail) from exc
         except SessionUnavailable:
             turn = None
     if turn and turn.replay is not None:
@@ -82,39 +77,26 @@ async def _query_evidence_analyst(
         loop.request_id = getattr(request.state, "request_id", "")
         settings = runtime.get_settings()
         answer_mode = settings.analysis_answer_mode
-        shadow_sampled = answer_mode == "shadow" and _sample_shadow(
-            loop.request_id, settings.analysis_shadow_sample_rate
+        verify_shadow = (
+            answer_mode == "shadow"
+            and bool(turn)
+            and _sample_shadow(loop.request_id, settings.analysis_shadow_sample_rate)
         )
-        result = await loop.run(
-            allow_model=bool(turn) and (answer_mode == "llm_primary" or shadow_sampled)
-        )
+        # A shadow trial is verification, never the answer. The client's facts are computed
+        # and committed first, so a blocked or failing provider cannot withhold them.
+        result = await loop.run(allow_model=bool(turn) and answer_mode == "llm_primary")
         state = result.pop("state")
-        if answer_mode == "shadow":
-            logger.info(
-                "analyst_shadow_verification",
-                extra={
-                    "sampled": shadow_sampled,
-                    "validated": result["llm_validated"],
-                    "model_calls": loop.calls,
-                    "tool_rounds": loop.rounds,
-                    "data_version": release.version,
-                    "latency_ms": round((time.monotonic() - started) * 1000),
-                    "model": runtime.get_settings().ai_chat_model,
-                },
-            )
-        # Shadow exercises the same reserved, validated path but delivers only backend facts.
-        if answer_mode == "shadow" and result["llm_validated"]:
-            result = loop.render_fallback("Shadow verification; deterministic delivery.")
-            state = result.pop("state")
         response = AnalysisQueryResponse(
             **result, request_id=getattr(request.state, "request_id", "")
         )
+        committed = False
         if turn:
             response.session_token = turn.token
             response.session_expires_at = datetime.now(UTC) + timedelta(seconds=86_400)
             response.revision = turn.revision + 1
             response.state_committed = True
-            if not await turn.commit(response.model_dump(mode="json"), state):
+            committed = await turn.commit(response.model_dump(mode="json"), state)
+            if not committed:
                 response.session_token = None
                 response.session_expires_at = None
                 response.revision = None
@@ -126,6 +108,16 @@ async def _query_evidence_analyst(
         else:
             response.warnings.append(
                 "Stateless factual fallback: conversation storage unavailable."
+            )
+        if verify_shadow and committed:
+            _schedule_shadow_verification(
+                background_tasks,
+                request_id=loop.request_id,
+                question=req.question,
+                season=req.season,
+                data_version=release.version,
+                state=state,
+                context=[m.model_dump() for m in req.context],
             )
         return response
     except TimeoutError:
