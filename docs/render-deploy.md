@@ -3,6 +3,18 @@
 KnicksIQ ships from the root `render.yaml` blueprint as a manually promoted,
 immutable archive.
 
+The web build invokes pnpm through Corepack directly, using the version pinned in
+`apps/web/package.json`. Do not run `corepack enable` on Render: it attempts to
+write package-manager shims beside Node in the read-only system directory. For an
+existing service whose build command is managed in the dashboard, set
+`knicksiq-web` → **Settings** → **Build & Deploy** → **Build Command** to:
+
+```bash
+cd apps/web && corepack pnpm install --frozen-lockfile && corepack pnpm build
+```
+
+Save the command and deploy only after the normal release approval.
+
 ## Services
 
 - `knicksiq-api`: Dockerized FastAPI read service.
