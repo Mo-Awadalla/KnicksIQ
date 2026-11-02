@@ -89,7 +89,7 @@ services:
   - type: web
     name: knicksiq-web
     runtime: static
-    buildCommand: cd apps/web && corepack enable pnpm && pnpm install --frozen-lockfile && pnpm build
+    buildCommand: cd apps/web && corepack pnpm install --frozen-lockfile && corepack pnpm build
     staticPublishPath: apps/web/dist
     autoDeployTrigger: off
     domains:
