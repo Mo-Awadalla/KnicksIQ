@@ -1,0 +1,14 @@
+--- a/apps/api/app/services/analyst_provider.py
++++ b/apps/api/app/services/analyst_provider.py
+@@ -350,7 +350,10 @@
+             "answerable from the available archive, or an empty list. Avoid evaluative "
+             "labels like efficient, dominant or all-around "
+             "without a supporting metric/baseline. Do not infer causes or rankings. "
+-            "Explain prior facts directly. Clarify ambiguous subjects. For mixed requests, "
++            "Explain prior facts directly. When the user explicitly corrects a subject and "
++            "says to answer the same question, use the immediately preceding question's "
++            "intent and constraints, changing only the corrected subject. "
++            "Clarify ambiguous subjects. For mixed requests, "
+             "answer the archive portion and briefly state the live-data gap. Scope is "
+             "backend-controlled. When no tool rounds remain, return an answer action."
+         )

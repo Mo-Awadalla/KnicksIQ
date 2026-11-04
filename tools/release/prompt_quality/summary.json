@@ -1,0 +1,190 @@
+{
+  "flow": "knicksiq-prompt-quality",
+  "goal": {
+    "target": "pass",
+    "direction": "higher",
+    "hold": [
+      "cost_usd"
+    ],
+    "directions": {}
+  },
+  "prices": {
+    "deepseek-v4.1-flash": {
+      "in": 0.15,
+      "out": 0.6
+    },
+    "glm-5.3-flash": {
+      "in": 0.15,
+      "out": 0.5
+    }
+  },
+  "reps": 5,
+  "split_seed": 1834539112,
+  "stop": {
+    "plateau": 3,
+    "rounds": 8
+  },
+  "best": {
+    "round": 0,
+    "variant": "baseline",
+    "test_score": 0.16
+  },
+  "rounds": [
+    {
+      "round": 0,
+      "variant": "baseline",
+      "change": "baseline",
+      "decision": "baseline",
+      "reasons": [
+        "test noise floor on pass: \u00b10.324"
+      ],
+      "train": {
+        "pass": {
+          "n": 10,
+          "mean": 0.3,
+          "half": 0.27185856616998477
+        },
+        "cost_usd": {
+          "n": 10,
+          "mean": 0.0032339960000000007,
+          "half": 0.0024927293767764117
+        }
+      },
+      "test": {
+        "pass": {
+          "n": 5,
+          "mean": 0.16,
+          "half": 0.32373444920181105
+        },
+        "cost_usd": {
+          "n": 5,
+          "mean": 0.0017310840000000001,
+          "half": 0.0006949813892591476
+        }
+      },
+      "errors": 2,
+      "truncated": 0,
+      "at": "2026-11-04T00:13:33.106Z"
+    },
+    {
+      "round": 1,
+      "variant": "v1",
+      "change": "Preserve prior question intent and constraints during explicit subject corrections.",
+      "decision": "revert",
+      "reasons": [
+        "no change outside noise vs baseline"
+      ],
+      "train": {
+        "pass": {
+          "n": 10,
+          "mean": 0.28,
+          "half": 0.254132677158999
+        },
+        "cost_usd": {
+          "n": 10,
+          "mean": 0.003458335,
+          "half": 0.002426363078280355
+        }
+      },
+      "test": {
+        "pass": {
+          "n": 5,
+          "mean": 0.24000000000000005,
+          "half": 0.44416
+        },
+        "cost_usd": {
+          "n": 5,
+          "mean": 0.0017043499999999999,
+          "half": 0.0008061384123035693
+        }
+      },
+      "errors": 12,
+      "truncated": 0,
+      "at": "2026-11-04T00:39:19.690Z"
+    },
+    {
+      "round": 2,
+      "variant": "v2",
+      "change": "Preserve requested comparisons, splits and windows instead of substituting a discovery example.",
+      "decision": "revert",
+      "reasons": [
+        "no change outside noise vs baseline"
+      ],
+      "train": {
+        "pass": {
+          "n": 10,
+          "mean": 0.27999999999999997,
+          "half": 0.2629287842743734
+        },
+        "cost_usd": {
+          "n": 10,
+          "mean": 0.0031275079999999998,
+          "half": 0.002030220211320214
+        }
+      },
+      "test": {
+        "pass": {
+          "n": 5,
+          "mean": 0.16,
+          "half": 0.32373444920181105
+        },
+        "cost_usd": {
+          "n": 5,
+          "mean": 0.001649502,
+          "half": 0.0005311337677815235
+        }
+      },
+      "errors": 3,
+      "truncated": 0,
+      "at": "2026-11-04T01:03:20.701Z"
+    },
+    {
+      "round": 3,
+      "variant": "v3",
+      "change": "Compress orchestration instructions to reduce input cost and preserve payload headroom.",
+      "decision": "revert",
+      "reasons": [
+        "no change outside noise vs baseline"
+      ],
+      "train": {
+        "pass": {
+          "n": 10,
+          "mean": 0.33999999999999997,
+          "half": 0.23410455441960115
+        },
+        "cost_usd": {
+          "n": 10,
+          "mean": 0.0022759290000000003,
+          "half": 0.0009916899147990239
+        }
+      },
+      "test": {
+        "pass": {
+          "n": 5,
+          "mean": 0.04,
+          "half": 0.11104
+        },
+        "cost_usd": {
+          "n": 5,
+          "mean": 0.0015519660000000001,
+          "half": 0.0007454596404977516
+        }
+      },
+      "errors": 2,
+      "truncated": 0,
+      "at": "2026-11-04T01:25:00.821Z"
+    }
+  ],
+  "status": "completed_at_plateau",
+  "approval_note": "Historical cases were human-approved. Original machine-bound ratchet approvals are not included or transferred to this portable package.",
+  "candidate_model": "deepseek-v4.1-flash",
+  "judge_model": "glm-5.3-flash",
+  "provider": "opencode-go",
+  "failure_taxonomy_counts": {
+    "artifact_gap": 0,
+    "grader": 0,
+    "harness": 0,
+    "structural": 31,
+    "variance": 2
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "train": [
+    "knicks-02",
+    "knicks-04",
+    "knicks-05",
+    "knicks-06",
+    "knicks-08",
+    "knicks-10",
+    "knicks-11",
+    "knicks-12",
+    "knicks-13",
+    "knicks-15"
+  ],
+  "test": [
+    "knicks-01",
+    "knicks-03",
+    "knicks-07",
+    "knicks-09",
+    "knicks-14"
+  ]
+}
