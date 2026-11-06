@@ -20,7 +20,8 @@ from app.core.db import AsyncSessionLocal
 from app.models.dataset_release import DatasetRelease
 from app.services.qdrant_client import get_qdrant_client, switch_aliases
 from app.services.release_evidence import sha256, validate_record
-from sqlalchemy import select, update
+from app.services.releases import activate_release
+from sqlalchemy import select
 
 
 def render_request(path: str, payload: dict | None = None) -> Any:
@@ -66,23 +67,13 @@ async def activate(version: str) -> None:
     async with AsyncSessionLocal() as db, db.begin():
         release = (
             await db.execute(
-                select(DatasetRelease)
-                .where(
+                select(DatasetRelease).where(
                     DatasetRelease.version == version,
                     DatasetRelease.validation_passed.is_(True),
                 )
-                .with_for_update()
             )
         ).scalar_one()
-        await db.execute(
-            update(DatasetRelease)
-            .where(
-                DatasetRelease.status == "active",
-                DatasetRelease.id != release.id,
-            )
-            .values(status="superseded")
-        )
-        release.status = "active"
+        await activate_release(db, release)
 
 
 def aliases() -> dict[str, str]:
@@ -121,7 +112,11 @@ def deploy(record: dict, save, request=render_request, wait=wait_deploy, smoke_c
     services = record["services"]
     rollback = record["rollback"]
     changed: list[str] = []
-    record["rollout"] = {"status": "starting", "restoration_failures": []}
+    record["rollout"] = {
+        "status": "starting",
+        "attempted_components": changed,
+        "restoration_failures": [],
+    }
     try:
         for name in ("api", "web"):
             changed.append(name)  # Record uncertain network outcomes before issuing mutations.

@@ -22,6 +22,28 @@ async def _query_evidence_analyst(
     request: Request,
     db: AsyncSession,
     background_tasks: BackgroundTasks,
+    *,
+    data_version: str,
+) -> AnalysisQueryResponse:
+    """Own the whole turn deadline without discarding known release authority."""
+    try:
+        async with asyncio.timeout(runtime.get_settings().analyst_deadline_seconds):
+            return await _execute_evidence_turn(req, request, db, background_tasks)
+    except TimeoutError:
+        return AnalysisQueryResponse(
+            answer="The archive could not be verified within this turn's deadline.",
+            citations=[],
+            degraded=True,
+            data_version=data_version,
+            session_status="retryable",
+        )
+
+
+async def _execute_evidence_turn(
+    req: AnalysisQueryRequest,
+    request: Request,
+    db: AsyncSession,
+    background_tasks: BackgroundTasks,
 ) -> AnalysisQueryResponse:
     from app.services.analyst_loop import AnalystLoop
     from app.services.analyst_sessions import SessionConflict, SessionTurn, SessionUnavailable
@@ -38,7 +60,10 @@ async def _query_evidence_analyst(
     ).scalar_one_or_none()
     if release is None:
         return AnalysisQueryResponse(
-            answer="No verified archive release is available.", citations=[], degraded=True
+            answer="No verified archive release is available.",
+            citations=[],
+            degraded=True,
+            session_status="unavailable",
         )
     if not req.turn_id:
         # Legacy clients get a factual response; they cannot supply authoritative state.
@@ -95,17 +120,20 @@ async def _query_evidence_analyst(
             response.session_expires_at = datetime.now(UTC) + timedelta(seconds=86_400)
             response.revision = turn.revision + 1
             response.state_committed = True
+            response.session_status = "committed"
             committed = await turn.commit(response.model_dump(mode="json"), state)
             if not committed:
                 response.session_token = None
                 response.session_expires_at = None
                 response.revision = None
                 response.state_committed = False
+                response.session_status = "retryable"
                 response.degraded = True
                 response.warnings.append(
                     "Conversation state could not be committed. Retry the same turn."
                 )
         else:
+            response.session_status = "unavailable"
             response.warnings.append(
                 "Stateless factual fallback: conversation storage unavailable."
             )
@@ -126,6 +154,7 @@ async def _query_evidence_analyst(
             citations=[],
             degraded=True,
             data_version=release.version,
+            session_status="retryable" if turn else "unavailable",
         )
     finally:
         if turn:

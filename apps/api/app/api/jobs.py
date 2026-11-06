@@ -17,7 +17,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.security import require_admin_api_key
-from app.core.db import AsyncSessionLocal, get_db
+from app.core.db import get_db
 from app.models.job import Job
 
 router = APIRouter(prefix="/jobs", tags=["jobs"])
@@ -50,20 +50,6 @@ class JobStatusResponse(BaseModel):
     started_at: datetime | None
     finished_at: datetime | None
     worker_name: str | None
-
-
-async def _create_job_row(job_id: str, job_type: str, payload: dict[str, Any]) -> None:
-    """Insert a Job row in 'queued' state so the API can read status back."""
-    async with AsyncSessionLocal() as db:
-        job = Job(
-            id=job_id,
-            job_type=job_type,
-            status="queued",
-            queue="default",
-            payload_json=json.dumps(payload),
-        )
-        db.add(job)
-        await db.commit()
 
 
 def _serialize(job: Job) -> JobStatusResponse:
@@ -101,9 +87,7 @@ async def trigger_ingest_games(
 
     season = body.season if body else None
     include_playoffs = body.include_playoffs if body else False
-    job_id = enqueue_ingest_games(season=season)
-    payload = {"season": season, "include_playoffs": include_playoffs}
-    await _create_job_row(job_id, "ingest_games", {k: v for k, v in payload.items() if v})
+    job_id = await enqueue_ingest_games(season=season, include_playoffs=include_playoffs)
     return JobAcceptedResponse(job_id=job_id, status="queued")
 
 
@@ -117,8 +101,7 @@ async def trigger_ingest_game_detail(game_id: int) -> JobAcceptedResponse:
     """Enqueue a job to (re)ingest play-by-play events for one game."""
     from worker_app.job_queue import enqueue_ingest_game_detail
 
-    job_id = enqueue_ingest_game_detail(game_db_id=game_id)
-    await _create_job_row(job_id, "ingest_game_detail", {"game_id": game_id})
+    job_id = await enqueue_ingest_game_detail(game_db_id=game_id)
     return JobAcceptedResponse(job_id=job_id, status="queued")
 
 

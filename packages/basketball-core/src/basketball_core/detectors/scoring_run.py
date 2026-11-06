@@ -126,9 +126,8 @@ def detect_scoring_runs(
                 )
             )
 
-        # Advance: skip past the terminator event too (if any). j
-        # points to the terminator, so +1 to scan from the next event.
-        i = j + 1
+        # The opponent's score or first score of a new period can start the next run.
+        i = j
 
     return [r for r in runs if r.score_delta > 0]
 

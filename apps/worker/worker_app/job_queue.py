@@ -12,12 +12,19 @@ for status, which keeps the read path free of Redis.
 
 from __future__ import annotations
 
+import asyncio
 import uuid
+from datetime import UTC, datetime
+from typing import Any
 
+from app.models.job import Job
 from redis import Redis
 from rq import Queue
+from sqlalchemy import update
 
 from worker_app.core.config import get_settings
+from worker_app.core.db import AsyncSessionLocal
+from worker_app.jobs import create_job
 
 _settings = get_settings()
 
@@ -31,37 +38,62 @@ def _get_queue() -> Queue:
     )
 
 
-def enqueue_ingest_games(season: str | None = None) -> str:
-    """Enqueue an ingest-games job. Returns the job_id."""
+async def _enqueue(
+    job_type: str, target: str, arguments: dict[str, Any], payload: dict[str, Any]
+) -> str:
     job_id = uuid.uuid4().hex
-    queue = _get_queue()
-    queue.enqueue(
+    async with AsyncSessionLocal() as db:
+        await create_job(
+            db, job_id=job_id, job_type=job_type, payload=payload, queue=_settings.default_queue
+        )
+    try:
+        await asyncio.to_thread(
+            _get_queue().enqueue,
+            target,
+            kwargs={"job_id": job_id, **arguments},
+            job_id=f"{job_type}-{job_id}",
+        )
+    except Exception as exc:
+        # Publication may have succeeded before a transport error. Never overwrite
+        # a worker that has already claimed or completed the job.
+        async with AsyncSessionLocal() as db:
+            await db.execute(
+                update(Job)
+                .where(Job.id == job_id, Job.status == "queued")
+                .values(
+                    status="failed",
+                    finished_at=datetime.now(UTC),
+                    error_message=f"Queue publication failed: {type(exc).__name__}",
+                )
+            )
+            await db.commit()
+        raise
+    return job_id
+
+
+async def enqueue_ingest_games(season: str | None = None, *, include_playoffs: bool = False) -> str:
+    arguments = {"season": season, "include_playoffs": include_playoffs}
+    return await _enqueue(
+        "ingest_games",
         "worker_app.jobs.ingest_games.ingest_games",
-        kwargs={"job_id": job_id, "season": season},
-        job_id=f"ingest_games-{job_id}",
+        arguments,
+        {key: value for key, value in arguments.items() if value is not None},
     )
-    return job_id
 
 
-def enqueue_ingest_game_detail(game_db_id: int) -> str:
-    """Enqueue an ingest-game-detail job. Returns the job_id."""
-    job_id = uuid.uuid4().hex
-    queue = _get_queue()
-    queue.enqueue(
+async def enqueue_ingest_game_detail(game_db_id: int) -> str:
+    return await _enqueue(
+        "ingest_game_detail",
         "worker_app.jobs.ingest_game_detail.ingest_game_detail",
-        kwargs={"job_id": job_id, "game_db_id": game_db_id},
-        job_id=f"ingest_game_detail-{job_id}",
+        {"game_db_id": game_db_id},
+        {"game_id": game_db_id},
     )
-    return job_id
 
 
-def enqueue_detect_runs(game_db_id: int) -> str:
-    """Enqueue a job to run scoring-run + bad-stretch detection on a game."""
-    job_id = uuid.uuid4().hex
-    queue = _get_queue()
-    queue.enqueue(
+async def enqueue_detect_runs(game_db_id: int) -> str:
+    return await _enqueue(
+        "detect_runs",
         "worker_app.jobs.detect_runs.detect_game_features",
-        kwargs={"job_id": job_id, "game_db_id": game_db_id},
-        job_id=f"detect_runs-{job_id}",
+        {"game_db_id": game_db_id},
+        {"game_id": game_db_id},
     )
-    return job_id

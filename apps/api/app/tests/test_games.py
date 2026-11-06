@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from datetime import date
-from unittest.mock import patch
 
 from app.core.db import AsyncSessionLocal
 from app.models.bad_stretch import BadStretch
@@ -156,17 +155,6 @@ async def test_get_bad_stretches(client):
             "opponent_fast_breaks": 2,
         }
     ]
-
-
-async def test_detect_runs_endpoint_returns_202(client):
-    """POST /games/{id}/detect-runs enqueues a detection job."""
-    with patch("worker_app.job_queue.enqueue_detect_runs", return_value="detect123"):
-        r = await client.post("/games/1/detect-runs")
-    assert r.status_code == 202
-    assert r.json()["job_id"] == "detect123"
-    job = (await client.get("/jobs/detect123")).json()
-    assert job["job_type"] == "detect_runs"
-    assert job["payload"] == {"game_id": 1}
 
 
 async def test_play_by_play_carries_placeholder_scores_across_periods_without_writes(client):

@@ -6,7 +6,7 @@ import gzip
 import hashlib
 import json
 from dataclasses import dataclass
-from datetime import UTC, date, datetime
+from datetime import date, datetime
 from pathlib import Path
 from typing import Any
 
@@ -18,8 +18,9 @@ from app.models.generated_stat_fact import GeneratedStatFact
 from app.models.player import Player
 from app.models.report import Report
 from app.models.team import Team
+from app.services.releases import activate_release
 from basketball_core.analytics import FactCandidate, build_fact_catalog, fact_fingerprint
-from sqlalchemy import select, update
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 
@@ -342,14 +343,7 @@ async def load_release_bundle(
         if existing.manifest_sha256 != bundle["bundle_sha256"]:
             raise ReleaseValidationError("Version already exists with a different manifest")
         if activate and existing.status != "active":
-            await db.execute(
-                update(DatasetRelease)
-                .where(DatasetRelease.status == "active")
-                .where(DatasetRelease.id != existing.id)
-                .values(status="superseded")
-            )
-            existing.status = "active"
-            existing.activated_at = datetime.now(UTC)
+            await activate_release(db, existing)
             await db.commit()
         return ReleaseLoadResult(
             existing.id, existing.version, False, existing.status == "active", validation["games"]
@@ -435,12 +429,6 @@ async def load_release_bundle(
         db.add(GeneratedStatFact(**row))
 
     if activate:
-        await db.execute(
-            update(DatasetRelease)
-            .where(DatasetRelease.status == "active")
-            .values(status="superseded")
-        )
-        release.status = "active"
-        release.activated_at = datetime.now(UTC)
+        await activate_release(db, release)
     await db.commit()
     return ReleaseLoadResult(release.id, release.version, True, activate, len(games))

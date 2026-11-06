@@ -37,6 +37,7 @@ async def test_route_commits_replays_and_ignores_client_authority(client, local_
     assert first.status_code == 200
     response = first.json()
     assert response["state_committed"] and response["revision"] == 1
+    assert response["session_status"] == "committed"
     assert response["llm_validated"]
     replay = await client.post("/analysis/query", json=request)
     assert replay.json() == response
@@ -74,7 +75,7 @@ async def test_redis_failure_gives_explicit_stateless_facts(client, monkeypatch)
     ).json()
     assert not response["state_committed"] and response["session_token"] is None
     assert not response["llm_validated"] and response["citations"]
-    assert any("Stateless" in warning for warning in response["warnings"])
+    assert response["session_status"] == "unavailable"
 
 
 async def test_six_turn_conversation_protocol(client, local_redis, monkeypatch):
@@ -144,3 +145,37 @@ async def test_six_turn_conversation_protocol(client, local_redis, monkeypatch):
     assert "does not prove" in outputs[4]["answer"]
     assert "don't have live injury" in outputs[5]["answer"]
     assert outputs[5]["citations"]
+
+
+async def test_commit_deadline_preserves_release_authority_for_retry(
+    client, local_redis, monkeypatch
+):
+    import asyncio
+
+    from app.core.db import AsyncSessionLocal
+
+    settings = get_settings()
+    monkeypatch.setattr(settings, "analyst_evidence_loop_enabled", True)
+    monkeypatch.setattr(settings, "analysis_answer_mode", "deterministic")
+    monkeypatch.setattr(settings, "analyst_deadline_seconds", 0.1)
+    async with AsyncSessionLocal() as db:
+        await _seed_release_stats(db)
+
+    async def stalled_commit(*args):
+        await asyncio.sleep(10)
+        return False
+
+    monkeypatch.setattr(analyst_sessions.SessionTurn, "commit", stalled_commit)
+    response = await client.post(
+        "/analysis/query",
+        json={
+            "question": "How many points did Jalen Brunson average?",
+            "turn_id": "deadline-release-authority",
+        },
+    )
+    assert response.status_code == 200
+    body = response.json()
+    assert body["session_status"] == "retryable"
+    assert body["data_version"] == "analytics-test"
+    assert body["state_committed"] is False
+    assert body["revision"] is None

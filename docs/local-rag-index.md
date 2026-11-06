@@ -28,12 +28,16 @@ uv run --package knicksiq-worker knicksiq-build-rag-index \
 ```
 
 The release build creates immutable physical collections for game summaries,
-box-score facts, reviewed reports, and possessions. It validates every point
-count before promoting all stable aliases in one operation. Each collection
-also receives payload indexes for every supported release/date/team/player/
-period filter, which Qdrant Cloud requires for filtered queries. Possession
-summaries are deterministic and provider-free; this command never calls
-OpenRouter.
+box-score facts, reviewed reports, and possessions. It validates counts and release
+isolation, then writes `candidate_aliases` to the manifest; it does not promote them.
+The coordinated release operation promotes aliases separately. Promotion refuses
+missing targets and collisions with physical collection names without deleting data.
+Migrate legacy names through an explicit maintenance operation first.
+
+Each collection receives payload indexes for every supported release/date/team/
+player/period filter, which Qdrant Cloud requires for filtered queries. Possession
+summaries are deterministic and provider-free; this command never calls OpenRouter.
+Rebuild candidates after changing possession boundaries or merged-window metadata.
 
 `RAG_EMBEDDING_DEVICE=cpu` is a useful override on Apple Silicon when MPS is
 slower for this compact model. An optional paid deployment can use Qdrant Cloud Inference instead of

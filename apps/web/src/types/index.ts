@@ -263,6 +263,7 @@ export interface AnalysisResponse {
   follow_up_questions?: string[]
   revision?: number | null
   state_committed?: boolean
+  session_status?: 'committed' | 'retryable' | 'unavailable' | null
   llm_validated?: boolean
   answer: string
   route?: string | null

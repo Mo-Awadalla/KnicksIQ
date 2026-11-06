@@ -223,6 +223,67 @@ def test_offensive_rebound_continues_sequence_and_review_is_honestly_labeled():
     assert chunks[0].metadata["possession_result"] is None
 
 
+def test_missed_free_throw_offensive_rebound_keeps_the_possession_open():
+    chunks = build_possession_chunks(
+        _game(),
+        [
+            _event(
+                sequence=1, team_id="NYK", event_type="free_throw", description="misses free throw"
+            ),
+            _event(
+                id=2,
+                sequence=2,
+                team_id="NYK",
+                event_type="rebound",
+                description="offensive rebound",
+            ),
+            _event(id=3, sequence=3, team_id="NYK", event_type="made_shot", home_score=2),
+        ],
+    )
+    assert [[row["sequence"] for row in chunk.rows] for chunk in chunks] == [[1, 2, 3]]
+    assert chunks[0].metadata["possession_result"] == "made_shot"
+
+
+def test_period_end_closes_the_current_possession_without_an_orphan_window():
+    chunks = build_possession_chunks(
+        _game(),
+        [
+            _event(sequence=1, team_id="NYK", event_type="made_shot", home_score=2),
+            _event(id=2, sequence=2, event_type="period_end", clock="0:00", home_score=2),
+        ],
+    )
+    assert [[row["sequence"] for row in chunk.rows] for chunk in chunks] == [[1, 2]]
+    assert chunks[0].metadata["end_clock"] == "0:00"
+
+
+def test_expanded_window_metadata_describes_every_member():
+    chunks = build_possession_chunks(
+        _game(),
+        [
+            _event(
+                sequence=1,
+                team_id="NYK",
+                player_id=1,
+                player_name="Brunson",
+                event_type="made_shot",
+            ),
+            _event(
+                id=2,
+                sequence=2,
+                team_id="TOR",
+                player_id=2,
+                player_name="Barnes",
+                event_type="turnover",
+            ),
+        ],
+    )
+    window = expand_neighboring_sequences([chunks[0]], chunks)[0]
+    assert window.metadata["player_ids"] == [1, 2]
+    assert window.metadata["player_names"] == ["Barnes", "Brunson"]
+    assert window.metadata["team_ids"] == ["NYK", "TOR"]
+    assert window.metadata["normalized_event_types"] == ["made_shot", "turnover"]
+
+
 def test_neighbor_expansion_happens_after_selection_and_merges_overlap():
     chunks = build_possession_chunks(
         _game(),

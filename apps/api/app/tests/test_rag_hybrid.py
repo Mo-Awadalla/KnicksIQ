@@ -13,7 +13,6 @@ from app.services.qdrant_client import (
     get_qdrant_client,
     qdrant_point_id,
     search_collection_batch,
-    switch_aliases,
     upsert_points,
 )
 from app.services.rag import search_possession_chunks
@@ -250,35 +249,6 @@ def test_qdrant_collection_queries_are_batched_per_collection():
     assert len(calls) == 1
     assert len(calls[0][1]) == 2
     assert [[item.id for item in ranking] for ranking in results] == [["1"], ["2"]]
-
-
-def test_release_aliases_promote_in_one_atomic_request(monkeypatch):
-    monkeypatch.setitem(sys.modules, "qdrant_client", SimpleNamespace(models=_FakeModels))
-    client = _FakeQdrantClient()
-
-    switch_aliases(
-        {
-            "knicks_games": "knicks_games__v1",
-            "knicks_reports": "knicks_reports__v1",
-            "knicks_possessions": "knicks_possessions__v1",
-        },
-        client=client,
-    )
-
-    assert len(client.alias_updates) == 1
-    assert client.deleted == ["knicks_games"]
-    operations = client.alias_updates[0]
-    assert len(operations) == 4  # one delete plus three creates
-    created = {
-        operation.create_alias.alias_name: operation.create_alias.collection_name
-        for operation in operations
-        if hasattr(operation, "create_alias")
-    }
-    assert created == {
-        "knicks_games": "knicks_games__v1",
-        "knicks_possessions": "knicks_possessions__v1",
-        "knicks_reports": "knicks_reports__v1",
-    }
 
 
 def test_rrf_ordering_is_deterministic_for_ties():

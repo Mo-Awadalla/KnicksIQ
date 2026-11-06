@@ -17,6 +17,10 @@ type Turn = {
   expected_revision: number
   session_token?: string
 }
+type TurnState =
+  | { status: 'idle' }
+  | { status: 'pending'; request: Turn }
+  | { status: 'retryable'; request: Turn; error?: string }
 type Conflict = { code: string; current_revision?: number }
 function conflictOf(error: unknown): Conflict | undefined {
   if (!isAxiosError(error) || error.response?.status !== 409) return undefined
@@ -45,11 +49,17 @@ type Chat = {
   sessionToken?: string
   revision: number
   expiresAt?: string
-  retry?: Turn
-  pending: boolean
-  error?: string
+  turn: TurnState
   notice?: string
   generation: number
+}
+type ChatSnapshot = Omit<Chat, 'turn' | 'generation' | 'notice'> & {
+  schema: number
+  retry?: Turn
+  interrupted?: boolean
+}
+function activeTurn(state: Chat): Turn | undefined {
+  return state.turn.status === 'idle' ? undefined : state.turn.request
 }
 const conversationStorageName = 'knicksiq-conversation-v1'
 const fresh = (): Chat => ({
@@ -57,7 +67,7 @@ const fresh = (): Chat => ({
   activeStart: 0,
   question: '',
   revision: 0,
-  pending: false,
+  turn: { status: 'idle' },
   generation: 0,
 })
 let chat = fresh()
@@ -77,7 +87,8 @@ function save() {
         sessionToken: chat.sessionToken,
         revision: chat.revision,
         expiresAt: chat.expiresAt,
-        retry: chat.retry,
+        retry: activeTurn(chat),
+        interrupted: chat.turn.status === 'pending',
       })
     )
   } catch {
@@ -116,10 +127,8 @@ function boundary(message: string, retry?: Turn) {
     sessionToken: undefined,
     revision: 0,
     expiresAt: undefined,
-    retry,
-    pending: false,
+    turn: retry ? { status: 'retryable', request: retry } : { status: 'idle' },
     generation: chat.generation + 1,
-    error: undefined,
     notice: undefined,
   })
 }
@@ -127,7 +136,7 @@ function restore() {
   try {
     const raw = sessionStorage.getItem(conversationStorageName)
     if (!raw) return
-    const value = JSON.parse(raw) as Partial<Chat> & { schema?: number }
+    const value = JSON.parse(raw) as Partial<ChatSnapshot>
     if (
       value.schema !== 1 ||
       !Array.isArray(value.messages) ||
@@ -139,6 +148,8 @@ function restore() {
       !Number.isInteger(value.revision) ||
       value.revision < 0 ||
       typeof value.question !== 'string' ||
+      (value.interrupted !== undefined &&
+        typeof value.interrupted !== 'boolean') ||
       (value.version !== undefined && typeof value.version !== 'string') ||
       (value.sessionToken !== undefined &&
         (typeof value.sessionToken !== 'string' ||
@@ -169,18 +180,28 @@ function restore() {
       throw new Error('Invalid conversation snapshot')
     }
     chat = {
-      ...fresh(),
-      ...value,
-      pending: false,
+      messages: value.messages,
+      activeStart: value.activeStart,
+      version: value.version,
+      sessionToken: value.sessionToken,
+      revision: value.revision,
+      expiresAt: value.expiresAt,
+      turn: value.retry
+        ? { status: 'retryable', request: value.retry }
+        : { status: 'idle' },
       generation: 0,
-      question: value.retry?.question ?? value.question ?? '',
+      question:
+        value.question ||
+        (value.interrupted !== false ? value.retry?.question : '') ||
+        '',
       notice: value.retry
         ? 'A question was interrupted. Retry it when ready.'
         : undefined,
     }
     if (chat.expiresAt && Date.parse(chat.expiresAt) <= Date.now()) {
-      const retry = chat.retry && {
-        ...chat.retry,
+      const previous = activeTurn(chat)
+      const retry = previous && {
+        ...previous,
         context: [],
         expected_revision: 0,
         session_token: undefined,
@@ -213,39 +234,51 @@ export function useAnalyst() {
   }, [attempt])
   const readiness = useQuery({
     queryKey: ['analyst-readiness', attempt],
-    queryFn: async () => {
-      let timer: ReturnType<typeof setTimeout> | undefined
-      const [status, games] = await Promise.race([
-        Promise.all([
-          fetchArchiveStatus(),
-          fetchGames({ season: '2025-26', teamId: 'NYK', limit: 1 }),
-        ]),
-        new Promise<never>((_, reject) => {
-          timer = setTimeout(
-            () => reject(new Error('Readiness deadline exceeded')),
-            60000
-          )
-        }),
-      ]).finally(() => clearTimeout(timer))
-      if (!status.games || !games.length) throw new Error('Archive unavailable')
-      if (chat.version && chat.version !== status.data_version) {
-        boundary(
-          'Archive updated. Previous messages are history; this is a new conversation.',
-          chat.retry && {
-            ...chat.retry,
-            context: [],
-            expected_revision: 0,
-            session_token: undefined,
-          }
-        )
+    queryFn: async ({ signal }) => {
+      const deadline = new AbortController()
+      const timer = setTimeout(
+        () => deadline.abort(new Error('Readiness deadline exceeded')),
+        60000
+      )
+      const requestSignal = AbortSignal.any([signal, deadline.signal])
+      try {
+        const [status, games] = await Promise.all([
+          fetchArchiveStatus(undefined, requestSignal),
+          fetchGames(
+            { season: '2025-26', teamId: 'NYK', limit: 1 },
+            requestSignal
+          ),
+        ])
+        if (!status.games || !games.length)
+          throw new Error('Archive unavailable')
+        return status
+      } finally {
+        clearTimeout(timer)
+        deadline.abort()
       }
-      change({ version: status.data_version })
-      return status
     },
     retry: false,
     refetchOnWindowFocus: false,
   })
   const archiveReady = readiness.isSuccess && !readiness.isFetching
+  useEffect(() => {
+    const status = readiness.data
+    if (!archiveReady || !status || chat.version === status.data_version) return
+    // Only the currently observed check may change conversation authority.
+    if (chat.version) {
+      const previous = activeTurn(chat)
+      boundary(
+        'Archive updated. Previous messages are history; this is a new conversation.',
+        previous && {
+          ...previous,
+          context: [],
+          expected_revision: 0,
+          session_token: undefined,
+        }
+      )
+    }
+    change({ version: status.data_version })
+  }, [archiveReady, readiness.data])
   const retryReadiness = () => {
     setSlow(false)
     setAttempt((value) => value + 1)
@@ -264,11 +297,12 @@ export function useAnalyst() {
   }
   const submit = (value = chat.question) => {
     const question = value.trim()
-    if (!archiveReady || chat.pending || !question) return
+    if (!archiveReady || chat.turn.status === 'pending' || !question) return
     if (chat.expiresAt && Date.parse(chat.expiresAt) <= Date.now()) {
       boundary('Session expired. Start a new conversation from here.')
     }
-    const retry = chat.retry?.question === question ? chat.retry : undefined
+    const previous = activeTurn(chat)
+    const retry = previous?.question === question ? previous : undefined
     const context = recentContext(
       chat.messages
         .slice(chat.activeStart)
@@ -302,9 +336,7 @@ export function useAnalyst() {
     change({
       messages,
       question: '',
-      retry: turn,
-      pending: true,
-      error: undefined,
+      turn: { status: 'pending', request: turn },
       notice: undefined,
     })
     void askAnalyst(
@@ -322,19 +354,23 @@ export function useAnalyst() {
           response.data_version &&
           response.data_version !== chat.version
         ) {
+          const restart = {
+            ...turn,
+            context: [],
+            expected_revision: 0,
+            session_token: undefined,
+          }
           boundary(
             'Archive updated. Previous messages are history; this is a new conversation.',
-            {
-              ...turn,
-              context: [],
-              expected_revision: 0,
-              session_token: undefined,
-            }
+            restart
           )
           change({
             version: response.data_version,
-            pending: false,
-            error: 'The archive changed. Edit or retry your question.',
+            turn: {
+              status: 'retryable',
+              request: restart,
+              error: 'The archive changed. Edit or retry your question.',
+            },
           })
           void queryClient.invalidateQueries({
             queryKey: ['analyst-readiness'],
@@ -345,12 +381,8 @@ export function useAnalyst() {
           response.state_committed &&
           response.session_token &&
           response.revision != null
-        const failedCommit = response.warnings.some((warning) =>
-          warning.includes('could not be committed')
-        )
-        const stateless = response.warnings.some((warning) =>
-          warning.includes('Stateless factual fallback')
-        )
+        const failedCommit = response.session_status === 'retryable'
+        const stateless = response.session_status === 'unavailable'
         const updated = [
           ...chat.messages.filter(
             (message) => message.id !== `${turn.turn_id}:answer`
@@ -364,16 +396,18 @@ export function useAnalyst() {
         ]
         change({
           messages: updated,
-          pending: false,
-          retry: failedCommit ? turn : undefined,
+          turn: failedCommit
+            ? {
+                status: 'retryable',
+                request: turn,
+                error: 'Conversation state was not saved. Retry this question.',
+              }
+            : { status: 'idle' },
           sessionToken: committed ? response.session_token! : chat.sessionToken,
           revision: committed ? response.revision! : chat.revision,
           expiresAt: committed
             ? (response.session_expires_at ?? undefined)
             : chat.expiresAt,
-          error: failedCommit
-            ? 'Conversation state was not saved. Retry this question.'
-            : undefined,
         })
         if (stateless) {
           boundary(
@@ -384,7 +418,7 @@ export function useAnalyst() {
         requestAnimationFrame(() => {
           if (
             generation !== chat.generation ||
-            chat.pending ||
+            chat.turn.status === 'pending' ||
             chat.question.trim() ||
             document.activeElement !== focusAtResponse
           )
@@ -399,64 +433,72 @@ export function useAnalyst() {
         if (generation !== chat.generation || signal.aborted) return
         const conflict = conflictOf(error)
         if (conflict?.code === 'session_expired') {
-          boundary('Session expired. Previous messages remain readable.', {
+          const restart = {
             ...turn,
             context: [],
             expected_revision: 0,
             session_token: undefined,
-          })
+          }
+          boundary(
+            'Session expired. Previous messages remain readable.',
+            restart
+          )
           change({
-            pending: false,
             question: turn.question,
-            error: 'Your question is ready to retry or edit.',
+            turn: {
+              status: 'retryable',
+              request: restart,
+              error: 'Your question is ready to retry or edit.',
+            },
           })
           return
         }
+        let retry = turn
         if (
           conflict?.code === 'revision_conflict' &&
           conflict.current_revision !== undefined
         ) {
-          change({
-            revision: conflict.current_revision,
-            retry: { ...turn, expected_revision: conflict.current_revision },
-          })
+          retry = { ...turn, expected_revision: conflict.current_revision }
+          change({ revision: conflict.current_revision })
         } else if (conflict?.code === 'turn_id_reused') {
-          change({
-            retry: {
-              question: turn.question,
-              context: turn.context,
-              turn_id: crypto.randomUUID(),
-              expected_revision: chat.revision,
-              session_token: chat.sessionToken,
-            },
-          })
+          retry = {
+            question: turn.question,
+            context: turn.context,
+            turn_id: crypto.randomUUID(),
+            expected_revision: chat.revision,
+            session_token: chat.sessionToken,
+          }
         }
         // turn_in_progress leaves the identical request replayable through UI retry.
         change({
-          pending: false,
-          error: navigator.onLine
-            ? 'The analyst could not answer that request. Retry your question.'
-            : 'You are offline. Reconnect and retry your question.',
+          turn: {
+            status: 'retryable',
+            request: retry,
+            error: navigator.onLine
+              ? 'The analyst could not answer that request. Retry your question.'
+              : 'You are offline. Reconnect and retry your question.',
+          },
         })
       })
   }
   const retry = () => {
-    if (chat.retry) submit(chat.retry.question)
+    const previous = activeTurn(chat)
+    if (previous) submit(previous.question)
   }
   return {
     question: state.question,
     setQuestion,
     messages: state.messages,
     analyst: {
-      error: state.error,
-      isPending: state.pending,
+      error: state.turn.status === 'retryable' ? state.turn.error : undefined,
+      isPending: state.turn.status === 'pending',
       isSuccess: !!state.messages[state.messages.length - 1]?.response,
     },
     submit,
     retry,
     newChat,
     notice: state.notice,
-    retryQuestion: state.retry?.question,
+    retryQuestion: activeTurn(state)?.question,
     archiveReady,
     archiveFailed: readiness.isError,
     archiveChecking: !archiveReady && !readiness.isError,

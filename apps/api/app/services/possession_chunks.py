@@ -195,8 +195,10 @@ def build_possession_chunks(
             flush()
         current_period = event.period
         description = str(event.description or "").lower()
-        continuation = event.event_type in {"free_throw", "foul", *_ADMINISTRATIVE_TYPES} or any(
-            term in description for term in ("review", "overturn", "technical", "flagrant")
+        continuation = (
+            event.event_type in {"free_throw", "foul", "period_end", *_ADMINISTRATIVE_TYPES}
+            or (event.event_type == "rebound" and possession_result == "free_throws")
+            or any(term in description for term in ("review", "overturn", "technical", "flagrant"))
         )
         if pending_end and not continuation:
             flush()
@@ -291,6 +293,12 @@ def expand_neighboring_sequences(
             first, last = members[0], members[-1]
             metadata = {
                 **first.metadata,
+                **{
+                    key: sorted(
+                        {value for member in members for value in member.metadata.get(key, [])}
+                    )
+                    for key in ("player_ids", "player_names", "team_ids", "normalized_event_types")
+                },
                 "end_period": last.metadata["end_period"],
                 "end_clock": last.metadata["end_clock"],
                 "score_after": last.metadata["score_after"],
