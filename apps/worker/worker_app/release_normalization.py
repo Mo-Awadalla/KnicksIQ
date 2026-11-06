@@ -171,22 +171,40 @@ def complete_overtime_period_scores(
         game.home_team_id: game.home_score,
         game.away_team_id: game.away_score,
     }
-    totals = {
+    reported_totals = {
         team_id: sum(row["points"] for row in rows if row["team_id"] == team_id)
         for team_id in expected
     }
-    if totals == expected:
+    if reported_totals == expected:
         return rows
-    max_period = max((int(row["period"]) for row in event_rows), default=4)
+    existing = {(row["team_id"], int(row["period"])): row["points"] for row in rows}
+    # Advance from regulation, adding each known or recovered period exactly once.
+    totals = {
+        team_id: sum(
+            points for (team, period), points in existing.items() if team == team_id and period <= 4
+        )
+        for team_id in expected
+    }
+    max_period = max(
+        max((int(row["period"]) for row in event_rows), default=4),
+        max((int(row["period"]) for row in rows), default=4),
+    )
     for period in range(5, max_period + 1):
         period_events = [row for row in event_rows if int(row["period"]) == period]
-        if not period_events:
-            continue
         cumulative = {
-            game.home_team_id: max(int(row.get("home_score") or 0) for row in period_events),
-            game.away_team_id: max(int(row.get("away_score") or 0) for row in period_events),
+            game.home_team_id: max(
+                (int(row.get("home_score") or 0) for row in period_events), default=0
+            ),
+            game.away_team_id: max(
+                (int(row.get("away_score") or 0) for row in period_events), default=0
+            ),
         }
         for team_id in expected:
+            if (team_id, period) in existing:
+                totals[team_id] += existing[team_id, period]
+                continue
+            if not period_events:
+                continue
             points = cumulative[team_id] - totals[team_id]
             if points < 0:
                 raise ValueError(f"{game.nba_game_id}: invalid cumulative overtime score")

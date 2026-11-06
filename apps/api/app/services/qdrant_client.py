@@ -258,9 +258,11 @@ def is_qdrant_healthy(client: Any | None = None) -> bool:
     except Exception:
         result = False
     with _health_lock:
-        _health_result = result
-        _health_checked_at = time.monotonic()
-        _health_future = None
+        # A slower waiter for an old probe must not clear a newer probe's slot.
+        if _health_future is future:
+            _health_result = result
+            _health_checked_at = time.monotonic()
+            _health_future = None
     return result
 
 
@@ -496,13 +498,15 @@ def switch_aliases(aliases: dict[str, str], *, client: Any | None = None) -> Non
     resolved: Any = client or get_qdrant_client()
     existing = {item.alias_name for item in resolved.get_aliases().aliases}
     collections = {item.name for item in resolved.get_collections().collections}
-    # Older deployments wrote directly to stable collection names. Once every
-    # versioned replacement has been built and validated, remove those legacy
-    # collections so the same stable names can become aliases. Qdrant remains
-    # optional during this one-time migration and SQL/lexical retrieval stays up.
-    for alias, collection_name in aliases.items():
-        if alias in collections and alias != collection_name:
-            resolved.delete_collection(collection_name=alias)
+    missing = set(aliases.values()) - collections
+    if missing:
+        raise ValueError(f"Missing alias targets: {', '.join(sorted(missing))}")
+    collisions = set(aliases) & collections
+    if collisions:
+        raise ValueError(
+            "Alias names conflict with physical collections; migrate them offline: "
+            + ", ".join(sorted(collisions))
+        )
     operations: list[Any] = []
     for alias, collection_name in sorted(aliases.items()):
         if alias in existing:

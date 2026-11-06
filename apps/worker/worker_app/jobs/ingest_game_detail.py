@@ -12,9 +12,11 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
+from app.models.bad_stretch import BadStretch
 from app.models.game import Game
 from app.models.game_event import GameEvent
 from app.models.player import Player
+from app.models.scoring_run import ScoringRun
 from app.services.rag import upsert_game_documents
 from basketball_core.parsers.play_by_play import parse_events
 from sqlalchemy import delete, select
@@ -77,7 +79,7 @@ async def ingest_game_detail(
     async with AsyncSessionLocal() as db:
         await mark_started(db, job_id, _worker_name())
         try:
-            game = await db.get(Game, game_db_id)
+            game = await db.get(Game, game_db_id, with_for_update=True)
             if not game:
                 raise ValueError(f"Game {game_db_id} not found")
 
@@ -89,7 +91,10 @@ async def ingest_game_detail(
             raw_events: list[dict[str, Any]] = raw.get("events", [])
             player_id_map = await _build_player_id_map(db, raw_events)
 
-            # Wipe and re-insert events. Cheap and avoids dedup logic.
+            # Replacement invalidates selections derived from the previous event stream.
+            # The game lock also serializes replacement with feature detection.
+            await db.execute(delete(ScoringRun).where(ScoringRun.game_id == game.id))
+            await db.execute(delete(BadStretch).where(BadStretch.game_id == game.id))
             await db.execute(delete(GameEvent).where(GameEvent.game_id == game.id))
 
             events = parse_events(game.id, raw_events)

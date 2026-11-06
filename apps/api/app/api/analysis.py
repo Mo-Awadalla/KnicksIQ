@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import asyncio
 import time
 from typing import Annotated, Any
 
@@ -92,9 +91,10 @@ async def query_analysis(
         AnalysisContextMessage.model_validate(item) for item in bounded_history(req.context)
     ]
     redis_degraded = await _rate_limit(request)
+    data_version = await _active_data_version(db)
     response_metadata = {
         "request_id": getattr(request.state, "request_id", ""),
-        "data_version": await _active_data_version(db),
+        "data_version": data_version,
         "degraded": redis_degraded,
     }
     question = req.question.strip()
@@ -110,15 +110,9 @@ async def query_analysis(
             tool_calls=[],
         )
     if getattr(settings, "analyst_evidence_loop_enabled", False):
-        try:
-            async with asyncio.timeout(settings.analyst_deadline_seconds):
-                return await _query_evidence_analyst(req, request, db, background_tasks)
-        except TimeoutError:
-            return AnalysisQueryResponse(
-                answer="The archive could not be verified within this turn's deadline.",
-                citations=[],
-                degraded=True,
-            )
+        return await _query_evidence_analyst(
+            req, request, db, background_tasks, data_version=data_version
+        )
     structured_conversation_enabled = getattr(
         settings,
         "rag_structured_conversation_state_enabled",

@@ -211,8 +211,8 @@ test('stateless reply remains readable without carrying its session context', as
     return route.fulfill({ json: {
       answer: `Answer ${contexts.length}`, citations: [], refused: false,
       degraded: true, data_version: 'parity.1',
-      warnings: contexts.length === 1
-        ? ['Stateless factual fallback: conversation storage unavailable.'] : [],
+      session_status: contexts.length === 1 ? 'unavailable' : null,
+      warnings: contexts.length === 1 ? ['Conversation storage is offline.'] : [],
     } })
   })
   await page.goto('/analyst')

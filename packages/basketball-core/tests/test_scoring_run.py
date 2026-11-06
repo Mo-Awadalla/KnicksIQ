@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import pytest
 from basketball_core.detectors.scoring_run import (
     ScoringRunConfig,
     detect_knicks_runs,
@@ -125,3 +126,21 @@ def test_custom_threshold():
     runs = detect_knicks_runs(events, cfg)
     assert len(runs) == 1
     assert runs[0].score_delta == 4
+
+
+@pytest.mark.parametrize(("next_team", "next_period"), [("BOS", 1), ("NYK", 2)])
+def test_run_terminator_is_reconsidered_as_the_next_run_start(next_team, next_period):
+    events = [
+        make_event(sequence, 1, "10:00", "NYK", EventType.MADE_SHOT, points=2)
+        for sequence in range(1, 4)
+    ] + [
+        make_event(sequence, next_period, "9:00", next_team, EventType.MADE_SHOT, points=2)
+        for sequence in range(4, 7)
+    ]
+    runs = detect_scoring_runs(events)
+    assert [
+        (run.team_id, run.start_sequence, run.end_sequence, run.points_for) for run in runs
+    ] == [
+        ("NYK", 1, 3, 6),
+        (next_team, 4, 6, 6),
+    ]

@@ -584,3 +584,32 @@ def test_parse_nba_game_date() -> None:
 
     assert parse_nba_game_date("OCT 22, 2024") == date(2024, 10, 22)
     assert parse_nba_game_date("APR 13, 2025") == date(2025, 4, 13)
+
+
+@responses.activate
+def test_every_retry_obeys_the_request_rate_window(data_source, fast_settings, monkeypatch):
+    from worker_app.adapters import nba_api_source
+
+    fast_settings.rate_remaining_per_minutes = 1
+    now = [0.0]
+    attempted_at = []
+    monkeypatch.setattr(nba_api_source.time, "monotonic", lambda: now[0])
+    monkeypatch.setattr(
+        nba_api_source.time, "sleep", lambda seconds: now.__setitem__(0, now[0] + seconds)
+    )
+
+    def response(request):
+        attempted_at.append(now[0])
+        if len(attempted_at) < 3:
+            return 503, {}, "temporarily unavailable"
+        return (
+            200,
+            {"Content-Type": "application/json"},
+            json.dumps(_playbyplay_v3_response("rate-window-game", [])),
+        )
+
+    responses.add_callback(responses.GET, f"{STATS_BASE}/playbyplayv3", callback=response)
+    data_source.get_game("rate-window-game")
+    assert len(attempted_at) == 3
+    assert attempted_at[1] - attempted_at[0] >= 60
+    assert attempted_at[2] - attempted_at[1] >= 60

@@ -170,7 +170,7 @@ Send previous user/assistant messages as context, plus:
 ```
 
 Replies preserve `answer` and `citations` and add `follow_up_questions` (zero to two),
-`session_token`, `revision`, `session_expires_at`, `state_committed`,
+`session_token`, `revision`, `session_expires_at`, `state_committed`, `session_status`,
 `llm_validated`, `degraded` and `outcome`. The opaque token is a bearer secret; do not
 log it. Redis owns subject/scope origins, the resolved operation, claims/receipts,
 delivered facts, families, release and revision; the raw question is not stored as
@@ -189,8 +189,9 @@ with `error.code` set to `turn_id_reused`, `revision_conflict` or
 expire after 24 hours of inactivity, and a request carrying an unknown session
 token returns `error.code` `session_expired`. The envelope never reflects the
 session token or turn identity. Redis loss gives an explicitly stateless
-factual response; a failed commit never claims a committed revision. The browser
-retains turn IDs for retry and prevents synchronous duplicate submission.
+factual response; a failed commit never claims a committed revision. `session_status`
+is `committed`, `retryable` (including deadlines), or `unavailable`; it is null outside
+the session protocol. Clients use this field, never warning wording, for recovery.
 
 Both chat surfaces share a transcript that remains fully visible. Each request sends
 the ten previous individual messages, excluding the current question. The API keeps
@@ -207,9 +208,12 @@ The writer returns short answers and may propose up to four follow-up candidates
 The reviewer checks each candidate in its existing call. Only the first two approved
 suggestions reach the browser. Rejected suggestions do not discard a valid answer.
 
-The browser stores a versioned transcript, session identity, expiry, archive version,
-and exact pending turn in `sessionStorage`. Reload exposes Retry for an interrupted
-turn. New chat aborts in-flight work and clears the active conversation. A 409 with
+The browser's turn state is exactly `idle`, `pending`, or `retryable`; only the latter
+two carry a request, and only a retryable turn carries an error. A versioned snapshot
+in `sessionStorage` preserves the transcript, session, pending request, and edited draft.
+Reload exposes Retry without replacing an edited draft. Abandoned readiness checks
+are cancelled and cannot reset a newer conversation. New chat aborts in-flight work
+and clears the active conversation. A 409 with
 `error.code` `session_expired` starts a visible new-conversation boundary, keeps older
 messages readable, retains the submitted question, and replays it tokenless at
 revision zero on Retry. `revision_conflict` keeps the same pending turn and adopts

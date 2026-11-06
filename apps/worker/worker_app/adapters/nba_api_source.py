@@ -364,13 +364,12 @@ class NbaApiDataSource:
         peeking at the response object. The cost of over-retrying a
         bug is bounded by `retry_attempts` (default 3).
         """
-        self._wait_for_rate_budget()
-
         attempts = max(1, self._settings.retry_attempts)
         backoff = max(0.0, self._settings.retry_backoff_seconds)
         last_exc: Exception | None = None
 
         for attempt in range(1, attempts + 1):
+            self._wait_for_rate_budget()
             self._call_timestamps.append(time.monotonic())
             try:
                 return fn()

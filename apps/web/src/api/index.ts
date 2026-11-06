@@ -21,14 +21,17 @@ export interface ReportSummary {
   created_at: string
 }
 
-export async function fetchGames(opts?: {
-  season?: string
-  teamId?: string
-  seasonType?: string
-  dataStatus?: string
-  limit?: number
-  offset?: number
-}): Promise<GameSummary[]> {
+export async function fetchGames(
+  opts?: {
+    season?: string
+    teamId?: string
+    seasonType?: string
+    dataStatus?: string
+    limit?: number
+    offset?: number
+  },
+  signal?: AbortSignal
+): Promise<GameSummary[]> {
   const params: Record<string, number | string> = {}
   if (opts?.season) params.season = opts.season
   if (opts?.teamId) params.team_id = opts.teamId
@@ -36,16 +39,20 @@ export async function fetchGames(opts?: {
   if (opts?.dataStatus) params.data_status = opts.dataStatus
   if (opts?.limit) params.limit = opts.limit
   if (opts?.offset) params.offset = opts.offset
-  const r = await api.get<GameSummary[]>('/games', { params })
+  const r = await api.get<GameSummary[]>('/games', { params, signal })
   return r.data
 }
 
-export async function fetchArchiveStatus(opts?: {
-  season_type?: string
-  data_status?: string
-}): Promise<ArchiveStatus> {
+export async function fetchArchiveStatus(
+  opts?: {
+    season_type?: string
+    data_status?: string
+  },
+  signal?: AbortSignal
+): Promise<ArchiveStatus> {
   const response = await api.get<ArchiveStatus>('/archive/status', {
     params: opts,
+    signal,
   })
   return response.data
 }

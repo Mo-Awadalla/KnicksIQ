@@ -113,4 +113,5 @@ class AnalysisQueryResponse(BaseModel):
     session_expires_at: datetime | None = None
     revision: int | None = None
     state_committed: bool = False
+    session_status: Literal["committed", "retryable", "unavailable"] | None = None
     llm_validated: bool = False
