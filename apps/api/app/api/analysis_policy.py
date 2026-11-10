@@ -212,6 +212,8 @@ def _is_supported_question(question: str) -> bool:
         "best",
         "biggest",
         "defense",
+        "deficit",
+        "collapse",
         "game",
         "lineup",
         "led",
@@ -280,8 +282,12 @@ def _is_supported_question(question: str) -> bool:
         )
         or (
             bool(re.search(r"\b20\d{2}-\d{2}-\d{2}\b", q))
-            and any(
-                term in q for term in ("game", "quarter", "minute", "possession", "score", "run")
+            and (
+                any(
+                    term in q
+                    for term in ("game", "quarter", "minute", "possession", "score", "run")
+                )
+                or bool(re.search(r"\bq[1-9]\b|\b(?:at|with)\s+\d{1,2}:\d{2}\b", q))
             )
         )
         or any(term in q for term in broad_archive_terms)

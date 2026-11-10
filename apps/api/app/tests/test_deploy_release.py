@@ -1,3 +1,5 @@
+import json
+
 import pytest
 from app.services.deploy_release import deploy
 
@@ -81,3 +83,32 @@ def test_restoration_failure_does_not_skip_other_services():
         )
     assert restored == ["services/web/rollback", "services/api/rollback"]
     assert record["rollout"]["status"] == "restoration_failed"
+
+
+def test_interrupted_publication_persists_the_attempted_component_before_io(tmp_path):
+    record = {
+        "tested_commit": "a" * 40,
+        "services": {
+            "api": {"id": "api", "url": "https://api.example"},
+            "web": {"id": "web", "url": "https://web.example"},
+        },
+        "rollback": {
+            "api_deployment": "old-api",
+            "web_deployment": "old-web",
+            "data_version": "v1",
+            "qdrant_aliases": {},
+        },
+        "deployments": {},
+    }
+    path = tmp_path / "rollout.json"
+
+    def interrupted_request(*_):
+        raise KeyboardInterrupt
+
+    with pytest.raises(KeyboardInterrupt):
+        deploy(
+            record, lambda value: path.write_text(json.dumps(value)), request=interrupted_request
+        )
+    persisted = json.loads(path.read_text())
+    assert persisted["rollout"]["status"] == "starting"
+    assert persisted["rollout"]["attempted_components"] == ["api"]

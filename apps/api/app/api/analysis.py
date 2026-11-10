@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import asyncio
 import time
 from typing import Annotated, Any
 
@@ -17,7 +16,6 @@ from app.api.analysis_models import (
     AnalysisQueryResponse,
     AnswerQueryContext,
 )
-from app.api.analysis_narrative_response import answer_narrative_query
 from app.api.analysis_player_response import answer_player_query
 from app.api.analysis_policy import (
     _client_id as _client_id,
@@ -39,7 +37,6 @@ from app.api.analysis_presenters import _format_answer
 from app.api.analysis_retrieval import (
     _active_data_version,
     _execute_archive_retrieval,
-    _matching_games,
     _schedule_shadow,
 )
 from app.api.analysis_retrieval import (
@@ -92,9 +89,10 @@ async def query_analysis(
         AnalysisContextMessage.model_validate(item) for item in bounded_history(req.context)
     ]
     redis_degraded = await _rate_limit(request)
+    data_version = await _active_data_version(db)
     response_metadata = {
         "request_id": getattr(request.state, "request_id", ""),
-        "data_version": await _active_data_version(db),
+        "data_version": data_version,
         "degraded": redis_degraded,
     }
     question = req.question.strip()
@@ -110,23 +108,9 @@ async def query_analysis(
             tool_calls=[],
         )
     if getattr(settings, "analyst_evidence_loop_enabled", False):
-        try:
-            async with asyncio.timeout(settings.analyst_deadline_seconds):
-                return await _query_evidence_analyst(req, request, db, background_tasks)
-        except TimeoutError:
-            return AnalysisQueryResponse(
-                answer="The archive could not be verified within this turn's deadline.",
-                citations=[],
-                degraded=True,
-            )
-    structured_conversation_enabled = getattr(
-        settings,
-        "rag_structured_conversation_state_enabled",
-        False,
-    )
-    context_question = (
-        question if structured_conversation_enabled else _contextual_question(question, req.context)
-    )
+        return await _query_evidence_analyst(
+            req, request, db, background_tasks, data_version=data_version
+        )
     if len(question) > settings.public_chat_max_prompt_chars:
         raise HTTPException(
             status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
@@ -136,6 +120,7 @@ async def query_analysis(
         return AnalysisQueryResponse(
             **response_metadata,
             refused=True,
+            outcome="refuse",
             route=None,
             classifier={},
             evidence=[],
@@ -149,6 +134,26 @@ async def query_analysis(
             citations=[],
             tool_calls=[],
         )
+    if _unknown_data_question(question):
+        limitation = _retrieval_limitation_note(question)
+        return AnalysisQueryResponse(
+            **response_metadata,
+            answer=_format_answer(
+                direct_answer="I can only answer from games available in this archive.",
+                limitation_note=limitation,
+            ),
+            warnings=[limitation] if limitation else [],
+            citations=[],
+            tool_calls=[],
+        )
+    structured_conversation_enabled = getattr(
+        settings,
+        "rag_structured_conversation_state_enabled",
+        False,
+    )
+    context_question = (
+        question if structured_conversation_enabled else _contextual_question(question, req.context)
+    )
     if is_discovery(question):
         discovery = await discover_fact(
             db,
@@ -206,6 +211,7 @@ async def query_analysis(
             return AnalysisQueryResponse(
                 **response_metadata,
                 route="clarification",
+                outcome="clarify",
                 classifier=initial_classifier.as_dict(),
                 resolved_query=resolved_query.model_dump(mode="json"),
                 conversation_state=conversation_state,
@@ -241,6 +247,7 @@ async def query_analysis(
             **response_metadata,
             answer=_format_answer(direct_answer=reference_clarification),
             route="clarification",
+            outcome="clarify",
             citations=[],
             warnings=[],
             tool_calls=[],
@@ -259,6 +266,13 @@ async def query_analysis(
     )
     if player_response is not None:
         return player_response
+    if not classify_query(context_question).is_aggregative and (
+        _is_supported_question(question)
+        or (_looks_like_follow_up(question) and _is_supported_question(context_question))
+    ):
+        return await _query_evidence_analyst(
+            req, request, db, background_tasks, data_version=data_version
+        )
     clarification = await narrative_clarification(
         db,
         question,
@@ -271,16 +285,11 @@ async def query_analysis(
             **response_metadata,
             answer=_format_answer(direct_answer=clarification),
             route="clarification",
+            outcome="clarify",
             citations=[],
             warnings=[],
             tool_calls=[],
         )
-    selected_narrative_game = None
-    if "best defensive game" in question.lower():
-        defensive_games = await _matching_games(db, question, req.season)
-        if len(defensive_games) == 1:
-            selected_narrative_game = defensive_games[0]
-            question = f"{question} on {selected_narrative_game.game_date}"
     answer_mode = getattr(settings, "analysis_answer_mode", "deterministic")
     preplanned_retrieval_plan: RetrievalPlan | None = None
     preplan_latency_ms = 0
@@ -324,6 +333,7 @@ async def query_analysis(
         response = AnalysisQueryResponse(
             **response_metadata,
             refused=True,
+            outcome="refuse",
             route=None,
             classifier={},
             evidence=[],
@@ -390,7 +400,7 @@ async def query_analysis(
     named_opponent_ids = team_ids_in_text(effective_question) - {"NYK"}
     planner = (
         None
-        if named_opponent_ids or selected_narrative_game or answer_mode in {"llm_primary", "shadow"}
+        if named_opponent_ids or answer_mode in {"llm_primary", "shadow"}
         else await maybe_plan_query(effective_question, classifier)
     )
     if planner:
@@ -425,17 +435,6 @@ async def query_analysis(
             )
             plan_latency_ms = int((time.perf_counter() - plan_t0) * 1000)
         retrieval_plan = _apply_resolved_filters(retrieval_plan, resolved_query)
-        if selected_narrative_game is not None:
-            retrieval_plan = retrieval_plan.model_copy(
-                update={
-                    "filters": retrieval_plan.filters.model_copy(
-                        update={
-                            "game_ids": [selected_narrative_game.id],
-                            "dates": [str(selected_narrative_game.game_date)],
-                        }
-                    ),
-                }
-            )
         plan_call = {
             "tool": (
                 "deterministic_retrieval_plan"
@@ -462,27 +461,6 @@ async def query_analysis(
             **response_metadata,
             "degraded": response_metadata["degraded"] or vector_degraded,
         }
-    if _unknown_data_question(question):
-        limitation = _retrieval_limitation_note(question)
-        response = AnalysisQueryResponse(
-            **response_metadata,
-            answer=_format_answer(
-                direct_answer=(
-                    "I can only answer from the games currently in KnicksIQ, and that "
-                    "question does not identify an available game."
-                ),
-                limitation_note=limitation,
-            ),
-            route=route,
-            classifier=classifier_payload,
-            evidence=[],
-            warnings=[limitation] if limitation else [],
-            citations=[],
-            tool_calls=tool_calls,
-        )
-        if cache_key and not response.degraded:
-            await set_cached_answer(cache_key, response.model_dump(mode="json"))
-        return response
 
     response_args = AnswerQueryContext(
         settings=settings,
@@ -499,13 +477,8 @@ async def query_analysis(
     if route == "table_rag":
         response = await answer_table_query(req, db, background_tasks, **response_args)
     else:
-        response = await answer_narrative_query(
-            req,
-            db,
-            background_tasks,
-            request_id=request.state.request_id,
-            selected_narrative_game=selected_narrative_game,
-            **response_args,
+        return await _query_evidence_analyst(
+            req, request, db, background_tasks, data_version=data_version
         )
     if cache_key and not response.degraded:
         await set_cached_answer(cache_key, response.model_dump(mode="json"))

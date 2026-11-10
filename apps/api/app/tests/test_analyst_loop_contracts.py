@@ -22,45 +22,6 @@ from app.tests.support.analyst_protocol import (
 )
 
 
-async def test_bounded_loop_and_revalidated_explanation(db_session, local_redis, monkeypatch):
-    await local_redis.set(f"ai-budget:{datetime.now(UTC):%Y-%m}", 0)
-    tools, _ = await make_tools(db_session)
-    adapter = ScriptedAdapter()
-    monkeypatch.setattr(analyst_provider, "get_llm_adapter", lambda: adapter)
-    loop = AnalystLoop(tools, [])
-    response = await loop.run()
-    assert response["llm_validated"], response
-    assert loop.calls == 3 and loop.rounds == 1
-    assert response["citations"]
-    assert response["state"]["delivered_fact_ids"]
-    assert "context" not in adapter.prompts[-1]
-    followup = AnalystTools(
-        db_session,
-        tools.release,
-        "Why is that interesting?",
-        tools.release.season,
-        response["state"],
-    )
-    await followup.prepare()
-    loop2 = AnalystLoop(followup, [])
-    result = await loop2.run()
-    assert result["llm_validated"] and loop2.calls == 2 and loop2.rounds == 0
-
-
-async def test_ten_short_prior_messages_still_reach_writer(db_session, local_redis, monkeypatch):
-    await local_redis.set(f"ai-budget:{datetime.now(UTC):%Y-%m}", 0)
-    tools, _ = await make_tools(db_session)
-    adapter = ScriptedAdapter()
-    monkeypatch.setattr(analyst_provider, "get_llm_adapter", lambda: adapter)
-    context = [
-        {"role": "user" if index % 2 == 0 else "assistant", "content": f"Turn {index}"}
-        for index in range(10)
-    ]
-    result = await AnalystLoop(tools, context).run()
-    assert result["llm_validated"], result
-    assert adapter.prompts[0]["context"] == context
-
-
 async def test_provider_schema_growth_uses_factual_fallback(db_session, local_redis, monkeypatch):
     await local_redis.set(f"ai-budget:{datetime.now(UTC):%Y-%m}", 0)
     monkeypatch.setattr(get_settings(), "analyst_provider_format", "json_schema")

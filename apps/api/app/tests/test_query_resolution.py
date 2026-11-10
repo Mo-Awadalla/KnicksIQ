@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from app.models.box_score import PlayerGameStat
 from app.models.game import Game
 from app.models.player import Player
 from app.services.query_resolution import resolve_query
@@ -62,28 +63,6 @@ async def test_contextual_splits_and_periods_become_typed_filters(db_session):
     assert resolved.date_end is not None and resolved.date_end.month == 4
 
 
-async def test_superlative_game_reference_resolves_structurally(db_session):
-    games = list((await db_session.execute(select(Game))).scalars())
-    biggest_win = max(
-        games,
-        key=lambda game: (
-            (game.home_score if game.home_team_id == "NYK" else game.away_score)
-            - (game.away_score if game.home_team_id == "NYK" else game.home_score),
-            game.game_date,
-            game.id,
-        ),
-    )
-
-    resolved = await resolve_query(
-        db_session,
-        "What did Towns do in the biggest win?",
-        intent="narrative",
-    )
-
-    assert resolved.game_ids == [biggest_win.id]
-    assert resolved.requires_clarification is False
-
-
 async def test_descriptive_game_reference_resolves_through_structured_games(db_session):
     boston = (
         await db_session.execute(
@@ -115,52 +94,67 @@ async def test_common_word_was_does_not_resolve_to_washington(db_session):
     assert resolved.requires_clarification is False
 
 
-async def test_full_name_consumes_surname_before_ambiguity_check(db_session):
-    db_session.add(
-        Player(
-            nba_player_id=999_997,
-            full_name="Miles Bridges",
-            team_id="CHA",
-            position="F",
-            jersey_number="0",
+async def test_full_name_consumes_surname_before_ambiguity_check(client, monkeypatch):
+    from app.core.db import AsyncSessionLocal
+    from app.tests.support.analytics_workflows import ask, claims, comparison_archive
+
+    version, ids = await comparison_archive(monkeypatch)
+    async with AsyncSessionLocal() as db:
+        competitor = Player(nba_player_id=999_997, full_name="Miles Bridges", team_id="TOR")
+        db.add(competitor)
+        await db.flush()
+        game = await db.get(Game, ids["2025-11-10"])
+        assert game is not None
+        db.add(
+            PlayerGameStat(
+                release_id=game.release_id,
+                game_id=game.id,
+                player_id=competitor.id,
+                team_id="TOR",
+                minutes=30,
+                points=25,
+            )
         )
-    )
-    await db_session.flush()
-    mikal = (
-        await db_session.execute(select(Player).where(Player.full_name == "Mikal Bridges"))
-    ).scalar_one()
-
-    resolved = await resolve_query(
-        db_session,
-        "What was Mikal Bridges' three-point percentage?",
-        intent="player_stat",
-    )
-
-    assert resolved.player_ids == [mikal.id]
-    assert resolved.requires_clarification is False
+        await db.commit()
+    result = await ask(client, "What was Mikal Bridges' scoring average?", version)
+    claim = claims(result)["points:average"]
+    assert claim["value"] == 12
+    assert "Mikal Bridges" in result["answer"]
+    assert claim["release_id"] == version
 
 
-async def test_ambiguous_surname_returns_clarification(db_session):
-    db_session.add(
-        Player(
-            nba_player_id=999_999,
-            full_name="Kevin Hart",
-            team_id="NYK",
-            position="G",
-            jersey_number="99",
+async def test_ambiguous_surname_returns_clarification(client, monkeypatch):
+    from app.core.db import AsyncSessionLocal
+    from app.tests.support.analytics_workflows import ask, claims, comparison_archive
+
+    version, ids = await comparison_archive(monkeypatch)
+    async with AsyncSessionLocal() as db:
+        competitor = Player(nba_player_id=999_999, full_name="Kevin Hart", team_id="NYK")
+        db.add(competitor)
+        await db.flush()
+        josh = (
+            await db.execute(select(Player).where(Player.full_name == "Josh Hart"))
+        ).scalar_one()
+        game = await db.get(Game, ids["2025-11-01"])
+        assert game is not None
+        db.add_all(
+            [
+                PlayerGameStat(
+                    release_id=game.release_id,
+                    game_id=game.id,
+                    player_id=player.id,
+                    team_id="NYK",
+                    minutes=30,
+                    points=10,
+                )
+                for player in (josh, competitor)
+            ]
         )
-    )
-    await db_session.flush()
-
-    resolved = await resolve_query(
-        db_session,
-        "How many points did Hart score?",
-        intent="player_stat",
-    )
-
-    assert resolved.requires_clarification is True
-    assert resolved.clarification_reason == "ambiguous_player"
-    assert resolved.clarification_options == ["Josh Hart", "Kevin Hart"]
+        await db.commit()
+    result = await ask(client, "How many points did Hart score?", version)
+    assert result["outcome"] == "clarify"
+    assert not claims(result)
+    assert "Josh Hart" in result["answer"] and "Kevin Hart" in result["answer"]
 
 
 def test_resolved_filters_replace_model_invented_internal_ids():

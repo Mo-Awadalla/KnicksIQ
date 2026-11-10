@@ -373,4 +373,27 @@ describe('useTableUrlState', () => {
       tag: 'x|y',
     })
   })
+  it('tracks external URL navigation and clearing without stale local filters', async () => {
+    let search: Record<string, unknown> = { filter: 'first', status: ['todo'] }
+    const navigate = vi.fn<NavigateFn>()
+    const { result, rerender } = await renderHook(() =>
+      useTableUrlState({
+        search,
+        navigate,
+        columnFilters: [
+          { columnId: 'status', searchKey: 'status', type: 'array' },
+        ],
+      })
+    )
+    search = { filter: 'second', status: ['done'] }
+    await rerender()
+    expect(result.current.globalFilter).toBe('second')
+    expect(result.current.columnFilters).toEqual([
+      { id: 'status', value: ['done'] },
+    ])
+    search = {}
+    await rerender()
+    expect(result.current.globalFilter).toBe('')
+    expect(result.current.columnFilters).toEqual([])
+  })
 })

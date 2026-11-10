@@ -1,48 +1,63 @@
-from __future__ import annotations
+"""First-name identity and ambiguity at the public analyst boundary."""
 
 import pytest
+from app.core.db import AsyncSessionLocal
+from app.models.box_score import PlayerGameStat
+from app.models.game import Game
 from app.models.player import Player
-from app.services.query_players import resolve_player_mentions
-from app.tests.test_metric_authority import _claims, _deterministic, _seed
+from app.tests.support.analytics_workflows import ask, claims, comparison_archive
 
 
-async def test_unique_first_name_keeps_player_average_not_team_score(db_session):
-    release = await _seed(
-        db_session,
-        [("2025-11-01", "NYK", "TOR", 110, 100), ("2025-11-05", "TOR", "NYK", 100, 120)],
-        box={"Mikal Bridges": [(35, 18, 3, 2, 5), (35, 22, 3, 2, 5)]},
-    )
-    tools, _, result = await _deterministic(
-        db_session, release, "How many points did Mikal average against Toronto?"
-    )
-    claim = _claims(result)["points:average"][0]
-    assert claim["value"] == 20
-    assert claim["sample_size"] == 2
-    scope = tools.scope
-    assert scope is not None
-    assert claim["subject_id"] == f"player:{scope.player_ids[0]}"
+async def test_unique_first_name_keeps_player_average_not_team_score(client, monkeypatch):
+    version, ids = await comparison_archive(monkeypatch)
+    body = await ask(client, "How many points did Mikal average against Toronto?", version)
+    claim = claims(body)["points:average"]
+    assert claim["value"] == 10
+    assert claim["sample_size"] == 1
+    assert claim["game_ids"] == [ids["2025-11-10"]]
+    assert claim["release_id"] == version
+    assert "Mikal Bridges" in body["answer"]
 
 
 @pytest.mark.parametrize("other_team", ["NYK", "BOS"])
-def test_shared_first_name_produces_choices_without_selecting_player(other_team):
-    players = [
-        Player(id=1001, full_name="Alex One", team_id="NYK"),
-        Player(id=1002, full_name="Alex Two", team_id=other_team),
-    ]
-    resolved, choices = resolve_player_mentions(
-        "How many points did Alex score?", players, typo_threshold=0.85, allow_fuzzy=False
-    )
-    assert resolved == []
-    assert choices == ["Alex One", "Alex Two"]
+async def test_shared_first_name_clarifies_without_selecting_player(
+    client, monkeypatch, other_team
+):
+    version, ids = await comparison_archive(monkeypatch)
+    async with AsyncSessionLocal() as db:
+        players = [
+            Player(nba_player_id=999_101, full_name="Alex One", team_id="NYK"),
+            Player(nba_player_id=999_102, full_name="Alex Two", team_id=other_team),
+        ]
+        db.add_all(players)
+        await db.flush()
+        game = await db.get(Game, ids["2025-11-01"])
+        assert game is not None
+        db.add_all(
+            [
+                PlayerGameStat(
+                    release_id=game.release_id,
+                    game_id=game.id,
+                    player_id=player.id,
+                    team_id=team,
+                    minutes=30,
+                    points=10,
+                )
+                for player, team in zip(players, ("NYK", other_team), strict=True)
+            ]
+        )
+        await db.commit()
+    body = await ask(client, "How many points did Alex score?", version)
+    assert body["outcome"] == "clarify"
+    assert not claims(body)
+    assert "Alex One" in body["answer"] and "Alex Two" in body["answer"]
 
 
-async def test_broad_player_performance_keeps_explicit_opponent_population(db_session):
-    release = await _seed(
-        db_session,
-        [("2025-11-01", "NYK", "TOR", 110, 100), ("2025-11-05", "TOR", "NYK", 100, 120)],
-        box={"Mikal Bridges": [(35, 18, 3, 2, 5), (35, 22, 3, 2, 5)]},
-    )
-    _, _, result = await _deterministic(db_session, release, "Did Mikal play well against Toronto?")
-    claim = _claims(result)["points:average"][0]
-    assert claim["value"] == 20
-    assert claim["sample_size"] == 2
+async def test_broad_player_performance_keeps_opponent_population(client, monkeypatch):
+    version, ids = await comparison_archive(monkeypatch)
+    body = await ask(client, "Did Mikal play well against Toronto?", version)
+    claim = claims(body)["points:average"]
+    assert claim["value"] == 10
+    assert claim["sample_size"] == 1
+    assert claim["game_ids"] == [ids["2025-11-10"]]
+    assert claim["release_id"] == version

@@ -65,7 +65,7 @@ async def detect_game_features(
     async with AsyncSessionLocal() as db:
         await mark_started(db, job_id, _worker_name())
         try:
-            game = await db.get(Game, game_db_id)
+            game = await db.get(Game, game_db_id, with_for_update=True)
             if not game:
                 raise ValueError(f"Game {game_db_id} not found")
 

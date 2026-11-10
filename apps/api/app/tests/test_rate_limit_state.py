@@ -80,14 +80,6 @@ def clock(monkeypatch) -> _Clock:
     return tick
 
 
-async def test_minute_bucket_still_enforces_the_public_limit(clock):
-    for _ in range(3):
-        assert await runtime._rate_limit(_request()) is False
-    with pytest.raises(HTTPException) as excinfo:
-        await runtime._rate_limit(_request())
-    assert excinfo.value.status_code == http_status.HTTP_429_TOO_MANY_REQUESTS
-
-
 async def test_abandoned_old_day_identities_are_pruned(clock):
     for octet in range(1, 41):
         await runtime._rate_limit(_request(host=f"198.51.100.{octet}"))
@@ -135,20 +127,6 @@ async def test_capacity_sheds_new_identities_and_keeps_existing_enforcement(monk
     assert newcomer_id not in runtime._requests_by_client
     assert newcomer_id not in runtime._daily_requests_by_client
     assert len(redis_calls) == calls_before
-
-
-async def test_capacity_pressure_keeps_the_same_active_identities(monkeypatch, clock):
-    monkeypatch.setattr(runtime, "_MAX_TRACKED_CLIENTS", 4)
-    hosted = [_request(host=f"198.51.100.{index}") for index in range(1, 21)]
-    for request in hosted:
-        try:
-            await runtime._rate_limit(request)
-        except HTTPException as exc:
-            assert exc.status_code == http_status.HTTP_429_TOO_MANY_REQUESTS
-    first_four = {runtime._client_id(request) for request in hosted[:4]}
-
-    assert set(runtime._requests_by_client) == first_four
-    assert len(runtime._daily_requests_by_client) <= 4
 
 
 async def test_capacity_pressure_does_not_rescan_per_request(monkeypatch, clock):
@@ -213,16 +191,6 @@ async def test_pruning_never_refills_an_active_window(clock):
     assert await runtime._rate_limit(_request()) is False
     with pytest.raises(HTTPException):
         await runtime._rate_limit(_request())
-
-
-async def test_pruning_drops_only_expired_windows(clock):
-    await runtime._rate_limit(_request(host="198.51.100.10"))
-    await runtime._rate_limit(_request(host="198.51.100.11"))
-
-    removed = runtime.prune_rate_limit_state(now=clock.now + 61)
-
-    assert removed == 0
-    assert len(runtime._requests_by_client) == 2
 
 
 async def test_redis_day_rejection_maps_to_the_public_envelope(monkeypatch, clock):

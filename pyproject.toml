@@ -31,9 +31,10 @@ dev = [
 asyncio_mode = "auto"
 testpaths = ["apps", "packages"]
 pythonpath = [
-    "apps/api/app",
-    "apps/worker/worker_app",
-    "apps/mcp/mcp_app",
+    ".",
+    "apps/api",
+    "apps/worker",
+    "apps/mcp",
     "packages/basketball-core/src",
 ]
 

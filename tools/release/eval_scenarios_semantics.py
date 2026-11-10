@@ -127,6 +127,46 @@ def scenario_player_population_checked(directory: Path) -> list[str]:
         "the wrong box-score population fails",
         problems,
     )
+    # Keep the value and population fixed while changing only the delivered player.
+    _set_fact(
+        expectations,
+        "answer-008",
+        subject=None,
+        canonical_evidence_ids=["box:0022500008:1628384"],
+    )
+    identities = synthetic_mapping()
+    identities["players"]["1626157"] = {"id": 115, "name": "Karl-Anthony Towns"}
+    dump(mapping, identities)
+    for subject, expected in (
+        ("player:114", None),
+        ("player:115", "entity_mismatch"),
+        ("player:9999", "subject_unverifiable"),
+    ):
+        rows[7] = observation(
+            "answer-008",
+            answer_response(game=110, value=68, subject=subject),
+        )
+        result, report = _score(directory, questions, expectations, mapping, rows)
+        if result.returncode != 0 or report is None:
+            return problems + [f"score failed: {result.stderr[-500:]}"]
+        codes = failures(report, "answer-008")
+        if expected is None:
+            expect(
+                not (
+                    {"entity_mismatch", "subject_unverifiable", "evidence_scope_mismatch"}
+                    & set(codes)
+                ),
+                "the mapped named player and matching population pass",
+                problems,
+            )
+        else:
+            expect(expected in codes, f"{subject} must produce {expected}", problems)
+            if expected == "subject_unverifiable":
+                expect(
+                    metric(report, "canonical_entity_correctness")["status"] == "blocked",
+                    "an unmapped player blocks the entity metric",
+                    problems,
+                )
     return problems
 
 
@@ -227,6 +267,48 @@ def scenario_runtime_metric_forms_pass(directory: Path) -> list[str]:
         "the per-game value matches",
         problems,
     )
+    _set_fact(
+        expectations,
+        "answer-008",
+        metric="Jalen Brunson: total points",
+        value=28,
+        subject=None,
+        player_name="Jalen Brunson",
+        appearances=1,
+        canonical_evidence_ids=["game:0022500008"],
+    )
+    for delivered_metric, unit, should_match in (
+        ("points:game", "points", True),
+        ("points:average", "points per appearance", False),
+    ):
+        rows[7] = observation(
+            "answer-008",
+            answer_response(
+                game=110,
+                value=28,
+                metric=delivered_metric,
+                unit=unit,
+                subject="player:114",
+                sample_size=1,
+            ),
+        )
+        result, report = _score(directory, questions, expectations, mapping, rows)
+        if result.returncode != 0 or report is None:
+            return problems + [f"score failed: {result.stderr[-500:]}"]
+        codes = failures(report, "answer-008")
+        expect(
+            ("no_typed_claim_for_fact" not in codes) == should_match,
+            f"{delivered_metric} {'matches' if should_match else 'does not match'} a game total",
+            problems,
+        )
+        if should_match:
+            expect(
+                not (
+                    {"numeric_mismatch", "entity_mismatch", "evidence_scope_mismatch"} & set(codes)
+                ),
+                "the game total also matches its value, player and population",
+                problems,
+            )
     return problems
 
 

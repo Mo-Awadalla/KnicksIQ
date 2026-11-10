@@ -1,0 +1,12 @@
+# Generated data, transcripts, credentials, and machine-bound ratchet state.
+local/
+runs/
+traces/
+**/traces/
+__pycache__/
+*.py[cod]
+.env
+.env.*
+_state.json
+harness-dependencies.json
+runtime-mapping*.json

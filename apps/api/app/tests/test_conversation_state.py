@@ -108,3 +108,28 @@ def test_equivalent_standalone_and_follow_up_resolve_to_same_filters():
     )
 
     assert follow_up.planner_filters() == standalone.planner_filters()
+
+
+def test_release_change_discards_prior_entities_and_population():
+    prior = ConversationState(
+        player_ids=[11, 12], game_ids=[7, 8], opponent_id="BOS", data_version="v1"
+    )
+    resolved, state = resolve_conversation_delta(
+        "What about his rebounds?", _resolved(data_version="v2", metric="rebounds"), prior
+    )
+    assert resolved.player_ids == []
+    assert resolved.game_ids == []
+    assert resolved.opponent_id is None
+    assert not resolved.requires_clarification
+    assert state.data_version == "v2"
+
+
+def test_explicit_subject_replaces_an_ambiguous_prior_subject():
+    prior = ConversationState(player_ids=[11, 12], game_ids=[7], data_version="v1")
+    resolved, state = resolve_conversation_delta(
+        "What about Towns and his assists?", _resolved(player_ids=[32], metric="assists"), prior
+    )
+    assert resolved.player_ids == [32]
+    assert resolved.game_ids == []
+    assert not resolved.requires_clarification
+    assert state.player_ids == [32]

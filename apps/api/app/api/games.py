@@ -392,9 +392,5 @@ async def trigger_detect_runs(game_id: int) -> JobAcceptedResponse:
     """
     from worker_app.job_queue import enqueue_detect_runs
 
-    job_id = enqueue_detect_runs(game_db_id=game_id)
-    # Reuse the API's job row creation helper.
-    from app.api.jobs import _create_job_row
-
-    await _create_job_row(job_id, "detect_runs", {"game_id": game_id})
+    job_id = await enqueue_detect_runs(game_db_id=game_id)
     return JobAcceptedResponse(job_id=job_id, status="queued")

@@ -8,42 +8,25 @@ from app.models.box_score import PlayerGameStat
 from app.models.game import Game
 from app.models.player import Player
 from app.services.player_analytics import answer_player_question
-from app.services.player_intelligence.planning import _parse_plan
-from app.services.player_intelligence.presentation import _answer_text
 from app.tests.support.player_archive import _seed_release_stats
 from basketball_core.analytics import AnalyticsOperation
 from sqlalchemy import select
 
 
-async def test_totals_averages_percentages_ratios_and_triple_doubles(db_session) -> None:
-    await _seed_release_stats(db_session)
-    total = await answer_player_question(
-        db_session,
-        question="How many points did JB score this season?",
-        season="2025-26",
-    )
-    assert total is not None
-    total_result = total.analytics["results"][0]
-    assert total.analytics["plan"]["aggregation_mode"] == "total"
-    assert total_result["raw_values"]["points"] == 50
+async def test_totals_and_averages_use_observed_appearances(client, monkeypatch):
+    from app.tests.support.analytics_workflows import ask, claims, player_archive
 
-    average = await answer_player_question(
-        db_session,
-        question="What did JB average per game in points this season?",
-        season="2025-26",
-    )
-    assert average is not None
-    assert average.analytics["results"][0]["raw_values"]["points"] == 25
-
-    plan = _parse_plan(
-        "KAT three point percentage and assist-to-turnover ratio plus triple-doubles",
-        [],
-    )
-    assert {
-        "three_point_percentage",
-        "assist_turnover_ratio",
-        "triple_doubles",
-    }.issubset(plan.stats)
+    version, ids = await player_archive(monkeypatch)
+    total = await ask(client, "How many points did JB score this season?", version)
+    average = await ask(client, "What did JB average per game in points this season?", version)
+    total_claim = claims(total)["points:total"]
+    average_claim = claims(average)["points:average"]
+    assert total_claim["value"] == 50
+    assert average_claim["value"] == 25
+    assert average_claim["sample_size"] == 2
+    expected = sorted(ids[d] for d in ("2026-01-01", "2026-01-03"))
+    assert total_claim["game_ids"] == average_claim["game_ids"] == expected
+    assert total_claim["release_id"] == average_claim["release_id"] == version
 
 
 async def test_association_operation_precedes_outcome_filters_and_parses_plus(db_session) -> None:
@@ -196,22 +179,17 @@ async def test_hardest_opposing_player_ranks_cumulative_plus_minus(db_session) -
     assert explicit_leader["raw_values"]["plus_minus"] == 17
 
 
-async def test_leader_totals_and_explicit_average_rank_different_players(db_session):
-    await _seed_release_stats(db_session)
-    total = await answer_player_question(
-        db_session, question="Who led the Knicks in points?", season="2025-26"
-    )
-    assert total is not None
-    average = await answer_player_question(
-        db_session, question="Who led the Knicks in average points?", season="2025-26"
-    )
-    assert average is not None
-    top = total.analytics["results"][0]["entries"][0]
-    assert top["player_name"] == "Karl-Anthony Towns"
-    assert top["raw_values"]["points"] == 51
-    assert total.analytics["plan"]["aggregation_mode"] == "total"
-    assert average.analytics["results"][0]["entries"][0]["player_name"] == "Jalen Brunson"
-    assert average.analytics["results"][0]["entries"][0]["raw_values"]["points"] == 25
+async def test_leader_totals_and_explicit_average_rank_different_players(client, monkeypatch):
+    from app.tests.support.analytics_workflows import ask, claims, player_archive
+
+    version, _ = await player_archive(monkeypatch)
+    total = claims(await ask(client, "Who led the Knicks in points?", version))["points:leader"]
+    average = claims(await ask(client, "Who led the Knicks in average points?", version))[
+        "points:leader"
+    ]
+    assert total["value"] == {"name": "Karl-Anthony Towns", "total": 51}
+    assert average["value"] == {"name": "Jalen Brunson", "average": 25}
+    assert total["release_id"] == average["release_id"] == version
 
 
 async def test_starts_returns_count_instead_of_scoring_average(db_session):
@@ -307,21 +285,3 @@ async def test_shooting_percentage_answer_does_not_claim_per_appearance(db_sessi
     assert "field goal percentage" in answer.answer.lower()
     assert "per appearance" not in answer.answer
     assert "total" not in answer.answer
-
-
-def test_percentage_leaderboard_wording_preserves_sample_without_per_game_unit() -> None:
-    answer = _answer_text(
-        {
-            "type": "leaderboard",
-            "stat": "true_shooting_percentage",
-            "aggregation_mode": "average",
-            "entries": [
-                {
-                    "player_name": "Jalen Brunson",
-                    "display_values": {"true_shooting_percentage": "60.0%"},
-                    "sample_size": 10,
-                }
-            ],
-        }
-    )
-    assert answer == "Jalen Brunson led at 60.0% across 10 appearances."

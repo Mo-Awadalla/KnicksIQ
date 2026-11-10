@@ -34,6 +34,8 @@ for _secret in (
     os.environ.pop(_secret, None)
 if str(API_ROOT) not in sys.path:
     sys.path.insert(0, str(API_ROOT))
+if str(Path(__file__).resolve().parent) not in sys.path:
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from app.core.config import Settings  # noqa: E402
 
@@ -50,6 +52,7 @@ from app.models import (  # noqa: E402
 from app.services.analyst_provenance import canonical_digest as digest  # noqa: E402
 from app.services.analyst_provenance import row_receipt  # noqa: E402
 from app.services.release_bundle import ReleaseValidationError, read_bundle  # noqa: E402
+from runtime_mapping_rows import SqlRow, load_event_rows, verify_rows  # noqa: E402
 from sqlalchemy import select, text  # noqa: E402
 from sqlalchemy.engine import URL, make_url  # noqa: E402
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine  # noqa: E402
@@ -69,23 +72,13 @@ COLLECTION_PREFIX = {
     "player_game_stats": "box",
     "team_game_stats": "team_box",
     "period_scores": "period",
+    "game_events": "event",
 }
 LOOPBACK_HOSTS = {"127.0.0.1", "localhost", "::1"}
 
 
 class VerificationError(ValueError):
     """The verifier cannot run without guessing."""
-
-
-@dataclass(frozen=True)
-class SqlRow:
-    canonical_id: str
-    collection: str
-    projection: dict[str, Any]
-    row_id: int
-    release_id: int
-    game_id: int
-    player_id: int | None
 
 
 @dataclass(frozen=True)
@@ -145,7 +138,11 @@ def _canonical(collection: str, bundle_row: dict[str, Any]) -> str:
         return f"{prefix}:{bundle_row['nba_game_id']}:{bundle_row['nba_player_id']}"
     if collection == "team_game_stats":
         return f"{prefix}:{bundle_row['nba_game_id']}:{bundle_row['team_id']}"
-    return f"{prefix}:{bundle_row['nba_game_id']}:{bundle_row['team_id']}:{bundle_row['period']}"
+    if collection == "period_scores":
+        return (
+            f"{prefix}:{bundle_row['nba_game_id']}:{bundle_row['team_id']}:{bundle_row['period']}"
+        )
+    return f"{prefix}:{bundle_row['nba_game_id']}:{bundle_row['sequence']}"
 
 
 def _expected(
@@ -157,7 +154,8 @@ def _expected(
     duplicates: list[str] = []
     for collection in COLLECTION_PREFIX:
         rows: dict[str, dict[str, Any]] = {}
-        for raw in data.get(collection) or []:
+        source_collection = "events" if collection == "game_events" else collection
+        for raw in data.get(source_collection) or []:
             canonical = _canonical(collection, raw)
             if canonical in rows:
                 duplicates.append(f"{canonical}: duplicate canonical row in bundle")
@@ -238,7 +236,7 @@ async def verify_restore(
         add(
             "games",
             canonical,
-            SqlRow(canonical, "games", projection, game.id, game.release_id, game.id, None),
+            SqlRow(canonical, "games", projection, game.id, release.id, game.id, None),
         )
 
     rows: list[tuple[str, Any]] = [
@@ -282,36 +280,9 @@ async def verify_restore(
             SqlRow(canonical, collection, projection, row.id, row.release_id, game.id, player_id),
         )
 
-    verified_rows: dict[str, SqlRow] = {}
-    counts: dict[str, int] = {}
-    for collection, expected_rows in expected.items():
-        counts[collection] = len(expected_rows)
-        for canonical, raw in expected_rows.items():
-            found = actual[collection].get(canonical, [])
-            if not found:
-                problems.append(f"{canonical}: missing SQL row")
-                continue
-            if len(found) > 1:
-                problems.append(f"{canonical}: duplicate SQL rows")
-                continue
-            row = found[0]
-            differing = [
-                field for field, value in raw.items() if row.projection.get(field) != value
-            ]
-            if differing:
-                problems.extend(
-                    f"{canonical}: field {field} differs "
-                    f"(sql={row.projection.get(field)!r}, bundle={raw[field]!r})"
-                    for field in differing
-                )
-                continue
-            if digest(row.projection) != digest(raw):
-                problems.append(f"{canonical}: canonical row digest differs")
-                continue
-            verified_rows[canonical] = row
-        for canonical in actual[collection]:
-            if canonical not in expected_rows:
-                problems.append(f"{canonical}: extra SQL row")
+    await load_event_rows(session, release.id, game_by_id, actual, problems)
+
+    verified_rows, counts = verify_rows(expected, actual, problems)
 
     players = _verify_players(bundle, players_by_id, problems)
     verified_references = _verify_labels(label_references or [], verified_rows, problems)
@@ -383,7 +354,11 @@ def build_mapping_payload(verification: Verification, bundle: dict[str, Any]) ->
     version = verification.version
     rows: dict[str, dict[str, Any]] = {}
     for canonical, row in verification.rows.items():
-        runtime_id = row.player_id or row.row_id
+        runtime_id = (
+            int(row.projection["sequence"])
+            if row.collection == "game_events"
+            else row.player_id or row.row_id
+        )
         receipt = row_receipt(version, row.collection, row.game_id, runtime_id)
         rows[canonical] = {
             "collection": row.collection,

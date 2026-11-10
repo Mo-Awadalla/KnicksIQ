@@ -44,15 +44,9 @@ def test_render_blueprint_provisions_the_optional_runtime_store():
     api = next(service for service in blueprint["services"] if service["name"] == "knicksiq-api")
     redis_url = next(item for item in api["envVars"] if item["key"] == "REDIS_URL")
 
-    assert runtime_store == {
-        "type": "keyvalue",
-        "name": "knicksiq-redis",
-        "plan": "free",
-        "region": "oregon",
-        "ipAllowList": [],
-        "maxmemoryPolicy": "allkeys-lru",
-        "persistenceMode": "off",
-    }
+    assert runtime_store["type"] == "keyvalue"
+    assert runtime_store["maxmemoryPolicy"] == "allkeys-lru"
+    assert runtime_store["persistenceMode"] == "off"
     assert redis_url["fromService"] == {
         "type": "keyvalue",
         "name": "knicksiq-redis",

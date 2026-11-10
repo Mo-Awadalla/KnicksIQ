@@ -2,14 +2,11 @@
 
 from __future__ import annotations
 
-from datetime import date, timedelta
-
 import pytest
 from app.api import analysis
 from app.api import analysis_policy as runtime
-from app.api import analysis_retrieval as retrieval
-from app.models.game import Game
 from app.services.llm_planner import PlannerResult
+from app.tests.analysis_test_support import active_seed_release as active_seed_release
 from app.tests.analysis_test_support import (
     isolate_response_cache as isolate_response_cache,
 )
@@ -36,52 +33,25 @@ def test_client_identity_ignores_untrusted_forwarded_header():
     )
 
 
-async def test_matching_games_finds_named_opponent_beyond_latest_ten(db_session):
-    for offset in range(11):
-        db_session.add(
-            Game(
-                nba_game_id=f"later-boston-{offset}",
-                season="2025-26",
-                game_date=date(2026, 4, 13) + timedelta(days=offset),
-                home_team_id="NYK",
-                away_team_id="BOS",
-                home_score=110,
-                away_score=100,
-                status="final",
-                season_type="playoffs",
-                data_status="summary_only",
-            )
-        )
-    await db_session.commit()
-
-    games = await retrieval._matching_games(
-        db_session,
-        "What happened in the Knicks game against Toronto?",
-        "2025-26",
-    )
-
-    assert games
-    assert all("TOR" in {game.home_team_id, game.away_team_id} for game in games)
-
-
-async def test_public_analysis_query_returns_citations(client):
-    r = await client.post(
+async def test_public_analysis_query_returns_citations(active_seed_release):
+    r = await active_seed_release.post(
         "/analysis/query",
         json={"question": "What happened in the Knicks game against Toronto?"},
     )
     assert r.status_code == 200
     body = r.json()
     assert body["refused"] is False
-    assert body["route"] == "retrieval_rag"
-    assert body["classifier"]["kind"] == "descriptive"
-    assert "evidence" in body
-    assert "warnings" in body
-    assert "Knicks" in body["answer"]
+    assert body["data_version"] == "narrative-seed-test"
     assert body["citations"]
-    assert any(c["type"] == "game" for c in body["citations"])
+    assert {c["game_id"] for c in body["citations"]} == {2}
+    assert "112" in body["answer"] and "95" in body["answer"]
+    assert "TOR" in body["answer"]
+    assert "over 1 archived games" not in body["answer"]
 
 
-async def test_named_opponent_query_cannot_be_reinterpreted_as_table_rag(client, monkeypatch):
+async def test_named_opponent_query_cannot_be_reinterpreted_as_table_rag(
+    active_seed_release, monkeypatch
+):
     async def table_planner(*_args, **_kwargs):
         return PlannerResult(
             intent="season_table",
@@ -91,7 +61,7 @@ async def test_named_opponent_query_cannot_be_reinterpreted_as_table_rag(client,
 
     monkeypatch.setattr(analysis, "maybe_plan_query", table_planner)
 
-    r = await client.post(
+    r = await active_seed_release.post(
         "/analysis/query",
         json={
             "question": "What happened in the Knicks game against Toronto?",
@@ -110,12 +80,8 @@ async def test_named_opponent_query_cannot_be_reinterpreted_as_table_rag(client,
 
     assert r.status_code == 200
     body = r.json()
-    assert body["route"] == "retrieval_rag"
     assert body["citations"]
     assert {citation["game_id"] for citation in body["citations"]} == {2}
-    assert all(
-        "TOR" in citation["title"] for citation in body["citations"] if citation["type"] == "game"
-    )
 
 
 async def test_public_analysis_refuses_live_questions(client):
@@ -142,17 +108,88 @@ async def test_public_analysis_refuses_future_player_analytics_before_historical
     assert body["citations"] == []
 
 
-async def test_public_analysis_refuses_off_topic_knicks_questions(client):
-    r = await client.post(
-        "/analysis/query",
-        json={"question": "can the knicks solve a two sum leetcode problem"},
-    )
+@pytest.mark.parametrize("enabled", [False, True])
+@pytest.mark.parametrize(
+    "question",
+    ["can the knicks solve a two sum leetcode problem", "Why are Knicks jerseys blue and orange?"],
+)
+async def test_public_analysis_refuses_off_topic_knicks_questions(
+    active_seed_release, monkeypatch, enabled, question
+):
+    monkeypatch.setattr(runtime.get_settings(), "analyst_evidence_loop_enabled", enabled)
+    r = await active_seed_release.post("/analysis/query", json={"question": question})
     assert r.status_code == 200
     body = r.json()
     assert body["refused"] is True
-    assert body["route"] is None
+    assert body["outcome"] == "refuse"
     assert body["citations"] == []
-    assert body["tool_calls"] == []
+
+
+@pytest.mark.parametrize("enabled", [False, True])
+async def test_missing_archive_data_is_not_replaced_by_season_facts(
+    active_seed_release, monkeypatch, enabled
+):
+    monkeypatch.setattr(runtime.get_settings(), "analyst_evidence_loop_enabled", enabled)
+    response = await active_seed_release.post(
+        "/analysis/query", json={"question": "Show Knicks possessions not in the data."}
+    )
+    assert response.status_code == 200
+    body = response.json()
+    assert not body["citations"]
+    assert "available" in body["answer"].lower()
+
+
+@pytest.mark.parametrize("enabled", [False, True])
+async def test_closest_game_narrative_selects_the_actual_game(
+    active_seed_release, monkeypatch, enabled
+):
+    monkeypatch.setattr(runtime.get_settings(), "analyst_evidence_loop_enabled", enabled)
+    response = await active_seed_release.post(
+        "/analysis/query", json={"question": "What happened in the Knicks closest game?"}
+    )
+    assert response.status_code == 200
+    body = response.json()
+    assert body["outcome"] == "answer"
+    assert "ATL" in body["answer"] and "108" in body["answer"] and "105" in body["answer"]
+    assert body["citations"]
+
+
+@pytest.mark.parametrize("enabled", [False, True])
+async def test_closest_game_tie_requires_a_choice(active_seed_release, monkeypatch, enabled):
+    from datetime import date
+
+    from app.core.db import AsyncSessionLocal
+    from app.models.dataset_release import DatasetRelease
+    from app.models.game import Game
+    from sqlalchemy import select
+
+    monkeypatch.setattr(runtime.get_settings(), "analyst_evidence_loop_enabled", enabled)
+    async with AsyncSessionLocal() as db:
+        release_id = (
+            await db.execute(select(DatasetRelease.id).where(DatasetRelease.status == "active"))
+        ).scalar_one()
+        db.add(
+            Game(
+                release_id=release_id,
+                nba_game_id="closest-tie",
+                season="2025-26",
+                game_date=date(2026, 4, 4),
+                home_team_id="NYK",
+                away_team_id="BOS",
+                home_score=100,
+                away_score=97,
+                status="final",
+                season_type="regular",
+            )
+        )
+        await db.commit()
+    response = await active_seed_release.post(
+        "/analysis/query", json={"question": "What happened in the Knicks closest game?"}
+    )
+    body = response.json()
+    assert response.status_code == 200
+    assert body["outcome"] == "clarify"
+    assert not body["citations"]
 
 
 async def test_public_analysis_aggregate_uses_table_rag(client):
@@ -162,15 +199,23 @@ async def test_public_analysis_aggregate_uses_table_rag(client):
     )
     assert r.status_code == 200
     body = r.json()
-    assert body["route"] == "table_rag"
-    assert body["classifier"]["is_aggregative"] is True
     assert body["evidence"]
     assert "NYK is" in body["answer"]
-    assert "Short answer" in body["answer"]
-    assert "Key evidence" in body["answer"]
-    assert "cached" not in body["answer"].lower()
-    tools = {call["tool"] for call in body["tool_calls"]}
-    assert tools == {"table_rag"}
+
+
+@pytest.mark.parametrize(
+    ("question", "expected"),
+    [
+        ("What was the Knicks average score this season?", "112.8"),
+        ("How many total points did the Knicks score this season?", "564"),
+    ],
+)
+async def test_public_scoring_aggregates_use_the_full_archive(
+    active_seed_release, question, expected
+):
+    response = await active_seed_release.post("/analysis/query", json={"question": question})
+    assert response.status_code == 200
+    assert expected in response.json()["answer"]
 
 
 async def test_public_analysis_losing_streak_uses_table_rag(client):
@@ -181,10 +226,7 @@ async def test_public_analysis_losing_streak_uses_table_rag(client):
     assert r.status_code == 200
     body = r.json()
     assert body["refused"] is False
-    assert body["route"] == "table_rag"
-    assert body["classifier"]["is_aggregative"] is True
     assert "longest 2025-26 losing streak in the available data" in body["answer"]
-    assert {call["tool"] for call in body["tool_calls"]} == {"table_rag"}
 
 
 async def test_public_analysis_best_game_uses_largest_win_margin(client):
@@ -194,25 +236,8 @@ async def test_public_analysis_best_game_uses_largest_win_margin(client):
     )
     assert r.status_code == 200
     body = r.json()
-    assert body["route"] == "table_rag"
-    assert body["classifier"]["is_aggregative"] is True
     assert "by win margin" in body["answer"]
     assert "136-96" in body["answer"]
-    assert {call["tool"] for call in body["tool_calls"]} == {"table_rag"}
-
-
-async def test_public_analysis_accepts_pronoun_biggest_win_query(client):
-    r = await client.post(
-        "/analysis/query",
-        json={"question": "what was their biggest win"},
-    )
-    assert r.status_code == 200
-    body = r.json()
-    assert body["refused"] is False
-    assert body["route"] == "table_rag"
-    assert "best 2025-26 game by win margin" in body["answer"]
-    assert "136-96" in body["answer"]
-    assert "cached" not in body["answer"].lower()
 
 
 async def test_public_analysis_why_pick_follow_up_stays_table_rag(client):
@@ -237,13 +262,11 @@ async def test_public_analysis_why_pick_follow_up_stays_table_rag(client):
     )
     assert r.status_code == 200
     body = r.json()
-    assert body["route"] == "table_rag"
     assert "ranks available Knicks wins by final margin" in body["answer"]
-    assert {call["tool"] for call in body["tool_calls"]} == {"table_rag"}
 
 
-async def test_public_analysis_follow_up_uses_short_context(client):
-    r = await client.post(
+async def test_public_analysis_follow_up_uses_short_context(active_seed_release):
+    r = await active_seed_release.post(
         "/analysis/query",
         json={
             "question": "What about Q4?",
@@ -262,20 +285,20 @@ async def test_public_analysis_follow_up_uses_short_context(client):
     assert r.status_code == 200
     body = r.json()
     assert body["refused"] is False
-    assert body["route"] == "retrieval_rag"
+    assert body["outcome"] == "clarify"
+    assert not body["citations"]
 
 
-async def test_public_analysis_retrieval_answer_shows_evidence(client):
-    r = await client.post(
+async def test_public_analysis_retrieval_answer_shows_evidence(active_seed_release):
+    r = await active_seed_release.post(
         "/analysis/query",
         json={"question": "What happened in the Knicks game against Toronto?"},
     )
     assert r.status_code == 200
     body = r.json()
-    assert body["route"] == "retrieval_rag"
-    assert "Short answer" in body["answer"]
-    assert "Receipts" in body["answer"]
-    assert "cached" not in body["answer"].lower()
+    assert body["citations"]
+    assert {citation["game_id"] for citation in body["citations"]} == {2}
+    assert body["data_version"] == "narrative-seed-test"
 
 
 async def test_public_analysis_unsupported_table_question_is_not_generic_dump(client):

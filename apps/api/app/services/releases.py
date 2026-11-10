@@ -1,7 +1,8 @@
-"""Reusable active-release filtering for public reads."""
+"""Active-release transitions and public read scoping."""
 
 from __future__ import annotations
 
+from datetime import UTC, datetime
 from typing import Any
 
 from app.core.config import get_settings
@@ -10,7 +11,33 @@ from app.models.dataset_release import DatasetRelease
 from app.models.game import Game
 from app.models.player import Player
 from app.models.team import Team
-from sqlalchemy import exists, or_, select
+from sqlalchemy import exists, or_, select, text, update
+from sqlalchemy.ext.asyncio import AsyncSession
+
+
+async def activate_release(db: AsyncSession, release: DatasetRelease) -> None:
+    """Publish one validated release inside the caller's transaction.
+
+    Candidate-row locks cannot serialize different candidates, including when
+    there is no active row yet. PostgreSQL callers share a transaction lock;
+    SQLite already serializes writers. Callers must not lock candidates first.
+    """
+    if not release.validation_passed:
+        raise ValueError("Only a validated release can be activated")
+    if db.get_bind().dialect.name == "postgresql":
+        await db.execute(text("SELECT pg_advisory_xact_lock(hashtext('knicksiq:active-release'))"))
+    await db.execute(
+        update(DatasetRelease)
+        .where(DatasetRelease.status == "active", DatasetRelease.id != release.id)
+        .values(status="superseded")
+    )
+    # The object may have been read as active before another activation superseded
+    # it. An unconditional SQL write avoids a stale ORM value suppressing the update.
+    await db.execute(
+        update(DatasetRelease)
+        .where(DatasetRelease.id == release.id)
+        .values(status="active", activated_at=datetime.now(UTC))
+    )
 
 
 def enforces_active_release() -> bool:

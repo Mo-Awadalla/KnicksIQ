@@ -1,0 +1,14 @@
+--- a/apps/api/app/services/analyst_provider.py
++++ b/apps/api/app/services/analyst_provider.py
+@@ -333,8 +333,9 @@
+             "get_player_stats calculates player metrics; get_team_stats answers the "
+             "operation in capabilities.operation for the whole scope: record, win/loss or "
+             "game counts, points totals and averages, largest win or loss margin, a "
+-            "losing/winning streak, or a score-margin swing ranking, never a substitute "
+-            "for the requested operation. Aggregate results as totals (aggregation total) or "
++            "losing/winning streak, or a score-margin swing ranking. Preserve requested "
++            "comparisons, splits and windows in tool calls and answers; a discovery example "
++            "alone does not answer a comparison. Aggregate results as totals (aggregation total) or "
+             "per-game averages (aggregation average) only when the operation is generic; "
+             "compare_windows compares populations; search_archive finds narrative examples; "
+             "get_evidence expands returned references. Answer once evidence is sufficient. "

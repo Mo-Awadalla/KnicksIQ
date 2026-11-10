@@ -107,8 +107,19 @@ def _aggregate(
     aggregation: Literal["average", "total"],
 ) -> ToolResult:
     requested = scope.requested_measures
+    pinned_score_only = (
+        scope.operation is None
+        and not requested
+        and bool(scope.game_ids)
+        and scope.game_result is None
+        and len(population) == 1
+    )
     operations: tuple[str | None, ...] = (
-        tuple(measure.operation for measure in requested) if requested else (scope.operation,)
+        ()
+        if pinned_score_only
+        else tuple(measure.operation for measure in requested)
+        if requested
+        else (scope.operation,)
     )
     if any(operation not in _AGGREGATE_OPERATIONS for operation in operations):
         return ToolResult(
@@ -127,6 +138,31 @@ def _aggregate(
     average_allowed = round(allowed / len(games), 1)
     average_margin = round(margin_total / len(games), 1)
     claims = []
+    if scope.operation is None and not requested and len(games) == 1:
+        game = games[0]
+        claims.append(
+            team_claim(
+                tools,
+                scope,
+                population=population,
+                metric="game_score",
+                value={
+                    "nba_game_id": game.nba_game_id,
+                    "game_date": game.game_date.isoformat(),
+                    "home_team_id": game.home_team_id,
+                    "away_team_id": game.away_team_id,
+                    "home_score": game.home_score,
+                    "away_score": game.away_score,
+                },
+                unit="scoreline",
+                statement=(
+                    f"Final score on {game.game_date}: {game.away_team_id} "
+                    f"{game.away_score}, {game.home_team_id} {game.home_score}."
+                ),
+                games=games,
+                evidence=evidence,
+            )
+        )
     for index, operation in enumerate(operations):
         measure_aggregation = (
             requested[index].aggregation or aggregation if requested else aggregation

@@ -77,7 +77,8 @@ _NARRATIVE_ASK = re.compile(
     r"|\bwho was on the floor\b|\bhow long did that run\b|\bwhat did .{0,30} do during\b"
     r"|\bshow me the receipts\b"
 )
-_RUN_ASK = re.compile(r"\b(?:runs?|stretch(?:es)?)\b")
+_RUN_ASK = re.compile(r"\b(?:runs?|stretch(?:es)?|deficits?)\b")
+_LINEUP_ASK = re.compile(r"\b(?:lineups?|on court|off court|on the floor)\b")
 _DEFINITION_ASK = re.compile(
     r"\bclose games?\b|\bblowouts?\b|\boffense or (?:the )?defense\b"
     r"|\bstronger\b|\bback[ -]to[ -]backs?\b"
@@ -174,9 +175,9 @@ def _clarify_run(*, pinned_game: bool) -> OperationDecision:
         )
     else:
         clarification = (
-            "A scoring run needs a game, the event interval it covers (which minutes or "
-            "possessions) and one definition. Name the game and interval, then choose the "
-            "definition."
+            "No single game is pinned. A season-wide ranking needs an event interval "
+            "(time window) and a definition of the scoring run or margin change. "
+            "Which time window and definition should I use?"
         )
     return OperationDecision(
         clarification=clarification,
@@ -326,6 +327,14 @@ def classify_operation(
     pinned_game = performance_scope == "game"
     if _LIVE_ASK.search(q):
         return OperationDecision(reason=UNSUPPORTED_LIVE)
+    if _LINEUP_ASK.search(q):
+        return OperationDecision(
+            clarification=(
+                "Lineup performance needs a game, the players on the floor and a defined "
+                "measure. Which game and measure do you want to examine?"
+            ),
+            options=("a player's game statline", "the team's game result"),
+        )
     if _EVENT_INTERVAL.search(q):
         return _clarify_sequence() if pinned_game else _clarify_narrative(q)
     stat = _player_stat(q)
@@ -431,6 +440,13 @@ def classify_operation(
     if _COMPARATIVE_ASK.search(q) and stat is None and metric is None:
         return _clarify_superlative(q)
     if pinned_game:
+        return OperationDecision()
+    if (
+        re.search(r"\bseason\b", q)
+        and re.search(r"\b(?:what happened|summari[sz]e|season summary)\b", q)
+        and not has_player
+        and not periods
+    ):
         return OperationDecision()
     if _NARRATIVE_ASK.search(q):
         return _clarify_narrative(q)

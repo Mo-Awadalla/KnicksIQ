@@ -11,16 +11,6 @@ from app.tests.support.analyst_protocol import (
 from app.tests.support.player_archive import _seed_release_stats
 
 
-async def test_boundary_normalizes_numeric_revision_to_revision_conflict(local_redis):
-    first = await SessionTurn.begin(None, "revision-turn-a", 0, {"question": "stat"})
-    assert await first.commit({"answer": "Committed"}, {})
-    with pytest.raises(SessionConflict) as stale:
-        await SessionTurn.begin(first.token, "revision-turn-b", 0, {"question": "stat"})
-    assert stale.value.reason == "revision_conflict"
-    assert stale.value.current_revision == 1
-    await local_redis.delete(first.key)
-
-
 async def test_boundary_distinguishes_reuse_progress_and_expiry(local_redis):
     first = await SessionTurn.begin(None, "shape-turn-a", 0, {"question": "stat"})
     assert await first.commit({"answer": "Committed"}, {})

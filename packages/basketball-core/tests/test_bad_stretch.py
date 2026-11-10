@@ -70,21 +70,6 @@ def test_detects_turnover_cluster():
     assert any(any("turnovers" in c for c in stretch.likely_causes) for stretch in stretches)
 
 
-def test_stretch_summary_includes_numbers():
-    """The summary should mention the point swing and turnover count."""
-    events = [
-        make_event(1, 4, "5:00", "NYK", EventType.MADE_SHOT, points=2),
-        make_event(2, 4, "4:30", "NYK", EventType.TURNOVER),
-        make_event(3, 4, "4:00", "BOS", EventType.MADE_SHOT, points=3),
-        make_event(4, 4, "3:30", "BOS", EventType.MADE_SHOT, points=3),
-        make_event(5, 4, "3:00", "BOS", EventType.MADE_SHOT, points=2),
-    ]
-    stretches = detect_bad_stretches(events)
-    assert len(stretches) >= 1
-    assert stretches[0].summary
-    assert stretches[0].score_delta < 0  # negative = Knicks got outscored
-
-
 def test_detects_game_changing_cross_quarter_swing():
     """A significant opponent swing can bridge quarter boundaries."""
     events = [

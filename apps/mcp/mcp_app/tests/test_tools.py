@@ -34,30 +34,20 @@ async def mcp_db() -> AsyncIterator:
         await conn.run_sync(Base.metadata.drop_all)
 
 
-async def test_knicks_get_games_lists_seeded(mcp_db):
+async def test_knicks_get_games_lists_and_filters_seeded_games(mcp_db):
     from mcp_app.tools import knicks_get_games
 
     games = await knicks_get_games()
     assert len(games) >= 2
-    for g in games:
-        assert "id" in g
-        assert "home_team_id" in g
-        assert "margin" in g
-
-
-async def test_knicks_get_games_filters_by_season(mcp_db):
-    from mcp_app.tools import knicks_get_games
-
-    games = await knicks_get_games(season="2024-25")
-    assert all(g["season"] == "2024-25" for g in games)
-
-
-async def test_knicks_get_games_filters_by_team(mcp_db):
-    from mcp_app.tools import knicks_get_games
-
-    games = await knicks_get_games(team_id="NYK")
-    for g in games:
-        assert g["home_team_id"] == "NYK" or g["away_team_id"] == "NYK"
+    season = games[0]["season"]
+    season_games = await knicks_get_games(season=season)
+    assert season_games
+    assert all(g["season"] == season for g in season_games)
+    assert await knicks_get_games(season="1900-01") == []
+    knicks_games = await knicks_get_games(team_id="NYK")
+    assert knicks_games
+    assert all("NYK" in (g["home_team_id"], g["away_team_id"]) for g in knicks_games)
+    assert await knicks_get_games(team_id="ZZZ") == []
 
 
 async def test_knicks_get_game_returns_detail(mcp_db):
@@ -102,11 +92,3 @@ async def test_knicks_find_scoring_runs_finds_runs_live(mcp_db):
     # be at least one Knicks 6+ point run.
     assert isinstance(runs, list)
     assert any(r["team_id"] == "NYK" and r["score_delta"] >= 6 for r in runs)
-
-
-async def test_knicks_find_bad_stretches_finds_stretches(mcp_db):
-    """The bad stretch detector should return at least one stretch."""
-    from mcp_app.tools import knicks_find_bad_stretches
-
-    stretches = await knicks_find_bad_stretches(1)
-    assert isinstance(stretches, list)

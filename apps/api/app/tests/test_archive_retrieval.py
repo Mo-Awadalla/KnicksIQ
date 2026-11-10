@@ -84,6 +84,54 @@ async def test_lexical_archive_search_is_independent_of_dense_results(db_session
     assert trace[0]["retrieval_source"] == "lexical"
 
 
+async def test_lexical_possessions_respect_exact_clock_and_period(db_session):
+    from app.models.dataset_release import DatasetRelease
+    from app.models.game import Game
+    from app.models.game_event import GameEvent
+    from sqlalchemy import delete, update
+
+    release = DatasetRelease(
+        version="clock-search",
+        season="2025-26",
+        source="test",
+        manifest_sha256="c" * 64,
+        validation_passed=True,
+        status="active",
+    )
+    db_session.add(release)
+    await db_session.flush()
+    await db_session.execute(update(Game).where(Game.id == 1).values(release_id=release.id))
+    await db_session.execute(delete(GameEvent).where(GameEvent.game_id == 1))
+    for sequence, period, clock, label in [
+        (1, 1, "0:13", "unpadded"),
+        (2, 1, "00:13", "padded"),
+        (3, 1, "00:14", "wrong clock"),
+        (4, 2, "00:13", "wrong period"),
+    ]:
+        db_session.add(
+            GameEvent(
+                game_id=1,
+                sequence=sequence,
+                period=period,
+                clock=clock,
+                team_id="NYK",
+                event_type="turnover",
+                description=f"clocksearch {label} turnover",
+            )
+        )
+    await db_session.flush()
+    results = await search_archive_lexical(
+        db_session,
+        query="clocksearch turnover",
+        collections=["possessions"],
+        filters={"game_ids": [1], "event_clock": {"period": 1, "seconds_remaining": 13}},
+        data_version="clock-search",
+        limit=20,
+    )
+    descriptions = {row["description"] for result in results for row in result.metadata["raw_rows"]}
+    assert descriptions == {"clocksearch unpadded turnover", "clocksearch padded turnover"}
+
+
 def test_fusion_deduplicates_and_traces_both_retrieval_sources(monkeypatch):
     monkeypatch.setattr(
         archive_retrieval,

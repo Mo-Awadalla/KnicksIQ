@@ -164,3 +164,55 @@ def test_complete_overtime_period_scores_uses_cumulative_pbp() -> None:
         {"nba_game_id": "ot-game", "team_id": "NYK", "period": 5, "points": 13},
         {"nba_game_id": "ot-game", "team_id": "DEN", "period": 5, "points": 10},
     ]
+
+
+def test_overtime_recovery_preserves_an_existing_team_period() -> None:
+    game = Game(
+        nba_game_id="partial-ot",
+        home_team_id="NYK",
+        away_team_id="DEN",
+        home_score=113,
+        away_score=110,
+    )
+    regulation = [
+        {"nba_game_id": "partial-ot", "team_id": team, "period": period, "points": 25}
+        for team in ("NYK", "DEN")
+        for period in range(1, 5)
+    ]
+    existing = {"nba_game_id": "partial-ot", "team_id": "NYK", "period": 5, "points": 13}
+    rows = complete_overtime_period_scores(
+        game, [*regulation, existing], [{"period": 5, "home_score": 113, "away_score": 110}]
+    )
+    assert sorted(
+        (row["team_id"], row["period"], row["points"]) for row in rows if row["period"] > 4
+    ) == [("DEN", 5, 10), ("NYK", 5, 13)]
+
+
+def test_overtime_recovery_advances_through_already_complete_periods() -> None:
+    game = Game(
+        nba_game_id="double-ot",
+        home_team_id="NYK",
+        away_team_id="DEN",
+        home_score=113,
+        away_score=110,
+    )
+    regulation = [
+        {"nba_game_id": "double-ot", "team_id": team, "period": period, "points": 25}
+        for team in ("NYK", "DEN")
+        for period in range(1, 5)
+    ]
+    first_overtime = [
+        {"nba_game_id": "double-ot", "team_id": team, "period": 5, "points": 10}
+        for team in ("NYK", "DEN")
+    ]
+    rows = complete_overtime_period_scores(
+        game,
+        [*regulation, *first_overtime],
+        [
+            {"period": 5, "home_score": 110, "away_score": 110},
+            {"period": 6, "home_score": 113, "away_score": 110},
+        ],
+    )
+    assert sorted(
+        (row["team_id"], row["period"], row["points"]) for row in rows if row["period"] > 4
+    ) == [("DEN", 5, 10), ("DEN", 6, 0), ("NYK", 5, 10), ("NYK", 6, 3)]

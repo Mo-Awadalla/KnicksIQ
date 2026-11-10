@@ -411,6 +411,7 @@ def score(
                 None if attestation is None else attestation.outstanding_nano_usd
             ),
             "run_id": None if binding is None else binding.run_id,
+            "candidate": None if binding is None else binding.candidate,
             "scope": None if binding is None else binding.scope,
             "attested": None if attestation is None else attestation.ok,
             "proof_scope": None if binding is None else "service",

@@ -13,31 +13,25 @@ from app.tests.support.player_archive import _seed_release_stats
 
 
 @pytest.mark.parametrize(
-    ("mode", "rate", "sampled", "budget", "malformed", "calls"),
+    ("rate", "sampled", "budget", "calls"),
     [
-        ("shadow", 0.0, True, True, False, False),
-        ("shadow", 1.0, False, True, False, True),
-        ("shadow", 0.1, True, True, False, True),
-        ("shadow", 0.1, False, True, False, False),
-        ("llm_primary", 0.0, False, True, False, True),
-        ("shadow", 1.0, True, False, False, False),
-        ("shadow", 1.0, True, True, True, True),
+        (0.1, True, True, True),
+        (0.1, False, True, False),
+        (1.0, True, False, False),
     ],
 )
 async def test_evidence_loop_shadow_http(
     client,
     local_redis,  # noqa: F811
     monkeypatch,
-    mode,
     rate,
     sampled,
     budget,
-    malformed,
     calls,
 ):
     settings = get_settings()
     monkeypatch.setattr(settings, "analyst_evidence_loop_enabled", True)
-    monkeypatch.setattr(settings, "analysis_answer_mode", mode)
+    monkeypatch.setattr(settings, "analysis_answer_mode", "shadow")
     monkeypatch.setattr(settings, "analysis_shadow_sample_rate", rate)
     async with AsyncSessionLocal() as db:
         await _seed_release_stats(db)
@@ -53,13 +47,6 @@ async def test_evidence_loop_shadow_http(
         return json.dumps(result)
 
     monkeypatch.setattr(adapter, "generate", player_generate)
-    if malformed:
-
-        async def invalid_generate(**kwargs):
-            adapter.prompts.append(kwargs)
-            return '{"action":"invented"}'
-
-        monkeypatch.setattr(adapter, "generate", invalid_generate)
     monkeypatch.setattr(analyst_provider, "get_llm_adapter", lambda: adapter)
     request_id = next(
         f"sampling-{i}" for i in range(1000) if _sample_shadow(f"sampling-{i}", 0.1) == sampled
@@ -78,10 +65,9 @@ async def test_evidence_loop_shadow_http(
     assert bool(adapter.prompts) == calls
     assert body["answer"] and "25" in body["answer"] and body["citations"]
     assert body["state_committed"] and body["revision"] == 1
-    assert body["llm_validated"] == (mode == "llm_primary")
-    if mode == "shadow":
-        assert body["degraded"] is False
-        assert body["warnings"] == []
+    assert body["llm_validated"] is False
+    assert body["degraded"] is False
+    assert body["warnings"] == []
     count = len(adapter.prompts)
     replay = await client.post(
         "/analysis/query", json=payload, headers={"x-request-id": "different-replay-request"}

@@ -50,7 +50,7 @@ def resolve_conversation_delta(
     prior: ConversationState | None,
 ) -> tuple[ResolvedQuery, ConversationState]:
     """Apply a follow-up delta while clearing state on explicit topic changes."""
-    if prior is None:
+    if prior is None or prior.data_version != current.data_version:
         return current, state_from_resolved(current)
 
     follow_up = bool(_FOLLOW_UP_RE.search(question))
@@ -60,7 +60,7 @@ def resolve_conversation_delta(
         or (current.game_ids and prior.game_ids and current.game_ids != prior.game_ids)
     )
     inherit = follow_up and not explicit_subject_change
-    if _PRONOUN_RE.search(question):
+    if not explicit_subject_change and _PRONOUN_RE.search(question):
         ambiguous_options: list[str] = []
         if len(prior.player_ids) > 1:
             ambiguous_options.extend(f"player:{value}" for value in prior.player_ids)

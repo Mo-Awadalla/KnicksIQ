@@ -1,0 +1,239 @@
+[
+  {
+    "id": "knicks-01",
+    "tag": "interesting",
+    "question": "Give me an interesting stat from this season.",
+    "expected_behavior": "Provide a specific backend-supported finding, correct season and relevant sample/denominator, with a verified comparison explaining interest.",
+    "prefix_scenarios": [],
+    "provenance": "user-authored, human-approved",
+    "grading_policy": {
+      "flexible_wording": true,
+      "multiple_valid_findings": true,
+      "require_backend_verification": true,
+      "novelty_relative_to_conversation": true,
+      "unavailable_scope": "Disclose unavailable evidence; never silently substitute another season or population."
+    }
+  },
+  {
+    "id": "knicks-02",
+    "tag": "novelty",
+    "question": "Another one.",
+    "expected_behavior": "Provide a genuinely different supported fact, not a paraphrase.",
+    "prefix_scenarios": [
+      "interesting"
+    ],
+    "provenance": "assistant-proposed, human-approved",
+    "grading_policy": {
+      "flexible_wording": true,
+      "multiple_valid_findings": true,
+      "require_backend_verification": true,
+      "novelty_relative_to_conversation": true,
+      "unavailable_scope": "Disclose unavailable evidence; never silently substitute another season or population."
+    }
+  },
+  {
+    "id": "knicks-03",
+    "tag": "novelty",
+    "question": "Another one, but about a different player.",
+    "expected_behavior": "Change player and fact while retaining season scope.",
+    "prefix_scenarios": [
+      "interesting"
+    ],
+    "provenance": "assistant-proposed, human-approved",
+    "grading_policy": {
+      "flexible_wording": true,
+      "multiple_valid_findings": true,
+      "require_backend_verification": true,
+      "novelty_relative_to_conversation": true,
+      "unavailable_scope": "Disclose unavailable evidence; never silently substitute another season or population."
+    }
+  },
+  {
+    "id": "knicks-04",
+    "tag": "explanation",
+    "question": "Why is that interesting?",
+    "expected_behavior": "Explain the previous finding using supported context; do not invent significance.",
+    "prefix_scenarios": [
+      "interesting"
+    ],
+    "provenance": "assistant-proposed, human-approved",
+    "grading_policy": {
+      "flexible_wording": true,
+      "multiple_valid_findings": true,
+      "require_backend_verification": true,
+      "novelty_relative_to_conversation": true,
+      "unavailable_scope": "Disclose unavailable evidence; never silently substitute another season or population."
+    }
+  },
+  {
+    "id": "knicks-05",
+    "tag": "interesting",
+    "question": "Give me something less obvious than points per game.",
+    "expected_behavior": "Provide a supported split, trend or comparison beyond basic scoring average.",
+    "prefix_scenarios": [],
+    "provenance": "assistant-proposed, human-approved",
+    "grading_policy": {
+      "flexible_wording": true,
+      "multiple_valid_findings": true,
+      "require_backend_verification": true,
+      "novelty_relative_to_conversation": true,
+      "unavailable_scope": "Disclose unavailable evidence; never silently substitute another season or population."
+    }
+  },
+  {
+    "id": "knicks-06",
+    "tag": "interesting",
+    "question": "What’s an interesting team stat rather than a player stat?",
+    "expected_behavior": "Provide a team-level finding with meaningful supported context.",
+    "prefix_scenarios": [],
+    "provenance": "assistant-proposed, human-approved",
+    "grading_policy": {
+      "flexible_wording": true,
+      "multiple_valid_findings": true,
+      "require_backend_verification": true,
+      "novelty_relative_to_conversation": true,
+      "unavailable_scope": "Disclose unavailable evidence; never silently substitute another season or population."
+    }
+  },
+  {
+    "id": "knicks-07",
+    "tag": "scope",
+    "question": "Only look at playoff games.",
+    "expected_behavior": "Use playoff-only evidence and state scope; do not substitute regular-season data.",
+    "prefix_scenarios": [
+      "interesting"
+    ],
+    "provenance": "assistant-proposed, human-approved",
+    "grading_policy": {
+      "flexible_wording": true,
+      "multiple_valid_findings": true,
+      "require_backend_verification": true,
+      "novelty_relative_to_conversation": true,
+      "unavailable_scope": "Disclose unavailable evidence; never silently substitute another season or population."
+    }
+  },
+  {
+    "id": "knicks-08",
+    "tag": "scope",
+    "question": "What changed most between the first ten and last ten games?",
+    "expected_behavior": "Compare correct populations using the same metric and both values; qualify any maximum to the metrics actually examined.",
+    "prefix_scenarios": [],
+    "provenance": "assistant-proposed, human-approved",
+    "grading_policy": {
+      "flexible_wording": true,
+      "multiple_valid_findings": true,
+      "require_backend_verification": true,
+      "novelty_relative_to_conversation": true,
+      "unavailable_scope": "Disclose unavailable evidence; never silently substitute another season or population."
+    }
+  },
+  {
+    "id": "knicks-09",
+    "tag": "scope",
+    "question": "Who had the biggest scoring improvement after the All-Star break?",
+    "expected_behavior": "Compare before/after scoring averages and sample sizes; rank only across a supported eligible population.",
+    "prefix_scenarios": [],
+    "provenance": "assistant-proposed, human-approved",
+    "grading_policy": {
+      "flexible_wording": true,
+      "multiple_valid_findings": true,
+      "require_backend_verification": true,
+      "novelty_relative_to_conversation": true,
+      "unavailable_scope": "Disclose unavailable evidence; never silently substitute another season or population."
+    }
+  },
+  {
+    "id": "knicks-10",
+    "tag": "scope",
+    "question": "Are the Knicks actually better at home?",
+    "expected_behavior": "Compare explicit home/away metrics and game counts without asserting causation.",
+    "prefix_scenarios": [],
+    "provenance": "assistant-proposed, human-approved",
+    "grading_policy": {
+      "flexible_wording": true,
+      "multiple_valid_findings": true,
+      "require_backend_verification": true,
+      "novelty_relative_to_conversation": true,
+      "unavailable_scope": "Disclose unavailable evidence; never silently substitute another season or population."
+    }
+  },
+  {
+    "id": "knicks-11",
+    "tag": "scope",
+    "question": "Give me an interesting Brunson stat from wins versus losses.",
+    "expected_behavior": "Use correct player and win/loss filters; give supported comparison and both sample sizes.",
+    "prefix_scenarios": [],
+    "provenance": "assistant-proposed, human-approved",
+    "grading_policy": {
+      "flexible_wording": true,
+      "multiple_valid_findings": true,
+      "require_backend_verification": true,
+      "novelty_relative_to_conversation": true,
+      "unavailable_scope": "Disclose unavailable evidence; never silently substitute another season or population."
+    }
+  },
+  {
+    "id": "knicks-12",
+    "tag": "boundary",
+    "question": "Does that prove he caused them to win?",
+    "expected_behavior": "Distinguish observed association from causation.",
+    "prefix_scenarios": [
+      "brunson_split"
+    ],
+    "provenance": "assistant-proposed, human-approved",
+    "grading_policy": {
+      "flexible_wording": true,
+      "multiple_valid_findings": true,
+      "require_backend_verification": true,
+      "novelty_relative_to_conversation": true,
+      "unavailable_scope": "Disclose unavailable evidence; never silently substitute another season or population."
+    }
+  },
+  {
+    "id": "knicks-13",
+    "tag": "correction",
+    "question": "I meant Towns, not Brunson—same question.",
+    "expected_behavior": "Correct player while retaining win/loss scope; obtain evidence for the corrected subject.",
+    "prefix_scenarios": [
+      "brunson_split"
+    ],
+    "provenance": "assistant-proposed, human-approved",
+    "grading_policy": {
+      "flexible_wording": true,
+      "multiple_valid_findings": true,
+      "require_backend_verification": true,
+      "novelty_relative_to_conversation": true,
+      "unavailable_scope": "Disclose unavailable evidence; never silently substitute another season or population."
+    }
+  },
+  {
+    "id": "knicks-14",
+    "tag": "boundary",
+    "question": "Tell me an interesting stat, and whether that player is injured today.",
+    "expected_behavior": "Answer supported archive portion and separate unavailable live injury information; do not fabricate.",
+    "prefix_scenarios": [],
+    "provenance": "assistant-proposed, human-approved",
+    "grading_policy": {
+      "flexible_wording": true,
+      "multiple_valid_findings": true,
+      "require_backend_verification": true,
+      "novelty_relative_to_conversation": true,
+      "unavailable_scope": "Disclose unavailable evidence; never silently substitute another season or population."
+    }
+  },
+  {
+    "id": "knicks-15",
+    "tag": "boundary",
+    "question": "Find a stat proving the Knicks are the best team in the league.",
+    "expected_behavior": "Do not manufacture proof or cherry-pick; state whether backend supports league-wide comparison.",
+    "prefix_scenarios": [],
+    "provenance": "assistant-proposed, human-approved",
+    "grading_policy": {
+      "flexible_wording": true,
+      "multiple_valid_findings": true,
+      "require_backend_verification": true,
+      "novelty_relative_to_conversation": true,
+      "unavailable_scope": "Disclose unavailable evidence; never silently substitute another season or population."
+    }
+  }
+]
