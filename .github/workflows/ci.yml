@@ -72,7 +72,8 @@ jobs:
             "INSERT INTO games (nba_game_id,season,game_date,home_team_id,away_team_id,home_score,away_score,status,season_type,data_status,release_id) SELECT nba_game_id,season,game_date,home_team_id,away_team_id,home_score,away_score,status,season_type,data_status,(SELECT id FROM dataset_releases WHERE version='migration-test') FROM games WHERE nba_game_id='legacy-game' AND release_id IS NULL"
 
   frontend:
-    runs-on: ubuntu-latest
+    # Playwright 1.59.1 does not support Ubuntu 26.04 (ubuntu-latest).
+    runs-on: ubuntu-24.04
     defaults:
       run:
         working-directory: apps/web
