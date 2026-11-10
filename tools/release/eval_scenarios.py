@@ -24,6 +24,7 @@ from eval_scenarios_budget import (
     scenario_budget_seal_fences_and_origin_denied,
     scenario_budget_unbound_and_tampered_config,
 )
+from eval_scenarios_candidate import scenario_candidate_approval_source_binding
 from eval_scenarios_citations import (
     scenario_calculation_receipt_reuse,
     scenario_calculation_receipts,
@@ -93,8 +94,8 @@ from eval_scenarios_projection import (
     scenario_games_count_scope,
     scenario_margin_extreme_projection,
     scenario_scope_windows_from_population,
-    scenario_scoreline_scope_projection,
 )
+from eval_scenarios_scorelines import scenario_scoreline_scope_projection
 from eval_scenarios_proof import (
     scenario_collect_requires_live_proof,
     scenario_proof_protocol_roundtrip,
@@ -147,6 +148,7 @@ from eval_scenarios_service import (
 )
 
 SCENARIOS: dict[str, Callable[[Path], list[str]]] = {
+    "candidate_approval_source_binding": scenario_candidate_approval_source_binding,
     "legacy_semantic_behavior_is_not_recall": scenario_legacy_semantic_behavior_is_not_recall,
     "omitted_fact_review_is_measured": scenario_omitted_fact_review_is_measured,
     "wrong_disposition_review_is_measured": scenario_wrong_disposition_review_is_measured,

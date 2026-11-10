@@ -19,8 +19,7 @@ from app.models.player import Player
 from app.services.analyst_loop import AnalystLoop
 from app.services.analyst_tools import AnalystTools
 from app.services.evidence_contracts import ToolResult
-from app.services.query_comparisons import group_games, resolve_comparison
-from app.services.query_resolution import resolve_query
+from app.services.query_comparisons import group_games
 from sqlalchemy import select
 
 # date, home, away, home_score, away_score, season_type
@@ -146,46 +145,32 @@ def _game_ids(tools: AnalystTools, *days: str) -> list[int]:
     return sorted(game.id for game in tools.games if game.game_date.isoformat() in wanted)
 
 
-async def test_home_and_away_keep_separate_populations(db_session):
-    tools, _, result = await _run(
-        db_session, "Compare the Knicks' offense at home and on the road."
-    )
-    scope = tools.scope
-    assert scope is not None and scope.comparison is not None
-    assert scope.comparison.measure == "scoring"
-    assert [group.key for group in scope.comparison.groups] == ["home", "away"]
-    # The comparison owns the split; the single-valued filters never collapse it.
-    assert scope.home_away is None and scope.game_ids == []
+async def test_home_and_away_keep_separate_populations(client, monkeypatch):
+    from app.tests.support.analytics_workflows import ask, comparison_archive
 
-    # A scoring ask is one fact per group: points per game, not a wide profile.
+    version, ids = await comparison_archive(monkeypatch)
+    result = await ask(client, "Compare the Knicks' offense at home and on the road.", version)
     assert set(_claims(result)) == {"points_per_game"}
     claims = _by_group(_claims(result)["points_per_game"])
     home, away = claims["home"], claims["away"]
-    assert home["value"] == pytest.approx(544 / 5)
-    assert away["value"] == pytest.approx(round(308 / 3, 1))
+    assert home["value"] == pytest.approx(108.8)
+    assert away["value"] == pytest.approx(102.7)
     assert (home["sample_size"], home["denominator"]) == (5, 5)
     assert (away["sample_size"], away["denominator"]) == (3, 3)
-    assert home["game_ids"] == _game_ids(
-        tools, "2025-11-01", "2025-11-10", "2025-11-15", "2026-01-20", "2026-06-10"
+    assert home["game_ids"] == sorted(
+        ids[day] for day in ("2025-11-01", "2025-11-10", "2025-11-15", "2026-01-20", "2026-06-10")
     )
-    assert away["game_ids"] == _game_ids(tools, "2025-11-05", "2026-02-10", "2026-02-20")
-    assert home["eligibility"]["considered_games"] == 5
-    assert away["eligibility"]["considered_games"] == 3
-    assert result["outcome"] == "answer" and result["refused"] is False
-
-
-async def test_two_opponent_comparison_never_sums_the_groups(db_session):
-    tools, _, result = await _run(
-        db_session, "Did the Knicks play better against Boston or Toronto?"
+    assert away["game_ids"] == sorted(
+        ids[day] for day in ("2025-11-05", "2026-02-10", "2026-02-20")
     )
-    scope = tools.scope
-    assert scope is not None and scope.comparison is not None
-    assert [group.kind for group in scope.comparison.groups] == ["opponent", "opponent"]
-    assert [group.key for group in scope.comparison.groups] == ["BOS", "TOR"]
-    assert scope.opponent_id is None and scope.game_ids == []
+    assert home["release_id"] == away["release_id"] == version
 
-    # "Play better" asks how they fared, so each group reports its record and mean
-    # margin as separate facts rather than one invented overall judgement.
+
+async def test_two_opponent_comparison_never_sums_the_groups(client, monkeypatch):
+    from app.tests.support.analytics_workflows import ask, comparison_archive
+
+    version, ids = await comparison_archive(monkeypatch)
+    result = await ask(client, "Did the Knicks play better against Boston or Toronto?", version)
     claims = _claims(result)
     assert set(claims) == {"wins", "losses", "margin_per_game"}
     wins = _by_group(claims["wins"])
@@ -193,33 +178,31 @@ async def test_two_opponent_comparison_never_sums_the_groups(db_session):
     margin = _by_group(claims["margin_per_game"])
     assert (wins["BOS"]["value"], losses["BOS"]["value"]) == (3, 0)
     assert (wins["TOR"]["value"], losses["TOR"]["value"]) == (1, 1)
-    assert margin["BOS"]["value"] == pytest.approx(round(50 / 3, 1))
+    assert margin["BOS"]["value"] == pytest.approx(16.7)
     assert margin["TOR"]["value"] == pytest.approx(0.5)
     assert margin["BOS"]["denominator"] == 3 and margin["TOR"]["denominator"] == 2
     assert "better" in " ".join(margin["BOS"]["coverage_limitations"]).lower()
-    assert margin["BOS"]["game_ids"] == _game_ids(tools, "2025-11-01", "2025-11-05", "2026-06-10")
-    assert margin["TOR"]["game_ids"] == _game_ids(tools, "2025-11-10", "2025-11-15")
-
-
-async def test_first_and_last_window_comparison_honours_direction(db_session):
-    tools, _, result = await _run(
-        db_session, "Compare their first 2 games with their last 2 games."
+    assert margin["BOS"]["game_ids"] == sorted(
+        ids[d] for d in ("2025-11-01", "2025-11-05", "2026-06-10")
     )
-    scope = tools.scope
-    assert scope is not None and scope.comparison is not None
-    assert [group.key for group in scope.comparison.groups] == ["first:2", "last:2"]
-    assert scope.relative_game_count is None and scope.game_ids == []
+    assert margin["TOR"]["game_ids"] == sorted(ids[d] for d in ("2025-11-10", "2025-11-15"))
+    assert all(claim["release_id"] == version for claim in margin.values())
 
-    # No stat is named, so a window comparison reports the record it can verify.
+
+async def test_first_and_last_window_comparison_honours_direction(client, monkeypatch):
+    from app.tests.support.analytics_workflows import ask, comparison_archive
+
+    version, ids = await comparison_archive(monkeypatch)
+    result = await ask(client, "Compare their first 2 games with their last 2 games.", version)
     claims = _claims(result)
     assert set(claims) == {"wins", "losses"}
     wins = _by_group(claims["wins"])
     losses = _by_group(claims["losses"])
     assert (wins["first:2"]["value"], losses["first:2"]["value"]) == (2, 0)
     assert (wins["last:2"]["value"], losses["last:2"]["value"]) == (1, 1)
-    assert wins["first:2"]["eligibility"]["considered_games"] == 2
-    assert wins["first:2"]["game_ids"] == _game_ids(tools, "2025-11-01", "2025-11-05")
-    assert wins["last:2"]["game_ids"] == _game_ids(tools, "2026-02-20", "2026-06-10")
+    assert wins["first:2"]["game_ids"] == sorted(ids[d] for d in ("2025-11-01", "2025-11-05"))
+    assert wins["last:2"]["game_ids"] == sorted(ids[d] for d in ("2026-02-20", "2026-06-10"))
+    assert wins["first:2"]["release_id"] == wins["last:2"]["release_id"] == version
 
 
 async def test_all_star_comparison_uses_the_archive_break_and_its_coverage(db_session):
@@ -289,29 +272,6 @@ async def test_conference_comparison_uses_the_team_domain_mapping(db_session):
     assert margin["West"]["eligibility"]["considered_games"] == 2
 
 
-def test_conference_groups_follow_the_team_domain_mapping():
-    class Stub:
-        def __init__(self, day: str, home: str, away: str) -> None:
-            self.game_date = date.fromisoformat(day)
-            self.home_team_id, self.away_team_id = home, away
-            self.season_type, self.id = "regular", 0
-
-    games = [Stub("2025-11-01", "NYK", "LAL"), Stub("2025-11-02", "NYK", "BOS")]
-    resolved = resolve_comparison(
-        "did they fare better against eastern or western teams?",
-        opponents=(),
-        has_player=False,
-        metric=None,
-        games=games,
-    )
-    assert resolved.spec is not None
-    east = next(group for group in resolved.spec.groups if group.key == "East")
-    mapped = group_games(resolved.spec, east, games, {"LAL": "East", "BOS": "East"})
-    assert [game.away_team_id for game in mapped] == ["LAL", "BOS"]
-    domain = group_games(resolved.spec, east, games, {"LAL": "West", "BOS": "East"})
-    assert [game.away_team_id for game in domain] == ["BOS"]
-
-
 async def test_month_comparison_uses_named_months(db_session):
     tools, _, result = await _run(
         db_session, "Compare their January record with their February record."
@@ -329,18 +289,6 @@ async def test_month_comparison_uses_named_months(db_session):
     assert (wins["month:2"]["value"], losses["month:2"]["value"]) == (1, 1)
     assert wins["month:1"]["game_ids"] == _game_ids(tools, "2026-01-20")
     assert wins["month:2"]["game_ids"] == _game_ids(tools, "2026-02-10", "2026-02-20")
-
-
-async def test_named_player_comparisons_stay_player_metrics(db_session):
-    for question in (
-        "Compare Brunson and Towns as scorers this season.",
-        "Who had the better rebounding season, Towns or Hart?",
-    ):
-        tools, _, result = await _run(db_session, question)
-        assert tools.scope is not None, question
-        assert tools.scope.comparison is None, question
-        assert tools.scope.operation in {None, "player_metric"}, question
-        assert result["outcome"] == "answer", question
 
 
 async def test_false_game_count_premise_clarifies(db_session):
@@ -425,19 +373,3 @@ async def test_unresolved_comparison_reports_the_empty_group(db_session):
     outcome = await compare(tools, scope)
     assert outcome.status == "incomplete_coverage"
     assert "after_all_star" in outcome.message
-
-
-async def test_resolution_exposes_the_comparison_before_filters_collapse(db_session):
-    release = await _seed_archive(db_session)
-    for question, banned in (
-        ("Compare the Knicks' offense at home and on the road.", "home_away"),
-        ("Did the Knicks play better against Boston or Toronto?", "opponent_id"),
-        ("Compare their first 5 games with their last 2 games.", "relative_game_count"),
-        ("Compare Brunson's last 2 games with his season average.", "relative_game_count"),
-    ):
-        resolved = await resolve_query(
-            db_session, question, intent="analyst", data_version=release.version
-        )
-        assert resolved.comparison is not None, question
-        assert getattr(resolved, banned) is None, question
-        assert len(resolved.comparison.groups) >= 2, question

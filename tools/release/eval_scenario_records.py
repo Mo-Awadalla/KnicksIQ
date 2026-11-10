@@ -21,7 +21,7 @@ from eval_scenario_support import RELEASE, canonical, digest
 def claim(
     *,
     game: int,
-    value: int | float,
+    value: int | float | str | dict[str, Any],
     metric: str = "wins",
     subject: str = "team:NYK",
     unit: str = "wins",

@@ -181,79 +181,59 @@ def _evidence_games(tools: AnalystTools, claim: dict) -> set[int]:
     return games
 
 
-async def test_comparison_keeps_the_shared_opponent_and_interval(db_session):
-    tools, _, result = await _run(
-        db_session, "Compare home and away scoring against Boston in January."
-    )
-    scope = tools.scope
-    assert scope is not None and scope.comparison is not None
-    assert [group.key for group in scope.comparison.groups] == ["home", "away"]
-    # Boston in January is the population both groups split; the axis owns home/away only.
-    filters = scope.comparison.filters
-    assert filters.opponent_id == "BOS"
-    assert filters.home_away is None
-    january_boston = [
-        game
-        for game in tools.games
-        if "BOS" in (game.home_team_id, game.away_team_id) and game.game_date.month == 1
-    ]
-    assert january_boston
-    assert all(filters.admits(game) for game in january_boston)
-    assert not any(filters.admits(game) for game in tools.games if game.game_date.month != 1)
-    assert not any(
-        filters.admits(game)
-        for game in tools.games
-        if "BOS" not in (game.home_team_id, game.away_team_id)
-    )
+async def test_comparison_keeps_the_shared_opponent_and_interval(client, monkeypatch):
+    from app.tests.support.analytics_workflows import ask, grouped, scope_archive
 
-    grouped = {
-        claim["eligibility"]["comparison_group"]: claim
-        for claim in _claims(result)["points_per_game"]
-    }
-    assert set(grouped) == {"home", "away"}
-    home, away = grouped["home"], grouped["away"]
-    assert home["game_ids"] == _game_ids(tools, "2026-01-11", "2026-01-17")
-    assert away["game_ids"] == _game_ids(tools, "2026-01-03")
-    assert home["value"] == pytest.approx(192 / 2)
-    assert away["value"] == pytest.approx(105 / 1)
-    assert home["eligibility"]["considered_games"] == 2
-    assert away["eligibility"]["considered_games"] == 1
+    version, ids = await scope_archive(monkeypatch)
+    result = await ask(client, "Compare home and away scoring against Boston in January.", version)
+    claims = grouped(result, "points_per_game")
+    assert set(claims) == {"home", "away"}
+    assert claims["home"]["game_ids"] == sorted(ids[d] for d in ("2026-01-11", "2026-01-17"))
+    assert claims["away"]["game_ids"] == [ids["2026-01-03"]]
+    assert claims["home"]["value"] == pytest.approx(96)
+    assert claims["away"]["value"] == pytest.approx(105)
+    assert claims["home"]["eligibility"]["considered_games"] == 2
+    assert claims["away"]["eligibility"]["considered_games"] == 1
+    assert all(claim["release_id"] == version for claim in claims.values())
 
 
-async def test_two_named_month_endpoints_are_one_inclusive_interval(db_session):
-    tools, _, result = await _run(
-        db_session, "How many games did the Knicks play between January 1 and March 15?"
+async def test_two_named_month_endpoints_are_one_inclusive_interval(client, monkeypatch):
+    from app.tests.support.analytics_workflows import ask, scope_archive
+
+    version, ids = await scope_archive(monkeypatch)
+    result = await ask(
+        client, "How many games did the Knicks play between January 1 and March 15?", version
     )
-    scope = tools.scope
-    assert scope is not None
-    assert scope.comparison is None
-    assert (scope.date_start, scope.date_end) == (date(2026, 1, 1), date(2026, 3, 15))
     claim = _claims(result)["games"][0]
     assert claim["value"] == 7
-    assert claim["game_ids"] == _game_ids(
-        tools,
-        "2026-01-03",
-        "2026-01-11",
-        "2026-01-17",
-        "2026-01-25",
-        "2026-02-02",
-        "2026-02-14",
-        "2026-03-04",
+    assert claim["game_ids"] == sorted(
+        ids[d]
+        for d in (
+            "2026-01-03",
+            "2026-01-11",
+            "2026-01-17",
+            "2026-01-25",
+            "2026-02-02",
+            "2026-02-14",
+            "2026-03-04",
+        )
     )
+    assert claim["release_id"] == version
 
 
-async def test_from_through_month_day_endpoints_keep_every_inner_game(db_session):
-    tools, _, result = await _run(
-        db_session, "What was the Knicks record from January 1 through January 31?"
+async def test_from_through_month_day_endpoints_keep_every_inner_game(client, monkeypatch):
+    from app.tests.support.analytics_workflows import ask, scope_archive
+
+    version, ids = await scope_archive(monkeypatch)
+    result = await ask(
+        client, "What was the Knicks record from January 1 through January 31?", version
     )
-    scope = tools.scope
-    assert scope is not None and scope.comparison is None
-    assert scope.operation == "team_record"
     wins, losses = _claims(result)["wins"][0], _claims(result)["losses"][0]
     assert (wins["value"], losses["value"]) == (3, 1)
-    assert set(wins["game_ids"]) | set(losses["game_ids"]) == set(
-        _game_ids(tools, "2026-01-03", "2026-01-11", "2026-01-17", "2026-01-25")
-    )
+    assert set(wins["game_ids"]) | set(losses["game_ids"]) == {
+        ids[d] for d in ("2026-01-03", "2026-01-11", "2026-01-17", "2026-01-25")
+    }
+    assert wins["release_id"] == losses["release_id"] == version
 
 
 async def test_first_window_average_uses_the_first_games(db_session):

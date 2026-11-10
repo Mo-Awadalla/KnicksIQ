@@ -15,6 +15,8 @@ from app.api.analysis_models import AnalysisQueryRequest, AnalysisQueryResponse
 from app.api.analysis_retrieval import _sample_shadow
 from app.api.analysis_shadow import _schedule_shadow_verification
 from app.models.dataset_release import DatasetRelease
+from app.services.fact_discovery import is_discovery
+from app.services.query_classifier import classify_query
 
 
 async def _query_evidence_analyst(
@@ -91,6 +93,8 @@ async def _execute_evidence_turn(
         return AnalysisQueryResponse.model_validate(turn.replay)
     tools = AnalystTools(db, release, req.question, req.season, turn.state if turn else {})
     try:
+        if len(req.question.strip()) > runtime.get_settings().public_chat_max_prompt_chars:
+            raise HTTPException(status_code=413, detail="Question is too long")
         async with asyncio.timeout(
             max(
                 0.001,
@@ -98,6 +102,43 @@ async def _execute_evidence_turn(
             )
         ):
             await tools.prepare()
+        scope = tools.scope
+        assert scope is not None
+        follow_up = bool(turn and req.session_token) or (
+            runtime._looks_like_follow_up(req.question) and bool(req.context)
+        )
+        missing_data = runtime._unknown_data_question(req.question)
+        outside_archive = not (
+            runtime._is_supported_question(req.question)
+            or is_discovery(req.question)
+            or follow_up
+            or scope.operation
+            or scope.player_ids
+            or scope.game_ids
+            or scope.date_start
+            or scope.date_end
+            or scope.periods
+            or scope.metric
+            or scope.comparison
+            or (
+                scope.requires_clarification
+                and (
+                    scope.clarification_reason != "ambiguous_metric"
+                    or classify_query(req.question).is_aggregative
+                )
+            )
+        )
+        if outside_archive and not missing_data:
+            tools.scope = scope.model_copy(
+                update={
+                    "operation_reason": (
+                        "I can only answer grounded questions about available Knicks "
+                        "archive games and player statistics."
+                    ),
+                    "requires_clarification": False,
+                }
+            )
+            tools.state["scope"] = tools.scope.model_dump(mode="json")
         loop = AnalystLoop(tools, [m.model_dump() for m in req.context], started=started)
         loop.request_id = getattr(request.state, "request_id", "")
         settings = runtime.get_settings()
@@ -105,11 +146,26 @@ async def _execute_evidence_turn(
         verify_shadow = (
             answer_mode == "shadow"
             and bool(turn)
+            and not outside_archive
+            and not missing_data
             and _sample_shadow(loop.request_id, settings.analysis_shadow_sample_rate)
         )
         # A shadow trial is verification, never the answer. The client's facts are computed
         # and committed first, so a blocked or failing provider cannot withhold them.
-        result = await loop.run(allow_model=bool(turn) and answer_mode == "llm_primary")
+        if missing_data:
+            from app.services.evidence_contracts import ProposedAnswer
+
+            limitation = runtime._retrieval_limitation_note(req.question)
+            text = "I can only answer from games available in this archive."
+            if limitation:
+                text += f" {limitation}"
+            result = loop.render(ProposedAnswer(text=text), llm=False, degraded=False, delivered=[])
+            if limitation:
+                result["warnings"] = [limitation]
+        else:
+            result = await loop.run(
+                allow_model=bool(turn) and answer_mode == "llm_primary" and not outside_archive
+            )
         state = result.pop("state")
         response = AnalysisQueryResponse(
             **result, request_id=getattr(request.state, "request_id", "")

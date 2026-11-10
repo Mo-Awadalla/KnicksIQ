@@ -41,10 +41,12 @@ jobs:
       - run: uv run ruff check apps packages migrations
       - run: uv run ruff format --check apps packages migrations
       - run: uv run pyright apps packages migrations
-      - name: Unit and integration tests
+      - name: Backend behavior regressions
         env:
           TEST_MODE: "true"
-        run: uv run pytest apps packages tools/report_audit --maxfail=1
+        run: make test-backend
+      - name: Provider-free evaluation CLI integrity
+        run: make test-evaluation
       - name: Empty database migration and expand-only rollback
         run: |
           uv run alembic upgrade head

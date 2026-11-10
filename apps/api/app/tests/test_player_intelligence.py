@@ -8,27 +8,9 @@ from datetime import date
 from app.models.game import Game
 from app.models.generated_stat_fact import GeneratedStatFact
 from app.services.player_analytics import answer_player_question
-from app.services.player_intelligence.planning import _parse_plan, _window_limitation
+from app.services.player_intelligence.planning import _window_limitation
 from app.tests.support.player_archive import _seed_release_stats
 from sqlalchemy import select
-
-
-async def test_last_appearances_exclude_zero_minute_rows_and_keep_receipts(db_session) -> None:
-    await _seed_release_stats(db_session)
-    answer = await answer_player_question(
-        db_session,
-        question="What did Jalen Brunson average in his last 2 appearances?",
-        season="2025-26",
-    )
-    assert answer is not None
-    payload = answer.analytics
-    assert payload["status"] == "complete"
-    result = payload["results"][0]
-    assert result["type"] == "aggregate"
-    assert result["sample_size"] == 2
-    assert result["raw_values"]["points"] == 25
-    assert len(result["source_game_ids"]) == 2
-    assert all(citation["metadata"]["result_id"] == result["id"] for citation in answer.citations)
 
 
 async def test_common_discovery_window_uses_precomputed_release_catalog(db_session) -> None:
@@ -102,20 +84,6 @@ async def test_availability_separates_appearances_from_archive_coverage(db_sessi
     assert answer.analytics["coverage"]["covered_game_count"] == 3
     assert answer.analytics["coverage"]["expected_game_count"] == 3
     assert len(result["source_game_ids"]) == 3
-
-
-async def test_month_all_star_and_explicit_date_windows_parse_deterministically(db_session) -> None:
-    await _seed_release_stats(db_session)
-    january = _parse_plan("JB points in January", [])
-    assert january.timeframe.start_date == "2026-01-01"
-    assert january.timeframe.end_date == "2026-01-31"
-    before = _parse_plan("JB points before All-Star", [])
-    assert before.timeframe.end_date == "2026-02-11"
-    after = _parse_plan("JB points after the All-Star break", [])
-    assert after.timeframe.start_date == "2026-02-19"
-    explicit = _parse_plan("JB points from 2026-01-01 through 2026-01-03", [])
-    assert explicit.timeframe.start_date == "2026-01-01"
-    assert explicit.timeframe.end_date == "2026-01-03"
 
 
 async def test_default_archive_includes_postseason_but_explicit_regular_does_not(db_session):

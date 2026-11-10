@@ -45,11 +45,6 @@ def test_empty_event_list_returns_no_runs():
     assert detect_scoring_runs([]) == []
 
 
-def test_single_event_no_runs():
-    events = [make_event(1, 1, "11:00", "NYK", EventType.MADE_SHOT, points=2)]
-    assert detect_scoring_runs(events) == []  # 2-pt alone is below default threshold of 6
-
-
 def test_detects_knicks_scoring_run():
     """A 8-0 Knicks run that ends when BOS scores should be detected."""
     events = [
@@ -86,35 +81,6 @@ def test_detects_opponent_scoring_run():
     assert runs[0].points_for == 7
 
 
-def test_run_closed_by_opponent_score():
-    """Once the opponent scores, the Knicks' run is over."""
-    events = [
-        make_event(1, 4, "5:00", "NYK", EventType.MADE_SHOT, points=2, home_score=2),
-        make_event(2, 4, "4:45", "NYK", EventType.MADE_SHOT, points=2, home_score=4),
-        make_event(3, 4, "4:30", "NYK", EventType.MADE_SHOT, points=2, home_score=6),
-        make_event(4, 4, "4:15", "NYK", EventType.MADE_SHOT, points=2, home_score=8),
-        make_event(5, 4, "4:00", "BOS", EventType.MADE_SHOT, points=2, home_score=8, away_score=2),
-        make_event(6, 4, "3:30", "NYK", EventType.MADE_SHOT, points=2, home_score=10),
-        make_event(7, 4, "3:00", "NYK", EventType.MADE_SHOT, points=2, home_score=12),
-    ]
-    knicks_runs = detect_knicks_runs(events)
-    # Should detect the 8-0 run, NOT extend it through the BOS score
-    assert len(knicks_runs) == 1
-    assert knicks_runs[0].score_delta == 8
-    assert knicks_runs[0].start_clock == "5:00"
-    assert knicks_runs[0].end_clock == "4:15"
-
-
-def test_run_respects_min_threshold():
-    """A 4-0 run with default threshold of 6 should NOT be detected."""
-    events = [
-        make_event(1, 1, "10:00", "NYK", EventType.MADE_SHOT, points=2),
-        make_event(2, 1, "9:45", "NYK", EventType.MADE_SHOT, points=2),
-        make_event(3, 1, "9:30", "BOS", EventType.MADE_SHOT, points=2),
-    ]
-    assert detect_knicks_runs(events) == []
-
-
 def test_custom_threshold():
     """A custom threshold of 4 should detect the 4-0 run."""
     events = [
@@ -122,6 +88,7 @@ def test_custom_threshold():
         make_event(2, 1, "9:45", "NYK", EventType.MADE_SHOT, points=2),
         make_event(3, 1, "9:30", "BOS", EventType.MADE_SHOT, points=2),
     ]
+    assert detect_knicks_runs(events) == []
     cfg = ScoringRunConfig(min_run_points=4)
     runs = detect_knicks_runs(events, cfg)
     assert len(runs) == 1

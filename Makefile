@@ -1,4 +1,4 @@
-.PHONY: help install hooks sync test test-api test-core lint typecheck run seed clean
+.PHONY: help install hooks sync test test-backend test-evaluation test-api test-core lint typecheck run seed clean
 
 help:
 	@echo "KnicksIQ Makefile"
@@ -6,7 +6,7 @@ help:
 	@echo "  make install   - install all workspace deps via uv"
 	@echo "  make hooks     - enable staged-file token limit hook (Git + Python 3.10+)"
 	@echo "  make sync      - uv sync all packages"
-	@echo "  make test      - run all tests"
+	@echo "  make test      - run backend workflows and provider-free evaluation CLI scenarios"
 	@echo "  make test-api  - run only api tests"
 	@echo "  make test-core - run only basketball-core tests"
 	@echo "  make lint      - ruff check"
@@ -24,8 +24,13 @@ hooks:
 sync:
 	uv sync --all-packages
 
-test:
-	uv run pytest
+test: test-backend test-evaluation
+
+test-backend:
+	uv run pytest apps packages tools/report_audit --maxfail=1
+
+test-evaluation:
+	uv run --package knicksiq-api python tools/release/eval_scenarios.py
 
 test-api:
 	uv run pytest apps/api/app/tests/

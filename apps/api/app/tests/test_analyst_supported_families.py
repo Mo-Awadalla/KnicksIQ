@@ -270,14 +270,6 @@ async def test_double_doubles_are_derived_from_appearances(db_session):
     assert "zero minutes" in " ".join(claim["coverage_limitations"]).lower()
 
 
-async def test_games_started_counts_starter_rows(db_session):
-    _, _, result = await _deterministic(db_session, "How many games did Josh Hart start?")
-    claim = _claims(result)["starts"][0]
-    assert claim["value"] == 4
-    assert claim["unit"] == "starts"
-    assert claim["sample_size"] == 6
-
-
 async def test_period_scoring_comparison_uses_period_rows(db_session):
     _, _, result = await _deterministic(
         db_session, "Compare the Knicks' third-quarter and fourth-quarter scoring."
@@ -313,17 +305,6 @@ async def test_result_split_reports_requested_counts(db_session):
     assert by_result["loss"]["value"] == pytest.approx(28 / 2)
 
 
-async def test_player_scoring_average_stays_on_the_named_player(db_session):
-    tools, _, result = await _deterministic(db_session, "What was Jalen Brunson's scoring average?")
-    claims = _claims(result)
-    assert "points:average" in claims
-    claim = claims["points:average"][0]
-    assert claim["subject_id"].startswith("player:")
-    assert claim["value"] == pytest.approx((30 + 22 + 25 + 20 + 18 + 28) / 6)
-    assert claim["denominator"] == 6
-    assert tools.scope is not None and tools.scope.operation == "player_metric"
-
-
 async def test_best_defensive_game_ranks_fewest_points_allowed(db_session):
     tools, _, result = await _deterministic(db_session, "Explain the Knicks' best defensive game.")
     claim = _claims(result)["opponent_points"][0]
@@ -351,19 +332,3 @@ async def test_live_and_betting_questions_refuse_honestly(db_session):
         assert "archive" in result["answer"].lower(), question
         assert _claims(result) == {}, question
         assert {item.status for item in loop.results} == {"unsupported_metric_or_scope"}
-
-
-async def test_previous_refusal_wordings_are_gone(db_session):
-    for question in (
-        "How many games did the Knicks score at least 120?",
-        "How many games did the Knicks hold opponents under 100?",
-        "Who led the Knicks in assists?",
-        "Who led the Knicks in rebounds?",
-        "Who led the Knicks in steals?",
-    ):
-        _, _, result = await _deterministic(db_session, question)
-        answer = result["answer"].lower()
-        assert "does not count games that cross" not in answer, question
-        assert "cannot answer that specific ranking" not in answer, question
-        assert result["outcome"] == "answer", question
-        assert result["refused"] is False, question

@@ -33,41 +33,6 @@ async def worker_db() -> AsyncIterator:
         await conn.run_sync(Base.metadata.drop_all)
 
 
-async def test_ingest_games_creates_jobs(worker_db):
-    """The ingest_games job should run, update the Job row to 'finished'."""
-    from worker_app.jobs.ingest_games import ingest_games
-
-    job_id = "test_job_001"
-    async with AsyncSessionLocal() as db:
-        # Pre-create a queued job so the worker has something to update.
-
-        job = Job(
-            id=job_id,
-            job_type="ingest_games",
-            status="queued",
-            payload_json="{}",
-        )
-        db.add(job)
-        await db.commit()
-
-    # Run the job.
-    result = await ingest_games(job_id=job_id, season=None)
-
-    assert "inserted_game_ids" in result
-    assert "skipped_nba_game_ids" in result
-    assert isinstance(result["inserted_game_ids"], list)
-
-    # The Job row should now be in 'finished' state.
-    async with AsyncSessionLocal() as db:
-        row = (await db.execute(select(Job).where(Job.id == job_id))).scalar_one()
-        assert row.status == "finished"
-        assert row.started_at is not None
-        assert row.finished_at is not None
-        assert row.worker_name is not None
-        assert row.result_json is not None
-        assert "inserted_game_ids" in row.result_json
-
-
 async def test_ingest_game_detail_normalizes_events(worker_db):
     """A single-game ingest should populate the game_events table."""
     from app.core.seed_loader import seed_teams

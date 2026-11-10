@@ -25,6 +25,7 @@ if str(TOOLS) not in sys.path:
     sys.path.insert(0, str(TOOLS))
 
 from app.evaluation.attempt_ledger import read_records  # noqa: E402
+from app.evaluation.candidate_identity import candidate_identity  # noqa: E402
 from app.evaluation.candidate_proof import RunProofKey  # noqa: E402
 from app.evaluation.provider_approval import approval_payload, load_approval  # noqa: E402
 from app.evaluation.provider_guard import RunBinding, issue_run_binding  # noqa: E402
@@ -81,14 +82,19 @@ class Wire(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(body)
 
-    def log_message(self, *args: Any) -> None:
+    def log_message(self, format: str, *args: Any) -> None:
         return
+
+
+class WireServer(ThreadingHTTPServer):
+    # The concurrency scenario sends 24 clients at once; the default backlog is 5.
+    request_queue_size = 32
 
 
 @contextmanager
 def wire(*, status: int = 200) -> Iterator[tuple[str, list[str]]]:
     handler = type("StatusWire", (Wire,), {"status": status})
-    server = ThreadingHTTPServer(("127.0.0.1", 0), handler)
+    server = WireServer(("127.0.0.1", 0), handler)
     server.hits = []  # type: ignore[attr-defined]
     thread = threading.Thread(target=server.serve_forever, daemon=True)
     thread.start()
@@ -140,11 +146,13 @@ def approval_for(
     cases: int = CASES,
 ) -> tuple[Any, RunBinding]:
     """Build, seal and verify one approval exactly as the operator would."""
+    candidate = candidate_identity()
     payload = approval_payload(
         approved=True,
         approver="operator",
         approved_at=APPROVED_AT,
         identity_sha256=identity,
+        candidate=candidate,
         labels_sha256=labels,
         case_count=cases,
         provider_base_url=base_url,
@@ -155,7 +163,13 @@ def approval_for(
         ledger_root=str(directory / "ledger"),
     )
     path = dump(directory / "approval.json", payload)
-    approval = load_approval(path, identity_sha256=identity, labels_sha256=labels, case_count=cases)
+    approval = load_approval(
+        path,
+        identity_sha256=identity,
+        labels_sha256=labels,
+        case_count=cases,
+        candidate=candidate,
+    )
     binding, key = issue_run_binding(approval)
     _PROOF_KEYS[binding.run_id] = key
     return approval, binding

@@ -17,7 +17,7 @@ from urllib.parse import urlsplit
 
 from app.evaluation.spend_bound import MAX_ATTEMPTS, SpendBound, SpendError
 
-APPROVAL_SCHEMA = "evaluation-budget-approval-v2"
+APPROVAL_SCHEMA = "evaluation-budget-approval-v4"
 APPROVAL_PURPOSE = "bounded-service-evaluation"
 DEFAULT_LEDGER_ROOT = "~/.knicksiq/eval-ledger"
 CAP_CEILING = MAX_ATTEMPTS
@@ -29,6 +29,7 @@ _APPROVAL_FIELDS = (
     "approver",
     "approved_at",
     "identity_sha256",
+    "candidate",
     "labels_sha256",
     "case_count",
     "provider_base_url",
@@ -92,6 +93,7 @@ class ServiceApproval:
     approver: str
     approved_at: str
     identity_sha256: str
+    candidate: dict[str, Any]
     labels_sha256: str
     case_count: int
     provider_base_url: str
@@ -129,6 +131,7 @@ def approval_payload(
     approver: str,
     approved_at: str,
     identity_sha256: str,
+    candidate: dict[str, Any],
     labels_sha256: str,
     case_count: int,
     provider_base_url: str,
@@ -147,6 +150,7 @@ def approval_payload(
         "approver": str(approver or ""),
         "approved_at": str(approved_at or ""),
         "identity_sha256": str(identity_sha256),
+        "candidate": candidate,
         "labels_sha256": str(labels_sha256),
         "case_count": case_count,
         "provider_base_url": str(provider_base_url or ""),
@@ -177,6 +181,17 @@ def _approval_problems(payload: Any) -> list[str]:
         problems.append("approval_timestamp_invalid")
     if not is_hex64(payload.get("identity_sha256")):
         problems.append("approval_identity_missing")
+    candidate = payload.get("candidate")
+    if (
+        not isinstance(candidate, dict)
+        or set(candidate) != {"commit", "source_sha256", "dirty"}
+        or not isinstance(candidate.get("commit"), str)
+        or len(candidate["commit"]) not in (40, 64)
+        or any(c not in "0123456789abcdef" for c in candidate["commit"])
+        or not is_hex64(candidate.get("source_sha256"))
+        or type(candidate.get("dirty")) is not bool
+    ):
+        problems.append("approval_candidate_invalid")
     if not is_hex64(payload.get("labels_sha256")):
         problems.append("approval_labels_missing")
     cases = payload.get("case_count")
@@ -214,6 +229,7 @@ def load_approval(
     path: Path,
     *,
     identity_sha256: str,
+    candidate: dict[str, Any],
     labels_sha256: str,
     case_count: int,
 ) -> ServiceApproval:
@@ -226,6 +242,8 @@ def load_approval(
     if not problems:
         if payload["identity_sha256"] != identity_sha256:
             problems.append("approval_identity_mismatch")
+        if payload["candidate"] != candidate:
+            problems.append("approval_candidate_mismatch")
         if payload["labels_sha256"] != labels_sha256:
             problems.append("approval_labels_mismatch")
         if payload["case_count"] != case_count:
@@ -238,6 +256,7 @@ def load_approval(
         approver=str(payload["approver"]).strip(),
         approved_at=_timestamp(payload["approved_at"]),
         identity_sha256=str(payload["identity_sha256"]),
+        candidate=dict(payload["candidate"]),
         labels_sha256=str(payload["labels_sha256"]),
         case_count=int(payload["case_count"]),
         provider_base_url=str(payload["provider_base_url"]).strip(),

@@ -41,8 +41,10 @@ class EvidenceRecord:
     value_decimals: int | None
     made: float | None
     attempted: float | None
-    source_row: dict[str, Any] | None
-    payload: dict[str, Any] | None
+    source_row: dict[str, Any] | None = None
+    payload: dict[str, Any] | None = None
+    event_window: dict[str, Any] | None = None
+    event_rows: tuple[dict[str, Any], ...] = ()
 
     @classmethod
     def from_dict(cls, value: dict[str, Any]) -> EvidenceRecord:
@@ -94,6 +96,14 @@ class EvidenceRecord:
             attempted=_optional_number(ingredients.get("attempted")),
             source_row=source_row,
             payload=payload,
+            event_window=(
+                metadata.get("event_window")
+                if isinstance(metadata.get("event_window"), dict)
+                else None
+            ),
+            event_rows=tuple(row for row in metadata.get("rows", []) if isinstance(row, dict))
+            if isinstance(metadata.get("rows"), list)
+            else (),
         )
 
 

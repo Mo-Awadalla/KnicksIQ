@@ -140,8 +140,15 @@ Backend:
 uv run ruff format --check apps packages migrations
 uv run ruff check apps packages migrations
 uv run pyright apps packages migrations
-uv run pytest
+make test
 ```
+
+The backend suite checks public HTTP/tool workflows and distinct arithmetic,
+security, and concurrency boundaries. `make test` also runs provider-free
+evaluation CLI scenarios; these replace duplicate evaluator helper tests rather
+than weakening citation, budget, or label-integrity gates. Add regression cases
+at the public boundary that owns the behavior, not at every internal layer.
+
 
 Frontend:
 

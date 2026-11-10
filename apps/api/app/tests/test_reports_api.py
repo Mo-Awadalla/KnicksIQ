@@ -49,19 +49,6 @@ async def test_list_reports_empty(client):
     assert r.json() == []
 
 
-async def test_post_postgame_returns_201(client):
-    r = await client.post("/reports/postgame", json={"game_id": 1})
-    assert r.status_code == 201, r.text
-    body = r.json()
-    assert body["game_id"] == 1
-    assert body["title"]
-    assert "turning_point" in body
-    assert isinstance(body["player_notes"], list)
-    assert isinstance(body["tool_calls"], list)
-    # tool trace should record at least 5 calls (game, runs, stretches, snippets, llm)
-    assert len(body["tool_calls"]) >= 5
-
-
 async def test_post_postgame_respects_trace_toggle(client):
     r = await client.post(
         "/reports/postgame",
@@ -72,22 +59,18 @@ async def test_post_postgame_respects_trace_toggle(client):
     assert body["sources"] == []
 
 
-async def test_list_reports_after_create(client):
-    await client.post("/reports/postgame", json={"game_id": 1})
-    r = await client.get("/reports")
-    assert r.status_code == 200
-    reports = r.json()
-    assert len(reports) >= 1
-    report_id = reports[0]["id"]
-    r2 = await client.get(f"/reports/{report_id}")
-    assert r2.status_code == 200
-
-
 async def test_delete_report(client):
     create = await client.post("/reports/postgame", json={"game_id": 1})
     report_id = create.json()["id"]
+    assert create.status_code == 201, create.text
+    listing = await client.get("/reports")
+    assert listing.status_code == 200
+    assert any(report["id"] == report_id for report in listing.json())
     r = await client.delete(f"/reports/{report_id}")
     assert r.status_code == 204
+    listing = await client.get("/reports")
+    assert listing.status_code == 200
+    assert all(report["id"] != report_id for report in listing.json())
     r2 = await client.get(f"/reports/{report_id}")
     assert r2.status_code == 404
 

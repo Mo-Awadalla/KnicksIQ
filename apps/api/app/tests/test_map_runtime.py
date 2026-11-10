@@ -21,6 +21,7 @@ from app.models import Base
 from app.models.box_score import PeriodScore, PlayerGameStat, TeamGameStat
 from app.models.dataset_release import DatasetRelease
 from app.models.game import Game
+from app.models.game_event import GameEvent
 from app.models.player import Player
 from app.models.team import Team
 from app.services.release_bundle import canonical_json
@@ -152,11 +153,30 @@ def _bundle() -> dict[str, Any]:
         dict(PERIOD_FIELDS),
         _second(PERIOD_FIELDS, nba_game_id="0022500018", points=30),
     ]
+    events = [
+        {
+            "nba_game_id": GAME_FIELDS["nba_game_id"],
+            "sequence": 1,
+            "period": 1,
+            "clock": "11:36",
+            "nba_player_id": 1628384,
+            "team_id": "NYK",
+            "event_type": "made_shot",
+            "description": "Jalen Brunson made 2pt jumper",
+            "home_score": 2,
+            "away_score": 0,
+            "score_margin": 2,
+            "shot_type": "2pt",
+            "shot_result": "made",
+            "shot_distance_ft": 8,
+        }
+    ]
     return {
         "games": games,
         "player_game_stats": player_stats,
         "team_game_stats": team_stats,
         "period_scores": periods,
+        "events": events,
         "players": [
             {"nba_player_id": 1628384, "full_name": "Jalen Brunson"},
             {"nba_player_id": 1626157, "full_name": "Karl-Anthony Towns"},
@@ -194,7 +214,16 @@ def _write_bundle(path: Path, content: dict[str, Any]) -> str:
 
 TABLES = [
     Base.metadata.tables[model.__tablename__]
-    for model in (DatasetRelease, Team, Player, Game, PlayerGameStat, TeamGameStat, PeriodScore)
+    for model in (
+        DatasetRelease,
+        Team,
+        Player,
+        Game,
+        GameEvent,
+        PlayerGameStat,
+        TeamGameStat,
+        PeriodScore,
+    )
 ]
 
 
@@ -231,8 +260,21 @@ async def _seed(path: Path, *, bundle_sha256: str) -> tuple[Any, Any]:
             row["release_id"] = release.id
             game = Game(**row)
             db.add(game)
-            await db.flush()
             games[game.nba_game_id] = game
+            await db.flush()
+        for raw in content["events"]:
+            db.add(
+                GameEvent(
+                    game_id=games[raw["nba_game_id"]].id,
+                    player_id=players[raw["nba_player_id"]].id,
+                    **{
+                        key: value
+                        for key, value in raw.items()
+                        if key not in {"nba_game_id", "nba_player_id"}
+                    },
+                )
+            )
+
         for raw in content["player_game_stats"]:
             row = {
                 key: value
@@ -293,8 +335,12 @@ async def test_verified_restore_generates_the_recorded_mapping(restore) -> None:
     assert box["runtime_receipt"] == f"{VERSION}:game:{box['game_id']}:player:{box['player_id']}"
     assert payload["rows"]["team_box:0022500003:NYK"]["row_sha256"] == digest(TEAM_STAT_FIELDS)
     assert payload["rows"]["period:0022500003:NYK:1"]["row_sha256"] == digest(PERIOD_FIELDS)
+    event = payload["rows"]["event:0022500003:1"]
+    assert event["collection"] == "game_events"
+    assert event["row_sha256"] == digest(restore["bundle"]["data"]["events"][0])
+    assert event["runtime_receipt"] == f"{VERSION}:events:{event['game_id']}:1"
     assert payload["players"]["1628384"]["name"] == "Jalen Brunson"
-    assert len(payload["rows"]) == 9
+    assert len(payload["rows"]) == 10
     assert len(payload["players"]) == 2
 
 

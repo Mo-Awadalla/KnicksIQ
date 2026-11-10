@@ -7,7 +7,6 @@ claimed hash never stands in for content that was actually produced and checked.
 
 from __future__ import annotations
 
-import hashlib
 import json
 from datetime import UTC, date, datetime
 from pathlib import Path
@@ -36,12 +35,6 @@ from app.services.evidence_contracts import Evidence, ToolCall
 from sqlalchemy import select
 
 VERSION = "2025-26.provenance-test"
-
-
-def calculation_reference(*, subject: str, metric: str, sources: list[str], value: float) -> str:
-    """The recipe ``app.evaluation.mapping`` recomputes."""
-    body = json.dumps([VERSION, subject, metric, sources, value], sort_keys=True)
-    return "calculation:" + hashlib.sha256(body.encode()).hexdigest()
 
 
 ARCHIVE = (
@@ -286,144 +279,6 @@ def _projection(home_score: int = 119) -> dict:
     game.away_team_id = "BOS"
     game.status = "final"
     return game_projection(game)
-
-
-def _source_record(receipt: str, projection: dict) -> EvidenceRecord:
-    return EvidenceRecord.from_dict(
-        {
-            "evidence_id": receipt,
-            "release_id": VERSION,
-            "text": "row",
-            "source_row": projection,
-            "row_sha256": provenance_digest(projection),
-        }
-    )
-
-
-def test_evaluator_accepts_only_content_that_matches_its_computed_hash(tmp_path: Path) -> None:
-    projection = _projection()
-    mapping = _mapping(tmp_path, {"game:0022500003": _row_entry(projection, 1, 12)})
-    reference = f"{VERSION}:game:12"
-    claim = None
-
-    verified = EvidenceRecord.from_dict(
-        {
-            "evidence_id": reference,
-            "release_id": VERSION,
-            "text": "row",
-            "game_id": 12,
-            "source_row_id": 1,
-            "source_row": projection,
-            "metadata": {"row_sha256": provenance_digest(projection)},
-        }
-    )
-    resolution = mapping.resolve_citation(reference, claim)
-    assert _content_problem(reference, resolution, mapping, {reference: verified}) is None
-
-    tampered = EvidenceRecord.from_dict(
-        {
-            "evidence_id": reference,
-            "release_id": VERSION,
-            "text": "row",
-            "game_id": 12,
-            "source_row_id": 1,
-            "source_row": _projection(home_score=120),
-            "metadata": {"row_sha256": provenance_digest(projection)},
-        }
-    )
-    assert (
-        _content_problem(reference, resolution, mapping, {reference: tampered})
-        == "citation_content_mismatch"
-    )
-
-    claimed_only = EvidenceRecord.from_dict(
-        {
-            "evidence_id": reference,
-            "release_id": VERSION,
-            "text": "row",
-            "game_id": 12,
-            "source_row_id": 1,
-            "metadata": {"row_sha256": provenance_digest(projection)},
-        }
-    )
-    assert (
-        _content_problem(reference, resolution, mapping, {reference: claimed_only})
-        == "citation_content_unverified"
-    )
-
-
-def test_evaluator_rejects_a_calculation_sample_beyond_its_expansion(tmp_path: Path) -> None:
-    projection = _projection()
-    rows = {"game:0022500003": _row_entry(projection, 1, 12)}
-    mapping = _mapping(tmp_path, rows)
-    sources = [f"{VERSION}:game:12"]
-    value = 119.0
-    reference = calculation_reference(
-        subject="team:NYK", metric="points", sources=sources, value=value
-    )
-    claim = {
-        "subject_id": "team:NYK",
-        "metric_id": "points",
-        "value": value,
-        "denominator": None,
-        "sample_size": 4,
-    }
-    record = EvidenceRecord.from_dict(
-        {
-            "evidence_id": reference,
-            "release_id": VERSION,
-            "text": "calc",
-            "metadata": {
-                "source_evidence_ids": sources,
-                "calculation_version": "analyst-v1",
-                "sample_size": 4,
-                "denominator": None,
-            },
-        }
-    )
-    resolution = mapping.resolve_citation(
-        reference,
-        claim,
-        registry={reference: record, sources[0]: _source_record(sources[0], projection)},
-    )
-    assert resolution.problems == ("calculation_population_mismatch",)
-
-
-def test_evaluator_rejects_numerator_inconsistent_with_value(tmp_path: Path) -> None:
-    projection = _projection()
-    mapping = _mapping(tmp_path, {"game:0022500003": _row_entry(projection, 1, 12)})
-    sources = [f"{VERSION}:game:12"]
-    value = 119.0
-    reference = calculation_reference(
-        subject="team:NYK", metric="points_per_game", sources=sources, value=value
-    )
-    claim = {
-        "subject_id": "team:NYK",
-        "metric_id": "points_per_game",
-        "value": value,
-        "denominator": 1.0,
-        "sample_size": 1,
-    }
-    record = EvidenceRecord.from_dict(
-        {
-            "evidence_id": reference,
-            "release_id": VERSION,
-            "text": "calc",
-            "metadata": {
-                "source_evidence_ids": sources,
-                "calculation_version": "analyst-v1",
-                "sample_size": 1,
-                "denominator": 1.0,
-                "numerator": 118.0,
-            },
-        }
-    )
-    resolution = mapping.resolve_citation(
-        reference,
-        claim,
-        registry={reference: record, sources[0]: _source_record(sources[0], projection)},
-    )
-    assert resolution.problems == ("calculation_arithmetic_mismatch",)
 
 
 def test_player_stat_projection_uses_relational_nba_ids() -> None:

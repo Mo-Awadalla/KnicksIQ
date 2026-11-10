@@ -6,7 +6,6 @@ import asyncio
 import hashlib
 import hmac
 import logging
-import re
 import time
 from typing import Any
 
@@ -17,7 +16,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.api import analysis_policy as runtime
 from app.api.analysis_generation import _generate_grounded_answer
 from app.models.dataset_release import DatasetRelease
-from app.models.game import Game
 from app.services.archive_retrieval import (
     ArchiveEvidence,
     RetrievalTrace,
@@ -27,39 +25,15 @@ from app.services.archive_retrieval import (
     search_archive_vectors,
 )
 from app.services.query_resolution import ResolvedQuery
-from app.services.releases import restrict_to_active_release
 from app.services.retrieval_planner import (
     RetrievalPlan,
     RetrievalPlanFilters,
     maybe_plan_retrieval,
 )
-from app.services.team_scope import scope_games, scores
 
 logger = logging.getLogger(__name__)
 
 _SHADOW_SAMPLE_DOMAIN = "analysis-shadow-sample:"
-
-
-async def _matching_games(db: AsyncSession, question: str, season: str) -> list[Game]:
-    stmt = (
-        select(Game)
-        .where(Game.season == season)
-        .where((Game.home_team_id == "NYK") | (Game.away_team_id == "NYK"))
-        .order_by(Game.game_date.desc())
-    )
-    stmt = restrict_to_active_release(stmt)
-    games = (await db.execute(stmt)).scalars().all()
-    selected = scope_games(question, list(games))
-    q = question.lower()
-    if "closest" in q and selected:
-        minimum = min(abs(scores(game)[0] - scores(game)[1]) for game in selected)
-        selected = [game for game in selected if abs(scores(game)[0] - scores(game)[1]) == minimum]
-    elif "best defensive game" in q and selected:
-        minimum = min(scores(game)[1] for game in selected)
-        selected = [game for game in selected if scores(game)[1] == minimum]
-    if re.search(r"\b(?:the|boston|toronto|atlanta|chicago|charlotte) loss\b", q):
-        selected = [game for game in selected if scores(game)[0] < scores(game)[1]]
-    return selected
 
 
 async def _active_data_version(db: AsyncSession) -> str:

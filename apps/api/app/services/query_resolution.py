@@ -45,6 +45,7 @@ from app.services.query_scope_parsing import (
     games_in_scope,
 )
 from app.services.team_aliases import team_ids_in_text
+from app.services.team_scope import best_defensive_game, closest_games
 from pydantic import BaseModel, ConfigDict, Field
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -337,17 +338,12 @@ async def resolve_query(
             )
         ]
         descriptive_reference = True
+    closest = closest_games(q, candidates)
+    if closest is not None:
+        candidates = closest
+        descriptive_reference = True
     if "best defensive game" in q and candidates:
-        candidates = [
-            min(
-                candidates,
-                key=lambda game: (
-                    game.away_score if game.home_team_id == "NYK" else game.home_score,
-                    game.game_date,
-                    game.id,
-                ),
-            )
-        ]
+        candidates = [best_defensive_game(candidates)]
         descriptive_reference = True
     if "overtime game" in q and game_ids:
         overtime_ids = set(
@@ -444,6 +440,9 @@ async def resolve_query(
             clarification_options = list(premise.options)
         else:
             clarification_reason = "ambiguous_game"
+            clarification_question = f"Which game do you mean? I found {len(candidates)} matches."
+            if len(candidates) > 8:
+                clarification_question += " Showing the first 8:"
             clarification_options = [
                 f"{game.game_date}: {game.away_team_id} at {game.home_team_id}"
                 for game in candidates[:8]

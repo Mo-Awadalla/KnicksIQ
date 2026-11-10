@@ -23,6 +23,7 @@ from app.evaluation.attempt_ledger import (
     LedgerError,
     attest,
 )
+from app.evaluation.candidate_identity import candidate_identity
 from app.evaluation.candidate_proof import RunProofKey
 from app.evaluation.labels import (
     LabelSet,
@@ -108,6 +109,10 @@ def prepare_approval(
     identity_sha256, labels = evaluation_identity_of(
         args, questions=questions, expectations=expectations
     )
+    try:
+        candidate = candidate_identity()
+    except (OSError, RuntimeError) as exc:
+        raise RunnerFailure("cannot identify candidate worktree") from exc
     cap = intent["max_provider_requests"]
     if type(cap) is not int or not 1 <= cap <= MAX_ATTEMPTS:
         raise RunnerFailure("intent max_provider_requests is invalid")
@@ -122,6 +127,7 @@ def prepare_approval(
         approver=str(intent["approver"]),
         approved_at=str(intent["approved_at"]),
         identity_sha256=identity_sha256,
+        candidate=candidate,
         labels_sha256=labels.labels_sha256,
         case_count=labels.case_count,
         provider_base_url=str(intent["provider_base_url"]),
@@ -139,6 +145,7 @@ def prepare_approval(
                 "approval": os.path.relpath(approval_path, Path.cwd()),
                 "approved": payload["approved"],
                 "identity_sha256": identity_sha256,
+                "candidate": candidate,
                 "case_count": labels.case_count,
                 "budget_sha256": payload["budget_sha256"],
                 "note": "prepared from the operator's intent; this run authorised nothing",
@@ -169,9 +176,14 @@ def service_settings(
         args, questions=questions, expectations=expectations
     )
     try:
+        candidate = candidate_identity()
+    except (OSError, RuntimeError) as exc:
+        raise RunnerFailure("cannot identify candidate worktree") from exc
+    try:
         approval = load_approval(
             approval_path,
             identity_sha256=identity_sha256,
+            candidate=candidate,
             labels_sha256=labels.labels_sha256,
             case_count=labels.case_count,
         )

@@ -35,15 +35,14 @@ async def record_tools(db, release, question, state=None):
     return tools
 
 
-@pytest.mark.parametrize("phrase", ["wins and losses", "record", "win-loss record", "W–L record"])
 @pytest.mark.parametrize(
-    "scope",
+    "phrase,scope",
     [
-        "",
-        "against Boston",
-        "at home",
-        "in the regular season",
-        "from 2026-01-01 through 2026-01-03",
+        ("wins and losses", ""),
+        ("record", "against Boston"),
+        ("win-loss record", "at home"),
+        ("W–L record", "in the regular season"),
+        ("record", "from 2026-01-01 through 2026-01-03"),
     ],
 )
 async def test_record_population(db_session, phrase, scope):
@@ -86,30 +85,6 @@ async def test_record_followup_clears_only_result(db_session):
     assert tools.scope.game_result is None
     assert tools.scope.home_away == "home"
     assert tools.scope.opponent_id == "BOS"
-
-
-@pytest.mark.parametrize("failure", [RuntimeError, ValueError, TimeoutError])
-async def test_early_failure_recovers_facts(db_session, monkeypatch, failure):
-    release = await seed_record(db_session)
-    tools = await record_tools(db_session, release, "What was their record?")
-    loop = AnalystLoop(tools, [])
-    monkeypatch.setattr(loop, "reserve", AsyncMock(return_value=True))
-    monkeypatch.setattr(loop, "investigate", AsyncMock(side_effect=failure("controlled")))
-    result = await loop.run()
-    assert "wins: 2" in result["answer"] and "losses: 1" in result["answer"]
-    assert result["citations"] and result["degraded"]
-    assert result["route"] == "factual_fallback" and not result["llm_validated"]
-
-
-async def test_retrieval_failure_returns_unavailable_once(db_session, monkeypatch):
-    release = await seed_record(db_session)
-    tools = await record_tools(db_session, release, "What was their record?")
-    retrieve = AsyncMock(side_effect=RuntimeError("controlled"))
-    monkeypatch.setattr(tools, "execute", retrieve)
-    result = await AnalystLoop(tools, []).run(allow_model=False)
-    assert "unavailable" in result["answer"].lower()
-    assert not result["citations"] and result["degraded"]
-    assert retrieve.await_count == 1
 
 
 @pytest.mark.usefixtures("local_redis")

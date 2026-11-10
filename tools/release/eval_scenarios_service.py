@@ -15,6 +15,7 @@ import subprocess
 import sys
 from pathlib import Path
 
+from app.evaluation.candidate_identity import candidate_identity  # noqa: E402
 from app.evaluation.labels import (  # noqa: E402
     evaluation_identity,
     identity_digest,
@@ -177,6 +178,11 @@ def scenario_collect_service_run_stamp(directory: Path) -> list[str]:
     expect(scored.returncode == 0, f"score failed: {scored.stderr[-800:]}", problems)
     if report_path.exists():
         report = load(report_path)
+        expect(
+            report["profile"].get("candidate") == binding.candidate,
+            "service report identifies the bound candidate",
+            problems,
+        )
         codes = [item["code"] for item in report["blockers"]]
         expect(
             "service_guard_unattested" in codes,
@@ -351,6 +357,7 @@ def scenario_runner_service_refuses_without_inputs(directory: Path) -> list[str]
             approver="operator",
             approved_at=APPROVED_AT,
             identity_sha256="e" * 64,
+            candidate=candidate_identity(),
             labels_sha256=LABELS,
             case_count=CASES,
             provider_base_url="http://127.0.0.1:9/v1",
@@ -392,6 +399,7 @@ def scenario_runner_service_refuses_without_inputs(directory: Path) -> list[str]
             approver="operator",
             approved_at=APPROVED_AT,
             identity_sha256=identity_sha256,
+            candidate=candidate_identity(),
             labels_sha256=labels_sha256,
             case_count=case_count,
             provider_base_url="http://127.0.0.1:9/v1",
