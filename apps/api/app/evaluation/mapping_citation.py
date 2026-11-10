@@ -18,6 +18,8 @@ loaders; the mapping exposes it as ``resolve_citation`` and ``resolve_document``
 
 from __future__ import annotations
 
+import hashlib
+import json
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any
 
@@ -111,6 +113,8 @@ def resolve_citation(
         return unresolved(reference, "citation_empty_reference")
     if reference.startswith(CALCULATION_PREFIX):
         return _resolve_calculation(mapping, reference, claim or {}, registry or {}, content)
+    if reference.startswith(f"{mapping.version}:event-window:"):
+        return _resolve_event_window(mapping, reference, claim or {}, registry or {})
     return _resolve_receipt(mapping, reference)
 
 
@@ -158,6 +162,106 @@ def _resolve_receipt(mapping: RuntimeMapping, reference: str) -> CitationResolut
     if mapping.canonical_for_game(source_row.game_id) != mapping.canonical_for_game(game_reference):
         return unresolved(reference, "citation_game_mismatch")
     return CitationResolution(reference, "receipt", (source_row.canonical_id,), (reference,))
+
+
+def _resolve_event_window(
+    mapping: RuntimeMapping,
+    reference: str,
+    claim: dict[str, Any],
+    registry: dict[str, EvidenceRecord],
+) -> CitationResolution:
+    root = registry.get(reference)
+    if root is None:
+        return unresolved(reference, "event_window_registry_missing")
+    rows, window, sources = root.event_rows, root.event_window, root.source_evidence_ids
+    if (
+        root.release_id != mapping.version
+        or root.game_id is None
+        or mapping.canonical_for_game(root.game_id) is None
+    ):
+        return unresolved(reference, "event_window_release_mismatch")
+    if not rows or len(rows) != len(sources) or len(set(sources)) != len(sources) or window is None:
+        return unresolved(reference, "event_window_expansion_missing")
+    if (
+        claim.get("metric_id") != "event_window"
+        or claim.get("value") != {"rows": list(rows)}
+        or claim.get("window") != window
+        or claim.get("game_ids") != [root.game_id]
+    ):
+        return unresolved(reference, "event_window_claim_mismatch")
+    digest = hashlib.sha256(
+        json.dumps([mapping.version, root.game_id, window, list(rows)], sort_keys=True).encode()
+    ).hexdigest()
+    if reference != f"{mapping.version}:event-window:{digest}":
+        return unresolved(reference, "event_window_digest_mismatch")
+    bounds = window.get("seconds_remaining")
+    periods = window.get("periods")
+    if not isinstance(bounds, dict) or not isinstance(periods, list):
+        return unresolved(reference, "event_window_bounds_invalid")
+    canonical: list[str] = []
+    for source_id, public in zip(sources, rows, strict=True):
+        source = mapping.row_by_receipt.get(source_id)
+        evidence = registry.get(source_id)
+        if (
+            source is None
+            or evidence is None
+            or source.collection != "game_events"
+            or source.game_id != root.game_id
+            or source.release_id != mapping.release_id
+            or evidence.release_id != mapping.version
+            or evidence.game_id != root.game_id
+            or source.source_row is None
+            or evidence.source_row is None
+            or evidence.source_row != source.source_row
+            or evidence.source_row_id != source.database_row_id
+            or evidence.row_sha256 != source.row_sha256
+            or canonical_digest(evidence.source_row) != source.row_sha256
+        ):
+            return unresolved(reference, "event_window_source_unverified")
+        snapshot = source.source_row
+        if snapshot is None:
+            return unresolved(reference, "event_window_source_unverified")
+        period, sequence = snapshot.get("period"), snapshot.get("sequence")
+        if type(period) is not int or type(sequence) is not int:
+            return unresolved(reference, "event_window_source_unverified")
+        if evidence.sequence_id != sequence or source_id != (
+            f"{mapping.version}:events:{source.game_id}:{sequence}"
+        ):
+            return unresolved(reference, "event_window_source_unverified")
+        if (
+            public.get("event_id") != source.database_row_id
+            or public.get("game_id") != root.game_id
+            or public.get("sequence") != sequence
+            or public.get("period") != period
+            or public.get("clock") != snapshot.get("clock")
+            or public.get("team_id") != snapshot.get("team_id")
+            or public.get("player_id") != source.player_id
+            or public.get("event_type") != snapshot.get("event_type")
+            or public.get("description") != snapshot.get("description")
+            or public.get("home_score") != snapshot.get("home_score")
+            or public.get("away_score") != snapshot.get("away_score")
+        ):
+            return unresolved(reference, "event_window_rows_mismatch")
+        try:
+            minute, second = map(int, str(public["clock"]).split(":"))
+            span = bounds[str(period)]
+            low, high = span["min"], span["max"]
+            maximum = 720 if period <= 4 else 300
+            if (
+                period not in periods
+                or not isinstance(low, int)
+                or not isinstance(high, int)
+                or low < 0
+                or high > maximum
+                or low > high
+            ):
+                raise ValueError
+        except (KeyError, TypeError, ValueError):
+            return unresolved(reference, "event_window_bounds_invalid")
+        if not low <= minute * 60 + second <= high:
+            return unresolved(reference, "event_window_row_out_of_bounds")
+        canonical.append(source.canonical_id)
+    return CitationResolution(reference, "receipt", tuple(canonical), sources)
 
 
 def _resolve_calculation(

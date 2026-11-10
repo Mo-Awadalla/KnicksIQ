@@ -18,6 +18,14 @@ from app.services.analyst_game_summary import game_summary
 from app.services.analyst_player_stats import leaderboard, player, player_threshold
 
 
+def season_matches(tools: AnalystTools) -> bool:
+    """Whether both request fields and explicit season text match this release."""
+    return tools.season == tools.release.season and all(
+        season == tools.release.season
+        for season in re.findall(r"\b20\d{2}-\d{2}(?!-\d{2})\b", tools.question)
+    )
+
+
 async def execute_call(tools: AnalystTools, call: ToolCall) -> ToolResult:
     assert tools.scope is not None
     if call.name == "get_evidence":
@@ -44,14 +52,7 @@ async def execute_call(tools: AnalystTools, call: ToolCall) -> ToolResult:
             message=tools.scope.operation_reason,
             scope=tools.scope.model_dump(mode="json"),
         )
-    if (
-        tools.season != tools.release.season
-        or re.search(r"\b20\d{2}-\d{2}(?!-\d{2})\b", tools.question)
-        and any(
-            s != tools.release.season
-            for s in re.findall(r"\b20\d{2}-\d{2}(?!-\d{2})\b", tools.question)
-        )
-    ):
+    if not season_matches(tools):
         return ToolResult(
             status="unsupported_metric_or_scope",
             message=f"Available season: {tools.release.season}.",

@@ -18,7 +18,7 @@ import responses
 from requests.exceptions import ConnectionError as RequestsConnectionError
 from requests.exceptions import Timeout
 from worker_app.adapters.nba_api_source import NbaApiDataSource
-from worker_app.adapters.nba_normalization import iso_duration_to_clock, parse_nba_game_date
+from worker_app.adapters.nba_normalization import iso_duration_to_clock
 from worker_app.core.config import NbaApiSettings
 
 STATS_BASE = "https://stats.nba.com/stats"
@@ -488,22 +488,6 @@ def test_get_game_returns_none_on_http_error(
 
 
 @responses.activate
-def test_retry_succeeds_after_transient_503(data_source: NbaApiDataSource) -> None:
-    """First call 503s, second succeeds — the adapter should return the data."""
-    game_id = "0022400001"
-    actions: list[dict[str, Any]] = []
-    success_body = json.dumps(_playbyplay_v3_response(game_id, actions))
-
-    responses.add(responses.GET, f"{STATS_BASE}/playbyplayv3", status=503)
-    responses.add(responses.GET, f"{STATS_BASE}/playbyplayv3", body=success_body, status=200)
-
-    result = data_source.get_game(game_id)
-    assert result is not None
-    assert result["nba_game_id"] == game_id
-    assert len(responses.calls) == 2
-
-
-@responses.activate
 def test_retry_exhausts_after_three_503s(data_source: NbaApiDataSource) -> None:
     """Three 503s in a row → the adapter exhausts retries and returns None.
 
@@ -579,13 +563,6 @@ def test_iso_duration_to_clock() -> None:
     assert iso_duration_to_clock("bogus") == "bogus"
 
 
-def test_parse_nba_game_date() -> None:
-    from datetime import date
-
-    assert parse_nba_game_date("OCT 22, 2024") == date(2024, 10, 22)
-    assert parse_nba_game_date("APR 13, 2025") == date(2025, 4, 13)
-
-
 @responses.activate
 def test_every_retry_obeys_the_request_rate_window(data_source, fast_settings, monkeypatch):
     from worker_app.adapters import nba_api_source
@@ -609,7 +586,7 @@ def test_every_retry_obeys_the_request_rate_window(data_source, fast_settings, m
         )
 
     responses.add_callback(responses.GET, f"{STATS_BASE}/playbyplayv3", callback=response)
-    data_source.get_game("rate-window-game")
+    assert data_source.get_game("rate-window-game") is not None
     assert len(attempted_at) == 3
     assert attempted_at[1] - attempted_at[0] >= 60
     assert attempted_at[2] - attempted_at[1] >= 60

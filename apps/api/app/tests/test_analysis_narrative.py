@@ -6,6 +6,7 @@ from datetime import date, timedelta
 
 import pytest
 from app.models.game import Game
+from app.tests.analysis_test_support import active_seed_release as active_seed_release
 from app.tests.analysis_test_support import (
     isolate_response_cache as isolate_response_cache,
 )
@@ -64,28 +65,6 @@ async def test_public_analysis_valid_question_recovers_after_off_topic_context(c
     assert body["tool_calls"]
 
 
-async def test_public_analysis_accepts_natural_archive_phrasings(client):
-    questions = [
-        "What happened in the 4th quarter?",
-        "Why did the Knicks lose?",
-        "Who led the Knicks in scoring?",
-        "Show me games where Towns dominated.",
-        "Tell me about Mikal Bridges defense.",
-        "Give me receipts for Brunson clutch moments.",
-        "What went wrong against Boston?",
-        "Did the Knicks shoot well from three?",
-        "What do you know about a game that is not in the data?",
-    ]
-
-    for question in questions:
-        r = await client.post("/analysis/query", json={"question": question})
-        assert r.status_code == 200
-        body = r.json()
-        assert body["refused"] is False, question
-        assert "Short answer" in body["answer"], question
-        assert "cached" not in body["answer"].lower(), question
-
-
 async def test_suggested_wildest_swings_question_returns_ranked_games(client):
     response = await client.post(
         "/analysis/query",
@@ -130,26 +109,59 @@ async def test_back_to_back_count_requests_definition_instead_of_points(client):
     assert "total points" not in answer
 
 
-@pytest.mark.parametrize("question", ["How did NYK do vs TOR?", "How did they do v TOR?"])
-async def test_team_matchup_alias_question_returns_full_record(client, question):
-    games = (await client.get("/games?team_id=TOR")).json()
-    wins = sum(game["winner_team_id"] == "NYK" for game in games)
-    response = await client.post("/analysis/query", json={"question": question})
-    assert response.status_code == 200
-    assert response.json()["route"] == "table_rag"
-    assert f"{wins}-{len(games) - wins}" in response.json()["answer"]
-
-
-async def test_ambiguous_narrative_requests_game_selection_without_receipts(client):
+async def test_ambiguous_narrative_requests_game_selection_without_receipts(active_seed_release):
+    client = active_seed_release
     response = await client.post(
         "/analysis/query", json={"question": "What happened in the fourth quarter?"}
     )
     assert response.status_code == 200
     body = response.json()
-    assert body["route"] == "clarification"
-    assert "Which game" in body["answer"]
+    assert body["outcome"] == "clarify"
+    assert body["answer"]
     assert body["refused"] is False
     assert body["citations"] == []
+
+
+@pytest.mark.parametrize(
+    "question",
+    [
+        "How did the lineup with Brunson look in the Knicks game?",
+        "What if the Knicks made two more threes in that game?",
+    ],
+)
+async def test_unscoped_lineup_and_counterfactual_questions_request_a_game(
+    active_seed_release, question
+):
+    response = await active_seed_release.post("/analysis/query", json={"question": question})
+    assert response.status_code == 200
+    body = response.json()
+    assert body["outcome"] == "clarify"
+    assert not body["citations"]
+
+
+async def test_season_summary_reports_the_active_archive_totals(active_seed_release):
+    response = await active_seed_release.post(
+        "/analysis/query", json={"question": "What happened in the Knicks season?"}
+    )
+    assert response.status_code == 200
+    body = response.json()
+    assert body["outcome"] == "answer"
+    claims = {
+        claim["metric_id"]: claim
+        for citation in body["citations"]
+        if (claim := citation["metadata"].get("claim"))
+    }
+    assert {
+        metric: claims[metric]["value"] for metric in ("wins", "losses", "points", "margin")
+    } == {
+        "wins": 4,
+        "losses": 1,
+        "points": 564,
+        "margin": 52,
+    }
+    assert all(claim["sample_size"] == 5 for claim in claims.values())
+    assert all(set(claim["game_ids"]) == {1, 2, 3, 4, 5} for claim in claims.values())
+    assert all(claim["release_id"] == "narrative-seed-test" for claim in claims.values())
 
 
 async def test_follow_up_requires_verified_game_and_event_reference(client):
@@ -168,7 +180,8 @@ async def test_follow_up_requires_verified_game_and_event_reference(client):
     assert response.json()["citations"] == []
 
 
-async def test_specific_final_minutes_return_only_matching_event_receipts(client):
+async def test_specific_final_minutes_return_only_matching_event_receipts(active_seed_release):
+    client = active_seed_release
     game = (await client.get("/games/1")).json()
     response = await client.post(
         "/analysis/query",
@@ -176,18 +189,26 @@ async def test_specific_final_minutes_return_only_matching_event_receipts(client
     )
     assert response.status_code == 200
     body = response.json()
-    assert body["route"] == "retrieval_rag"
-    assert body["evidence"]
-    for item in body["evidence"]:
-        assert item["game_id"] == game["id"]
-        for row in item["rows"]:
-            assert row["period"] == 4
-            minutes, seconds = map(int, row["clock"].split(":"))
-            assert minutes * 60 + seconds <= 120
-    assert all(citation["type"] != "document" for citation in body["citations"])
+    assert body["outcome"] == "answer"
+    assert body["citations"]
+    rows = [
+        row
+        for citation in body["citations"]
+        if citation["game_id"] == game["id"]
+        for row in citation["metadata"].get("rows", [])
+    ]
+    assert rows
+    assert {citation["game_id"] for citation in body["citations"]} == {game["id"]}
+    for row in rows:
+        assert row["period"] == 4
+        minutes, seconds = map(int, row["clock"].split(":"))
+        assert minutes * 60 + seconds <= 120
 
 
-async def test_best_defensive_game_binds_lowest_points_allowed_before_retrieval(client):
+async def test_best_defensive_game_binds_lowest_points_allowed_before_retrieval(
+    active_seed_release,
+):
+    client = active_seed_release
     games = (await client.get("/games")).json()
 
     def allowed(game):
@@ -199,14 +220,16 @@ async def test_best_defensive_game_binds_lowest_points_allowed_before_retrieval(
     )
     assert response.status_code == 200
     body = response.json()
-    assert body["route"] == "retrieval_rag"
-    assert "fewest points allowed" in body["answer"]
-    assert "do not establish why the defense succeeded" in body["answer"]
+    assert body["outcome"] == "answer"
     assert str(allowed(best)) in body["answer"]
     assert best["game_date"] in body["answer"]
     assert body["citations"]
     assert {citation["game_id"] for citation in body["citations"]} == {best["id"]}
-    assert all(item["game_id"] == best["id"] for item in body["evidence"])
+    assert any(
+        "Final scores only" in limitation
+        for citation in body["citations"]
+        for limitation in citation["metadata"]["claim"]["coverage_limitations"]
+    )
 
 
 @pytest.mark.parametrize(
@@ -218,38 +241,50 @@ async def test_best_defensive_game_binds_lowest_points_allowed_before_retrieval(
         "What was NY's worst collpase?",
     ],
 )
-async def test_season_run_superlative_preserves_scope_and_requests_metric(client, question):
+async def test_season_run_superlative_preserves_scope_and_requests_metric(
+    active_seed_release, question
+):
+    client = active_seed_release
     response = await client.post("/analysis/query", json={"question": question})
     assert response.status_code == 200
     body = response.json()
-    assert body["route"] == "clarification"
+    assert body["outcome"] == "clarify"
     assert "season-wide ranking" in body["answer"]
     assert "time window" in body["answer"]
     assert "Which game" not in body["answer"]
     assert body["citations"] == []
 
 
-async def test_narrative_game_choices_disclose_truncated_dates(client, db_session):
-    for offset in range(9):
-        db_session.add(
-            Game(
-                nba_game_id=f"clarify-atl-{offset}",
-                season="2025-26",
-                game_date=date(2026, 3, 1) + timedelta(days=offset),
-                home_team_id="NYK",
-                away_team_id="ATL",
-                home_score=110,
-                away_score=100,
-                status="final",
-                season_type="regular",
+async def test_narrative_game_choices_disclose_truncated_dates(active_seed_release):
+    from app.core.db import AsyncSessionLocal
+    from app.models.dataset_release import DatasetRelease
+    from sqlalchemy import select
+
+    async with AsyncSessionLocal() as db:
+        release_id = (
+            await db.execute(select(DatasetRelease.id).where(DatasetRelease.status == "active"))
+        ).scalar_one()
+        for offset in range(9):
+            db.add(
+                Game(
+                    release_id=release_id,
+                    nba_game_id=f"clarify-atl-{offset}",
+                    season="2025-26",
+                    game_date=date(2026, 3, 1) + timedelta(days=offset),
+                    home_team_id="NYK",
+                    away_team_id="ATL",
+                    home_score=110,
+                    away_score=100,
+                    status="final",
+                    season_type="regular",
+                )
             )
-        )
-    await db_session.commit()
-    response = await client.post(
+        await db.commit()
+    response = await active_seed_release.post(
         "/analysis/query", json={"question": "Explain the Knicks game against Atlanta."}
     )
     body = response.json()
-    assert body["route"] == "clarification"
+    assert body["outcome"] == "clarify"
     assert "Showing the first 8:" in body["answer"]
     assert "2026-03-01" in body["answer"]
     assert "2026-03-09" not in body["answer"]

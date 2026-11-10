@@ -23,7 +23,19 @@ def citations(
                     "game_id": receipt.game_id,
                     "source_name": receipt.source_name,
                     "source_url": receipt.source_url,
-                    "metadata": {"claim": claim.model_dump(mode="json"), "evidence_id": ref},
+                    "metadata": {
+                        "claim": claim.model_dump(mode="json"),
+                        "evidence_id": ref,
+                        **(
+                            {
+                                "source_type": "possessions",
+                                "event_window": receipt.metadata["event_window"],
+                                "rows": receipt.metadata["rows"],
+                            }
+                            if "event_window" in receipt.metadata
+                            else {}
+                        ),
+                    },
                 }
             )
     for ref in answer.evidence_ids:

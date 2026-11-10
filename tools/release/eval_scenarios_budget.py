@@ -12,6 +12,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from app.evaluation.attempt_ledger import read_records
+from app.evaluation.candidate_identity import candidate_identity
 from app.evaluation.provider_approval import ApprovalError, approval_payload, load_approval
 from eval_scenario_support import expect
 from eval_scenarios_budget_support import (
@@ -297,11 +298,13 @@ print(json.dumps(settled))
 def scenario_budget_approval_rejections(directory: Path) -> list[str]:
     """No approval artifact shape can be manufactured into a budget."""
     problems: list[str] = []
+    candidate = candidate_identity()
     good = approval_payload(
         approved=True,
         approver="operator",
         approved_at=APPROVED_AT,
         identity_sha256=IDENTITY,
+        candidate=candidate,
         labels_sha256=LABELS,
         case_count=CASES,
         provider_base_url="https://openrouter.ai/api/v1",
@@ -327,20 +330,34 @@ def scenario_budget_approval_rejections(directory: Path) -> list[str]:
     for expected, payload in rejected.items():
         path = dump(directory / "rejected.json", payload)
         try:
-            load_approval(path, identity_sha256=IDENTITY, labels_sha256=LABELS, case_count=CASES)
+            load_approval(
+                path,
+                identity_sha256=IDENTITY,
+                labels_sha256=LABELS,
+                case_count=CASES,
+                candidate=candidate,
+            )
         except ApprovalError as exc:
             expect(expected in str(exc), f"{expected} expected, got: {exc}", problems)
         else:
             problems.append(f"{expected}: a tampered approval was accepted")
     path = dump(directory / "foreign.json", good)
     try:
-        load_approval(path, identity_sha256="d" * 64, labels_sha256=LABELS, case_count=CASES)
+        load_approval(
+            path,
+            identity_sha256="d" * 64,
+            labels_sha256=LABELS,
+            case_count=CASES,
+            candidate=candidate,
+        )
     except ApprovalError as exc:
         expect("approval_identity_mismatch" in str(exc), f"{exc}", problems)
     else:
         problems.append("a foreign identity was accepted")
     path = dump(directory / "good.json", good)
-    load_approval(path, identity_sha256=IDENTITY, labels_sha256=LABELS, case_count=CASES)
+    load_approval(
+        path, identity_sha256=IDENTITY, labels_sha256=LABELS, case_count=CASES, candidate=candidate
+    )
     return problems
 
 

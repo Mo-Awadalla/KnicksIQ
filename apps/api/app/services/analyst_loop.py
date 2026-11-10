@@ -11,6 +11,7 @@ from typing import Any
 from app.core.config import get_settings
 from app.services.analyst_budget import BudgetReservation
 from app.services.analyst_citations import citation_gap
+from app.services.analyst_event_window import window_response
 from app.services.analyst_fallback import fallback_claims, re_search_discovery
 from app.services.analyst_provider import (
     Schema,
@@ -304,6 +305,8 @@ class AnalystLoop:
         return fallback_claims(self)
 
     async def fallback(self, reason: str, *, degraded: bool = True) -> dict[str, Any]:
+        if (result := await window_response(self, reason, degraded)) is not None:
+            return result
         if not self.fallback_claims() and not self.recovery_ran and self.remaining() > 0.5:
             self.recovery_ran = True
             question = self.tools.question

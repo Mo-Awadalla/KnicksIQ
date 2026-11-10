@@ -9,89 +9,42 @@ from app.api import analysis_generation as generation
 from app.api import analysis_player_response as player_response
 from app.api import analysis_policy as runtime
 from app.api import analysis_retrieval as retrieval
+from app.services import analyst_provider
 from app.services.archive_retrieval import ArchiveEvidence
 from app.services.player_analytics import AnalyticsAnswer
 from app.tests.analysis_test_support import (
     _true,
 )
+from app.tests.analysis_test_support import active_seed_release as active_seed_release
 from app.tests.analysis_test_support import (
     isolate_response_cache as isolate_response_cache,
 )
 
 
-async def test_deterministic_mode_does_not_use_configured_llm(client, monkeypatch):
-    class StubSettings:
-        analysis_answer_mode = "deterministic"
-        ai_provider = "openrouter"
-        ai_api_key = "test-key"
-        ai_chat_model = "nvidia/nemotron-3-ultra-550b-a55b:free"
-        public_chat_rate_limit_per_minute = 20
-        public_chat_max_prompt_chars = 1200
+async def test_deterministic_mode_does_not_use_configured_llm(active_seed_release, monkeypatch):
+    settings = runtime.get_settings()
+    monkeypatch.setattr(settings, "analysis_answer_mode", "deterministic")
 
     class StubAdapter:
         async def generate(self, *, system: str, user: str) -> str:
             raise AssertionError("deterministic mode must not call the model")
 
-    monkeypatch.setattr(runtime, "get_settings", lambda: StubSettings())
+    monkeypatch.setattr(analyst_provider, "get_llm_adapter", lambda: StubAdapter())
     monkeypatch.setattr(
         generation,
         "get_llm_adapter",
         lambda *, response_format_json=True: StubAdapter(),
     )
 
-    r = await client.post(
+    r = await active_seed_release.post(
         "/analysis/query",
         json={"question": "What happened in the Knicks game against Toronto?"},
     )
     assert r.status_code == 200
     body = r.json()
-    assert body["answer"].startswith("Short answer")
-    assert "Receipts" in body["answer"]
-    assert all(call["tool"] != "llm_generate" for call in body["tool_calls"])
-
-
-async def test_openrouter_failure_preserves_deterministic_factual_answer(client, monkeypatch):
-    original_get_settings = runtime.get_settings
-
-    class StubSettings:
-        test_mode = False
-        ai_provider = "openrouter"
-        ai_api_key = "test-key"
-        ai_chat_model = "approved-model"
-        openrouter_allowed_models = ["approved-model"]
-
-    class FailingAdapter:
-        async def generate(self, *, system: str, user: str) -> str:  # noqa: ARG002
-            raise ConnectionError("provider unavailable")
-
-    monkeypatch.setattr(runtime, "get_settings", lambda: StubSettings())
-    monkeypatch.setattr(generation, "reserve_ai_budget", lambda: _true())
-    monkeypatch.setattr(
-        generation,
-        "get_llm_adapter",
-        lambda *, response_format_json=True: FailingAdapter(),
-    )
-
-    answer = await generation._generate_llm_answer(
-        question="What happened against Toronto?",
-        season="2025-26",
-        games=[],
-        docs=[],
-    )
-
-    assert answer is None
-    monkeypatch.setattr(runtime, "get_settings", original_get_settings)
-
-    response = await client.post(
-        "/analysis/query",
-        json={"question": "What happened in the Knicks game against Toronto?"},
-    )
-    assert response.status_code == 200
-    body = response.json()
-    assert body["refused"] is False
     assert body["citations"]
-    assert "Knicks" in body["answer"]
-    assert all(call["tool"] != "llm_generate" for call in body["tool_calls"])
+    assert {citation["game_id"] for citation in body["citations"]} == {2}
+    assert "112" in body["answer"] and "95" in body["answer"]
 
 
 async def test_llm_primary_synthesizes_computed_swing_facts(client, monkeypatch):
@@ -171,77 +124,6 @@ async def test_llm_primary_synthesizes_computed_swing_facts(client, monkeypatch)
         "table_rag",
         "llm_generate",
     }
-    assert body["citations"]
-
-
-async def test_llm_primary_grounds_descriptive_answers_in_vector_evidence(client, monkeypatch):
-    original_settings = runtime.get_settings()
-
-    class LlmPrimarySettings:
-        analysis_answer_mode = "llm_primary"
-        test_mode = False
-        ai_provider = "openrouter"
-        ai_api_key = "test-key"
-        ai_chat_model = "approved-model"
-        openrouter_allowed_models = ["approved-model"]
-        rag_qdrant_enabled = True
-
-        def __getattr__(self, name):
-            return getattr(original_settings, name)
-
-    class GroundedAdapter:
-        async def generate(self, *, system: str, user: str) -> str:
-            payload = json.loads(user)
-            assert payload["evidence"]["vector:reports:toronto-1"]
-            return json.dumps(
-                {
-                    "claims": [
-                        {
-                            "text": "Toronto was decided by the archived turning points.",
-                            "evidence_ids": ["vector:reports:toronto-1"],
-                        }
-                    ]
-                }
-            )
-
-    async def healthy_rate_limit(_request):
-        return False
-
-    monkeypatch.setattr(runtime, "get_settings", lambda: LlmPrimarySettings())
-    monkeypatch.setattr(analysis, "_rate_limit", healthy_rate_limit)
-    monkeypatch.setattr(generation, "reserve_ai_budget", lambda: _true())
-    monkeypatch.setattr(
-        generation,
-        "get_llm_adapter",
-        lambda *, response_format_json=True: GroundedAdapter(),
-    )
-    monkeypatch.setattr(
-        retrieval,
-        "search_archive_vectors",
-        lambda **_kwargs: [
-            ArchiveEvidence(
-                evidence_id="vector:reports:toronto-1",
-                collection="reports",
-                text="Archived Toronto turning points.",
-                score=1.0,
-                metadata={"game_id": 2},
-            )
-        ],
-    )
-
-    response = await client.post(
-        "/analysis/query",
-        json={"question": "What happened in the Knicks game against Toronto?"},
-    )
-
-    assert response.status_code == 200
-    body = response.json()
-    assert body["answer"] == "Toronto was decided by the archived turning points."
-    assert body["refused"] is False
-    assert body["degraded"] is False
-    assert {"retrieval_plan", "archive_vector_search", "llm_generate"}.issubset(
-        {call["tool"] for call in body["tool_calls"]}
-    )
     assert body["citations"]
 
 

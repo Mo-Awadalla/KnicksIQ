@@ -38,6 +38,24 @@ def scores(game: Any) -> tuple[int, int]:
     )
 
 
+def closest_games(question: str, games: list[Any]) -> list[Any] | None:
+    if not re.search(r"\bclosest\s+game\b", question) or not games:
+        return None
+    smallest_margin = min(abs(game.home_score - game.away_score) for game in games)
+    return [game for game in games if abs(game.home_score - game.away_score) == smallest_margin]
+
+
+def best_defensive_game(games: list[Any]) -> Any:
+    return min(
+        games,
+        key=lambda game: (
+            game.away_score if game.home_team_id == "NYK" else game.home_score,
+            game.game_date,
+            game.id,
+        ),
+    )
+
+
 def scope_games(question: str, games: list[Any], *, window: bool = True) -> list[Any]:
     q = question.lower().replace("-", " ")
     selected = sorted(games, key=lambda g: (g.game_date, g.id))

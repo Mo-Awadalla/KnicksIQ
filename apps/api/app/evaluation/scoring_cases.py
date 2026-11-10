@@ -169,6 +169,9 @@ def _content_problem(
         if canonical_digest(record.payload) != record.payload_sha256:
             return "citation_content_mismatch"
         return None
+    if reference.startswith(f"{mapping.version}:event-window:"):
+        # The event-window resolver verifies the root and every expanded source.
+        return None
     for canonical in resolution.canonical_ids:
         row = mapping.rows.get(canonical)
         if row is None:

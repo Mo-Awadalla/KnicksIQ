@@ -173,20 +173,34 @@ _GROUP_BOX = {
 }
 
 
-async def test_grouped_three_point_percentage_uses_weighted_attempts(db_session):
-    release = await _seed(db_session, _GROUP_GAMES, box=_GROUP_BOX)
-    tools, _, result = await _deterministic(
-        db_session, release, "Compare Mikal Bridges' three-point percentage at home and away."
+async def test_grouped_three_point_percentage_uses_weighted_attempts(client, monkeypatch):
+    from app.core.config import get_settings
+    from app.core.db import AsyncSessionLocal
+    from app.tests.support.analytics_workflows import ask, grouped
+
+    settings = get_settings()
+    monkeypatch.setattr(settings, "analyst_evidence_loop_enabled", True)
+    monkeypatch.setattr(settings, "analysis_answer_mode", "deterministic")
+    async with AsyncSessionLocal() as db:
+        release = await _seed(db, _GROUP_GAMES, box=_GROUP_BOX)
+        version = release.version
+    result = await ask(
+        client, "Compare Mikal Bridges' three-point percentage at home and away.", version
     )
-    assert tools.scope is not None and tools.scope.comparison is not None
-    assert tools.scope.comparison.stat == "three_point_percentage"
-    claims = _claims(result)["three_pointers_made:percentage"]
-    by_group = {claim["eligibility"]["comparison_group"]: claim for claim in claims}
+    by_group = grouped(result, "three_pointers_made:percentage")
     assert set(by_group) == {"home", "away"}
-    # Home 6 makes on 14 attempts; away 4 makes on 6 attempts. Not 3.0 vs 2.0 makes per game.
-    assert by_group["home"]["value"] == pytest.approx(100 * 6 / 14)
-    assert by_group["away"]["value"] == pytest.approx(100 * 4 / 6)
-    assert result["outcome"] == "answer"
+    # Six makes in fourteen attempts versus four in six, not an average of game percentages.
+    assert by_group["home"]["value"] == pytest.approx(42.857142857)
+    assert by_group["away"]["value"] == pytest.approx(66.666666667)
+    assert (
+        by_group["home"]["eligibility"]["made"],
+        by_group["home"]["eligibility"]["attempted"],
+    ) == (6, 14)
+    assert (
+        by_group["away"]["eligibility"]["made"],
+        by_group["away"]["eligibility"]["attempted"],
+    ) == (4, 6)
+    assert all(claim["release_id"] == version for claim in by_group.values())
 
 
 async def test_grouped_total_points_stays_a_total(db_session):
@@ -472,18 +486,3 @@ async def test_zero_turnover_ratio_is_undefined_coverage(db_session):
     assert "assist_turnover_ratio" not in _claims(result)
     assert "undefined" in result["answer"].lower()
     assert result["refused"] is False
-
-
-async def test_grouped_percentage_preserves_measured_ingredients(db_session):
-    release = await _seed(db_session, _GROUP_GAMES, box=_GROUP_BOX)
-    _, _, result = await _deterministic(
-        db_session, release, "Compare Mikal Bridges' three-point percentage at home and away."
-    )
-    by_group = {
-        claim["eligibility"]["comparison_group"]: claim
-        for claim in _claims(result)["three_pointers_made:percentage"]
-    }
-    assert by_group["home"]["eligibility"]["made"] == 6
-    assert by_group["home"]["eligibility"]["attempted"] == 14
-    assert by_group["away"]["eligibility"]["made"] == 4
-    assert by_group["away"]["eligibility"]["attempted"] == 6

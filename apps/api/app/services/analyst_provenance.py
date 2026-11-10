@@ -93,6 +93,8 @@ def canonical_digest(value: Any) -> str:
 
 def row_receipt(release: str, collection: str, game_id: int, runtime_id: int) -> str:
     """The receipt id the analyst emits for one canonical SQL row."""
+    if collection == "game_events":
+        return event_receipt(release, game_id, runtime_id)
     if collection == "games":
         return f"{release}:game:{int(game_id)}"
     if collection == "player_game_stats":
@@ -102,6 +104,31 @@ def row_receipt(release: str, collection: str, game_id: int, runtime_id: int) ->
         "period_scores": ("period", "period"),
     }[collection]
     return f"{release}:{segment}:{int(game_id)}:{marker}:{int(runtime_id)}"
+
+
+def event_receipt(release: str, game_id: int, sequence: int) -> str:
+    """The release-scoped receipt for one sequence-identified play-by-play row."""
+    return f"{release}:events:{int(game_id)}:{int(sequence)}"
+
+
+def event_projection(game: Any, event: Any) -> dict[str, Any]:
+    """Project a loaded event into the canonical bundle row, including NBA identities."""
+    return {
+        "nba_game_id": game.nba_game_id,
+        "sequence": int(event.sequence),
+        "period": int(event.period),
+        "clock": event.clock,
+        "nba_player_id": getattr(getattr(event, "player", None), "nba_player_id", None),
+        "team_id": event.team_id,
+        "event_type": event.event_type,
+        "description": event.description,
+        "home_score": int(event.home_score),
+        "away_score": int(event.away_score),
+        "score_margin": int(event.score_margin),
+        "shot_type": event.shot_type,
+        "shot_result": event.shot_result,
+        "shot_distance_ft": event.shot_distance_ft,
+    }
 
 
 def _json_value(value: Any) -> Any:

@@ -278,9 +278,8 @@ def scenario_scoreline_and_signed_facts(directory: Path) -> list[str]:
         mapping=mapping,
         observations=observations,
     )
-    expect(result.returncode == 0, f"cli failed: {result.stderr[-800:]}", problems)
-    if report is None:
-        return problems + ["no report written"]
+    if result.returncode != 0 or report is None:
+        return problems + [f"score failed: {result.stderr[-800:]}"]
     expect(failures(report, "answer-001") == [], "mapped scoreline fact passes", problems)
     expect(failures(report, "answer-002") == [], "signed fact stays attributable", problems)
     broken = dict(runtime_scoreline)
@@ -309,10 +308,68 @@ def scenario_scoreline_and_signed_facts(directory: Path) -> list[str]:
         mapping=mapping,
         observations=observations,
     )
-    if report is not None:
+    if result.returncode != 0 or report is None:
+        return problems + [f"score failed: {result.stderr[-800:]}"]
+    expect(
+        "numeric_mismatch" in failures(report, "answer-001"),
+        "a different scoreline must fail",
+        problems,
+    )
+    broken = {**scoreline, "nba_game_id": 103}
+    observations[0] = observation(
+        "answer-001",
+        answer_response(
+            game=103,
+            value=0,
+            claims=[claim(game=103, value=broken, metric="game_score", unit="game", sample_size=1)],
+            text="Synthetic game Score 120 66.",
+        ),
+    )
+    result, report = run_score(
+        directory,
+        questions=questions_path,
+        expectations=expectations_path,
+        mapping=mapping,
+        observations=observations,
+    )
+    if result.returncode != 0 or report is None:
+        return problems + [f"score failed: {result.stderr[-800:]}"]
+    expect(
+        "numeric_mismatch" in failures(report, "answer-001"),
+        "a SQL game id cannot substitute for the canonical NBA game id",
+        problems,
+    )
+
+    player_scoreline = {**scoreline, "nba_player_id": "1628384"}
+    for case in expectations["cases"]:
+        if case["id"] == "answer-001":
+            case["proposed_expectation"]["canonical_facts"][0]["value"] = player_scoreline
+    dump(expectations_path, expectations)
+    for player_id, should_match in (("1628384", True), (114, False)):
+        value = {**player_scoreline, "nba_player_id": player_id}
+        observations[0] = observation(
+            "answer-001",
+            answer_response(
+                game=103,
+                value=0,
+                claims=[
+                    claim(game=103, value=value, metric="game_score", unit="game", sample_size=1)
+                ],
+                text="Synthetic game Score 120 66.",
+            ),
+        )
+        result, report = run_score(
+            directory,
+            questions=questions_path,
+            expectations=expectations_path,
+            mapping=mapping,
+            observations=observations,
+        )
+        if result.returncode != 0 or report is None:
+            return problems + [f"score failed: {result.stderr[-800:]}"]
         expect(
-            "numeric_mismatch" in failures(report, "answer-001"),
-            "a different scoreline must fail",
+            ("numeric_mismatch" not in failures(report, "answer-001")) == should_match,
+            "canonical player id matches but a SQL player id cannot substitute for it",
             problems,
         )
     return problems

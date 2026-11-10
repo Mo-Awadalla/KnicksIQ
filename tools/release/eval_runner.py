@@ -333,6 +333,7 @@ def main(argv: list[str] | None = None) -> int:
     if service is not None:
         guard_block = {
             "run_id": service.binding.run_id,
+            "candidate": service.binding.candidate,
             "approval_sha256": service.binding.approval_sha256,
             "config_sha256": service.binding.config_sha256,
             "ledger_file": Path(service.binding.ledger_path).name,

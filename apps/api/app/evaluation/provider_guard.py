@@ -29,6 +29,7 @@ from typing import Any
 from urllib.parse import urlsplit
 
 from app.evaluation.attempt_ledger import AttemptLedger
+from app.evaluation.candidate_identity import candidate_identity
 from app.evaluation.candidate_proof import RunProofKey, generate_keypair
 from app.evaluation.ledger_state import LedgerBinding
 from app.evaluation.provider_approval import (
@@ -46,7 +47,7 @@ from app.evaluation.spend_bound import (
     SpendError,
 )
 
-CONFIG_SCHEMA = "evaluation-run-config-v3"
+CONFIG_SCHEMA = "evaluation-run-config-v5"
 ENV_CONFIG = "EVAL_RUN_CONFIG"
 ENV_CONFIG_SHA256 = "EVAL_RUN_CONFIG_SHA256"
 
@@ -55,6 +56,7 @@ _BINDING_FIELDS = (
     "run_id",
     "approval_sha256",
     "identity_sha256",
+    "candidate",
     "labels_sha256",
     "case_count",
     "provider_base_url",
@@ -120,6 +122,7 @@ class RunBinding:
     run_id: str
     approval_sha256: str
     identity_sha256: str
+    candidate: dict[str, Any]
     labels_sha256: str
     case_count: int
     provider_base_url: str
@@ -144,6 +147,7 @@ class RunBinding:
             run_id=run_id,
             approval_sha256=approval.approval_sha256,
             identity_sha256=approval.identity_sha256,
+            candidate=approval.candidate,
             labels_sha256=approval.labels_sha256,
             case_count=approval.case_count,
             provider_base_url=approval.provider_origin,
@@ -181,6 +185,7 @@ class RunBinding:
             "run_id": self.run_id,
             "approval_sha256": self.approval_sha256,
             "identity_sha256": self.identity_sha256,
+            "candidate": self.candidate,
             "labels_sha256": self.labels_sha256,
             "case_count": self.case_count,
             "provider_base_url": self.provider_base_url,
@@ -234,6 +239,13 @@ class RunBinding:
             problems.append("config_scope_invalid")
         if not is_hex64(payload.get("proof_public_key")):
             problems.append("config_proof_key_missing")
+        candidate = payload.get("candidate")
+        if not isinstance(candidate, dict) or set(candidate) != {
+            "commit",
+            "source_sha256",
+            "dirty",
+        }:
+            problems.append("config_candidate_invalid")
         if not str(payload.get("ledger_path") or "").strip():
             problems.append("config_ledger_missing")
         elif not Path(str(payload["ledger_path"])).is_absolute():
@@ -273,6 +285,7 @@ class RunBinding:
             run_id=str(payload["run_id"]),
             approval_sha256=str(payload["approval_sha256"]),
             identity_sha256=str(payload["identity_sha256"]),
+            candidate=dict(payload["candidate"]),
             labels_sha256=str(payload["labels_sha256"]),
             case_count=int(payload["case_count"]),
             provider_base_url=base_url,
@@ -354,6 +367,12 @@ def bind_run_guard(environ: Mapping[str, str] | None = None) -> RunGuard:
     if not announced:
         raise GuardNotBound(f"{ENV_CONFIG_SHA256} is unset; the run configuration is unverified")
     guard = build_guard(RunBinding.load(Path(path), expected_sha256=announced))
+    try:
+        current_candidate = candidate_identity()
+    except (OSError, RuntimeError) as exc:
+        raise GuardError("cannot verify candidate worktree at startup") from exc
+    if guard.binding.candidate != current_candidate:
+        raise GuardError("candidate source changed since approval")
     if _guard is not None and _guard.binding.config_sha256 != guard.binding.config_sha256:
         raise GuardError(
             "this process already bound run "

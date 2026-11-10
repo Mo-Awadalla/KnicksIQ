@@ -1,10 +1,13 @@
 # Evidence-led analyst implementation
 
-The opt-in `ANALYST_EVIDENCE_LOOP_ENABLED=true` route replaces the discovery early
-return and legacy planner/generator chain with one bounded orchestrator. It uses
-the existing configured model, six controlled tools, immutable backend claims,
-a separate whole-answer reviewer, and one optional revision/re-review. The default
-local default remains **false**. The production Blueprint enables the loop in
+`ANALYST_EVIDENCE_LOOP_ENABLED=true` sends all non-greeting analyst turns through
+one bounded orchestrator, replacing the discovery early return and legacy
+planner/generator chain. When the flag is false, narrative requests still use this
+orchestrator; deterministic table and player routes remain available. Both paths
+require a validated active release for narrative answers.
+The orchestrator uses the existing configured model, six controlled tools, immutable
+backend claims, a separate whole-answer reviewer, and one optional revision/re-review.
+The local default is **false**. The production Blueprint enables the loop in
 `shadow` mode with a 0.1 comparison sample. It does not enable `llm_primary`.
 `ANALYSIS_ANSWER_MODE=deterministic` provides immediate model-free rollback with
 the flag enabled. `shadow` delivers backend facts and commits the turn first, then runs

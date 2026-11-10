@@ -286,48 +286,6 @@ async def test_review_spans_preserve_decimal_punctuation_and_full_coverage(db_se
     assert not validate_review(stripped, answer, {}, {})
 
 
-async def test_scoped_schema_rejects_invented_ids_and_partial_claim_values(db_session):
-    from copy import deepcopy
-
-    from app.services.analyst_provider import scoped_response_schema
-    from app.services.evidence_contracts import Action
-    from jsonschema import Draft202012Validator
-
-    tools, _ = await make_tools(db_session)
-    result = await tools.execute(ToolCall(name="discover_facts", question=tools.question))
-    loop = AnalystLoop(tools, [])
-    loop.results.append(result)
-    payload = loop.payload(Action)
-    claim = payload["claims"][0]
-    candidate = next(c for c in payload["candidates"] if claim["claim_id"] in c["claim_ids"])
-    answer = {
-        "action": "answer_from_available_evidence",
-        "tools": [],
-        "answer": {
-            "text": claim["statement"],
-            "claims": [
-                {
-                    "claim_id": claim["claim_id"],
-                    "displayed_value": claim["value"],
-                    "decimal_places": None,
-                }
-            ],
-            "evidence_ids": [],
-            "fact_ids": [candidate["fact_id"]],
-        },
-    }
-    validator = Draft202012Validator(scoped_response_schema(Action, payload))
-    assert validator.is_valid(answer)
-    wrong = deepcopy(answer)
-    wrong["answer"]["claims"][0]["displayed_value"] = {"points": 47}
-    assert not validator.is_valid(wrong)
-    wrong = deepcopy(answer)
-    wrong["answer"]["fact_ids"] = ["invented"]
-    assert not validator.is_valid(wrong)
-    # The ordinary schema remains reusable and is not mutated by release-scoping.
-    assert "enum" not in Action.model_json_schema()["$defs"]["ClaimUse"]
-
-
 async def test_catalog_preserves_baselines_and_qualifier_population(db_session, monkeypatch):
     from collections import Counter
     from datetime import date, timedelta

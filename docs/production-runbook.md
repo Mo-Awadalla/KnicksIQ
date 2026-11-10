@@ -84,8 +84,9 @@ label-enrichment tool adds identity metadata only; it does not freeze labels or 
 semantic targets. Keep unresolved gold blockers visible.
 
 Service mode is separate and never reads keys from `.env`. An operator must issue a
-`evaluation-budget-approval-v1` binding the full evaluation identity, model, upstream and
-maximum attempts, and must provide a provider-side billing limit independently. The runner
+`evaluation-budget-approval-v4` binding the evaluation identity, candidate commit and source
+digest, model, upstream and spend bound, and must provide a provider-side billing limit
+independently. Changed source requires a new approval. The runner
 uses loopback Redis and the evaluation-only signed-proof entrypoint. Every attempt is
 persisted before network IO. A local fake proves the bounded request boundary only, not
 provider quality, and is blocked by the scorer.

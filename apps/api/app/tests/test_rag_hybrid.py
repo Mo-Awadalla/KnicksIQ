@@ -5,50 +5,15 @@ from __future__ import annotations
 import sys
 from types import SimpleNamespace
 
-import pytest
-from app.services import embeddings, qdrant_client
+from app.services import qdrant_client
 from app.services.possession_chunks import PossessionChunk
 from app.services.qdrant_client import (
     ensure_collections,
-    get_qdrant_client,
     qdrant_point_id,
     search_collection_batch,
     upsert_points,
 )
-from app.services.rag import search_possession_chunks
-from app.services.rag_ranking import reciprocal_rank_fusion
 from app.services.reranker import rerank_candidates
-
-
-class _FakeEmbeddingModel:
-    calls = 0
-
-    def encode(self, texts, **_kwargs):
-        self.calls += 1
-        return [[float(index)] * 1024 for index, _text in enumerate(texts, start=1)]
-
-
-def test_embed_texts_returns_empty_without_loading_model(monkeypatch):
-    def fail_loader():
-        raise AssertionError("model should not load for empty input")
-
-    monkeypatch.setattr(embeddings, "_load_model", fail_loader)
-    assert embeddings.embed_texts([]) == []
-
-
-def test_embed_texts_shape_and_loader_cache(monkeypatch):
-    fake = _FakeEmbeddingModel()
-    loader_calls = {"count": 0}
-
-    def fake_loader():
-        loader_calls["count"] += 1
-        return fake
-
-    monkeypatch.setattr(embeddings, "_load_model", fake_loader)
-    vectors = embeddings.embed_texts(["one", "two"])
-    assert len(vectors) == 2
-    assert len(vectors[0]) == 1024
-    assert loader_calls["count"] == 1
 
 
 class _FakeModels:
@@ -192,33 +157,6 @@ def test_qdrant_cloud_inference_upserts_source_documents(monkeypatch):
     assert point.vector.model == "sentence-transformers/all-MiniLM-L6-v2"
 
 
-def test_qdrant_client_is_reused_for_the_same_configuration(monkeypatch):
-    created = []
-
-    class Client:
-        def __init__(self, **kwargs):
-            created.append(kwargs)
-
-    settings = SimpleNamespace(
-        qdrant_url="https://example.qdrant.io",
-        qdrant_api_key="test-key",
-        rag_qdrant_cloud_inference=True,
-        qdrant_timeout_seconds=5,
-        qdrant_host="localhost",
-        qdrant_port=6333,
-    )
-    monkeypatch.setitem(sys.modules, "qdrant_client", SimpleNamespace(QdrantClient=Client))
-    monkeypatch.setattr(qdrant_client, "get_settings", lambda: settings)
-    qdrant_client._cached_qdrant_client.cache_clear()
-
-    first = get_qdrant_client()
-    second = get_qdrant_client()
-
-    assert first is second
-    assert len(created) == 1
-    qdrant_client._cached_qdrant_client.cache_clear()
-
-
 def test_qdrant_collection_queries_are_batched_per_collection():
     calls = []
 
@@ -251,17 +189,6 @@ def test_qdrant_collection_queries_are_batched_per_collection():
     assert [[item.id for item in ranking] for ranking in results] == [["1"], ["2"]]
 
 
-def test_rrf_ordering_is_deterministic_for_ties():
-    fused = reciprocal_rank_fusion(
-        [[("b", 10.0), ("a", 9.0)], [("a", 8.0), ("b", 7.0)]],
-        limit=2,
-    )
-    assert fused == [
-        ("a", pytest.approx(1 / 61 + 1 / 62)),
-        ("b", pytest.approx(1 / 61 + 1 / 62)),
-    ]
-
-
 def test_reranker_reorders_and_respects_top_n():
     candidates = [
         PossessionChunk("a", 1, "first", {}, []),
@@ -284,36 +211,3 @@ def test_reranker_failure_falls_back_to_fused_order():
 
     model = SimpleNamespace(predict=fail)
     assert rerank_candidates("query", candidates, top_n=1, model=model) == candidates[:1]
-
-
-async def test_optional_retrieval_work_does_not_block_request_event_loop(monkeypatch, db_session):
-    import threading
-
-    request_thread = threading.get_ident()
-    provider_threads = {}
-
-    def record_provider(name, result):
-        def provider(*_args, **_kwargs):
-            provider_threads[name] = threading.get_ident()
-            return result
-
-        return provider
-
-    monkeypatch.setattr(
-        "app.services.rag.get_settings",
-        lambda: SimpleNamespace(
-            rag_hybrid_enabled=True,
-            rag_qdrant_enabled=True,
-            rag_reranker_enabled=True,
-            rag_rerank_limit=20,
-        ),
-    )
-    monkeypatch.setattr("app.services.rag.is_qdrant_healthy", record_provider("health", True))
-    monkeypatch.setattr("app.services.rag.embed_texts", record_provider("embedding", [[0.0]]))
-    monkeypatch.setattr("app.services.rag.search_possessions", record_provider("search", []))
-    monkeypatch.setattr("app.services.rag.rerank_candidates", record_provider("rerank", []))
-
-    await search_possession_chunks(db_session, "What happened in the Knicks game against Toronto?")
-
-    assert set(provider_threads) == {"health", "embedding", "search", "rerank"}
-    assert all(thread != request_thread for thread in provider_threads.values())

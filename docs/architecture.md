@@ -48,6 +48,17 @@ task. `llm_primary` returns the validated LLM answer. Any vector, model, Redis
 budget, timeout, parsing, or validation failure returns the deterministic answer
 with `degraded=true`.
 
+Narrative questions always use the release-bound analyst evidence loop, including
+when `ANALYST_EVIDENCE_LOOP_ENABLED` is false. That flag still selects the loop for
+other question types; the legacy deterministic table/player handlers remain.
+The former document/possession narrative response path has been removed.
+Pinned-game narratives cite the game's final score. Quarter and clock-window
+narratives cite only matching release-scoped play-by-play rows, not whole-game
+averages; the receipts do not establish causes.
+Modern turns resolve replay and turn-identity conflicts before archive-domain
+admission. Out-of-domain and missing-data turns use the same session commit
+protocol without running the model; mixed requests retain supported archive portions.
+
 Production routing deliberately excludes ingestion, job enqueue, run
 detection, report creation/deletion, Swagger, and OpenAPI. Workers and MCP are
 offline/development packages, not deployed production services.
@@ -70,8 +81,8 @@ dataset_releases
     reports
 ```
 
-Teams and players supply entity metadata. Documents/chunks support local and
-legacy retrieval paths. Jobs exist for offline/development workflows only.
+Teams and players supply entity metadata. Documents/chunks support offline
+index generation. Jobs exist for offline/development workflows only.
 
 Offline jobs persist their SQL status row before RQ publication. Only a queued job
 may start, and work completion requires a started job. Publication failure may fail
