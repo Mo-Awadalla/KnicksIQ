@@ -44,17 +44,19 @@ export function AppShell({
   description,
   children,
   actions,
+  layout = 'page',
 }: {
-  eyebrow: string
+  eyebrow?: string
   title: string
   description: string
   children: React.ReactNode
   actions?: React.ReactNode
+  layout?: 'page' | 'chat'
 }) {
   const location = useLocation()
 
   return (
-    <div className='surface-app'>
+    <div className='surface-app' data-layout={layout}>
       <header className='surface-topbar'>
         <div className='surface-container surface-topbar-inner'>
           <Link
@@ -101,7 +103,7 @@ export function AppShell({
       <main className='surface-container surface-main'>
         <header className='surface-page-heading'>
           <div>
-            <p className='surface-kicker'>{eyebrow}</p>
+            {eyebrow ? <p className='surface-kicker'>{eyebrow}</p> : null}
             <h1>{title}</h1>
             <p className='surface-description'>{description}</p>
           </div>

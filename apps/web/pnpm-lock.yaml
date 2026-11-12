@@ -68,6 +68,9 @@ importers:
       '@sentry/react':
         specifier: 10.22.0
         version: 10.22.0(react@19.2.5)
+      '@shadcn/react':
+        specifier: 0.3.1
+        version: 0.3.1(@types/react@19.2.14)(react@19.2.5)
       '@tailwindcss/vite':
         specifier: ^4.2.2
         version: 4.2.2(vite@8.2.2(@types/node@25.6.0)(jiti@2.6.1)(tsx@4.20.3)(yaml@2.8.3))
@@ -1578,6 +1581,17 @@ packages:
     engines: {node: '>=18'}
     peerDependencies:
       react: ^16.14.0 || 17.x || 18.x || 19.x
+
+  '@shadcn/react@0.3.1':
+    resolution: {integrity: sha512-2gOR0HDMtWeRsCZfNDaU0YDFdgH3zsDQ6lz67Fv/y/qjY9y+R8kJqAn6q56phqv7/zHi0wqURjntrNO9zL7vnQ==}
+    peerDependencies:
+      '@types/react': '>=19'
+      react: '>=19'
+    peerDependenciesMeta:
+      '@types/react':
+        optional: true
+      react:
+        optional: true
 
   '@standard-schema/spec@1.0.0':
     resolution: {integrity: sha512-m2bOd0f2RT9k8QJx1JN85cZYyH1RqFBdlwtkSlf4tBDYLCiiZnv1fIIwacK6cqwXavOydf0NPToMQgpKq+dVlA==}
@@ -4655,6 +4669,11 @@ snapshots:
       '@sentry/browser': 10.22.0
       '@sentry/core': 10.22.0
       hoist-non-react-statics: 3.3.2
+      react: 19.2.5
+
+  '@shadcn/react@0.3.1(@types/react@19.2.14)(react@19.2.5)':
+    optionalDependencies:
+      '@types/react': 19.2.14
       react: 19.2.5
 
   '@standard-schema/spec@1.0.0': {}

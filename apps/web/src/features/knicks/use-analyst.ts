@@ -223,7 +223,11 @@ const subscribe = (listener: () => void) => {
   }
 }
 
-export function useAnalyst() {
+export function useAnalyst({
+  responseFocus = 'answer',
+}: {
+  responseFocus?: 'answer' | 'preserve'
+} = {}) {
   const queryClient = useQueryClient()
   const state = useSyncExternalStore(subscribe, () => chat)
   const [attempt, setAttempt] = useState(0)
@@ -417,6 +421,7 @@ export function useAnalyst() {
         const focusAtResponse = document.activeElement
         requestAnimationFrame(() => {
           if (
+            responseFocus === 'preserve' ||
             generation !== chat.generation ||
             chat.turn.status === 'pending' ||
             chat.question.trim() ||

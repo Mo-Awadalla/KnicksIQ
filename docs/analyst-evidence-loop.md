@@ -232,6 +232,17 @@ duplicating it in the transcript. Archive
 changes similarly invalidate the old context. Storage failure leaves the in-memory
 chat usable and displays a refresh-recovery notice.
 
+The dedicated Analyst view composes shadcn Message Scroller, Message, Bubble, and
+Input Group. User turns anchor the viewport; live-edge following yields when the
+reader scrolls away, and Jump to latest returns to the current turn. The composer
+stays visible, including on narrow screens, and accepts the next draft during a
+pending request. Sending the first message preserves composer focus; the field is
+outside the resettable scroller context. Restored threads open at their last user
+turn. Replies remain
+buffered by the existing API: the interface shows real pending activity, not
+simulated token streaming. The homepage keeps its existing layout and answer-focus
+behavior while sharing the same conversation state.
+
 ## Budget operations
 
 The configured production cutoff remains $2. Reservations, cutoff checks and settlement are
