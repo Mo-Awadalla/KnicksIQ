@@ -13,6 +13,7 @@ from app.models.box_score import PlayerGameStat
 from app.models.dataset_release import DatasetRelease
 from app.models.game import Game
 from app.models.player import Player
+from app.services.analyst_citations import requested_sources
 from app.services.analyst_context import admitted, capability_manifest, load_archive
 from app.services.analyst_dispatch import execute_call
 from app.services.analyst_player_stats import METRICS
@@ -26,6 +27,7 @@ from app.services.analyst_scope import (
     clarification,
     prior_scope,
     reclassify_with_subject,
+    window_games,
 )
 from app.services.archive_clock import moment_from_question
 from app.services.archive_retrieval import (
@@ -173,15 +175,7 @@ class AnalystTools:
                 for g in games
                 if (self.score(g)[0] > self.score(g)[1]) == (scope.game_result == "W")
             ]
-        return self._windowed(games, scope)
-
-    @staticmethod
-    def _windowed(games: list[Game], scope: ResolvedQuery) -> list[Game]:
-        """Apply the requested first/last window once, over the filtered population."""
-        if not scope.relative_game_count:
-            return games
-        count = scope.relative_game_count
-        return games[:count] if scope.relative_game_position == "first" else games[-count:]
+        return window_games(games, scope)
 
     def considered_games(self, scope: ResolvedQuery) -> list[Game]:
         """The population an operation ranks or counts.
@@ -404,10 +398,16 @@ class AnalystTools:
         moment = moment_from_question(call.question, scope.periods)
         if moment is not None:
             filters["event_clock"] = moment.as_filter()
+        wanted = requested_sources(call.question)
+        collections = [
+            name
+            for name in ("games", "box_scores", "reports", "possessions")
+            if not wanted or name in wanted
+        ]
         lexical = await search_archive_lexical(
             self.db,
             query=call.question,
-            collections=["games", "box_scores", "reports", "possessions"],
+            collections=collections,
             filters=filters,
             data_version=self.release.version,
             limit=20,
@@ -421,7 +421,7 @@ class AnalystTools:
                 dense = await asyncio.to_thread(
                     search_archive_vectors,
                     queries=[call.question],
-                    collections=["games", "box_scores", "reports", "possessions"],
+                    collections=collections,
                     filters=filters,
                     data_version=self.release.version,
                     limit=20,

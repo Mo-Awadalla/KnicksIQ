@@ -29,6 +29,10 @@ def re_search_discovery(question: str) -> bool:
     )
 
 
+def re_search_live(question: str) -> bool:
+    return bool(re.search(r"\b(injur\w*|today|current|live|tonight)\b", question, re.I))
+
+
 def _operation(loop: AnalystLoop) -> str:
     """The population key a team claim must carry to answer this question."""
     scope = loop.tools.scope

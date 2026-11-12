@@ -235,3 +235,11 @@ def reclassify_with_subject(scope: ResolvedQuery, question: str) -> ResolvedQuer
             clarification_options=[],
         )
     return scope.model_copy(update=updates)
+
+
+def window_games(games: list[Game], scope: ResolvedQuery) -> list[Game]:
+    """Apply the requested first/last window once, over the filtered population."""
+    if not scope.relative_game_count:
+        return games
+    count = scope.relative_game_count
+    return games[:count] if scope.relative_game_position == "first" else games[-count:]
