@@ -4,15 +4,14 @@ from __future__ import annotations
 
 import asyncio
 import logging
-import re
 import time
 from typing import Any
 
 from app.core.config import get_settings
 from app.services.analyst_budget import BudgetReservation
-from app.services.analyst_citations import citation_gap
+from app.services.analyst_citations import citation_gap, requested_sources
 from app.services.analyst_event_window import window_response
-from app.services.analyst_fallback import fallback_claims, re_search_discovery
+from app.services.analyst_fallback import fallback_claims, re_search_discovery, re_search_live
 from app.services.analyst_provider import (
     Schema,
     build_payload,
@@ -154,6 +153,15 @@ class AnalystLoop:
             try:
                 async with asyncio.timeout(investigation_budget):
                     if await self.reserve(3):
+                        if requested_sources(self.tools.question):
+                            # Verified prior claims do not satisfy a new source request.
+                            self.tool_count += 1
+                            self.results.append(
+                                await self.tools.execute(
+                                    ToolCall(name="search_archive", question=self.tools.question)
+                                )
+                            )
+                            self._record_traces()
                         return await self.investigate()
             except Exception as exc:
                 failure = exc
@@ -301,13 +309,10 @@ class AnalystLoop:
         )
         return True, ""
 
-    def fallback_claims(self) -> list[VerifiedClaim]:
-        return fallback_claims(self)
-
     async def fallback(self, reason: str, *, degraded: bool = True) -> dict[str, Any]:
         if (result := await window_response(self, reason, degraded)) is not None:
             return result
-        if not self.fallback_claims() and not self.recovery_ran and self.remaining() > 0.5:
+        if not fallback_claims(self) and not self.recovery_ran and self.remaining() > 0.5:
             self.recovery_ran = True
             question = self.tools.question
             comparison = bool(self.tools.scope and self.tools.scope.comparison)
@@ -336,7 +341,7 @@ class AnalystLoop:
         return self.render_fallback(reason, degraded=degraded)
 
     def render_fallback(self, reason: str, *, degraded: bool = True) -> dict[str, Any]:
-        claims = self.fallback_claims()
+        claims = fallback_claims(self)
         partial, coverage = coverage_gap(self.results, claims)
         text = deterministic_text(claims, reserve=(len(coverage) + 1) if coverage else 0)
         if coverage:
@@ -437,7 +442,9 @@ class AnalystLoop:
         )
         if degraded is None:
             degraded = not llm
-        outcome = self.outcome(answered=bool(claims or (llm and answer.evidence_ids)))
+        outcome = disposition(
+            self.results, self.tools.scope, answered=bool(claims or (llm and answer.evidence_ids))
+        )
         return {
             "answer": answer.text,
             "follow_up_questions": self.accepted_suggestions if llm else [],
@@ -454,19 +461,3 @@ class AnalystLoop:
             # The public flag is the structured disposition, never inferred from wording.
             "refused": outcome == "refuse",
         }
-
-    def outcome(self, *, answered: bool) -> str | None:
-        outcome = disposition(self.results, answered=answered)
-        if outcome is not None:
-            return outcome
-        scope = self.tools.scope
-        if scope is not None:
-            if scope.operation_reason:
-                return "refuse"
-            if scope.requires_clarification:
-                return "clarify"
-        return None
-
-
-def re_search_live(question: str) -> bool:
-    return bool(re.search(r"\b(injur\w*|today|current|live|tonight)\b", question, re.I))

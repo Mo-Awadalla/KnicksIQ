@@ -2,10 +2,13 @@
 
 from __future__ import annotations
 
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from app.services.analyst_citations import CITATION_TITLES, collection
 from app.services.evidence_contracts import Evidence, ProposedAnswer, ToolResult, VerifiedClaim
+
+if TYPE_CHECKING:
+    from app.services.query_resolution import ResolvedQuery
 
 
 def citations(
@@ -94,7 +97,9 @@ def coverage_gap(results: list[ToolResult], claims: list[VerifiedClaim]) -> tupl
     return bool(notes), " ".join(dict.fromkeys(notes))[:1200]
 
 
-def disposition(results: list[ToolResult], *, answered: bool) -> str | None:
+def disposition(
+    results: list[ToolResult], scope: ResolvedQuery | None, *, answered: bool
+) -> str | None:
     """Structured disposition of this turn, decided from tool status rather than prose.
 
     `None` means no decision was reached (for example a dependency failure), which is
@@ -107,4 +112,9 @@ def disposition(results: list[ToolResult], *, answered: bool) -> str | None:
         return "clarify"
     if statuses & {"unsupported_metric_or_scope", "no_matching_results"}:
         return "refuse"
+    if scope is not None:
+        if scope.operation_reason:
+            return "refuse"
+        if scope.requires_clarification:
+            return "clarify"
     return None

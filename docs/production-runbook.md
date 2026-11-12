@@ -167,3 +167,52 @@ Neon project from it. Sentry must have API/frontend exception alerts, latency
 tracing, and an external `/health/live` uptime check. Session replay stays
 disabled and `before_send` removes requests, headers, cookies, users, prompts,
 and breadcrumbs.
+
+## Verification and promotion
+
+`search_archive` records the fused ranking it actually emitted, bound to the request id
+and release, in the same `tool_calls` trace with `stage: "retrieval"`. Recovery searches
+record it too. The recorded ordering is not truncated to flatter a metric, and provider
+call timing is read only from the `orchestrate`, `revise` and `review` stages.
+
+Run `uv run --package knicksiq-api python -m app.evaluation.analyst_probe` against the
+configured provider. `ANALYST_PROVIDER_FORMAT=json_schema` enables strict schema
+and OpenRouter `require_parameters`; the explicit default `json_object` still
+requires local schema validation. No model substitution occurs.
+
+Run the repeated conversation harness against a private API:
+
+```sh
+uv run --package knicksiq-api python -m app.evaluation.analyst_evaluation \
+  --base-url http://127.0.0.1:8000 --repetitions 5 \
+  --output docs/release-evidence/analyst-evidence-v1/conversations.json
+```
+
+The harness stops if provider capability fails. Automated protocol tests use
+scripted models and actual local Redis; they do not measure provider answer
+quality or count toward LLM release success. Human review, held-out reviewer
+calibration, search Recall@5 on labelled top-five-satisfiable tasks, answerable
+completion, naturalness and latency classifications must be supplied separately.
+Missing measurements fail the gate helper. Existing release approvals remain
+required; this implementation does not automatically promote or deploy.
+
+The production model is `deepseek/deepseek-v4.1-flash`, selected explicitly by the
+owner on 2026-09-22. Production uses JSON-object output with local schema checks,
+`AI_REASONING_EFFORT=none`, latency-prioritized OpenRouter routing, and required
+parameter support. This keeps provider reasoning from consuming the bounded JSON
+output allowance. The independent whole-answer review remains mandatory.
+The production application cutoff is now $2, matching the owner’s available
+credit; the original $8 default was not increased.
+
+DeepSeek passed Action, ProposedAnswer and AnswerReview capability probes and
+produced validated discovery answers against the active archive. These smoke
+checks are not a completed release evaluation: repeated six-turn completion,
+held-out human reviewer calibration, Recall@5 and warm p95 gates remain unproven.
+Earlier NVIDIA and Nex probe artifacts are historical, not evidence for DeepSeek.
+
+Development conversations and a separate held-out reviewer challenge draft live
+under `app/evaluation/analyst-fixtures/`. Draft expected verdicts are explicitly
+marked `human_reviewed: false`; they must be reviewed by a person before they can
+satisfy the calibration gate. The held-out set includes causal claims hidden in
+otherwise correct prose, hedged causation, subject/sign/scope swaps, retrieval
+as a denominator, extreme-selection overclaims and injected source instructions.

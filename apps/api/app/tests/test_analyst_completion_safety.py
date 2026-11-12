@@ -3,6 +3,7 @@ from __future__ import annotations
 import re
 
 import pytest
+from app.services.analyst_fallback import fallback_claims
 from app.services.analyst_loop import AnalystLoop
 from app.services.analyst_tools import AnalystTools
 from app.services.evidence_contracts import ToolCall
@@ -90,7 +91,7 @@ async def test_narrowed_leaderboard_cannot_answer_the_season(db_session):
         names.add(name)
     assert names == {"Jalen Brunson"}
     # January ranks a subset of the season, so it never answers the season ask.
-    assert loop.fallback_claims() == []
+    assert fallback_claims(loop) == []
     result = await loop.fallback("Review failed.")
     leaders = _claims(result)["assists:leader"]
     assert {claim["value"]["name"] for claim in leaders} == {"Karl-Anthony Towns"}

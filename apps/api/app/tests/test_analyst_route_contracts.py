@@ -247,3 +247,96 @@ async def test_commit_deadline_preserves_release_authority_for_retry(
     assert body["data_version"] == "analytics-test"
     assert body["state_committed"] is False
     assert body["revision"] is None
+
+
+@pytest.mark.parametrize(
+    "question",
+    [
+        "Summarize the Boston game on January 1, 2026 and cite the game report.",
+        "Summarize Jalen Brunson's game on January 1, 2026 and cite the game report.",
+    ],
+)
+async def test_requested_report_is_retrieved_after_a_committed_player_answer(
+    client, local_redis, monkeypatch, question
+):
+    from app.core.db import AsyncSessionLocal
+    from app.models.report import Report
+
+    settings = get_settings()
+    monkeypatch.setattr(settings, "analyst_evidence_loop_enabled", True)
+    monkeypatch.setattr(settings, "analysis_answer_mode", "llm_primary")
+    monkeypatch.setattr(settings, "rag_qdrant_enabled", False)
+    await local_redis.set(f"ai-budget:{datetime.now(UTC):%Y-%m}", 0)
+    async with AsyncSessionLocal() as db:
+        release, _ = await _seed_release_stats(db)
+        game = (
+            await db.execute(
+                select(Game).where(
+                    Game.release_id == release.id, Game.game_date == date(2026, 1, 1)
+                )
+            )
+        ).scalar_one()
+        db.add(
+            Report(
+                release_id=release.id,
+                game_id=game.id,
+                reviewed=True,
+                title="Boston postgame report",
+                summary="The Knicks beat Boston 111-100.",
+            )
+        )
+        await db.commit()
+        game_id = game.id
+
+    class ReportAdapter(ScriptedAdapter):
+        async def generate(self, *, system, user):
+            payload = json.loads(user)
+            value = json.loads(await super().generate(system=system, user=user))
+            if payload["schema"]["title"] == "AnswerReview":
+                value["assertions"][0]["supporting_evidence_ids"] = payload["proposed_answer"][
+                    "evidence_ids"
+                ]
+            elif payload["schema"]["title"] == "Action":
+                reports = [
+                    item for item in payload["evidence"] if item.get("source_type") == "game_report"
+                ]
+                if reports:
+                    value = {
+                        "action": "answer_from_available_evidence",
+                        "tools": [],
+                        "answer": {
+                            "text": "The Knicks beat Boston 111-100.",
+                            "claims": [],
+                            "evidence_ids": [reports[0]["evidence_id"]],
+                            "fact_ids": [],
+                        },
+                    }
+            return json.dumps(value)
+
+    monkeypatch.setattr(analyst_provider, "get_llm_adapter", lambda: ReportAdapter())
+    first = await client.post(
+        "/analysis/query",
+        json={
+            "question": "How many points did Jalen Brunson score on January 1, 2026?",
+            "turn_id": "report-followup-player",
+            "expected_revision": 0,
+        },
+    )
+    prior = first.json()
+    assert first.status_code == 200 and prior["state_committed"], prior
+    response = await client.post(
+        "/analysis/query",
+        json={
+            "question": question,
+            "turn_id": "report-followup-summary",
+            "session_token": prior["session_token"],
+            "expected_revision": prior["revision"],
+        },
+    )
+    body = response.json()
+    assert response.status_code == 200 and body["llm_validated"], body
+    assert "111-100" in body["answer"]
+    assert any(
+        item["game_id"] == game_id and item["metadata"].get("source_type") == "reports"
+        for item in body["citations"]
+    ), body
