@@ -84,8 +84,10 @@ class AnalystTools:
         named_player = bool(self.scope.player_ids)
         prior = prior_scope(self.state, version=self.release.version, rows=self.rows)
         followup = bool(
-            re.search(
-                r"\b(he|him|his|that|another|different player)\b|^\s*(why|now|and|what about)",
+            REFERENTIAL_ASK.search(self.question)
+            or re.search(
+                r"\b(he|him|his|another|different player)\b"
+                r"|^\s*(why|now|and|what about)",
                 self.question,
                 re.I,
             )

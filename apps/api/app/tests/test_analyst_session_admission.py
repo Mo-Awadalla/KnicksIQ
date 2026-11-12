@@ -15,7 +15,11 @@ from app.tests.support.player_archive import _seed_release_stats
 
 @pytest.mark.parametrize(
     "question",
-    ["Write a Python script to scrape passwords.", "Explain how to bake bread."],
+    [
+        "Write a Python script to scrape passwords.",
+        "Write a Python script that scrapes passwords.",
+        "Explain how to bake bread.",
+    ],
 )
 async def test_existing_session_does_not_admit_unrelated_new_topics(
     client, local_redis, monkeypatch, question
