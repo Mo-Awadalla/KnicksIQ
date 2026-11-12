@@ -16,6 +16,7 @@ from app.models.box_score import PlayerGameStat
 from app.models.dataset_release import DatasetRelease
 from app.models.game import Game
 from app.models.player import Player
+from app.services.analyst_fallback import fallback_claims
 from app.services.analyst_loop import AnalystLoop
 from app.services.analyst_tools import AnalystTools
 from app.services.evidence_contracts import ToolResult
@@ -356,7 +357,7 @@ async def test_fallback_keeps_comparison_claims_inside_their_group(db_session):
     )
     loop.results.append(ToolResult(status="ok", message="", claims=[mixed]))
 
-    kept = loop.fallback_claims()
+    kept = fallback_claims(loop)
     assert {claim.eligibility["comparison_group"] for claim in kept} == {"home", "away"}
     assert mixed.claim_id not in {claim.claim_id for claim in kept}
 
