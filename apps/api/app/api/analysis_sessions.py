@@ -104,8 +104,9 @@ async def _execute_evidence_turn(
             await tools.prepare()
         scope = tools.scope
         assert scope is not None
-        follow_up = bool(turn and req.session_token) or (
-            runtime._looks_like_follow_up(req.question) and bool(req.context)
+        follow_up = bool((turn and req.session_token) or req.context) and (
+            runtime._looks_like_follow_up(req.question)
+            or tools.state.get("scope_origin") == "verified_followup"
         )
         missing_data = runtime._unknown_data_question(req.question)
         outside_archive = not (

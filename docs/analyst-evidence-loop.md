@@ -181,6 +181,9 @@ conversation authority, and a legacy `intent` entry is dropped at admission. Cli
 `conversation_state` is ignored by the new
 route. Active release identity is pinned and prior references are revalidated
 against the newly resolved scope. A changed release clears old evidence.
+A session token alone does not admit a new topic. A turn must independently resolve
+to archive scope or express a recognized follow-up; unrelated new requests are
+refused without calling the provider, even inside an established conversation.
 
 Lua scripts serialize turns using an owner-checked lease, check revisions, and
 atomically commit the response and state. Identical turn retries replay the exact
