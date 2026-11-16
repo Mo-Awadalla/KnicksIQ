@@ -1,15 +1,10 @@
-"""Window, filter and game-reference workflows through the public endpoint."""
+"""Window, filter and game-reference workflows through the private factual boundary."""
 
-from app.tests.support.analyst_protocol import local_redis as local_redis
 from app.tests.support.analytics_workflows import ask, comparison_archive, scope_archive
 
 
 def claims(body):
-    return {
-        claim["metric_id"]: claim
-        for citation in body["citations"]
-        if (claim := citation["metadata"].get("claim"))
-    }
+    return {claim.metric_id: claim.model_dump(mode="json") for claim in body.claims}
 
 
 async def test_final_regular_window_excludes_playoffs(client, monkeypatch):
@@ -55,30 +50,14 @@ async def test_last_window_average_margin_uses_requested_games(client, monkeypat
     assert claim["release_id"] == version
 
 
-async def test_game_reference_requires_anchor_and_inherits_a_verified_game(
-    client, local_redis, monkeypatch
-):
+async def test_game_reference_requires_anchor_and_inherits_a_verified_game(client, monkeypatch):
+    from app.tests.support.analytics_workflows import query_in_release
+
     version, ids = await scope_archive(monkeypatch)
     unanchored = await ask(client, "How did JB play in that game?", version)
-    assert unanchored["outcome"] == "clarify" and not claims(unanchored)
-    first = await client.post(
-        "/analysis/query",
-        json={"question": "What happened on 2026-01-11?", "turn_id": "scope-anchor-first-001"},
-    )
-    assert first.status_code == 200
-    anchor = first.json()
-    assert anchor["state_committed"]
-    second = await client.post(
-        "/analysis/query",
-        json={
-            "question": "How did JB play in that game?",
-            "turn_id": "scope-anchor-next-0001",
-            "session_token": anchor["session_token"],
-            "expected_revision": anchor["revision"],
-        },
-    )
-    assert second.status_code == 200
-    body = second.json()
+    assert unanchored.status == "ambiguous_entity" and not claims(unanchored)
+    _, state = await query_in_release("What happened on 2026-01-11?", version)
+    body, _ = await query_in_release("How did JB play in that game?", version, state)
     result = claims(body)
     assert (
         result["points:game"]["value"],

@@ -6,6 +6,7 @@ from app.models.box_score import PlayerGameStat
 from app.models.game import Game
 from app.models.player import Player
 from app.services.query_resolution import resolve_query
+from app.tests.support.factual_queries import text
 from sqlalchemy import select
 
 
@@ -119,7 +120,7 @@ async def test_full_name_consumes_surname_before_ambiguity_check(client, monkeyp
     result = await ask(client, "What was Mikal Bridges' scoring average?", version)
     claim = claims(result)["points:average"]
     assert claim["value"] == 12
-    assert "Mikal Bridges" in result["answer"]
+    assert "Mikal Bridges" in text(result)
     assert claim["release_id"] == version
 
 
@@ -152,37 +153,9 @@ async def test_ambiguous_surname_returns_clarification(client, monkeypatch):
         )
         await db.commit()
     result = await ask(client, "How many points did Hart score?", version)
-    assert result["outcome"] == "clarify"
+    assert result.status == "ambiguous_entity"
     assert not claims(result)
-    assert "Josh Hart" in result["answer"] and "Kevin Hart" in result["answer"]
-
-
-def test_resolved_filters_replace_model_invented_internal_ids():
-    from app.api.analysis import _apply_resolved_filters
-    from app.services.query_resolution import ResolvedQuery
-    from app.services.retrieval_planner import RetrievalPlan, RetrievalPlanFilters
-
-    resolved = ResolvedQuery(
-        intent="narrative",
-        player_ids=[11],
-        team_ids=["BOS"],
-        opponent_id="BOS",
-        game_ids=[22],
-        data_version="v1",
-    )
-    model_plan = RetrievalPlan(
-        supported=True,
-        intent="narrative",
-        queries=["Boston"],
-        collections=["reports"],
-        filters=RetrievalPlanFilters(player_ids=[999], game_ids=[999]),
-    )
-
-    safe = _apply_resolved_filters(model_plan, resolved)
-
-    assert safe.filters.player_ids == [11]
-    assert safe.filters.game_ids == [22]
-    assert safe.filters.team_ids == ["BOS"]
+    assert "Josh Hart" in text(result) and "Kevin Hart" in text(result)
 
 
 async def test_explicit_rebounding_comparison_is_not_an_undefined_quality_judgment(db_session):

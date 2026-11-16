@@ -3,14 +3,11 @@
 from __future__ import annotations
 
 import asyncio
-import json
 from datetime import UTC, datetime
 
 import pytest
 from app.core.config import get_settings
 from app.services.analyst_budget import BudgetReservation
-from app.services.analyst_loop import AnalystLoop
-from app.services.analyst_sessions import SessionConflict, SessionTurn
 from app.services.analyst_tools import AnalystTools
 from app.services.evidence_contracts import (
     AnswerReview,
@@ -27,32 +24,6 @@ from app.tests.support.analyst_protocol import (
 from app.tests.support.analyst_protocol import (
     make_tools,
 )
-
-
-async def test_session_race_replay_conflict_and_atomic_commit(local_redis):
-    turn_id = "first-turn-identity"
-    first = await SessionTurn.begin(None, turn_id, 0, {"question": "stat"})
-    with pytest.raises(SessionConflict):
-        await SessionTurn.begin(first.token, "second-turn-identity", 0, {"question": "stat"})
-    assert await first.commit({"answer": "Committed"}, {"delivered_fact_ids": ["fact:1"]})
-    replay = await SessionTurn.begin(None, turn_id, 0, {"question": "stat"})
-    assert replay.replay == {"answer": "Committed"}
-    with pytest.raises(SessionConflict):
-        await SessionTurn.begin(first.token, turn_id, 0, {"question": "changed"})
-    with pytest.raises(SessionConflict):
-        await SessionTurn.begin(first.token, "new-turn-identity", 0, {"question": "stat"})
-    next_turn = await SessionTurn.begin(first.token, "new-turn-identity", 1, {"question": "stat"})
-    assert next_turn.state["delivered_fact_ids"] == ["fact:1"]
-    await local_redis.delete(next_turn.key + ":lease")
-    assert not await next_turn.commit({"answer": "Lost lease"}, {"delivered_fact_ids": ["bad"]})
-    assert json.loads(await local_redis.hget(first.key, "state"))["delivered_fact_ids"] == [
-        "fact:1"
-    ]
-    assert 86000 < await local_redis.ttl(first.key) <= 86400
-    await local_redis.delete(first.key)
-    with pytest.raises(SessionConflict) as expired:
-        await SessionTurn.begin(first.token, "expired-turn-identity", 1, {"question": "stat"})
-    assert expired.value.reason == "session_expired"
 
 
 async def test_atomic_budget_starts_a_missing_month_at_zero(local_redis, monkeypatch):
@@ -229,61 +200,6 @@ async def test_unknown_entity_and_baseline_scope_fail_closed(db_session):
         )
     )
     assert result.status == "unsupported_metric_or_scope" and not result.claims
-
-
-async def test_whole_records_fit_budget_and_provenance_is_resolvable(db_session):
-    tools, _ = await make_tools(db_session)
-    result = await tools.execute(ToolCall(name="discover_facts", question=tools.question))
-    loop = AnalystLoop(tools, [])
-    loop.results.append(result)
-    from app.services.analyst_provider import encoded, token_upper_bound
-    from app.services.evidence_contracts import Action
-
-    payload = loop.payload(Action)
-    assert token_upper_bound(encoded(payload)) + 1700 <= get_settings().analyst_input_tokens
-    assert payload["candidates"]
-    for claim in payload["claims"]:
-        full = tools.claims[claim["claim_id"]].model_dump(mode="json")
-        assert {"game_ids", "release_id", "calculation_version"}.isdisjoint(claim)
-        assert claim["value"] == full["value"] and claim["statement"] == full["statement"]
-        assert claim["supporting_evidence_ids"] == full["supporting_evidence_ids"]
-        assert all(full[k] == v for k, v in claim.items() if k != "filters")
-        assert all(ref in tools.evidence for ref in claim["supporting_evidence_ids"])
-
-
-async def test_review_spans_preserve_decimal_punctuation_and_full_coverage(db_session):
-    tools, _ = await make_tools(db_session)
-    loop = AnalystLoop(tools, [{"role": "user", "content": "Untrusted context"}])
-    answer = ProposedAnswer(
-        text="Ask about a 25.5-point average.  Why?\nAsk about archive games—only."
-    )
-    payload = loop.payload(AnswerReview, answer=answer, review=True)
-    spans = payload["review_spans"]
-    assert spans == ["Ask about a 25.5-point average.  ", "Why?\n", "Ask about archive games—only."]
-    assert "context" not in payload
-    review = AnswerReview(
-        assertions=[
-            AssertionReview(
-                text=span,
-                assertion_type="conversational",
-                verdict="supported",
-                offending_text=None,
-                supporting_claim_ids=[],
-                supporting_evidence_ids=[],
-                reason="Format fixture.",
-            )
-            for span in spans
-        ]
-    )
-    assert validate_review(review, answer, {}, {})
-    truncated = review.model_copy(update={"assertions": review.assertions[:-1]})
-    assert not validate_review(truncated, answer, {}, {})
-    stripped = review.model_copy(
-        update={
-            "assertions": [a.model_copy(update={"text": a.text.strip()}) for a in review.assertions]
-        }
-    )
-    assert not validate_review(stripped, answer, {}, {})
 
 
 async def test_catalog_preserves_baselines_and_qualifier_population(db_session, monkeypatch):

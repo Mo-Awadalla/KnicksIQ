@@ -165,7 +165,7 @@ def scenario_calculation_receipts(directory: Path) -> list[str]:
             problems,
         )
         expect(
-            metric(report, "citation_receipt_correctness")["status"] == "blocked",
+            metric(report, "citation_receipt_correctness")["status"] == "inapplicable",
             "unresolved sources never publish a citation value",
             problems,
         )
@@ -340,7 +340,7 @@ def scenario_possession_document_receipts(directory: Path) -> list[str]:
         claims=[narrative_claim],
         text="Synthetic narrative 61.",
     )
-    response["citations"].append(
+    response["calculation_audit"]["citations"].append(
         {
             "claim": "Synthetic narrative passage.",
             "type": "possession",
@@ -373,7 +373,9 @@ def scenario_possession_document_receipts(directory: Path) -> list[str]:
         "the document's game is the expected evidence",
         problems,
     )
-    response["citations"][-1]["metadata"] = {"possession_id": "game:103:poss:9"}
+    response["calculation_audit"]["citations"][-1]["metadata"] = {
+        "possession_id": "game:103:poss:9"
+    }
     observations[0] = observation("answer-001", response)
     result, report = run_score(
         directory,

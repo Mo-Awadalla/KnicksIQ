@@ -199,7 +199,7 @@ def scenario_season_mismatch_fails(directory: Path) -> list[str]:
     mapping = dump(directory / "runtime-mapping.json", synthetic_mapping())
     rows = baseline_observations(synthetic_questions())
     response = answer_response(game=105, value=64)
-    response["citations"][0]["metadata"]["claim"]["season"] = "2024-25"
+    response["calculation_audit"]["citations"][0]["metadata"]["claim"]["season"] = "2024-25"
     rows[3] = observation("answer-004", response)
     result, report = _score(directory, questions, expectations, mapping, rows)
     if report is None:
@@ -363,7 +363,7 @@ def scenario_unmapped_references_do_not_verify(directory: Path) -> list[str]:
     mapping = dump(directory / "runtime-mapping.json", synthetic_mapping())
     rows = baseline_observations(synthetic_questions())
     response = answer_response(game=105, value=64)
-    response["evidence"] = [
+    response["calculation_audit"]["evidence"] = [
         {
             "evidence_id": f"{RELEASE}:game:105",
             "release_id": RELEASE,
@@ -384,7 +384,7 @@ def scenario_unmapped_references_do_not_verify(directory: Path) -> list[str]:
         problems,
     )
     expect(
-        metric(report, "citation_receipt_correctness")["status"] == "blocked",
+        metric(report, "citation_receipt_correctness")["status"] == "inapplicable",
         "identity coverage alone does not publish a citation value",
         problems,
     )

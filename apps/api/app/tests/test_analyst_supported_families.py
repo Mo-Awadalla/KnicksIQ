@@ -1,8 +1,8 @@
 """Advertised factual families answered by the deterministic analyst path.
 
-Each case drives `resolve_query`, `AnalystTools` and `AnalystLoop` against real release
-rows. They were written before the operation fixes, so threshold counts, player
-leaderboards, shooting ratios, derived player counts, period scoring and the win/loss
+Each case drives `resolve_query`, `AnalystTools` and the private factual boundary
+against real release rows. Threshold counts, player leaderboards, shooting ratios,
+derived player counts, period scoring and the win/loss
 split fail on the previous behaviour, which refused them for using words such as
 "over", "under", "who led" or "shooting".
 """
@@ -16,8 +16,8 @@ from app.models.box_score import PeriodScore, PlayerGameStat, TeamGameStat
 from app.models.dataset_release import DatasetRelease
 from app.models.game import Game
 from app.models.player import Player
-from app.services.analyst_loop import AnalystLoop
 from app.services.analyst_tools import AnalystTools
+from app.tests.support.factual_queries import grouped_claims, lookup, text
 from sqlalchemy import select
 
 ARCHIVE = (
@@ -172,18 +172,12 @@ async def _deterministic(db_session, question: str):
     release = await _seed_archive(db_session)
     tools = AnalystTools(db_session, release, question, release.season, {})
     await tools.prepare()
-    loop = AnalystLoop(tools, [])
-    loop.request_id = "supported-families-test"
-    return tools, loop, await loop.run(allow_model=False)
+    result = await lookup(tools)
+    return tools, result, result
 
 
-def _claims(result) -> dict[str, list]:
-    grouped: dict[str, list] = {}
-    for citation in result["citations"]:
-        claim = citation["metadata"].get("claim")
-        if claim:
-            grouped.setdefault(claim["metric_id"], []).append(claim)
-    return grouped
+def _claims(result):
+    return grouped_claims(result)
 
 
 def _game_ids(tools: AnalystTools, *days: str) -> list[int]:
@@ -200,8 +194,8 @@ async def test_score_threshold_counts_games_over_a_cutoff(db_session):
     assert claim["unit"] == "games"
     assert claim["denominator"] == 6 and claim["sample_size"] == 3
     assert claim["game_ids"] == _game_ids(tools, "2025-11-01", "2025-11-15", "2025-11-25")
-    assert "3 of 6" in result["answer"]
-    assert result["outcome"] == "answer" and result["refused"] is False
+    assert "3 of 6" in text(result)
+    assert result.status in {"ok", "incomplete_coverage"}
 
 
 async def test_opponent_threshold_counts_points_allowed(db_session):
@@ -213,7 +207,7 @@ async def test_opponent_threshold_counts_points_allowed(db_session):
     assert claim["denominator"] == 6
     assert claim["game_ids"] == _game_ids(tools, "2025-11-05", "2025-11-15", "2025-11-25")
     assert claim["eligibility"]["subject"] == "opponent_points"
-    assert result["outcome"] == "answer" and result["refused"] is False
+    assert result.status in {"ok", "incomplete_coverage"}
 
 
 async def test_margin_threshold_counts_wins_by_margin(db_session):
@@ -224,7 +218,7 @@ async def test_margin_threshold_counts_wins_by_margin(db_session):
     assert claim["value"] == 2
     assert claim["game_ids"] == _game_ids(tools, "2025-11-15", "2025-11-25")
     assert claim["eligibility"]["subject"] == "margin"
-    assert result["outcome"] == "answer" and result["refused"] is False
+    assert result.status in {"ok", "incomplete_coverage"}
 
 
 async def test_assists_leaderboard_names_the_leader_with_totals(db_session):
@@ -237,8 +231,8 @@ async def test_assists_leaderboard_names_the_leader_with_totals(db_session):
     assert claim["subject_id"] == f"player:{brunson.id}"
     assert claim["unit"] == "assists"
     assert claim["sample_size"] == 6 and claim["denominator"] == 6
-    assert "Jalen Brunson" in result["answer"]
-    assert result["outcome"] == "answer" and result["refused"] is False
+    assert "Jalen Brunson" in text(result)
+    assert result.status in {"ok", "incomplete_coverage"}
 
 
 async def test_leaderboard_window_restricts_to_requested_games(db_session):
@@ -279,7 +273,7 @@ async def test_period_scoring_comparison_uses_period_rows(db_session):
     assert by_period[(3,)]["value"] == pytest.approx(165 / 6)
     assert by_period[(4,)]["value"] == pytest.approx(150 / 6)
     assert all(claim["denominator"] == 6 for claim in claims)
-    assert result["outcome"] == "answer" and result["refused"] is False
+    assert result.status in {"ok", "incomplete_coverage"}
 
 
 async def test_shooting_split_reports_both_results(db_session):
@@ -310,14 +304,15 @@ async def test_best_defensive_game_ranks_fewest_points_allowed(db_session):
     claim = _claims(result)["opponent_points"][0]
     assert claim["value"] == 95
     assert claim["game_ids"] == _game_ids(tools, "2025-11-15")
-    assert result["outcome"] == "answer" and result["refused"] is False
+    assert result.status in {"ok", "incomplete_coverage"}
+    assert all(item.game_id in claim["game_ids"] for item in result.evidence)
 
 
 async def test_undefined_superlative_clarifies_instead_of_refusing(db_session):
     _, loop, result = await _deterministic(db_session, "Describe the Knicks' worst third quarter.")
-    assert result["outcome"] == "clarify" and result["refused"] is False
-    assert "quarter" in result["answer"].lower()
-    assert {item.status for item in loop.results} == {"ambiguous_entity"}
+    assert result.status == "ambiguous_entity"
+    assert "quarter" in text(result).lower()
+    assert {result.status} == {"ambiguous_entity"}
 
 
 async def test_live_and_betting_questions_refuse_honestly(db_session):
@@ -327,8 +322,8 @@ async def test_live_and_betting_questions_refuse_honestly(db_session):
         "Will the Knicks win their next game?",
     ):
         _, loop, result = await _deterministic(db_session, question)
-        assert result["outcome"] == "refuse", question
-        assert result["refused"] is True, question
-        assert "archive" in result["answer"].lower(), question
+        assert result.status == "unsupported_metric_or_scope", question
+        assert not result.claims, question
+        assert "archive" in text(result).lower(), question
         assert _claims(result) == {}, question
-        assert {item.status for item in loop.results} == {"unsupported_metric_or_scope"}
+        assert {result.status} == {"unsupported_metric_or_scope"}

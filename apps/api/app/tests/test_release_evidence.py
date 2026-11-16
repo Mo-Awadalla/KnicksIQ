@@ -45,22 +45,17 @@ def test_boolean_status_does_not_replace_hashed_evidence(tmp_path):
 
 
 @pytest.mark.parametrize(
-    ("mode", "rate", "blocked"),
-    [("shadow", "0.1", False), ("llm_primary", "0.1", True), ("shadow", "1", True)],
+    "cutoff,model,blocked",
+    [("2", "approved", False), ("3", "approved", True), ("2", "other", True)],
 )
-def test_launch_policy_checks_the_deployment_blueprint(tmp_path, mode, rate, blocked):
+def test_launch_policy_checks_the_deployment_blueprint(tmp_path, cutoff, model, blocked):
     (tmp_path / "render.yaml").write_text(
-        "services:\n"
-        "  - name: knicksiq-api\n"
-        "    envVars:\n"
-        "      - key: ANALYSIS_ANSWER_MODE\n"
-        f"        value: {mode}\n"
-        "      - key: ANALYSIS_SHADOW_SAMPLE_RATE\n"
-        f"        value: '{rate}'\n"
+        "services:\n  - name: knicksiq-api\n    envVars:\n"
+        f"      - key: OPENROUTER_MONTHLY_CUTOFF_USD\n        value: '{cutoff}'\n"
+        f"      - key: AI_CHAT_MODEL\n        value: {model}\n"
+        "      - key: OPENROUTER_ALLOWED_MODELS\n        value: '[\"approved\"]'\n"
     )
-    failures = validate_record(
-        {"configuration": {"answer_mode": "shadow", "shadow_sample_rate": 0.1}}, tmp_path
-    )
+    failures = validate_record({}, tmp_path)
     assert any("blueprint" in failure for failure in failures) is blocked
 
 

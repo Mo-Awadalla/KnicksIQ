@@ -1,17 +1,5 @@
-"""Fail-closed scoring with fixed denominators and explicit, disaggregated gates.
-
-Every original case is scored. Missing reviews, unapproved labels and absent
-document-level narrative observations block their gates explicitly.
-
-The ``disabled`` profile blocks on any model stage, so no report can present a
-paying run as a deterministic measurement. The ``service`` profile is accepted
-only with a verified approved-run binding, a persisted attempt attestation, and
-a candidate-signed proof on every single observation, checkable offline from the
-public key bound in the run configuration. It reports upstream attempts from the
-ledger separately from the logical model stages the responses report and never
-compares them. A loopback fake wire keeps its ``local_fake`` proof scope and
-blocks as quality evidence: it proves boundary behaviour, never quality.
-"""
+"""Loopback fixture proof establishes boundary behavior, not model quality.
+Public provider counts are unavailable; private attempt attestation is separate."""
 
 from __future__ import annotations
 
@@ -143,14 +131,6 @@ def _service_blockers(
             {
                 "code": "service_guard_unattested",
                 "detail": "; ".join(attestation.problems),
-            }
-        )
-    if not submission.provider_requests:
-        blockers.append(
-            {
-                "code": "service_stages_absent",
-                "detail": "no model stage was reported; a deterministic run is not service "
-                "evidence even when an attempt ledger exists",
             }
         )
     if binding.scope == "local_fake":
@@ -320,7 +300,6 @@ def score(
         blockers.append({"code": "answer_quality_unreviewed", "detail": "; ".join(review_blockers)})
     for code, attribute in (
         ("assertion_evidence_unresolved", "assertion_blockers"),
-        ("citation_content_unverified", "citation_blockers"),
         ("entity_subject_unverifiable", "entity_blockers"),
     ):
         offenders = [item.case.id for item in scores if getattr(item, attribute)]
@@ -356,6 +335,13 @@ def score(
     for name, gate in gates.items():
         if gate["status"] == "fail":
             blockers.append({"code": f"gate_failed:{name}", "detail": "measured below threshold"})
+        elif metrics[name]["status"] == "inapplicable":
+            blockers.append(
+                {
+                    "code": f"gate_inapplicable:{name}",
+                    "detail": "; ".join(metrics[name]["blockers"]),
+                }
+            )
         elif metrics[name]["status"] == "blocked":
             blockers.append(
                 {"code": f"gate_blocked:{name}", "detail": "required measurement is unavailable"}
@@ -397,7 +383,10 @@ def score(
         },
         "profile": {
             "name": profile,
-            "provider_requests": submission.provider_requests,
+            "provider_requests": None,
+            "provider_requests_status": (
+                "inapplicable: public tool traces retired; use private attestation"
+            ),
             "provider_attempts": None if attestation is None else attestation.admitted,
             "attempts_refused": None if attestation is None else attestation.refused,
             "attempt_budget": None if binding is None else binding.max_provider_requests,

@@ -58,7 +58,7 @@ def create_app() -> FastAPI:
         )
     app = FastAPI(
         title="KnicksIQ API",
-        description="KnicksIQ FastAPI backend — Knicks postgame intelligence platform",
+        description="KnicksIQ season conversation API",
         version="0.1.0",
         lifespan=lifespan,
         docs_url=None if settings.is_production else "/docs",
@@ -74,7 +74,7 @@ def create_app() -> FastAPI:
         allow_origins=settings.cors_origins,
         allow_credentials=False,
         allow_methods=["GET", "POST", "OPTIONS"],
-        allow_headers=["Content-Type", "X-Request-ID"],
+        allow_headers=["Content-Type", "X-Request-ID", "X-Chat-Token"],
     )
 
     @app.middleware("http")
@@ -104,13 +104,7 @@ def create_app() -> FastAPI:
             if elapsed_ms < 4000
             else "gte_4s"
         )
-        feature = (
-            "analyst"
-            if request.url.path == "/analysis/query"
-            else "archive"
-            if request.url.path.startswith(("/archive", "/games", "/reports"))
-            else "operational"
-        )
+        feature = "chat" if request.url.path.startswith("/chat/") else "operational"
         get_logger("knicksiq.aggregate").info(
             "aggregate.request",
             feature=feature,
@@ -136,19 +130,6 @@ def create_app() -> FastAPI:
             "code": f"http_{exc.status_code}",
             "message": message,
         }
-        conflict_messages = {
-            "session_expired": "The conversation expired. Retry your question.",
-            "revision_conflict": "The conversation changed. Retry your question.",
-            "turn_id_reused": "This turn identity belongs to a different question.",
-            "turn_in_progress": "This conversation turn is still in progress.",
-        }
-        if exc.status_code == 409 and isinstance(exc.detail, dict):
-            code = exc.detail.get("code")
-            if isinstance(code, str) and code in conflict_messages:
-                error = {"code": code, "message": conflict_messages[code]}
-                revision = exc.detail.get("current_revision")
-                if code == "revision_conflict" and type(revision) is int and revision >= 0:
-                    error["current_revision"] = revision
         return JSONResponse(
             status_code=exc.status_code,
             content={

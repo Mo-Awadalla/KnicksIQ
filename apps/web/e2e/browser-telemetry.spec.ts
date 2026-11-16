@@ -2,12 +2,20 @@ import { expect, test } from 'playwright/test'
 
 const enabled = process.env.KNICKSIQ_TELEMETRY_E2E === '1'
 const marker = 'KIQ_FRONTEND_PRIVATE_20261030'
-const probeType = 'KnicksPrivacyProbe'
+const probeType = 'Error'
 const sink = 'http://127.0.0.1:19499/'
 
-test('browser error telemetry removes question text before transport', async ({ page, baseURL }, testInfo) => {
-  test.skip(!enabled, 'Requires a build with the loopback-only telemetry probe DSN.')
-  expect(['127.0.0.1', 'localhost']).toContain(new URL(String(baseURL)).hostname)
+test('browser error telemetry removes question text before transport', async ({
+  page,
+  baseURL,
+}, testInfo) => {
+  expect(
+    enabled,
+    'Requires a build with the loopback-only telemetry probe DSN.'
+  ).toBe(true)
+  expect(['127.0.0.1', 'localhost']).toContain(
+    new URL(String(baseURL)).hostname
+  )
   const forbiddenPosts: string[] = []
   await page.route('**/*', async (route) => {
     const request = route.request()
@@ -26,7 +34,10 @@ test('browser error telemetry removes question text before transport', async ({ 
       })
       return
     }
-    if (request.method() !== 'GET' && !['127.0.0.1', 'localhost'].includes(url.hostname)) {
+    if (
+      request.method() !== 'GET' &&
+      !['127.0.0.1', 'localhost'].includes(url.hostname)
+    ) {
       forbiddenPosts.push(url.origin)
       await route.abort()
       return
@@ -35,19 +46,29 @@ test('browser error telemetry removes question text before transport', async ({ 
   })
   await page.goto('/')
   await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
-  const delivered = page.waitForRequest((request) =>
-    request.url().startsWith(sink) && (request.postData() || '').includes(probeType)
+  const delivered = page.waitForRequest(
+    (request) =>
+      request.url().startsWith(sink) &&
+      (request.postData() || '').includes(probeType)
   )
   await page.addScriptTag({
-    content: `setTimeout(() => { const error = new Error('${marker}'); error.name = '${probeType}'; throw error; }, 0);`,
+    content: `setTimeout(() => { const error = new Error('${marker}'); error.name = '${marker}'; throw error; }, 0);`,
   })
   const raw = (await delivered).postData() || ''
-  const event = raw.trim().split('\n').map((line) => JSON.parse(line)).find((item) =>
-    item.exception?.values?.some((exception: { type?: string }) => exception.type === probeType)
+  const event = raw
+    .trim()
+    .split('\n')
+    .map((line) => JSON.parse(line))
+    .find((item) =>
+      item.exception?.values?.some(
+        (exception: { type?: string }) => exception.type === probeType
+      )
+    )
+  expect(event.exception.values).toEqual(
+    expect.arrayContaining([
+      expect.objectContaining({ type: probeType, value: '<redacted>' }),
+    ])
   )
-  expect(event.exception.values).toEqual(expect.arrayContaining([
-    expect.objectContaining({ type: probeType, value: '<redacted>' }),
-  ]))
   expect(raw).not.toContain(marker)
   expect(forbiddenPosts).toEqual([])
   await testInfo.attach('browser-telemetry-result', {

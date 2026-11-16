@@ -13,6 +13,7 @@ exercised without a bound process.
 
 from __future__ import annotations
 
+import asyncio
 import json
 from collections.abc import Awaitable, Callable, Mapping
 from typing import Any
@@ -33,9 +34,10 @@ from app.evaluation.candidate_proof import (
     preflight_body,
     public_key_for,
 )
+from app.evaluation.chat_stream import frame, response_from_events
 from app.evaluation.provider_guard import RunBinding
 
-CHALLENGE_PATHS = frozenset({"/analysis/query"})
+CHALLENGE_PATHS = frozenset({"/chat/turns"})
 MAX_BODY_BYTES = 8 << 20
 
 Message = dict[str, Any]
@@ -218,28 +220,56 @@ class CandidateProofMiddleware:
         nonce: str,
         send: Send,
     ) -> None:
-        """Buffer the application's answer, sign its exact digests, then release it."""
-        request_sha256 = canonical_digest(request_payload)
-        status = 0
-        headers: list[tuple[bytes, bytes]] = []
-        parts: list[bytes] = []
-        size = 0
-        complete = False
+        """Forward every SSE chunk immediately; append a signed normalized terminal record.
+
+        The proof binds the command and normalized reply/snapshot/delta count, not timing
+        or individual chunk boundaries. It is an evaluation-only final SSE event.
+        """
+        status, parts, size, streaming = 0, [], 0, False
 
         async def capture(message: Message) -> None:
-            nonlocal status, headers, size, complete
+            nonlocal status, size, streaming
             if message["type"] == "http.response.start":
-                status = int(message.get("status") or 0)
-                headers = list(message.get("headers") or [])
+                status = int(message["status"])
+                streaming = any(
+                    k.lower() == b"content-type" and b"text/event-stream" in v
+                    for k, v in message.get("headers", [])
+                )
+                if streaming:
+                    await send(message)
                 return
             if message["type"] != "http.response.body":
                 return
-            chunk = message.get("body") or b""
+            chunk = message.get("body", b"")
             size += len(chunk)
             if size > MAX_BODY_BYTES:
-                raise ProofError("the response body is larger than this surface signs")
+                raise ProofError("response exceeds proof bound")
             parts.append(chunk)
-            complete = not message.get("more_body")
+            if streaming:
+                await send({**message, "more_body": True})
+            if message.get("more_body"):
+                return
+            if streaming:
+                events = [
+                    event
+                    for raw in b"".join(parts).decode().split("\n\n")
+                    if (event := frame(raw)) is not None
+                ]
+                payload = response_from_events(events)
+            else:
+                payload = _json_object(b"".join(parts), "response")
+            proof = self.signer.sign(
+                kind="response",
+                nonce=nonce,
+                request_sha256=canonical_digest(request_payload),
+                http_status=status,
+                response_sha256=canonical_digest(payload),
+            )
+            if streaming:
+                data = "event: evaluation_proof\ndata: " + json.dumps(proof.as_dict()) + "\n\n"
+                await send({"type": "http.response.body", "body": data.encode()})
+            else:
+                await _send_json(send, status, payload, proof=encode_header(proof.as_dict()))
 
         delivered = False
 
@@ -248,33 +278,8 @@ class CandidateProofMiddleware:
             if not delivered:
                 delivered = True
                 return {"type": "http.request", "body": body, "more_body": False}
+            # A consumed request body is not a client disconnect.
+            await asyncio.Event().wait()
             return {"type": "http.disconnect"}
 
-        try:
-            await self.app(scope, replay, capture)
-            if not status or not complete:
-                raise ProofError("the application produced no complete response to sign")
-            response_payload = _json_object(b"".join(parts), "response")
-        except ProofError as exc:
-            await _send_json(
-                send, 502, {"error": {"code": "evaluation_proof_failed", "message": str(exc)}}
-            )
-            return
-        proof = self.signer.sign(
-            kind="response",
-            nonce=nonce,
-            request_sha256=request_sha256,
-            http_status=status,
-            response_sha256=canonical_digest(response_payload),
-        )
-        await send(
-            {
-                "type": "http.response.start",
-                "status": status,
-                "headers": [
-                    *headers,
-                    (PROOF_HEADER.encode(), encode_header(proof.as_dict()).encode()),
-                ],
-            }
-        )
-        await send({"type": "http.response.body", "body": b"".join(parts)})
+        await self.app(scope, replay, capture)

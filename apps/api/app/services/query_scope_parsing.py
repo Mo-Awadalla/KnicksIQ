@@ -96,6 +96,21 @@ def _named_year(q: str) -> int | None:
     return int(match.group(1)) if match else None
 
 
+def _month_year(month: int, year: int | None, games: list[Game]) -> int | None:
+    if year is not None:
+        return year
+    for game in games:
+        if game.game_date.month == month:
+            return game.game_date.year
+    for game in games:
+        season = re.fullmatch(r"(\d{4})-(\d{2})", game.season)
+        if season:
+            first = int(season[1])
+            if (first + 1) % 100 == int(season[2]):
+                return first if month >= 7 else first + 1
+    return None
+
+
 def _month_interval(
     months: list[int],
     year: int | None,
@@ -109,12 +124,8 @@ def _month_interval(
     month with no game keeps its place in the interval. "Since January" stays open-ended.
     """
     first, last = months[0], months[-1]
-    start_year = year or next(
-        (game.game_date.year for game in games if game.game_date.month == first), None
-    )
-    end_year = year or next(
-        (game.game_date.year for game in games if game.game_date.month == last), None
-    )
+    start_year = _month_year(first, year, games)
+    end_year = _month_year(last, year, games)
     if start_year is None or end_year is None:
         return None, None
     date_start = date(start_year, first, 1)

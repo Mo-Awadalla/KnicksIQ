@@ -299,11 +299,16 @@ def scenario_abstention_content_checked(directory: Path) -> list[str]:
     mapping = dump(directory / "runtime-mapping.json", synthetic_mapping())
     observations = baseline_observations(synthetic_questions())
     wrong_clarify = dict(observations[58]["response"])
-    wrong_clarify["citations"] = []
+    wrong_clarify["calculation_audit"] = {
+        "schema": "calculation-audit-v1",
+        "season": "2025-26",
+        "citations": [],
+        "evidence": [],
+    }
     wrong_clarify["outcome"] = "clarify"
-    wrong_clarify["answer"] = "Synthetic clarify with a delivered fact."
+    wrong_clarify["text"] = "Synthetic clarify with a delivered fact."
     wrong_clarify["tool_calls"] = []
-    wrong_clarify["citations"] = [
+    wrong_clarify["calculation_audit"]["citations"] = [
         {
             "claim": "Synthetic wins 61.",
             "type": "verified_claim",
@@ -371,7 +376,6 @@ def scenario_request_identity_required(directory: Path) -> list[str]:
     observations = baseline_observations(synthetic_questions())
     stripped = observations[0]
     stripped.pop("request_id")
-    stripped.pop("turn_id")
     stripped["request"] = {}
     observations[0] = stripped
     result, report = _score_reviewed(
@@ -404,7 +408,7 @@ def scenario_request_case_mismatch(directory: Path) -> list[str]:
     mapping = dump(directory / "runtime-mapping.json", synthetic_mapping())
     observations = baseline_observations(synthetic_questions())
     observations[1]["request"] = dict(observations[1]["request"])
-    observations[1]["request"]["question"] = observations[0]["request"]["question"]
+    observations[1]["request"]["message"] = observations[0]["request"]["message"]
     result, report = _score_reviewed(
         directory,
         questions=questions,

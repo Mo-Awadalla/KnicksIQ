@@ -16,8 +16,7 @@ os.environ["LOG_JSON"] = "false"
 os.environ["DEBUG"] = "true"
 
 # ruff: noqa: E402
-# A developer `.env` carries live provider keys and ANALYSIS_ANSWER_MODE=llm_primary,
-# which changes tool calls and could reach real services. Tests read only the process env.
+# A developer `.env` can carry live provider keys. Tests read only process env.
 # This must run before `app.core.db` builds the cached Settings.
 from app.core.config import Settings
 

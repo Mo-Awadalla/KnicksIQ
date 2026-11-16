@@ -1,7 +1,8 @@
-"""Discovery must answer casual prompts without giving generation control of facts."""
+"""Private discovery never broadens missing or unsupported season scope."""
 
 import pytest
-from app.core.db import AsyncSessionLocal
+from app.services.analyst_tools import AnalystTools
+from app.tests.support.factual_queries import lookup
 from app.tests.support.player_archive import _seed_release_stats
 
 
@@ -15,17 +16,12 @@ from app.tests.support.player_archive import _seed_release_stats
         "An interesting stat about the Lakers season",
     ],
 )
-async def test_missing_evidence_never_broadens_scope(client, monkeypatch, question):
-    from app.core.config import get_settings
-
-    monkeypatch.setattr(get_settings(), "analyst_evidence_loop_enabled", False)
-    async with AsyncSessionLocal() as db:
-        await _seed_release_stats(db)
-    response = await client.post("/analysis/query", json={"question": question})
-    assert response.status_code == 200
-    body = response.json()
-    assert not body["citations"]
-    assert "put up" not in body["answer"]
+async def test_missing_evidence_never_broadens_scope(db_session, question):
+    release, _ = await _seed_release_stats(db_session)
+    tools = AnalystTools(db_session, release, question, release.season, {})
+    await tools.prepare()
+    result = await lookup(tools)
+    assert not result.claims
 
 
 @pytest.mark.parametrize(
@@ -36,78 +32,30 @@ async def test_missing_evidence_never_broadens_scope(client, monkeypatch, questi
         "Something surprising about Brunson tonight?",
     ],
 )
-async def test_live_requests_are_not_reinterpreted_as_discovery(client, question):
-    response = await client.post("/analysis/query", json={"question": question})
-    assert response.status_code == 200
-    assert response.json()["refused"]
-    assert response.json()["citations"] == []
+async def test_live_requests_are_not_reinterpreted_as_discovery(db_session, question):
+    release, _ = await _seed_release_stats(db_session)
+    tools = AnalystTools(db_session, release, question, release.season, {})
+    await tools.prepare()
+    result = await lookup(tools)
+    assert result.status == "unsupported_metric_or_scope"
+    assert not result.claims
 
 
-async def test_public_route_and_followup(client, monkeypatch):
-    from app.core.config import get_settings
-
-    monkeypatch.setattr(get_settings(), "analyst_evidence_loop_enabled", False)
-    async with AsyncSessionLocal() as db:
-        release, player = await _seed_release_stats(db)
-        version, player_id = release.version, player.id
-    response = await client.post(
-        "/analysis/query", json={"question": "Something surprising about Brunson?"}
+async def test_discovery_binds_player_and_release(db_session):
+    release, player = await _seed_release_stats(db_session)
+    tools = AnalystTools(
+        db_session, release, "Something surprising about Brunson?", release.season, {}
     )
-    assert response.status_code == 200
-    first = response.json()
-    assert first["route"] == "discover_fact" and not first["refused"]
-    assert "Jalen Brunson put up 30 points" in first["answer"]
-    receipt = first["citations"][0]
-    assert receipt["claim"] in first["answer"]
-    assert receipt["metadata"]["data_version"] == version
-    assert receipt["game_id"] in receipt["metadata"]["source_game_ids"]
-    assert receipt["metadata"]["player_ids"] == [player_id]
-    response = await client.post(
-        "/analysis/query",
-        json={"question": "Give me another one", "conversation_state": first["conversation_state"]},
+    await tools.prepare()
+    result = await lookup(tools)
+    assert result.status == "ok"
+    assert result.claims
+    assert any(
+        claim.metric_id == "box_score"
+        and isinstance(claim.value, dict)
+        and claim.value["points"] == 30
+        for claim in result.claims
     )
-    assert response.status_code == 200
-    second = response.json()
-    assert "Jalen Brunson" in second["answer"] and "20 points" in second["answer"]
-    assert second["citations"][0]["game_id"] != receipt["game_id"]
-    assert second["citations"][0]["metadata"]["fact_id"] != receipt["metadata"]["fact_id"]
-    response = await client.post(
-        "/analysis/query",
-        json={"question": "One more", "conversation_state": second["conversation_state"]},
-    )
-    assert response.status_code == 200
-    assert not response.json()["citations"]
-    assert "another verified fact" in response.json()["answer"]
-    response = await client.post(
-        "/analysis/query",
-        json={
-            "question": "Something surprising about Towns?",
-            "conversation_state": first["conversation_state"],
-        },
-    )
-    assert response.status_code == 200
-    assert "Karl-Anthony Towns" in response.json()["answer"]
-
-
-async def test_text_history_can_continue_discovery_without_repeating(client, monkeypatch):
-    from app.core.config import get_settings
-
-    monkeypatch.setattr(get_settings(), "analyst_evidence_loop_enabled", False)
-    async with AsyncSessionLocal() as db:
-        await _seed_release_stats(db)
-    question = "Something surprising about Brunson?"
-    first = await client.post("/analysis/query", json={"question": question})
-    assert first.status_code == 200
-    response = await client.post(
-        "/analysis/query",
-        json={
-            "question": "Another one",
-            "context": [
-                {"role": "user", "content": question},
-                {"role": "assistant", "content": first.json()["answer"]},
-            ],
-        },
-    )
-    assert response.status_code == 200
-    assert "Jalen Brunson" in response.json()["answer"]
-    assert "20 points" in response.json()["answer"]
+    assert all(claim.release_id == release.version for claim in result.claims)
+    assert all(claim.subject_id == f"player:{player.id}" for claim in result.claims)
+    assert all(claim.supporting_evidence_ids for claim in result.claims)

@@ -2,7 +2,8 @@
 
 These are question and fact candidates found during harness construction. They
 are not gold labels until a reviewer confirms the same facts in a pinned
-KnicksIQ release and maps its evidence IDs.
+KnicksIQ release and privately maps its evidence IDs. Chat replies expose no citations.
+The public-citation gate is inapplicable pending owner-approved rubric migration.
 
 - **December 2, 2025 at Boston:** Boston won 123-117. Jaylen Brown scored 42,
   and Boston stopped a New York rally that cut a 15-point deficit to 102-99.

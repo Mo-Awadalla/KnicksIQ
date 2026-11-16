@@ -63,3 +63,6 @@ graphify-out/
 
 # Package-manager store
 .pnpm-store/
+
+# Local season-chat verification scratch and private run evidence
+/.audit/season-chat-rehaul/

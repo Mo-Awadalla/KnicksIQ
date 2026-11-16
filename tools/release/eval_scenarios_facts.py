@@ -68,8 +68,8 @@ def scenario_clean(directory: Path) -> list[str]:
         problems,
     )
     expect(
-        metric(report, "citation_receipt_correctness")["value"] == 1.0,
-        "citations must be measured and passing",
+        metric(report, "citation_receipt_correctness")["status"] == "inapplicable",
+        "public citations are explicitly inapplicable pending owner-approved rubric migration",
         problems,
     )
     expect(

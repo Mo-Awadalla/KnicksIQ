@@ -250,47 +250,36 @@ def test_container_healthcheck_exit_code_against_the_real_process(live_api):
     assert probe(port=str(_free_port())) == 1
 
 
-def test_directories_serve_only_the_active_release(live_api):
-    players = httpx.get(f"{live_api.base_url}/players", headers=PROBE_HEADERS)
-    assert players.status_code == 200
-    assert [player["id"] for player in players.json()] == [live_api.brunson_id]
-
-    staged = httpx.get(
-        f"{live_api.base_url}/players/{live_api.staged_player_id}", headers=PROBE_HEADERS
-    )
-    assert staged.status_code == 404
-
-    member = httpx.get(f"{live_api.base_url}/players/{live_api.brunson_id}", headers=PROBE_HEADERS)
-    assert member.status_code == 200
-    assert member.json()["full_name"] == "Jalen Brunson"
-
-    teams = httpx.get(f"{live_api.base_url}/teams", headers=PROBE_HEADERS)
-    assert teams.status_code == 200
-    team_ids = {team["id"] for team in teams.json()}
-    assert "NYK" in team_ids
-    assert "ZZZ" not in team_ids
-
-    unknown = httpx.get(f"{live_api.base_url}/teams/ZZZ", headers=PROBE_HEADERS)
-    assert unknown.status_code == 404
-    assert unknown.json()["error"]["code"] == "http_404"
-
-    known = httpx.get(f"{live_api.base_url}/teams/NYK", headers=PROBE_HEADERS)
-    assert known.status_code == 200
-
-
 def test_real_socket_rate_limit_is_per_connection_identity(live_api):
-    url = f"{live_api.base_url}/analysis/query"
-    payload = {"question": "hi"}
+    url = f"{live_api.base_url}/chat/turns"
+    payload = {
+        "kind": "message",
+        "request_id": "00000000-0000-4000-8000-000000000001",
+        "expected_revision": 0,
+        "message": "hi",
+    }
     statuses = [
-        httpx.post(url, json=payload, headers=PROBE_HEADERS, timeout=30).status_code
+        httpx.post(
+            url, json=payload, headers={**PROBE_HEADERS, "X-Chat-Token": "a" * 43}, timeout=30
+        ).status_code
         for _ in range(2)
     ]
     assert 429 not in statuses
 
     # Redis is unset in this scenario, so the in-process limiter is the only bound.
-    assert httpx.post(url, json=payload, headers=PROBE_HEADERS, timeout=30).status_code == 429
+    assert (
+        httpx.post(
+            url, json=payload, headers={**PROBE_HEADERS, "X-Chat-Token": "a" * 43}, timeout=30
+        ).status_code
+        == 429
+    )
     # The identity is the resolved connection address: the same peer stays limited.
-    assert httpx.post(url, json=payload, headers=PROBE_HEADERS, timeout=30).status_code == 429
+    assert (
+        httpx.post(
+            url, json=payload, headers={**PROBE_HEADERS, "X-Chat-Token": "a" * 43}, timeout=30
+        ).status_code
+        == 429
+    )
 
 
 def test_forwarded_identity_is_decided_by_the_trusted_proxy_not_the_app(live_api):
@@ -302,12 +291,18 @@ def test_forwarded_identity_is_decided_by_the_trusted_proxy_not_the_app(live_api
     be the Render edge, which appends the real client address; see
     docs/production-runbook.md.
     """
-    url = f"{live_api.base_url}/analysis/query"
-    payload = {"question": "hi"}
+    url = f"{live_api.base_url}/chat/turns"
+    payload = {
+        "kind": "message",
+        "request_id": "00000000-0000-4000-8000-000000000001",
+        "expected_revision": 0,
+        "message": "hi",
+    }
     response = httpx.post(
         url,
         json=payload,
-        headers={**PROBE_HEADERS, "X-Forwarded-For": "198.51.100.99"},
+        headers={**PROBE_HEADERS, "X-Forwarded-For": "198.51.100.99", "X-Chat-Token": "b" * 43},
         timeout=30,
     )
-    assert response.status_code == 200
+    assert response.status_code == 503
+    assert response.json()["error"]["code"] == "unavailable"

@@ -23,7 +23,7 @@ from app.evaluation.assertions import (
     extra_claims,
     unattributed_numbers,
 )
-from app.evaluation.labels import ExpectationCase, LabelError, conversation_context
+from app.evaluation.labels import ExpectationCase
 from app.evaluation.mapping import CitationResolution, RuntimeMapping
 from app.evaluation.mapping_citation import CalculationContent
 from app.evaluation.observations import EvidenceRecord, Observation, canonical_digest
@@ -31,6 +31,9 @@ from app.evaluation.reviews import CaseDecision, DecisionRecord
 
 INTEGRITY_CODES = frozenset(
     {
+        "request_kind_invalid",
+        "malformed_calculation_audit",
+        "calculation_audit_response_mismatch",
         "response_hash_missing",
         "response_hash_mismatch",
         "malformed_claim",
@@ -107,6 +110,9 @@ class CaseScore:
             "checks": self.checks,
             "failures": [failure.__dict__ for failure in self.failures],
             "citations": self.citations,
+            "citation_status": (
+                "inapplicable: public citations retired; owner-approved rubric migration pending"
+            ),
             "citation_blockers": self.citation_blockers,
             "entity_blockers": self.entity_blockers,
             "assertion_blockers": self.assertion_blockers,
@@ -310,60 +316,21 @@ def score_case(
     mapping: RuntimeMapping,
     decisions: DecisionRecord | None,
 ) -> CaseScore:
-    result = CaseScore(case, observation)
     if observation is None:
-        result.integrity = False
+        result = CaseScore(case, None, integrity=False)
         result.failures.append(AssertionFailure("cases_missing", "no response recorded"))
         return result
-    for problem in observation.problems:
-        result.failures.append(AssertionFailure(problem.split(":", 1)[0], problem))
-    if str(observation.request.get("question") or "") != case.question:
-        result.failures.append(AssertionFailure("request_case_mismatch", observation.case_id))
-    context_failure = _context_failure(case, observation)
-    if context_failure is not None:
-        result.failures.append(context_failure)
-    if observation.outcome is None:
-        result.failures.append(
-            AssertionFailure(
-                "outcome_missing_dependency" if observation.degraded else "outcome_missing",
-                observation.route or "",
-            )
-        )
-    elif observation.outcome != case.disposition:
-        result.failures.append(
-            AssertionFailure("disposition_mismatch", f"{observation.outcome} != {case.disposition}")
-        )
-    expected_request = observation.sent_request_id or observation.request_id
-    for entry in observation.traces:
-        for problem in entry.rank_problems():
-            code, _, stage = problem.partition(":")
-            result.failures.append(AssertionFailure(code, stage or entry.request_id))
-        if entry.data_version != mapping.version:
-            result.failures.append(AssertionFailure("trace_release_mismatch", entry.data_version))
-        if expected_request and entry.request_id != expected_request:
-            result.failures.append(AssertionFailure("trace_request_mismatch", entry.request_id))
-    result.integrity = not (result.codes & INTEGRITY_CODES)
+    from app.evaluation.scoring_chat import score_chat_case
 
-    decision = decisions.for_case(case.id, observation.response_sha256) if decisions else None
-    reviewed, review_failures, assertion_blockers, additions_ok = _review_state(
-        case, observation, decision
-    )
-    result.failures.extend(review_failures)
-    result.assertion_blockers.extend(assertion_blockers)
-    result.reviewed = reviewed
-    result.checks["reviewed"] = reviewed
-    result.checks["review_disposition_correct"] = (
-        decision is not None
-        and decision.disposition == case.disposition
-        and decision.disposition == observation.outcome
-    )
-    result.checks["review_content_correct"] = (
-        decision is not None
-        and decision.paraphrase == "supported"
-        and all(assertion.decision == "supported" for assertion in decision.assertions)
-    )
+    return score_chat_case(case, observation, mapping, decisions)
 
-    content_ok = True
+
+def check_calculation_audit(
+    result: CaseScore, observation: Observation, mapping: RuntimeMapping
+) -> None:
+    """An explicit private audit can deny facts, never supply chat review credit."""
+    case = result.case
+    additions_ok = result.checks.get("no_additional_facts") is True
     if case.disposition == "answer":
         if not case.facts:
             result.failures.append(AssertionFailure("no_expected_facts", case.id))
@@ -395,7 +362,8 @@ def score_case(
         result.checks["scope"] = not (codes & (SCOPE_CODES | FACT_INVALID_CODES))
         result.checks["no_additional_facts"] = not extra and additions_ok
         result.checks["numeric_attribution"] = not extras
-        result.checks["citations"] = None if citation_blockers else not citation_failures
+        result.checks["private_receipts"] = not citation_blockers and not citation_failures
+        return
     elif case.disposition == "clarify":
         content_ok = not observation.claims
         if observation.claims:
@@ -408,53 +376,8 @@ def score_case(
             result.failures.append(
                 AssertionFailure("refusal_dependency_failure", observation.analytics_status or "")
             )
-    result.checks["disposition_content"] = content_ok
-    if not result.integrity:
-        for name in (
-            "facts",
-            "numeric",
-            "entities",
-            "scope",
-            "no_additional_facts",
-            "numeric_attribution",
-            "citations",
-            "disposition_content",
-        ):
-            result.checks[name] = False if name != "citations" else None
-    return result
-
-
-def _context_failure(case: ExpectationCase, observation: Observation) -> AssertionFailure | None:
-    """The scored request must carry exactly the turns the question file declares."""
-    raw = observation.request.get("context")
-    if raw is None:
-        return AssertionFailure(
-            "request_context_missing",
-            f"{case.id}: the recorded request carries no conversation context",
-        )
-    try:
-        sent = conversation_context("the recorded request", raw)
-    except LabelError as exc:
-        return AssertionFailure("request_context_mismatch", f"{case.id}: {exc}")
-    if sent != case.context:
-        return AssertionFailure(
-            "request_context_mismatch", f"{case.id}: {_context_difference(case.context, sent)}"
-        )
-    return None
-
-
-def _context_difference(
-    expected: tuple[dict[str, str], ...], sent: tuple[dict[str, str], ...]
-) -> str:
-    if len(expected) != len(sent):
-        return f"{len(expected)} original turns but {len(sent)} turns were sent"
-    for index, (want, got) in enumerate(zip(expected, sent, strict=True), start=1):
-        if want != got:
-            return (
-                f"turn {index} differs: sent {got['role']} {got['content'][:60]!r}, "
-                f"asked {want['role']} {want['content'][:60]!r}"
-            )
-    return "the sent turns are not the original ones"
+    if not content_ok:
+        result.checks["disposition_content"] = False
 
 
 def _dependency_failed(observation: Observation) -> bool:

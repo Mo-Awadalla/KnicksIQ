@@ -145,15 +145,15 @@ missing ledger no longer blocks reservations.
 
 Correlate the public `request_id` with scrubbed API logs. Do not request or copy user prompts. Check Postgres pool saturation and statement timeouts first, then optional dependency timeouts. Roll back when the error rate exceeds 1% and the cause is release-specific.
 
-## Answer-mode rollout
+## Conversation provider outage or spend stop
 
-1. Deploy with `ANALYSIS_ANSWER_MODE=shadow` and
-   `ANALYSIS_SHADOW_SAMPLE_RATE=0.1`.
-2. Verify shadow validation, retrieval, cost, and latency gates without
-   inspecting or retaining prompt/evidence content.
-3. Set `ANALYSIS_ANSWER_MODE=llm_primary` only after owner sign-off.
-4. Roll back instantly by setting the mode to `deterministic`; no data or index
-   rollback is required.
+Every reply streams from the configured model; there is no deterministic or
+mock fallback. Clearing `AI_API_KEY`, or a cutoff reached in the Redis ledger,
+makes new replies settle `interrupted` without any provider request while the
+conversation history stays readable. Do not raise `OPENROUTER_MONTHLY_CUTOFF_USD`
+or change `AI_CHAT_MODEL` and `OPENROUTER_ALLOWED_MODELS` without owner approval.
+Investigate with the per-attempt `conversation.turn` log fields (outcome, reason,
+calls, tool rounds, gate violations, continuations); they contain no user text.
 
 ## Secret rotation
 

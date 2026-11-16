@@ -1,4 +1,132 @@
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    X-Frame-Options = "DENY"
+    Permissions-Policy = "camera=(), microphone=(), geolocation=()"
+
+[[redirects]]
+  from = "/api"
+  to = "/not-found.txt"
+  status = 404
+  force = true
+
+[[redirects]]
+  from = "/health"
+  to = "/not-found.txt"
+  status = 404
+  force = true
+
+[[redirects]]
+  from = "/health/*"
+  to = "/not-found.txt"
+  status = 404
+  force = true
+
+[[redirects]]
+  from = "/archive/status/*"
+  to = "/not-found.txt"
+  status = 404
+  force = true
+
+[[redirects]]
+  from = "/api/*"
+  to = "/not-found.txt"
+  status = 404
+  force = true
+
+[[redirects]]
+  from = "/analysis"
+  to = "/not-found.txt"
+  status = 404
+  force = true
+
+[[redirects]]
+  from = "/analysis/*"
+  to = "/not-found.txt"
+  status = 404
+  force = true
+
+[[redirects]]
+  from = "/players"
+  to = "/not-found.txt"
+  status = 404
+  force = true
+
+[[redirects]]
+  from = "/players/*"
+  to = "/not-found.txt"
+  status = 404
+  force = true
+
+[[redirects]]
+  from = "/teams"
+  to = "/not-found.txt"
+  status = 404
+  force = true
+
+[[redirects]]
+  from = "/teams/*"
+  to = "/not-found.txt"
+  status = 404
+  force = true
+
+[[redirects]]
+  from = "/archive/status"
+  to = "/not-found.txt"
+  status = 404
+  force = true
+
+[[redirects]]
+  from = "/games"
+  to = "/"
+  status = 302
+  force = true
+
+[[redirects]]
+  from = "/games/*"
+  to = "/"
+  status = 302
+  force = true
+
+[[redirects]]
+  from = "/reports"
+  to = "/"
+  status = 302
+  force = true
+
+[[redirects]]
+  from = "/reports/*"
+  to = "/"
+  status = 302
+  force = true
+
+[[redirects]]
+  from = "/analyst"
+  to = "/"
+  status = 302
+  force = true
+
+[[redirects]]
+  from = "/analyst/*"
+  to = "/"
+  status = 302
+  force = true
+
+[[redirects]]
+  from = "/archive"
+  to = "/"
+  status = 302
+  force = true
+
+[[redirects]]
+  from = "/sources.html"
+  to = "/"
+  status = 302
+  force = true
+
 [[redirects]]
   from = "/*"
-  to = "/index.html"
-  status = 200
+  to = "/"
+  status = 302

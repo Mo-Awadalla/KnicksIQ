@@ -1,24 +1,129 @@
-"""Check a local production-profile API against an approved archive bundle.
+"""Check a provider-free local API and its actual persisted canonical release rows.
 
-This sends factual analyst turns but never deploys, approves content, changes
-basketball data, or calls a provider directly. Run the API with provider keys
-empty and a dedicated Redis database. Results do not replace release approval.
+The explicit local database must belong to the listening API process. No public
+archive export, stored verification report, or manifest label substitutes for SQL.
+This check does not approve provider quality or deployment.
 """
 
 from __future__ import annotations
 
 import argparse
 import asyncio
-import gzip
 import hashlib
 import json
+import re
 import subprocess
-import uuid
 from datetime import UTC, datetime
 from pathlib import Path
 from urllib.parse import urlsplit
 
 import httpx
+from runtime_mapping import (
+    DatasetRelease,
+    VerificationError,
+    loopback_dsn,
+    read_bundle,
+    verify_restore,
+)
+from sqlalchemy import select, text
+from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
+
+
+def api_database_identity(pid: int, base_url: str, dsn: str) -> str:
+    """Bind the selected database to the actual local origin listener, not a label."""
+    parsed = urlsplit(base_url)
+    if parsed.scheme not in {"http", "https"} or parsed.hostname not in {
+        "localhost",
+        "127.0.0.1",
+        "::1",
+    }:
+        raise VerificationError("only a direct loopback API origin is supported")
+    if (
+        parsed.username
+        or parsed.password
+        or parsed.path not in {"", "/"}
+        or parsed.query
+        or parsed.fragment
+    ):
+        raise VerificationError("use the direct API origin without credentials, path, or query")
+    if pid <= 1:
+        raise VerificationError("--api-pid must identify the local API worker")
+    port = parsed.port or (443 if parsed.scheme == "https" else 80)
+    listener = subprocess.check_output(
+        ["lsof", "-nP", "-a", "-p", str(pid), f"-iTCP:{port}", "-sTCP:LISTEN", "-Fpn"],
+        text=True,
+        stderr=subprocess.DEVNULL,
+        timeout=10,
+    ).splitlines()
+    addresses = {f"n127.0.0.1:{port}", f"n[::1]:{port}"}
+    if f"p{pid}" not in listener or not addresses.intersection(listener):
+        raise VerificationError("--api-pid does not own the direct loopback API listener")
+    identity = subprocess.check_output(
+        ["ps", "-p", str(pid), "-o", "lstart="], text=True, timeout=10
+    ).strip()
+    if not identity:
+        raise VerificationError("the local API process is no longer alive")
+    environment = Path(f"/proc/{pid}/environ")
+    if environment.exists():
+        entries = environment.read_bytes().decode().split("\0")
+    else:
+        command = subprocess.check_output(
+            ["ps", "eww", "-p", str(pid), "-o", "command="], text=True, timeout=10
+        )
+        entries = command.split()
+    selected = {}
+    for key in ("DB_URL", "TEST_MODE", "ENVIRONMENT"):
+        values = [entry.removeprefix(key + "=") for entry in entries if entry.startswith(key + "=")]
+        if len(values) != 1:
+            raise VerificationError(f"the API worker requires an explicit unique {key}")
+        selected[key] = values[0]
+    if (
+        selected["TEST_MODE"].lower() not in {"false", "0"}
+        or selected["ENVIRONMENT"] != "production"
+    ):
+        raise VerificationError("the API worker must explicitly use production and TEST_MODE=false")
+    if loopback_dsn(selected["DB_URL"]) != loopback_dsn(dsn):
+        raise VerificationError(
+            "API database does not match --dsn; an explicit DB_URL on the worker is required"
+        )
+    return identity
+
+
+async def verify_database(dsn: str, bundle: dict) -> dict:
+    """Read one consistent snapshot with PostgreSQL itself enforcing read-only access."""
+    engine = create_async_engine(loopback_dsn(dsn))
+    try:
+        async with engine.connect() as connection, connection.begin():
+            await connection.execute(
+                text("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ, READ ONLY")
+            )
+            async with AsyncSession(bind=connection, expire_on_commit=False) as session:
+                active = (
+                    (
+                        await session.execute(
+                            select(DatasetRelease).where(DatasetRelease.status == "active")
+                        )
+                    )
+                    .scalars()
+                    .all()
+                )
+                if len(active) != 1 or active[0].version != bundle["manifest"]["version"]:
+                    raise VerificationError("the bundle must be the database's sole active release")
+                verified = await verify_restore(session, bundle)
+                if active[0].id != verified.release_id or not verified.counts.get("games"):
+                    raise VerificationError("the active release has no verifiable canonical games")
+                return {
+                    "release_id": verified.release_id,
+                    "version": verified.version,
+                    "bundle_sha256": verified.bundle_sha256,
+                    "collections": verified.counts,
+                    "rows_verified": len(verified.rows),
+                    "players_verified": len(verified.players),
+                    "problems": list(verified.problems),
+                    "transaction": "repeatable read, read only",
+                }
+    finally:
+        await engine.dispose()
 
 
 def worktree_sha256() -> str:
@@ -44,8 +149,9 @@ async def run(args: argparse.Namespace) -> dict:
     report = {
         "observed_at": datetime.now(UTC).isoformat(),
         "base_url": args.base_url,
-        "scope": "Local production-profile HTTP smoke with optional providers disabled. "
-        "Not a retrieval evaluation, provider evaluation, or deployment approval.",
+        "scope": "Local production-profile HTTP and canonical SQL row verification. "
+        "Optional providers disabled. Not a retrieval evaluation, provider evaluation, "
+        "or deployment approval.",
         "base_commit": subprocess.check_output(["git", "rev-parse", "HEAD"], text=True).strip(),
         "worktree_sha256": worktree_sha256(),
         "verifier_sha256": hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
@@ -61,18 +167,15 @@ async def run(args: argparse.Namespace) -> dict:
             raise RuntimeError(f"Readiness check failed: {name}")
 
     try:
+        if re.fullmatch(r"[0-9a-f]{64}", args.sha256) is None:
+            raise VerificationError("--sha256 must be the original approved bundle SHA-256")
         if urlsplit(args.base_url).hostname not in {"localhost", "127.0.0.1", "::1"}:
             raise ValueError("This command only targets a local API with providers disabled")
-        compressed = args.bundle.read_bytes()
-        verify(
-            "bundle_identity",
-            hashlib.sha256(compressed).hexdigest() == args.sha256,
-            str(args.bundle),
-        )
-        bundle = json.loads(gzip.decompress(compressed))
+        loopback_dsn(args.dsn)
+        identity = api_database_identity(args.api_pid, args.base_url, args.dsn)
+        bundle = read_bundle(args.bundle, args.sha256)
+        verify("bundle_identity", True, args.sha256)
         version = bundle["manifest"]["version"]
-        canonical = bundle["data"]
-        games = {game["nba_game_id"]: game for game in canonical["games"]}
         headers = {"X-Forwarded-Proto": "https"} if args.local_https_proxy else {}
         async with httpx.AsyncClient(
             base_url=args.base_url,
@@ -90,123 +193,24 @@ async def run(args: argparse.Namespace) -> dict:
                 and ready["optional_dependencies"].get("openrouter") in {"disabled", "degraded"},
                 ready["optional_dependencies"],
             )
-            status = await client.get("/archive/status")
-            status.raise_for_status()
-            archive = status.json()
+            database = await verify_database(args.dsn, bundle)
+            verify("database_rows", not database["problems"], database)
             verify(
-                "archive_identity",
-                archive["data_version"] == version
-                and archive["games"] == len(games)
-                and archive["reports"] == len(canonical["reports"]),
-                archive,
+                "api_database_binding",
+                api_database_identity(args.api_pid, args.base_url, args.dsn) == identity,
+                {"api_pid": args.api_pid, "release_id": database["release_id"]},
             )
-            response = await client.get("/games", params={"season": "2025-26", "limit": 200})
-            response.raise_for_status()
-            served = response.json()
-            fields = (
-                "nba_game_id",
-                "game_date",
-                "home_team_id",
-                "away_team_id",
-                "home_score",
-                "away_score",
-                "season_type",
-            )
+            response = await client.get("/health/ready")
             verify(
-                "canonical_schedule",
-                len(served) == len(games)
-                and {game["nba_game_id"] for game in served} == set(games)
-                and all(
-                    all(game[key] == games[game["nba_game_id"]][key] for key in fields)
-                    for game in served
-                ),
-                {"games_compared": len(served)},
+                "ready_after_rows",
+                response.status_code == 200 and response.json()["data_version"] == version,
+                response.json(),
             )
-            ids = {game["nba_game_id"]: game["id"] for game in served}
-            first = canonical["games"][0]
-            game_id = ids[first["nba_game_id"]]
-            response = await client.get(f"/games/{game_id}/box-score")
-            response.raise_for_status()
-            points = {team["team_id"]: team["points"] for team in response.json()["teams"]}
-            verify(
-                "box_score",
-                points
-                == {
-                    first["home_team_id"]: first["home_score"],
-                    first["away_team_id"]: first["away_score"],
-                },
-                points,
-            )
-            response = await client.get("/reports", params={"limit": 200})
-            response.raise_for_status()
-            reports = response.json()
-            expected = {ids[row["nba_game_id"]]: row for row in canonical["reports"]}
-            verify(
-                "report_population",
-                len(reports) == len(expected)
-                and {row["game_id"] for row in reports} == set(expected),
-                {"reports": len(reports)},
-            )
-            for row in reports:
-                response = await client.get(f"/reports/{row['id']}")
-                response.raise_for_status()
-                body = response.json()
-                keys = ("title", "summary", "turning_point", "best_stretch", "worst_stretch")
-                if not all(body[key] == expected[row["game_id"]][key] for key in keys):
-                    raise RuntimeError(f"Report {row['id']} differs from approved content")
-            verify("approved_report_content", True, {"reports_compared": len(reports)})
+            response = await client.get("/health/live")
+            verify("live", response.status_code == 200, response.status_code)
             for path in ("/docs", "/openapi.json", "/jobs", "/health/rag"):
                 response = await client.get(path)
                 verify(f"private_route:{path}", response.status_code == 404, response.status_code)
-            response = await client.post("/reports/postgame", json={})
-            verify("write_route_disabled", response.status_code in {404, 405}, response.status_code)
-            payload = {
-                "question": "What was the Knicks record this season?",
-                "season": "2025-26",
-                "turn_id": "readiness-" + uuid.uuid4().hex,
-                "expected_revision": 0,
-            }
-            response = await client.post("/analysis/query", json=payload)
-            response.raise_for_status()
-            answer = response.json()
-            wins = sum(
-                (game["home_score"] > game["away_score"]) == (game["home_team_id"] == "NYK")
-                for game in games.values()
-            )
-            values = {
-                citation.get("metadata", {}).get("claim", {}).get("metric_id"): citation.get(
-                    "metadata", {}
-                )
-                .get("claim", {})
-                .get("value")
-                for citation in answer.get("citations", [])
-            }
-            verify(
-                "canonical_analyst_record",
-                values.get("wins") == wins
-                and values.get("losses") == len(games) - wins
-                and answer.get("data_version") == version
-                and not answer.get("llm_validated"),
-                {"answer": answer.get("answer"), "cited_values": values},
-            )
-            verify(
-                "session_committed",
-                answer.get("state_committed") is True and answer.get("revision") == 1,
-                {"revision": answer.get("revision")},
-            )
-            payload["session_token"] = answer["session_token"]
-            replay = await client.post("/analysis/query", json=payload)
-            verify(
-                "turn_replay",
-                replay.status_code == 200 and replay.json() == answer,
-                {"status": replay.status_code},
-            )
-            conflict = await client.post(
-                "/analysis/query", json={**payload, "question": "Changed turn"}
-            )
-            verify("turn_conflict", conflict.status_code == 409, conflict.status_code)
-            invalid = await client.post("/analysis/query", json={"question": ""})
-            verify("invalid_request", invalid.status_code == 422, invalid.status_code)
             verify(
                 "security_headers",
                 response.headers.get("x-content-type-options") == "nosniff"
@@ -233,6 +237,13 @@ def main() -> None:
     parser.add_argument("--bundle", type=Path, required=True)
     parser.add_argument("--sha256", required=True)
     parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument("--dsn", required=True, help="explicit loopback PostgreSQL URL")
+    parser.add_argument(
+        "--api-pid",
+        required=True,
+        type=int,
+        help="local API worker PID, with explicit DB_URL and a direct loopback listener",
+    )
     parser.add_argument("--local-https-proxy", action="store_true")
     args = parser.parse_args()
     report = asyncio.run(run(args))

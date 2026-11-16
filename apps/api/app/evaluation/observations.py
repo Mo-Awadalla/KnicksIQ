@@ -1,20 +1,5 @@
-"""Typed runtime observations: what one request actually returned, and its trace.
-
-The response is read as data. Nothing here infers an answer's disposition from
-prose: ``outcome`` must be present, and a missing outcome is an observation
-failure rather than an abstention.
-
-A record also carries the request it was sent with (question, season, context,
-turn, expected revision and the sent request id). A response is only credited to
-a case when that identity is present and consistent, so a self-consistent
-response cannot be reassigned to another question.
-
-``response["evidence"]``, when the candidate emits it, is the backend-generated
-evidence registry for that turn: the receipts and calculation expansions the
-answer was built from. It is read as an authoritative snapshot for this response
-only; nothing here treats a stored row as proof of a persistent commit. The
-registry and the retrieval traces are read as records in ``observations_records``.
-"""
+"""Chat disposition requires bound human review, not inference from reply text.
+A signed response snapshot does not establish a durable transcript commit."""
 
 from __future__ import annotations
 
@@ -142,6 +127,17 @@ class Citation:
 
 
 @dataclass(frozen=True)
+class CalculationAudit:
+    """Private arithmetic inputs, never a disposition or a public citation."""
+
+    response_sha256: str
+    season: str
+    claims: tuple[TypedClaim, ...]
+    citations: tuple[Citation, ...]
+    evidence: dict[str, EvidenceRecord]
+
+
+@dataclass(frozen=True)
 class Observation:
     case_id: str
     turn_id: str
@@ -167,6 +163,8 @@ class Observation:
     evidence: dict[str, EvidenceRecord] = field(default_factory=dict)
     run_stamp: RunStamp | None = None
     proof: ResponseProof | None = None
+    context: tuple[dict[str, str], ...] = ()
+    calculation_audit: CalculationAudit | None = None
 
 
 def _claims_from(response: dict[str, Any]) -> tuple[tuple[TypedClaim, ...], tuple[str, ...]]:
@@ -232,28 +230,81 @@ def parse_record(record: dict[str, Any]) -> Observation:
         problems.append("response_hash_missing")
     elif recorded_digest != canonical_digest(response):
         problems.append("response_hash_mismatch")
-    claims, claim_problems = _claims_from(response)
-    problems.extend(claim_problems)
-    evidence, registry_problems = evidence_registry(response)
-    problems.extend(registry_problems)
+    raw_audit = record.get("calculation_audit")
+    audit = None
+    claims: tuple[TypedClaim, ...] = ()
+    citations: tuple[Citation, ...] = ()
+    evidence: dict[str, EvidenceRecord] = {}
+    if raw_audit is not None:
+        if not isinstance(raw_audit, dict) or raw_audit.get("schema") != "calculation-audit-v1":
+            problems.append("malformed_calculation_audit")
+        else:
+            if raw_audit.get("response_sha256") != canonical_digest(response):
+                problems.append("calculation_audit_response_mismatch")
+            season = raw_audit.get("season")
+            if not isinstance(season, str) or not re.fullmatch(r"20\d{2}-\d{2}", season):
+                problems.append("malformed_calculation_audit")
+                season = ""
+            claims, claim_problems = _claims_from(raw_audit)
+            problems.extend(claim_problems)
+            citations = _citations(raw_audit)
+            evidence, registry_problems = evidence_registry(raw_audit)
+            problems.extend(registry_problems)
+            audit = CalculationAudit(
+                str(raw_audit.get("response_sha256") or ""), season, claims, citations, evidence
+            )
+    context: list[dict[str, str]] = []
+    snapshot = response.get("snapshot")
+    if not isinstance(snapshot, dict) or not isinstance(snapshot.get("exchanges"), list):
+        problems.append("request_context_missing")
+    else:
+        exchanges = snapshot["exchanges"]
+        if not exchanges or not all(
+            isinstance(item, dict)
+            and isinstance(item.get("message"), str)
+            and isinstance(item.get("reply"), dict)
+            and isinstance(item["reply"].get("text"), str)
+            for item in exchanges
+        ):
+            problems.append("request_context_mismatch")
+        else:
+            for exchange in exchanges[:-1]:
+                context.extend(
+                    (
+                        {"role": "user", "content": exchange["message"]},
+                        {"role": "assistant", "content": exchange["reply"]["text"]},
+                    )
+                )
+            last = exchanges[-1]
+            raw_request = record.get("request")
+            request = raw_request if isinstance(raw_request, dict) else {}
+            expected_revision = request.get("expected_revision")
+            if (
+                last["message"] != request.get("message")
+                or last["reply"].get("id") != record.get("request_id")
+                or last["reply"]["text"] != response.get("text")
+                or type(expected_revision) is not int
+                or snapshot.get("revision") != expected_revision + 1
+            ):
+                problems.append("request_context_mismatch")
 
     request = record.get("request")
     if not isinstance(request, dict) or not request:
         problems.append("request_identity_missing")
         request = {}
     else:
-        if not str(request.get("question") or "").strip():
+        if not str(request.get("message") or "").strip():
             problems.append("request_question_missing")
-        if not str(request.get("season") or "").strip():
-            problems.append("request_season_missing")
-        if not str(request.get("turn_id") or "").strip():
+        if request.get("kind") != "message":
+            problems.append("request_kind_invalid")
+        if not str(request.get("request_id") or "").strip():
             problems.append("request_turn_missing")
-        if not isinstance(request.get("expected_revision"), int):
+        if type(request.get("expected_revision")) is not int:
             problems.append("request_revision_missing")
-    recorded_turn = str(record.get("turn_id") or "")
+    recorded_turn = str(record.get("request_id") or "")
     if not recorded_turn:
         problems.append("turn_identity_missing")
-    elif request and recorded_turn != str(request.get("turn_id") or ""):
+    elif request and recorded_turn != str(request.get("request_id") or ""):
         problems.append("turn_identity_mismatch")
     sent_request_id = str(record.get("request_id") or "")
     if not sent_request_id:
@@ -281,12 +332,12 @@ def parse_record(record: dict[str, Any]) -> Observation:
         outcome = None
     return Observation(
         case_id=case_id,
-        turn_id=str(record.get("turn_id") or ""),
+        turn_id=str(record.get("request_id") or ""),
         request_id=str(response.get("request_id") or ""),
         outcome=outcome,
-        answer=str(response.get("answer") or ""),
+        answer=str(response.get("text") or ""),
         claims=claims,
-        citations=_citations(response),
+        citations=citations,
         analytics_status=analytics.get("status") if isinstance(analytics, dict) else None,
         analytics_result_count=(
             len(analytics.get("results") or []) if isinstance(analytics, dict) else 0
@@ -306,6 +357,8 @@ def parse_record(record: dict[str, Any]) -> Observation:
         evidence=evidence,
         run_stamp=binding.stamp,
         proof=binding.proof,
+        context=tuple(context),
+        calculation_audit=audit,
     )
 
 

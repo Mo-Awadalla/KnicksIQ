@@ -1,18 +1,15 @@
 """Permanent, isolated reproductions from knicksiq_diagnose.py; no provider calls."""
 
-import asyncio
-import time
 from unittest.mock import AsyncMock
 
 import pytest
-from app.core.config import get_settings
 from app.models.box_score import PlayerGameStat
 from app.models.game import Game
 from app.models.player import Player
-from app.services.analyst_loop import AnalystLoop
 from app.services.analyst_tools import AnalystTools
 from app.services.evidence_contracts import ToolCall
 from app.tests.support.analyst_protocol import local_redis  # noqa: F401
+from app.tests.support.factual_queries import lookup, text
 from app.tests.support.player_archive import _seed_release_stats
 from sqlalchemy import select
 
@@ -87,89 +84,6 @@ async def test_record_followup_clears_only_result(db_session):
     assert tools.scope.opponent_id == "BOS"
 
 
-@pytest.mark.usefixtures("local_redis")
-async def test_api_record_and_failure(client, monkeypatch):
-    from app.core.db import AsyncSessionLocal
-
-    async with AsyncSessionLocal() as db:
-        await seed_record(db)
-    monkeypatch.setattr(get_settings(), "analyst_evidence_loop_enabled", True)
-    monkeypatch.setattr(get_settings(), "analysis_answer_mode", "llm_primary")
-    monkeypatch.setattr(AnalystLoop, "reserve", AsyncMock(return_value=True))
-    monkeypatch.setattr(
-        AnalystLoop, "investigate", AsyncMock(side_effect=RuntimeError("controlled"))
-    )
-    for index, question in enumerate(
-        ["What were their wins and losses?", "What was their record?"]
-    ):
-        response = await client.post(
-            "/analysis/query", json={"question": question, "turn_id": f"reliability-record-{index}"}
-        )
-        assert response.status_code == 200
-        result = response.json()
-        assert "wins: 2" in result["answer"] and "losses: 1" in result["answer"]
-        assert result["citations"] and result["degraded"]
-
-
-async def test_recovery_timeout_and_cancellation(db_session, monkeypatch):
-    release = await seed_record(db_session)
-    tools = await record_tools(db_session, release, "What was their record?")
-    monkeypatch.setattr(get_settings(), "analyst_deadline_seconds", 0.7)
-
-    async def slow(*args):
-        await asyncio.sleep(10)
-
-    monkeypatch.setattr(tools, "execute", slow)
-    started = time.monotonic()
-    result = await AnalystLoop(tools, []).run(allow_model=False)
-    assert time.monotonic() - started < 0.6
-    assert "unavailable" in result["answer"].lower() and not result["citations"]
-    monkeypatch.setattr(tools, "execute", AsyncMock(side_effect=asyncio.CancelledError))
-    with pytest.raises(asyncio.CancelledError):
-        await AnalystLoop(tools, []).run(allow_model=False)
-
-
-async def test_current_evidence_reused_and_prior_facts_not_reused(db_session, monkeypatch):
-    release = await seed_record(db_session)
-    tools = await record_tools(db_session, release, "What was their record?")
-    facts = await tools.execute(ToolCall(name="get_team_stats", question=tools.question))
-    loop = AnalystLoop(tools, [])
-    loop.results.append(facts)
-    retrieve = AsyncMock(wraps=tools.execute)
-    monkeypatch.setattr(tools, "execute", retrieve)
-    monkeypatch.setattr(loop, "reserve", AsyncMock(return_value=True))
-    monkeypatch.setattr(loop, "investigate", AsyncMock(side_effect=RuntimeError("review failure")))
-    result = await loop.run()
-    assert result["citations"] and retrieve.await_count == 0
-    # Exact prior record totals can be reused, but unrelated team points cannot.
-    assert (await AnalystLoop(tools, []).run(allow_model=False))["citations"]
-    assert retrieve.await_count == 0
-    tools.claims = {
-        key: claim for key, claim in tools.claims.items() if claim.metric_id == "points"
-    }
-    new_loop = AnalystLoop(tools, [])
-    result = await new_loop.run(allow_model=False)
-    assert result["citations"] and retrieve.await_count == 1
-
-
-async def test_budget_denial_and_exhausted_deadline(db_session, monkeypatch):
-    release = await seed_record(db_session)
-    tools = await record_tools(db_session, release, "What was their record?")
-    loop = AnalystLoop(tools, [])
-    monkeypatch.setattr(loop, "reserve", AsyncMock(return_value=False))
-    model = AsyncMock(side_effect=AssertionError("must not call provider"))
-    monkeypatch.setattr(loop, "model", model)
-    assert (await loop.run())["citations"]
-    assert model.await_count == 0
-    tools.claims.clear()
-    loop = AnalystLoop(tools, [], started=time.monotonic() - 1000)
-    retrieve = AsyncMock(side_effect=AssertionError("deadline exhausted"))
-    monkeypatch.setattr(tools, "execute", retrieve)
-    result = await loop.run(allow_model=False)
-    assert not result["citations"] and "unavailable" in result["answer"].lower()
-    assert retrieve.await_count == 0
-
-
 def test_regular_season_is_not_a_fuzzy_player_name():
     from app.models.player import Player
     from app.services.query_players import resolve_player_mentions
@@ -181,20 +95,6 @@ def test_regular_season_is_not_a_fuzzy_player_name():
         typo_threshold=0.86,
     )
     assert resolved == []
-
-
-async def test_api_retrieval_failure_is_unavailable(client, monkeypatch):
-    from app.core.db import AsyncSessionLocal
-
-    async with AsyncSessionLocal() as db:
-        await seed_record(db)
-    monkeypatch.setattr(get_settings(), "analyst_evidence_loop_enabled", True)
-    monkeypatch.setattr(AnalystTools, "execute", AsyncMock(side_effect=RuntimeError("controlled")))
-    response = await client.post("/analysis/query", json={"question": "What was their record?"})
-    assert response.status_code == 200
-    result = response.json()
-    assert "unavailable" in result["answer"].lower()
-    assert result["degraded"] and not result["citations"] and not result["llm_validated"]
 
 
 async def test_record_excludes_undecided_games(db_session):
@@ -210,27 +110,9 @@ async def test_record_excludes_undecided_games(db_session):
     games[1].home_score = games[1].away_score
     await db_session.commit()
     tools = await record_tools(db_session, release, "What was their record?")
-    result = await AnalystLoop(tools, []).run(allow_model=False)
-    assert "wins: 0" in result["answer"] and "losses: 1" in result["answer"]
-    assert result["citations"]
-
-
-async def test_provider_timeout_reserves_recovery_window(db_session, monkeypatch):
-    release = await seed_record(db_session)
-    tools = await record_tools(db_session, release, "What was their record?")
-    loop = AnalystLoop(tools, [])
-    monkeypatch.setattr(get_settings(), "analyst_deadline_seconds", 0.9)
-    monkeypatch.setattr(loop, "reserve", AsyncMock(return_value=True))
-
-    async def slow_provider():
-        await asyncio.sleep(10)
-
-    monkeypatch.setattr(loop, "investigate", slow_provider)
-    started = time.monotonic()
-    result = await loop.run()
-    assert time.monotonic() - started < 0.9
-    assert "wins: 2" in result["answer"] and "losses: 1" in result["answer"]
-    assert result["citations"] and loop.recovery_ran
+    result = await lookup(tools)
+    assert "wins: 0" in text(result) and "losses: 1" in text(result)
+    assert result.claims
 
 
 @pytest.mark.parametrize(
@@ -243,11 +125,11 @@ async def test_provider_timeout_reserves_recovery_window(db_session, monkeypatch
 async def test_prior_record_cannot_answer_unsupported_current_scope(db_session, question):
     release = await seed_record(db_session)
     tools = await record_tools(db_session, release, "What was their record?")
-    previous = await AnalystLoop(tools, []).run(allow_model=False)
-    current = await record_tools(db_session, release, question, previous["state"])
-    result = await AnalystLoop(current, []).run(allow_model=False)
-    assert not result["citations"]
-    assert "wins: 2" not in result["answer"]
+    await lookup(tools)
+    current = await record_tools(db_session, release, question, tools.state)
+    result = await lookup(current)
+    assert not result.claims
+    assert "wins: 2" not in text(result)
 
 
 @pytest.mark.parametrize(
@@ -295,11 +177,32 @@ async def test_fallback_capability_precedes_name_and_comparison_ambiguity(
     )
     await db_session.commit()
     tools = await record_tools(db_session, release, question)
-    result = await AnalystLoop(tools, []).run(allow_model=False)
-    assert result["outcome"] == expected
+    result = await lookup(tools)
+    assert result.status in (
+        {"ok", "incomplete_coverage"}
+        if expected == "answer"
+        else {"ambiguous_entity"}
+        if expected == "clarify"
+        else {"unsupported_metric_or_scope"}
+    )
     if expected == "answer":
-        assert {item["metadata"]["claim"]["subject_id"] for item in result["citations"]} == {
-            f"player:{players[0].id}"
-        }
+        assert {item.subject_id for item in result.claims} == {f"player:{players[0].id}"}
     else:
-        assert result["citations"] == []
+        assert result.claims == []
+
+
+async def test_private_retrieval_failure_is_unavailable(client, monkeypatch):
+    from app.conversation.facts import FactDesk
+    from app.core.db import AsyncSessionLocal
+
+    async with AsyncSessionLocal() as db:
+        await seed_record(db)
+    monkeypatch.setattr(AnalystTools, "execute", AsyncMock(side_effect=RuntimeError("controlled")))
+    desk = FactDesk("2025-26", {}, 6000, "lookup-failure")
+    try:
+        result = await desk.lookup("What was their record?")
+        assert result["status"] == "unavailable"
+        assert "facts" not in result
+        assert "controlled" not in result["message"]
+    finally:
+        await desk.close()

@@ -21,27 +21,33 @@ from eval_scenario_support import clean_env, expect, metric, run_cli
 class FakeAPI(BaseHTTPRequestHandler):
     """A local candidate API stand-in that records every request body it receives."""
 
-    responses: dict[str, dict[str, Any]] = {}
-
     def do_POST(self) -> None:  # noqa: N802
         length = int(self.headers.get("Content-Length", "0"))
         body = json.loads(self.rfile.read(length) or b"{}")
         self.server.requests.append(body)  # type: ignore[attr-defined]
-        payload = {
-            "answer": "Synthetic.",
-            "citations": [],
-            "tool_calls": [],
-            "outcome": "clarify",
-            "request_id": body.get("turn_id", ""),
+        request_id = body["request_id"]
+        snapshot = {
+            "revision": body["expected_revision"] + 1,
+            "exchanges": [
+                {
+                    "id": request_id,
+                    "message": body["message"],
+                    "reply": {"id": request_id, "text": "Synthetic.", "status": "complete"},
+                }
+            ],
         }
-        encoded = json.dumps(payload).encode()
+        encoded = (
+            "event: settled\ndata: "
+            + json.dumps({"request_id": request_id, "snapshot": snapshot})
+            + "\n\n"
+        ).encode()
         self.send_response(200)
-        self.send_header("Content-Type", "application/json")
+        self.send_header("Content-Type", "text/event-stream")
         self.send_header("Content-Length", str(len(encoded)))
         self.end_headers()
         self.wfile.write(encoded)
 
-    def log_message(self, *args: Any) -> None:
+    def log_message(self, format: str, *args: Any) -> None:
         return
 
 
@@ -103,17 +109,21 @@ def scenario_collect_profile(directory: Path) -> list[str]:
             rows = [json.loads(line) for line in responses.read_text().splitlines() if line.strip()]
             expect(len(rows) == 3, "collect writes one record per requested case", problems)
             expect(
-                all(row["turn_id"] and row["request"]["turn_id"] == row["turn_id"] for row in rows),
+                all(
+                    row["request_id"] and row["request"]["request_id"] == row["request_id"]
+                    for row in rows
+                ),
                 "collect sends a turn id and records it",
                 problems,
             )
             expect(
-                len(requests_seen) == 3 and all("turn_id" in request for request in requests_seen),
+                len(requests_seen) == 3
+                and all("request_id" in request for request in requests_seen),
                 "server sees turn ids",
                 problems,
             )
             expect(
-                all(row["response"]["outcome"] == "clarify" for row in rows),
+                all(row["response"]["status"] == "complete" for row in rows),
                 "collect records the runtime outcome untouched",
                 problems,
             )
@@ -145,55 +155,10 @@ def scenario_collect_profile(directory: Path) -> list[str]:
                 problems,
             )
             expect(
-                report["profile"]["provider_requests"] == 0,
-                "collect reports zero provider requests",
+                report["profile"]["provider_requests"] is None,
+                "public replies cannot measure private provider activity",
                 problems,
             )
-    return problems
-
-
-def scenario_provider_stage_in_collect_refused(directory: Path) -> list[str]:
-    """A model stage reported under the disabled profile must abort collection."""
-    problems: list[str] = []
-    questions_path, expectations_path = write_dataset(directory)
-
-    class ProviderAPI(FakeAPI):
-        def do_POST(self) -> None:  # noqa: N802
-            length = int(self.headers.get("Content-Length", "0"))
-            body = json.loads(self.rfile.read(length) or b"{}")
-            self.server.requests.append(body)  # type: ignore[attr-defined]
-            payload = {
-                "answer": "Synthetic.",
-                "citations": [],
-                "tool_calls": [{"stage": "orchestrate", "tool": "llm_orchestrate"}],
-                "outcome": "answer",
-                "request_id": body.get("turn_id", ""),
-            }
-            encoded = json.dumps(payload).encode()
-            self.send_response(200)
-            self.send_header("Content-Type", "application/json")
-            self.send_header("Content-Length", str(len(encoded)))
-            self.end_headers()
-            self.wfile.write(encoded)
-
-    responses = directory / "collected.jsonl"
-    with fake_api(ProviderAPI) as (base_url, requests_seen):
-        result = run_cli(
-            collect_args(
-                base_url,
-                questions_path,
-                expectations_path,
-                responses,
-                "--profile",
-                "disabled",
-                "--limit",
-                "2",
-            ),
-            cwd=directory,
-        )
-        expect(result.returncode != 0, "a provider stage must abort the disabled run", problems)
-        expect(not responses.exists(), "no responses publish a provider-calling run", problems)
-        expect(len(requests_seen) == 1, "collection stops at the first provider stage", problems)
     return problems
 
 

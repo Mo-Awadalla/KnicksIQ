@@ -191,8 +191,6 @@ async def test_informal_player_opponent_summaries_resolve_aliases_and_preserve_s
 
 
 async def test_mikal_typo_summary_reaches_public_player_route(db_session):
-    from app.main import create_app
-    from httpx import ASGITransport, AsyncClient
 
     release, _ = await _seed_release_stats(db_session)
     player = (
@@ -217,20 +215,24 @@ async def test_mikal_typo_summary_reaches_public_player_route(db_session):
         )
     )
     await db_session.commit()
-    async with AsyncClient(
-        transport=ASGITransport(app=create_app()), base_url="http://testserver"
-    ) as client:
-        response = await client.post(
-            "/analysis/query",
-            json={"question": "Did Mikal play well aginst Toronto?", "season": "2025-26"},
-        )
-    assert response.status_code == 200
-    data = response.json()
-    assert not data["refused"]
-    assert data["analytics"]["results"][0]["raw_values"] == {
-        "points": 17,
-        "rebounds": 4,
-        "assists": 3,
-    }
-    assert "Mikal Bridges" in data["answer"]
-    assert "versus TOR" in data["answer"]
+    from app.services.analyst_tools import AnalystTools
+    from app.tests.support.factual_queries import lookup, text
+
+    tools = AnalystTools(db_session, release, "Did Mikal play well aginst Toronto?", "2025-26", {})
+    await tools.prepare()
+    result = await lookup(tools)
+    assert result.status == "ok"
+    values = {claim.metric_id: claim.value for claim in result.claims}
+    assert values["points:game"] == 17
+    assert values["rebounds:game"] == 4
+    assert values["assists:game"] == 3
+    assert "Mikal Bridges" in text(result)
+    assert tools.scope is not None
+    assert tools.scope.opponent_id == "TOR"
+    assert all(claim.game_ids == [game.id] for claim in result.claims)
+    assert set(values) == {"points:game", "rebounds:game", "assists:game", "game_score"}
+    assert all(
+        claim.subject_id == f"player:{player.id}"
+        for claim in result.claims
+        if claim.metric_id != "game_score"
+    )

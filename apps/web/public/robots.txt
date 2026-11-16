@@ -1,6 +1,12 @@
 User-agent: *
 Allow: /
-Disallow: /games/
-Disallow: /analyst/
-Disallow: /reports/
+Disallow: /api/
+Disallow: /analysis
+Disallow: /players
+Disallow: /teams
+Disallow: /archive
+Disallow: /games
+Disallow: /reports
+Disallow: /analyst
+Disallow: /sources
 Sitemap: https://www.knicksiq.win/sitemap.xml

@@ -231,10 +231,18 @@ def player(
             limitations.append(f"Missing player rows for archived game IDs: {absent}.")
         name = rows[0][1].full_name
         unit = f"{metric} per appearance" if aggregation == "average" else metric
-        statement = (
-            f"{name}: {value:.1f} {unit} across {count} observed appearances "
-            f"in the {tools.release.season} {scope.season_type or 'all-phase'} archive."
-        )
+        if count == 1 and len(game_map) == 1:
+            game = game_map[rows[0][0].game_id]
+            statement = (
+                f"{name}: {value:g} {metric.replace('_', ' ')} on {game.game_date} "
+                f"({game.away_team_id} at {game.home_team_id})."
+            )
+        else:
+            games_label = "recorded game" if count == 1 else "recorded games"
+            statement = (
+                f"{name}: {value:.1f} {unit} across {count} {games_label} "
+                f"in {tools.release.season}."
+            )
         claims.append(
             tools.claim(
                 subject=f"player:{player_id}",

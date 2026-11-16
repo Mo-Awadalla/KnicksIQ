@@ -2,6 +2,7 @@
 
 import pytest
 from app.tests.support.analytics_workflows import ask, comparison_archive, grouped
+from app.tests.support.factual_queries import text
 
 
 async def test_shared_appearance_window_truncates_before_the_split(client, monkeypatch):
@@ -33,7 +34,7 @@ async def test_shared_appearance_window_applies_before_the_opponent_split(client
     assert claims["TOR"]["game_ids"] == [ids["2025-11-10"]]
     assert claims["TOR"]["value"] == pytest.approx(10)
     assert claims["TOR"]["release_id"] == version
-    assert "against bos" in body["answer"].lower() and "no observed" in body["answer"].lower()
+    assert "against bos" in text(body).lower() and "no observed" in text(body).lower()
 
 
 async def test_player_group_without_observed_rows_is_reported_incomplete(client, monkeypatch):
@@ -45,5 +46,5 @@ async def test_player_group_without_observed_rows_is_reported_incomplete(client,
     assert set(claims) == {"BOS"}
     assert claims["BOS"]["sample_size"] == 2
     assert claims["BOS"]["release_id"] == version
-    answer = body["answer"].lower()
+    answer = text(body).lower()
     assert "against tor" in answer and "no observed" in answer and "does not show" in answer

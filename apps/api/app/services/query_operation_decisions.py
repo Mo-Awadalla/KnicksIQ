@@ -77,7 +77,7 @@ _NARRATIVE_ASK = re.compile(
     r"|\bwho was on the floor\b|\bhow long did that run\b|\bwhat did .{0,30} do during\b"
     r"|\bshow me the receipts\b"
 )
-_RUN_ASK = re.compile(r"\b(?:runs?|stretch(?:es)?|deficits?)\b")
+_RUN_ASK = re.compile(r"\b(?:runs?|stretch(?:es)?|deficits?|collapses?|collpase|droughts?)\b")
 _LINEUP_ASK = re.compile(r"\b(?:lineups?|on court|off court|on the floor)\b")
 _DEFINITION_ASK = re.compile(
     r"\bclose games?\b|\bblowouts?\b|\boffense or (?:the )?defense\b"
@@ -86,6 +86,7 @@ _DEFINITION_ASK = re.compile(
 _COMPARATIVE_ASK = re.compile(r"\b(?:better|worse)\b")
 _LIVE_ASK = re.compile(
     r"\b(?:live|tonight|today|tomorrow|yesterday|currently|upcoming|forecast)\b"
+    r"|\bcurrent season\b"
     r"|\b(?:injured?|injuries|injury)\b|\btrades?\b|\btraded\b|\bsigning(?:s)?\b"
     r"|\bbetting\b|\bodds\b|\bspread\b|\bstandings\b|\bplayoff picture\b"
     r"|\bnext (?:game|season)\b|\bwill (?:the knicks|they|he|she)\b"
@@ -256,7 +257,10 @@ def _clarify_superlative(q: str) -> OperationDecision:
                 "The archive stores game dates but no back-to-back flag. Which games should "
                 "count as a back-to-back?"
             ),
-            options=("second game of consecutive dates", "name the dates to count"),
+            options=(
+                "wins in the second game of consecutive dates",
+                "wins in both games on consecutive dates",
+            ),
         )
     return OperationDecision(
         clarification=(
@@ -336,6 +340,8 @@ def classify_operation(
             options=("a player's game statline", "the team's game result"),
         )
     if _EVENT_INTERVAL.search(q):
+        if _RUN_ASK.search(q):
+            return _clarify_run(pinned_game=pinned_game)
         return _clarify_sequence() if pinned_game else _clarify_narrative(q)
     stat = _player_stat(q)
     aggregation = requested_aggregation(q)
@@ -421,7 +427,7 @@ def classify_operation(
         and aggregation is None
         and _SEQUENCE_ASK.search(q)
     ):
-        return _clarify_sequence()
+        return _clarify_run(pinned_game=True) if _RUN_ASK.search(q) else _clarify_sequence()
     operation = _team_operation(q, has_player=has_player)
     if periods and _SCORING_WORD.search(q) and not has_player:
         return OperationDecision(operation="period_scoring", stat=stat, aggregation=aggregation)

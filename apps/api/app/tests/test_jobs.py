@@ -39,7 +39,6 @@ async def test_get_job_not_found(client):
     [
         ("/jobs/ingest/games", {"season": "2025-26", "include_playoffs": True}, "ingest_games"),
         ("/jobs/ingest/game/1", None, "ingest_game_detail"),
-        ("/games/1/detect-runs", None, "detect_runs"),
     ],
 )
 async def test_immediate_worker_completion_is_visible_from_job_status(
@@ -136,5 +135,16 @@ async def test_reingest_invalidates_analysis_derived_from_previous_events(client
     await detail.ingest_game_detail(job_id="revised-events", game_db_id=1)
     # The revised feed has only six unanswered NYK points: neither an impactful
     # eight-point run nor an opponent bad stretch qualifies.
-    assert (await client.get("/games/1/runs")).json() == []
-    assert (await client.get("/games/1/bad-stretches")).json() == []
+    from sqlalchemy import select
+
+    async with AsyncSessionLocal() as db:
+        assert (
+            not (await db.execute(select(ScoringRun).where(ScoringRun.game_id == 1)))
+            .scalars()
+            .all()
+        )
+        assert (
+            not (await db.execute(select(BadStretch).where(BadStretch.game_id == 1)))
+            .scalars()
+            .all()
+        )

@@ -394,14 +394,21 @@ class AnalystTools:
                 scope={"error_type": type(exc).__name__},
             )
 
-    async def search(self, call: ToolCall, scope: ResolvedQuery, games: list[Game]) -> ToolResult:
+    async def search(
+        self,
+        call: ToolCall,
+        scope: ResolvedQuery,
+        games: list[Game],
+        *,
+        collections: frozenset[str] | None = None,
+    ) -> ToolResult:
         filters: dict[str, Any] = dict(scope.planner_filters())
         filters["game_ids"] = [g.id for g in games]
         moment = moment_from_question(call.question, scope.periods)
         if moment is not None:
             filters["event_clock"] = moment.as_filter()
-        wanted = requested_sources(call.question)
-        collections = [
+        wanted = collections if collections is not None else requested_sources(call.question)
+        selected_collections = [
             name
             for name in ("games", "box_scores", "reports", "possessions")
             if not wanted or name in wanted
@@ -409,7 +416,7 @@ class AnalystTools:
         lexical = await search_archive_lexical(
             self.db,
             query=call.question,
-            collections=collections,
+            collections=selected_collections,
             filters=filters,
             data_version=self.release.version,
             limit=20,
@@ -423,7 +430,7 @@ class AnalystTools:
                 dense = await asyncio.to_thread(
                     search_archive_vectors,
                     queries=[call.question],
-                    collections=collections,
+                    collections=selected_collections,
                     filters=filters,
                     data_version=self.release.version,
                     limit=20,

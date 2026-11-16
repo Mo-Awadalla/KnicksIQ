@@ -81,31 +81,11 @@ def aliases() -> dict[str, str]:
 
 
 def smoke(api_url: str, web_url: str, expected_version: str) -> None:
-    for url in [web_url, api_url + "/health/ready", api_url + "/archive/status"]:
-        with urllib.request.urlopen(url, timeout=60) as response:
-            body = response.read()
-            if url.endswith("/archive/status"):
-                if json.loads(body)["data_version"] != expected_version:
-                    raise RuntimeError("Deployed archive version does not match")
-    request = urllib.request.Request(
-        api_url + "/analysis/query",
-        data=json.dumps(
-            {
-                "question": "How many games did the Knicks win?",
-                "season": "2025-26",
-                "context": [],
-            }
-        ).encode(),
-        headers={"Content-Type": "application/json"},
-    )
-    with urllib.request.urlopen(request, timeout=60) as response:
-        answer = json.load(response)
-        if (
-            not answer.get("answer")
-            or answer.get("refused")
-            or answer.get("data_version") != expected_version
-        ):
-            raise RuntimeError("Analyst smoke failed")
+    for path in ("/health/live", "/health/ready"):
+        with urllib.request.urlopen(api_url.rstrip("/") + path, timeout=60) as response:
+            payload = json.load(response)
+            if path == "/health/ready" and payload.get("data_version") != expected_version:
+                raise RuntimeError("Deployed release version does not match")
 
 
 def deploy(record: dict, save, request=render_request, wait=wait_deploy, smoke_check=smoke) -> None:

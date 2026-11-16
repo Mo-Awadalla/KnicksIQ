@@ -16,9 +16,10 @@ from app.core.db import AsyncSessionLocal, engine
 from app.models.dataset_release import DatasetRelease
 from app.models.game import Game
 from app.models.game_event import GameEvent
-from app.tests.analysis_test_support import active_seed_release as active_seed_release
-from app.tests.analysis_test_support import isolate_response_cache as isolate_response_cache
-from sqlalchemy import event
+from app.services.analyst_tools import AnalystTools
+from app.tests.support.factual_queries import lookup, text
+from app.tests.support.narrative_seed import active_seed_release as active_seed_release
+from sqlalchemy import event, select
 
 
 @pytest.fixture
@@ -72,68 +73,50 @@ async def staged_window(active_seed_release):
     ],
 )
 async def test_foreign_season_never_returns_active_events(active_seed_release, payload):
-    response = await active_seed_release.post("/analysis/query", json=payload)
-    assert response.status_code == 200
-    body = response.json()
-    assert body["outcome"] != "answer"
-    assert body["citations"] == []
-    assert "Brunson made 2pt jumper" not in body["answer"]
+    body = await query(payload)
+    assert body.status not in {"ok", "incomplete_coverage"}
+    assert body.evidence == []
+    assert "Brunson made 2pt jumper" not in text(body)
 
 
 async def test_ambiguous_biggest_run_requires_clarification(active_seed_release):
-    response = await active_seed_release.post(
-        "/analysis/query",
-        json={"question": "What was the biggest run in the fourth quarter on 2026-04-12?"},
+    body = await query(
+        {"question": "What was the biggest run in the fourth quarter on 2026-04-12?"}
     )
-    assert response.status_code == 200
-    body = response.json()
-    assert body["outcome"] == "clarify"
-    assert body["citations"] == []
+    assert body.status == "ambiguous_entity"
+    assert body.evidence == []
 
 
 async def test_first_quarter_only_cites_active_first_period(staged_window):
-    response = await staged_window.post(
-        "/analysis/query", json={"question": "What happened in Q1 on 2026-04-12?"}
-    )
-    assert response.status_code == 200
-    body = response.json()
-    assert body["outcome"] == "answer"
-    assert body["data_version"] == "narrative-seed-test"
-    assert body["citations"]
-    assert {citation["game_id"] for citation in body["citations"]} == {1}
-    rows = [row for citation in body["citations"] for row in citation["metadata"].get("rows", [])]
+    body = await query({"question": "What happened in Q1 on 2026-04-12?"})
+    assert body.status in {"ok", "incomplete_coverage"}
+    assert body.scope["release"] == "narrative-seed-test"
+    assert body.evidence
+    assert {citation.game_id for citation in body.evidence} == {1}
+    rows = [row for citation in body.evidence for row in citation.metadata.get("rows", [])]
     assert rows
     assert all(row["period"] == 1 for row in rows)
     assert any(
         row["clock"] == "11:36" and row["home_score"] == 2 and row["away_score"] == 0
         for row in rows
     )
-    assert "Staged-only event" not in body["answer"]
+    assert "Staged-only event" not in text(body)
     assert all(row["description"] != "Staged-only event" for row in rows)
 
 
 async def test_exact_clock_cites_only_the_requested_instant(staged_window):
-    response = await staged_window.post(
-        "/analysis/query",
-        json={"question": "What happened at 11:36 in Q1 on 2026-04-12?"},
-    )
-    assert response.status_code == 200
-    body = response.json()
-    assert body["outcome"] == "answer"
-    rows = [row for citation in body["citations"] for row in citation["metadata"].get("rows", [])]
+    body = await query({"question": "What happened at 11:36 in Q1 on 2026-04-12?"})
+    assert body.status in {"ok", "incomplete_coverage"}
+    rows = [row for citation in body.evidence for row in citation.metadata.get("rows", [])]
     assert rows
     assert all(row["period"] == 1 and row["clock"] == "11:36" for row in rows)
     assert all(row["description"] != "Staged-only event" for row in rows)
 
 
 async def test_clock_without_period_requires_clarification(active_seed_release):
-    response = await active_seed_release.post(
-        "/analysis/query", json={"question": "What happened at 11:36 on 2026-04-12?"}
-    )
-    assert response.status_code == 200
-    body = response.json()
-    assert body["outcome"] == "clarify"
-    assert body["citations"] == []
+    body = await query({"question": "What happened at 11:36 on 2026-04-12?"})
+    assert body.status == "ambiguous_entity"
+    assert body.evidence == []
 
 
 @pytest.mark.parametrize(
@@ -147,11 +130,9 @@ async def test_clock_without_period_requires_clarification(active_seed_release):
     ],
 )
 async def test_invalid_or_conflicting_clocks_require_clarification(active_seed_release, question):
-    response = await active_seed_release.post("/analysis/query", json={"question": question})
-    assert response.status_code == 200
-    body = response.json()
-    assert body["outcome"] == "clarify"
-    assert body["citations"] == []
+    body = await query({"question": question})
+    assert body.status == "ambiguous_entity"
+    assert body.evidence == []
 
 
 @pytest.mark.parametrize(("period", "clock"), [(1, "12:00"), (5, "5:00")])
@@ -169,11 +150,9 @@ async def test_period_start_clock_returns_matching_event(active_seed_release, pe
         )
         await db.commit()
     question = f"What happened at {clock} in Q{period} on 2026-04-12?"
-    response = await active_seed_release.post("/analysis/query", json={"question": question})
-    assert response.status_code == 200
-    body = response.json()
-    assert body["outcome"] == "answer"
-    rows = [row for citation in body["citations"] for row in citation["metadata"].get("rows", [])]
+    body = await query({"question": question})
+    assert body.status in {"ok", "incomplete_coverage"}
+    rows = [row for citation in body.evidence for row in citation.metadata.get("rows", [])]
     assert rows
     assert all(row["period"] == period and row["clock"] == clock for row in rows)
     assert any(row["description"] == f"Boundary start Q{period}" for row in rows)
@@ -193,14 +172,26 @@ async def test_event_query_failure_degrades_without_whole_game_answer(active_see
 
     event.listen(engine.sync_engine, "before_cursor_execute", fail_event_query)
     try:
-        response = await active_seed_release.post(
-            "/analysis/query", json={"question": "What happened in Q1 on 2026-04-12?"}
-        )
+        body = await query({"question": "What happened in Q1 on 2026-04-12?"})
     finally:
         event.remove(engine.sync_engine, "before_cursor_execute", fail_event_query)
     assert attempted
-    assert response.status_code == 200
-    body = response.json()
-    assert body["degraded"] is True
-    assert body["citations"] == []
-    assert "96" not in body["answer"] and "110" not in body["answer"]
+    assert body.status == "dependency_failure"
+    assert body.evidence == []
+    assert "96" not in text(body) and "110" not in text(body)
+
+
+async def query(payload):
+    async with AsyncSessionLocal() as db:
+        release = (
+            await db.execute(
+                select(DatasetRelease).where(
+                    DatasetRelease.status == "active", DatasetRelease.validation_passed.is_(True)
+                )
+            )
+        ).scalar_one()
+        tools = AnalystTools(
+            db, release, payload["question"], payload.get("season", release.season), {}
+        )
+        await tools.prepare()
+        return await lookup(tools)

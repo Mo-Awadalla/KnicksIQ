@@ -103,18 +103,18 @@ def scenario_score_rejects_unproven_rows(directory: Path) -> list[str]:
     def copy() -> list[dict[str, Any]]:
         return json.loads(json.dumps(original))
 
-    changed_question = copy()
-    changed_question[0]["request"]["question"] += " (x)"
-    code, codes, _ = scored(changed_question, "changed-question")
-    expect(code == 0, "a changed question still scores, as a blocked report", problems)
+    changed_message = copy()
+    changed_message[0]["request"]["message"] += " (x)"
+    code, codes, _ = scored(changed_message, "changed-message")
+    expect(code == 0, "a changed message still scores, as a blocked report", problems)
     expect(
         "service_proof_request_mismatch" in codes,
-        f"a changed question is not this run's answer: {codes}",
+        f"a changed message is not this run's answer: {codes}",
         problems,
     )
 
     changed_response = copy()
-    changed_response[0]["response"]["answer"] = "Tampered."
+    changed_response[0]["response"]["text"] = "Tampered."
     code, codes, _ = scored(changed_response, "changed-response")
     expect(code == 0, "a changed response still scores, as a blocked report", problems)
     expect(

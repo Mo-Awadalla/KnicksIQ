@@ -1,4 +1,4 @@
-"""First-name identity and ambiguity at the public analyst boundary."""
+"""First-name identity and ambiguity at the private factual boundary."""
 
 import pytest
 from app.core.db import AsyncSessionLocal
@@ -6,6 +6,7 @@ from app.models.box_score import PlayerGameStat
 from app.models.game import Game
 from app.models.player import Player
 from app.tests.support.analytics_workflows import ask, claims, comparison_archive
+from app.tests.support.factual_queries import text
 
 
 async def test_unique_first_name_keeps_player_average_not_team_score(client, monkeypatch):
@@ -16,7 +17,7 @@ async def test_unique_first_name_keeps_player_average_not_team_score(client, mon
     assert claim["sample_size"] == 1
     assert claim["game_ids"] == [ids["2025-11-10"]]
     assert claim["release_id"] == version
-    assert "Mikal Bridges" in body["answer"]
+    assert "Mikal Bridges" in text(body)
 
 
 @pytest.mark.parametrize("other_team", ["NYK", "BOS"])
@@ -48,9 +49,9 @@ async def test_shared_first_name_clarifies_without_selecting_player(
         )
         await db.commit()
     body = await ask(client, "How many points did Alex score?", version)
-    assert body["outcome"] == "clarify"
+    assert body.status == "ambiguous_entity"
     assert not claims(body)
-    assert "Alex One" in body["answer"] and "Alex Two" in body["answer"]
+    assert "Alex One" in text(body) and "Alex Two" in text(body)
 
 
 async def test_broad_player_performance_keeps_opponent_population(client, monkeypatch):

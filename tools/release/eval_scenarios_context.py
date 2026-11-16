@@ -35,7 +35,7 @@ from eval_scenario_fixtures import (
     synthetic_mapping,
     synthetic_questions,
 )
-from eval_scenario_records import baseline_observations, write_observations
+from eval_scenario_records import baseline_observations, bind_fixture_response, write_observations
 from eval_scenario_support import (
     SEMANTIC_CASES,
     canonical,
@@ -84,8 +84,23 @@ def context_observations() -> list[dict[str, Any]]:
     original = {row["id"]: row.get("context") or [] for row in context_questions()}
     rows = baseline_observations(synthetic_questions())
     for row in rows:
-        row["request"] = dict(row["request"])
-        row["request"]["context"] = [dict(turn) for turn in original[row["case_id"]]]
+        turns = original[row["case_id"]]
+        if turns:
+            snapshot = row["response"]["snapshot"]
+            snapshot["exchanges"].insert(
+                0,
+                {
+                    "message": turns[0]["content"],
+                    "reply": {
+                        "id": "earlier-turn",
+                        "text": turns[1]["content"],
+                        "status": "complete",
+                    },
+                },
+            )
+            row["request"]["expected_revision"] = 1
+            snapshot["revision"] = 2
+        bind_fixture_response(row)
     return rows
 
 
@@ -132,7 +147,9 @@ def _mutated(
     observations = context_observations()
     for row in observations:
         if row["case_id"] == case_id:
-            change(row["request"])
+            snapshot = row["response"]["snapshot"]
+            change(snapshot)
+            bind_fixture_response(row)
     return _score(directory, questions, expectations, observations)
 
 
@@ -221,7 +238,7 @@ def scenario_context_clean(directory: Path) -> list[str]:
 def scenario_context_omitted_rejected(directory: Path) -> list[str]:
     """A request that omits the original turns is unverified, whatever the answer says."""
     problems: list[str] = []
-    result, report = _mutated(directory, "answer-001", lambda request: request.pop("context"))
+    result, report = _mutated(directory, "answer-001", lambda snapshot: snapshot.pop("exchanges"))
     expect(result.returncode == 0, f"cli failed: {result.stderr[-1200:]}", problems)
     if report is None:
         return problems + ["no report written"]
@@ -233,7 +250,9 @@ def scenario_context_dropped_rejected(directory: Path) -> list[str]:
     """Silently discarding the turns (an empty list) is a mismatch, not a neutral request."""
     problems: list[str] = []
     result, report = _mutated(
-        directory, "answer-002", lambda request: request.__setitem__("context", [])
+        directory,
+        "answer-002",
+        lambda snapshot: snapshot.__setitem__("exchanges", snapshot["exchanges"][-1:]),
     )
     expect(result.returncode == 0, f"cli failed: {result.stderr[-1200:]}", problems)
     if report is None:
@@ -246,11 +265,8 @@ def scenario_context_changed_rejected(directory: Path) -> list[str]:
     """Rewriting one turn's content fails the case even though every number still matches."""
     problems: list[str] = []
 
-    def rewrite(request: dict[str, Any]) -> None:
-        request["context"] = [
-            dict(request["context"][0]),
-            {"role": "assistant", "content": "Boston led from start to finish."},
-        ]
+    def rewrite(snapshot: dict[str, Any]) -> None:
+        snapshot["exchanges"][0]["reply"]["text"] = "Boston led from start to finish."
 
     result, report = _mutated(directory, "answer-001", rewrite)
     expect(result.returncode == 0, f"cli failed: {result.stderr[-1200:]}", problems)
@@ -267,19 +283,23 @@ def scenario_context_substituted_rejected(directory: Path) -> list[str]:
     invented = context_observations()
     for row in invented:
         if row["case_id"] == "answer-003":
-            row["request"] = dict(row["request"])
-            row["request"]["context"] = [dict(turn) for turn in ORIGINAL_CONTEXT]
+            row["response"]["snapshot"]["exchanges"].insert(
+                0,
+                {
+                    "message": ORIGINAL_CONTEXT[0]["content"],
+                    "reply": {"id": "invented", "text": ORIGINAL_CONTEXT[1]["content"]},
+                },
+            )
+            bind_fixture_response(row)
     result, report = _score(directory, questions, expectations, invented)
     expect(result.returncode == 0, f"cli failed: {result.stderr[-1200:]}", problems)
     if report is None:
         return problems + ["no report written"]
     _assert_no_credit(report, "answer-003", "request_context_mismatch", problems)
 
-    def swap(request: dict[str, Any]) -> None:
-        request["context"] = [
-            {"role": "assistant", "content": ORIGINAL_CONTEXT[0]["content"]},
-            {"role": "user", "content": ORIGINAL_CONTEXT[1]["content"]},
-        ]
+    def swap(snapshot: dict[str, Any]) -> None:
+        snapshot["exchanges"][0]["message"] = ORIGINAL_CONTEXT[1]["content"]
+        snapshot["exchanges"][0]["reply"]["text"] = ORIGINAL_CONTEXT[0]["content"]
 
     result, report = _mutated(directory, "answer-001", swap)
     expect(result.returncode == 0, f"cli failed: {result.stderr[-1200:]}", problems)

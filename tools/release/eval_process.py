@@ -143,8 +143,6 @@ def clean_env(
         "AI_PROVIDER": "mock",
         "AI_API_KEY": "",
         "OPENROUTER_API_KEY": "",
-        "ANALYST_EVIDENCE_LOOP_ENABLED": "true" if loop_enabled else "false",
-        "ANALYSIS_ANSWER_MODE": "deterministic",
         "REQUIRE_ACTIVE_RELEASE": "true",
         "SEED_ON_STARTUP": "false",
         "PUBLIC_CHAT_RATE_LIMIT_PER_MINUTE": "1000",
@@ -162,7 +160,6 @@ def clean_env(
                 "AI_BASE_URL": binding.provider_base_url,
                 "AI_CHAT_MODEL": binding.provider_model,
                 "OPENROUTER_ALLOWED_MODELS": json.dumps([binding.provider_model]),
-                "ANALYSIS_ANSWER_MODE": "llm_primary",
                 ENV_CONFIG: str(service.config_path),
                 ENV_CONFIG_SHA256: binding.config_sha256,
             }

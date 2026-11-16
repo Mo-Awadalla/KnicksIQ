@@ -145,7 +145,7 @@ def scenario_collect_service_run_stamp(directory: Path) -> list[str]:
         if collected.returncode == 0:
             summary = json.loads(collected.stdout)
             expect(summary["provider_attempts"] == 0, f"no attempts: {summary}", problems)
-            expect(summary["provider_stages"] == CASES, f"stages are separate: {summary}", problems)
+            expect(summary["provider_stages"] is None, f"stages are separate: {summary}", problems)
             expect(
                 summary.get("proofs_verified") == CASES,
                 f"every proof verifies before acceptance: {summary}",
@@ -196,7 +196,7 @@ def scenario_collect_service_run_stamp(directory: Path) -> list[str]:
         )
         expect(
             report["profile"]["provider_attempts"] == 0
-            and report["profile"]["provider_requests"] == CASES,
+            and report["profile"]["provider_requests"] is None,
             f"attempts and stages stay separate: {report['profile']}",
             problems,
         )

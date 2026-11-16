@@ -36,6 +36,8 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
+from starlette.types import Message, Receive, Scope, Send
+
 REPO_ROOT = Path(__file__).resolve().parents[2]
 API_ROOT = REPO_ROOT / "apps/api"
 
@@ -49,8 +51,6 @@ os.environ.update(
         "LOG_JSON": "true",
         "LOG_LEVEL": "INFO",
         "AI_PROVIDER": "mock",
-        "ANALYSIS_ANSWER_MODE": "deterministic",
-        "ANALYST_EVIDENCE_LOOP_ENABLED": "false",
         "RAG_QDRANT_ENABLED": "false",
         "REQUIRE_ACTIVE_RELEASE": "false",
     }
@@ -110,7 +110,7 @@ def build_app() -> tuple[Any, str]:
 def make_scope(
     *,
     method: str = "POST",
-    path: str = "/analysis/query",
+    path: str = "/chat/turns",
     headers: list[tuple[str, str]] | None = None,
 ) -> dict[str, Any]:
     return {
@@ -151,22 +151,22 @@ async def drive(
     *,
     scope: dict[str, Any],
     messages: deque[dict[str, Any]],
-) -> list[dict[str, Any]]:
-    sent: list[dict[str, Any]] = []
+) -> list[Message]:
+    sent: list[Message] = []
 
     async def receive() -> dict[str, Any]:
         if messages:
             return messages.popleft()
         return {"type": "http.disconnect"}
 
-    async def send(message: dict[str, Any]) -> None:
+    async def send(message: Message) -> None:
         sent.append(message)
 
     await asyncio.wait_for(app(scope, receive, send), timeout=20)
     return sent
 
 
-def read_response(sent: list[dict[str, Any]]) -> tuple[int, dict[str, bytes], Any, bytes]:
+def read_response(sent: list[Message]) -> tuple[int, dict[bytes, bytes], Any, bytes]:
     start = next(item for item in sent if item["type"] == "http.response.start")
     raw = b"".join(item.get("body", b"") for item in sent if item["type"] == "http.response.body")
     headers = {key.lower(): value for key, value in start["headers"]}
@@ -311,16 +311,16 @@ async def check_disconnect(app: Any) -> None:
 
 
 async def check_stalled_upload() -> None:
-    async def downstream(scope: dict[str, Any], receive: Any, send: Any) -> None:
+    async def downstream(scope: Scope, receive: Receive, send: Send) -> None:
         raise AssertionError("A stalled body reached application parsing")
 
     async def slow_receive() -> dict[str, Any]:
         await asyncio.sleep(2)
         return {"type": "http.request", "body": b"", "more_body": False}
 
-    sent: list[dict[str, Any]] = []
+    sent: list[Message] = []
 
-    async def send(message: dict[str, Any]) -> None:
+    async def send(message: Message) -> None:
         sent.append(message)
 
     await RequestBodyLimitMiddleware(downstream, read_timeout=0.05)(
@@ -340,13 +340,13 @@ async def check_stalled_upload() -> None:
 def check_sentry_scrub() -> None:
     event = {
         "type": "error",
-        "transaction": "GET /analysis/query?question=SECRET-QUERY",
+        "transaction": "GET /chat/turns?message=SECRET-QUERY",
         "user": {"id": "anon"},
         "request": {
-            "url": "http://test/analysis/query?question=SECRET-QUERY",
-            "query_string": "question=SECRET-QUERY",
-            "data": {"question": "SECRET-BODY"},
-            "headers": {"Authorization": "Bearer SECRET-TOKEN"},
+            "url": "http://test/chat/turns?message=SECRET-QUERY",
+            "query_string": "message=SECRET-QUERY",
+            "data": {"message": "SECRET-BODY", "text": "SECRET-REPLY"},
+            "headers": {"X-Chat-Token": "SECRET-TOKEN"},
             "cookies": "session=SECRET-COOKIE",
             "env": {"REMOTE_ADDR": "203.0.113.9"},
         },
@@ -373,18 +373,18 @@ def check_sentry_scrub() -> None:
             "values": [
                 {
                     "category": "http",
-                    "message": "POST /analysis/query?question=SECRET-QUERY",
-                    "data": {"url": "http://test/analysis/query?question=SECRET-QUERY"},
+                    "message": "POST /chat/turns?message=SECRET-QUERY",
+                    "data": {"url": "http://test/chat/turns?message=SECRET-QUERY"},
                 }
             ]
         },
         "spans": [
             {
                 "op": "http.client",
-                "description": "POST /analysis/query?question=SECRET-QUERY",
+                "description": "POST /chat/turns?message=SECRET-QUERY",
                 "data": {
                     "url": "https://provider.example/chat?key=SECRET-TOKEN",
-                    "http.query": "question=SECRET-QUERY",
+                    "http.query": "message=SECRET-QUERY",
                     "db.statement": "SELECT * FROM game WHERE note = 'SECRET-QUERY'",
                     "db.params": ["SECRET-QUERY"],
                 },
@@ -406,13 +406,13 @@ def check_sentry_scrub() -> None:
         and "headers" not in scrubbed["request"]
         and "cookies" not in scrubbed["request"]
         and "env" not in scrubbed["request"]
-        and scrubbed["request"]["url"] == "http://test/analysis/query"
+        and scrubbed["request"]["url"] == "http://test/chat/turns"
         and "user" not in scrubbed
         and "data" not in scrubbed["breadcrumbs"]["values"][0]
         and "message" not in scrubbed["breadcrumbs"]["values"][0]
-        and scrubbed["spans"][0]["description"] == "POST /analysis/query"
+        and scrubbed["spans"][0]["description"] == "POST /chat/turns"
         and scrubbed["spans"][0]["data"] == {}
-        and scrubbed["transaction"] == "GET /analysis/query",
+        and scrubbed["transaction"] == "GET /chat/turns",
         {"leaked_markers": token_count, "frame": frame, "span": scrubbed["spans"][0]},
     )
 
@@ -482,43 +482,32 @@ def check_logging_redaction() -> None:
 
 
 def check_request_schema_bounds() -> None:
-    """The public request model must accept a whole-season scope.
+    """Only bounded chat commands cross the public message boundary."""
+    import uuid
 
-    ``resolve_query`` stores every filtered game id in the conversation state,
-    and the archive has 101 games, so the state bound has to clear the public
-    list cap of 200 without allowing unbounded lists.
-    """
-    from app.api.analysis_models import AnalysisQueryRequest
-    from pydantic import ValidationError
+    from app.conversation.domain import TOKEN_PATTERN, MessageCommand, RetryCommand
+    from pydantic import TypeAdapter, ValidationError
 
+    adapter = TypeAdapter(MessageCommand | RetryCommand)
     base = {
-        "question": "Who scored the most points?",
-        "season": "2025-26",
-        "context": [],
-        "conversation_state": {"game_ids": list(range(200))},
+        "kind": "message",
+        "message": "z" * 1200,
+        "request_id": str(uuid.uuid4()),
+        "expected_revision": 0,
     }
-    accepted = AnalysisQueryRequest.model_validate(base)
-    state = accepted.conversation_state
-    accepted_ids = len(state.game_ids) if state is not None else 0
-    over = dict(base, conversation_state={"game_ids": list(range(201))})
-    unknown = dict(base, unexpected_field=True)
-    rejected_over = rejected_unknown = False
-    try:
-        AnalysisQueryRequest.model_validate(over)
-    except ValidationError:
-        rejected_over = True
-    try:
-        AnalysisQueryRequest.model_validate(unknown)
-    except ValidationError:
-        rejected_unknown = True
+    adapter.validate_python(base)
+    rejected = []
+    for payload in ({**base, "message": "z" * 1201}, {**base, "unexpected_field": True}):
+        try:
+            adapter.validate_python(payload)
+        except ValidationError:
+            rejected.append(True)
+        else:
+            rejected.append(False)
     verify(
-        "request_schema_bounds_whole_season_scope",
-        accepted.season == "2025-26" and accepted_ids == 200 and rejected_over and rejected_unknown,
-        {
-            "accepted_game_ids": accepted_ids,
-            "rejected_201": rejected_over,
-            "rejected_unknown_field": rejected_unknown,
-        },
+        "chat_request_schema_bounds",
+        all(rejected) and bool(TOKEN_PATTERN.fullmatch("x" * 43)),
+        {"accepted_message_chars": 1200, "rejected_oversize_and_unknown": rejected},
     )
 
 

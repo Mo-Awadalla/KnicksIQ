@@ -470,6 +470,8 @@ def test_loopback_dsn_guard_rejects_non_loopback_and_other_backends() -> None:
     for rejected in (
         "postgresql://u:p@db.internal:5432/knicksiq",
         "sqlite:///tmp/x.sqlite",
+        "postgresql://u:p@127.0.0.1:18430/knicksiq?host=remote.invalid",
+        "postgresql://u:p@127.0.0.1:18430/knicksiq?port=5432",
         "",
     ):
         with pytest.raises(VerificationError):

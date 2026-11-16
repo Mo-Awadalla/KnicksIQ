@@ -91,23 +91,23 @@ def scenario_proof_protocol_roundtrip(directory: Path) -> list[str]:
         message = await receive()
         body = json.loads(message["body"] or b"{}")
         served.append(body)
-        payload = {"answer": "Synthetic.", "outcome": "clarify", "request_id": body["turn_id"]}
+        payload = {"answer": "Synthetic.", "outcome": "clarify", "request_id": body["request_id"]}
         encoded = json.dumps(payload).encode()
         await send({"type": "http.response.start", "status": 200, "headers": []})
         await send({"type": "http.response.body", "body": encoded})
 
     wrapped = CandidateProofMiddleware(downstream, signer)
-    status, _, body = call_asgi(wrapped, path="/analysis/query", body={"turn_id": "t"})
+    status, _, body = call_asgi(wrapped, path="/chat/turns", body={"request_id": "t"})
     if status != 400 or served:
         problems.append(f"an unchallenged analyst request must be refused first: {status}")
     elif body.get("error", {}).get("code") != "evaluation_challenge_required":
         problems.append(f"the refusal must name the missing challenge: {body}")
 
     challenged = new_nonce()
-    sent = {"turn_id": "t", "question": "q"}
+    sent = {"request_id": "t", "message": "q"}
     status, headers, body = call_asgi(
         wrapped,
-        path="/analysis/query",
+        path="/chat/turns",
         body=sent,
         headers=[(CHALLENGE_HEADER.encode(), challenged.encode())],
     )

@@ -3,10 +3,9 @@ from __future__ import annotations
 import re
 
 import pytest
-from app.services.analyst_fallback import fallback_claims
-from app.services.analyst_loop import AnalystLoop
 from app.services.analyst_tools import AnalystTools
 from app.services.evidence_contracts import ToolCall
+from app.tests.support.factual_queries import lookup, text
 from app.tests.test_metric_authority import _claims, _deterministic, _seed, _tools
 
 GAMES = [
@@ -23,14 +22,10 @@ async def test_exploratory_subset_cannot_answer_season_average(db_session):
         [("2026-01-01", "NYK", "BOS", 80, 70), ("2026-02-01", "NYK", "DET", 120, 110)],
     )
     tools, loop = await _tools(db_session, release, "What was the Knicks' average scoring?")
-    loop.results.append(
-        await tools.execute(
-            ToolCall(
-                name="get_team_stats", question="What was the Knicks' average scoring in January?"
-            )
-        )
+    await tools.execute(
+        ToolCall(name="get_team_stats", question="What was the Knicks' average scoring in January?")
     )
-    result = await loop.fallback("Review failed.")
+    result = await lookup(tools)
     claim = _claims(result)["points_per_game"][0]
     assert claim["value"] == 100
     assert claim["sample_size"] == 2
@@ -76,12 +71,10 @@ async def test_narrowed_leaderboard_cannot_answer_the_season(db_session):
     )
     question = "Who led the Knicks in assists this season?"
     tools, loop = await _tools(db_session, release, question)
-    loop.results.append(
-        await tools.execute(
-            ToolCall(name="get_player_stats", question="Who led the Knicks in assists in January?")
-        )
+    exploratory = await tools.execute(
+        ToolCall(name="get_player_stats", question="Who led the Knicks in assists in January?")
     )
-    january = loop.results[-1]
+    january = exploratory
     names: set[str] = set()
     for claim in january.claims:
         value = claim.value
@@ -91,11 +84,14 @@ async def test_narrowed_leaderboard_cannot_answer_the_season(db_session):
         names.add(name)
     assert names == {"Jalen Brunson"}
     # January ranks a subset of the season, so it never answers the season ask.
-    assert fallback_claims(loop) == []
-    result = await loop.fallback("Review failed.")
+    assert all(
+        claim.sample_size is not None and claim.sample_size < len(tools.games)
+        for claim in january.claims
+    )
+    result = await lookup(tools)
     leaders = _claims(result)["assists:leader"]
     assert {claim["value"]["name"] for claim in leaders} == {"Karl-Anthony Towns"}
-    assert "Jalen Brunson led" not in result["answer"]
+    assert "Jalen Brunson led" not in text(result)
 
 
 async def test_compound_total_and_average_keep_independent_aggregations(db_session):
@@ -115,16 +111,18 @@ async def test_pronoun_threshold_counts_inherited_player_appearances(db_session)
         GAMES[:3],
         box={"Jalen Brunson": [(36, 30, 5, 1, 3), (36, 20, 5, 1, 3), (36, 26, 5, 1, 3)]},
     )
-    _, _, first = await _deterministic(db_session, release, "What was Brunson's average points?")
+    first_tools, _, first = await _deterministic(
+        db_session, release, "What was Brunson's average points?"
+    )
     tools = AnalystTools(
         db_session,
         release,
         "And how many games did he score at least 25?",
         release.season,
-        first["state"],
+        first_tools.state,
     )
     await tools.prepare()
-    result = await AnalystLoop(tools, []).run(allow_model=False)
+    result = await lookup(tools)
     claim = _claims(result)["points:threshold"][0]
     assert claim["value"] == 2
     assert claim["denominator"] == 3
@@ -143,7 +141,7 @@ async def test_recent_appearance_comparison_ignores_storage_order(db_session):
         "Compare Brunson's scoring in the last 2 games with his season average.",
     )
     tools.rows.reverse()
-    result = await loop.run(allow_model=False)
+    result = await lookup(tools)
     recent = next(claim for claim in _claims(result)["points:average"] if claim["sample_size"] == 2)
     assert recent["value"] == 25
     assert recent["game_ids"] == sorted(game.id for game in tools.games[-2:])
@@ -167,7 +165,6 @@ async def test_partial_comparison_delivers_missing_group_explanation(db_session)
     )
     claim = _claims(result)["three_pointers_made:percentage"][0]
     assert claim["value"] == pytest.approx(50)
-    assert result["outcome"] == "answer"
-    assert result["degraded"] is True
-    assert "home" in result["answer"].lower()
-    assert re.search(r"undefined|no .*attempt|zero .*attempt", result["answer"], re.IGNORECASE)
+    assert result.status == "incomplete_coverage"
+    assert "home" in text(result).lower()
+    assert re.search(r"undefined|no .*attempt|zero .*attempt", text(result), re.IGNORECASE)

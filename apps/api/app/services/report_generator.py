@@ -1,7 +1,9 @@
-"""Postgame report generator.
+"""Postgame report generator, an internal offline tool with no public HTTP route.
 
 Orchestrates: fetch game data → assemble context → call LLM →
 validate citations → persist Report row with tool trace.
+
+Run: python -m app.services.report_generator GAME_ID
 """
 
 from __future__ import annotations
@@ -257,3 +259,17 @@ def new_report_id() -> str:
 
 def now_iso() -> str:
     return datetime.now(UTC).isoformat()
+
+
+def main() -> None:
+    import argparse
+    import asyncio
+
+    parser = argparse.ArgumentParser(description="Generate and persist one postgame report.")
+    parser.add_argument("game_id", type=int, help="Internal game id (not the NBA game id)")
+    result = asyncio.run(generate_postgame_report(game_id=parser.parse_args().game_id))
+    print(json.dumps({"report_id": result["id"], "game_id": result["game_id"]}))
+
+
+if __name__ == "__main__":
+    main()

@@ -53,9 +53,6 @@ services:
       RAG_HYBRID_ENABLED: "true"
       RAG_RERANKER_ENABLED: "false"
       RAG_LLM_PLANNER_ENABLED: "true"
-      ANALYSIS_ANSWER_MODE: ${ANALYSIS_ANSWER_MODE:-deterministic}
-      ANALYSIS_SHADOW_SAMPLE_RATE: ${ANALYSIS_SHADOW_SAMPLE_RATE:-0.1}
-      ANALYSIS_PROMPT_VERSION: ${ANALYSIS_PROMPT_VERSION:-v1}
       AI_PROVIDER: openrouter
       AI_BASE_URL: https://openrouter.ai/api/v1
       AI_API_KEY: ${AI_API_KEY:-}

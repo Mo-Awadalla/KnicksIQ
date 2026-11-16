@@ -19,7 +19,6 @@ from app.models.box_score import PeriodScore, PlayerGameStat, TeamGameStat
 from app.models.dataset_release import DatasetRelease
 from app.models.game import Game
 from app.models.player import Player
-from app.services.analyst_loop import AnalystLoop
 from app.services.analyst_provenance import (
     GAME_FIELDS,
     PLAYER_GAME_STAT_FIELDS,
@@ -32,6 +31,7 @@ from app.services.analyst_provenance import (
 )
 from app.services.analyst_tools import AnalystTools
 from app.services.evidence_contracts import Evidence, ToolCall
+from app.tests.support.factual_queries import lookup
 from sqlalchemy import select
 
 VERSION = "2025-26.provenance-test"
@@ -191,25 +191,22 @@ async def test_loop_exposes_the_private_registry_and_keeps_state_round_trip_safe
     db_session,
 ) -> None:
     tools = await _tools(db_session, "What was the Knicks record this season?")
-    loop = AnalystLoop(tools, [])
-    loop.request_id = "provenance-test"
-    result = await loop.run(allow_model=False)
-    assert result["evidence"]
-    by_id = {item["evidence_id"]: item for item in result["evidence"]}
-    for item in result["evidence"]:
+    result = await lookup(tools)
+    assert result.evidence
+    entries = tools.provenance.registry([item.model_dump(mode="json") for item in result.evidence])
+    by_id = {item["evidence_id"]: item for item in entries}
+    for item in entries:
         if item["evidence_id"].startswith("calculation:"):
-            # A calculation record describes an expansion; it is not itself a SQL row.
             assert "source_row" not in item
             continue
         game = next(game for game in tools.games if game.id == item["game_id"])
         assert item["source_row"] == game_projection(game)
         assert item["row_sha256"] == provenance_digest(item["source_row"])
         assert item["source_row_id"] == game.id
-    assert any(item.get("row_sha256") for item in result["evidence"])
-    # Committed state stays plain evidence so a later turn can revalidate it.
-    for raw in result["state"]["evidence"]:
-        assert "source_row" not in raw
-        assert Evidence.model_validate(raw).evidence_id in by_id
+    assert any(item.get("row_sha256") for item in entries)
+    for raw in result.evidence:
+        assert "source_row" not in raw.model_dump(mode="json")
+        assert Evidence.model_validate(raw.model_dump(mode="json")).evidence_id in by_id
 
 
 async def test_player_average_calculation_records_the_actual_numerator(db_session) -> None:

@@ -1,84 +1,83 @@
-"""Explicit, metered capability probe; never substitutes a model or logs prompts."""
+"""Explicit metered chat-stream capability probe. Running it spends provider budget."""
 
 from __future__ import annotations
 
 import asyncio
 import json
 import time
+from typing import Literal, NotRequired, TypedDict
 
+import httpx
+
+from app.conversation.provider import Completion, ProviderConfig, request_body, stream_completion
 from app.core.config import get_settings
 from app.services.analyst_budget import BudgetReservation
-from app.services.evidence_contracts import (
-    CONTRACT_VERSION,
-    PROMPT_VERSION,
-    VALIDATOR_VERSION,
-    Action,
-    AnswerReview,
-    ProposedAnswer,
-)
-from app.services.report_llm import get_llm_adapter
 
 
-async def probe() -> dict:
+class ProbeResult(TypedDict):
+    passed: bool
+    error: NotRequired[str]
+    delta_count: NotRequired[int]
+    latency_ms: NotRequired[int]
+
+
+class ProbeReport(TypedDict):
+    model: str
+    format: Literal["stream"]
+    results: list[ProbeResult]
+
+
+async def probe() -> ProbeReport:
     settings = get_settings()
-    results = []
-    for schema, instruction in (
-        (
-            Action,
-            "Return a call_tools action with one discover_facts tool for an interesting stat.",
-        ),
-        (ProposedAnswer, 'Return text "Which player?" with no claims, evidence_ids or fact_ids.'),
-        (
-            AnswerReview,
-            'Review "Which player?" as a supported clarification, with null '
-            "offending_text, no supporting references and a reason.",
-        ),
-    ):
-        reservation = await BudgetReservation.reserve(settings.analyst_call_reservation_usd)
-        if reservation is None:
-            results.append(
-                {"schema": schema.__name__, "passed": False, "error": "budget_unavailable"}
-            )
-            break
-        adapter = get_llm_adapter()
-        adapter.max_tokens = 1200
-        if settings.analyst_provider_format == "json_schema":
-            adapter.response_schema = schema.model_json_schema()
-        start = time.monotonic()
-        try:
-            raw = await adapter.generate(
-                system="Return only JSON matching the provided schema.",
-                user=json.dumps({"task": instruction, "schema": schema.model_json_schema()}),
-            )
-            schema.model_validate_json(raw)
-            results.append(
-                {
-                    "schema": schema.__name__,
-                    "passed": True,
-                    "latency_ms": round((time.monotonic() - start) * 1000),
-                    "provider_metadata": adapter.last_metadata,
-                }
-            )
-        except Exception as exc:
-            results.append(
-                {
-                    "schema": schema.__name__,
-                    "passed": False,
-                    "error": type(exc).__name__,
-                    "detail": str(exc)[:500],
-                }
-            )
-        usage = getattr(adapter, "last_metadata", {}).get("usage") or {}
-        await reservation.settle(usage.get("cost"))
-    return {
+    result: ProbeResult = {"passed": False}
+    report: ProbeReport = {
         "model": settings.ai_chat_model,
-        "format": settings.analyst_provider_format,
-        "temperature": 0,
-        "schema_version": CONTRACT_VERSION,
-        "prompt_version": PROMPT_VERSION,
-        "validator_version": VALIDATOR_VERSION,
-        "results": results,
+        "format": "stream",
+        "results": [result],
     }
+    if (
+        not settings.ai_api_key
+        or settings.ai_provider.lower() in {"mock", "none", "disabled"}
+        or settings.ai_chat_model not in settings.openrouter_allowed_models
+    ):
+        result["error"] = "provider_unavailable"
+        return report
+    reservation = await BudgetReservation.reserve(settings.analyst_call_reservation_usd)
+    if reservation is None:
+        result["error"] = "budget_unavailable"
+        return report
+    completion = Completion()
+    config = ProviderConfig(
+        settings.ai_base_url,
+        settings.ai_api_key,
+        settings.ai_chat_model,
+        settings.ai_reasoning_effort,
+        600,
+    )
+    started = time.monotonic()
+    try:
+        body = request_body(
+            config,
+            [{"role": "user", "content": "Say hello to a Knicks fan in one short sentence."}],
+            None,
+        )
+        async with httpx.AsyncClient(
+            timeout=settings.analyst_deadline_seconds, trust_env=False
+        ) as client:
+            async with asyncio.timeout(settings.analyst_deadline_seconds):
+                chunks = [
+                    text async for text in stream_completion(client, config, body, completion)
+                ]
+        result.update(
+            passed=bool("".join(chunks).strip()) and completion.finish == "stop",
+            delta_count=len(chunks),
+            latency_ms=round((time.monotonic() - started) * 1000),
+        )
+    except Exception as exc:
+        result["error"] = type(exc).__name__
+    finally:
+        await asyncio.shield(reservation.settle(completion.cost))
+    return report
 
 
 if __name__ == "__main__":

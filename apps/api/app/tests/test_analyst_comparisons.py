@@ -1,8 +1,9 @@
 """Grouped comparisons answered from separate populations with their own denominators.
 
-Every case drives `resolve_query`, `AnalystTools` and `AnalystLoop` against real fixture
-rows. The fixture has unequal group sizes (5 home games, 3 away games, 3 Boston games, 2
-Toronto games), a mid-February schedule gap that defines the All-Star boundary, a playoff
+Every case drives `resolve_query`, `AnalystTools` and the private factual boundary
+against real fixture rows. The fixture has unequal group sizes (5 home games,
+3 away games, 3 Boston games, 2 Toronto games), a mid-February schedule gap that
+defines the All-Star boundary, a playoff
 game after the break, and a zero-minute bench row, so a collapsed single population, a
 summing comparison, or a per-appearance bench denominator fails here.
 """
@@ -16,11 +17,8 @@ from app.models.box_score import PlayerGameStat
 from app.models.dataset_release import DatasetRelease
 from app.models.game import Game
 from app.models.player import Player
-from app.services.analyst_fallback import fallback_claims
-from app.services.analyst_loop import AnalystLoop
 from app.services.analyst_tools import AnalystTools
-from app.services.evidence_contracts import ToolResult
-from app.services.query_comparisons import group_games
+from app.tests.support.factual_queries import grouped_claims, lookup
 from sqlalchemy import select
 
 # date, home, away, home_score, away_score, season_type
@@ -123,18 +121,12 @@ async def _run(db_session, question: str):
     release = await _seed_archive(db_session)
     tools = AnalystTools(db_session, release, question, release.season, {})
     await tools.prepare()
-    loop = AnalystLoop(tools, [])
-    loop.request_id = "comparison-test"
-    return tools, loop, await loop.run(allow_model=False)
+    result = await lookup(tools)
+    return tools, result, result
 
 
-def _claims(result) -> dict[str, list]:
-    grouped: dict[str, list] = {}
-    for citation in result["citations"]:
-        claim = citation["metadata"].get("claim")
-        if claim:
-            grouped.setdefault(claim["metric_id"], []).append(claim)
-    return grouped
+def _claims(result):
+    return grouped_claims(result)
 
 
 def _by_group(claims: list) -> dict[str, dict]:
@@ -296,9 +288,9 @@ async def test_false_game_count_premise_clarifies(db_session):
     tools, loop, result = await _run(db_session, "Compare the two Knicks games against Boston.")
     assert tools.scope is not None
     assert tools.scope.comparison is None
-    assert result["outcome"] == "clarify" and result["refused"] is False
+    assert result.status == "ambiguous_entity"
     assert _claims(result) == {}
-    assert {item.status for item in loop.results} == {"ambiguous_entity"}
+    assert {result.status} == {"ambiguous_entity"}
     assert any("2025-11-01" in choice for choice in tools.scope.clarification_options)
 
 
@@ -310,56 +302,9 @@ async def test_undefined_measure_comparisons_clarify(db_session):
     for question, marker in cases.items():
         tools, loop, result = await _run(db_session, question)
         assert tools.scope is not None and tools.scope.comparison is None, question
-        assert result["outcome"] == "clarify", question
+        assert result.status == "ambiguous_entity", question
         assert marker in (tools.scope.clarification_question or "").lower(), question
-        assert {item.status for item in loop.results} == {"ambiguous_entity"}, question
-
-
-async def test_fallback_keeps_comparison_claims_inside_their_group(db_session):
-    release = await _seed_archive(db_session)
-    tools = AnalystTools(
-        db_session,
-        release,
-        "Compare the Knicks' offense at home and on the road.",
-        release.season,
-        {},
-    )
-    await tools.prepare()
-    loop = AnalystLoop(tools, [])
-    loop.request_id = "comparison-test"
-    from app.services.evidence_contracts import ToolCall
-
-    loop.results.append(
-        await tools.execute(ToolCall(name="get_team_stats", question=tools.question))
-    )
-    scope = tools.scope
-    assert scope is not None and scope.comparison is not None
-    home = next(group for group in scope.comparison.groups if group.key == "home")
-    away = next(group for group in scope.comparison.groups if group.key == "away")
-    mixed = tools.claim(
-        subject="team:NYK",
-        metric="points_per_game",
-        value=99.0,
-        unit="points per game",
-        games=group_games(scope.comparison, home, tools.games, tools.conferences)
-        + group_games(scope.comparison, away, tools.games, tools.conferences),
-        evidence=[tools.receipt(game) for game in tools.games],
-        statement="Mixed population",
-        scope=scope,
-        sample=8,
-        denominator=8,
-        eligibility={
-            "operation": "team_comparison",
-            "comparison_group": "home",
-            "measure": "scoring",
-            "considered_games": 8,
-        },
-    )
-    loop.results.append(ToolResult(status="ok", message="", claims=[mixed]))
-
-    kept = fallback_claims(loop)
-    assert {claim.eligibility["comparison_group"] for claim in kept} == {"home", "away"}
-    assert mixed.claim_id not in {claim.claim_id for claim in kept}
+        assert {result.status} == {"ambiguous_entity"}, question
 
 
 async def test_unresolved_comparison_reports_the_empty_group(db_session):

@@ -1,8 +1,7 @@
-"""Public analyst workflows against the comparison archive."""
+"""Private factual workflows against the comparison archive."""
 
 from datetime import UTC, date, datetime
 
-from app.core.config import get_settings
 from app.core.db import AsyncSessionLocal
 from app.models.dataset_release import DatasetRelease
 from app.models.game import Game
@@ -86,9 +85,6 @@ async def seed_operations_archive(db_session) -> DatasetRelease:
 
 
 async def operations_archive(monkeypatch):
-    settings = get_settings()
-    monkeypatch.setattr(settings, "analyst_evidence_loop_enabled", True)
-    monkeypatch.setattr(settings, "analysis_answer_mode", "deterministic")
     async with AsyncSessionLocal() as db:
         release = await seed_operations_archive(db)
         version = release.version
@@ -99,9 +95,6 @@ async def operations_archive(monkeypatch):
 
 
 async def comparison_archive(monkeypatch):
-    settings = get_settings()
-    monkeypatch.setattr(settings, "analyst_evidence_loop_enabled", True)
-    monkeypatch.setattr(settings, "analysis_answer_mode", "deterministic")
     async with AsyncSessionLocal() as db:
         release = await seed_comparison(db)
         version = release.version
@@ -114,9 +107,6 @@ async def comparison_archive(monkeypatch):
 async def scope_archive(monkeypatch):
     from app.tests.test_analyst_scope_composition import _seed_archive as seed_scope
 
-    settings = get_settings()
-    monkeypatch.setattr(settings, "analyst_evidence_loop_enabled", True)
-    monkeypatch.setattr(settings, "analysis_answer_mode", "deterministic")
     async with AsyncSessionLocal() as db:
         release = await seed_scope(db)
         version = release.version
@@ -129,9 +119,6 @@ async def scope_archive(monkeypatch):
 async def player_archive(monkeypatch):
     from app.tests.support.player_archive import _seed_release_stats
 
-    settings = get_settings()
-    monkeypatch.setattr(settings, "analyst_evidence_loop_enabled", True)
-    monkeypatch.setattr(settings, "analysis_answer_mode", "deterministic")
     async with AsyncSessionLocal() as db:
         release, _ = await _seed_release_stats(db)
         version = release.version
@@ -141,36 +128,46 @@ async def player_archive(monkeypatch):
         return version, {game.game_date.isoformat(): game.id for game in games}
 
 
+async def query_in_release(question, version, state=None):
+    from app.conversation.facts import PERSISTED_STATE_KEYS
+    from app.services.analyst_tools import AnalystTools
+    from app.tests.support.factual_queries import lookup
+
+    async with AsyncSessionLocal() as db:
+        release = (
+            await db.execute(
+                select(DatasetRelease).where(
+                    DatasetRelease.version == version,
+                    DatasetRelease.status == "active",
+                    DatasetRelease.validation_passed.is_(True),
+                )
+            )
+        ).scalar_one()
+        tools = AnalystTools(db, release, question, release.season, state or {})
+        await tools.prepare()
+        result = await lookup(tools)
+        persisted = {key: tools.state[key] for key in PERSISTED_STATE_KEYS if key in tools.state}
+        return result, persisted
+
+
 async def ask(client, question, version):
-    response = await client.post("/analysis/query", json={"question": question})
-    assert response.status_code == 200
-    body = response.json()
-    assert body["data_version"] == version
-    assert not body["refused"]
-    return body
+    result, _ = await query_in_release(question, version)
+    return result
 
 
-def delivered_claims(body):
-    """Unique claim identities; one claim may cite multiple source receipts."""
-    unique = {}
-    for citation in body["citations"]:
-        claim = citation["metadata"].get("claim")
-        if claim:
-            unique.setdefault(claim["claim_id"], claim)
-    return list(unique.values())
+def delivered_claims(result):
+    return [claim.model_dump(mode="json") for claim in result.claims]
 
 
-def claims(body):
-    delivered = delivered_claims(body)
+def claims(result):
+    delivered = delivered_claims(result)
     metrics = [claim["metric_id"] for claim in delivered]
-    assert len(metrics) == len(set(metrics)), (
-        f"distinct claims with duplicate metric IDs require a list: {metrics}"
-    )
+    assert len(metrics) == len(set(metrics)), metrics
     return {claim["metric_id"]: claim for claim in delivered}
 
 
-def grouped(body, metric):
-    delivered = [claim for claim in delivered_claims(body) if claim["metric_id"] == metric]
+def grouped(result, metric):
+    delivered = [claim for claim in delivered_claims(result) if claim["metric_id"] == metric]
     groups = [claim["eligibility"]["comparison_group"] for claim in delivered]
-    assert len(groups) == len(set(groups)), f"duplicate comparison-group claims: {groups}"
+    assert len(groups) == len(set(groups)), groups
     return dict(zip(groups, delivered, strict=True))

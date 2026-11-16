@@ -1,8 +1,4 @@
-"""Repeated real-provider conversations and explicit, human-reviewed release gates.
-
-Run against a private development API with the evidence loop enabled. No model is
-substituted. Fixtures are test prompts, not production conversation logging.
-"""
+"""Requires an approved provider budget. Fixture prompts are not production conversation logs."""
 
 from __future__ import annotations
 
@@ -10,6 +6,7 @@ import argparse
 import asyncio
 import json
 import math
+import secrets
 import time
 import uuid
 from pathlib import Path
@@ -19,7 +16,8 @@ import httpx
 
 from app.core.config import get_settings
 from app.evaluation.analyst_probe import probe
-from app.services.evidence_contracts import CONTRACT_VERSION
+from app.evaluation.chat_stream import stream_turn
+from app.evaluation.collection_transport import validate_base_url
 
 SIX_TURNS = [
     "Give me an interesting stat.",
@@ -41,7 +39,8 @@ def release_gates(metrics: dict[str, Any]) -> dict[str, bool]:
         "provider_capability": metrics.get("provider_capability_passed") is True,
         "unsupported_claims": metrics.get("reviewed_answers", 0) > 0
         and metrics.get("unsupported_claims") == 0,
-        "calculation_entity_scope_citation": metrics.get("all_structured_checks_passed") is True,
+        "calculation_entity_scope": metrics.get("all_structured_checks_passed") is True,
+        "public_citation_rubric_migration": False,
         "search_recall_at_5": metrics.get("applicable_search_tasks", 0) > 0
         and metrics.get("search_recall_at_5", 0) >= 0.95,
         "answerable_completion": metrics.get("answerable_completion", 0) >= 0.95,
@@ -58,10 +57,14 @@ def release_gates(metrics: dict[str, Any]) -> dict[str, bool]:
 
 
 async def evaluate(base_url: str, repetitions: int) -> dict[str, Any]:
+    validate_base_url(base_url)
     capabilities = await probe()
     report: dict[str, Any] = {
         "model": get_settings().ai_chat_model,
-        "contract_version": CONTRACT_VERSION,
+        "contract_version": "season-chat",
+        "citation_gate": (
+            "inapplicable: public citations retired; owner-approved rubric migration pending"
+        ),
         "provider_probe": capabilities,
         "repetitions": repetitions,
         "conversations": [],
@@ -69,37 +72,29 @@ async def evaluate(base_url: str, repetitions: int) -> dict[str, Any]:
         "promotion_allowed": False,
         "human_review_status": "pending",
     }
-    passed = len(capabilities["results"]) == 3 and all(r["passed"] for r in capabilities["results"])
+    passed = len(capabilities["results"]) == 1 and all(r["passed"] for r in capabilities["results"])
     report["metrics"]["provider_capability_passed"] = passed
     if not passed:
-        report["blocked_reason"] = "Configured provider did not pass schema capability probes."
+        report["blocked_reason"] = "Configured provider did not pass streaming capability probe."
         report["gates"] = release_gates(report["metrics"])
         return report
-    async with httpx.AsyncClient(base_url=base_url, timeout=35) as client:
+    async with httpx.AsyncClient(
+        base_url=base_url, timeout=35, trust_env=False, follow_redirects=False
+    ) as client:
         for trial in range(repetitions):
-            context, token, revision = [], None, 0
+            token, revision = secrets.token_urlsafe(32), 0
             turns = []
             for question in SIX_TURNS:
-                turn_id = uuid.uuid4().hex
                 request = dict(
-                    question=question,
-                    context=context[-10:],
-                    session_token=token,
+                    kind="message",
+                    message=question,
                     expected_revision=revision,
-                    turn_id=turn_id,
+                    request_id=str(uuid.uuid4()),
                 )
                 started = time.monotonic()
                 try:
-                    response = await client.post("/analysis/query", json=request)
-                    response.raise_for_status()
-                    body = response.json()
-                    token, revision = body.get("session_token"), body.get("revision", 0)
-                    context.extend(
-                        [
-                            {"role": "user", "content": question},
-                            {"role": "assistant", "content": body["answer"]},
-                        ]
-                    )
+                    body, events = await stream_turn(client, request, token)
+                    revision = body.get("revision", revision)
                     turns.append(
                         {
                             "question": question,
@@ -108,15 +103,25 @@ async def evaluate(base_url: str, repetitions: int) -> dict[str, Any]:
                             "human_review": None,
                         }
                     )
-                    replay = await client.post("/analysis/query", json=request)
-                    turns[-1]["replay_equal"] = replay.json() == body
+                    replay, replay_events = await stream_turn(client, request, token)
+                    equal = (
+                        len(replay_events) == 1
+                        and replay_events[0][0] == "settled"
+                        and replay["snapshot"] == body["snapshot"]
+                        and replay["delta_count"] == 0
+                    )
+                    turns[-1]["replay_equal"] = equal
+                    if not equal:
+                        raise ValueError("replay was not a single identical settled frame")
                 except (httpx.HTTPError, ValueError) as exc:
                     turns.append({"question": question, "error": type(exc).__name__})
                     break
             report["conversations"].append({"trial": trial, "turns": turns})
     turns = [turn for trial in report["conversations"] for turn in trial["turns"]]
     report["metrics"].update(
-        normal_llm_completion=sum(t.get("response", {}).get("llm_validated", False) for t in turns)
+        normal_llm_completion=sum(
+            (t.get("response", {}).get("status") == "complete") for t in turns
+        )
         / max(1, repetitions * len(SIX_TURNS)),
         request_error_rate=sum("error" in t for t in turns) / max(1, len(turns)),
     )

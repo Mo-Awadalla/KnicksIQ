@@ -23,7 +23,7 @@ EXACT_THRESHOLD = 1.0
 @dataclass
 class Metric:
     name: str
-    status: Literal["measured", "failed", "blocked"]
+    status: Literal["measured", "failed", "blocked", "inapplicable"]
     denominator: int
     numerator: float = 0.0
     blockers: list[str] = field(default_factory=list)
@@ -31,7 +31,7 @@ class Metric:
 
     @property
     def value(self) -> float | None:
-        if self.status == "blocked" or self.denominator == 0:
+        if self.status in {"blocked", "inapplicable"} or self.denominator == 0:
             return None
         return self.numerator / self.denominator
 
@@ -102,7 +102,6 @@ def _behavior_credited(item: CaseScore) -> bool:
             "scope",
             "no_additional_facts",
             "numeric_attribution",
-            "citations",
         )
     )
 
@@ -143,7 +142,6 @@ def answer_metrics(answer_scores: list[CaseScore]) -> list[Metric]:
     """Numeric, entity, scope, addition and citation correctness over answer cases."""
     entity_blockers = _blockers(answer_scores, "entity_blockers")
     assertion_blockers = _blockers(answer_scores, "assertion_blockers")
-    citation_blockers = _blockers(answer_scores, "citation_blockers")
 
     def measured(name: str, check: str, blockers: list[str] | None = None) -> Metric:
         metric = _metric(name, len(answer_scores), (blockers or None))
@@ -179,7 +177,14 @@ def answer_metrics(answer_scores: list[CaseScore]) -> list[Metric]:
         measured("canonical_entity_correctness", "entities", entity_blockers),
         measured("scope_window_denominator_correctness", "scope"),
         additions,
-        measured("citation_receipt_correctness", "citations", citation_blockers),
+        Metric(
+            "citation_receipt_correctness",
+            "inapplicable",
+            len(answer_scores),
+            blockers=[
+                "inapplicable: public citations retired; owner-approved rubric migration pending"
+            ],
+        ),
     ]
 
 
@@ -245,11 +250,14 @@ def latency_entries(submission: Submission) -> dict[str, dict[str, Any]]:
             "failing_cases": [],
         },
         "provider_requests": {
-            "status": "measured",
-            "value": submission.provider_requests,
+            "status": "inapplicable",
+            "value": None,
             "numerator": submission.provider_requests,
             "denominator": 0,
-            "blockers": [],
+            "blockers": [
+                "inapplicable: public tool traces retired; "
+                "provider activity requires private evidence"
+            ],
             "failing_cases": [],
         },
     }
@@ -294,7 +302,9 @@ def _gates(metrics: dict[str, dict[str, Any]], blockers: list[dict[str, str]]) -
     for name, threshold in GATE_THRESHOLDS.items():
         entry = metrics[name]
         blocked_by = list(entry["blockers"]) + global_blockers
-        if entry["status"] == "blocked":
+        if entry["status"] == "inapplicable":
+            status = "inapplicable"
+        elif entry["status"] == "blocked":
             status = "blocked"
         elif entry["value"] is not None and entry["value"] >= threshold:
             status = "blocked" if global_blockers else "pass"

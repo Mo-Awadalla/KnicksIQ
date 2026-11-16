@@ -13,13 +13,11 @@ import json
 import threading
 from collections.abc import Iterator
 from contextlib import contextmanager
-from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from http.server import ThreadingHTTPServer
 from pathlib import Path
 from typing import Any
 
 from app.evaluation.candidate_proof import (
-    CHALLENGE_HEADER,
-    PREFLIGHT_PATH,
     PROOF_HEADER,
     ProofSigner,
     RunProofKey,
@@ -39,7 +37,7 @@ from eval_scenarios_budget_support import (
     sealed,
     wire,
 )
-from eval_scenarios_service_support import service_collect, synthetic_identity
+from eval_scenarios_service_support import StageCandidate, service_collect, synthetic_identity
 
 
 def signer_of(binding: RunBinding, key: RunProofKey) -> ProofSigner:
@@ -52,35 +50,11 @@ def signer_of(binding: RunBinding, key: RunProofKey) -> ProofSigner:
     )
 
 
-class SigningCandidate(BaseHTTPRequestHandler):
+class SigningCandidate(StageCandidate):
     """A loopback stand-in for a bound candidate: it preflights and signs like the real one."""
 
     signer: ProofSigner
     refuse_preflight = False
-
-    def do_POST(self) -> None:  # noqa: N802
-        length = int(self.headers.get("Content-Length", "0"))
-        body = json.loads(self.rfile.read(length) or b"{}")
-        if self.path.rstrip("/") == PREFLIGHT_PATH:
-            self._preflight(body)
-            return
-        self.server.requests.append(body)  # type: ignore[attr-defined]
-        nonce = str(self.headers.get(CHALLENGE_HEADER) or "")
-        payload = {
-            "answer": "Synthetic.",
-            "citations": [],
-            "tool_calls": [{"stage": "orchestrate", "tool": "llm_orchestrate"}],
-            "outcome": "clarify",
-            "request_id": str(self.headers.get("X-Request-ID") or ""),
-        }
-        proof = self.signer.sign(
-            kind="response",
-            nonce=nonce,
-            request_sha256=canonical_digest(body),
-            http_status=200,
-            response_sha256=canonical_digest(payload),
-        )
-        self._reply(200, payload, proof.as_dict())
 
     def _preflight(self, challenge: dict[str, Any]) -> None:
         signer = self.signer
@@ -115,7 +89,7 @@ class SigningCandidate(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(encoded)
 
-    def log_message(self, *args: Any) -> None:
+    def log_message(self, format: str, *args: Any) -> None:
         return
 
 

@@ -1,11 +1,7 @@
 import type { KnipConfig } from 'knip'
 
 const config: KnipConfig = {
-  ignore: [
-    'src/components/ui/**',
-    'src/components/layout/app-title.tsx',
-    'src/tanstack-table.d.ts',
-  ],
+  entry: ['playwright.config.ts', 'e2e/**/*.spec.ts', 'e2e/chat-preview.mjs'],
+  project: ['src/**/*.{ts,tsx}', '*.config.ts', 'e2e/**/*.{ts,mjs}'],
 }
-
 export default config
