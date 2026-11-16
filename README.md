@@ -136,10 +136,10 @@ uv run --package knicksiq-worker knicksiq-load-release \
 
 Backend:
 
-Backend HTTP tests require a local disposable PostgreSQL server. Before
-`make test`, set `CHAT_E2E_DATABASE_URL` and `READINESS_TEST_DATABASE_URL` to its
-database URL. Use a test role that can create and drop databases. Do not use
-production credentials.
+Backend HTTP tests require an existing loopback PostgreSQL database named
+`knicksiq_rehaul_*`. Before `make test`, set `CHAT_E2E_DATABASE_URL` and
+`READINESS_TEST_DATABASE_URL` to its database URL. Use a test role that can create
+and drop databases. Do not use production credentials.
 
 ```bash
 uv run ruff format --check apps packages migrations

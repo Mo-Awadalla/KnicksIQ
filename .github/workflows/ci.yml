@@ -43,11 +43,13 @@ jobs:
       - run: uv run ruff check apps packages migrations
       - run: uv run ruff format --check apps packages migrations
       - run: uv run pyright apps packages migrations
+      - name: Prepare disposable conversation database
+        run: createdb -h localhost -U knicksiq knicksiq_rehaul_ci
       - name: Backend behavior regressions
         env:
           TEST_MODE: "true"
-          CHAT_E2E_DATABASE_URL: postgresql+asyncpg://knicksiq:knicksiq@localhost:5432/knicksiq_test
-          READINESS_TEST_DATABASE_URL: postgresql://knicksiq:knicksiq@localhost:5432/knicksiq_test
+          CHAT_E2E_DATABASE_URL: postgresql+asyncpg://knicksiq:knicksiq@localhost:5432/knicksiq_rehaul_ci
+          READINESS_TEST_DATABASE_URL: postgresql://knicksiq:knicksiq@localhost:5432/knicksiq_rehaul_ci
         run: make test-backend
       - name: Provider-free evaluation CLI integrity
         run: make test-evaluation
@@ -56,7 +58,6 @@ jobs:
           CHAT_E2E_DATABASE_URL: postgresql+asyncpg://knicksiq:knicksiq@localhost:5432/knicksiq_rehaul_ci
           READINESS_TEST_DATABASE_URL: postgresql://knicksiq:knicksiq@localhost:5432/knicksiq_rehaul_ci
         run: |
-          createdb -h localhost -U knicksiq knicksiq_rehaul_ci
           uv run pytest apps/api/app/tests/test_chat_*http.py apps/api/app/tests/test_readiness_rows.py \
             --junitxml=release-artifacts/chat-http.xml --maxfail=1
       - name: Persist conversation HTTP proof
