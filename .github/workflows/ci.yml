@@ -46,6 +46,8 @@ jobs:
       - name: Backend behavior regressions
         env:
           TEST_MODE: "true"
+          CHAT_E2E_DATABASE_URL: postgresql+asyncpg://knicksiq:knicksiq@localhost:5432/knicksiq_test
+          READINESS_TEST_DATABASE_URL: postgresql://knicksiq:knicksiq@localhost:5432/knicksiq_test
         run: make test-backend
       - name: Provider-free evaluation CLI integrity
         run: make test-evaluation
