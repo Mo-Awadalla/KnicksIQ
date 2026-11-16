@@ -1,3 +1,5 @@
 allowBuilds:
-  '@clerk/shared': true
   esbuild: true
+minimumReleaseAgeExclude:
+  - '@ui-sdk/core@0.1.0-beta.1'
+  - '@ui-sdk/react@0.1.0-beta.1'

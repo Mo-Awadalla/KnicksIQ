@@ -15,7 +15,7 @@ address to start over.
 from __future__ import annotations
 
 import pytest
-from app.api import analysis_policy as runtime
+from app.api import rate_limit as runtime
 from app.core.config import get_settings
 from fastapi import HTTPException, Request
 from fastapi import status as http_status
@@ -82,7 +82,7 @@ def clock(monkeypatch) -> _Clock:
 
 async def test_abandoned_old_day_identities_are_pruned(clock):
     for octet in range(1, 41):
-        await runtime._rate_limit(_request(host=f"198.51.100.{octet}"))
+        await runtime.rate_limit(_request(host=f"198.51.100.{octet}"))
     assert len(runtime._requests_by_client) == 40
 
     removed = runtime.prune_rate_limit_state(now=clock.now + 86_401)
@@ -105,20 +105,20 @@ async def test_capacity_sheds_new_identities_and_keeps_existing_enforcement(monk
     neighbour = _request(host="198.51.100.2")
     for request in (resident, neighbour):
         for _ in range(3):
-            assert await runtime._rate_limit(request) is False
+            assert await runtime.rate_limit(request) is False
     tracked = set(runtime._requests_by_client)
     assert len(tracked) == 2
 
     # The tracked client keeps its accrued minute debt at capacity.
     with pytest.raises(HTTPException) as excinfo:
-        await runtime._rate_limit(resident)
+        await runtime.rate_limit(resident)
     assert excinfo.value.status_code == http_status.HTTP_429_TOO_MANY_REQUESTS
 
     newcomer = _request(host="198.51.100.3")
-    newcomer_id = runtime._client_id(newcomer)
+    newcomer_id = runtime.client_id(newcomer)
     calls_before = len(redis_calls)
     with pytest.raises(HTTPException) as excinfo:
-        await runtime._rate_limit(newcomer)
+        await runtime.rate_limit(newcomer)
     assert excinfo.value.status_code == http_status.HTTP_429_TOO_MANY_REQUESTS
     assert excinfo.value.detail == "Rate limit exceeded"
 
@@ -141,7 +141,7 @@ async def test_capacity_pressure_does_not_rescan_per_request(monkeypatch, clock)
     monkeypatch.setattr(runtime, "prune_rate_limit_state", _counted)
     for index in range(1, 21):
         try:
-            await runtime._rate_limit(_request(host=f"198.51.100.{index}"))
+            await runtime.rate_limit(_request(host=f"198.51.100.{index}"))
         except HTTPException:
             pass
 
@@ -152,45 +152,45 @@ async def test_capacity_pressure_preserves_day_debt(monkeypatch, clock):
     monkeypatch.setattr(runtime, "_MAX_TRACKED_CLIENTS", 2)
     resident = _request(host="198.51.100.1")
     for _ in range(3):
-        assert await runtime._rate_limit(resident) is False
-    assert await runtime._rate_limit(_request(host="198.51.100.2")) is False
+        assert await runtime.rate_limit(resident) is False
+    assert await runtime.rate_limit(_request(host="198.51.100.2")) is False
 
     clock.advance(61)
     with pytest.raises(HTTPException):
-        await runtime._rate_limit(_request(host="198.51.100.3"))
+        await runtime.rate_limit(_request(host="198.51.100.3"))
 
     # The minute window expired, but the three day-window requests still count.
-    assert await runtime._rate_limit(resident) is False
-    assert await runtime._rate_limit(resident) is False
+    assert await runtime.rate_limit(resident) is False
+    assert await runtime.rate_limit(resident) is False
     with pytest.raises(HTTPException) as excinfo:
-        await runtime._rate_limit(resident)
+        await runtime.rate_limit(resident)
     assert excinfo.value.detail == "Daily rate limit exceeded"
 
 
 async def test_admission_resumes_after_windows_expire(monkeypatch, clock):
     monkeypatch.setattr(runtime, "_MAX_TRACKED_CLIENTS", 2)
     for host in ("198.51.100.1", "198.51.100.2"):
-        assert await runtime._rate_limit(_request(host=host)) is False
+        assert await runtime.rate_limit(_request(host=host)) is False
 
     saturated = _request(host="198.51.100.3")
     with pytest.raises(HTTPException):
-        await runtime._rate_limit(saturated)
+        await runtime.rate_limit(saturated)
 
     clock.advance(86_401)
 
-    assert await runtime._rate_limit(saturated) is False
-    assert runtime._client_id(saturated) in runtime._requests_by_client
+    assert await runtime.rate_limit(saturated) is False
+    assert runtime.client_id(saturated) in runtime._requests_by_client
 
 
 async def test_pruning_never_refills_an_active_window(clock):
     for _ in range(2):
-        await runtime._rate_limit(_request())
+        await runtime.rate_limit(_request())
 
     runtime.prune_rate_limit_state(now=clock.now + 30)
 
-    assert await runtime._rate_limit(_request()) is False
+    assert await runtime.rate_limit(_request()) is False
     with pytest.raises(HTTPException):
-        await runtime._rate_limit(_request())
+        await runtime.rate_limit(_request())
 
 
 async def test_redis_day_rejection_maps_to_the_public_envelope(monkeypatch, clock):
@@ -199,7 +199,7 @@ async def test_redis_day_rejection_maps_to_the_public_envelope(monkeypatch, cloc
 
     monkeypatch.setattr(runtime, "enforce_redis_limits", _reject)
     with pytest.raises(HTTPException) as excinfo:
-        await runtime._rate_limit(_request())
+        await runtime.rate_limit(_request())
     assert excinfo.value.status_code == http_status.HTTP_429_TOO_MANY_REQUESTS
     assert excinfo.value.detail == "Daily rate limit exceeded"
 
@@ -209,28 +209,28 @@ async def test_redis_outage_degrades_instead_of_blocking(monkeypatch, clock):
         return True
 
     monkeypatch.setattr(runtime, "enforce_redis_limits", _degraded)
-    assert await runtime._rate_limit(_request()) is True
+    assert await runtime.rate_limit(_request()) is True
 
 
 async def test_forwarded_header_cannot_mint_a_new_identity(monkeypatch, clock):
     monkeypatch.setattr(runtime, "_MAX_TRACKED_CLIENTS", 10_000)
     for _ in range(3):
-        await runtime._rate_limit(_request())
+        await runtime.rate_limit(_request())
 
     with pytest.raises(HTTPException):
-        await runtime._rate_limit(
+        await runtime.rate_limit(
             _request(**{"x-forwarded-for": "198.51.100.99", "x-real-ip": "198.51.100.98"})
         )
     assert len(runtime._requests_by_client) == 1
 
 
 async def test_identity_is_a_day_scoped_pseudonym(clock):
-    client_id = runtime._client_id(_request())
+    client_id = runtime.client_id(_request())
     assert len(client_id) == 64
     assert "203.0.113.7" not in client_id
-    assert client_id == runtime._client_id(_request())
+    assert client_id == runtime.client_id(_request())
 
 
 async def test_missing_connection_address_shares_one_bucket(clock):
-    await runtime._rate_limit(_request(host=None))
+    await runtime.rate_limit(_request(host=None))
     assert len(runtime._requests_by_client) == 1

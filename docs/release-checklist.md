@@ -10,12 +10,12 @@ Generate the view and run the fail-closed gate from the repository root:
 uv run --package knicksiq-api python -m app.services.release_evidence docs/release-evidence/release-record.json --render
 ```
 
-The launch configuration is 10% shadow with deterministic answers delivered to users. Automatic
+The launch configuration is the streamed season conversation on the allowlisted model. Automatic
 Render deployments stay disabled. Both NOW workstreams block deployment. NEXT and LATER are
 outside this release gate and hosting remains unchanged.
 
-The gate validates `ANALYSIS_ANSWER_MODE` and `ANALYSIS_SHADOW_SAMPLE_RATE`
-in `render.yaml`, not just the record. The deployment command reads that blueprint
+The gate validates the `$2` `OPENROUTER_MONTHLY_CUTOFF_USD` and that `AI_CHAT_MODEL`
+is inside `OPENROUTER_ALLOWED_MODELS` in `render.yaml`, not just the record. The deployment command reads that blueprint
 from `--tested-root` while resolving evidence artifacts from the evidence checkout.
 A missing or invalid blueprint blocks promotion.
 

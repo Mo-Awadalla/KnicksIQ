@@ -180,9 +180,10 @@ def _evidence_failures(
 
 
 def _season_failures(claim: TypedClaim, observation: Observation) -> list[AssertionFailure]:
-    expected = str(observation.request.get("season") or "")
-    if not expected:
-        return [AssertionFailure("season_unverifiable", "request carries no season")]
+    audit = observation.calculation_audit
+    if audit is None or not audit.season:
+        return [AssertionFailure("season_unverifiable", "private audit carries no season")]
+    expected = audit.season
     if claim.season != expected:
         return [AssertionFailure("season_mismatch", f"{claim.season} != {expected}")]
     return []

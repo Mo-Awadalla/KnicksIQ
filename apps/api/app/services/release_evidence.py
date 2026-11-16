@@ -31,7 +31,7 @@ REQUIRED_CHECKS = (
     "desktop_mobile_keyboard",
     "accessibility",
     "warm_load",
-    "shadow_dependencies",
+    "conversation_protocol",
     "rollback_snapshot",
 )
 
@@ -47,22 +47,20 @@ def validate_record(
     commit = record.get("tested_commit")
     if not isinstance(commit, str) or not re.fullmatch(r"[0-9a-f]{40}", commit):
         failures.append("missing exact tested Git commit")
-    if (
-        record.get("configuration", {}).get("answer_mode") != "shadow"
-        or record.get("configuration", {}).get("shadow_sample_rate") != 0.1
-    ):
-        failures.append("requires 10% shadow mode with deterministic delivered answers")
     try:
         blueprint = yaml.safe_load(((tested_root or root) / "render.yaml").read_text())
         api = next(
             service for service in blueprint["services"] if service["name"] == "knicksiq-api"
         )
         deployed = {item["key"]: item.get("value") for item in api["envVars"]}
+        allowed = json.loads(deployed.get("OPENROUTER_ALLOWED_MODELS", "[]"))
         if (
-            deployed.get("ANALYSIS_ANSWER_MODE") != "shadow"
-            or float(deployed.get("ANALYSIS_SHADOW_SAMPLE_RATE", "")) != 0.1
+            str(deployed.get("OPENROUTER_MONTHLY_CUTOFF_USD")) != "2"
+            or not deployed.get("AI_CHAT_MODEL")
+            or not isinstance(allowed, list)
+            or deployed["AI_CHAT_MODEL"] not in allowed
         ):
-            failures.append("deployment blueprint requires 10% shadow mode")
+            failures.append("deployment blueprint requires $2 cutoff and allowlisted chat model")
     except (OSError, ValueError, TypeError, KeyError, StopIteration, yaml.YAMLError):
         failures.append("deployment blueprint missing or invalid")
     for name in ("data", "bundle", "evaluation"):
@@ -80,6 +78,12 @@ def validate_record(
     for mode in ("evaluation", "evaluation_services_disabled"):
         metrics = evidence.get(mode, {}).get("metrics", {})
         for name, minimum in GATE_THRESHOLDS.items():
+            if name == "citation_receipt_correctness":
+                failures.append(
+                    f"{mode}: inapplicable: public citations retired; "
+                    "owner-approved rubric migration pending"
+                )
+                continue
             value = metrics.get(name)
             if type(value) not in (int, float) or not minimum <= value <= 1:
                 failures.append(f"{mode}: {name} must be >= {minimum}")

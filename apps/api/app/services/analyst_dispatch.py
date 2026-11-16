@@ -44,6 +44,7 @@ async def execute_call(tools: AnalystTools, call: ToolCall) -> ToolResult:
             status="ambiguous_entity",
             message=tools.scope.clarification_question or "Which subject did you mean?",
             choices=tools.scope.clarification_options,
+            scope={"release": tools.release.version, **tools.scope.model_dump(mode="json")},
         )
     if tools.scope.operation_reason:
         # An unsupported ranking never becomes season totals.
@@ -64,8 +65,9 @@ async def execute_call(tools: AnalystTools, call: ToolCall) -> ToolResult:
     if scope.requires_clarification:
         return ToolResult(
             status="ambiguous_entity",
-            message="Ambiguous entity.",
+            message=scope.clarification_question or "Which subject did you mean?",
             choices=scope.clarification_options,
+            scope={"release": tools.release.version, **scope.model_dump(mode="json")},
         )
     for key in (
         "player_ids",

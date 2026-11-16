@@ -200,6 +200,7 @@ def _command_collect(args: argparse.Namespace) -> int:
                 "cases_recorded": summary.cases_recorded,
                 "http_errors": summary.http_errors,
                 "provider_stages": summary.provider_stages,
+                "provider_stages_status": "inapplicable: public tool traces retired",
                 "provider_attempts": summary.provider_attempts,
                 "attempts_refused": summary.attempts_refused,
                 "proofs_verified": summary.proofs_verified,

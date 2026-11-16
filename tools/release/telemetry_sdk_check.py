@@ -58,8 +58,6 @@ os.environ.update(
         "LOG_JSON": "true",
         "LOG_LEVEL": "INFO",
         "AI_PROVIDER": "mock",
-        "ANALYSIS_ANSWER_MODE": "deterministic",
-        "ANALYST_EVIDENCE_LOOP_ENABLED": "false",
         "RAG_QDRANT_ENABLED": "false",
         "REQUIRE_ACTIVE_RELEASE": "false",
         "SENTRY_DSN": DUMMY_DSN,
@@ -309,7 +307,7 @@ def check_coverage(events: list[tuple[dict[str, Any], Any]]) -> dict[str, Any]:
     }
 
 
-def check_wire() -> tuple[list[dict[str, Any]], list[dict[str, Any]], int]:
+def check_wire() -> tuple[list[dict[str, Any]], list[tuple[dict[str, Any], Any]], int]:
     headers: list[dict[str, Any]] = []
     events: list[tuple[dict[str, Any], Any]] = []
     for raw in TRANSPORT.wire:
@@ -399,7 +397,9 @@ def check_public_response(
     except json.JSONDecodeError:
         payload = None
     body = payload if isinstance(payload, dict) else {}
-    error = body.get("error") if isinstance(body.get("error"), dict) else {}
+    error = body.get("error")
+    if not isinstance(error, dict):
+        error = {}
     request_id = body.get("request_id")
     verify(
         "unhandled_error_reached_the_public_handler",

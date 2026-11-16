@@ -1,7 +1,7 @@
 """Metric and population authority cases for the deterministic analyst path.
 
 Every case drives the real seam: `resolve_query` through `AnalystTools.prepare`,
-`AnalystLoop.run(allow_model=False)` for deterministic delivery, or
+the private factual lookup for deterministic delivery, or
 `AnalystTools.execute` for a model tool call. Fixtures are written so each case fails
 on the previous behaviour:
 
@@ -25,9 +25,9 @@ from app.models.box_score import PeriodScore, PlayerGameStat, TeamGameStat
 from app.models.dataset_release import DatasetRelease
 from app.models.game import Game
 from app.models.player import Player
-from app.services.analyst_loop import AnalystLoop
 from app.services.analyst_tools import AnalystTools
 from app.services.evidence_contracts import ToolCall
+from app.tests.support.factual_queries import grouped_claims, lookup, text
 from sqlalchemy import select
 
 _SEED_COUNT = 0
@@ -126,28 +126,20 @@ async def _seed(
     return release
 
 
-async def _tools(
-    db_session, release: DatasetRelease, question: str
-) -> tuple[AnalystTools, AnalystLoop]:
+async def _tools(db_session, release: DatasetRelease, question: str) -> tuple[AnalystTools, None]:
     tools = AnalystTools(db_session, release, question, release.season, {})
     await tools.prepare()
-    loop = AnalystLoop(tools, [])
-    loop.request_id = "metric-authority-test"
-    return tools, loop
+    return tools, None
 
 
 async def _deterministic(db_session, release: DatasetRelease, question: str):
     tools, loop = await _tools(db_session, release, question)
-    return tools, loop, await loop.run(allow_model=False)
+    result = await lookup(tools)
+    return tools, result, result
 
 
-def _claims(result) -> dict[str, list]:
-    grouped: dict[str, list] = {}
-    for citation in result["citations"]:
-        claim = citation["metadata"].get("claim")
-        if claim:
-            grouped.setdefault(claim["metric_id"], []).append(claim)
-    return grouped
+def _claims(result):
+    return grouped_claims(result)
 
 
 def _ids(tools: AnalystTools, *days: str) -> list[int]:
@@ -174,13 +166,9 @@ _GROUP_BOX = {
 
 
 async def test_grouped_three_point_percentage_uses_weighted_attempts(client, monkeypatch):
-    from app.core.config import get_settings
     from app.core.db import AsyncSessionLocal
     from app.tests.support.analytics_workflows import ask, grouped
 
-    settings = get_settings()
-    monkeypatch.setattr(settings, "analyst_evidence_loop_enabled", True)
-    monkeypatch.setattr(settings, "analysis_answer_mode", "deterministic")
     async with AsyncSessionLocal() as db:
         release = await _seed(db, _GROUP_GAMES, box=_GROUP_BOX)
         version = release.version
@@ -252,12 +240,10 @@ async def test_margin_thresholds_require_the_requested_outcome(db_session):
     assert win_claim["denominator"] == 3
     assert win_claim["game_ids"] == _ids(tools, "2025-11-01")
 
-    loss_result = None
     tools, _ = await _tools(
         db_session, release, "How many games did the Knicks lose by fewer than 10?"
     )
-    loop = AnalystLoop(tools, [])
-    loss_result = await loop.run(allow_model=False)
+    loss_result = await lookup(tools)
     loss_claim = _claims(loss_result)["games"][0]
     assert loss_claim["value"] == 1
     assert loss_claim["denominator"] == 3
@@ -274,9 +260,9 @@ async def test_zero_match_threshold_claim_cites_the_population(db_session):
     assert claim["value"] == 0
     assert claim["denominator"] == 3
     assert claim["supporting_evidence_ids"]
-    assert "0 of 3" in result["answer"]
-    assert result["citations"]
-    assert result["outcome"] == "answer" and result["refused"] is False
+    assert "0 of 3" in text(result)
+    assert result.claims
+    assert result.status in {"ok", "incomplete_coverage"}
 
 
 _RATIO_GAMES = [
@@ -299,14 +285,14 @@ async def test_zero_attempt_percentage_is_undefined_coverage(db_session):
         db_session, release, "What was Mikal Bridges' three-point percentage?"
     )
     assert "three_pointers_made:percentage" not in _claims(undefined)
-    assert "undefined" in undefined["answer"].lower()
-    assert "attempt" in undefined["answer"].lower()
-    assert undefined["refused"] is False
+    assert "undefined" in text(undefined).lower()
+    assert "attempt" in text(undefined).lower()
+    assert undefined.status != "unsupported_metric_or_scope"
 
     towns, _ = await _tools(
         db_session, release, "What was Karl-Anthony Towns' three-point percentage?"
     )
-    measured = await AnalystLoop(towns, []).run(allow_model=False)
+    measured = await lookup(towns)
     claim = _claims(measured)["three_pointers_made:percentage"][0]
     assert claim["value"] == 0
     assert claim["sample_size"] == 3
@@ -322,7 +308,7 @@ async def test_compound_average_points_and_margin_deliver_both_measures(db_sessi
     claims = _claims(result)
     assert claims["points_per_game"][0]["value"] == pytest.approx(315 / 3, abs=0.05)
     assert claims["margin_per_game"][0]["value"] == pytest.approx(25 / 3, abs=0.05)
-    assert "points" in result["answer"] and "margin" in result["answer"]
+    assert "points" in text(result) and "margin" in text(result)
 
 
 async def test_operation_implied_total_cannot_become_a_model_average(db_session):
@@ -401,7 +387,7 @@ async def test_result_split_keeps_three_point_specificity(db_session):
     }
     assert by_result["win"]["value"] == pytest.approx(100 * 17 / 50)
     assert by_result["loss"]["value"] == pytest.approx(100 * 12 / 24)
-    assert result["outcome"] == "answer"
+    assert result.status in {"ok", "incomplete_coverage"}
 
 
 async def test_result_split_margin_keeps_both_outcomes(db_session):
@@ -438,7 +424,7 @@ async def test_every_tied_leader_survives_deterministic_delivery(db_session):
     claims = _claims(result)["assists:leader"]
     assert len(claims) == 8
     assert {claim["value"]["name"] for claim in claims} == set(players)
-    assert result["outcome"] == "answer"
+    assert result.status in {"ok", "incomplete_coverage"}
 
 
 async def test_every_tied_extreme_survives_beyond_thirty(db_session):
@@ -451,8 +437,8 @@ async def test_every_tied_extreme_survives_beyond_thirty(db_session):
     delivered = {game_id for claim in claims for game_id in (claim["game_ids"] or [])}
     assert delivered == {game.id for game in tools.games}
     assert len(claims) == 31
-    assert result["outcome"] == "answer"
-    assert tools.release.season in result["answer"] or "points" in result["answer"]
+    assert result.status in {"ok", "incomplete_coverage"}
+    assert tools.release.season in text(result) or "points" in text(result)
 
 
 async def test_first_quarter_scoring_uses_period_rows(db_session):
@@ -484,5 +470,5 @@ async def test_zero_turnover_ratio_is_undefined_coverage(db_session):
         db_session, release, "What was Jalen Brunson's assist-to-turnover ratio?"
     )
     assert "assist_turnover_ratio" not in _claims(result)
-    assert "undefined" in result["answer"].lower()
-    assert result["refused"] is False
+    assert "undefined" in text(result).lower()
+    assert result.status != "unsupported_metric_or_scope"

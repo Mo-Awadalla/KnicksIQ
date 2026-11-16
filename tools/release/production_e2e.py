@@ -30,8 +30,11 @@ import tempfile
 import time
 import traceback
 import uuid
+from collections.abc import Callable
 from datetime import UTC, datetime
 from pathlib import Path
+from types import FrameType
+from typing import Any
 from urllib.parse import urlsplit
 
 import httpx
@@ -156,9 +159,6 @@ def scenario_environment(
         "RAG_QDRANT_ENABLED": "false",
         "RAG_HYBRID_ENABLED": "false",
         "RAG_LLM_PLANNER_ENABLED": "false",
-        "ANALYST_EVIDENCE_LOOP_ENABLED": "true",
-        "ANALYSIS_ANSWER_MODE": "shadow",
-        "ANALYSIS_SHADOW_SAMPLE_RATE": "0",
         "IP_HASH_SECRET": f"isolated-e2e-{identity}",
         "PUBLIC_WEB_ORIGIN": web_url,
         "CORS_ORIGINS": json.dumps([web_url]),
@@ -217,7 +217,10 @@ def local_client(headers: dict[str, str] | None = None) -> httpx.Client:
     return httpx.Client(timeout=2, headers=headers, trust_env=False)
 
 
-def install_handlers(state: dict) -> dict[int, object]:
+SignalHandler = Callable[[int, FrameType | None], Any] | int | None
+
+
+def install_handlers(state: dict) -> dict[int, SignalHandler]:
     def handle(signum, _frame):
         if state["cleaning"]:
             return
@@ -226,7 +229,7 @@ def install_handlers(state: dict) -> dict[int, object]:
     return {signum: signal.signal(signum, handle) for signum in (signal.SIGTERM, signal.SIGINT)}
 
 
-def restore_handlers(previous: dict[int, object]) -> None:
+def restore_handlers(previous: dict[int, SignalHandler]) -> None:
     for signum, handler in previous.items():
         signal.signal(signum, handler)
 
@@ -385,10 +388,8 @@ def run_scenario(
     with (output / "api.log").open("w") as log:
         state["api"] = subprocess.Popen(
             [
-                "uv",
-                "run",
-                "--frozen",
-                "--all-packages",
+                sys.executable,
+                "-m",
                 "uvicorn",
                 "app.main:app",
                 "--host",
@@ -464,6 +465,10 @@ def run_scenario(
                 BUNDLE,
                 "--sha256",
                 BUNDLE_SHA256,
+                "--dsn",
+                environment["DB_URL"],
+                "--api-pid",
+                str(state["api"].pid),
                 "--output",
                 str(output / "api-smoke.json"),
             ],

@@ -30,7 +30,7 @@ class ReadyServer(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(body)
 
-    def log_message(self, *args: Any) -> None:
+    def log_message(self, format: str, *args: Any) -> None:
         return
 
 
@@ -102,6 +102,7 @@ def scenario_runner_readiness_ignores_proxy(directory: Path) -> list[str]:
     child = subprocess.Popen(
         [sys.executable, "-c", "import time; time.sleep(30)"],
         start_new_session=True,
+        text=True,
     )
     previous = {
         key: os.environ.get(key)
@@ -144,7 +145,9 @@ def scenario_runner_readiness_rejects_foreign_listener(directory: Path) -> list[
     server = ThreadingHTTPServer(("127.0.0.1", 0), ReadyServer)
     thread = threading.Thread(target=server.serve_forever, daemon=True)
     thread.start()
-    child = subprocess.Popen([sys.executable, "-c", "raise SystemExit(3)"], start_new_session=True)
+    child = subprocess.Popen(
+        [sys.executable, "-c", "raise SystemExit(3)"], start_new_session=True, text=True
+    )
     child.wait(timeout=10)
     try:
         try:
@@ -171,6 +174,7 @@ def scenario_runner_cleanup_escalates(directory: Path) -> list[str]:
             "import signal, time; signal.signal(signal.SIGTERM, signal.SIG_IGN); time.sleep(60)",
         ],
         start_new_session=True,
+        text=True,
     )
     time.sleep(0.3)
     started = time.monotonic()

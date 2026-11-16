@@ -45,7 +45,7 @@ def serve(port, hits):
             self.end_headers()
             self.wfile.write(b"ok")
 
-        def log_message(self, *args):
+        def log_message(self, format: str, *args):
             pass
 
     ThreadingHTTPServer(("127.0.0.1", port), Handler).serve_forever()
@@ -276,7 +276,7 @@ class Probe:
                 self.end_headers()
                 self.wfile.write(b"stale")
 
-            def log_message(self, *args):
+            def log_message(self, format: str, *args):
                 pass
 
         server = ThreadingHTTPServer(("127.0.0.1", port), Handler)

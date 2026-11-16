@@ -1,19 +1,19 @@
 # KnicksIQ
 
-KnicksIQ is an anonymous, unofficial archive for the Knicks’ 2025–26 regular season and
-postseason. It answers supported factual questions from immutable game, play-by-play, period,
-team, and player data with claim-level citations. Unsupported tactical or out-of-archive claims
-are declined rather than invented.
+KnicksIQ is an anonymous, unofficial place to talk about the Knicks' 2025-26 season.
+One chat supports takes, disagreements, relevant basketball history, hypotheticals and quizzes.
+Replies stream from the model. Read-only tools check exact season facts quietly;
+game records, reports, receipts and source panels are not public browsing surfaces.
 
 ## Production shape
 
-- `apps/web`: anonymous React archive and analyst experience.
-- `apps/api`: read-only production FastAPI service.
+- `apps/web`: one fixed-light React chat built with Vercel UI SDK.
+- `apps/api`: conversation streaming, recovery, health and private read-only factual tools.
 - Neon Free Postgres: authoritative factual data and active release metadata.
 - Render Free Key Value: ephemeral shared rate limits, response caching, and AI budget state. A lost monthly ledger restarts at zero under a recorded owner decision. The `$2` application cutoff applies while that ledger survives. Repeated losses can reopen spending, so a verified provider-side limit must bound total monthly charges.
 - Qdrant Cloud provides optional hybrid retrieval; Postgres/lexical retrieval remains authoritative when it is unavailable.
-- OpenRouter: optional phrasing of already-computed facts.
-- Sentry: scrubbed exception, trace, alert, and uptime monitoring.
+- OpenRouter: conversational replies and bounded internal fact lookup. Missing credentials produce honest unavailability, not a mock or stat-only answer.
+- Sentry: optional scrubbed monitoring. The browser does not enable session replay or performance tracing.
 
 Workers, ingestion, report generation, MCP, admin routes, Swagger, and runtime data mutations are
 not part of the production deployment. NBA ingestion and release construction are offline tools.
@@ -156,10 +156,13 @@ Frontend:
 cd apps/web
 pnpm lint
 pnpm format:check
-pnpm build
+VITE_API_URL=/api pnpm build
 pnpm test
-pnpm e2e
 ```
+
+See [frontend verification](apps/web/README.md) for the separate telemetry-enabled build
+and actual SDK envelope-redaction probe. Scripted upstream tests prove delivery and recovery,
+not the real model's voice or answer quality.
 
 Production images:
 
@@ -194,16 +197,25 @@ Check a running local production-profile API against the approved archive:
 ```bash
 uv run --package knicksiq-api python tools/release/readiness.py \
   --base-url http://127.0.0.1:8000 --local-https-proxy \
+  --dsn "$LOCAL_API_DB_URL" --api-pid "$LOCAL_API_PID" \
   --bundle release-artifacts/2025-26/reliability-approved-20260928.json.gz \
   --sha256 549af2edd0d195eff60bb318bdc58a8c8e217ea0359c0684d492d5292dcb595b \
   --output release-artifacts/readiness.json
 ```
 
 Use empty provider keys, disabled Qdrant, and a dedicated Redis database.
-The command compares every game score and the main text of all approved reports.
-It checks a box score, cited season record, session replay and conflicts,
-private routes, and security headers. It never approves or deploys a release.
-Omit `--local-https-proxy` when an actual local proxy supplies the HTTPS header.
+Set `LOCAL_API_DB_URL` to the explicit loopback PostgreSQL `DB_URL` supplied when
+launching the API. Set `LOCAL_API_PID` to the worker PID, not a launcher or proxy.
+The verifier requires a direct loopback listener and checks that worker's database
+configuration. The same local user must be able to inspect it through `lsof` and
+`ps` or `/proc`. No `.env` database fallback or stored mapping report is accepted.
+It compares every canonical game field, player identity, box score, period score,
+and event through a PostgreSQL-enforced read-only snapshot using the private runtime
+mapping authority. The bundle hash and sole active release must agree.
+It also checks release health, private routes, and security headers. It does not
+check report text, provider answers, session behavior, or deployment readiness.
+Use `--local-https-proxy` only with this direct local origin to supply the HTTPS
+header. It does not support inspecting an API behind a separate proxy process.
 
 Local embedding and reranking dependencies are an explicit offline extra:
 

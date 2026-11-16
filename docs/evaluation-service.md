@@ -34,16 +34,18 @@ A new output directory or restarted process cannot reset either limit.
 Shutdown seals and attests a claimed ledger even if collection fails or is interrupted.
 Exhausted or unverifiable runs fail instead of publishing successful service evidence.
 
-A signed live challenge must verify before the first analyst POST.
-Every response then proves its own exact request, response and HTTP status.
+A signed live challenge must verify before the first chat POST.
+Each successful stream forwards every chunk without buffering or delay. After settlement,
+the evaluation wrapper appends an `evaluation_proof` SSE event. It binds the exact command,
+HTTP status and normalized reply text/status/reason/revision/snapshot/delta count.
+It does not attest timing or individual network chunk boundaries. JSON errors retain header proofs.
 The v5 run configuration binds the candidate identity, Ed25519 public key and spend profile.
 The private seed travels only in candidate memory and `EVAL_RUN_PROOF_KEY`.
 Never publish that seed or operational configs containing private filesystem paths.
 Offline scoring re-verifies every row from the bound public key.
 Missing, changed, replayed or foreign proofs receive no metric credit.
 
-Logical model stages and upstream attempts are distinct and are never compared as equals
-or ordered counts. A loopback fake proves boundary behavior only.
+Public chat exposes no model stages. Upstream attempts come only from private ledger attestation. A loopback fake proves boundary behavior only.
 Its `local_fake` scope always blocks provider-quality promotion.
 
 ```bash
@@ -54,3 +56,5 @@ These adversarial scenarios are synthetic integrity checks, not release measurem
 The 50 original semantic cases receive route-aware behavior scoring.
 The separate narrative corpus requires source-first document labels and actual hybrid traces.
 Owner approval and a successful funded provider run remain separate release requirements.
+
+The public-citation gate is inapplicable pending owner-approved rubric migration, not passing.

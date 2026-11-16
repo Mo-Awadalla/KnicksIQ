@@ -20,8 +20,13 @@ from eval_scenario_fixtures import (
     synthetic_questions,
     write_dataset,
 )
-from eval_scenario_records import baseline_observations, disposition_response, observation
-from eval_scenario_support import digest, expect, metric
+from eval_scenario_records import (
+    baseline_observations,
+    bind_fixture_response,
+    disposition_response,
+    observation,
+)
+from eval_scenario_support import expect, metric
 
 
 def scenario_wrong_disposition_review_is_measured(directory: Path) -> list[str]:
@@ -123,7 +128,7 @@ def scenario_legacy_semantic_behavior_is_not_recall(directory: Path) -> list[str
     rows = baseline_observations(synthetic_questions())
     for row in rows:
         row["response"]["tool_calls"] = []
-        row["response_sha256"] = digest(row["response"])
+        bind_fixture_response(row)
     reviews = dump(
         directory / "reviews.json",
         review_payload(

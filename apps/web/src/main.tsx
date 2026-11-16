@@ -1,123 +1,43 @@
-import { StrictMode } from 'react'
 import ReactDOM from 'react-dom/client'
-import { AxiosError } from 'axios'
-import {
-  QueryCache,
-  QueryClient,
-  QueryClientProvider,
-} from '@tanstack/react-query'
-import { RouterProvider, createRouter } from '@tanstack/react-router'
+
 import * as Sentry from '@sentry/react'
-import { toast } from 'sonner'
-import { handleServerError } from '@/lib/handle-server-error'
-import { scrubTelemetryEvent } from '@/lib/telemetry'
-import { DirectionProvider } from './context/direction-provider'
-import { FontProvider } from './context/font-provider'
-// Generated Routes
-import { routeTree } from './routeTree.gen'
-// Styles
+import { createAgent } from '@ui-sdk/react/agent'
+
+import { Chat } from './chat/chat'
+import { Conversation } from './chat/controller'
+import { scrubTelemetryEvent } from './lib/telemetry'
 import './styles/index.css'
+
+declare global {
+  interface Window {
+    knicksUI: typeof agent
+  }
+}
+const agent = createAgent()
+window.knicksUI = agent
 
 if (import.meta.env.VITE_SENTRY_DSN) {
   Sentry.init({
     dsn: import.meta.env.VITE_SENTRY_DSN,
-    environment: import.meta.env.MODE,
     sendDefaultPii: false,
-    tracesSampleRate: 0.05,
-    beforeBreadcrumb(breadcrumb) {
-      if (breadcrumb.category === 'fetch' || breadcrumb.category === 'xhr') {
-        return null
-      }
-      delete breadcrumb.data
-      return breadcrumb
-    },
+    defaultIntegrations: false,
+    integrations: [Sentry.globalHandlersIntegration()],
     beforeSend: scrubTelemetryEvent,
-    beforeSendTransaction: scrubTelemetryEvent,
+    beforeSendTransaction: () => null,
+    beforeBreadcrumb: () => null,
+    tracesSampleRate: 0,
+    attachStacktrace: false,
+    normalizeDepth: 2,
   })
 }
 
+if (
+  window.location.pathname !== '/' ||
+  window.location.search ||
+  window.location.hash
+)
+  window.history.replaceState(null, '', '/')
 document.documentElement.classList.remove('dark', 'light')
-document
-  .querySelector("meta[name='theme-color']")
-  ?.setAttribute('content', '#0072CE')
-
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      retry: (failureCount, error) => {
-        // eslint-disable-next-line no-console
-        if (import.meta.env.DEV) console.log({ failureCount, error })
-
-        if (failureCount >= 0 && import.meta.env.DEV) return false
-        if (failureCount >= 1 && import.meta.env.PROD) return false
-
-        return !(
-          error instanceof AxiosError &&
-          error.response &&
-          error.response.status >= 400 &&
-          error.response.status < 500
-        )
-      },
-      refetchOnWindowFocus: import.meta.env.PROD,
-      staleTime: 10 * 1000, // 10s
-    },
-    mutations: {
-      onError: (error) => {
-        handleServerError(error)
-
-        if (error instanceof AxiosError) {
-          if (error.response?.status === 304) {
-            toast.error('Content not modified!')
-          }
-        }
-      },
-    },
-  },
-  queryCache: new QueryCache({
-    onError: (error) => {
-      if (error instanceof AxiosError) {
-        if (error.response?.status === 401) {
-          toast.error('Unauthorized request.')
-        }
-        if (error.response?.status === 500) {
-          toast.error('Internal Server Error!')
-        }
-        if (error.response?.status === 403) {
-          // router.navigate("/forbidden", { replace: true });
-        }
-      }
-    },
-  }),
-})
-
-// Create a new router instance
-const router = createRouter({
-  routeTree,
-  context: { queryClient },
-  defaultPreload: 'intent',
-  defaultPreloadStaleTime: 0,
-})
-
-// Register the router instance for type safety
-declare module '@tanstack/react-router' {
-  interface Register {
-    router: typeof router
-  }
-}
-
-// Render the app
-const rootElement = document.getElementById('root')!
-if (!rootElement.innerHTML) {
-  const root = ReactDOM.createRoot(rootElement)
-  root.render(
-    <StrictMode>
-      <QueryClientProvider client={queryClient}>
-        <FontProvider>
-          <DirectionProvider>
-            <RouterProvider router={router} />
-          </DirectionProvider>
-        </FontProvider>
-      </QueryClientProvider>
-    </StrictMode>
-  )
-}
+const conversation = new Conversation()
+const root = document.getElementById('root')
+if (root) ReactDOM.createRoot(root).render(<Chat conversation={conversation} />)

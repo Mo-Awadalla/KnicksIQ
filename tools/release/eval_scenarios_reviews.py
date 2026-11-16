@@ -19,7 +19,7 @@ from eval_scenario_records import (
     disposition_response,
     observation,
 )
-from eval_scenario_support import digest, expect, failures, metric
+from eval_scenario_support import expect, failures, metric
 
 
 def scenario_disposition_separation(directory: Path) -> list[str]:
@@ -29,19 +29,35 @@ def scenario_disposition_separation(directory: Path) -> list[str]:
     observations = baseline_observations(synthetic_questions())
     observations.append(observation("clarify-001", disposition_response("answer")))
     observations = [row for index, row in enumerate(observations) if index != 58]
-    refused = [row for row in observations if row["case_id"] == "refuse-001"][0]
-    refused["response"] = disposition_response("clarify")
-    refused["response_sha256"] = digest(refused["response"])
-    missing = [row for row in observations if row["case_id"] == "clarify-002"][0]
-    missing["response"] = disposition_response("clarify")
-    missing["response"].pop("outcome")
-    missing["response_sha256"] = digest(missing["response"])
+    observations = [
+        observation("refuse-001", disposition_response("clarify"))
+        if row["case_id"] == "refuse-001"
+        else row
+        for row in observations
+    ]
+    payload = review_payload(
+        observations,
+        questions_path=questions_path,
+        expectations_path=expectations_path,
+        mapping_path=mapping,
+    )
+    for decision in payload["cases"]:
+        if decision["case_id"] == "clarify-001":
+            decision["disposition"] = "answer"
+            decision["paraphrase"] = "unsupported"
+        if decision["case_id"] == "refuse-001":
+            decision["disposition"] = "clarify"
+    payload["cases"] = [
+        decision for decision in payload["cases"] if decision["case_id"] != "clarify-002"
+    ]
+    reviews = dump(directory / "review-decisions.json", payload)
     result, report = run_score(
         directory,
         questions=questions_path,
         expectations=expectations_path,
         mapping=mapping,
         observations=observations,
+        reviews=reviews,
     )
     expect(result.returncode == 0, f"cli failed: {result.stderr[-800:]}", problems)
     if report is None:
@@ -56,7 +72,10 @@ def scenario_disposition_separation(directory: Path) -> list[str]:
         "clarifying instead of refusing must fail",
         problems,
     )
-    expect("outcome_missing" in failures(report, "clarify-002"), "missing outcome fails", problems)
+    missing = next(case for case in report["cases"] if case["id"] == "clarify-002")
+    expect(
+        missing["reviewed"] is False, "missing bound review earns no disposition credit", problems
+    )
     expect(
         metric(report, "clarification_accuracy")["denominator"] == 53,
         "clarification denominator 53",

@@ -369,7 +369,7 @@ def review_payload(
             for index in indices:
                 assertions.append(
                     {
-                        "text": response["answer"],
+                        "text": response["text"],
                         "decision": "supported",
                         "canonical_fact_indices": [index],
                         "evidence": "scenario fixture evidence",

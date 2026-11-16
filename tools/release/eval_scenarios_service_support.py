@@ -38,12 +38,6 @@ from eval_scenarios_budget_support import proof_key_for
 
 
 class StageCandidate(BaseHTTPRequestHandler):
-    """A loopback candidate stand-in that reports one model stage per case.
-
-    Bound to a run, it also answers the preflight challenge and signs every
-    response, so a service collection can be exercised without a provider.
-    """
-
     signer: Any = None
 
     def do_POST(self) -> None:  # noqa: N802
@@ -53,23 +47,45 @@ class StageCandidate(BaseHTTPRequestHandler):
             self._preflight(body)
             return
         self.server.requests.append(body)  # type: ignore[attr-defined]
-        payload = {
-            "answer": "Synthetic.",
-            "citations": [],
-            "tool_calls": [{"stage": "orchestrate", "tool": "llm_orchestrate"}],
-            "outcome": "clarify",
-            "request_id": str(self.headers.get("X-Request-ID") or ""),
+        from app.evaluation.chat_stream import response_from_events
+
+        request_id = body["request_id"]
+        revision = body["expected_revision"] + 1
+        snapshot = {
+            "revision": revision,
+            "exchanges": [
+                {
+                    "id": request_id,
+                    "message": body["message"],
+                    "reply": {"id": request_id, "text": "Synthetic.", "status": "complete"},
+                }
+            ],
         }
-        proof = None
+        events = [
+            (
+                "accepted",
+                {"request_id": request_id, "exchange_id": request_id, "revision": revision - 1},
+            ),
+            ("delta", {"request_id": request_id, "text": "Synthetic."}),
+            ("settled", {"request_id": request_id, "snapshot": snapshot}),
+        ]
         if self.signer is not None:
             proof = self.signer.sign(
                 kind="response",
                 nonce=str(self.headers.get(CHALLENGE_HEADER) or ""),
                 request_sha256=canonical_digest(body),
                 http_status=200,
-                response_sha256=canonical_digest(payload),
+                response_sha256=canonical_digest(response_from_events(events)),
             )
-        self._reply(200, payload, proof)
+            events.append(("evaluation_proof", proof.as_dict()))
+        encoded = "".join(
+            f"event: {name}\ndata: {json.dumps(data)}\n\n" for name, data in events
+        ).encode()
+        self.send_response(200)
+        self.send_header("Content-Type", "text/event-stream")
+        self.send_header("Content-Length", str(len(encoded)))
+        self.end_headers()
+        self.wfile.write(encoded)
 
     def _preflight(self, challenge: dict[str, Any]) -> None:
         signer = self.signer
@@ -104,7 +120,7 @@ class StageCandidate(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(encoded)
 
-    def log_message(self, *args: Any) -> None:
+    def log_message(self, format: str, *args: Any) -> None:
         return
 
 

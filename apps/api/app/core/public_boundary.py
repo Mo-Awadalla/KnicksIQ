@@ -33,8 +33,16 @@ _SPAN_SENSITIVE_KEYS = frozenset(
         "graphql.variables",
         "prompt",
         "question",
+        "message",
+        "messages",
+        "text",
+        "content",
+        "arguments",
+        "tool_calls",
         "body",
         "params",
+        "x-chat-token",
+        "http.request.header.x-chat-token",
     }
 )
 
@@ -273,7 +281,7 @@ def _scrub_span(span: Any) -> None:
     data = span.get("data")
     if isinstance(data, dict):
         for key in list(data):
-            if key in _SPAN_SENSITIVE_KEYS or key.endswith(("_query", "_url", "_body")):
+            if key.lower() in _SPAN_SENSITIVE_KEYS or key.endswith(("_query", "_url", "_body")):
                 data.pop(key, None)
             elif key.endswith("target") and isinstance(data[key], str):
                 data[key] = _without_query(data[key])

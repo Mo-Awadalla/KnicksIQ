@@ -102,6 +102,10 @@ def loopback_dsn(value: str) -> URL:
         raise VerificationError("only an explicit PostgreSQL DSN is supported")
     if (url.host or "").lower() not in LOOPBACK_HOSTS:
         raise VerificationError(f"refusing non-loopback database host {url.host!r}")
+    if not url.database or url.query:
+        raise VerificationError(
+            "an explicit database without connection query overrides is required"
+        )
     return url.set(drivername="postgresql+asyncpg")
 
 

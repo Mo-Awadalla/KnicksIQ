@@ -90,11 +90,3 @@ async def rag_health() -> dict[str, object]:
         "qdrant_enabled": settings.rag_qdrant_enabled,
         "qdrant_healthy": healthy,
     }
-
-
-@router.get("/")
-async def root() -> dict[str, str]:
-    return {
-        "name": "knicksiq-api",
-        "description": "Unofficial Knicks 2025-26 archive",
-    }

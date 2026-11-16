@@ -1,14 +1,15 @@
 """Synthetic runtime responses and the observations that record them.
 
-Every response carries the identity a real candidate emits: its own request id
-matching the recorded sent id, a backend-style evidence registry for its receipts,
-and typed claims bound to a release. Nothing here is a measurement.
+The final chat snapshot carries command identity and reply text. Private typed
+calculation audits carry their own source rows outside the public response.
+These are explicit synthetic fixtures, not service or human-review evidence.
 """
 
 from __future__ import annotations
 
 import hashlib
 import uuid
+from copy import deepcopy
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
@@ -202,10 +203,14 @@ def answer_response(
             if not reference.startswith("calculation:")
         ]
     response: dict[str, Any] = {
-        "answer": text if text is not None else " ".join(item["statement"] for item in delivered),
-        "citations": citations,
+        "text": text if text is not None else " ".join(item["statement"] for item in delivered),
+        "calculation_audit": {
+            "schema": "calculation-audit-v1",
+            "season": "2025-26",
+            "citations": citations,
+            "evidence": registry,
+        },
         "tool_calls": [trace_entry if trace_entry is not None else trace(game)],
-        "evidence": registry,
         "route": "factual_fallback",
         "refused": False,
         "degraded": True,
@@ -222,10 +227,8 @@ def answer_response(
 
 def disposition_response(outcome: str) -> dict[str, Any]:
     return {
-        "answer": f"Synthetic {outcome}.",
-        "citations": [],
+        "text": f"Synthetic {outcome}.",
         "tool_calls": [],
-        "evidence": [],
         "route": None,
         "refused": outcome == "refuse",
         "degraded": False,
@@ -241,24 +244,32 @@ def observation(case_id: str, response: dict[str, Any], *, latency_ms: int = 20)
     """One recorded request/response pair with a consistent request identity."""
     from eval_scenario_fixtures import question_for
 
-    turn_id = uuid.uuid4().hex
+    response = deepcopy(response)
     request_id = uuid.uuid4().hex
     response["request_id"] = request_id
     for entry in response.get("tool_calls") or []:
         if isinstance(entry, dict) and entry.get("kind") == "retrieval_trace":
             entry["request_id"] = request_id
     response.pop("response_sha256", None)
-    return {
+    private = response.pop("calculation_audit", None)
+    response["snapshot"] = {
+        "revision": 1,
+        "exchanges": [
+            {
+                "message": question_for(case_id),
+                "reply": {"id": request_id, "text": response["text"], "status": "complete"},
+            }
+        ],
+    }
+    if private is not None:
+        private["response_sha256"] = digest(response)
+    row = {
         "case_id": case_id,
         "request_id": request_id,
-        "turn_id": turn_id,
-        "session_token": None,
-        "expected_revision": 0,
         "request": {
-            "question": question_for(case_id),
-            "season": "2025-26",
-            "context": [],
-            "turn_id": turn_id,
+            "kind": "message",
+            "message": question_for(case_id),
+            "request_id": request_id,
             "expected_revision": 0,
         },
         "response": response,
@@ -267,6 +278,16 @@ def observation(case_id: str, response: dict[str, Any], *, latency_ms: int = 20)
         "started_at": datetime.now(UTC).isoformat(),
         "response_sha256": digest(response),
     }
+    if private is not None:
+        row["calculation_audit"] = private
+    return row
+
+
+def bind_fixture_response(row: dict[str, Any]) -> None:
+    """Explicitly bind a changed synthetic response, never a collected service record."""
+    row["response_sha256"] = digest(row["response"])
+    if "calculation_audit" in row:
+        row["calculation_audit"]["response_sha256"] = row["response_sha256"]
 
 
 def baseline_observations(questions: list[dict[str, Any]]) -> list[dict[str, Any]]:

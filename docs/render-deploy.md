@@ -24,12 +24,13 @@ Save the command and deploy only after the normal release approval.
 - Qdrant Cloud: external release-versioned vector store supplied through
   `QDRANT_URL` and `QDRANT_API_KEY`.
 
-Production starts in sampled LLM shadow mode with Qdrant Cloud Inference and
-hybrid retrieval enabled. Qdrant, Redis, OpenRouter, and Sentry remain optional
-for availability: deterministic Postgres-backed answers remain available when
-they fail. The free Key Value instance is intentionally non-persistent because
-every stored rate-limit, cache, and budget entry is reconstructible runtime
-state. A lost monthly budget ledger restarts at zero under a recorded owner
+Production serves the season conversation with Qdrant Cloud Inference and
+hybrid retrieval enabled for private fact lookups. Redis holds conversation
+records (24 hour retention), owner leases, rate limits and the budget ledger;
+without Redis the chat is unavailable. Without OpenRouter replies settle
+interrupted instead of falling back to a mock. The free Key Value instance is
+intentionally non-persistent: losing it loses current conversations and resets
+rate-limit and budget state. A lost monthly budget ledger restarts at zero under a recorded owner
 decision. The `$2` application cutoff applies while that ledger survives.
 Repeated restarts or LRU evictions can reopen spending within the same month.
 A separately verified provider-side limit must bound total monthly charges.
@@ -71,14 +72,14 @@ See `docs/production-runbook.md`.
    `knicksiq-build-rag-index --season 2025-26 --data-version <version>
    --reset-qdrant`. Validate counts and Recall@5 before promoting its aliases.
 5. Activate the matching Postgres release and Qdrant aliases.
-6. Manually deploy the immutable API and web artifacts in `shadow` mode.
+6. Manually deploy the immutable API and web artifacts.
 7. Render uses `GET /health/live` for deploy health checks so the first deploy
    can complete before release data is loaded. That probe is liveness only:
    before go-live, require `GET /health/ready` to return 200 with the expected data
    version, and require the container to report healthy from inside the container
-   (`docker exec <container> python -m app.api.health_probe`). Run one archive and
-   one deterministic analyst synthetic before go-live. Promote to `llm_primary`
-   only after the shadow gates in `docs/evaluation.md` pass.
+   (`docker exec <container> python -m app.api.health_probe`). Real-provider chat
+   acceptance needs its own bounded owner approval; the release smoke never sends
+   a paid question.
 
 Production redirects plaintext HTTP to HTTPS. Confirm the Render edge's
 `X-Forwarded-Proto` reaches the container and that `request.client.host` resolves to
@@ -103,9 +104,9 @@ Set `DB_URL` to the Neon direct connection string in the API dashboard, then
 delete the old `knicksiq-postgres` resource and downgrade `knicksiq-api` to Free
 to stop paid compute charges.
 
-Production exposes only the public read endpoints and `POST /analysis/query`.
-Swagger, ingestion, job, report-generation, deletion, and run-detection routes
-are excluded from the production router. The worker and MCP packages remain
+Production exposes only `GET /health/live`, `GET /health/ready` and the three
+`/chat` routes. Archive reads, Swagger, ingestion, job, report-generation,
+deletion, and run-detection routes are excluded from the production router. The worker and MCP packages remain
 offline/development tools and are not Render services.
 
 See `docs/production-runbook.md` for rollback, restore, dependency-outage,

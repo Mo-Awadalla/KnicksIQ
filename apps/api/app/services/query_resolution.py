@@ -224,16 +224,8 @@ async def resolve_query(
     ):
         # "From January through March" is one calendar interval, not two groupings.
         date_start, date_end = _month_interval(named_months, named_year, games, q, latest_date)
-    elif len(named_months) == 1 and games:
-        named_month = named_months[0]
-        month_dates = [
-            game.game_date
-            for game in games
-            if game.game_date.month == named_month
-            and (named_year is None or game.game_date.year == named_year)
-        ]
-        if month_dates:
-            date_start, date_end = min(month_dates), max(month_dates)
+    elif len(named_months) == 1:
+        date_start, date_end = _month_interval(named_months, named_year, games, q, latest_date)
     if explicit_dates and "since" in q:
         date_end = latest_date
     elif explicit_dates and "before" in q:

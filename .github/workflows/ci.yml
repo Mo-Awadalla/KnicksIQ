@@ -37,6 +37,8 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+      - name: Install real-HTTP fixture Redis
+        run: sudo apt-get update && sudo apt-get install -y redis-server lsof
       - run: uv sync --all-packages --all-extras --dev
       - run: uv run ruff check apps packages migrations
       - run: uv run ruff format --check apps packages migrations
@@ -47,6 +49,22 @@ jobs:
         run: make test-backend
       - name: Provider-free evaluation CLI integrity
         run: make test-evaluation
+      - name: PostgreSQL conversation and release-row E2E
+        env:
+          CHAT_E2E_DATABASE_URL: postgresql+asyncpg://knicksiq:knicksiq@localhost:5432/knicksiq_rehaul_ci
+          READINESS_TEST_DATABASE_URL: postgresql://knicksiq:knicksiq@localhost:5432/knicksiq_rehaul_ci
+        run: |
+          createdb -h localhost -U knicksiq knicksiq_rehaul_ci
+          uv run pytest apps/api/app/tests/test_chat_*http.py apps/api/app/tests/test_readiness_rows.py \
+            --junitxml=release-artifacts/chat-http.xml --maxfail=1
+      - name: Persist conversation HTTP proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: conversation-http-proof
+          path: release-artifacts/chat-http.xml
+          if-no-files-found: ignore
+          retention-days: 7
       - name: Empty database migration and expand-only rollback
         run: |
           uv run alembic upgrade head
@@ -72,7 +90,7 @@ jobs:
             "INSERT INTO games (nba_game_id,season,game_date,home_team_id,away_team_id,home_score,away_score,status,season_type,data_status,release_id) SELECT nba_game_id,season,game_date,home_team_id,away_team_id,home_score,away_score,status,season_type,data_status,(SELECT id FROM dataset_releases WHERE version='migration-test') FROM games WHERE nba_game_id='legacy-game' AND release_id IS NULL"
 
   frontend:
-    # Playwright 1.59.1 does not support Ubuntu 26.04 (ubuntu-latest).
+    # Pin the runner to Playwright 1.59.1's supported native dependencies.
     runs-on: ubuntu-24.04
     defaults:
       run:
@@ -87,16 +105,46 @@ jobs:
           node-version: "24.22.1"
           cache: pnpm
           cache-dependency-path: apps/web/pnpm-lock.yaml
+      - uses: astral-sh/setup-uv@v6
+        with:
+          version: "0.8.6"
+          enable-cache: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install real-stack browser dependencies
+        working-directory: .
+        run: |
+          sudo apt-get update && sudo apt-get install -y redis-server
+          uv sync --frozen --all-packages --all-extras --dev
       - run: pnpm install --frozen-lockfile
       - run: pnpm exec playwright install --with-deps chromium
       - run: pnpm lint
       - run: pnpm format:check
       - run: pnpm build
         env:
-          VITE_API_URL: https://api.knicksiq.win
+          VITE_API_URL: /api
           VITE_PUBLIC_URL: https://www.knicksiq.win
       - run: pnpm test
-      - run: pnpm e2e
+      - name: Enabled browser telemetry redaction
+        env:
+          VITE_API_URL: /api
+          VITE_PUBLIC_URL: https://www.knicksiq.win
+          VITE_SENTRY_DSN: http://public@127.0.0.1:19499/1
+          KNICKSIQ_TELEMETRY_E2E: "1"
+        run: |
+          pnpm build
+          pnpm test:telemetry
+      - name: Persist built-browser proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: conversation-browser-proof
+          path: |
+            .audit/season-chat-rehaul/proof/playwright-results
+            .audit/season-chat-rehaul/proof/playwright-report
+          if-no-files-found: ignore
+          retention-days: 7
 
   containers:
     runs-on: ubuntu-latest

@@ -1,6 +1,6 @@
 """Scope defects that handed back a wider population, a merged ask or a full game.
 
-Each case drives `resolve_query`, `AnalystTools` and `AnalystLoop` against rows whose
+Each case drives `resolve_query`, `AnalystTools` and the private factual boundary against rows whose
 scoped numbers differ from the release-wide ones: five Boston games but two in January and
 two in the playoffs, a five-game window whose allowed total differs from its per-game mean,
 and a pinned game whose minute-level slice is not a full-game box score. A premise counted
@@ -18,8 +18,8 @@ from app.models.box_score import PlayerGameStat
 from app.models.dataset_release import DatasetRelease
 from app.models.game import Game
 from app.models.player import Player
-from app.services.analyst_loop import AnalystLoop
 from app.services.analyst_tools import AnalystTools
+from app.tests.support.factual_queries import grouped_claims, lookup, text
 from sqlalchemy import select
 
 # date, home, away, home_score, away_score, season_type
@@ -110,18 +110,12 @@ async def _run(db_session, question: str, release=None):
     release = release or await _seed_archive(db_session)
     tools = AnalystTools(db_session, release, question, release.season, {})
     await tools.prepare()
-    loop = AnalystLoop(tools, [])
-    loop.request_id = "scope-root-repair"
-    return tools, loop, await loop.run(allow_model=False)
+    result = await lookup(tools)
+    return tools, result, result
 
 
-def _claims(result) -> dict[str, list[dict]]:
-    grouped: dict[str, list[dict]] = {}
-    for citation in result["citations"]:
-        claim = citation["metadata"].get("claim")
-        if claim:
-            grouped.setdefault(claim["metric_id"], []).append(claim)
-    return grouped
+def _claims(result):
+    return grouped_claims(result)
 
 
 def _game_ids(tools: AnalystTools, *days: str) -> list[int]:
@@ -143,7 +137,7 @@ async def test_stated_opponent_count_is_checked_inside_the_named_month(db_sessio
     assert claims["wins"][0]["value"] == 1
     assert claims["losses"][0]["value"] == 1
     assert set(claims["wins"][0]["game_ids"]) == set(_game_ids(tools, *JANUARY_BOSTON))
-    assert result["outcome"] == "answer"
+    assert result.status in {"ok", "incomplete_coverage"}
 
 
 async def test_stated_opponent_count_is_checked_inside_the_named_phase(db_session):
@@ -164,9 +158,9 @@ async def test_stated_opponent_count_still_questions_a_wrong_unscoped_count(db_s
         db_session, "How did the Knicks do in the two games against Boston?"
     )
     assert tools.scope is not None
-    assert result["outcome"] == "clarify" and result["refused"] is False
+    assert result.status == "ambiguous_entity"
     assert _claims(result) == {}
-    assert {item.status for item in loop.results} == {"ambiguous_entity"}
+    assert {result.status} == {"ambiguous_entity"}
     # The question offers the five Boston games the whole release actually holds.
     assert len(tools.scope.clarification_options) == 5
 
@@ -237,10 +231,11 @@ async def test_a_minute_slice_never_becomes_the_full_game_statline(db_session, q
     # The verified game stays anchored even though the slice cannot be answered.
     assert tools.scope.game_ids == _game_ids(tools, "2026-01-22")
     assert tools.scope.requires_clarification is True
-    assert result["outcome"] == "clarify" and result["refused"] is False
+    assert result.status == "no_matching_results"
     assert _claims(result) == {}
-    assert {item.status for item in loop.results} == {"ambiguous_entity"}
-    answer = result["answer"].lower()
+    assert not result.evidence
+    assert result.scope["game_ids"] == _game_ids(tools, "2026-01-22")
+    answer = text(result).lower()
     assert "31" not in answer
 
 
@@ -249,7 +244,7 @@ async def test_a_minute_slice_without_a_pinned_game_asks_for_the_game_and_interv
         db_session, "What did Brunson do in the final two minutes over the last 5 games?"
     )
     assert tools.scope is not None
-    assert result["outcome"] == "clarify" and result["refused"] is False
+    assert result.status == "ambiguous_entity"
     assert _claims(result) == {}
     question = (tools.scope.clarification_question or "").lower()
     assert "game" in question and "interval" in question
@@ -258,7 +253,7 @@ async def test_a_minute_slice_without_a_pinned_game_asks_for_the_game_and_interv
 async def test_run_clarification_asks_for_the_missing_game_and_interval(db_session):
     tools, _, result = await _run(db_session, "What was their biggest scoring run this season?")
     assert tools.scope is not None
-    assert result["outcome"] == "clarify" and result["refused"] is False
+    assert result.status == "ambiguous_entity"
     assert _claims(result) == {}
     question = (tools.scope.clarification_question or "").lower()
     # A definition alone is not enough while the game and interval are unnamed.

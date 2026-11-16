@@ -2,17 +2,17 @@
 
 ## Production system
 
-KnicksIQ serves one immutable Knicks 2025–26 archive. Render hosts a static
-React application and a free, read-only FastAPI service. Neon Free Postgres is
-the authoritative store. Render Free Key Value supplies ephemeral shared rate
-limits, answer caching, and AI budget state. Qdrant Cloud holds release-versioned
-retrieval indexes. OpenRouter plans bounded retrieval and phrases evidence that
-KnicksIQ retrieved or computed. Sentry receives scrubbed errors and low-sample
-traces.
+KnicksIQ is one Knicks 2025–26 season conversation backed by an immutable
+archive. Render hosts a static React chat and a FastAPI service. Neon Free
+Postgres is the authoritative store. Render Free Key Value holds conversation
+records, owner leases, shared rate limits and the application AI budget ledger.
+Qdrant Cloud holds release-versioned retrieval indexes. OpenRouter streams the
+conversational replies. Sentry receives scrubbed errors and low-sample traces.
 
-Postgres and one validated active `dataset_releases` row are required.
-Qdrant, Redis, and OpenRouter are optional at request time. Their failure must
-not prevent deterministic factual answers.
+Postgres and one validated active `dataset_releases` row are required for
+readiness and for exact facts. Opinions and small talk need only Redis and the
+provider. Without Redis the chat is unavailable; without the provider a reply
+settles interrupted rather than falling back to a mock.
 
 ## Immutable release boundary
 
@@ -33,34 +33,18 @@ locking individual candidates alone does not prevent two concurrent active relea
 
 ## Runtime request flow
 
-The web application calls the public API anonymously. Archive endpoints read
-the active release directly from Postgres. `POST /analysis/query` first refuses
-explicit unsupported/live/tactical requests. In `llm_primary`, a schema-bound
-planner selects allowlisted searches and fact tools; the server validates its
-filters and injects the active data version. Qdrant supplies game, box-score,
-report, and possession evidence while Postgres analytics compute canonical
-numeric facts. The answer model emits evidence-linked claims, and the server
-rejects unsupported evidence IDs, entities, or numbers before rendering prose.
+The web application is one chat. It calls `POST /chat/turns`, `GET /chat/current`
+and `POST /chat/cancel` with a per-tab capability in `X-Chat-Token`. Redis holds
+the conversation record and the live owner lease; every transition is an atomic
+script in `app/conversation/store.py`. Each turn streams one real incremental
+provider response through a sentence gate. Exact facts come from a private
+`lookup` tool over the release-pinned calculations and archive retrieval, read
+from Postgres and, when enabled, Qdrant. Opinions and small talk need neither.
+See `docs/conversation.md` for the lifecycle and `docs/api.md` for the contract.
 
-`deterministic` bypasses planning and synthesis. `shadow` returns the
-deterministic response and evaluates a sampled LLM candidate in a background
-task. `llm_primary` returns the validated LLM answer. Any vector, model, Redis
-budget, timeout, parsing, or validation failure returns the deterministic answer
-with `degraded=true`.
-
-Narrative questions always use the release-bound analyst evidence loop, including
-when `ANALYST_EVIDENCE_LOOP_ENABLED` is false. That flag still selects the loop for
-other question types; the legacy deterministic table/player handlers remain.
-The former document/possession narrative response path has been removed.
-Pinned-game narratives cite the game's final score. Quarter and clock-window
-narratives cite only matching release-scoped play-by-play rows, not whole-game
-averages; the receipts do not establish causes.
-Modern turns resolve replay and turn-identity conflicts before archive-domain
-admission. Out-of-domain and missing-data turns use the same session commit
-protocol without running the model; mixed requests retain supported archive portions.
-
-Production routing deliberately excludes ingestion, job enqueue, run
-detection, report creation/deletion, Swagger, and OpenAPI. Workers and MCP are
+Production routing exposes only health probes and the conversation. It
+excludes archive, game, player, team and report reads, ingestion, job enqueue,
+run detection, report creation, Swagger, and OpenAPI. Workers and MCP are
 offline/development packages, not deployed production services.
 
 ## Data model

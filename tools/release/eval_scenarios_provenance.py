@@ -93,7 +93,7 @@ def scenario_calculation_evidence_required(directory: Path) -> list[str]:
         problems,
     )
     expect(
-        metric(report, "citation_receipt_correctness")["status"] == "blocked",
+        metric(report, "citation_receipt_correctness")["status"] == "inapplicable",
         "no citation value is published without content",
         problems,
     )
@@ -413,7 +413,7 @@ def scenario_source_content_verified(directory: Path) -> list[str]:
             problems,
         )
         expect(
-            metric(report, "citation_receipt_correctness")["status"] == "blocked",
+            metric(report, "citation_receipt_correctness")["status"] == "inapplicable",
             "claimed digests never publish a citation value",
             problems,
         )

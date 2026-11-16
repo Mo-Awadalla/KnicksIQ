@@ -75,16 +75,6 @@ services:
         value: "false"
       - key: RAG_LLM_PLANNER_ENABLED
         value: "true"
-      - key: ANALYSIS_ANSWER_MODE
-        value: shadow
-      - key: ANALYST_EVIDENCE_LOOP_ENABLED
-        value: "true"
-      - key: ANALYST_PROVIDER_FORMAT
-        value: json_object
-      - key: ANALYSIS_SHADOW_SAMPLE_RATE
-        value: "0.1"
-      - key: ANALYSIS_PROMPT_VERSION
-        value: v1
 
   - type: web
     name: knicksiq-web

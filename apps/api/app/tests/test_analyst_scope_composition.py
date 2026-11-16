@@ -1,7 +1,7 @@
 """Scope composition: shared constraints, one window authority, and honest anchors.
 
-Each case drives the public analyst seam (`resolve_query`, `AnalystTools`, `AnalystLoop`)
-against a fixture with unequal home/away groups, Boston games inside and outside January,
+Each case drives `resolve_query`, `AnalystTools` and the private factual boundary
+against unequal home/away groups, Boston games inside and outside January,
 a named-month interval that spans a missing month, and a player who has a DNP in the most
 recent team game. A scope that replaces shared filters with the split axis, materializes a
 window into game IDs before the calculation, truncates appearances before removing DNPs,
@@ -17,8 +17,8 @@ from app.models.box_score import PlayerGameStat
 from app.models.dataset_release import DatasetRelease
 from app.models.game import Game
 from app.models.player import Player
-from app.services.analyst_loop import AnalystLoop
 from app.services.analyst_tools import AnalystTools
+from app.tests.support.factual_queries import grouped_claims, lookup
 from sqlalchemy import select
 
 # date, home, away, home_score, away_score, season_type
@@ -143,18 +143,12 @@ async def _run(db_session, question: str, state: dict | None = None, release=Non
     release = release or await _seed_archive(db_session)
     tools = AnalystTools(db_session, release, question, release.season, state or {})
     await tools.prepare()
-    loop = AnalystLoop(tools, [])
-    loop.request_id = "scope-composition-test"
-    return tools, loop, await loop.run(allow_model=False)
+    result = await lookup(tools)
+    return tools, result, result
 
 
-def _claims(result) -> dict[str, list]:
-    grouped: dict[str, list] = {}
-    for citation in result["citations"]:
-        claim = citation["metadata"].get("claim")
-        if claim:
-            grouped.setdefault(claim["metric_id"], []).append(claim)
-    return grouped
+def _claims(result):
+    return grouped_claims(result)
 
 
 def _game_ids(tools: AnalystTools, *days: str) -> list[int]:
@@ -353,9 +347,9 @@ async def test_named_months_without_a_comparison_ask_clarify(db_session):
     assert scope.comparison is None
     assert scope.requires_clarification is True
     assert scope.clarification_reason == "ambiguous_interval"
-    assert result["outcome"] == "clarify" and result["refused"] is False
+    assert result.status == "ambiguous_entity"
     assert _claims(result) == {}
-    assert {item.status for item in loop.results} == {"ambiguous_entity"}
+    assert {result.status} == {"ambiguous_entity"}
 
 
 async def test_explicit_year_is_honoured_for_a_named_month(db_session):
@@ -387,9 +381,9 @@ async def test_a_year_outside_the_release_asks_instead_of_answering(db_session):
     assert scope.requires_clarification is True
     assert scope.clarification_reason == "outside_archive"
     assert "2024" in (scope.clarification_question or "")
-    assert result["outcome"] == "clarify" and result["refused"] is False
+    assert result.status == "ambiguous_entity"
     assert _claims(result) == {}
-    assert {item.status for item in loop.results} == {"ambiguous_entity"}
+    assert {result.status} == {"ambiguous_entity"}
 
 
 async def test_explicit_new_interval_clears_the_previous_game_anchor(db_session):
@@ -441,6 +435,6 @@ async def test_previous_release_anchor_is_not_inherited(db_session):
     assert scope is not None
     assert scope.game_ids == []
     assert scope.clarification_reason == "missing_reference"
-    assert result["outcome"] == "clarify" and result["refused"] is False
+    assert result.status == "ambiguous_entity"
     assert _claims(result) == {}
-    assert {item.status for item in loop.results} == {"ambiguous_entity"}
+    assert {result.status} == {"ambiguous_entity"}

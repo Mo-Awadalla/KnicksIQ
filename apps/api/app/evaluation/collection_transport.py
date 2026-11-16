@@ -14,6 +14,7 @@ transport refusal and a run-level refusal reach the caller as the same error.
 from __future__ import annotations
 
 import json
+import secrets
 import time
 import urllib.error
 import urllib.request
@@ -29,6 +30,7 @@ from app.evaluation.candidate_proof import (
     ResponseProof,
     canonical_digest,
 )
+from app.evaluation.chat_stream import frame, response_from_events
 from app.evaluation.labels import ExpectationCase
 from app.evaluation.provider_guard import is_loopback_host
 
@@ -66,10 +68,9 @@ def validate_base_url(base_url: str) -> str:
 def build_request(case: ExpectationCase, *, season: str) -> dict[str, Any]:
     """Exactly the fields the public request model accepts, and nothing imagined."""
     return {
-        "question": case.question,
-        "season": season,
-        "context": list(case.context),
-        "turn_id": uuid.uuid4().hex,
+        "kind": "message",
+        "message": case.question,
+        "request_id": str(uuid.uuid4()),
         "expected_revision": 0,
     }
 
@@ -82,87 +83,97 @@ def collect_case(
     timeout: float,
     challenge: str = "",
 ) -> dict[str, Any]:
-    """Send one case as one turn, recording the exact request and the exact response."""
-    request_body = build_request(case, season=season)
-    payload = json.dumps(request_body).encode()
-    sent_request_id = uuid.uuid4().hex
-    headers = {"Content-Type": "application/json", "X-Request-ID": sent_request_id}
-    if challenge:
-        headers[CHALLENGE_HEADER] = challenge
-    request = urllib.request.Request(
-        f"{base_url.rstrip('/')}/analysis/query",
-        data=payload,
-        headers=headers,
-        method="POST",
-    )
-    started = time.perf_counter()
-    started_at = datetime.now(UTC).isoformat()
-    status = 0
-    body: dict[str, Any] = {}
-    proof_header = ""
-    try:
-        with direct_opener().open(request, timeout=timeout) as response:
-            status = int(response.status)
-            raw = response.read()
-            proof_header = response.headers.get(PROOF_HEADER) or ""
-            body = json.loads(raw or b"{}")
-    except urllib.error.HTTPError as exc:
-        status = int(exc.code)
-        raw = exc.read()
-        proof_header = (exc.headers or {}).get(PROOF_HEADER) or ""
+    validate_base_url(base_url)
+    token, revision, history = secrets.token_urlsafe(32), 0, []
+    started, started_at = time.perf_counter(), datetime.now(UTC).isoformat()
+    commands = [entry["content"] for entry in case.context if entry["role"] == "user"]
+    commands.append(case.question)
+    requests: list[dict[str, Any]] = [
+        {
+            "kind": "message",
+            "request_id": str(uuid.uuid4()),
+            "expected_revision": 0,
+            "message": message,
+        }
+        for message in commands
+    ]
+    request_body = requests[0]
+    status, body, proof = 0, {}, None
+    for request_body in requests:
+        request_body["expected_revision"] = revision
+        headers = {
+            "Content-Type": "application/json",
+            "X-Chat-Token": token,
+            "X-Request-ID": request_body["request_id"],
+        }
+        if challenge:
+            headers[CHALLENGE_HEADER] = challenge
+        request = urllib.request.Request(
+            f"{base_url.rstrip('/')}/chat/turns",
+            data=json.dumps(request_body).encode(),
+            headers=headers,
+            method="POST",
+        )
+        events = []
         try:
-            parsed = json.loads(raw or b"{}")
-        except json.JSONDecodeError:
-            parsed = {"error": {"raw": raw.decode("utf-8", "replace")[:500]}}
-        body = parsed if isinstance(parsed, dict) else {"error": {"non_object_response": True}}
-    except RunnerError:
-        raise
-    except (urllib.error.URLError, TimeoutError) as exc:
-        body = {"error": {"code": "transport_failure", "message": type(exc).__name__}}
-    latency_ms = (time.perf_counter() - started) * 1000
-    if not isinstance(body, dict):
-        body = {"error": {"code": "non_object_response"}}
-    record: dict[str, Any] = {
+            with direct_opener().open(request, timeout=timeout) as response:
+                status, lines = int(response.status), []
+                for raw in response:
+                    line = raw.decode("utf-8").rstrip("\r\n")
+                    if line:
+                        lines.append(line)
+                    else:
+                        event, lines = frame("\n".join(lines)), []
+                        if event:
+                            if event[0] == "evaluation_proof":
+                                proof = event[1]
+                            else:
+                                events.append(event)
+                if lines:
+                    raise ValueError("unterminated chat frame")
+                body = response_from_events(events)
+                revision = body.get("revision", revision)
+        except urllib.error.HTTPError as exc:
+            status, body = int(exc.code), json.loads(exc.read() or b"{}")
+            proof_header = (exc.headers or {}).get(PROOF_HEADER)
+            if proof_header:
+                try:
+                    proof = ResponseProof.from_header(proof_header).as_dict()
+                except ProofError:
+                    proof = None
+            break
+        except RunnerError:
+            raise
+        except (urllib.error.URLError, TimeoutError, ValueError, KeyError, StopIteration) as exc:
+            body = {"error": {"code": "transport_failure", "message": type(exc).__name__}}
+            break
+        history.append({"request": request_body, "response": body})
+        if body.get("status") != "complete":
+            break
+    record = {
         "case_id": case.id,
-        "request_id": sent_request_id,
-        "turn_id": request_body["turn_id"],
-        "session_token": body.get("session_token"),
+        "request_id": request_body["request_id"],
         "expected_revision": request_body["expected_revision"],
         "request": request_body,
+        "context_turns": history[:-1],
+        "declared_context": list(case.context),
         "response": body,
         "http_status": status,
-        "latency_ms": round(latency_ms, 1),
+        "latency_ms": round((time.perf_counter() - started) * 1000, 1),
         "started_at": started_at,
         "response_sha256": canonical_digest(body),
     }
     if challenge:
         record["challenge"] = challenge
-        if proof_header:
-            try:
-                record["proof"] = ResponseProof.from_header(proof_header).as_dict()
-            except ProofError as exc:
-                record["proof_problem"] = str(exc)
+        if proof:
+            record["proof"] = proof
     return record
-
-
-def count_provider_stages(record: dict[str, Any]) -> int:
-    response = record.get("response") or {}
-    return sum(
-        1
-        for entry in response.get("tool_calls") or []
-        if isinstance(entry, dict)
-        and (
-            entry.get("stage") in {"orchestrate", "revise", "review"}
-            or str(entry.get("tool", "")).startswith("llm_")
-        )
-    )
 
 
 __all__ = [
     "RunnerError",
     "build_request",
     "collect_case",
-    "count_provider_stages",
     "direct_opener",
     "validate_base_url",
 ]

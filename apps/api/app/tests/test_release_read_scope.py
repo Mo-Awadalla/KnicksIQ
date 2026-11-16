@@ -6,6 +6,7 @@ from app.core.db import AsyncSessionLocal
 from app.models.dataset_release import DatasetRelease
 from app.models.game import Game
 from app.services import releases
+from app.services.analyst_tools import AnalystTools
 from sqlalchemy import update
 
 
@@ -32,6 +33,7 @@ async def test_real_development_reads_exclude_historical_games(client, monkeypat
             require_active_release=True,
         ),
     )
-    response = await client.get("/games")
-    assert response.status_code == 200
-    assert [game["id"] for game in response.json()] == [1]
+    async with AsyncSessionLocal() as db:
+        tools = AnalystTools(db, release, "What was the Knicks record?", release.season, {})
+        await tools.prepare()
+        assert [game.id for game in tools.games] == [1]

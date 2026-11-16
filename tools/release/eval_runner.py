@@ -370,8 +370,6 @@ def main(argv: list[str] | None = None) -> int:
                 "RAG_QDRANT_ENABLED",
                 "RAG_QDRANT_CLOUD_INFERENCE",
                 "AI_PROVIDER",
-                "ANALYSIS_ANSWER_MODE",
-                "ANALYST_EVIDENCE_LOOP_ENABLED",
             )
             if key in env
         },

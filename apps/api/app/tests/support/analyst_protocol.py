@@ -3,13 +3,12 @@
 from __future__ import annotations
 
 import asyncio
-import json
 import shutil
 import socket
 import subprocess
 
 import pytest
-from app.services import analyst_budget, analyst_sessions
+from app.services import analyst_budget
 from app.services.analyst_tools import AnalystTools
 from app.tests.support.player_archive import _seed_release_stats
 from redis.asyncio import Redis
@@ -54,7 +53,7 @@ async def local_redis(monkeypatch, tmp_path):
                 await asyncio.sleep(0.01)
             except Exception:
                 await asyncio.sleep(0.01)
-        for module in (analyst_budget, analyst_sessions):
+        for module in (analyst_budget,):
             monkeypatch.setattr(module, "_redis", connection)
         yield redis
     finally:
@@ -68,61 +67,3 @@ async def make_tools(db, question="Give me an interesting stat", state=None):
     tools = AnalystTools(db, release, question, release.season, state or {})
     await tools.prepare()
     return tools, player
-
-
-class ScriptedAdapter:
-    """Protocol fixture, deliberately not an evaluation of model quality."""
-
-    def __init__(self):
-        self.max_tokens = 0
-        self.last_metadata = {"usage": {"cost": 0}, "provider": "protocol-fixture"}
-        self.prompts = []
-
-    async def generate(self, *, system, user):
-        payload = json.loads(user)
-        self.prompts.append(payload)
-        if payload["schema"]["title"] == "AnswerReview":
-            answer = payload["proposed_answer"]
-            return json.dumps(
-                {
-                    "assertions": [
-                        {
-                            "text": answer["text"],
-                            "verdict": "supported",
-                            "assertion_type": "factual",
-                            "offending_text": None,
-                            "supporting_claim_ids": [c["claim_id"] for c in answer["claims"]],
-                            "supporting_evidence_ids": [],
-                            "reason": "Matches backend claims.",
-                        }
-                    ]
-                }
-            )
-        if not payload["claims"]:
-            return json.dumps(
-                {
-                    "action": "call_tools",
-                    "tools": [{"name": "discover_facts", "question": payload["question"]}],
-                    "answer": None,
-                }
-            )
-        candidate = next(iter(payload["candidates"]), None)
-        claims = (
-            [c for c in payload["claims"] if c["claim_id"] in candidate["claim_ids"]]
-            if candidate
-            else payload["claims"][:1]
-        )
-        return json.dumps(
-            {
-                "action": "answer_from_available_evidence",
-                "tools": [],
-                "answer": {
-                    "text": " ".join(c["statement"] for c in claims),
-                    "claims": [
-                        {"claim_id": c["claim_id"], "displayed_value": c["value"]} for c in claims
-                    ],
-                    "evidence_ids": [],
-                    "fact_ids": [candidate["fact_id"]] if candidate else [],
-                },
-            }
-        )

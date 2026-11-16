@@ -1,28 +1,5 @@
-"""Request-correlated collection against a candidate API.
-
-Collecting is separated from scoring: every record stores the exact request,
-turn id, revision, response and its digest, so a score can be recomputed later
-and an observation cannot be replaced by a second, unrecorded search.
-
-Collection is local-only and provider-free for the ``disabled`` profile:
-
-- the candidate must be a loopback HTTP endpoint, so the collector cannot emit
-  outbound traffic or follow a redirect off loopback;
-- ambient proxy settings are never consulted and redirects are refused;
-- the ``disabled`` profile asserts what it did not do: the run aborts at the
-  first response that reports a model stage, and the summary refuses to
-  publish a provider-free claim.
-
-The ``service`` profile is the enabled path. It never carries an approval of its
-own: it loads the run configuration the operator's approval produced, proves
-before the first analyst POST that a guarded candidate process claimed that exact
-configuration in its attempt ledger, stamps every response with the run identity,
-and reports upstream attempts from the ledger separately from the logical model
-stages the candidate reports.
-
-The wire exchange itself lives in :mod:`app.evaluation.collection_transport`;
-this module decides what a run means and what evidence it may publish.
-"""
+"""Public chat events cannot prove zero private provider calls.
+Provider-call evidence requires private run attestation."""
 
 from __future__ import annotations
 
@@ -46,7 +23,6 @@ from app.evaluation.candidate_proof import (
 from app.evaluation.collection_transport import (
     RunnerError,
     collect_case,
-    count_provider_stages,
     direct_opener,
     validate_base_url,
 )
@@ -64,7 +40,7 @@ class CollectionSummary:
     cases_requested: int
     cases_recorded: int
     http_errors: int
-    provider_stages: int
+    provider_stages: int | None
     base_url: str
     provider_attempts: int = 0
     attempts_refused: int = 0
@@ -308,13 +284,12 @@ def collect(
         # signed challenge without touching a provider, so an unprovable candidate is
         # rejected before any paid request exists to regret.
         prove_candidate(base_url, binding, timeout=timeout)
-        records, stages = _collect_all(
+        records = _collect_all(
             cases,
             base_url=base_url,
             season=season,
             timeout=timeout,
             limit=None,
-            stop_on_stages=False,
             binding=binding,
         )
         stamp = RunStamp(
@@ -340,7 +315,7 @@ def collect(
             cases_requested=len(cases),
             cases_recorded=len(records),
             http_errors=sum(1 for record in records if record["http_status"] != 200),
-            provider_stages=stages,
+            provider_stages=None,
             base_url=base_url,
             provider_attempts=attempts,
             attempts_refused=refused,
@@ -348,20 +323,19 @@ def collect(
             scope=binding.scope,
             proofs_verified=len(records),
         )
-    records, stages = _collect_all(
+    records = _collect_all(
         cases,
         base_url=base_url,
         season=season,
         timeout=timeout,
         limit=limit,
-        stop_on_stages=True,
     )
     return records, CollectionSummary(
         profile=profile,
         cases_requested=len(cases[:limit] if limit else cases),
         cases_recorded=len(records),
         http_errors=sum(1 for record in records if record["http_status"] != 200),
-        provider_stages=stages,
+        provider_stages=None,
         base_url=base_url,
     )
 
@@ -373,12 +347,10 @@ def _collect_all(
     season: str,
     timeout: float,
     limit: int | None,
-    stop_on_stages: bool,
     binding: RunBinding | None = None,
-) -> tuple[list[dict[str, Any]], int]:
+) -> list[dict[str, Any]]:
     selected = cases[:limit] if limit else cases
     records: list[dict[str, Any]] = []
-    stages = 0
     for case in selected:
         challenge = new_nonce() if binding is not None else ""
         record = collect_case(base_url, case, season=season, timeout=timeout, challenge=challenge)
@@ -387,16 +359,7 @@ def _collect_all(
             # than joining the submission and borrowing another record's evidence.
             verify_record_proof(record, binding)
         records.append(record)
-        stages += count_provider_stages(record)
-        if stop_on_stages and stages:
-            # Stop at the first model stage: the disabled profile must not keep spending
-            # requests once its own provider-free claim is already false.
-            raise RunnerError(
-                f"{stages} model stages reported under the disabled profile after "
-                f"{len(records)} of {len(selected)} cases; zero provider requests cannot "
-                "be claimed and no further requests are sent"
-            )
-    return records, stages
+    return records
 
 
 __all__ = [

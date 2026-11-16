@@ -37,7 +37,6 @@ from eval_scenarios_collection import (
     scenario_collect_ignores_ambient_proxy,
     scenario_collect_profile,
     scenario_collect_rejects_remote_base_url,
-    scenario_provider_stage_in_collect_refused,
 )
 from eval_scenarios_context import (
     scenario_context_changed_rejected,
@@ -95,7 +94,6 @@ from eval_scenarios_projection import (
     scenario_margin_extreme_projection,
     scenario_scope_windows_from_population,
 )
-from eval_scenarios_scorelines import scenario_scoreline_scope_projection
 from eval_scenarios_proof import (
     scenario_collect_requires_live_proof,
     scenario_proof_protocol_roundtrip,
@@ -130,6 +128,7 @@ from eval_scenarios_reviews import (
     scenario_review_decisions,
     scenario_stale_review_decisions,
 )
+from eval_scenarios_scorelines import scenario_scoreline_scope_projection
 from eval_scenarios_semantics import (
     scenario_displayed_precision_additions,
     scenario_player_population_checked,
@@ -201,7 +200,6 @@ SCENARIOS: dict[str, Callable[[Path], list[str]]] = {
     "collect_service_run_stamp": scenario_collect_service_run_stamp,
     "score_service_requires_attestation": scenario_score_service_requires_attestation,
     "runner_service_refuses_without_inputs": scenario_runner_service_refuses_without_inputs,
-    "provider_stage_in_collect_refused": scenario_provider_stage_in_collect_refused,
     "collect_ignores_ambient_proxy": scenario_collect_ignores_ambient_proxy,
     "collect_rejects_remote_base_url": scenario_collect_rejects_remote_base_url,
     "collect_disabled_flag_only": scenario_collect_disabled_flag_only,

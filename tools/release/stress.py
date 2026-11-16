@@ -1,9 +1,8 @@
-"""Measure ten concurrent archive readers and analyst requests against a real API.
+"""Requires approval when the API uses a paid provider.
 
-Run with the API environment's normal rate limits. The cooldown keeps the
-warmup outside the ten-request minute budget of clients sharing one address.
-This records observations; it does not approve a release.
-"""
+Run with normal API rate limits. The cooldown keeps warmup outside the
+ten-request minute budget of clients sharing one address.
+These observations do not approve a release."""
 
 from __future__ import annotations
 
@@ -11,14 +10,19 @@ import argparse
 import asyncio
 import json
 import math
+import secrets
 import time
+import uuid
 from datetime import UTC, datetime
 from pathlib import Path
 
 import httpx
+from app.evaluation.chat_stream import stream_turn
+from app.evaluation.collection_transport import validate_base_url
 
 
 async def run(args: argparse.Namespace) -> dict:
+    validate_base_url(args.base_url)
     headers = {"X-Forwarded-Proto": "https"} if args.local_https_proxy else {}
     samples: dict[str, list[float]] = {"archive": [], "analyst": []}
     errors: list[dict] = []
@@ -40,40 +44,50 @@ async def run(args: argparse.Namespace) -> dict:
                 "What was Mikal Bridges' three-point percentage?",
             )
         ]
-    async with httpx.AsyncClient(base_url=args.base_url, headers=headers, timeout=60) as client:
+    async with httpx.AsyncClient(
+        base_url=args.base_url, headers=headers, timeout=60, trust_env=False, follow_redirects=False
+    ) as client:
         ready = await client.get("/health/ready")
         ready.raise_for_status()
-        identity = await client.get("/archive/status")
+        identity = await client.get("/health/ready")
         identity.raise_for_status()
         version = identity.json()["data_version"]
         if version != args.data_version:
             raise RuntimeError("Archive version does not match the requested target")
-        warmup = await client.post("/analysis/query", json=question)
-        warmup.raise_for_status()
-        if warmup.json().get("refused") or not warmup.json().get("answer"):
-            raise RuntimeError("Analyst warmup did not produce a factual answer")
+        warmup, _ = await stream_turn(
+            client,
+            {
+                "kind": "message",
+                "message": question["question"],
+                "request_id": str(uuid.uuid4()),
+                "expected_revision": 0,
+            },
+            secrets.token_urlsafe(32),
+        )
+        if warmup["status"] != "complete":
+            raise RuntimeError("Chat warmup did not complete")
         print(f"Warmup passed for {version}; waiting 61s for the rate-limit window", flush=True)
         await asyncio.sleep(61)
 
         async def request(route: str, path: str, payload: dict | None = None) -> None:
             start = time.perf_counter()
             try:
-                response = (
-                    await client.get(path)
-                    if payload is None
-                    else await client.post(path, json=payload)
-                )
-                response.raise_for_status()
-                body = response.json()
-                if route == "analyst" and (
-                    body.get("refused")
-                    or not body.get("answer")
-                    or not body.get("citations")
-                    or body.get("data_version") != version
-                ):
-                    raise RuntimeError(
-                        "Analyst response missing factual answer, citations or version"
+                if payload is None:
+                    response = await client.get(path)
+                    response.raise_for_status()
+                else:
+                    body, _ = await stream_turn(
+                        client,
+                        {
+                            "kind": "message",
+                            "message": payload["question"],
+                            "request_id": str(uuid.uuid4()),
+                            "expected_revision": 0,
+                        },
+                        secrets.token_urlsafe(32),
                     )
+                    if body["status"] != "complete" or not body["text"]:
+                        raise RuntimeError("Chat did not complete")
             except Exception as exc:
                 errors.append({"route": route, "type": type(exc).__name__, "detail": str(exc)})
             finally:
@@ -83,12 +97,12 @@ async def run(args: argparse.Namespace) -> dict:
 
         async def archive_reader() -> None:
             while time.monotonic() < deadline:
-                await request("archive", "/archive/status")
+                await request("archive", "/health/ready")
                 await asyncio.sleep(0.1)
 
         await asyncio.gather(
             *(archive_reader() for _ in range(10)),
-            *(request("analyst", "/analysis/query", item) for item in analyst_questions),
+            *(request("analyst", "/chat/turns", item) for item in analyst_questions),
         )
 
     def p95(values: list[float]) -> float:
@@ -109,9 +123,12 @@ async def run(args: argparse.Namespace) -> dict:
         "data_version": version,
         "readiness": ready.json(),
         "scope": (
-            "Ten distinct factual analyst questions with archive readers; clear cache required"
+            "Ten distinct chat questions with readiness readers"
             if args.distinct_questions
-            else "Warm cached analyst response and archive metadata; ten users per scenario"
+            else (
+                "Ten fresh chat sessions and readiness readers; "
+                "legacy latency metric names retained"
+            )
         ),
         "metrics": metrics,
         "errors": errors,
